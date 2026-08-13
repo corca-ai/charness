@@ -17,6 +17,7 @@
 - [Handoff/retro skill critique](../charness-artifacts/critique/2026-08-13-handoff-retro-skill-feedback-loop.md) — owns the repaired feedback-loop contract, review dispositions, and deferred typed-adapter boundary.
 - [Lesson-ledger contract](../charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md) — owns score rules and the boundary between ledger-backed preview selection and the generated digest.
 - [Lesson-ledger state](../charness-artifacts/retro/lesson-ledger.json) — records declared preview-session snapshots and sparse score events; a snapshot proves containment, not exposure.
+- [Lesson-evaluation continuity contract](../charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md) — owns the eligible-retro denominator, exact disposition grammar, bounded receipt claim, and reconciliation violations.
 - [#614](https://github.com/corca-ai/charness/issues/614) — holds the remaining unbounded `pytest-tmp` and `reports/mutation` cache class.
 
 Historical immutable publish-state claim — this captures the completed
@@ -35,7 +36,7 @@ Refresh non-claims: no #615 push, hosted CI, GitHub closure, or installed-consum
 ## Next Session
 
 1. Do not report [#615](https://github.com/corca-ai/charness/issues/615) closed from its local carrier. Under a new phase-scoped grant, push it, observe hosted CI through a distinct channel, and run `verify-closeout --expect-state CLOSED`; without that grant, leave it OPEN.
-2. Before #614, follow [Local Lesson-Ledger Authoring](./development.md#local-lesson-ledger-authoring) to declare a deterministic preview session and actually present its list; at retro, record only sparse anchored effects. The record alone does not prove presentation.
+2. Before #614, run the start command in [Local Lesson-Ledger Authoring](./development.md#local-lesson-ledger-authoring), actually present its deterministic list, and retain the same session ID through the retro disposition. At retro, record only sparse anchored effects, persist exactly one [Lesson Evaluation Disposition](./development.md#lesson-evaluation-disposition) line, then run the continuity report. The declaration and receipt do not prove presentation.
 3. Resolve [#614](https://github.com/corca-ai/charness/issues/614)'s remaining members: `pytest-tmp` keeps the most recent N failed basetemps rather than cleaning up on failure (the retention is deliberate), and `reports/mutation` has no policy at all.
 4. Keep the [score-policy evidence goal](../charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md) dormant until multiple declared sessions contain naturally varied scores; do not tune from the current positive-only cohort.
 5. [#584](https://github.com/corca-ai/charness/issues/584) stays held on the ledger's Umbrella Closure Contract.
@@ -45,6 +46,10 @@ Refresh non-claims: no #615 push, hosted CI, GitHub closure, or installed-consum
 ## Discuss
 
 - #527's brief remains the owner of any future product decision; its current OPEN deferral does not authorize implementation.
+- Whether a machine-local observer can count meaningful work that never produces
+  a durable retro without writing noisy per-chat repository state; until then,
+  the [continuity contract](../charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md)
+  claims durable-retro continuity only.
 - Whether a typed public evaluator-adapter schema is warranted after more than one repo-local evaluator demonstrates that generic evidence discovery is insufficient.
 
 ## References

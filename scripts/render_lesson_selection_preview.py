@@ -11,6 +11,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 ROOT = repo_root_from_script(__file__)
 _preview = import_repo_module(__file__, "scripts.lesson_selection_preview_lib")
+_continuity = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
 build_lesson_selection_preview = _preview.build_lesson_selection_preview
 
 
@@ -30,9 +31,7 @@ def main() -> int:
     if args.json:
         print(json.dumps(preview, ensure_ascii=False, indent=2))
         return 0
-    print(f"Lesson selection preview ({len(preview['items'])}/{preview['eligible_count']} eligible):")
-    for item in preview["items"]:
-        print(f"- {item['lesson_id']} — {item['lesson']}")
+    print(_continuity.render_preview_bytes(preview).decode("utf-8"), end="")
     return 0
 
 

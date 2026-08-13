@@ -3257,6 +3257,62 @@
       "note": "a two-line `if not <optional>: return None` / early-return idiom shared across six unrelated owners (filter_cosmic_ray_mutants, dup_ratchet_git, nose_baseline_lib, plan_quality_run, publish_release_adapter_preflight, and the new plan_release_prepared_stop). Five of the six members are untouched by this slice. Idiom-sized guard-clause plumbing across independent verdict contracts, the same class already accepted as 349f5d577fe2588b and 003780cc89f2ccfd; extraction would couple six owners through a helper that removes no behavior.",
       "reviewed_at": "2026-08-13",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2e2265948baf9447",
+      "note": "Two untouched goal-artifact readers use the same short heading-normalization guard. The family surfaced from branch-wide baseline drift, not this slice; their downstream grammars and evidence verdicts are different, so extracting nine lines would couple independent proof readers without centralizing a shared policy.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3bd0684aec91ff45",
+      "note": "Standard direct-CLI failure footer shared across independently executable repo scripts: call main, catch the command's bounded error set, print to stderr, exit 1. The two lesson entrypoints newly join an existing 18-member portability idiom; a shared runner would hide each command's accepted failure boundary and require the import bootstrapping it is meant to protect.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "522e71b786781f14",
+      "note": "Artifact scaffold payloads deliberately share the dated-record/template/validator shape while retaining skill-owned section order and write semantics. The shared extractable behavior already lives in scaffold_artifact_lib; the remaining retro, critique, and ideation bodies are explicit consumer contracts whose generic extraction would hide which sections each artifact promises.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "62a2d1c487bedb21",
+      "note": "Debug and retro planners intentionally expose parallel required-read and gate-packet assembly under the shared run-plan envelope. Each is a portable skill-local planner with different adapter evidence, artifacts, trust text, and next actions; centralizing the large-looking control flow would couple two independently shipped workflows while obscuring their declared reads.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "765234fbcb826726",
+      "note": "Portable skill planners independently locate skill_runtime_bootstrap before they can import repository and sibling modules. The retro loader joins the existing release, quality, and debug entrypoint idiom; extracting it would require the very import path the block establishes.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a0ff581916c94487",
+      "note": "Small argparse main functions across unrelated report CLIs share parse-arguments, render JSON-or-human, and return-status scaffolding. The continuity reporter owns a distinct payload and exit verdict; a generic CLI runner would couple unrelated command contracts for five idiom-sized lines and conceal its fail-closed return condition.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d217dbc76c0052a4",
+      "note": "The lesson session and lesson score writers intentionally spell the same lock-read-replay-copy-replay-replace transaction around different mutations. Locking and atomic replacement are already shared by lesson_ledger_writer_lib; keeping the replay and mutation order explicit in each writer prevents a callback abstraction from hiding which state is validated before and after each ledger event.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f8cc48617039b140",
+      "note": "Two untouched goal-artifact grammar helpers share a short normalized-heading scan but return different evidence shapes. This branch-wide family did not arise from the lesson slice; a common iterator would add a proof-reader dependency while leaving each caller's distinct filtering and refusal contract in place.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

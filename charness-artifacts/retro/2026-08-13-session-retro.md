@@ -367,6 +367,131 @@ ask-before-run.
 
 `charness-artifacts/retro/2026-08-13-issue-615-memory-audit-packet.md`
 
+## Continuation: Lesson-Evaluation Continuity
+
+### Context, Window, and Evidence
+
+This continuation reviews the structural answer to the user's question: how a
+future operator can know that lesson evaluation keeps happening without relying
+on the agent saying it will remember. The window begins with the audit above,
+which established that the #615 work had no contemporaneous lesson session, and
+ends with the repo-local continuity implementation and its two bounded review
+rounds.
+
+Strong evidence is the completed
+`charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md`,
+the implementation critique, the focused continuity/planner/scaffold/quality
+runner tests, and the read-only continuity report. The report's activation-eve
+baseline is zero eligible durable retros, zero dispositions, six historical
+score events, and zero violations. That is a clean baseline, not evidence that
+tomorrow's operation already happened.
+
+### Waste and Critical Decisions
+
+The first feedback-loop repair improved reminders and evidence discovery but
+still left success as an anecdote: no durable-retro denominator could distinguish
+an affirmative `no-effect` session from a skipped evaluation. The implementation
+also initially put Charness-specific grammar in the generic public retro
+scaffold. Round 2 caught that ownership inversion; the capped repair moved the
+exact section and command back to the Charness adapter and development guide.
+(recurrence-class: rule-exists-but-does-not-bind)
+
+The decisions that constrained the result were:
+
+- count only dated durable retro artifacts from 2026-08-14, not every host chat;
+- require an explicit disposition and never infer success from score volume;
+- keep `missing-start`, `emission-unproven`, and `presentation-unproven`
+  distinct;
+- bind one declared session to at most one retro;
+- treat the start receipt as stdout-write evidence only, never proof of display,
+  reading, use, benefit, or before-work ordering;
+- put exact Charness policy in the repo adapter while the public retro skill
+  carries only the generic adapter seam.
+
+### Trends vs Last Retro
+
+The earlier audit could only say that three sessions and six positive-only
+scores existed and that operation had paused. The new report adds the missing
+lifecycle denominator and typed miss states. It does not improve the evidence
+that lessons are useful, and it deliberately leaves host sessions without a
+durable retro outside the measured cohort.
+
+### North Star Alignment
+
+The mechanism now puts teeth only on mechanically observable continuity:
+eligible retro presence, exact disposition shape, receipt consistency, unique
+session ownership, and score-count reconciliation. Human presentation remains
+a judgment and is represented by an honest `presentation-unproven` state rather
+than a fabricated machine verdict.
+
+The first draft mis-applied ownership by embedding one repository's evaluator
+grammar in a public skill. A different observer caught that cross-surface leak;
+the adapter seam is now generic and the Charness policy is adjacent to its
+actual consumer. The remaining named failure signature is “local green becomes
+terminal trust”: today's zero-violation activation-eve report cannot prove the
+first eligible session will be operated correctly.
+
+### Expert Counterfactuals
+
+Douglas Engelbart's system-improving lens changes the unit from “remember the
+lesson command” to one Method/Language/Tool loop: the handoff orders the start,
+the adapter declares the section and metric, and the quality reporter reconciles
+the durable result. W. Edwards Deming's feedback-loop lens adds the denominator
+and explicit negative states; six scores without complete dispositions are not
+a healthy process signal.
+
+### Sibling Search
+
+- same layer: Charness RCA conversion ledger | decision: intentional boundary |
+  proof: RCA records detected events automatically, while lesson effect scoring
+  remains a bounded human judgment.
+- abstraction up: generic public retro scaffold | decision: same waste, fix now |
+  proof: `artifact_sections` is adapter-declared and public guidance no longer
+  contains the Charness command or JSON grammar.
+- specialization down: Charness handoff and development guide | decision: same
+  waste, fix now | proof: the handoff links the owner and orders the start;
+  development owns the exact forms and non-claims.
+- mental-model siblings: host chats without durable retros | decision: valid
+  follow-up outside the slice | proof: no observer can yet distinguish meaningful
+  work from incidental host opens without noisy repo writes; follow-up: deferred
+  docs/handoff.md#discuss.
+
+Structural-follow-up destination: applied: adapter-owned artifact sections,
+next-session handoff ordering, and the continuity quality report; the broader
+host-session denominator remains deferred to `docs/handoff.md#discuss`.
+
+### Next Improvements
+
+- **workflow**: before #614, run the start command, actually present the exact
+  selected list, and carry its session ID into one retro disposition.
+  (recurrence-class: durable-lesson-ledger-first)
+- **capability**: inspect the first eligible cohort after 2026-08-14 with
+  `python3 scripts/check_lesson_evaluation_continuity.py --repo-root .`; fix any
+  typed violation rather than adding a score to improve the appearance.
+  (recurrence-class: rule-exists-but-does-not-bind)
+- **memory**: keep the handoff pointed at the continuity contract, development
+  procedure, ledger state, and this retro instead of copying test counts or
+  packet hashes. (recurrence-class: guard-adjacent-to-action)
+
+### Portable Candidate
+
+The generic pattern is portable: an adapter-declared evaluation section plus a
+repo-owned read-only reconciliation command. The exact Charness grammar is not
+portable. Destination: `create-skill` only after a second consuming repository
+needs the seam; first-prompt acceptance is that a repo with no evaluator gets no
+extra section or command.
+
+### Packet Consumed
+
+`charness-artifacts/retro/2026-08-13-104307-packet.md`
+
+## Lesson Evaluation
+
+Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}
+
+This work began before the session opener and continuity contract existed. No
+score was appended retroactively.
+
 ## Persisted
 
 Persisted: yes: charness-artifacts/retro/2026-08-13-session-retro.md

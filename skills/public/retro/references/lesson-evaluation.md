@@ -7,17 +7,24 @@ duty.
 
 Append sparse scores only for lessons selected and actually presented by a
 contemporaneous agent-authored session-start action before the affected work. A
-stored snapshot proves neither display nor use. Retro-time inspection is not
-presentation.
+stored snapshot or command-side receipt proves neither display nor use.
+Retro-time inspection is not presentation.
 
-If presentation is absent or uncertain:
+When the repo-owned evaluator defines a disposition grammar:
 
-- append no score;
-- write this explicit line in the retro artifact on one line:
-  `Lesson evaluation: not evaluated — presentation not established for <session-id>; no score events appended`
-- put the missing declaration/presentation prerequisite before the next work
-  slice in the handoff.
+- use its exact status, reason, identity, and score-count form;
+- treat an affirmative no-effect judgment as distinct from merely having zero
+  score events;
+- record absent or uncertain presentation honestly without appending a score;
+- run its declared read-only reconciler after the retro is persisted; and
+- keep the reconciler's denominator label explicit rather than implying it
+  covers host sessions the repo cannot observe.
 
-Never backfill scores from a later retro. The negative disposition belongs in
-the retro, not in a ledger field unless the repo-owned evaluator contract
-already defines such a field.
+The adapter may expose the repo-owned authoring form through
+`artifact_sections` and its reconciler through `metrics_commands`. Those fields
+route an evaluator contract; they do not create one. Exact grammar, commands,
+and proof limits stay in the repo-owned evidence named by the adapter.
+
+Never backfill scores from a later retro. The disposition belongs in the retro,
+not in a ledger field unless the repo-owned evaluator contract explicitly owns
+such state.

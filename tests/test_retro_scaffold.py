@@ -53,6 +53,7 @@ def test_retro_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert "decision: valid follow-up outside the slice" in template
     assert "follow-up: deferred TODO-handoff-anchor" in template
     assert "## Persisted\n\nPersisted: yes: TODO path" in template
+    assert "## Lesson Evaluation" not in template
 
     artifact_path = repo / payload["write_artifact_path"]
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
@@ -154,3 +155,18 @@ def test_payload_for_requires_the_title_to_be_named(tmp_path: Path) -> None:
         assert "positional" in str(exc)
     else:
         raise AssertionError("payload_for must not accept a positional title")
+
+
+def test_retro_scaffold_appends_only_adapter_declared_sections() -> None:
+    template = SCAFFOLD_MODULE.render_template(
+        title="Session Retro",
+        date_text="2026-08-14",
+        artifact_sections=[
+            "## Repo Evaluator",
+            "",
+            "Repo evaluation: TODO exact repo-owned form",
+        ],
+    )
+
+    assert "## Repo Evaluator" in template
+    assert "Repo evaluation: TODO exact repo-owned form" in template

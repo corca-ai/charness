@@ -35,6 +35,7 @@ Retro-specific fields:
 
 - `evidence_paths`
 - `metrics_commands`
+- `artifact_sections`
 - `packet_sections`
 - `auto_session_trigger_surfaces`
 - `auto_session_trigger_path_globs`
@@ -52,6 +53,7 @@ summary_path: charness-artifacts/retro/recent-lessons.md
 evidence_paths:
   - docs/handoff.md
 metrics_commands: []
+artifact_sections: []
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces
@@ -71,6 +73,10 @@ auto_session_trigger_path_globs: []
   A path may expose a repo-owned evaluator contract, but the path string alone
   never implies one.
 - `metrics_commands` are optional. If absent, the retro may still run narratively.
+- `artifact_sections` are optional exact lines appended to the retro scaffold
+  before `## Next Improvements`. They let a repo-owned evaluator expose its
+  authoring form without hard-coding that form into the public skill. Empty
+  strings preserve intentional blank lines.
 - `packet_sections` are optional prepare-packet sections. When present, run
   `scripts/prepare_packet.py` before writing lessons and record the consumed
   packet path.
@@ -92,6 +98,8 @@ auto_session_trigger_path_globs: []
 - `summary_path` should stay stable when used so `<repo-root>/AGENTS.md` and handoff can
   treat it as a repeatable memory surface instead of a one-off artifact
 - `metrics_commands` must be real commands with real sources; never placeholders
+- `artifact_sections` own form only; the repo's evidence path owns the meaning
+  and validator, and unrelated repos keep the default empty list
 - `packet_sections` reuse the critique prepare-packet section shape:
   `id`, `title`, `content_kind`, and exactly one of `content`, `content_path`,
   or `command`

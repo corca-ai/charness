@@ -237,6 +237,46 @@ def test_retro_plan_preserves_empty_adapter_evidence(tmp_path: Path) -> None:
     assert [read for read in payload["required_reads"] if read.get("kind") == "evidence"] == []  # type: ignore[index]
 
 
+def test_retro_plan_surfaces_adapter_metrics_after_persistence(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+    adapter_path = repo / ".agents" / "retro-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "metrics_commands:\n"
+        + "  - python3 scripts/check_lesson_evaluation_continuity.py --repo-root .\n",
+        encoding="utf-8",
+    )
+
+    payload = run_plan(repo, changed_paths=["src/app.py"])
+    metric = next(packet for packet in payload["gate_packets"] if packet["id"] == "adapter-metric-1")  # type: ignore[index]
+
+    assert metric["command"] == "python3 scripts/check_lesson_evaluation_continuity.py --repo-root ."
+    assert metric["run_when"] == "after the retro disposition is written and persisted, before closeout"
+
+
+def test_retro_plan_scaffold_uses_repo_declared_artifact_sections(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+    adapter_path = repo / ".agents" / "retro-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "artifact_sections:\n"
+        + "  - '## Repo Evaluation'\n"
+        + "  - ''\n"
+        + "  - 'Repo evaluation: TODO'\n",
+        encoding="utf-8",
+    )
+
+    payload = run_plan(repo, changed_paths=["src/app.py"])
+    scaffold = next(packet for packet in payload["gate_packets"] if packet["id"] == "retro-artifact-scaffold")  # type: ignore[index]
+    template = load_plan_module().scaffold_retro_artifact.payload_for(repo, title=None)["template"]
+
+    assert payload["adapter"]["valid"] is True  # type: ignore[index]
+    assert scaffold["write_artifact_path"].endswith("-session-retro.md")
+    assert "## Repo Evaluation" in template
+
+
 def test_retro_plan_infers_work_paths_from_recent_commits(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_adapter(repo)

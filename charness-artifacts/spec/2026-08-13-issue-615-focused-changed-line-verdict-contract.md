@@ -147,3 +147,11 @@ population; the plugin mirror is synchronized; 97 focused tests and the exact
 historical wrapper path pass their respective clean/block contracts. The
 two-round critique is recorded at
 `charness-artifacts/critique/2026-08-13-issue-615-focused-marker-parity.md`.
+
+## Later Interrupt Carry-Forward
+
+Refreshed 2026-08-13 for the later lesson-evaluation lifecycle slice. The
+disproving observation remains resolved by the exact historical blocked replay,
+the source/export repair, and the two-round review named above. That later slice
+does not alter focused-coverage producer or verdict semantics; ordinary impl is
+allowed while this spec remains the durable handoff for the closed interrupt.

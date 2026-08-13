@@ -234,7 +234,7 @@ def _on_demand_reads() -> list[dict[str, str]]:
 
 
 def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, Any]) -> list[dict[str, Any]]:
-    return [
+    packets = [
         _packet(
             "adapter-readiness",
             "deterministic adapter parser; trust failures and warnings",
@@ -265,6 +265,16 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
             **_relative_script_command(repo_root, "skills/public/retro/scripts/check_auto_trigger.py", "--repo-root", "."),
         ),
     ]
+    for index, command in enumerate(adapter["data"].get("metrics_commands", []), start=1):
+        packets.append(
+            _packet(
+                f"adapter-metric-{index}",
+                "adapter-declared read-only metric; trust its structured counts and failures, not causal interpretation",
+                command=str(command),
+                run_when="after the retro disposition is written and persisted, before closeout",
+            )
+        )
+    return packets
 
 
 def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
@@ -310,7 +320,7 @@ def build_plan(
         on_demand_reads=_on_demand_reads(),
         phase_barriers=[
             "Open required_reads (esp. expert-lens.md for the briefed lens) before writing the retro.",
-            "If repo-owned evidence defines lesson evaluation, score only a list presented contemporaneously before the work; a stored snapshot alone is not presentation, and uncertainty is recorded in the retro as not evaluated with no score append.",
+            "If repo-owned evidence defines lesson evaluation, score only a list presented contemporaneously before the work; write the exact repo-owned disposition, then run its adapter metric after persistence. A stored snapshot or command receipt alone is not presentation.",
             "Treat gate_packets as cheap deterministic evidence: trust them for shape, not for judgment.",
             "Never close without a Persisted: yes/no line.",
         ],

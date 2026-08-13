@@ -38,7 +38,7 @@ def _slug(title: str) -> str:
     return slug or "retro"
 
 
-def render_template(*, title: str, date_text: str) -> str:
+def render_template(*, title: str, date_text: str, artifact_sections: list[str] | None = None) -> str:
     lines = [f"# {title}", f"Date: {date_text}", ""]
     lines.extend(["## Context", "", "TODO what happened and why this retro.", ""])
     lines.extend(["## Evidence Summary", "", "- TODO concrete evidence (paths, line counts, command output).", ""])
@@ -74,6 +74,8 @@ def render_template(*, title: str, date_text: str) -> str:
             "",
         ]
     )
+    if artifact_sections:
+        lines.extend([*artifact_sections, ""])
     lines.extend(["## Next Improvements", "", "- workflow: TODO", "- capability: TODO", "- memory: TODO", ""])
     lines.extend(["## Persisted", "", "Persisted: yes: TODO path", ""])
     return "\n".join(lines).rstrip() + "\n"
@@ -99,7 +101,11 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         write_artifact_path=write_artifact_path,
         date_text=date_text,
         title=resolved_title,
-        template=render_template(title=resolved_title, date_text=date_text),
+        template=render_template(
+            title=resolved_title,
+            date_text=date_text,
+            artifact_sections=list(adapter["data"].get("artifact_sections", [])),
+        ),
         validator_command=validator_command(repo_root, write_artifact_path),
     )
 

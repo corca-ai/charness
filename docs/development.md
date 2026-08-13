@@ -86,14 +86,13 @@ fresh-eye, provider, installed-consumer, remote-CI, push, or release proof.
 ## Local Lesson-Ledger Authoring
 
 The lesson ledger has a deliberately local eligibility path. At session start,
-render the deterministic preview, present that selected list in the active
-conversation, and then record its frozen declaration before affected work:
+use the one command that declares the frozen session, writes the deterministic
+preview, and leaves a subordinate command receipt. Present that selected list
+in the active conversation before affected work:
 
 ```bash
-python3 scripts/render_lesson_selection_preview.py --repo-root . \
-  --seed <deterministic-seed>
-python3 scripts/record_lesson_session.py --repo-root . \
-  --session-id <unique-session-id> --seed <same-deterministic-seed>
+python3 scripts/open_lesson_session.py --repo-root . \
+  --session-id <unique-session-id> --seed <deterministic-seed>
 ```
 
 At retro, add only sparse cited scores for effects observed after that
@@ -107,14 +106,42 @@ python3 scripts/check_lesson_ledger.py --repo-root .
 ```
 
 The session is a local declaration of the deterministic snapshot at record
-time. A valid cited score proves only that its lesson occurred in that declared
-list; it does not prove that a person saw, read, used, or benefited from it, and
-does not authorize contract graduation. The contemporaneous presentation is an
-agent-authored conversation action, not a ledger receipt. If it is absent or
-uncertain, append no score; record
-`not evaluated — presentation not established` in the retro and schedule
-declaration plus presentation before the next work slice in the handoff. Never
-backfill from retro-time inspection.
+time. Its emission receipt proves only that the command's stdout write and
+flush returned for the recorded bytes. A valid cited score proves only that its
+lesson occurred in that declared list. Neither record proves that a person saw,
+read, used, or benefited from it, and neither authorizes contract graduation.
+The contemporaneous presentation is an agent-authored conversation action. If
+it is absent or uncertain, append no score and use the exact `not-evaluated`
+form below. Never backfill from retro-time inspection.
+
+### Lesson Evaluation Disposition
+
+Every eligible Charness retro has exactly one `## Lesson Evaluation` section and
+one machine line. Use one applicable form, replacing the session ID and score
+count:
+
+```text
+Lesson evaluation: {"score_event_count":1,"session_id":"2026-08-14-example","status":"effect-recorded"}
+Lesson evaluation: {"score_event_count":0,"session_id":"2026-08-14-example","status":"no-effect"}
+Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}
+Lesson evaluation: {"reason":"emission-unproven","score_event_count":0,"session_id":"2026-08-14-example","status":"not-evaluated"}
+Lesson evaluation: {"reason":"presentation-unproven","score_event_count":0,"session_id":"2026-08-14-example","status":"not-evaluated"}
+```
+
+`no-effect` is affirmative and is never inferred from zero scores.
+`presentation-unproven` means a valid command receipt exists but actual
+conversation presentation is absent or uncertain. `emission-unproven` means a
+session was declared without a valid receipt.
+
+After the retro disposition and any sparse scores are persisted, reconcile the
+eligible durable-retro cohort:
+
+```bash
+python3 scripts/check_lesson_evaluation_continuity.py --repo-root .
+```
+
+This report measures disposition continuity, not all host sessions or lesson
+usefulness.
 
 ## Proof-Only Non-Managed Checkout
 

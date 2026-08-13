@@ -19,6 +19,7 @@ _enforcement_scope = import_repo_module(__file__, "scripts.critique_enforcement_
 # ideation validators.
 _sections = import_repo_module(__file__, "scripts.markdown_sections")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
+_lesson_evaluation = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
 git_changed_paths = _scripts_artifact_validator_module.git_changed_paths
@@ -86,6 +87,7 @@ SIBLING_BOUNDARY_HEADINGS = (
     "## Critical Decisions",
     "## Trends vs Last Retro",
     "## Expert Counterfactuals",
+    "## Lesson Evaluation",
     "## Next Improvements",
     "## Persisted",
 )
@@ -305,6 +307,20 @@ def validate_north_star_alignment(lines: list[str], observed_date: date | None) 
         )
 
 
+def validate_lesson_evaluation_disposition(
+    lines: list[str], observed_date: date | None
+) -> None:
+    """Require one strict disposition only for the activated durable-retro cohort."""
+    if observed_date is None or observed_date < _lesson_evaluation.ACTIVATION_DATE:
+        return
+    try:
+        _lesson_evaluation.parse_disposition("\n".join(lines))
+    except ValueError as exc:
+        raise ValidationError(
+            f"{exc}. See skills/public/retro/references/lesson-evaluation.md."
+        ) from exc
+
+
 def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     observed_date = _retro_observed_date(path, lines)
@@ -319,6 +335,7 @@ def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
         lambda: validate_persisted_form(lines, observed_date),
         lambda: validate_recurrence_class_slugs(lines),
         lambda: validate_north_star_alignment(lines, observed_date),
+        lambda: validate_lesson_evaluation_disposition(lines, observed_date),
     )
     # collect_all surfaces every violation in one pass (the CLI default) so a
     # multi-rule retro draft is fixed in one edit instead of one rule per gate

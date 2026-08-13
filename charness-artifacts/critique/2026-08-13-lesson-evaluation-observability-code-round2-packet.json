@@ -1,0 +1,197 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-13T11:04:58Z",
+  "prepared_for": "repaired lesson evaluation observability implementation round 2 final",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- .agents/retro-adapter.yaml\n- charness-artifacts/quality/dup-review.json\n- charness-artifacts/retro/2026-08-13-session-retro.md\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/spec/2026-08-13-issue-615-focused-changed-line-verdict-contract.md\n- docs/conventions/validator-timing-layers.md\n- docs/development.md\n- docs/handoff.md\n- docs/public-skill-dogfood.json\n- plugins/charness/scripts/record_lesson_session.py\n- plugins/charness/scripts/render_lesson_selection_preview.py\n- plugins/charness/scripts/run-quality.sh\n- plugins/charness/scripts/validate_retro_artifact.py\n- plugins/charness/skills/retro/adapter.example.yaml\n- plugins/charness/skills/retro/references/adapter-contract.md\n- plugins/charness/skills/retro/references/lesson-evaluation.md\n- plugins/charness/skills/retro/scripts/plan_retro_run.py\n- plugins/charness/skills/retro/scripts/resolve_adapter.py\n- plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py\n- scripts/record_lesson_session.py\n- scripts/render_lesson_selection_preview.py\n- scripts/run-quality.sh\n- scripts/validate_retro_artifact.py\n- skills/public/retro/adapter.example.yaml\n- skills/public/retro/references/adapter-contract.md\n- skills/public/retro/references/lesson-evaluation.md\n- skills/public/retro/scripts/plan_retro_run.py\n- skills/public/retro/scripts/resolve_adapter.py\n- skills/public/retro/scripts/scaffold_retro_artifact.py\n- tests/quality_gates/support.py\n- tests/test_retro_plan.py\n- tests/test_retro_scaffold.py\n- charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round1-packet.json\n- charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round1-packet.md\n- charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round2-packet.json\n- charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round2-packet.md\n- charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-implementation.md\n- charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-preimpl-packet.json\n- charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-preimpl-packet.md\n- charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-spec-critique.md\n- charness-artifacts/impl/2026-08-13-lesson-evaluation-observability-closeout.md\n- charness-artifacts/retro/2026-08-13-104307-packet.json\n- charness-artifacts/retro/2026-08-13-104307-packet.md\n- charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md\n- plugins/charness/scripts/check_lesson_evaluation_continuity.py\n- plugins/charness/scripts/lesson_evaluation_continuity_lib.py\n- plugins/charness/scripts/open_lesson_session.py\n- scripts/check_lesson_evaluation_continuity.py\n- scripts/lesson_evaluation_continuity_lib.py\n- scripts/open_lesson_session.py\n- tests/test_lesson_evaluation_continuity.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/record_lesson_session.py, scripts/render_lesson_selection_preview.py, scripts/run-quality.sh, scripts/validate_retro_artifact.py, skills/public/retro/adapter.example.yaml, skills/public/retro/references/adapter-contract.md, skills/public/retro/references/lesson-evaluation.md, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/resolve_adapter.py, skills/public/retro/scripts/scaffold_retro_artifact.py, scripts/check_lesson_evaluation_continuity.py, scripts/lesson_evaluation_continuity_lib.py, scripts/open_lesson_session.py\n  derived matches: plugins/charness/scripts/record_lesson_session.py, plugins/charness/scripts/render_lesson_selection_preview.py, plugins/charness/scripts/run-quality.sh, plugins/charness/scripts/validate_retro_artifact.py, plugins/charness/skills/retro/adapter.example.yaml, plugins/charness/skills/retro/references/adapter-contract.md, plugins/charness/skills/retro/references/lesson-evaluation.md, plugins/charness/skills/retro/scripts/plan_retro_run.py, plugins/charness/skills/retro/scripts/resolve_adapter.py, plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py, plugins/charness/scripts/check_lesson_evaluation_continuity.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/open_lesson_session.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/retro/2026-08-13-session-retro.md, charness-artifacts/spec/2026-08-13-issue-615-focused-changed-line-verdict-contract.md, docs/conventions/validator-timing-layers.md, docs/development.md, docs/handoff.md, skills/public/retro/references/adapter-contract.md, skills/public/retro/references/lesson-evaluation.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round1-packet.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round2-packet.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-implementation.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-preimpl-packet.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-spec-critique.md, charness-artifacts/impl/2026-08-13-lesson-evaluation-observability-closeout.md, charness-artifacts/retro/2026-08-13-104307-packet.md, charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md\n  derived matches: plugins/charness/skills/retro/references/adapter-contract.md, plugins/charness/skills/retro/references/lesson-evaluation.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- handoff-machine-readers: docs/handoff.md is a rotating human document that is ALSO a machine-read source: the publish-state ledger declares it as a source locator, and the retro-memory gate requires its recent-lessons reference.\n  source matches: docs/handoff.md\n  verify: python3 scripts/publish_state_ledger.py --repo-root ., python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py\n- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.\n  source matches: charness-artifacts/quality/dup-review.json\n  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: .agents/retro-adapter.yaml, skills/public/retro/references/adapter-contract.md, skills/public/retro/references/lesson-evaluation.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/retro/adapter.example.yaml, skills/public/retro/references/adapter-contract.md, skills/public/retro/references/lesson-evaluation.md, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/resolve_adapter.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  derived matches: plugins/charness/skills/retro/adapter.example.yaml, plugins/charness/skills/retro/references/adapter-contract.md, plugins/charness/skills/retro/references/lesson-evaluation.md, plugins/charness/skills/retro/scripts/plan_retro_run.py, plugins/charness/skills/retro/scripts/resolve_adapter.py, plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/retro/adapter.example.yaml, skills/public/retro/references/adapter-contract.md, skills/public/retro/references/lesson-evaluation.md, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/resolve_adapter.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/retro/adapter.example.yaml, skills/public/retro/references/adapter-contract.md, skills/public/retro/references/lesson-evaluation.md, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/resolve_adapter.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/retro-adapter.yaml\n  verify: python3 scripts/validate_adapters.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round1-packet.json, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round1-packet.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round2-packet.json, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-code-round2-packet.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-implementation.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-preimpl-packet.json, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-preimpl-packet.md, charness-artifacts/critique/2026-08-13-lesson-evaluation-observability-spec-critique.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-13-session-retro.md, charness-artifacts/retro/2026-08-13-104307-packet.json, charness-artifacts/retro/2026-08-13-104307-packet.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/record_lesson_session.py, plugins/charness/scripts/render_lesson_selection_preview.py, plugins/charness/scripts/run-quality.sh, plugins/charness/scripts/validate_retro_artifact.py, plugins/charness/scripts/check_lesson_evaluation_continuity.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/open_lesson_session.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/record_lesson_session.py, scripts/render_lesson_selection_preview.py, scripts/validate_retro_artifact.py, tests/quality_gates/support.py, tests/test_retro_plan.py, tests/test_retro_scaffold.py, scripts/check_lesson_evaluation_continuity.py, scripts/lesson_evaluation_continuity_lib.py, scripts/open_lesson_session.py, tests/test_lesson_evaluation_continuity.py\n  derived matches: plugins/charness/scripts/record_lesson_session.py, plugins/charness/scripts/render_lesson_selection_preview.py, plugins/charness/scripts/validate_retro_artifact.py, plugins/charness/scripts/check_lesson_evaluation_continuity.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/open_lesson_session.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/record_lesson_session.py, scripts/render_lesson_selection_preview.py, scripts/validate_retro_artifact.py, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/resolve_adapter.py, skills/public/retro/scripts/scaffold_retro_artifact.py, scripts/check_lesson_evaluation_continuity.py, scripts/lesson_evaluation_continuity_lib.py, scripts/open_lesson_session.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "a7c0362c2be4fbcb2af858275bc5cdee583be8d0",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/retro-adapter.yaml",
+      "charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md",
+      "docs/development.md",
+      "docs/handoff.md",
+      "scripts/check_lesson_evaluation_continuity.py",
+      "scripts/lesson_evaluation_continuity_lib.py",
+      "scripts/open_lesson_session.py",
+      "scripts/record_lesson_session.py",
+      "scripts/render_lesson_selection_preview.py",
+      "scripts/run-quality.sh",
+      "scripts/validate_retro_artifact.py",
+      "skills/public/retro/adapter.example.yaml",
+      "skills/public/retro/references/adapter-contract.md",
+      "skills/public/retro/references/lesson-evaluation.md",
+      "skills/public/retro/scripts/plan_retro_run.py",
+      "skills/public/retro/scripts/resolve_adapter.py",
+      "skills/public/retro/scripts/scaffold_retro_artifact.py",
+      "tests/quality_gates/support.py",
+      "tests/test_lesson_evaluation_continuity.py",
+      "tests/test_retro_plan.py",
+      "tests/test_retro_scaffold.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/retro-adapter.yaml",
+        "content_sha256": "784686dd5c9da40be476e14f5a5965fd54203854cfc273a68f247d5d2a1d354c"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md",
+        "content_sha256": "2cbceac4c1523341e44b3e420090872fb7be50b54741e08a1648cb29226d00b6"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "d270d6ae17b11f08a184bb9f14748800ab37d008f12302b99d789f11a7e4d9a7"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "cc96724bb5b4e58e93115377c01e9070a3319009b82b6ec9a29b6fe28ad0cad7"
+      },
+      {
+        "path": "scripts/check_lesson_evaluation_continuity.py",
+        "content_sha256": "59c9473969bd71ff8b082d3a0fdf6fb947c746b6a820d63f6d43848e675eab54"
+      },
+      {
+        "path": "scripts/lesson_evaluation_continuity_lib.py",
+        "content_sha256": "6ea0b8ec7d9da62f53cbefc406efa1a3b25f0826d9e70c0ee9a7dd55840d1d80"
+      },
+      {
+        "path": "scripts/open_lesson_session.py",
+        "content_sha256": "4dcbaf95eece6d61d95395280e0c9c6fe115a419d4033404ac4a309f24d8014c"
+      },
+      {
+        "path": "scripts/record_lesson_session.py",
+        "content_sha256": "5e325b42bd4a120778a4e047b05245a1c07f989d04e733a12b12307d65657956"
+      },
+      {
+        "path": "scripts/render_lesson_selection_preview.py",
+        "content_sha256": "2d453f766557da84f61b67710c081aafa017121e64de2342939c47d565a75094"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "268ef13d79ba0e6ecbd162e67a28cd3a31e6259af61020849ae261f8f222eb84"
+      },
+      {
+        "path": "scripts/validate_retro_artifact.py",
+        "content_sha256": "7ae4700d2e95e526baedc9f6748ddd3f052cfc540ca35de6e1eb683e0c847fad"
+      },
+      {
+        "path": "skills/public/retro/adapter.example.yaml",
+        "content_sha256": "29806e5d11486181ea578d68d8b1c3e260e0e9c69a5314ac1871ef2d40d34240"
+      },
+      {
+        "path": "skills/public/retro/references/adapter-contract.md",
+        "content_sha256": "de58beff7ab05f9f9b84bba85c7d385744febd7b13791cf8beda0d2d90e56036"
+      },
+      {
+        "path": "skills/public/retro/references/lesson-evaluation.md",
+        "content_sha256": "49c16d933c678b089a384fc3095156a6e7fd614850b765ddb0bda7e2e8b5b8f8"
+      },
+      {
+        "path": "skills/public/retro/scripts/plan_retro_run.py",
+        "content_sha256": "ed6a6818d3e71b66ca45dd07234f2b449c4ec66a4d22aa0f503e0968bbf13fe7"
+      },
+      {
+        "path": "skills/public/retro/scripts/resolve_adapter.py",
+        "content_sha256": "c17dc657d59cd35e1a7f56fbc2459c22deb09bfa2642fa84ef5a8b981f58e92e"
+      },
+      {
+        "path": "skills/public/retro/scripts/scaffold_retro_artifact.py",
+        "content_sha256": "b49ef162dae2c4d331b065fac3114ade86753007379c077b0906ad89c283b115"
+      },
+      {
+        "path": "tests/quality_gates/support.py",
+        "content_sha256": "997223f4092796526b9c66effc8b922d41e1541e242fdf8ed139465a85b00591"
+      },
+      {
+        "path": "tests/test_lesson_evaluation_continuity.py",
+        "content_sha256": "62756957eab6837e4d49ff43070d6233965ffcbd8709d5940299fcba3eae17bc"
+      },
+      {
+        "path": "tests/test_retro_plan.py",
+        "content_sha256": "cb5d19a17dae560dbfa48d7fba4d71d04ecbc8e067d20f6bf601ce916ed731b1"
+      },
+      {
+        "path": "tests/test_retro_scaffold.py",
+        "content_sha256": "36a724d991d5f94a74af0a5d164bea0beff66f3ad76777d26ca158ec3dd93498"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "9aedc5f8184eb0a6d27e72c9544e676048e2fe0e7b5e696c89fca874f168b03a",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md",
+        "content_sha256": "2cbceac4c1523341e44b3e420090872fb7be50b54741e08a1648cb29226d00b6"
+      },
+      {
+        "path": "scripts/check_lesson_evaluation_continuity.py",
+        "content_sha256": "59c9473969bd71ff8b082d3a0fdf6fb947c746b6a820d63f6d43848e675eab54"
+      },
+      {
+        "path": "scripts/lesson_evaluation_continuity_lib.py",
+        "content_sha256": "6ea0b8ec7d9da62f53cbefc406efa1a3b25f0826d9e70c0ee9a7dd55840d1d80"
+      },
+      {
+        "path": "scripts/open_lesson_session.py",
+        "content_sha256": "4dcbaf95eece6d61d95395280e0c9c6fe115a419d4033404ac4a309f24d8014c"
+      },
+      {
+        "path": "tests/test_lesson_evaluation_continuity.py",
+        "content_sha256": "62756957eab6837e4d49ff43070d6233965ffcbd8709d5940299fcba3eae17bc"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "a426820c53ee1309a2071ee319daae82a216eaf3bab7f5d9d566c4e1bd1dbfdf"
+  }
+}

@@ -47,6 +47,7 @@ STRING_FIELDS = (
 STRING_LIST_FIELDS = (
     "evidence_paths",
     "metrics_commands",
+    "artifact_sections",
     "auto_session_trigger_surfaces",
     "auto_session_trigger_path_globs",
 )
@@ -61,6 +62,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "summary_path": "charness-artifacts/retro/recent-lessons.md",
         "evidence_paths": [],
         "metrics_commands": [],
+        "artifact_sections": [],
         "packet_sections": [],
         "auto_session_trigger_surfaces": [],
         "auto_session_trigger_path_globs": [],
@@ -125,6 +127,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "field_state": {
                 "evidence_paths": list_field_state(raw_data, "evidence_paths"),
                 "metrics_commands": list_field_state(raw_data, "metrics_commands"),
+                "artifact_sections": list_field_state(raw_data, "artifact_sections"),
                 "packet_sections": list_field_state(raw_data, "packet_sections"),
                 "auto_session_trigger_surfaces": list_field_state(raw_data, "auto_session_trigger_surfaces"),
                 "auto_session_trigger_path_globs": list_field_state(raw_data, "auto_session_trigger_path_globs"),

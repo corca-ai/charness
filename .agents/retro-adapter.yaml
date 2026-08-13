@@ -11,7 +11,12 @@ evidence_paths:
   - charness-artifacts/quality/latest.md
   - charness-artifacts/retro/lesson-ledger.json
   - docs/development.md
-metrics_commands: []
+metrics_commands:
+  - python3 scripts/check_lesson_evaluation_continuity.py --repo-root .
+artifact_sections:
+  - "## Lesson Evaluation"
+  - ""
+  - "Lesson evaluation: TODO replace with the exact Charness JSON form in docs/development.md#lesson-evaluation-disposition"
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces

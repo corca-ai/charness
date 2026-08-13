@@ -25,9 +25,9 @@ def _nonblank(value: str, name: str) -> str:
     return value
 
 
-def append_session(
+def declare_session(
     *, repo_root: Path, output_dir: Path, summary_path: Path, session_id: str, seed: str
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     require_repo_local_helper(__file__, repo_root)
     session_id, seed = _nonblank(session_id, "session_id"), _nonblank(seed, "seed")
     path = _ledger.lesson_ledger_path(output_dir)
@@ -72,6 +72,20 @@ def append_session(
             payload=candidate,
         )
         _writer.replace_payload(path, candidate)
+    return event, preview
+
+
+def append_session(
+    *, repo_root: Path, output_dir: Path, summary_path: Path, session_id: str, seed: str
+) -> dict[str, Any]:
+    """Backward-compatible ledger-only authoring entry point."""
+    event, _preview_payload = declare_session(
+        repo_root=repo_root,
+        output_dir=output_dir,
+        summary_path=summary_path,
+        session_id=session_id,
+        seed=seed,
+    )
     return event
 
 
