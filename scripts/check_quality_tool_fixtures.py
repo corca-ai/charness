@@ -28,6 +28,15 @@ Refusals, each for an escape that was observed rather than imagined:
   `scripts/issue_source_freeze_lib.py` already refuses this for the same reason on the
   same kind of input; this is that idiom, applied here.
 - `digest_drift`: the stream file no longer hashes to what the fixture recorded.
+- `nothing was compared`: the refusal above used to key on how many fixture FILES exist,
+  not on how many stream comparisons those files caused. A fixture carrying only the six
+  required provenance fields pins no stream at all, so a corpus of such fixtures printed
+  `Verified 1 quality tool fixture(s) against their captured streams.` and exited 0 having
+  compared nothing -- the same unproven evidence contract the empty-corpus refusal exists
+  to stop, reached by adding a file instead of by removing one. Found by the round-2
+  bounded review of the repair that closed the empty-corpus hole: the repair carried the
+  class it fixed. The count of comparisons is now the thing both the refusal and the
+  success line are keyed on.
 """
 from __future__ import annotations
 
@@ -73,15 +82,33 @@ def _record_problems(payload: dict[str, object], rel: str) -> list[str]:
     return problems
 
 
-def _problems(repo_root: Path, fixture: Path) -> list[str]:
+def _problems(repo_root: Path, fixture: Path) -> tuple[list[str], int, int]:
+    """Return this fixture's problems, its digest checks, and its FILE-BACKED checks.
+
+    Two counters, not one, because they establish different things. Round 1 of this
+    repair counted the empty-digest-without-path branch as a comparison, so a corpus of
+    one fixture carrying `sha256("")` twice reported `2 captured stream(s) compared`
+    while opening no file at all -- a floor satisfiable by typing 64 known characters,
+    which is the same "green over nothing checked" class the count was introduced to
+    close.
+
+    What `file_backed` establishes, exactly: a recorded digest matched the bytes of a
+    file checked in under the fixture directory. It does NOT establish that those bytes
+    came from a tool run -- a reviewed zero-byte capture, or a digest pointed at another
+    checked-in file, both count. That residue needs a file in the tree and a reviewer to
+    have looked at it, which is a different order of cost from typing a known constant,
+    and refusing a legitimately-empty capture would be a refusal against honest evidence.
+    """
     found: list[str] = []
+    checked = 0
+    file_backed = 0
     rel = fixture.relative_to(repo_root).as_posix()
     try:
         payload = json.loads(fixture.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        return [f"{rel}: unreadable fixture JSON: {exc}"]
+        return [f"{rel}: unreadable fixture JSON: {exc}"], 0, 0
     if not isinstance(payload, dict):
-        return [f"{rel}: expected a JSON object"]
+        return [f"{rel}: expected a JSON object"], 0, 0
     found.extend(_record_problems(payload, rel))
 
     for stream in STREAMS:
@@ -106,6 +133,9 @@ def _problems(repo_root: Path, fixture: Path) -> list[str]:
                 found.append(
                     f"{rel}: {digest_key} records content but {path_key} is absent, so nothing proves it"
                 )
+                continue
+            # A check, but against a constant -- it opens no file and pins no capture.
+            checked += 1
             continue
         contained = _contained(repo_root, stream_rel)
         if contained is None:
@@ -117,7 +147,10 @@ def _problems(repo_root: Path, fixture: Path) -> list[str]:
         actual = hashlib.sha256(contained.read_bytes()).hexdigest()
         if actual != recorded:
             found.append(f"{rel}: {digest_key} drift -- recorded {recorded}, {stream_rel} hashes to {actual}")
-    return found
+            continue
+        checked += 1
+        file_backed += 1
+    return found, checked, file_backed
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -135,13 +168,36 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
-    problems = [problem for fixture in fixtures for problem in _problems(repo_root, fixture)]
+    results = [_problems(repo_root, fixture) for fixture in fixtures]
+    problems = [problem for found, _, _ in results for problem in found]
     for problem in problems:
         print(f"FAIL {problem}", file=sys.stderr)
     if problems:
         print(f"FAIL check_quality_tool_fixtures: {len(problems)} problem(s)", file=sys.stderr)
         return 1
-    print(f"Verified {len(fixtures)} quality tool fixture(s) against their captured streams.")
+
+    checked = sum(count for _, count, _ in results)
+    file_backed = sum(count for _, _, count in results)
+    if file_backed == 0:
+        # Keyed on file-backed comparisons, not on file count and not on digest checks.
+        # `len(fixtures)` says a file exists; a digest check against `sha256("")` says a
+        # constant matched a constant; only this says the gate read a captured stream.
+        print(
+            f"FAIL check_quality_tool_fixtures: {len(fixtures)} fixture(s) and {checked} digest "
+            f"check(s), but none compared a digest against bytes checked in under {FIXTURE_DIR}; "
+            f"that is the same unproven evidence contract as an empty directory.",
+            file=sys.stderr,
+        )
+        return 1
+
+    unpinned = sum(1 for _, count, _ in results if count == 0)
+    summary = (
+        f"Verified {len(fixtures)} quality tool fixture(s): {checked} stream digest(s) checked, "
+        f"{file_backed} against checked-in capture file(s)"
+    )
+    if unpinned:
+        summary += f", {unpinned} fixture(s) pinning no stream"
+    print(f"{summary}.")
     return 0
 
 

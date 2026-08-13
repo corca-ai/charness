@@ -102,6 +102,17 @@ def _resume_claims_publication_leg(*, remote_branch_sha: str, tag_remote: bool) 
         "phase": "prepared-claims-review", "tag_local": True, "tag_remote": tag_remote,
         "remote_branch_sha": remote_branch_sha, "claims_evidence_commit": "claims-evidence",
         "head_sha": "claims-evidence", "prepared": {"commit": "prepared"}, "release_exists": True,
+        # The real `preflight_resume_state` always sets this for a claims phase, and
+        # `resume_publish` now refuses a claims phase without it -- a reconstructed state
+        # must not be able to reach tag/push/release create with the floor unrun.
+        "claims_review": {
+            "path": "charness-artifacts/release-review/edge.json",
+            "verdict": "pass",
+            "observer_distinctness": {
+                "kind": "separate-agent-context", "signal": "edge-coverage fixture",
+                "review_artifact": "charness-artifacts/release-review/edge.md",
+            },
+        },
     }
     plan = {
         "payload": {"commit_message": "Release v1.2.3"}, "tag_name": "v1.2.3", "branch": "main",
@@ -345,3 +356,32 @@ def test_release_content_close_refs_refuses_when_issue_verifier_is_unavailable(m
     monkeypatch.setattr(MESSAGE, "_ISSUE_CLOSEOUT_DRAFT_ERROR", "issue skill missing (forced)")
     with pytest.raises(SystemExit, match="requires the issue skill's closeout helper"):
         MESSAGE.release_content_close_keyword_refs("Release\n\nClose #44.")
+
+
+def test_a_claims_phase_without_a_validated_review_cannot_publish() -> None:
+    """The claims floor lives in `preflight_resume_state`, a different function from the
+    one that publishes. A reconstructed state can resolve to a claims phase, pass
+    `assert_resumable`, carry no `claims_review`, and reach tag/push/release create --
+    the exact "publishing path that never calls validate_claims_review" shape this lane
+    was repaired for, preserved one caller away."""
+    commands: list[list[str]] = []
+    state = {
+        "phase": "prepared-claims-review", "tag_local": True, "tag_remote": False,
+        "remote_branch_sha": "old-branch", "claims_evidence_commit": "claims-evidence",
+        "head_sha": "claims-evidence", "prepared": {"commit": "prepared"}, "release_exists": True,
+    }
+    plan = {
+        "payload": {"commit_message": "Release v1.2.3"}, "tag_name": "v1.2.3", "branch": "main",
+        "backend": "github", "issue_repo": "example/demo", "release_content_paths": [], "title": "v1.2.3",
+    }
+    args = SimpleNamespace(execute=True, remote="origin", notes_file=None, close_issue=[])
+
+    with pytest.raises(SystemExit, match="requires a validated claims review"):
+        RESUME_PUBLISH.resume_publish(
+            Path("."), args=args, plan=plan, adapter_data={}, cli=_ClaimsResumeCli(commands),
+            state=state, resumable_state=lambda *_a, **_k: state,
+            assert_resumable=lambda *_a, **_k: None, common=_ClaimsResumeCommon(),
+            resume_closeout=SimpleNamespace(),
+            commit_artifact_before_push=lambda *_a, **_k: None,
+        )
+    assert commands == [], "refused before any git or gh command"

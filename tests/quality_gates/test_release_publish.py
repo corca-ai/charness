@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -16,6 +15,7 @@ from .release_publish_fixtures import (
     _run_review_gate,
     _seed_publish_release_repo,
     _write_exec,
+    commit_claims_review,
 )
 from .release_script_loading import load_release_script
 
@@ -92,18 +92,10 @@ def test_exported_plugin_executes_claims_review_topology(tmp_path: Path) -> None
         ["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"],
         cwd=repo, check=True, capture_output=True, text=True,
     ).stdout
-    review_path = "charness-artifacts/release-review/plugin-claims.json"
-    (repo / review_path).parent.mkdir(parents=True, exist_ok=True)
-    (repo / review_path).write_text(json.dumps({
-        "schema_version": "charness.release.claims-review.v1",
-        "prepared_commit": prepared_commit,
-        "release_record_path": "charness-artifacts/release/latest.md",
-        "release_record_sha256": hashlib.sha256(record.encode("utf-8")).hexdigest(),
-        "target_version": payload["target_version"], "tag_name": payload["tag_name"], "verdict": "pass",
-        "preparer_context": "plugin-fixture-preparer", "reviewer_context": "plugin-fixture-reviewer",
-    }) + "\n", encoding="utf-8")
-    subprocess.run(["git", "add", review_path], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "Record plugin claims review"], cwd=repo, check=True, capture_output=True, text=True)
+    review_path = commit_claims_review(
+        repo, prepared_commit=prepared_commit, prepared_record=record,
+        target_version=payload["target_version"], tag_name=payload["tag_name"], stem="plugin-claims",
+    )
     evidence_commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
     # Simulate response loss after P's tag reaches the remote but before R's
     # branch push. Resume must push the evidence branch without retagging P.

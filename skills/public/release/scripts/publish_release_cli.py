@@ -169,8 +169,12 @@ def parse_args() -> argparse.Namespace:
         "commit, repeat the exact original issue, classification, carrier, behavior, repo, critique, and "
         "--notes-file arguments. Omitting --notes-file on resume is refused when notes for the tag are drafted."))
     parser.add_argument("--claims-review-artifact", help=(
-        "Repo-relative JSON record for a marked prepared release; commit the distinct claims review, then use "
-        "--resume --publish-current --claims-review-artifact <path>."))
+        "Repo-relative charness.release.claims-review.v2 JSON record for a marked prepared release; commit it "
+        "with the review narrative it names, then use --resume --publish-current --claims-review-artifact <path>. "
+        "A `pass` requires an `observer_distinctness` object naming one of separate-agent-context / separate-host / "
+        "separate-operator plus its concrete signal and the review narrative; a host with no distinct observer "
+        "records `verdict: unproven` with `kind: unproven` instead of a same-agent reread. Run plan_release_run.py "
+        "at a prepared stop for the exact resume invocation."))
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--publish-current", action="store_true", help="Publish the current packaging manifest version without bumping")
     group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump before publishing")

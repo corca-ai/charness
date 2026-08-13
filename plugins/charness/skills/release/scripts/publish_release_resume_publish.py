@@ -5,6 +5,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+CLAIMS_PHASES = {
+    "prepared-claims-review",
+    "post-publication-claims-carrier",
+    "post-publication-claims-final",
+}
 POST_PUBLICATION = {
     "post-publication-carrier", "post-publication-final",
     "post-publication-claims-carrier", "post-publication-claims-final",
@@ -18,7 +23,28 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     state = state or resumable_state(repo_root, tag_name=tag_name, commit_message=payload["commit_message"],
                                      remote=args.remote, branch=branch, backend=backend, cli=cli)
     assert_resumable(state, tag_name=tag_name)
+    # The claims floor lives in `preflight_resume_state`, a DIFFERENT function. A
+    # reconstructed state (the `state or ...` fallback above) can resolve to a claims
+    # phase, pass `assert_resumable`, carry no `claims_review`, and reach tag/push/release
+    # create -- the exact "publishing path that never calls validate_claims_review" shape
+    # this lane was repaired for, preserved one caller away. No production caller does
+    # this today; the assertion is what keeps that true.
+    if state["phase"] in CLAIMS_PHASES and not state.get("claims_review"):
+        raise SystemExit(
+            f"--resume: phase `{state['phase']}` requires a validated claims review and this "
+            "state carries none; refusing to publish through an unvalidated path."
+        )
     payload["resume_state"] = state
+    # Top-level, not only nested inside `resume_state`: the claims verdict is the
+    # strongest floor this lane applies, and the published release record does not carry
+    # it (tracked separately), so the payload is where an auditor has to be able to find
+    # it without knowing the resume state's shape.
+    if state.get("claims_review"):
+        payload["claims_review"] = {
+            "path": state["claims_review"]["path"],
+            "verdict": state["claims_review"]["verdict"],
+            "observer_distinctness": state["claims_review"]["observer_distinctness"],
+        }
     if state["phase"] in POST_PUBLICATION:
         resume_closeout.resume_post_publication_closeout(repo_root, args=args, plan=plan, adapter_data=adapter_data,
                                                           state=state, common=common, cli=cli)

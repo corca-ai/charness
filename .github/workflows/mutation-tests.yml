@@ -274,7 +274,22 @@ jobs:
                 if (tail.length > 8000) {
                   tail = `... (truncated to the last 8000 characters)\n${tail.slice(-8000)}`;
                 }
-                runLogTail = ['', '## Run log tail (last 80 lines)', '', '```', tail, '```'].join('\n');
+                // `Run mutation` creates the log with `tee` BEFORE the command runs, so a
+                // command that dies at process launch leaves a 0-byte file. An empty fenced
+                // block reads as "we looked and the run produced nothing", which is
+                // indistinguishable from "the tail branch is broken again" -- the exact
+                // ambiguity this section exists to remove.
+                // Two empty cases, not one. A whole-file emptiness claim from evidence
+                // about the LAST 80 LINES is the same overclaim this section exists to
+                // remove: a 500-line log whose ImportError sits at line 100 followed by
+                // blank lines would read as "the commands produced no output", and a
+                // triager would stop there.
+                const emptyNote = logText.trim() === ''
+                  ? '(the run log exists but is empty; the mutation commands produced no output)'
+                  : '(the last 80 lines of the run log are blank; read the full log in the `mutation-report` artifact of this run)';
+                runLogTail = tail.trim() === ''
+                  ? ['', '## Run log tail (last 80 lines)', '', emptyNote].join('\n')
+                  : ['', '## Run log tail (last 80 lines)', '', '```', tail, '```'].join('\n');
               }
             }
             // THREE states, not two. `Run mutation` has no `always()`, so when
@@ -303,6 +318,11 @@ jobs:
             const clampBody = (text) => text.length <= 60000
               ? text
               : `${text.slice(0, 60000)}\n\n... (body truncated at 60000 characters; the full summary, sample, and run log are in the \`mutation-report\` artifact of this run)`;
+            // Diagnostics FIRST, because `clampBody` truncates from the front. With the
+            // log tail last, a large summary consumed the whole budget and the tail was
+            // sliced away -- so the D repair silently disabled the B repair for exactly
+            // the population B is about: the runs with the most diagnostic output, whose
+            // summary describes a collateral symptom while the log names the real failure.
             const body = [
               marker,
               `Mutation testing failed on \`${context.sha}\`.`,
@@ -310,11 +330,11 @@ jobs:
               `Workflow run: ${runUrl}`,
               '',
               stepOutcomes,
+              runLogTail,
               '',
               summary,
               '',
               sample,
-              runLogTail,
             ].join('\n');
             // APPLIED, not merely defined. GitHub rejects a body over 65536 and the
             // throw kills this whole reporting step, so an unclamped body means the

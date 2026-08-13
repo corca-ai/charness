@@ -16,6 +16,7 @@ from .release_publish_fixtures import (
     REPO_ROOT,
     _release_env,
     _seed_publish_release_repo,
+    commit_claims_review,
 )
 
 PLANNER = "skills/public/release/scripts/plan_release_run.py"
@@ -517,3 +518,174 @@ def test_release_run_packets_next_action_blockers(
     )
 
     assert action["kind"] == expected
+
+
+def _prepare_release_stop(tmp_path: Path):
+    """Drive a real prepare so the planner reads the marker the helper actually writes."""
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    prepared = subprocess.run(
+        ["python3", str(PUBLISH_SCRIPT), "--repo-root", str(repo), "--part", "patch", "--execute",
+         "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents"],
+        cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
+    )
+    assert prepared.returncode == 0, prepared.stderr
+    return repo, env, json.loads(prepared.stdout)
+
+
+@pytest.mark.release_only
+def test_planner_routes_a_prepared_claims_stop_to_a_resume_not_inspect_only(tmp_path: Path) -> None:
+    """Normal preparation stops at a marked local record. Neither planner read that
+    marker, so the planner said `inspect_only` -- "no target selector was provided" --
+    while a release sat mid-flight, and the five-flag resume invocation had to be
+    reconstructed by hand."""
+    repo, env, payload = _prepare_release_stop(tmp_path)
+
+    result = _run_plan(repo, env)
+
+    assert result.returncode == 0, result.stderr
+    plan = yaml.safe_load(result.stdout)
+    assert plan["next_action"]["kind"] == "resume_prepared_claims_review"
+    assert payload["tag_name"] in plan["next_action"]["reason"]
+    assert plan["prepared_claims_review"]["target_version"] == payload["target_version"]
+    assert plan["prepared_claims_review"]["marker"] == "charness-release-state:prepared-awaiting-claims-review"
+
+
+@pytest.mark.release_only
+def test_planner_emits_the_resume_command_with_every_required_flag(tmp_path: Path) -> None:
+    """`inspect_only` emitted no publish packet at all, so nothing named `--resume`,
+    `--publish-current`, or the two artifact flags the stop requires."""
+    repo, env, _payload = _prepare_release_stop(tmp_path)
+
+    plan = yaml.safe_load(_run_plan(repo, env).stdout)
+
+    packets = {packet["id"]: packet for packet in plan["publish_packets"]}
+    assert set(packets) == {"publish-resume-dry-run", "publish-resume-execute"}
+    execute = packets["publish-resume-execute"]
+    for flag in ("--resume", "--publish-current", "--claims-review-artifact",
+                 "--critique-artifact", "--execute"):
+        assert flag in execute["command"], execute["command"]
+    assert execute["requires_user_confirmation"] is True
+    assert packets["publish-resume-dry-run"]["requires_user_confirmation"] is False
+    assert "--execute" not in packets["publish-resume-dry-run"]["command"]
+
+    # And on the summary line, which is where an operator at a prepared stop looks.
+    summary = subprocess.run(
+        ["python3", str(REPO_ROOT / PLANNER), "--repo-root", str(repo)],
+        cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
+    )
+    assert summary.returncode == 0, summary.stderr
+    assert "publish-resume-execute:" in summary.stdout
+    assert "--claims-review-artifact" in summary.stdout
+
+
+@pytest.mark.release_only
+def test_planner_names_only_a_critique_artifact_the_publish_gate_accepts(tmp_path: Path) -> None:
+    """The refusal an operator hits is "standalone critique not satisfied", which never
+    names an artifact that WOULD bind. Binding is not the whole question, though: the gate
+    also requires the artifact to be TRACKED and to clear a stub-residual floor. A
+    binding-only filter named an untracked file (whose real refusal is a dirty-worktree
+    complaint that never says "commit this first") and a four-byte stub (whose refusal is
+    the exact message this packet exists to prevent)."""
+    repo, env, payload = _prepare_release_stop(tmp_path)
+    version = payload["target_version"]
+    slug = version.replace(".", "-")
+
+    plan = yaml.safe_load(_run_plan(repo, env).stdout)
+    assert plan["prepared_claims_review"]["critique_artifact_candidates"] == []
+    assert "no artifact under charness-artifacts/critique binds" in plan["next_action"]["reason"]
+
+    critique_dir = repo / "charness-artifacts" / "critique"
+    critique_dir.mkdir(parents=True, exist_ok=True)
+    good = critique_dir / f"release-{slug}.md"
+    good.write_text(
+        f"# Release critique for {version}\n\nScope, risks, and the counterweight pass "
+        f"for the {version} release candidate.\n",
+        encoding="utf-8",
+    )
+    untracked = critique_dir / f"untracked-{slug}.md"
+    untracked.write_text(f"# Untracked critique\n\nRelease: {version}\n", encoding="utf-8")
+    stub = critique_dir / f"stub-{slug}.md"
+    stub.write_text(f"# {version}\n", encoding="utf-8")
+    unrelated = critique_dir / "unrelated.md"
+    unrelated.write_text("# Some other critique\n\nAbout nothing in particular.\n", encoding="utf-8")
+    _git(repo, "add", str(good), str(stub), str(unrelated))
+    _git(repo, "commit", "-m", "Add critique candidates")
+
+    plan = yaml.safe_load(_run_plan(repo, env).stdout)
+    candidates = plan["prepared_claims_review"]["critique_artifact_candidates"]
+    assert candidates == [good.relative_to(repo).as_posix()], candidates
+    for rejected in (untracked, stub, unrelated):
+        assert rejected.relative_to(repo).as_posix() not in candidates
+    # A single unambiguous candidate is placed into the command, not left as a hole.
+    execute = next(p for p in plan["publish_packets"] if p["id"] == "publish-resume-execute")
+    assert f"--critique-artifact {candidates[0]}" in execute["command"]
+
+
+@pytest.mark.release_only
+def test_the_resume_packet_names_the_arguments_the_claims_lane_will_not_enforce(
+    tmp_path: Path,
+) -> None:
+    """The claims lane skips the narrative audit and never runs the notes-file preflight,
+    so a resume that drops `--notes-file` publishes with `--generate-notes` instead of the
+    drafted notes the prepare validated, and a dropped `--close-issue*` just leaves the
+    issue open. Neither is refused, so the packet has to say so."""
+    repo, env, _payload = _prepare_release_stop(tmp_path)
+
+    plan = yaml.safe_load(_run_plan(repo, env).stdout)
+
+    execute = next(p for p in plan["publish_packets"] if p["id"] == "publish-resume-execute")
+    assert "--notes-file" in execute["repeat_original_arguments"]
+    assert "--close-issue" in execute["repeat_original_arguments"]
+
+
+@pytest.mark.release_only
+def test_the_resume_packet_uses_the_committed_claims_record_when_there_is_one(
+    tmp_path: Path,
+) -> None:
+    """At the second half of the stop the record is committed and its path is fully
+    derivable, so leaving it a `<placeholder>` defeats the point of emitting the command
+    in exactly the state where it is knowable."""
+    repo, env, payload = _prepare_release_stop(tmp_path)
+    record = subprocess.run(
+        ["git", "show", f"{payload['prepared_release_commit']}:charness-artifacts/release/latest.md"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    ).stdout
+    review_path = commit_claims_review(
+        repo, prepared_commit=payload["prepared_release_commit"], prepared_record=record,
+        target_version=payload["target_version"], tag_name=payload["tag_name"], stem="planner-claims",
+    )
+
+    plan = yaml.safe_load(_run_plan(repo, env).stdout)
+
+    assert plan["prepared_claims_review"]["committed_claims_record"] == review_path
+    execute = next(p for p in plan["publish_packets"] if p["id"] == "publish-resume-execute")
+    assert f"--claims-review-artifact {review_path}" in execute["command"]
+    assert "<claims-review-record>" not in execute["command"]
+
+
+@pytest.mark.release_only
+def test_the_planner_reads_the_marker_from_the_commit_not_the_worktree(tmp_path: Path) -> None:
+    """Every publish-side consumer reads `git show <commit>:...`. A worktree-only read
+    makes the planner confidently prescribe a claims resume for a HEAD the publish helper
+    does not treat as a prepared stop -- and, worse, prescribe a `--claims-review-artifact`
+    for a run that would ignore it."""
+    repo, env, _payload = _prepare_release_stop(tmp_path)
+    record = repo / "charness-artifacts" / "release" / "latest.md"
+
+    # Uncommitted removal of the marker: the COMMIT still carries it, so the stop stands.
+    record.write_text("# release\n\nno marker here\n", encoding="utf-8")
+    plan = yaml.safe_load(_run_plan(repo, env).stdout)
+    assert plan["next_action"]["kind"] == "resume_prepared_claims_review"
+
+    # Uncommitted ADDITION of the marker on a tree whose commit lacks it: no stop.
+    second = tmp_path / "second"
+    second.mkdir()
+    repo2, _remote2, bin_dir2 = _seed_publish_release_repo(second)
+    env2 = _release_env(second, bin_dir2)
+    target = repo2 / "charness-artifacts" / "release" / "latest.md"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("<!-- charness-release-state:prepared-awaiting-claims-review -->\n", encoding="utf-8")
+    plan2 = yaml.safe_load(_run_plan(repo2, env2).stdout)
+    assert plan2["next_action"]["kind"] != "resume_prepared_claims_review"
+    assert plan2["prepared_claims_review"] is None

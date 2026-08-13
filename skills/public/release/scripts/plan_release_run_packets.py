@@ -11,8 +11,111 @@ _ENVELOPE = SimpleNamespace(
 )
 
 
+RELEASE_RECORD_PATH = "charness-artifacts/release/latest.md"
+PREPARED_MARKER = "charness-release-state:prepared-awaiting-claims-review"
+CRITIQUE_DIR = "charness-artifacts/critique"
+CLAIMS_REVIEW_DIR = "charness-artifacts/release-review"
+
+
 def read_packet(path: str, why: str) -> dict[str, str]:
     return _ENVELOPE.read(path, why)
+
+
+def prepared_claims_state(
+    repo_root: Path,
+    *,
+    current_version: str | None,
+    binding_tokens: list[str],
+    accepts: Any,
+    marker_text: str | None,
+    committed_record: str | None = None,
+) -> dict[str, Any] | None:
+    """Describe a `prepared-awaiting-claims-review` stop, or None when there is none.
+
+    Normal release preparation now STOPS at a marked local record, and neither planner
+    read that marker: the planner reported `inspect_only` and emitted no resume command,
+    so the five-flag resume invocation -- including a `--critique-artifact` that must bind
+    to the version being published -- had to be reconstructed by hand. A wrong critique
+    path then fails as "standalone critique not satisfied" without naming an artifact that
+    WOULD bind, which is the part a reader cannot recover from the refusal.
+    """
+    # The marker is read from the COMMIT, not the worktree file: every publish-side
+    # consumer reads `git show <commit>:...`, and a worktree-only read makes the planner
+    # confidently prescribe a claims resume for a HEAD the publish helper will not treat
+    # as a prepared stop at all.
+    if marker_text is None or PREPARED_MARKER not in marker_text:
+        return None
+    candidates: list[str] = []
+    critique_root = repo_root / CRITIQUE_DIR
+    if binding_tokens and critique_root.is_dir():
+        # Judged by the publish gate's OWN acceptance, not by binding alone. The gate
+        # applies three tests -- tracked-in-git, binding, and a stub-residual floor -- and
+        # a binding-only filter named candidates the gate then refused with the exact
+        # "standalone critique not satisfied" message this packet exists to prevent, or
+        # named an UNTRACKED file whose real refusal is a dirty-worktree complaint that
+        # never says "commit this first".
+        candidates = sorted(
+            rel for rel in (
+                path.relative_to(repo_root).as_posix()
+                for path in critique_root.rglob("*.md")
+                if path.is_file() and path.stat().st_size
+            )
+            if accepts(rel)
+        )
+    return {
+        "marker": PREPARED_MARKER,
+        "release_record": RELEASE_RECORD_PATH,
+        "target_version": current_version,
+        "tag_name": f"v{current_version}" if current_version else None,
+        "critique_artifact_candidates": candidates,
+        "critique_binding_tokens": binding_tokens,
+        "claims_review_artifact_dir": CLAIMS_REVIEW_DIR,
+        "committed_claims_record": committed_record,
+    }
+
+
+def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, object]]:
+    """The exact resume invocation, with every flag the stop requires already placed."""
+    if not prepared:
+        return []
+    critique = prepared["critique_artifact_candidates"]
+    critique_value = critique[0] if len(critique) == 1 else "<release-critique-artifact>"
+    # Once the record is committed the path is fully derivable, and leaving it a hole in
+    # exactly the state where it is knowable defeats the point of emitting the command.
+    claims_value = prepared.get("committed_claims_record") or f"{CLAIMS_REVIEW_DIR}/<claims-review-record>.json"
+
+    def packet(packet_id: str, *, execute: bool) -> dict[str, object]:
+        command = [
+            'python3 "$SKILL_DIR/scripts/publish_release.py"', "--repo-root", ".",
+            "--resume", "--publish-current",
+            "--claims-review-artifact", claims_value,
+            "--critique-artifact", critique_value,
+        ]
+        if execute:
+            command.append("--execute")
+        return {
+            "id": packet_id,
+            "command": command_text(command),
+            "requires_user_confirmation": execute,
+            "purpose": (
+                "publish the already-prepared release commit once its claims review is committed"
+                if execute
+                else "re-validate the prepared-stop gates without mutation"
+            ),
+            # The claims lane skips the narrative audit and never runs the notes-file
+            # preflight, so a resume that drops `--notes-file` publishes with
+            # `--generate-notes` instead of the drafted notes the prepare validated, and a
+            # dropped `--close-issue*` simply leaves the issue open. Neither is refused.
+            "repeat_original_arguments": [
+                "--notes-file", "--close-issue", "--close-issue-classification",
+                "--close-issue-carrier-file",
+            ],
+            "placeholders": sorted(
+                {value for value in (critique_value, claims_value) if value.startswith("<") or "<" in value}
+            ),
+        }
+
+    return [packet("publish-resume-dry-run", execute=False), packet("publish-resume-execute", execute=True)]
 
 
 def action(kind: str, reason: str) -> dict[str, str]:
@@ -179,6 +282,7 @@ def next_action(
     release_payload: dict[str, Any] | None,
     target_version: str | None,
     update_blocker: str | None,
+    prepared_claims: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     if adapter_action := first_matching_action(
         [
@@ -206,6 +310,29 @@ def next_action(
         return action("prep_update_instructions", update_blocker)
     if release_payload.get("git_status") and target_version is not None:
         return action("clean_worktree", "Publish helper requires a clean worktree before dry-run or execute.")
+    if prepared_claims:
+        # BEFORE `inspect_only`. A prepared stop with no `--part`/`--publish-current`
+        # selector is exactly the shape that used to read as "nothing to do here": the
+        # release is mid-flight and its next step is a resume, not a fresh selector.
+        candidates = prepared_claims["critique_artifact_candidates"]
+        if len(candidates) == 1:
+            critique_hint = f"--critique-artifact {candidates[0]}"
+        elif candidates:
+            critique_hint = (
+                f"--critique-artifact one of {candidates} (each binds "
+                f"{prepared_claims['critique_binding_tokens']})"
+            )
+        else:
+            critique_hint = (
+                f"--critique-artifact <path> -- no artifact under {CRITIQUE_DIR} binds "
+                f"{prepared_claims['critique_binding_tokens']}, so the release critique is owed first"
+            )
+        return action(
+            "resume_prepared_claims_review",
+            f"{RELEASE_RECORD_PATH} carries `{PREPARED_MARKER}` for "
+            f"{prepared_claims['tag_name'] or 'the prepared version'}; commit the bound claims review, "
+            f"then run the publish-resume packets. Critique: {critique_hint}.",
+        )
     if target_version is None:
         return action(
             "inspect_only",

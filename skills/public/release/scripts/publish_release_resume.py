@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import importlib.util
 import runpy
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -60,11 +61,15 @@ def _is_claims_evidence_commit(cli: Any, repo_root: Path, *, prepared_commit: st
     parents = _optional_git_out(cli, repo_root, ["show", "-s", "--format=%P", evidence_commit]).split()
     if parents != [prepared_commit]:
         return False
-    changed = cli.run(
+    changed = [line for line in cli.run(
         ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", prepared_commit, evidence_commit],
         cwd=repo_root,
-    ).stdout.splitlines()
-    return len(changed) == 1 and changed[0].startswith("charness-artifacts/release-review/") and changed[0].endswith(".json")
+    ).stdout.splitlines() if line]
+    # The claims-review schema's `pass` verdict carries the review's own narrative
+    # alongside the JSON record, so R is one record plus at most its narrative -- never
+    # anything else. The shape rule has one owner; `validate_claims_review` is what binds
+    # the second path to the one the record actually names.
+    return _claims_review["claims_record_in_change_set"](changed) is not None
 
 
 def _claims_evidence_child(cli: Any, repo_root: Path, *, prepared_commit: str) -> str:
@@ -198,6 +203,7 @@ def resumable_state(
     return {
         "head_is_release_commit": head_subject == commit_message,
         "phase": phase,
+        "marker_at_head": _claims_review["marker_at_commit"](repo_root, commit=head_sha, run=cli.run),
         "prepared": prepared,
         "claims_evidence_commit": claims_evidence_commit,
         "prepared_parent_sha": prepared_parent_sha,
@@ -287,6 +293,32 @@ def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
                 "refusing unrelated advancement before publication."
             )
         return
+    if state.get("marker_at_head"):
+        # The legacy marker-free lane never validates a claims review, so reaching it with
+        # the prepared marker present publishes with none at all. The prepared branches
+        # above all require `prepared_record`, which declines when the marker is INHERITED
+        # rather than introduced -- a second prepare while one is outstanding, which is the
+        # likeliest action at a stop. Refuse instead of falling through.
+        published = state.get("tag_remote") and state.get("release_exists")
+        recovery = (
+            # Already published: the tag is on the remote and the release exists, so the
+            # "reset to one prepared record" advice would rewrite history behind a
+            # published tag and discard the committed claims record.
+            "The tag is already pushed and its release exists, so this is a publication "
+            "whose closeout did not finish -- do NOT reset past the claims record. Drop only "
+            "the post-push artifact commit (`git reset --hard <claims-evidence-commit>`) and "
+            "resume."
+            if published
+            else "This is the state a second prepare over an outstanding marker produces; "
+            "reset to one prepared record before resuming rather than publishing through the "
+            "marker-free lane."
+        )
+        raise SystemExit(
+            "--resume: HEAD's release record carries "
+            "`charness-release-state:prepared-awaiting-claims-review`, but no single-parent "
+            "prepared boundary could be identified, so the claims-review floor cannot run. "
+            + recovery
+        )
     if not state["head_is_release_commit"]:
         raise SystemExit(
             f"--resume: HEAD is not the `{tag_name}` release commit; nothing to resume. "
@@ -316,6 +348,7 @@ def preflight_resume_state(
     adapter_data: dict[str, Any],
     cli: Any,
 ) -> dict[str, Any]:
+    _claims_review["assert_record_path_matches_adapter"](adapter_data.get("output_dir"))
     current_version = cli.build_release_payload(repo_root)["surface_versions"]["packaging_manifest"]
     if not isinstance(current_version, str):
         raise SystemExit("current_release did not report a packaging manifest version")
@@ -336,15 +369,34 @@ def preflight_resume_state(
         cli=cli,
     )
     assert_resumable(state, tag_name=tag_name)
-    if state["phase"] in {
+    claims_phases = {
         "prepared-claims-review",
         "post-publication-claims-carrier",
         "post-publication-claims-final",
-    }:
+    }
+    if args.claims_review_artifact and state["phase"] not in claims_phases:
+        # Accepted and silently ignored was the worse half of the fall-through above: the
+        # operator supplies a real record, believes they are in the claims lane, and the
+        # argument is never opened.
+        raise SystemExit(
+            f"--resume: --claims-review-artifact was supplied but the resolved phase is "
+            f"`{state['phase']}`, which does not read it; refusing rather than publishing "
+            "with the record unread."
+        )
+    if state["phase"] in claims_phases:
         state["claims_review"] = _claims_review["validate_claims_review"](
             repo_root, prepared=state["prepared"], evidence_commit=state.get("claims_evidence_commit") or state["head_sha"],
             artifact_path=args.claims_review_artifact, target_version=current_version, tag_name=tag_name, run=cli.run,
         )
+        if state["claims_review"]["verdict"] == "unproven":
+            # LOUD. Publication may proceed on `unproven` -- that is the point of the
+            # state -- but the release record does not yet mirror it, so stderr is the
+            # only channel that puts it in front of the operator at the boundary.
+            sys.stderr.write(
+                "WARNING (release claims review): verdict is `unproven` -- the distinct-observer "
+                "property was NOT established for this release. Recorded signal: "
+                f"{state['claims_review']['observer_distinctness']['signal']}\n"
+            )
     return state
 
 

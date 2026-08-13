@@ -477,19 +477,10 @@ def test_checked_in_mutation_workflow_installs_length_gate_binary_before_samplin
 
 
 def test_mutation_workflows_pass_workload_budget_envs() -> None:
-    paths = [
-        ROOT / ".github" / "workflows" / "mutation-tests.yml",
-        TEMPLATE_PATH,
-        ROOT
-        / "plugins"
-        / "charness"
-        / "skills"
-        / "quality"
-        / "scripts"
-        / "templates"
-        / "mutation-tests.yml",
-    ]
-    for path in paths:
+    # `_mutation_workflow_copies()`, not a restated list: a fourth copy added there would
+    # get the body, marker, and state-change invariants and silently miss this one --
+    # which is the same "one copy kept the defect" failure that list exists to close.
+    for path in _mutation_workflow_copies():
         body = path.read_text(encoding="utf-8")
         for required in (
             "max_executable_mutants=$(read_slot '.mutation_testing.max_executable_mutants' '120')",

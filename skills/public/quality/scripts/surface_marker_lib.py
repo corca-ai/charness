@@ -2,18 +2,31 @@ from __future__ import annotations
 
 import ast
 import re
+import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.append(str(Path(__file__).resolve().parent))
+# JS/TS seams are scanned by a hand-written delimiter walk with no parser behind it,
+# which is a different discipline from this module's `ast` reading; it lives next door.
+_JS = __import__("js_settlement_scan_lib")
 
 NESTED_CLI_RE = re.compile(
     r"\b(subprocess\.(?:run|check_call|check_output|Popen)|spawnSync|execFileSync|execSync|spawn\(|execa\()"
 )
 _PYTHON_SUBPROCESS_CALLS = {"run", "check_call", "check_output", "Popen"}
-_JS_SYNC_CALLS = {"spawnSync", "execFileSync", "execSync"}
-_JS_CALL_RE = re.compile(r"\b(spawnSync|execFileSync|execSync|spawn|execa)\s*\(")
 
 
 def nested_cli_files(repo_root: Path, test_files: list[Path]) -> list[str]:
+    """Files whose raw text mentions a nested CLI call.
+
+    Deliberately RAW text, and therefore deliberately wider than
+    `subprocess_settlement_seams`, which now filters comments and strings. A JS file whose
+    only match is `// legacy: execSync(cmd)` is counted here and contributes no seam. The
+    two counts answer different questions -- "does this file talk about spawning" versus
+    "what does this call site declare" -- so they are not reconciled, and a reader
+    comparing them will find the seam count the smaller of the two."""
+
     matches: list[str] = []
     for path in test_files:
         try:
@@ -95,42 +108,6 @@ def _python_settlement_seams(repo_root: Path, path: Path, text: str) -> list[dic
     return seams
 
 
-def _js_settlement_seams(repo_root: Path, path: Path, text: str) -> list[dict[str, Any]]:
-    seams: list[dict[str, Any]] = []
-    for line_number, line in enumerate(text.splitlines(), start=1):
-        for match in _JS_CALL_RE.finditer(line):
-            call = match.group(1)
-            timeout_match = re.search(r"\btimeout\s*:\s*([^,}\s]+)", line)
-            timeout_value = timeout_match.group(1) if timeout_match else None
-            deadline = (
-                "absent"
-                if timeout_value is None
-                else "present"
-                if re.fullmatch(r"\d+(?:\.\d+)?", timeout_value)
-                else "unknown"
-            )
-            if re.search(r"\bstdio\s*:\s*['\"]ignore['\"]", line):
-                output_bounding = "bounded"
-            elif re.search(r"\bstdio\s*:\s*['\"]pipe['\"]", line):
-                output_bounding = "unbounded"
-            else:
-                output_bounding = "unknown"
-            seams.append(
-                {
-                    "path": path.relative_to(repo_root).as_posix(),
-                    "line": line_number,
-                    "call": call,
-                    "deadline": deadline,
-                    "lifecycle": "finite"
-                    if call in _JS_SYNC_CALLS and deadline == "present"
-                    else "unknown",
-                    "process_tree_termination": "unknown",
-                    "output_bounding": output_bounding,
-                }
-            )
-    return seams
-
-
 def subprocess_settlement_seams(repo_root: Path, test_files: list[Path]) -> list[dict[str, Any]]:
     """Return conservative static settlement signals for nested subprocess call sites.
 
@@ -145,8 +122,11 @@ def subprocess_settlement_seams(repo_root: Path, test_files: list[Path]) -> list
             continue
         if path.suffix == ".py":
             seams.extend(_python_settlement_seams(repo_root, path, text))
-        elif path.suffix in {".js", ".mjs", ".cjs", ".ts", ".tsx"}:
-            seams.extend(_js_settlement_seams(repo_root, path, text))
+        # Must cover every JS-family extension `test_discovery_lib` DISCOVERS. `.jsx` was
+        # missing, so a `run.test.jsx` counted as a nested-CLI file and contributed no
+        # seam at all -- a silent undercount with nothing reconciling the two lists.
+        elif path.suffix in {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"}:
+            seams.extend(_JS.js_settlement_seams(path.relative_to(repo_root).as_posix(), text))
     return sorted(
         seams,
         key=lambda item: (str(item["path"]), int(item["line"]), str(item["call"])),

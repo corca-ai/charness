@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -25,6 +26,7 @@ _review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_
 _publish_helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _planner_packets = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_run_packets")
+_claims_review = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_claims_review")
 _publish_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
@@ -40,9 +42,15 @@ path_list_sha256 = _publish_helpers.path_list_sha256
 current_branch = _publish_helpers.current_branch
 update_instructions_version_blocker = _preflight.update_instructions_version_blocker
 safe_real_host_payload = _preflight.safe_real_host_payload
+release_binding_tokens = _preflight.release_binding_tokens
+_closeout_evidence = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.check_prescribed_skill_executed_lib"
+)
 required_reads = _planner_packets.required_reads
 gate_packets = _planner_packets.gate_packets
 publish_packets = _planner_packets.publish_packets
+prepared_claims_state = _planner_packets.prepared_claims_state
+resume_claims_packets = _planner_packets.resume_claims_packets
 next_action = _planner_packets.next_action
 release_plan_target_version = _publish_plan.target_version
 ENVELOPE = SimpleNamespace(
@@ -102,6 +110,57 @@ def _target_version(args: argparse.Namespace, current_version: str | None) -> st
     if not (args.publish_current or args.set_version or args.part):
         return None
     return release_plan_target_version(args, current_version)
+
+
+def _git(repo_root: Path, args: list[str]) -> tuple[int, str]:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), *args], check=False, capture_output=True, text=True
+    )
+    return result.returncode, result.stdout
+
+
+def _head_release_record(repo_root: Path) -> str | None:
+    """The release record AS COMMITTED at HEAD, which is what the publish helper reads."""
+    code, out = _git(repo_root, ["show", f"HEAD:{_planner_packets.RELEASE_RECORD_PATH}"])
+    return out if code == 0 else None
+
+
+def _committed_claims_record(repo_root: Path) -> str | None:
+    """The claims record already committed as HEAD's own change, when there is one.
+
+    Delegates the shape rule to the claims-review module rather than restating it, so the
+    planner cannot come to disagree with the publish helper about what R looks like."""
+    code, out = _git(repo_root, ["show", "--no-commit-id", "--name-only", "-r", "--format=", "HEAD"])
+    if code != 0:
+        return None
+    return _claims_review.claims_record_in_change_set(
+        [line for line in out.splitlines() if line]
+    )
+
+
+def _critique_acceptor(repo_root: Path, target_version: str | None):
+    """Return a predicate that answers the publish gate's OWN question about a candidate.
+
+    Binding alone is not what the gate asks: it also requires the artifact to be TRACKED
+    and to clear a stub-residual floor. A binding-only filter named candidates the gate
+    then refused, which is the refusal this planner exists to save the operator from.
+    """
+    tokens = release_binding_tokens(target_version)
+
+    def accepts(rel_path: str) -> bool:
+        if _git(repo_root, ["ls-files", "--error-unmatch", rel_path])[0] != 0:
+            return False
+        report = _closeout_evidence.check(
+            repo_root=repo_root,
+            required=["standalone_critique"],
+            evidence={"standalone_critique": rel_path},
+            skips={},
+            kind="release",
+            tokens=tokens,
+        )
+        return bool(report["ok"])
+
+    return accepts
 
 
 def _target_selector(args: argparse.Namespace) -> str | None:
@@ -211,12 +270,21 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     review_payload = None
     if adapter.get("valid"):
         review_payload = build_review_gate_payload(repo_root, run_commands=False)
+    prepared_claims = prepared_claims_state(
+        repo_root,
+        current_version=current_version if isinstance(current_version, str) else None,
+        binding_tokens=release_binding_tokens(current_version if isinstance(current_version, str) else None),
+        accepts=_critique_acceptor(repo_root, current_version if isinstance(current_version, str) else None),
+        marker_text=_head_release_record(repo_root),
+        committed_record=_committed_claims_record(repo_root),
+    )
     planned_next_action = next_action(
         args=args,
         adapter=adapter,
         release_payload=release_payload,
         target_version=target_version,
         update_blocker=update_blocker,
+        prepared_claims=prepared_claims,
     )
     return ENVELOPE.build_envelope(
         schema_version="release.run_plan.v1",
@@ -247,11 +315,13 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
             "real_host": real_host_payload,
             "requested_review": review_payload,
         },
+        prepared_claims_review=prepared_claims,
         publish_packets=publish_packets(
             args,
             target_version=target_version,
             next_action_kind=planned_next_action["kind"],
-        ),
+        )
+        or resume_claims_packets(prepared_claims),
         blockers=[item for item in (update_blocker,) if item],
         phase_barriers=[
             "Read required_reads before release mutation.",
@@ -274,6 +344,12 @@ def main() -> int:
             yaml_output.emit_yaml(payload)
         else:
             print(f"next_action={payload['next_action']['kind']}: {payload['next_action']['reason']}")
+            for packet in payload.get("publish_packets") or []:
+                # The summary line is where an operator at a prepared stop actually
+                # looks; without the command here the resume invocation still has to be
+                # reconstructed by hand from --detail.
+                if str(packet.get("id", "")).startswith("publish-resume"):
+                    print(f"{packet['id']}: {packet['command']}")
             real_host = payload.get("evidence_packets", {}).get("real_host")
             if isinstance(real_host, dict) and real_host.get("required"):
                 scope = real_host.get("evidence_scope") or "unknown"

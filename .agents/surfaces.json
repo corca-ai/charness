@@ -441,7 +441,8 @@
       "surface_id": "release-claims-review-evidence",
       "description": "Committed, machine-readable claims-review evidence that binds a prepared local release record before publication may resume.",
       "source_paths": [
-        "charness-artifacts/release-review/*.json"
+        "charness-artifacts/release-review/*.json",
+        "charness-artifacts/release-review/*.md"
       ],
       "derived_paths": [],
       "sync_commands": [],
@@ -449,7 +450,7 @@
         "for review_record in charness-artifacts/release-review/*.json; do [ -e \"$review_record\" ] && python3 -m json.tool \"$review_record\" >/dev/null || exit $?; done"
       ],
       "notes": [
-        "The release resume helper validates the record's exact prepared-commit, path, blob, version, tag, direct-child topology, and reviewer-context binding before auth, tag, push, or GitHub release creation.",
+        "The release resume helper validates the record's exact prepared-commit, path, blob, version, tag, and direct-child topology before auth, tag, push, or GitHub release creation. Under charness.release.claims-review.v2 it additionally requires a declared `observer_distinctness` object (kind, concrete signal, and — for a `pass` — the review narrative committed alongside the record and bound to the prepared commit), and accepts `verdict: unproven` so a host with no distinct observer has an honest record instead of only `pass`.",
         "This surface owns checked-in JSON syntax and changed-surface routing; it does not treat an arbitrary record as approved publication evidence outside the helper's prepared-claims-review state."
       ]
     },

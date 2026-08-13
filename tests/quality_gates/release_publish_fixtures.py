@@ -176,6 +176,91 @@ def _run_publish(repo: Path, env: dict[str, str], *args: str) -> subprocess.Comp
     )
 
 
+def claims_review_narrative(prepared_commit: str, target_version: str) -> str:
+    """A claims-review narrative of the shape the v2 floor requires.
+
+    The v1 floor accepted an 11-line JSON carrying a verdict and two context strings and
+    no product of a review at all; the narrative is what a `pass` now has to carry, bound
+    to this exact prepared commit so an earlier release's record cannot be re-pointed."""
+    return (
+        f"# Claims review for {target_version}\n\n"
+        f"Prepared commit: {prepared_commit}\n\n"
+        "## Re-derived figures\n\n"
+        "- Version claim in the release record matches the bumped manifest version.\n"
+        "- Gate counts in the record match the quality receipt they cite.\n\n"
+        "## Reasons checked against their citations\n\n"
+        "- Each recorded reason cites a path that exists at the prepared commit.\n\n"
+        "## Claimed-as-proven that was only reasoned about\n\n"
+        "- None found in this synthetic fixture record.\n\n"
+        "## Promised verification steps against recorded evidence\n\n"
+        "- Every promised step names a receipt in the prepared release record.\n"
+    )
+
+
+def claims_review_record(
+    *,
+    prepared_commit: str,
+    prepared_record: str,
+    target_version: str,
+    tag_name: str,
+    narrative_path: str,
+    verdict: str = "pass",
+    kind: str = "separate-agent-context",
+) -> dict:
+    record = {
+        "schema_version": "charness.release.claims-review.v2",
+        "prepared_commit": prepared_commit,
+        "release_record_path": "charness-artifacts/release/latest.md",
+        "release_record_sha256": hashlib.sha256(prepared_record.encode("utf-8")).hexdigest(),
+        "target_version": target_version,
+        "tag_name": tag_name,
+        "verdict": verdict,
+        "preparer_context": "fixture-preparer",
+        "reviewer_context": "fixture-reviewer",
+        "observer_distinctness": {
+            "kind": kind,
+            "signal": "fixture harness records a bounded reviewer in a separate agent context",
+            "review_artifact": narrative_path,
+        },
+    }
+    if verdict == "unproven":
+        record["observer_distinctness"]["review_artifact"] = None
+    return record
+
+
+def commit_claims_review(
+    repo: Path,
+    *,
+    prepared_commit: str,
+    prepared_record: str,
+    target_version: str,
+    tag_name: str,
+    stem: str,
+    verdict: str = "pass",
+    kind: str = "separate-agent-context",
+) -> str:
+    """Write and commit the v2 record plus its narrative; return the record's path."""
+    review_path = f"charness-artifacts/release-review/{stem}.json"
+    narrative_path = f"charness-artifacts/release-review/{stem}.md"
+    record = claims_review_record(
+        prepared_commit=prepared_commit, prepared_record=prepared_record,
+        target_version=target_version, tag_name=tag_name, narrative_path=narrative_path,
+        verdict=verdict, kind=kind,
+    )
+    paths = [review_path]
+    (repo / review_path).parent.mkdir(parents=True, exist_ok=True)
+    (repo / review_path).write_text(json.dumps(record) + "\n", encoding="utf-8")
+    if record["observer_distinctness"]["review_artifact"]:
+        (repo / narrative_path).write_text(
+            claims_review_narrative(prepared_commit, target_version), encoding="utf-8"
+        )
+        paths.append(narrative_path)
+    subprocess.run(["git", "add", *paths], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "Record claims review"], cwd=repo, check=True,
+                   capture_output=True, text=True)
+    return review_path
+
+
 def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subprocess.CompletedProcess[str]:
     # The release critique gate refuses publish unless one of
     # --critique-artifact / --critique-blocked is supplied. Tests that already
@@ -213,23 +298,10 @@ def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subproce
         ["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"],
         cwd=repo, check=True, capture_output=True, text=True,
     ).stdout
-    review_path = "charness-artifacts/release-review/fixture-claims.json"
-    review = {
-        "schema_version": "charness.release.claims-review.v1",
-        "prepared_commit": prepared_commit,
-        "release_record_path": "charness-artifacts/release/latest.md",
-        "release_record_sha256": hashlib.sha256(record.encode("utf-8")).hexdigest(),
-        "target_version": payload["target_version"],
-        "tag_name": payload["tag_name"],
-        "verdict": "pass",
-        "preparer_context": "fixture-preparer",
-        "reviewer_context": "fixture-reviewer",
-    }
-    path = repo / review_path
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(review) + "\n", encoding="utf-8")
-    subprocess.run(["git", "add", review_path], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "Record fixture claims review"], cwd=repo, check=True, capture_output=True, text=True)
+    review_path = commit_claims_review(
+        repo, prepared_commit=prepared_commit, prepared_record=record,
+        target_version=payload["target_version"], tag_name=payload["tag_name"], stem="fixture-claims",
+    )
     resumed = _run_publish(
         repo, env, "--resume", "--publish-current", *extras,
         "--claims-review-artifact", review_path, "--execute",

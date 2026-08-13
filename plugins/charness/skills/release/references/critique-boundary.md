@@ -39,6 +39,70 @@ people, later, with less context, and is the hardest to correct after the fact.
 When the host cannot provide a distinct observer, record the concrete signal and
 publish with the review unproven rather than substituting a same-agent reread.
 
+### Claims Record Shape
+
+The claims round's record is a `charness.release.claims-review.v2` JSON file
+under `charness-artifacts/release-review/`, committed as the direct child of the
+marked prepared release commit, together with the review narrative it names and
+nothing else.
+
+Distinctness is a RECORDED observable, in the same shape
+`publication-boundary.md` already requires of the other release verdict — each
+verdict record names its observer identity explicitly rather than leaving it to
+be inferred. The record carries the prepared-record bindings (`prepared_commit`,
+`release_record_path`, `release_record_sha256`, `target_version`, `tag_name`), a
+`verdict`, a `preparer_context` and `reviewer_context` (still required as distinct
+nonempty strings — a weak leftover from the previous shape, kept because it names
+the two sides in the operator's own words), and an `observer_distinctness` object:
+
+- `kind`: one of `separate-agent-context`, `separate-host`, `separate-operator`
+  for a `pass`, or `unproven`. There is deliberately no `same-agent` value — a
+  same-agent reread is the observer this floor exists to exclude.
+- `signal`: the concrete signal behind that kind (which reviewer ran, on what
+  host, or the host refusal that blocked the spawn).
+- `review_artifact`: for a `pass`, the Markdown narrative the round produced,
+  naming the prepared commit and target version so an earlier release's record
+  cannot be re-pointed. `null` for `unproven`.
+
+`verdict: unproven` is a first-class state, not a failure: it is how the
+paragraph above is actually written down. Publication may proceed on it, and the
+claims-review record says plainly that the distinct-observer property was never
+established. Note the scope of that sentence: the CLAIMS RECORD carries the
+verdict, and the published release record does not yet mirror it, so a reader of
+`<repo-root>/charness-artifacts/release/latest.md` alone cannot tell the two apart.
+
+An already-committed `v1` record is repaired by AMENDING that commit in place; a
+follow-on commit is not the direct child of the prepared record and is refused,
+and an already-pushed record needs a force-push to the release branch.
+
+The previous `v1` shape is refused by name. Its only distinctness test was that
+`preparer_context` and `reviewer_context` were unequal strings, so one agent
+writing two different strings satisfied the distinct-observer floor completely,
+and a spawn-blocked session had `verdict: pass` as its only path forward.
+
+**Non-claim, and the honest size of the residual.** Nothing runnable on the
+publishing machine proves a distinct observer existed. What the validator does is
+refuse the shapes that made the claim unfalsifiable: an undeclared relationship, a
+same-agent reread with nowhere to say so, and a `pass` carrying no product of the
+review it asserts. Unlike the publication verdict — whose recorded observer is
+paired with a mechanical channel check — the claims side has no mechanical arm:
+`signal` is free text.
+
+State the residual at its real size rather than at the cost of forging a `pass`.
+The floor is keyed on a marker the same agent writes and may rewrite, and nothing
+else — tag state, branch state, remote state — forces the claims lane. **Deleting
+the marker line from the prepared record and amending that commit skips the floor
+entirely**, which is cheaper than authoring an accepted record by an order of
+magnitude. The floor raises the cost of a *careless* publication and gives a
+spawn-blocked host an honest alternative; it does not defeat a deliberate bypass,
+and a reviewer of a release should read the claims record itself rather than
+inferring one exists from a green publish.
+
+At a `prepared-awaiting-claims-review` stop, run
+`plan_release_run.py --repo-root .` for the exact resume invocation; it reads
+the marker, names a `--critique-artifact` candidate that binds to the version
+being published, and emits the dry-run and execute packets.
+
 ## Timing
 
 The critique gate runs before version bump, manifest sync, generated export, tag,

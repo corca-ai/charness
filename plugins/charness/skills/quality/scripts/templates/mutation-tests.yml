@@ -188,9 +188,19 @@ jobs:
         env:
           SUMMARY_PATH: ${{ steps.adapter.outputs.summary_md }}
           SAMPLE_PATH: ${{ steps.adapter.outputs.sample_md }}
+          RUN_LOG_PATH: ${{ steps.adapter.outputs.run_log }}
           ISSUE_TITLE: ${{ steps.adapter.outputs.auto_issue_title }}
           ISSUE_LABEL: ${{ steps.adapter.outputs.auto_issue_label }}
           MARKER_TOKEN: ${{ steps.adapter.outputs.auto_issue_marker_token }}
+          # `Run mutation` is continue-on-error, so its `conclusion` reads `success`
+          # in the REST API and the run UI even when it exited non-zero. Only
+          # `outcome` carries the truth, and only inside a workflow expression --
+          # so it is carried into the issue body here. Without it, a reader triaging
+          # from the run summary concludes the mutation commands succeeded and that
+          # the reported failure is downstream.
+          RUN_OUTCOME: ${{ steps.run.outcome }}
+          SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
+          SAMPLE_OUTCOME: ${{ steps.sample.outcome }}
         with:
           script: |
             const fs = require('node:fs');
@@ -200,6 +210,12 @@ jobs:
             const marker = `<!-- ${owner}/${repo}-${process.env.MARKER_TOKEN} -->`;
             const RECOVERY_CANDIDATE_LABEL = 'mutation-recovered-candidate';
             const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            // Declared HERE, above every use. A previous revision read this const at
+            // the log-tail condition while declaring it 20 lines lower, which is a
+            // temporal-dead-zone ReferenceError -- and `||` short-circuiting hid it
+            // whenever the summary file was ABSENT, so the only runs that threw were
+            // the ones with a summary. The step died before filing anything at all.
+            const runOutcome = process.env.RUN_OUTCOME || 'unknown';
             const summaryPath = process.env.SUMMARY_PATH;
             const summary = summaryPath && fs.existsSync(summaryPath)
               ? fs.readFileSync(summaryPath, 'utf8')
@@ -208,16 +224,90 @@ jobs:
             const sample = samplePath && fs.existsSync(samplePath)
               ? fs.readFileSync(samplePath, 'utf8')
               : 'No mutation sample manifest was generated.';
+            const runLogPath = process.env.RUN_LOG_PATH;
+            let runLogTail = '';
+            // ALSO when the mutation commands failed, not only when the summary is
+            // absent. A summary can exist and describe a collateral symptom, in which
+            // case an absence-only branch never fires and the actual failing baseline
+            // output never reaches the issue. A summary that exists is not a summary
+            // that explains.
+            if (!summaryPath || !fs.existsSync(summaryPath) || runOutcome !== 'success') {
+              if (runLogPath && fs.existsSync(runLogPath)) {
+                const logText = fs.readFileSync(runLogPath, 'utf8');
+                // Clamped by CHARACTERS as well as lines. GitHub rejects a body over
+                // 65536 and the throw kills this whole reporting step -- so without a
+                // clamp the runs with the MOST diagnostic output are the ones that
+                // file no issue at all.
+                let tail = logText.split('\n').slice(-80).join('\n');
+                if (tail.length > 8000) {
+                  tail = `... (truncated to the last 8000 characters)\n${tail.slice(-8000)}`;
+                }
+                // `Run mutation` creates the log with `tee` BEFORE the command runs, so a
+                // command that dies at process launch leaves a 0-byte file. An empty fenced
+                // block reads as "we looked and the run produced nothing", which is
+                // indistinguishable from "the tail branch is broken again" -- the exact
+                // ambiguity this section exists to remove.
+                // Two empty cases, not one. A whole-file emptiness claim from evidence
+                // about the LAST 80 LINES is the same overclaim this section exists to
+                // remove: a 500-line log whose ImportError sits at line 100 followed by
+                // blank lines would read as "the commands produced no output", and a
+                // triager would stop there.
+                const emptyNote = logText.trim() === ''
+                  ? '(the run log exists but is empty; the mutation commands produced no output)'
+                  : '(the last 80 lines of the run log are blank; read the full log in the `mutation-report` artifact of this run)';
+                runLogTail = tail.trim() === ''
+                  ? ['', '## Run log tail (last 80 lines)', '', emptyNote].join('\n')
+                  : ['', '## Run log tail (last 80 lines)', '', '```', tail, '```'].join('\n');
+              }
+            }
+            // THREE states, not two. `Run mutation` has no `always()`, so when
+            // `Select mutation sample` fails the run step is SKIPPED and its outcome
+            // is 'skipped' -- and a two-way branch then told the reader "the mutation
+            // commands completed" for a run in which they never started. That is the
+            // same false-headline class this section exists to fix, so the sample
+            // step gets its own line too: on that path it is the only outcome that
+            // names what failed.
+            const verdictLine = runOutcome === 'failure'
+              ? 'The mutation commands themselves failed. Everything the summary below reports about a missing report or missing stats is COLLATERAL — read the run log tail first.'
+              : runOutcome === 'skipped'
+                ? 'The mutation commands NEVER RAN — an earlier step failed or was skipped. The summary below describes absent artifacts, not a mutation result; read the `Select mutation sample` outcome above and the workflow logs.'
+                : runOutcome === 'success'
+                  ? 'The mutation commands completed; the failure below is the summary\'s own verdict.'
+                  : `\`Run mutation\` reported \`${runOutcome}\`; treat the summary below as UNEXPLAINED rather than as a mutation result.`;
+            const stepOutcomes = [
+              '## Step outcomes',
+              '',
+              `- \`Select mutation sample\`: **${process.env.SAMPLE_OUTCOME || 'unknown'}**`,
+              `- \`Run mutation\`: **${runOutcome}**`,
+              `- \`Summarize mutation report\`: **${process.env.SUMMARY_OUTCOME || 'unknown'}**`,
+              '',
+              verdictLine,
+            ].join('\n');
+            const clampBody = (text) => text.length <= 60000
+              ? text
+              : `${text.slice(0, 60000)}\n\n... (body truncated at 60000 characters; the full summary, sample, and run log are in the \`mutation-report\` artifact of this run)`;
+            // Diagnostics FIRST, because `clampBody` truncates from the front. With the
+            // log tail last, a large summary consumed the whole budget and the tail was
+            // sliced away -- so the D repair silently disabled the B repair for exactly
+            // the population B is about: the runs with the most diagnostic output, whose
+            // summary describes a collateral symptom while the log names the real failure.
             const body = [
               marker,
               `Mutation testing failed on \`${context.sha}\`.`,
               '',
               `Workflow run: ${runUrl}`,
               '',
+              stepOutcomes,
+              runLogTail,
+              '',
               summary,
               '',
               sample,
             ].join('\n');
+            // APPLIED, not merely defined. GitHub rejects a body over 65536 and the
+            // throw kills this whole reporting step, so an unclamped body means the
+            // runs with the most diagnostic output are the ones that file nothing.
+            const clampedBody = clampBody(body);
 
             try {
               await github.rest.issues.createLabel({
@@ -254,7 +344,7 @@ jobs:
                 owner,
                 repo,
                 issue_number: existing.number,
-                body,
+                body: clampedBody,
               });
               // A fresh failure retires any standing recovery candidate.
               try {
@@ -275,7 +365,7 @@ jobs:
                 repo,
                 title,
                 labels: [label],
-                body,
+                body: clampedBody,
               });
             }
 

@@ -51,6 +51,23 @@ def _write(directory: Path, name: str, payload: dict[str, object]) -> None:
     (directory / name).write_text(json.dumps({**RECORD, **payload}), encoding="utf-8")
 
 
+def test_the_quality_runner_queues_this_gate_in_the_default_battery() -> None:
+    """A refusal nobody runs is not a floor. The existing drift guard in
+    `test_quality_runner.py` is one-directional -- it asserts every QUEUED gate has a
+    harness stub, so deleting the queue line leaves it green and this gate simply stops
+    running. `queue_selected` (not `queue_timed` behind an env opt-in) is the assertion:
+    it is what puts the gate in the default battery rather than in a lane an operator
+    must ask for."""
+    runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    expected = (
+        'queue_selected "quality-tool-fixtures" python3 scripts/check_quality_tool_fixtures.py '
+        '--repo-root "$REPO_ROOT"'
+    )
+    assert runner.count(expected) == 1, (
+        "run-quality.sh must queue check_quality_tool_fixtures.py in the default battery"
+    )
+
+
 def test_the_checked_in_corpus_passes() -> None:
     result = _run(ROOT)
     assert result.returncode == 0, result.stderr
@@ -132,9 +149,18 @@ def test_a_digest_without_a_stream_path_is_refused(tmp_path: Path) -> None:
 
 def test_an_empty_stream_needs_no_path(tmp_path: Path) -> None:
     """A tool that wrote nothing to stderr records the empty digest and no file. Refusing
-    that would be a refusal against malformed input that changes no verdict."""
+    that would be a refusal against malformed input that changes no verdict.
+
+    It sits next to a file-backed fixture on purpose. Round 1 of this repair let this
+    corpus satisfy the floor ALONE, which meant the floor's only test-guaranteed
+    satisfier was the vacuous one -- see the corpus test below."""
     directory = _fixture_dir(tmp_path)
-    _write(directory, "f.json", {"stderr_sha256": EMPTY_SHA256})
+    (directory / "out.txt").write_text("captured\n", encoding="utf-8")
+    _write(directory, "empty-stderr.json", {"stderr_sha256": EMPTY_SHA256})
+    _write(directory, "real.json", {
+        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+        "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
+    })
     assert _run(tmp_path).returncode == 0
 
 
@@ -220,16 +246,106 @@ def test_containment_is_exercised_in_process(tmp_path: Path) -> None:
 
 
 def test_a_fixture_with_no_digests_is_not_invented_into_a_failure(tmp_path: Path) -> None:
-    """Not every recorded observation captures a stream. Refusing one would add teeth
-    where nothing can escape."""
+    """Not every recorded observation captures a stream. Refusing one PER FIXTURE would
+    add teeth where nothing can escape -- so it stays allowed, next to a fixture that
+    does pin something. The corpus-level floor below is what the escape actually needed.
+    """
+    directory = _fixture_dir(tmp_path)
+    (directory / "out.txt").write_text("captured\n", encoding="utf-8")
+    _write(directory, "pinned.json", {
+        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+        "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
+    })
+    _write(directory, "unpinned.json", {})
+    result = _run(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert "1 fixture(s) pinning no stream" in result.stdout
+
+
+def test_a_corpus_that_pins_no_stream_at_all_is_refused(tmp_path: Path) -> None:
+    """The round-2 hole in this script's OWN repair: the empty-corpus refusal keyed on
+    how many fixture FILES exist, not on what was compared. A fixture carrying only the
+    six required provenance fields printed `Verified 1 quality tool fixture(s) against
+    their captured streams.` and exited 0 having compared zero streams -- reaching the
+    unproven contract by ADDING a file instead of removing one.
+    """
     directory = _fixture_dir(tmp_path)
     _write(directory, "f.json", {})
-    assert _run(tmp_path).returncode == 0
+    result = _run(tmp_path)
+    assert result.returncode == 1
+    assert "none compared a digest against bytes checked in under" in result.stderr
+    assert "Verified" not in result.stdout
+
+
+def test_many_provenance_only_fixtures_do_not_add_up_to_a_comparison(tmp_path: Path) -> None:
+    """Count is not evidence. Ten unpinned fixtures compare exactly as much as one."""
+    directory = _fixture_dir(tmp_path)
+    for index in range(10):
+        _write(directory, f"f{index}.json", {})
+    result = _run(tmp_path)
+    assert result.returncode == 1
+    assert "10 fixture(s) and 0 digest check(s)" in result.stderr
+
+
+def test_the_success_line_reports_comparisons_not_only_files(tmp_path: Path) -> None:
+    """The old line claimed fixtures were verified `against their captured streams`
+    whether or not any stream existed. A reader triaging a green gate could not tell a
+    corpus that compared six streams from one that compared none, so the claim is now
+    the count itself."""
+    directory = _fixture_dir(tmp_path)
+    (directory / "out.txt").write_text("captured\n", encoding="utf-8")
+    digest = hashlib.sha256(b"captured\n").hexdigest()
+    _write(directory, "f.json", {
+        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+        "stdout_sha256": digest,
+        "stderr_sha256": EMPTY_SHA256,
+    })
+    result = _run(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert (
+        "1 quality tool fixture(s): 2 stream digest(s) checked, 1 against checked-in capture file(s)."
+        in result.stdout
+    )
+    assert "pinning no stream" not in result.stdout
+
+
+def test_a_refused_comparison_is_never_counted_as_one(tmp_path: Path) -> None:
+    """Drift, escape, and missing-file branches all `continue` past the counter. If any
+    of them still incremented it, a corpus of nothing but broken comparisons would clear
+    the corpus floor -- the floor would then be satisfied by the failures it exists to
+    report."""
+    module = load_script_module(
+        "check_quality_tool_fixtures_compare_count",
+        ROOT / "scripts" / "check_quality_tool_fixtures.py",
+    )
+    directory = _fixture_dir(tmp_path)
+    (directory / "out.txt").write_text("captured\n", encoding="utf-8")
+    for name, payload in (
+        ("drift.json", {"stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+                        "stdout_sha256": "b" * 64}),
+        ("gone.json", {"stdout_path": "charness-artifacts/quality/fixtures/gone.txt",
+                       "stdout_sha256": "d" * 64}),
+        ("escape.json", {"stdout_path": "/etc/hostname", "stdout_sha256": "a" * 64}),
+        ("bad-digest.json", {"stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+                             "stdout_sha256": EMPTY_SHA256[:62]}),
+        ("unproven.json", {"stdout_sha256": "a" * 64}),
+    ):
+        _write(directory, name, payload)
+        found, checked, file_backed = module._problems(tmp_path, directory / name)
+        assert found, name
+        assert (checked, file_backed) == (0, 0), f"{name} counted a refused comparison"
 
 
 def test_a_fixture_without_a_final_consumer_can_still_be_recorded_evidence(tmp_path: Path) -> None:
     directory = _fixture_dir(tmp_path)
-    _write(directory, "f.json", {"final_consumer": None})
+    # Pins a FILE-backed stream so the corpus floor is satisfied; `final_consumer` is
+    # the subject.
+    (directory / "out.txt").write_text("captured\n", encoding="utf-8")
+    _write(directory, "f.json", {
+        "final_consumer": None,
+        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+        "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
+    })
     assert _run(tmp_path).returncode == 0
 
 
@@ -254,3 +370,32 @@ def test_a_fixture_without_required_observation_provenance_is_refused(
 
     assert result.returncode == 1
     assert f"required observation field {field!r}" in result.stderr
+
+
+def test_a_corpus_of_empty_digests_alone_does_not_satisfy_the_floor(tmp_path: Path) -> None:
+    """Round 1's own escape. It counted the empty-digest-without-path branch as a
+    comparison, so ONE fixture carrying `sha256("")` for both streams reported
+    `2 captured stream(s) compared` and exited 0 having opened no file at all -- a floor
+    satisfiable by typing 64 known characters, requiring no tool run and pinning no
+    captured evidence. That is the same "green over nothing checked" class the count was
+    introduced to close, one layer down."""
+    directory = _fixture_dir(tmp_path)
+    _write(directory, "f.json", {"stdout_sha256": EMPTY_SHA256, "stderr_sha256": EMPTY_SHA256})
+    result = _run(tmp_path)
+    assert result.returncode == 1
+    assert "1 fixture(s) and 2 digest check(s)" in result.stderr
+    assert "none compared a digest against bytes checked in under" in result.stderr
+
+
+def test_the_summary_separates_digest_checks_from_file_backed_ones(tmp_path: Path) -> None:
+    """A reader of a green gate must be able to tell how much of it touched disk."""
+    directory = _fixture_dir(tmp_path)
+    (directory / "out.txt").write_text("captured\n", encoding="utf-8")
+    _write(directory, "f.json", {
+        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+        "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
+        "stderr_sha256": EMPTY_SHA256,
+    })
+    result = _run(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert "2 stream digest(s) checked, 1 against checked-in capture file(s)" in result.stdout
