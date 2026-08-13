@@ -7,11 +7,6 @@ from typing import Any
 
 MARKER = "charness-release-state:prepared-awaiting-claims-review"
 SCHEMA_VERSION = "charness.release.claims-review.v2"
-# v1's only distinctness test was `preparer_context != reviewer_context`, so one agent
-# writing two different strings satisfied the distinct-observer floor completely, and a
-# spawn-blocked session had `verdict: pass` as its only path forward.  Accepting v1 here
-# would leave that path open, so it is refused by name.
-SUPERSEDED_SCHEMA_VERSIONS = {"charness.release.claims-review.v1"}
 RELEASE_RECORD_FILENAME = "latest.md"
 # NOT derived from `output_dir`, deliberately.  The claims record's location is defined by
 # this floor and has no adapter key; deriving it would make every already-committed claims
@@ -385,16 +380,6 @@ def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidenc
         raise SystemExit(f"--resume: claims-review artifact is not valid JSON: {normalized}") from exc
     if not isinstance(data, dict):
         raise SystemExit("--resume: claims-review artifact does not bind the exact prepared release record")
-    if data.get("schema_version") in SUPERSEDED_SCHEMA_VERSIONS:
-        raise SystemExit(
-            f"--resume: claims-review artifact uses superseded schema {data['schema_version']!r}; "
-            f"{SCHEMA_VERSION} requires an `observer_distinctness` object and accepts "
-            f"`verdict: unproven` so a host with no distinct observer has an honest record. "
-            "Recovery for an already-committed v1 record: AMEND that commit in place (a "
-            "follow-on commit is not the direct child of the prepared record and is refused); "
-            "if it was already pushed, the amend needs a force-push to the release branch, "
-            "which is its own grant-requiring boundary."
-        )
     expected = {"schema_version": SCHEMA_VERSION, "prepared_commit": prepared["commit"],
                 "release_record_path": prepared["path"], "release_record_sha256": prepared["sha256"],
                 "target_version": target_version, "tag_name": tag_name}

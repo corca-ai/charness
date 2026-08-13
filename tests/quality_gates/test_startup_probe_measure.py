@@ -72,9 +72,9 @@ def _seed_repo(
 
 def test_measure_startup_probes_filters_by_class_and_reports_timings(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["probes_configured"] == 2
     assert payload["probes_measured"] == 1
     assert payload["failures"] == []
@@ -88,14 +88,11 @@ def test_measure_startup_probes_filters_by_class_and_reports_timings(tmp_path: P
     assert measured["status"] == "ok"
 
 
-def test_measure_startup_probes_summary_yaml_matches_json(tmp_path: Path) -> None:
+def test_measure_startup_probes_summary_yaml_is_structured(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path)
     args = ("--repo-root", str(repo), "--class", "standing", "--summary")
     yaml_result = run_script(SCRIPT, *args)
-    json_result = run_script(SCRIPT, *args, "--json")
-
-    assert yaml_result.returncode == json_result.returncode == 0
-    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml_result.returncode == 0
     assert yaml.safe_load(yaml_result.stdout)["probes_measured"] == 1
 
 
@@ -126,7 +123,7 @@ def test_measure_startup_probes_can_record_runtime_signals(tmp_path: Path) -> No
         "--class",
         "standing",
         "--record-runtime-signals",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
     summary = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
@@ -135,9 +132,9 @@ def test_measure_startup_probes_can_record_runtime_signals(tmp_path: Path) -> No
 
 def test_measure_startup_probes_fails_when_command_fails(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, failing=True)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--detail")
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert len(payload["failures"]) == 1
     assert payload["failures"][0]["label"] == "demo-version"
     assert payload["failures"][0]["status"] == "command-failed"
@@ -145,9 +142,9 @@ def test_measure_startup_probes_fails_when_command_fails(tmp_path: Path) -> None
 
 def test_measure_startup_probes_times_out_hanging_command(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, probe_sleep_seconds=0.2, timeout_seconds=0.05)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--detail")
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert len(payload["failures"]) == 1
     assert payload["failures"][0]["status"] == "command-timeout"
     assert payload["failures"][0]["timeout_seconds"] == 0.05

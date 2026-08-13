@@ -7,6 +7,14 @@ the root instruction file but still apply to Charness maintenance work.
 
 - Repo-owned diff obligations live in [.agents/surfaces.json](../../.agents/surfaces.json);
   use `python3 scripts/check_changed_surfaces.py --repo-root .` to inspect them.
+- Long-running runners and parallel orchestrators use **isolated bodies, streamed
+  lifecycle** by default. Buffer each child command's diagnostic body separately
+  so concurrent output cannot interleave, but immediately emit the runner start,
+  each child start, each child terminal status with elapsed time, periodic
+  heartbeat while work remains, and the final receipt. Full-body buffering is not
+  progress visibility: a finished child must not remain invisible behind an
+  unrelated slow child. Keep lifecycle events compact and stable; replay a body's
+  full log on failure, explicit verbose mode, or operator request.
 - The full `run_slice_closeout.py` runs the cheap structural sweep FIRST
   (`staged_commit_gate_plan` subset: `validate_skill_ergonomics`,
   `validate_attention_state_visibility`, the `SKILL.md` authoring preflight),

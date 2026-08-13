@@ -1,18 +1,14 @@
 from __future__ import annotations
 
 import json
-import runpy
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from scripts import lesson_ledger_lib as ledger
 from scripts import lesson_selection_preview_lib as preview
-from scripts import migrate_lesson_lifecycle as lifecycle_migration
 from scripts import record_lesson_lifecycle as lifecycle_recorder
-from tests.test_lesson_ledger import ROOT, _ledger, _retro
+from tests.test_lesson_ledger import _ledger, _retro
 
 
 def _lesson() -> dict[str, object]:
@@ -30,40 +26,6 @@ def _event(**updates: object) -> dict[str, object]:
     }
     event.update(updates)
     return event
-
-
-def test_lifecycle_migration_rejects_closed_inputs_and_accepts_v4() -> None:
-    v4 = {"kind": ledger.KIND, "schema_version": ledger.SCHEMA_VERSION}
-    assert lifecycle_migration.migration_candidate(v4) == v4
-    cases = [
-        ([], "expected a lesson ledger object"),
-        ({"kind": ledger.KIND, "schema_version": 2}, "only schema version 3"),
-        ({"kind": ledger.KIND, "schema_version": 3, "lessons": {"a": None}}, "invalid materialized lesson"),
-    ]
-    for payload, message in cases:
-        with pytest.raises(ValueError, match=message):
-            lifecycle_migration.migration_candidate(payload)
-
-
-def test_committed_v3_ledger_shape_is_supported(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    previous = {
-        "kind": ledger.KIND,
-        "schema_version": 3,
-        "transitions": [],
-        "score_events": [],
-        "legacy_score_event_count": 0,
-        "session_events": [],
-    }
-    monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps(previous), ""),
-    )
-    assert ledger._committed_state(tmp_path, tmp_path / "ledger.json") == (
-        [], [], 0, [], ledger.ACTIVE_LESSON_BUDGET, []
-    )
 
 
 def test_lifecycle_replay_rejects_closed_event_shapes(tmp_path: Path) -> None:
@@ -101,7 +63,6 @@ def test_committed_lesson_budget_rewrite_is_refused(
         lambda *_args: (
             payload["transitions"],
             payload["score_events"],
-            payload["legacy_score_event_count"],
             payload["session_events"],
             49,
             payload["lifecycle_events"],
@@ -119,8 +80,6 @@ def test_committed_lesson_budget_rewrite_is_refused(
 
 def test_lifecycle_operator_rejects_missing_blank_and_unknown_action(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match="missing lesson ledger"):
-        lifecycle_migration.migrate(repo_root=tmp_path, execute=False)
-    with pytest.raises(FileNotFoundError, match="missing lesson ledger"):
         lifecycle_recorder.append_lifecycle_event(
             repo_root=tmp_path, event_id="e", lesson_id="a", action="archive",
             decision_ref="d.md", rationale="r",
@@ -137,25 +96,6 @@ def test_lifecycle_operator_rejects_missing_blank_and_unknown_action(tmp_path: P
             repo_root=tmp_path, event_id="e", lesson_id="a", action="other",
             decision_ref="d.md", rationale="r",
         )
-
-
-def test_lifecycle_migration_entrypoint_reports_failure(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    repo = tmp_path / "repo"
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        ["migrate_lesson_lifecycle.py", "--repo-root", str(repo)],
-    )
-    with pytest.raises(SystemExit) as exit_result:
-        runpy.run_path(
-            str(ROOT / "scripts/migrate_lesson_lifecycle.py"), run_name="__main__"
-        )
-    assert exit_result.value.code == 1
-    assert "missing lesson ledger" in capsys.readouterr().err
 
 
 def test_preview_refuses_a_validated_lesson_with_unknown_lifecycle_state(

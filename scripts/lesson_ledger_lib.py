@@ -12,7 +12,7 @@ from scripts.recent_lessons_lib import build_lesson_selection_index
 
 LEDGER_FILENAME = "lesson-ledger.json"
 KIND = "charness.lesson-ledger"
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 ACTIVE_LESSON_BUDGET = 50
 TOP_LEVEL_KEYS = {
     "kind",
@@ -20,7 +20,6 @@ TOP_LEVEL_KEYS = {
     "transitions",
     "active_lesson_budget",
     "lifecycle_events",
-    "legacy_score_event_count",
     "session_events",
     "score_events",
     "lessons",
@@ -34,9 +33,9 @@ LIFECYCLE_EVENT_KEYS = {
     "decision_ref",
     "rationale",
 }
-LEGACY_EVENT_KEYS = {"event_id", "source_retro", "lesson_id", "score"}
+SCORE_EVENT_REQUIRED_KEYS = {"event_id", "source_retro", "lesson_id", "score", "session_id"}
 EVENT_OPTIONAL_KEYS = {"anchor"}
-SCORE_EVENT_KEYS = LEGACY_EVENT_KEYS | {"session_id"}
+SCORE_EVENT_KEYS = SCORE_EVENT_REQUIRED_KEYS | EVENT_OPTIONAL_KEYS
 SESSION_EVENT_KEYS = {"session_id", "snapshot", "snapshot_sha256"}
 SNAPSHOT_KEYS = {
     "kind",
@@ -97,7 +96,7 @@ def _candidate_sources(
 
 def _committed_state(
     repo_root: Path, path: Path
-) -> tuple[list[Any], list[Any], int, list[Any], int, list[Any]] | None:
+) -> tuple[list[Any], list[Any], list[Any], int, list[Any]] | None:
     result = subprocess.run(
         ["git", "show", f"HEAD:{path.relative_to(repo_root)}"],
         cwd=repo_root,
@@ -117,44 +116,16 @@ def _committed_state(
         or not isinstance(previous.get("transitions"), list)
     ):
         _fail("committed ledger has an unrecognized shape")
-    version = previous.get("schema_version")
-    if version == 1:
-        return previous["transitions"], [], 0, [], ACTIVE_LESSON_BUDGET, []
-    if version == 2 and isinstance(previous.get("score_events"), list):
-        return (
-            previous["transitions"],
-            previous["score_events"],
-            len(previous["score_events"]),
-            [],
-            ACTIVE_LESSON_BUDGET,
-            [],
-        )
     if (
-        version == 3
-        and isinstance(previous.get("score_events"), list)
-        and isinstance(previous.get("session_events"), list)
-        and type(previous.get("legacy_score_event_count")) is int
-    ):
-        return (
-            previous["transitions"],
-            previous["score_events"],
-            previous["legacy_score_event_count"],
-            previous["session_events"],
-            ACTIVE_LESSON_BUDGET,
-            [],
-        )
-    if (
-        version == SCHEMA_VERSION
+        previous.get("schema_version") == SCHEMA_VERSION
         and isinstance(previous.get("score_events"), list)
         and isinstance(previous.get("session_events"), list)
         and isinstance(previous.get("lifecycle_events"), list)
-        and type(previous.get("legacy_score_event_count")) is int
         and type(previous.get("active_lesson_budget")) is int
     ):
         return (
             previous["transitions"],
             previous["score_events"],
-            previous["legacy_score_event_count"],
             previous["session_events"],
             previous["active_lesson_budget"],
             previous["lifecycle_events"],
@@ -309,7 +280,6 @@ def _replay_sessions(events: list[Any], replayed: dict[str, dict[str, Any]]) -> 
 
 def _replay_scores(
     events: list[Any],
-    legacy_count: int,
     replayed: dict[str, dict[str, Any]],
     available_sources: dict[str, set[str]],
     sessions: dict[str, set[str]],
@@ -317,14 +287,7 @@ def _replay_scores(
     ids: set[str] = set()
     sources: set[tuple[str, str]] = set()
     for position, event in enumerate(events, start=1):
-        legacy = position <= legacy_count
-        allowed = (
-            LEGACY_EVENT_KEYS | EVENT_OPTIONAL_KEYS
-            if legacy
-            else SCORE_EVENT_KEYS | EVENT_OPTIONAL_KEYS
-        )
-        required = LEGACY_EVENT_KEYS if legacy else SCORE_EVENT_KEYS
-        if not isinstance(event, dict) or not required <= set(event) <= allowed:
+        if not isinstance(event, dict) or not SCORE_EVENT_REQUIRED_KEYS <= set(event) <= SCORE_EVENT_KEYS:
             _fail(f"score event {position} has unexpected or missing fields")
         event_id, source, lesson_id, score = (
             event.get(key) for key in ("event_id", "source_retro", "lesson_id", "score")
@@ -340,12 +303,11 @@ def _replay_scores(
             _fail(f"score event `{event_id}` anchor must be non-empty non-whitespace when present")
         if abs(score) >= 2 and "anchor" not in event:
             _fail(f"score event `{event_id}` with magnitude at least two needs an anchor")
-        if not legacy:
-            session_id = event.get("session_id")
-            if not _nonblank(session_id) or session_id not in sessions:
-                _fail(f"score event `{event_id}` names unknown session")
-            if lesson_id not in sessions[session_id]:
-                _fail(f"score event `{event_id}` lesson is absent from session `{session_id}`")
+        session_id = event.get("session_id")
+        if not _nonblank(session_id) or session_id not in sessions:
+            _fail(f"score event `{event_id}` names unknown session")
+        if lesson_id not in sessions[session_id]:
+            _fail(f"score event `{event_id}` lesson is absent from session `{session_id}`")
         if event_id in ids or (source, lesson_id) in sources:
             _fail(f"duplicate score event_id or score source for `{lesson_id}`")
         if lesson_id not in replayed or source not in available_sources.get(lesson_id, set()):
@@ -366,14 +328,13 @@ def replay_validated_ledger_payload(
         or set(payload) != TOP_LEVEL_KEYS
     ):
         _fail(f"expected kind `{KIND}` at schema version {SCHEMA_VERSION}")
-    transitions, events, sessions, lessons, legacy_count, lifecycle_events, budget = (
+    transitions, events, sessions, lessons, lifecycle_events, budget = (
         payload.get(key)
         for key in (
             "transitions",
             "score_events",
             "session_events",
             "lessons",
-            "legacy_score_event_count",
             "lifecycle_events",
             "active_lesson_budget",
         )
@@ -389,33 +350,26 @@ def replay_validated_ledger_payload(
                 (lifecycle_events, list),
             )
         )
-        or type(legacy_count) is not int
-        or not 0 <= legacy_count <= len(events)
     ):
-        _fail("ledger has invalid containers or legacy_score_event_count")
+        _fail("ledger has invalid containers")
     available = _candidate_sources(repo_root, output_dir, summary_path)
     replayed = _replay_transitions(transitions, available)
     _replay_lifecycle(lifecycle_events, replayed, budget=budget, repo_root=repo_root)
     declared = _replay_sessions(sessions, replayed)
     committed = _committed_state(repo_root, path)
-    if committed is None:
-        if legacy_count != 0:
-            _fail("legacy_score_event_count is only allowed when migrating a committed v2 ledger")
-    else:
-        old_transitions, old_events, old_legacy, old_sessions, old_budget, old_lifecycle = committed
+    if committed is not None:
+        old_transitions, old_events, old_sessions, old_budget, old_lifecycle = committed
         if transitions[: len(old_transitions)] != old_transitions:
             _fail("committed transitions were rewritten or removed; append new transitions instead")
         if events[: len(old_events)] != old_events:
             _fail("committed score events were rewritten or removed; append new events instead")
         if sessions[: len(old_sessions)] != old_sessions:
             _fail("committed session events were rewritten or removed; append new events instead")
-        if legacy_count != old_legacy:
-            _fail("committed legacy_score_event_count was rewritten")
         if budget != old_budget:
             _fail("committed active_lesson_budget was rewritten")
         if lifecycle_events[: len(old_lifecycle)] != old_lifecycle:
             _fail("committed lifecycle events were rewritten or removed; append new events instead")
-    _replay_scores(events, legacy_count, replayed, available, declared)
+    _replay_scores(events, replayed, available, declared)
     if any(
         not isinstance(entry, dict)
         or set(entry) != LESSON_KEYS

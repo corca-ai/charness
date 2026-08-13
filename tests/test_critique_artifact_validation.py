@@ -32,7 +32,7 @@ def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
 def _multi_violation_artifact() -> str:
     # Breaks two independent checks at once: an unknown structured-finding bin
     # and an unknown reviewer-tier host exposure state. Used to exercise
-    # --report-all vs the fail-fast default.
+    # default one-pass vs fail-fast.
     return (
         "\n".join(
             [
@@ -197,16 +197,6 @@ def test_validate_critique_artifact_default_mode_lists_every_violation(tmp_path:
     assert "rule violation(s)" in result.stderr
     assert "unknown bin `bogus-bin`" in result.stderr
     assert "host exposure state `bogus-state`" in result.stderr
-
-
-def test_validate_critique_artifact_report_all_is_accepted_no_op(tmp_path: Path) -> None:
-    repo = seed_repo(tmp_path, _multi_violation_artifact())
-    args = ("--repo-root", str(repo), "--paths", ARTIFACT_RELPATH)
-    script = str(ROOT / "scripts" / "validate_critique_artifacts.py")
-    default = run_script(script, *args)
-    deprecated = run_script(script, *args, "--report-all")
-    assert deprecated.returncode == default.returncode == 1
-    assert deprecated.stderr == default.stderr
 
 
 def test_empty_artifact_set_does_not_run_the_cross_surface_probe(tmp_path: Path) -> None:

@@ -5,15 +5,7 @@ seams from a repo adapter.
 
 ## Canonical Path
 
-Use `<repo-root>/.agents/release-adapter.yaml` for new repos.
-
-Search order:
-
-1. `<repo-root>/.agents/release-adapter.yaml`
-2. `<repo-root>/.codex/release-adapter.yaml`
-3. `<repo-root>/.claude/release-adapter.yaml`
-4. `<repo-root>/docs/release-adapter.yaml`
-5. `<repo-root>/release-adapter.yaml`
+Use `<repo-root>/.agents/release-adapter.yaml`.
 
 ## Shared Core
 

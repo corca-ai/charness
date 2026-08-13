@@ -9,16 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts import (
-    check_lesson_evaluation_continuity as checker,
-)
-from scripts import (
-    lesson_evaluation_continuity_lib as continuity,
-)
-from scripts import (
-    open_lesson_session,
-    validate_retro_artifact,
-)
+from scripts import check_lesson_evaluation_continuity as checker
+from scripts import lesson_evaluation_continuity_lib as continuity
+from scripts import open_lesson_session, validate_retro_artifact
 
 
 def _disposition(**values: object) -> dict[str, object]:
@@ -127,7 +120,7 @@ def test_disposition_parser_allows_explanatory_prose_but_not_a_second_machine_li
         )
 
 
-def test_receipt_binds_ledger_snapshot_renderer_bytes_and_integrity() -> None:
+def test_receipt_binds_ledger_snapshot_renderer_bytes_and_integrity(tmp_path: Path) -> None:
     stdout = "Lesson selection preview (1/1 eligible):\n- a — 안녕\n".encode()
     snapshot = "a" * 64
     receipt = continuity.build_receipt(
@@ -136,17 +129,23 @@ def test_receipt_binds_ledger_snapshot_renderer_bytes_and_integrity() -> None:
         stdout_bytes=stdout,
         emitted_at="2026-08-14T00:00:00Z",
     )
+    continuity.write_bundle(continuity.bundle_path(tmp_path, "s-1"), stdout)
     assert receipt["stdout_byte_count"] == len(stdout)
     assert continuity.validate_receipt(
-        receipt, sessions={"s-1": {"snapshot_sha256": snapshot}}
+        receipt, sessions={"s-1": {"snapshot_sha256": snapshot}}, output_dir=tmp_path
     ) == receipt
+    assert continuity.load_session_bundle(
+        receipt, sessions={"s-1": {"snapshot_sha256": snapshot}}, output_dir=tmp_path
+    ) == stdout
 
     for field, value in (("snapshot_sha256", "b" * 64), ("renderer_id", "changed"), ("stdout_byte_count", 1)):
         tampered = copy.deepcopy(receipt)
         tampered[field] = value
         with pytest.raises(ValueError):
             continuity.validate_receipt(
-                tampered, sessions={"s-1": {"snapshot_sha256": snapshot}}
+                tampered,
+                sessions={"s-1": {"snapshot_sha256": snapshot}},
+                output_dir=tmp_path,
             )
 
 
@@ -174,10 +173,16 @@ def test_open_session_writes_exact_bytes_before_atomic_receipt(
     )
     expected = continuity.render_preview_bytes(preview)
     assert stdout.getvalue() == expected
+    bundle = tmp_path / result["bundle_path"]
+    assert bundle.read_bytes() == expected
     path = tmp_path / result["receipt_path"]
     assert path.is_file()
     receipt = json.loads(path.read_text(encoding="utf-8"))
-    assert continuity.validate_receipt(receipt, sessions={"s-1": event}) == receipt
+    assert continuity.validate_receipt(
+        receipt,
+        sessions={"s-1": event},
+        output_dir=tmp_path / "charness-artifacts/retro",
+    ) == receipt
 
 
 def test_open_session_broken_stdout_never_writes_receipt(
@@ -205,6 +210,9 @@ def test_open_session_broken_stdout_never_writes_receipt(
     assert not continuity.receipt_path(
         tmp_path / "charness-artifacts/retro", "s-1"
     ).exists()
+    assert continuity.bundle_path(
+        tmp_path / "charness-artifacts/retro", "s-1"
+    ).is_file()
 
 
 def test_open_session_failed_flush_never_writes_receipt(
@@ -229,6 +237,9 @@ def test_open_session_failed_flush_never_writes_receipt(
     assert not continuity.receipt_path(
         tmp_path / "charness-artifacts/retro", "s-1"
     ).exists()
+    assert continuity.bundle_path(
+        tmp_path / "charness-artifacts/retro", "s-1"
+    ).is_file()
 
 
 def test_open_session_completes_short_writes_before_receipting(
@@ -286,22 +297,24 @@ def test_open_session_rejects_unsafe_id_before_declaration(
     assert not (tmp_path / "charness-artifacts").exists()
 
 
-def test_receipt_atomic_replace_failure_leaves_no_receipt_or_temp(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize("kind", ["receipt", "bundle"])
+def test_atomic_replace_failure_leaves_no_output_or_temp(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, kind: str
 ) -> None:
-    path = tmp_path / "receipts" / "s-1.json"
-    receipt = _receipt()
-    monkeypatch.setattr(
-        continuity.os,
-        "replace",
-        lambda *_args: (_ for _ in ()).throw(OSError("replace failed")),
-    )
+    path = tmp_path / "receipts" / ("s-1.json" if kind == "receipt" else "s-1.md")
+    def replace_error(*_args: object) -> None:
+        raise OSError("replace failed")
+
+    monkeypatch.setattr(continuity.os, "replace", replace_error)
 
     with pytest.raises(OSError, match="replace failed"):
-        continuity.write_receipt(path, receipt)
+        if kind == "receipt":
+            continuity.write_receipt(path, _receipt())
+        else:
+            continuity.write_bundle(path, b"preview\n")
 
     assert not path.exists()
-    assert not list(path.parent.glob(".s-1.json.*"))
+    assert not list(path.parent.glob(f".{path.name}.*"))
 
 
 def _receipt(session_id: str = "s-1", emitted_at: str = "2026-08-14T00:00:00Z") -> dict:
@@ -311,6 +324,12 @@ def _receipt(session_id: str = "s-1", emitted_at: str = "2026-08-14T00:00:00Z") 
         stdout_bytes=b"preview\n",
         emitted_at=emitted_at,
     )
+
+
+def _write_bundle(output: Path, session_id: str = "s-1") -> None:
+    path = continuity.bundle_path(output, session_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"preview\n")
 
 
 def test_reconciler_keeps_disposition_health_separate_from_score_volume() -> None:
@@ -547,7 +566,6 @@ def test_reporter_on_disk_cohort_preserves_denominator_and_human_json_fields(
     (output / "lesson-ledger.json").write_text(
         json.dumps(
             {
-                "legacy_score_event_count": 0,
                 "session_events": [event],
                 "score_events": [],
             }
@@ -558,6 +576,7 @@ def test_reporter_on_disk_cohort_preserves_denominator_and_human_json_fields(
     path = continuity.receipt_path(output, "s-1")
     path.parent.mkdir(parents=True)
     path.write_text(json.dumps(receipt), encoding="utf-8")
+    _write_bundle(output)
     monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
 
     report = checker.build_report(tmp_path, as_of=date(2026, 8, 14))
@@ -585,7 +604,6 @@ def test_reporter_skips_generated_digest_and_prepare_packet(
     (output / "lesson-ledger.json").write_text(
         json.dumps(
             {
-                "legacy_score_event_count": 0,
                 "session_events": [],
                 "score_events": [],
             }
@@ -609,7 +627,6 @@ def test_reporter_rejects_receipt_filename_session_mismatch(
     (output / "lesson-ledger.json").write_text(
         json.dumps(
             {
-                "legacy_score_event_count": 0,
                 "session_events": [{"session_id": "s-1", "snapshot_sha256": "a" * 64}],
                 "score_events": [],
             }
@@ -639,7 +656,6 @@ def test_reporter_names_missing_disposition_and_invalid_receipt(
     (output / "lesson-ledger.json").write_text(
         json.dumps(
             {
-                "legacy_score_event_count": 0,
                 "session_events": [{"session_id": "s-1", "snapshot_sha256": "a" * 64}],
                 "score_events": [],
             }
@@ -732,7 +748,6 @@ def test_cli_json_snapshot_and_exit_status(
     (output / "lesson-ledger.json").write_text(
         json.dumps(
             {
-                "legacy_score_event_count": 0,
                 "session_events": [{"session_id": "s-1", "snapshot_sha256": "a" * 64}],
                 "score_events": [],
             }
@@ -742,6 +757,7 @@ def test_cli_json_snapshot_and_exit_status(
     receipt_path = continuity.receipt_path(output, "s-1")
     receipt_path.parent.mkdir(parents=True)
     receipt_path.write_text(json.dumps(_receipt()), encoding="utf-8")
+    _write_bundle(output)
     monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
     monkeypatch.setattr(
         checker.sys,

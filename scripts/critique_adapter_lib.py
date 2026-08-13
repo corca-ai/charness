@@ -19,10 +19,6 @@ from scripts.adapter_lib import load_yaml_file, optional_string, validate_adapte
 DEFAULT_OUTPUT_DIR = "charness-artifacts/critique"
 ADAPTER_CANDIDATES = (
     Path(".agents/critique-adapter.yaml"),
-    Path(".codex/critique-adapter.yaml"),
-    Path(".claude/critique-adapter.yaml"),
-    Path("docs/critique-adapter.yaml"),
-    Path("critique-adapter.yaml"),
 )
 STRING_FIELDS = ("repo", "language", "output_dir")
 VALID_CONTENT_KINDS = ("static", "script")
@@ -261,9 +257,6 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     warnings: list[str] = []
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    canonical = repo_root / ".agents" / "critique-adapter.yaml"
-    if adapter_path.resolve() != canonical.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical}.")
     data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
     return {

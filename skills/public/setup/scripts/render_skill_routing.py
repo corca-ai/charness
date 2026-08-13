@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -118,13 +117,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose skill-routing markdown should be rendered")
     parser.add_argument("--detail", action="store_true", help="Emit the full routing payload as YAML instead of markdown.")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
     payload = _build_payload(repo_root)
-    if args.json:
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-    elif args.detail:
+    if args.detail:
         yaml_output.emit_yaml(payload)
     else:
         sys.stdout.write(str(payload["markdown"]))

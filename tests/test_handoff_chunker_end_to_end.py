@@ -172,7 +172,7 @@ def test_end_to_end_pipeline_produces_valid_goal_artifact(
         [
             "python3",
             str(DRAFTER_SCRIPT),
-            "--chunk",
+            "--input",
             "-",
             "--date",
             "2026-05-28",
@@ -203,5 +203,4 @@ def test_end_to_end_pipeline_produces_valid_goal_artifact(
     # round-trip too.
     assert text.splitlines()[0].startswith("# Achieve Goal: ")
     assert "Achieve Goal: Achieve Goal:" not in text
-
 

@@ -98,31 +98,8 @@ def load_json(repo_root: Path, rel: str, expected_schema: str | None = None) -> 
 
 
 def load_inspection(repo_root: Path, rel: str) -> dict[str, Any]:
-    """Load an owner inspection, naming the migration when a pre-`#562` file shows up.
-
-    `load_json`'s generic `wrong_schema` is the right refusal and the wrong message here:
-    this repo SHIPS this module to consumers under `plugins/`, so a consumer upgrading
-    arrives holding a v1 artifact and a bare version mismatch gives them no path forward.
-    The refusal names the remedy instead of making them derive it.
-    """
-    payload = load_json(repo_root, rel)
-    declared = payload.get("schema")
-    if declared != INSPECTION_SCHEMA:
-        remedy = ""
-        # ONLY the version this remedy actually describes. A `startswith` prefix match also
-        # caught a FORWARD version and told whoever held it to downgrade — worse advice than
-        # the generic refusal it replaced, since the whole point is a path forward.
-        if declared == "issue-source-owner-inspection/v1":
-            remedy = (
-                ". #562 retired the per-locator sha256 content pin; to migrate, delete every locator's "
-                f"sha256 key, set schema to {INSPECTION_SCHEMA}, then run "
-                "`validate_issue_source_freeze.py refreeze`"
-            )
-        raise FreezeError(
-            "wrong_schema",
-            f"{rel} declares schema {declared!r}, expected {INSPECTION_SCHEMA!r}{remedy}",
-        )
-    return payload
+    """Load the single current owner-inspection schema."""
+    return load_json(repo_root, rel, INSPECTION_SCHEMA)
 
 
 def require_file(repo_root: Path, rel: str) -> None:

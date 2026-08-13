@@ -8,9 +8,10 @@ the inline `# discovery-boundary:` silencing marker.
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 from types import ModuleType
+
+import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -92,10 +93,10 @@ def test_inventory_cli_reports_unmarked_advisory(tmp_path: Path) -> None:
     result = run_loaded_script_main(
         "inventory_hardcoded_discovery.py",
         load_script_module("inventory_hardcoded_discovery_for_test", INVENTORY),
-        "--repo-root", str(repo), "--scan-root", "scripts", "--json",
+        "--repo-root", str(repo), "--scan-root", "scripts", "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["summary"]["polyglot_discovery_sites"] == 1
     assert payload["summary"]["unmarked_count"] == 1

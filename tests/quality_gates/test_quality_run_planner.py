@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import runpy
 import sys
@@ -57,7 +56,7 @@ def test_quality_run_plan_help_describes_repo_root_and_detail(
     )
 
 
-def test_quality_run_plan_main_emits_yaml_detail_and_hidden_json_in_process(
+def test_quality_run_plan_main_emits_yaml_detail_in_process(
     capsys, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     plan = {"next_action": {"kind": "inspect", "reason": "test"}}
@@ -68,13 +67,6 @@ def test_quality_run_plan_main_emits_yaml_detail_and_hidden_json_in_process(
     )
     assert PLAN.main() == 0
     assert yaml.safe_load(capsys.readouterr().out) == plan
-
-    monkeypatch.setattr(
-        sys, "argv", ["plan_quality_run.py", "--repo-root", str(tmp_path), "--json"]
-    )
-    assert PLAN.main() == 0
-    assert json.loads(capsys.readouterr().out) == plan
-
 
 @pytest.mark.parametrize(
     ("loader_name", "adjacent_name"),
@@ -118,8 +110,8 @@ def test_quality_run_plan_excludes_skill_refs_when_repo_has_no_skills(tmp_path: 
     assert plan["next_action"]["kind"] == "read_primer_refs"
     assert plan["gate_plan"] == "report_first"
     assert plan["skills_in_scope"] is False
-    refs = plan["required_primer_refs"]
     reads = plan["required_reads"]
+    refs = [read["path"] for read in reads]
     assert "references/quality-lenses.md" in refs
     assert "references/skill-quality.md" not in refs
     assert "references/skill-ergonomics.md" not in refs
@@ -157,8 +149,8 @@ def test_quality_run_plan_includes_skill_refs_for_skill_authoring_repo(tmp_path:
 
     assert plan["skills_in_scope"] is True
     assert plan["sample_skill_paths"] == ["skills/public/demo/SKILL.md"]
-    assert "references/skill-quality.md" in plan["required_primer_refs"]
-    assert "references/skill-ergonomics.md" in plan["required_primer_refs"]
+    assert "references/skill-quality.md" in {read["path"] for read in plan["required_reads"]}
+    assert "references/skill-ergonomics.md" in {read["path"] for read in plan["required_reads"]}
     packet = plan["structural_review_packet"]
     assert packet["required"] is True
     assert packet["target_skill"]["status"] == "unspecified"
@@ -411,8 +403,8 @@ def test_quality_run_plan_detects_plugin_only_skill_authoring_repo(tmp_path: Pat
 
     assert plan["skills_in_scope"] is True
     assert plan["sample_skill_paths"] == ["plugins/acme/skills/demo/SKILL.md"]
-    assert "references/skill-quality.md" in plan["required_primer_refs"]
-    assert "references/skill-ergonomics.md" in plan["required_primer_refs"]
+    assert "references/skill-quality.md" in {read["path"] for read in plan["required_reads"]}
+    assert "references/skill-ergonomics.md" in {read["path"] for read in plan["required_reads"]}
 
 
 def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path) -> None:

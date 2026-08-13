@@ -12,12 +12,12 @@ prose that names them.
 """
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_main import load_script_module
 
@@ -163,14 +163,14 @@ def test_the_planner_shim_degrades_gracefully_where_no_debug_artifact_exists(tmp
             str(MIRROR_SCRIPTS / "plan_risk_interrupt.py"),
             "--repo-root",
             str(tmp_path),
-            "--json",
+            "--detail",
         ],
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["status"] == "not-applicable"
+    assert yaml.safe_load(result.stdout)["status"] == "not-applicable"
 
 
 @pytest.mark.parametrize("name", sorted(SHIMS))

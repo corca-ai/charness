@@ -247,8 +247,7 @@ When both a probe template and manual flags are supplied, the probe's verdict
 wins; the manual flags are the fallback, not an override.
 
 `--delivery-kind` is not free-form self-attestation: it accepts only `none`,
-`release-notes`, `human-backend` (case-insensitive; the deprecated `command`
-alias normalizes to `human-backend`), and when the resolved adapter declares
+`release-notes`, `human-backend` (case-insensitive), and when the resolved adapter declares
 `delivery_kind: human-backend`, a record whose `--delivery-kind` disagrees is
 refused naming both values -- closing the loophole where a delivering agent
 understates the kind to dodge the floor above. When the adapter cannot be

@@ -123,10 +123,10 @@ def test_release_adapter_rejects_invalid_fresh_checkout_probes(tmp_path: Path) -
     assert "fresh_checkout_probes must be a list of strings" in payload["errors"]
 
 
-@pytest.mark.parametrize("adapter_relpath", [".agents/release-adapter.yaml", ".codex/release-adapter.yaml"])
 def test_release_adapter_preflight_maps_real_host_changes_to_focused_test(
-    tmp_path: Path, adapter_relpath: str
+    tmp_path: Path,
 ) -> None:
+    adapter_relpath = ".agents/release-adapter.yaml"
     repo = tmp_path / "repo"
     adapter_path = repo / adapter_relpath
     adapter_path.parent.mkdir(parents=True)

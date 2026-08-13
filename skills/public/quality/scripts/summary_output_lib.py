@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -30,10 +29,6 @@ def emit_yaml(payload: dict[str, Any]) -> None:
     print(dump_yaml(payload), end="")
 
 
-def emit_json(payload: dict[str, Any]) -> None:
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
-
-
 def bounded_list(
     payload: dict[str, Any], key: str, *, sample_limit: int = 10
 ) -> dict[str, Any]:
@@ -56,7 +51,6 @@ def add_output_args(
     output_mode = parser.add_mutually_exclusive_group()
     output_mode.add_argument("--summary", action="store_true", help=summary_help)
     output_mode.add_argument("--detail", action="store_true", help=detail_help)
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
 
 
 def emit_selected(
@@ -66,9 +60,6 @@ def emit_selected(
     summarize: Callable[[dict[str, Any]], dict[str, Any]],
 ) -> bool:
     selected = summarize(payload) if args.summary else payload
-    if args.json:
-        emit_json(selected)
-        return True
     if args.summary or args.detail:
         emit_yaml(selected)
         return True

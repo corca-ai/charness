@@ -3,9 +3,9 @@
 
 CLI surface:
 
-    python3 draft_goal_from_chunk.py --chunk <path-to-chunk-json> --date YYYY-MM-DD
-    python3 draft_goal_from_chunk.py --chunk - --date YYYY-MM-DD            # read stdin
-    python3 draft_goal_from_chunk.py --chunk <path> --slug <override-slug>
+    python3 draft_goal_from_chunk.py --input <path-to-chunk-json> --date YYYY-MM-DD
+    python3 draft_goal_from_chunk.py --input - --date YYYY-MM-DD            # read stdin
+    python3 draft_goal_from_chunk.py --input <path> --slug <override-slug>
 
 The input is a single ChunkCandidate JSON (the shape from
 ``ChunkCandidate.to_dict()``). Writes to
@@ -101,8 +101,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     chunked_routing_cli.add_input_argument(
         parser,
-        legacy=("--chunk",),
-        help_text="A single ChunkCandidate JSON. `--chunk` is a kept alias.",
+        help_text="A single ChunkCandidate JSON.",
     )
     parser.add_argument(
         "--date",

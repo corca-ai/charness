@@ -2,8 +2,8 @@
 input convention and fail loudly on bad input.
 
 Pins the regression hit while picking up a session via chunked routing:
-- each JSON-consuming stage (propose -> chunk-packet -> prepare -> draft) accepts a uniform
-  ``--input``/``-i`` plus its legacy alias and defaults to stdin, so
+- each JSON-consuming stage (propose -> chunk-packet -> prepare -> draft) accepts uniform
+  ``--input``/``-i`` flags and defaults to stdin, so
   ``parse | propose | chunk-packet | prepare`` composes without a temp file or per-stage
   ``--help`` lookup;
 - a malformed input fails at the stage that read it (structured stderr +
@@ -68,10 +68,9 @@ def test_propose_reads_stdin_by_default(entries_json):
     assert "standalone" in json.loads(res.stdout)
 
 
-@pytest.mark.parametrize("flag", ["--input", "-i", "--entries"])
+@pytest.mark.parametrize("flag", ["--input", "-i"])
 def test_propose_input_flags_are_equivalent(entries_json, proposal_json, tmp_path, flag):
-    """`--input`, `-i`, and the legacy `--entries` alias all name the same
-    input and yield identical output."""
+    """`--input` and `-i` name the same input and yield identical output."""
     entries_file = tmp_path / "entries.json"
     entries_file.write_text(entries_json, encoding="utf-8")
     res = _run([PROPOSE, flag, entries_file])
@@ -94,7 +93,7 @@ def test_prepare_chunk_packet_reads_entries_stdin_by_default(entries_json):
     assert "chunk_proposer_prompt" in payload
 
 
-@pytest.mark.parametrize("flag", ["--input", "-i", "--entries"])
+@pytest.mark.parametrize("flag", ["--input", "-i"])
 def test_prepare_chunk_packet_input_flags_are_equivalent(entries_json, tmp_path, flag):
     entries_file = tmp_path / "entries.json"
     entries_file.write_text(entries_json, encoding="utf-8")
@@ -103,8 +102,8 @@ def test_prepare_chunk_packet_input_flags_are_equivalent(entries_json, tmp_path,
     assert "sources" in json.loads(res.stdout)
 
 
-@pytest.mark.parametrize("flag", ["--input", "--merge-proposal"])
-def test_prepare_input_flag_alias(proposal_json, tmp_path, flag):
+@pytest.mark.parametrize("flag", ["--input", "-i"])
+def test_prepare_input_flags_are_equivalent(proposal_json, tmp_path, flag):
     proposal_file = tmp_path / "proposal.json"
     proposal_file.write_text(proposal_json, encoding="utf-8")
     res = _run([PREPARE, flag, proposal_file])
@@ -140,8 +139,7 @@ def test_missing_input_file_fails_loudly(tmp_path):
     assert "not found" in err["error"]
 
 
-def test_draft_input_alias_matches_chunk(tmp_path):
-    """draft accepts `--input -` (alias of the legacy `--chunk -`)."""
+def test_draft_accepts_uniform_input_flag(tmp_path):
     chunk = {
         "entries": [
             {

@@ -15,7 +15,6 @@ always-brief + closeout presence-floor without this objective override.
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -46,7 +45,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--changed-path", nargs="*", help="Explicit changed paths (bypasses git).")
     parser.add_argument("--changed-ref", help="Git ref/range for changed-path discovery (else working-tree diff).")
     parser.add_argument("--detail", action="store_true", help="Emit the full payload as YAML.")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -67,9 +65,7 @@ def build_payload(repo_root: Path, changed_path, changed_ref) -> dict:
 def main() -> int:
     args = parse_args()
     payload = build_payload(args.repo_root.resolve(), args.changed_path, args.changed_ref)
-    if args.json:
-        print(json.dumps(payload, indent=2))
-    elif args.detail:
+    if args.detail:
         yaml_output.emit_yaml(payload)
     else:
         print(payload["reason"])

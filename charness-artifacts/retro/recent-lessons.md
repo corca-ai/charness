@@ -2,22 +2,22 @@
 
 ## Current Focus
 
-- Four rows a bounded closeout review had pulled back from the cohort carrier (#597, #607, #590, #609) were repaired, reviewed in two bounded rounds each, closed through the `issue` floor, and read back. (source: `charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md`)
-- The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro. (source: `charness-artifacts/retro/2026-08-13-post-publication-session-retro.md`)
+- The user corrected the claim that #614's lesson presentation was unproven. (source: `charness-artifacts/retro/2026-08-14-compaction-lesson-presentation-miss-retro.md`)
+- This session turned three user corrections into one current-contract cleanup: retired migration and compatibility surfaces should be deleted rather than maintained, opened lesson content must survive compaction as readable bytes, and long-running runners must not hide their lifecycle merely because diagnostic bodies are isolated. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`)
 
 ## Repeat Traps
 
-- **I hand-edited a ratchet baseline twice and was wrong both times.** First edit removed a key without the count; the guard caught it. I then concluded the file could be left alone entirely because the ratchet passed — and a second consumer of the same file crashed. The third attempt edited two fields and I described it as "what a rebuild would produce"; an actual rebuild showed two ENFORCED counts still stale. Three cycles for one file, and the correct action — run the builder — was named in the repo's own procedure doc the whole time. (source: `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`; sources: 4)
 - Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately. (source: `charness-artifacts/retro/2026-08-07-session-retro.md`; sources: 3)
 - Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention. (source: `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`; sources: 2)
 - **A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one. (source: `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`; sources: 2)
+- **The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about "deprecated aliases", a knob that no longer exists. Found by a handoff critique, two commits later. (source: `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`; sources: 2)
 
 ## Next-Time Checklist
 
+- **workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 5)
 - **memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 5)
-- **capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
-- **capability**: operate the local lesson ledger as a real loop by declaring a preview session and actually presenting its list before work, then recording only sparse, anchored effects at retro; do not infer continuity from the existence of the scripts. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
-- **workflow**: freeze source, export, evidence receipt, and review inputs before minting one final packet; regenerate only when that reviewed identity truly changes. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
+- **capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 4)
+- **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
 
 ## Selection Policy
 
@@ -34,7 +34,7 @@
 - `charness-artifacts/retro/2026-08-06-session-retro.md`
 - `charness-artifacts/retro/2026-08-07-session-retro.md`
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
-- `charness-artifacts/retro/2026-08-12-session-retro.md`
-- `charness-artifacts/retro/2026-08-13-post-publication-session-retro.md`
 - `charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md`
 - `charness-artifacts/retro/2026-08-13-session-retro.md`
+- `charness-artifacts/retro/2026-08-14-compaction-lesson-presentation-miss-retro.md`
+- `charness-artifacts/retro/2026-08-14-session-retro.md`

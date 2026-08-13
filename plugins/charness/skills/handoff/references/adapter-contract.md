@@ -5,15 +5,7 @@ skill body.
 
 ## Canonical Path
 
-Use `<repo-root>/.agents/handoff-adapter.yaml` for new repos.
-
-Search order:
-
-1. `<repo-root>/.agents/handoff-adapter.yaml`
-2. `<repo-root>/.codex/handoff-adapter.yaml`
-3. `<repo-root>/.claude/handoff-adapter.yaml`
-4. `<repo-root>/docs/handoff-adapter.yaml`
-5. `<repo-root>/handoff-adapter.yaml` as compatibility fallback only
+Use `<repo-root>/.agents/handoff-adapter.yaml`.
 
 ## Fields
 

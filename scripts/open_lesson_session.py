@@ -30,6 +30,8 @@ def open_session(
         seed=seed,
     )
     rendered = _continuity.render_preview_bytes(preview)
+    bundle = _continuity.bundle_path(output_dir, event["session_id"])
+    _continuity.write_bundle(bundle, rendered)
     written = 0
     while written < len(rendered):
         progress = stdout.write(rendered[written:])
@@ -46,7 +48,12 @@ def open_session(
     )
     path = _continuity.receipt_path(output_dir, event["session_id"])
     _continuity.write_receipt(path, receipt)
-    return {"session": event, "receipt_path": str(path.relative_to(repo_root)), "receipt": receipt}
+    return {
+        "session": event,
+        "bundle_path": str(bundle.relative_to(repo_root)),
+        "receipt_path": str(path.relative_to(repo_root)),
+        "receipt": receipt,
+    }
 
 
 def main() -> int:

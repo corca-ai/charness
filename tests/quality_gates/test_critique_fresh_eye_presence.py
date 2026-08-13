@@ -336,6 +336,5 @@ def test_live_corpus_critique_artifacts_pass_whole_tree_validation() -> None:
         "--repo-root",
         str(repo_root),
         "--all",
-        "--report-all",
     )
     assert result.returncode == 0, result.stderr

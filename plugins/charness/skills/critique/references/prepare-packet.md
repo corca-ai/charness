@@ -162,9 +162,9 @@ Rules:
   change, does not stale a path-scoped verdict — only an actual edit does. A
   changed-ref identity treats its resolved target and patch as inputs. Symlinks are
   hashed by their link payload without following them.
-- `verify` recomputes under the algorithm recorded in the packet, so bindings written
-  under `sha256-v1` keep verifying under v1 rules rather than being retroactively
-  staled by the v2 digest change.
+- `verify` accepts only the current `sha256-v2` identity contract. Historical
+  packets remain byte-addressed evidence, but are not accepted as current review
+  proof under a retired digest rule.
 - The auto sweep never returns the review record itself: everything under the adapter
   `output_dir` is dropped and reported in `auto_excluded_paths`, so authoring the
   critique artifact cannot stale the binding that describes it. An explicit

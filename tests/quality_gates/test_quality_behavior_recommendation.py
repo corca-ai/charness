@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -320,7 +319,7 @@ def test_split_values_drops_blank_and_whitespace_only_segments() -> None:
     assert _recommend_behavior_test._split_values(["a, ,b", " "]) == ["a", "b"]
 
 
-def test_quality_behavior_recommendation_summary_yaml_matches_json(monkeypatch, capsys) -> None:
+def test_quality_behavior_recommendation_summary_yaml_is_structured(monkeypatch, capsys) -> None:
     args = (
         "--behavior-seam", "skill-routing",
         "--subject-ref", "skills/public/quality/SKILL.md",
@@ -329,13 +328,11 @@ def test_quality_behavior_recommendation_summary_yaml_matches_json(monkeypatch, 
         "--summary",
     )
     yaml_result = run_recommend_behavior_test(monkeypatch, capsys, *args)
-    json_result = run_recommend_behavior_test(monkeypatch, capsys, *args, "--json")
-
-    assert yaml_result.returncode == json_result.returncode == 0
-    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml_result.returncode == 0
+    assert yaml.safe_load(yaml_result.stdout)["behaviorSeam"] == "skill-routing"
 
 
-@pytest.mark.parametrize("structured_mode", ["--summary", "--detail", "--json"])
+@pytest.mark.parametrize("structured_mode", ["--summary", "--detail"])
 def test_quality_behavior_recommendation_rejects_markdown_with_structured_mode(
     structured_mode: str,
 ) -> None:

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import subprocess
 from pathlib import Path
@@ -115,15 +114,12 @@ def main() -> int:
     parser.add_argument("--artifact", type=Path, help="Release artifact file to scan for review waiver/unavailability phrases")
     parser.add_argument("--skip-commands", action="store_true", help="Skip executing the configured requested_review_commands")
     parser.add_argument("--detail", action="store_true", help="Emit the full review-gate payload as YAML")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     artifact_path = args.artifact.resolve() if args.artifact else None
     payload = build_payload(repo_root, artifact_path=artifact_path, run_commands=not args.skip_commands)
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    elif args.detail:
+    if args.detail:
         yaml_output.emit_yaml(payload)
     elif payload["status"] == "blocked":
         for blocker in payload["blockers"]:

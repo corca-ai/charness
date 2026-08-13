@@ -3,8 +3,8 @@
 
 CLI surface:
 
-    python3 prepare_ranker_packet.py --merge-proposal <path-to-json>
-    python3 prepare_ranker_packet.py --merge-proposal -        # read stdin
+    python3 prepare_ranker_packet.py --input <path-to-json>
+    python3 prepare_ranker_packet.py --input -        # read stdin
 
 The packet is a self-contained JSON payload: the agent fills the
 ``ranked_chunks`` array per the embedded ``response_schema`` and the
@@ -57,11 +57,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     chunked_routing_cli.add_input_argument(
         parser,
-        legacy=("--merge-proposal",),
-        help_text=(
-            "A MergeProposal JSON from propose_merges.py "
-            "(MergeProposal.to_dict()). `--merge-proposal` is a kept alias."
-        ),
+        help_text="A MergeProposal JSON from propose_merges.py (MergeProposal.to_dict()).",
     )
     return parser.parse_args()
 

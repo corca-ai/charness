@@ -14,7 +14,7 @@ Portable by construction: a consumer points `review_artifact_path`,
 `run-quality.sh` + the broad pre-push path (NOT the docs-only fast subset). See
 `references/dup-ratchet.md`.
 
-Test seams: `--code-inventory` / `--doc-inventory` inject pre-collected `--json`
+Test seams: `--code-inventory` / `--doc-inventory` inject pre-collected structured
 payloads (no nose needed); `--stagnation` injects the commit distance (no git
 needed). `--write-baseline` seeds the gate baseline from a full code scan; a
 re-baseline that shifts the accepted family_ids by more than

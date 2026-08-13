@@ -4,7 +4,7 @@
 Pre-push hook usage:
 
 ```
-DIFF=$(python3 scripts/classify_push_diff.py --json)
+DIFF=$(python3 scripts/classify_push_diff.py)
 classification=$(printf '%s' "$DIFF" | python3 -c "import sys,json; print(json.load(sys.stdin)['classification'])")
 ```
 
@@ -46,7 +46,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--remote", default="origin", help="Git remote whose tracking branch defines the diff range")
     parser.add_argument("--diff-range", help="Explicit `<base>..<head>` diff range; overrides upstream resolution")
     parser.add_argument("--paths-stdin", action="store_true", help="Read newline-separated paths from stdin instead of running git diff")
-    parser.add_argument("--json", action="store_true", help="Emit JSON to stdout (default; flag retained for parity)")
     return parser.parse_args()
 
 

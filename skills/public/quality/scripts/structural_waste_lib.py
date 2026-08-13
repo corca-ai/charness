@@ -51,7 +51,8 @@ def _tracked_files(repo_root: Path) -> list[Path]:
         capture_output=True,
     )
     if result.returncode == 0:
-        return sorted(repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel)
+        paths = [repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel]
+        return sorted(path for path in paths if path.is_file())
     return sorted(path for path in repo_root.rglob("*") if path.is_file())
 
 
@@ -193,7 +194,9 @@ def _broad_scanner_candidates(repo_root: Path) -> list[dict[str, Any]]:
     for path in _python_sources(repo_root):
         try:
             text = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
+        except (FileNotFoundError, UnicodeDecodeError):
+            # The index may still name a worktree-deleted file. A dirty-tree
+            # inventory reports the readable current tree instead of crashing.
             continue
         if not BROAD_SCAN_RE.search(text):
             continue

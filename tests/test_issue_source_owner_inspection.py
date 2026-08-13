@@ -52,45 +52,15 @@ def _write_inspection(tmp_path: Path, **overrides) -> dict:
     return payload
 
 
-def test_a_v1_inspection_is_refused_with_the_migration_named(tmp_path: Path) -> None:
-    """The load-bearing DIRECTION of the schema bump, which no other test covers.
-
-    Reverting `INSPECTION_SCHEMA` makes the v2 fixtures fail, so that mutant only proves
-    the constant is consulted — not that a v1 artifact is refused. Without this test,
-    relaxing the check to accept a version SET (the natural kindness after a consumer
-    complains) goes green, and a v1 artifact carrying 20 live-looking `sha256` fields
-    would validate with its pin unenforced. That is precisely the state the bump exists
-    to prevent, so the refusal needs its own pin.
-
-    The remedy in the message is not decoration: `plugins/` ships this module to consumer
-    repos, so someone upgrading meets this refusal holding an artifact they must migrate.
-    """
-    _write_inspection(tmp_path, schema="issue-source-owner-inspection/v1")
-
-    with pytest.raises(FreezeError) as excinfo:
-        load_inspection(tmp_path, INSPECTION_REL)
-
-    assert excinfo.value.code == "wrong_schema"
-    assert "#562" in excinfo.value.detail
-    assert "refreeze" in excinfo.value.detail
-
-
-def test_a_forward_schema_is_refused_without_being_told_to_downgrade(tmp_path: Path) -> None:
-    """The remedy must not fire for a version it does not describe.
-
-    A prefix match caught `/v3` as readily as `/v1` and instructed whoever held it to delete
-    their sha256 keys and set the schema BACKWARDS to v2. For a message whose entire job is
-    to give a consumer a path forward, advising a downgrade is worse than the generic
-    refusal it replaced.
-    """
+def test_a_noncurrent_schema_is_refused(tmp_path: Path) -> None:
+    """Only the exact current schema is accepted."""
     _write_inspection(tmp_path, schema="issue-source-owner-inspection/v3")
 
     with pytest.raises(FreezeError) as excinfo:
         load_inspection(tmp_path, INSPECTION_REL)
 
     assert excinfo.value.code == "wrong_schema"
-    assert "#562" not in excinfo.value.detail
-    assert "refreeze" not in excinfo.value.detail
+    assert INSPECTION_SCHEMA in excinfo.value.detail
 
 
 def test_the_refreeze_preflight_refuses_a_bad_locator_before_any_write(tmp_path: Path) -> None:

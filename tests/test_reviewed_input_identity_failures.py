@@ -49,10 +49,17 @@ def test_identity_reconstruction_failures(tmp_path: Path) -> None:
         "reviewed input identity was unavailable when the packet was produced",
     )
     assert identity_lib.verify_reviewed_input_identity(
-        tmp_path, {"status": "captured", "identity_sha256": "missing"}
+        tmp_path,
+        {"status": "captured", "algorithm": "sha256-v2", "identity_sha256": "missing"},
     ) == (False, "declared reviewed inputs cover zero paths")
     ok, reason = identity_lib.verify_reviewed_input_identity(
-        tmp_path, {"status": "captured", "reviewed_paths": 5, "identity_sha256": "missing"}
+        tmp_path,
+        {
+            "status": "captured",
+            "algorithm": "sha256-v2",
+            "reviewed_paths": 5,
+            "identity_sha256": "missing",
+        },
     )
     assert not ok
     assert reason.startswith("cannot reconstruct reviewed input identity:")

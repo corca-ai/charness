@@ -5,15 +5,7 @@ should not live in the portable public skill body.
 
 ## Location
 
-Search order:
-
-1. `<repo-root>/.agents/create-skill-adapter.yaml`
-2. `.codex/create-skill-adapter.yaml`
-3. `.claude/create-skill-adapter.yaml`
-4. `<repo-root>/docs/create-skill-adapter.yaml`
-5. `create-skill-adapter.yaml`
-
-The canonical checked-in location is `<repo-root>/.agents/create-skill-adapter.yaml`.
+The checked-in location is `<repo-root>/.agents/create-skill-adapter.yaml`.
 
 ## Fields
 

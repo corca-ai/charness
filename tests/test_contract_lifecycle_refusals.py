@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import runpy
-import subprocess
 import sys
 from pathlib import Path
 
@@ -10,7 +9,6 @@ import pytest
 
 from scripts import apply_contract_transition as transition_writer
 from scripts import contract_register_lib as register
-from scripts import migrate_contract_register as register_migration
 from scripts import record_contract_citation as citation_writer
 from scripts import record_contract_graduation_proposal as proposal_writer
 from scripts import render_contract_retention_review as retention_review
@@ -50,54 +48,6 @@ def _proposal(**updates: object) -> dict[str, object]:
     }
     proposal.update(updates)
     return proposal
-
-
-def test_contract_migration_rejects_closed_inputs_and_accepts_v2() -> None:
-    v2 = {
-        "kind": register.KIND,
-        "schema_version": register.SCHEMA_VERSION,
-    }
-    assert register_migration.migration_candidate(v2) == v2
-    for payload, message in (
-        ([], "expected a contract register object"),
-        ({"kind": register.KIND, "schema_version": 0}, "only schema version 1"),
-    ):
-        with pytest.raises(ValueError, match=message):
-            register_migration.migration_candidate(payload)
-
-
-def test_committed_v1_register_conversion_and_proposal_refusal(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    path = tmp_path / "charness-artifacts/retro/contract-register.json"
-    base = {
-        "kind": register.KIND,
-        "schema_version": 1,
-        "unit_budget": 0,
-        "units": [],
-        "citation_events": [],
-        "catch_events": [],
-        "graduation_proposals": [],
-    }
-
-    def committed(payload: dict[str, object]) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess([], 0, json.dumps(payload), "")
-
-    monkeypatch.setattr(register.subprocess, "run", lambda *_args, **_kwargs: committed(base))
-    assert register._committed_state(tmp_path, path) == {
-        "unit_budget": 0,
-        "seed_units": [],
-        "citation_events": [],
-        "catch_events": [],
-        "graduation_proposals": [],
-        "applied_transitions": [],
-    }
-    with_proposal = {**base, "graduation_proposals": [{"proposal_id": "legacy"}]}
-    monkeypatch.setattr(
-        register.subprocess, "run", lambda *_args, **_kwargs: committed(with_proposal)
-    )
-    with pytest.raises(ValueError, match="explicit evidence-session migration"):
-        register._committed_state(tmp_path, path)
 
 
 def test_contract_reference_and_unit_shape_refusals(tmp_path: Path) -> None:
@@ -266,7 +216,6 @@ def test_citation_and_retention_main_success_paths(tmp_path: Path, capsys: pytes
 @pytest.mark.parametrize(
     "script,args,error",
     [
-        ("migrate_contract_register.py", [], "missing contract register"),
         (
             "apply_contract_transition.py",
             ["--action", "retire", "--event-id", "e", "--approval-ref", "a.md", "--rationale", "r"],

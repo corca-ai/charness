@@ -47,18 +47,18 @@ def _input_help(parser: argparse.ArgumentParser) -> str:
 
 def test_add_input_argument_registers_input_and_default(cli):
     parser = argparse.ArgumentParser()
-    cli.add_input_argument(parser, legacy=("--entries",))
-    assert parser.parse_args(["--entries", "x.json"]).input == "x.json"
+    cli.add_input_argument(parser)
+    assert parser.parse_args(["--input", "x.json"]).input == "x.json"
     assert parser.parse_args(["-i", "y.json"]).input == "y.json"
     assert parser.parse_args([]).input == "-"  # default = stdin sentinel
 
 
-def test_add_input_argument_legacy_is_keyword_only(cli):
+def test_add_input_argument_help_is_keyword_only(cli):
     """The ``*`` keyword-only marker (mutated to ``/`` positional-only) is
-    enforced — ``legacy`` cannot be passed positionally."""
+    enforced — ``help_text`` cannot be passed positionally."""
     parser = argparse.ArgumentParser()
     with pytest.raises(TypeError):
-        cli.add_input_argument(parser, ("--entries",))
+        cli.add_input_argument(parser, "help")
 
 
 def test_add_input_argument_help_suffix_branch(cli):

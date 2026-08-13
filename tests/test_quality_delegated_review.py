@@ -22,7 +22,7 @@ def validate(repo: Path) -> None:
     """Run the validator in-process: the CLI boundary is proven elsewhere.
 
     `tests/test_quality_artifact_report_all.py` owns the subprocess contract
-    (fail-fast vs --report-all, stderr shape, exit status); spawning it again per
+    (default one-pass vs fail-fast, stderr shape, exit status); spawning it again per
     rule is the redundant boundary the bypass ratchet exists to stop.
     """
     _validate_quality_artifact.validate_quality_artifact(

@@ -77,16 +77,6 @@ def test_renderer_falls_back_to_json_yaml_when_pyyaml_is_unavailable(monkeypatch
     assert yaml.safe_load(rendered) == {"message": "안녕하세요", "items": [1, 2]}
 
 
-def test_legacy_json_is_accepted_but_hidden_and_ignored() -> None:
-    default = run_cli("version")
-    legacy = run_cli("version", "--json")
-    help_result = run_cli("version", "--help")
-
-    assert default.returncode == legacy.returncode == 0
-    assert legacy.stdout == default.stdout
-    assert "--json" not in help_result.stdout
-
-
 def test_plain_version_does_not_write_version_state(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     result = run_cli("version", "--home-root", str(home_root))

@@ -76,12 +76,12 @@ def test_nose_advisory_filters_absent_default_roots_and_marks_partial_scope(tmp_
         """,
     )
     result = _run(
-        ["--repo-root", str(tmp_path), "--json"],
+        ["--repo-root", str(tmp_path), "--detail"],
         bin_dir,
         check=False,
         seed_default_roots=False,
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 4
     assert payload["status"] == "clean"
     assert payload["scope_status"] == "partial"
@@ -100,12 +100,12 @@ def test_nose_advisory_reports_inapplicable_without_querying(tmp_path: Path) -> 
         """,
     )
     result = _run(
-        ["--repo-root", str(tmp_path), "--json"],
+        ["--repo-root", str(tmp_path), "--detail"],
         bin_dir,
         check=False,
         seed_default_roots=False,
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 3
     assert payload["status"] == "inapplicable"
     assert payload["scope_status"] == "inapplicable"
@@ -117,12 +117,12 @@ def test_nose_advisory_does_not_write_baseline_for_inapplicable_scope(tmp_path: 
     bin_dir = tmp_path / "bin"
     _make_nose(bin_dir, """if args[0] == "query": raise AssertionError("query must not run")""")
     result = _run(
-        ["--repo-root", str(tmp_path), "--write-baseline", "--json"],
+        ["--repo-root", str(tmp_path), "--write-baseline", "--detail"],
         bin_dir,
         check=False,
         seed_default_roots=False,
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 3
     assert payload["status"] == "inapplicable"
     assert not (tmp_path / "charness-artifacts/quality/nose-baseline.json").exists()
@@ -147,12 +147,12 @@ def test_nose_advisory_honors_adapter_configured_paths(tmp_path: Path) -> None:
         """,
     )
     result = _run(
-        ["--repo-root", str(tmp_path), "--json"],
+        ["--repo-root", str(tmp_path), "--detail"],
         bin_dir,
         check=False,
         seed_default_roots=False,
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0
     assert payload["status"] == "clean"
     assert payload["scope_status"] == "scanned"
@@ -178,12 +178,12 @@ def test_nose_advisory_explicit_path_overrides_invalid_adapter_scope(tmp_path: P
         """,
     )
     result = _run(
-        ["--repo-root", str(tmp_path), "--path", "src", "--json"],
+        ["--repo-root", str(tmp_path), "--path", "src", "--detail"],
         bin_dir,
         check=False,
         seed_default_roots=False,
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0
     assert payload["status"] == "clean"
     assert payload["requested_paths"] == ["src"]
@@ -192,10 +192,10 @@ def test_nose_advisory_explicit_path_overrides_invalid_adapter_scope(tmp_path: P
 def test_nose_advisory_missing_json_preserves_scope_filters(tmp_path: Path) -> None:
     result = _run(
         ["--repo-root", str(tmp_path), "--exclude", "**/resolve_adapter.py",
-         "--ignore-file", "nose.ignore.json", "--json"],
+         "--ignore-file", "nose.ignore.json", "--detail"],
         bin_dir=None, check=False,
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "missing"
     assert payload["excludes"] == ["**/resolve_adapter.py"]
     assert payload["ignore_file"] == "nose.ignore.json"
@@ -204,13 +204,11 @@ def test_nose_advisory_missing_json_preserves_scope_filters(tmp_path: Path) -> N
     assert payload["ranking"] == {}
 
 
-def test_nose_advisory_summary_yaml_matches_json(tmp_path: Path) -> None:
+def test_nose_advisory_summary_yaml_is_structured(tmp_path: Path) -> None:
     args = ["--repo-root", str(tmp_path), "--summary"]
     yaml_result = _run(args, bin_dir=None, check=False)
-    json_result = _run([*args, "--json"], bin_dir=None, check=False)
-
-    assert yaml_result.returncode == json_result.returncode == 3
-    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml_result.returncode == 3
+    assert yaml.safe_load(yaml_result.stdout)["status"] == "missing"
 
 
 def test_nose_advisory_uses_installed_binary(tmp_path: Path) -> None:
@@ -231,7 +229,7 @@ def test_nose_advisory_uses_installed_binary(tmp_path: Path) -> None:
         ]}))
         """,
     )
-    payload = json.loads(_run(["--repo-root", str(tmp_path), "--json"], bin_dir).stdout)
+    payload = yaml.safe_load(_run(["--repo-root", str(tmp_path), "--detail"], bin_dir).stdout)
     assert payload["status"] == "findings"
     assert payload["family_count"] == 1  # one family survives the normalized query payload
     assert payload["total_dup_lines"] == 12  # two 6-line spans, derived
@@ -256,7 +254,7 @@ def test_nose_advisory_propagates_family_id(tmp_path: Path) -> None:
         ]}))
         """,
     )
-    payload = json.loads(_run(["--repo-root", str(tmp_path), "--json"], bin_dir).stdout)
+    payload = yaml.safe_load(_run(["--repo-root", str(tmp_path), "--detail"], bin_dir).stdout)
     assert payload["status"] == "findings"
     assert payload["families"][0]["family_id"] == "ff1fc93f63fabbc0"
 
@@ -277,10 +275,10 @@ def test_nose_advisory_passes_exclude_filters_to_nose(tmp_path: Path) -> None:
         print(json.dumps({"schema_version": 3, "tool_version": "0.13.3", "families": []}))
         """,
     )
-    payload = json.loads(
+    payload = yaml.safe_load(
         _run(
             ["--repo-root", str(tmp_path), "--exclude", "**/resolve_adapter.py",
-             "--exclude", "plugins/**", "--ignore-file", "nose.ignore.json", "--json"],
+             "--exclude", "plugins/**", "--ignore-file", "nose.ignore.json", "--detail"],
             bin_dir,
         ).stdout
     )
@@ -378,7 +376,7 @@ def test_nose_advisory_id_baseline_filters_drift_without_nose_baseline_flag(tmp_
         ]}))
         """,
     )
-    payload = json.loads(_run(["--repo-root", str(tmp_path), "--json"], bin_dir).stdout)
+    payload = yaml.safe_load(_run(["--repo-root", str(tmp_path), "--detail"], bin_dir).stdout)
     assert payload["family_count"] == 1
     assert payload["families"][0]["family_id"] == "drift1"
     assert payload["baseline"] == "charness-artifacts/quality/nose-baseline.json"
@@ -401,7 +399,7 @@ def test_nose_advisory_defaults_baseline_when_present(tmp_path: Path) -> None:
         print(json.dumps({"schema_version": 3, "tool_version": "0.13.3", "families": []}))
         """,
     )
-    payload = json.loads(_run(["--repo-root", str(tmp_path), "--json"], bin_dir).stdout)
+    payload = yaml.safe_load(_run(["--repo-root", str(tmp_path), "--detail"], bin_dir).stdout)
     assert payload["baseline"] == "charness-artifacts/quality/nose-baseline.json"
 
 
@@ -420,7 +418,7 @@ def test_nose_advisory_write_baseline_writes_fingerprint_set(tmp_path: Path) -> 
         ]}))
         """,
     )
-    payload = json.loads(_run(["--repo-root", str(tmp_path), "--write-baseline", "--json"], bin_dir).stdout)
+    payload = yaml.safe_load(_run(["--repo-root", str(tmp_path), "--write-baseline", "--detail"], bin_dir).stdout)
     assert payload["status"] == "baseline-written"
     assert payload["baseline"] == "charness-artifacts/quality/nose-baseline.json"
     assert payload["code_family_count"] == 2
@@ -450,7 +448,7 @@ def test_nose_advisory_parses_query_schema_v3(tmp_path: Path) -> None:
         ]}))
         """,
     )
-    payload = json.loads(_run(["--repo-root", str(tmp_path), "--json"], bin_dir).stdout)
+    payload = yaml.safe_load(_run(["--repo-root", str(tmp_path), "--detail"], bin_dir).stdout)
     assert payload["status"] == "findings"
     assert payload["family_count"] == 1
     assert payload["tool_version"] == "0.13.3"

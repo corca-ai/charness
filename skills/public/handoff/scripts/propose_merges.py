@@ -3,8 +3,8 @@
 
 CLI surface:
 
-    python3 propose_merges.py --entries <path-to-parser-json>
-    python3 propose_merges.py --entries -                # read stdin
+    python3 propose_merges.py --input <path-to-parser-json>
+    python3 propose_merges.py --input -                # read stdin
 
 Reads the JSON payload emitted by ``parse_handoff_entries.py`` (the
 ``entries`` array), rebuilds the HandoffEntry list, and emits a
@@ -48,11 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     chunked_routing_cli.add_input_argument(
         parser,
-        legacy=("--entries",),
-        help_text=(
-            "A parse_handoff_entries.py payload (with entries[]) or a bare "
-            "entries array. `--entries` is a kept alias."
-        ),
+        help_text="A parse_handoff_entries.py payload (with entries[]) or a bare entries array.",
     )
     return parser.parse_args()
 

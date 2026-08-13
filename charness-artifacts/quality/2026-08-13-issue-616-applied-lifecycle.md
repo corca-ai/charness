@@ -1,123 +1,135 @@
 # Quality Review
-Date: 2026-08-13
-Title: Issue 616 applied lesson and contract lifecycle
+Date: 2026-08-14
+Title: Current-contract cleanup and runner visibility
 
 ## Scope
 
-Target boundary: schema migration, replay, operator mutation commands, and
-non-authorizing reports for lesson archive/resurrection and contract
-graduation/retirement. No live contract membership transition is applied.
+Target boundary: the current-only lifecycle/receipt cleanup, issue #617 lesson
+bundle, lesson ledger schema 5, and lifecycle visibility for long-running runners.
 
-Ambient repo findings: PLR2004 is not enabled and a diagnostic-only scan reports
-992 findings, mostly tests. That is a separate baseline/ratchet candidate, not a
-reason to broaden this lifecycle slice.
+Ambient repo findings: remaining compatibility/grandfather terminology and the
+PLR2004 inventory are classified here but do not widen this reviewed slice silently.
 
 ## Surface Contract Review
 
-- semantic coverage: observed — v3/v1 migration, lifecycle replay, active and
-  archived selection, proposal evidence, reviewed application, retirement, and
-  retained history have deterministic behavior tests.
-- surface: lesson ledger v4, preview policy v2, contract register v2, and seven
-  operator commands.
-- owner: the ledgers own durable events and projections; quality supplies evidence
-  for a proposal; a reviewed Markdown decision authorizes a state transition.
-- projections: active lessons, archived lessons, active units, retired units,
-  preview buckets, checker receipts, and retention rows.
-- state scope: one repository-local append-only ledger/register; no installed,
-  hosted, or GitHub state is touched.
-- transitions: v3-to-v4 and v1-to-v2 migration, archive/resurrect,
-  propose/apply-graduation, retirement, citation, and deterministic rebuild.
-- proof boundary: focused tests, live read-only validators/previews, generated
-  mirror equality, and bounded fresh-eye review; no human approval quality or
-  usefulness threshold is inferred.
-- unexamined axes: long-run selection usefulness, contract catch mapping,
-  calibrated staleness, provider behavior, and concurrent writers across hosts.
+- semantic coverage: observed — exact bundle bytes, receipt commitment, schema
+  rejection, completion-order status, heartbeat, failure logs, exit aggregation,
+  and final receipts have behavior tests.
+- surface: lesson session producer/continuity checker, lesson ledger, reviewed-input
+  identity, issue owner inspection, `run-quality`, and slice closeout.
+- owner: each producer owns its single current schema; runner parents own lifecycle
+  events while child bodies stay isolated.
+- projections: session Markdown plus receipt, ledger selection/report, streamed
+  status, durable failure logs, and final structured receipt.
+- state scope: repository-local artifacts and temporary runner state; no hosted,
+  installed, GitHub, or release state is changed.
+- transitions: write bundle then stdout then receipt; queue, observe actual child
+  completion, emit status/heartbeat, aggregate, and receipt.
+- proof boundary: focused tests, source/plugin parity, shell syntax, deterministic
+  validators, and bounded fresh-eye review; no live host session or publication claim.
+- unexamined axes: hostile concurrent filesystem replacement and live provider behavior.
 
 ## Current Gates
 
-- Existing ledger/register validators enforce closed schemas, canonical paths,
-  append-only committed prefixes, fixed budgets, deterministic projections, and
-  live H2 equality when an application is attempted.
-- Existing root-plugin synchronization owns shipped mirrors; no new broad gate is
-  introduced.
+- Exact-schema readers reject retired forms rather than dispatching to migrations.
+- `run-quality` records child metadata atomically, synthesizes a failure if a child
+  exits without metadata, and retains the existing failure-log/final-receipt boundary.
+- Plugin generation remains the only source-to-shipped-surface projection.
 
 ## Runtime Signals
 
-- runtime source: focused pytest and direct operator-command receipts; timing
-  capture is missing because these bounded local paths have no timing budget.
-  <!-- reproduction-source -->
-- runtime hot spots: none observed; 82 focused tests completed in about four seconds.
-- coverage gate: focused lifecycle suite passed (85 tests); broad repo quality
-  remains a closeout step.
-- evaluator depth: deterministic-gates-only; Cautilus is ask-before-run and was
-  neither requested nor needed to prove replay invariants.
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
+  rendered by `skills/public/quality/scripts/render_runtime_summary.py`; profile
+  `local-linux-x86_64-36cpu`.
+- runtime hot spots: `run-quality-read-only` 229.9s latest / 102.4s median;
+  changed-line mutation 219.1s / 71.9s; `run-quality-full` 142.7s / 142.6s.
+- coverage gate: focused current-slice suites pass; the targeted changed-line gate
+  covers every mapped changed file and explicitly leaves three unmapped pool files
+  unproven; final broad gate follows the final commit.
+- evaluator depth: deterministic-gates-only; Cautilus is ask-before-run and no live
+  semantic evaluator claim is needed for these executable contracts.
 
 ## Healthy
 
-- Existing live state migrates without changing its lesson scores, active cohort,
-  contract unit inventory, or unit budget.
-- Archived selection has a real slot and no fabricated active fallback.
-- Contract evidence proposes but never auto-applies a membership change.
-- Duplicate review classifies the 19 newly grouped families as intentional
-  standalone-CLI plumbing or parallel schema-owner replay, with a rationale per
-  fingerprint; no fixable duplication is accepted into the gate baseline.
+- #617 stores the exact human-readable lesson bytes beside the receipt and validates
+  the deterministic path, byte count, and digest before accepting the session.
+- Current ledger/inspection/identity readers have one accepted schema or algorithm.
+- Long-running runner diagnostics no longer trade non-interleaving for a silent
+  control plane: start, child start, completion, heartbeat, and final receipt are visible.
 
 ## Weak
 
-- Catch events remain unavailable because no gate-to-unit mapping exists.
-- The retention report cannot yet calibrate staleness.
+- Lexical inventory finds 128 production/test files mentioning compatibility,
+  grandfathering, deprecation, or migration. Some are active strict refusals or
+  historical prose; keyword count is not a safe deletion verdict.
+- PLR2004 is not selected. A diagnostic scan reports 990 findings: 181 production
+  and 809 tests, too noisy for an unbaselined global blocker.
+- Test/production Python line ratio is 1.23, above the advisory 1.00 threshold.
 
 ## Missing
 
-- No live archive, graduation, or retirement decision exists to exercise a real
-  reviewed event; fixtures prove the transition mechanics only.
+- The repo has no shared monitored-capture primitive. Long-running Python
+  orchestrators therefore choose between inherited noisy bodies and silent
+  `capture_output` ad hoc, and lifecycle formats can drift per runner.
 
 ## Deferred
 
-- Score thresholds, automatic graduation, contract catch attribution, calibrated
-  staleness, and adversarial multi-host writer transactions remain explicitly out
-  of scope.
+- Historical artifact grandfather removal must be handled by owner cohort: either
+  retire the old evidence population or make the validator current-scope-only. A
+  blind keyword deletion would turn retained history into broad false reds.
 
 ## Advisory
 
-- structural review result: artifact: the durable event stream is separate from its
-  materialized projection and from live contract docs, so replay can refuse drift
-  instead of silently rebuilding away history.
-- prose review result: command: operator docs put dry run and reviewed decision references
-  at mutation boundaries and state that evidence/reporting is non-authorizing.
-- inventory evidence: `ruff check --select PLR2004 scripts skills tests` found a
-  separate 992-item adoption problem; use a production-only no-increase ratchet if
-  pursued rather than enabling it globally in this slice.
+- structural review result: inventory: 230 capture/redirect markers across 147 production
+  files are not 147 defects. A timeout/fan-out inspection found 17 capture files
+  declaring at least a 60-second timeout and ranks release runners, skill A/B,
+  JS mutation, mutant restore, eval fan-out, worktree prepare, and skill-surface
+  preflight as monitored-phase candidates. Atomic git/JSON/help probes remain
+  legitimate quiet captures.
+- prose review result: artifact: implementation discipline now states the repo default
+  as isolated child bodies plus streamed lifecycle; no new blocking floor was added.
+- command: the PLR2004 JSON inventory and compatibility residue scan are evidence for
+  scoped follow-up, not proof that every numeric literal or every word is a defect.
 
 ## Delegated Review
 
-- status: executed — a bounded preimplementation quality reviewer confirmed the
-  v4/v2 event-and-projection shape, active budget 50, real archive slot, frozen
-  register seed, and non-authorizing report; its reviewer-boundary fingerprint
-  verified clean. Final repaired-surface critique is still required at closeout.
+- Delegated Review: executed — two high-leverage bounded rounds culminated in
+  review-time identity `6647f7…353df`; the repaired-surface round passed 23 focused tests and
+  returned no act-before-ship, bundle-anyway, or valid-but-defer finding; artifact:
+  `charness-artifacts/critique/2026-08-14-current-contract-cleanup-review.md`.
 - Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof):
-  not applicable; focused deterministic tests reuse existing fixtures and complete
-  in seconds.
+  covered by the runner review; completion-order streaming preserves overlap and does
+  not replay green bodies.
 
 ## Commands Run
 
-- `pytest` over the lesson, selection, continuity, and contract-register suites —
-  85 passed.
-- both checker commands, deterministic preview, and retention review — valid;
-  live state is 16 active lessons and 26 active contract units.
-- `sync_root_plugin_manifests.py` and Ruff over changed Python — clean.
-- duplicate ratchet after reviewed overlay classification — clean at fixed
-  `fixable_ceiling=0`.
+- focused runner, continuity, ledger, contract, identity, and closeout suites — pass.
+- five owner test modules — 80 pass; targeted changed-line coverage exits 0 with
+  mapped coverage complete and three unmapped pool files explicitly unproven.
+- `bash -n scripts/run-quality.sh`, `git diff --check`, plugin sync/parity — pass.
+- standing-gate verbosity detail, timeout/fan-out capture inventory, PLR2004 JSON
+  scan, runtime summary, and ratio advisory.
+- reviewer-boundary snapshot/verify — `clean`; critique artifact validator — pass.
 
 ## Recommended Next Quality Moves
 
-- active lifecycle closeout — capability_needed=bounded repaired-surface review;
-  next_center=#616 proof surface; transformation=review then focused/broad gates;
-  proof_boundary=local direct-commit carrier; enforcement_posture=existing-gate-reuse.
-- passive magic-number ratchet because adoption needs its own baseline owner — capability_needed=baseline ownership;
-  next_center=production Python only; transformation=no-increase PLR2004 baseline;
-  proof_boundary=diagnostic inventory because tests dominate current findings;
-  enforcement_posture=no-gate because adoption needs an independent quality slice.
+- active compatibility-owner cohorts — capability_needed=current-state premise scan;
+  next_center=goal/artifact validators, quality baselines, release resume, and adapter
+  bootstrap; transformation=delete each dual reader plus migration-only tests as one
+  owner slice; proof_boundary=current checked-in corpus plus focused refusal tests;
+  enforcement_posture=existing-gate-reuse.
+- active Python orchestrator visibility — capability_needed=one shared monitored
+  execution primitive with an explicit `atomic_capture`/`monitored_phase` caller
+  choice; next_center=release publish helpers first because they can swallow the
+  child quality runner's own lifecycle for 1,800 seconds, then skill A/B, JS
+  mutation, mutant restore, eval fan-out, worktree prepare, and skill-surface
+  preflight; transformation=stream compact lifecycle while preserving isolated
+  bodies; proof_boundary=early start, bounded heartbeat, actual completion order,
+  failure body, and terminal receipt tests; enforcement_posture=advisory.
+- passive PLR2004 ratchet because production findings need classification before a
+  ceiling is meaningful — capability_needed=baseline owner; next_center=production
+  Python; transformation=no-increase pilot; proof_boundary=diagnostic inventory;
+  enforcement_posture=no-gate because the current 990-item corpus is untriaged.
 
 ## History
 

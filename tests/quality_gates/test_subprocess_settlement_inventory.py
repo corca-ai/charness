@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import ast
 import importlib.util
-import json
 from pathlib import Path
 from types import ModuleType
+
+import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -240,12 +241,12 @@ def test_standing_test_economics_hides_settlement_callsite_list_in_summary(tmp_p
         encoding="utf-8",
     )
 
-    summary = _run_inventory_cli("--repo-root", str(repo), "--summary", "--json")
-    detail = _run_inventory_cli("--repo-root", str(repo), "--detail", "--json")
+    summary = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    detail = _run_inventory_cli("--repo-root", str(repo), "--detail")
     assert summary.returncode == 0, summary.stderr
     assert detail.returncode == 0, detail.stderr
-    summary_payload = json.loads(summary.stdout)
-    detail_payload = json.loads(detail.stdout)
+    summary_payload = yaml.safe_load(summary.stdout)
+    detail_payload = yaml.safe_load(detail.stdout)
     assert summary_payload["subprocess_settlement"] == {
         "seam_count": 1,
         "deadline_counts": {"present": 1, "absent": 0, "unknown": 0},

@@ -268,15 +268,6 @@ def _distinctness_invoke(tmp_path: Path):
     return invoke, record, prepared, narrative_path
 
 
-def test_a_v1_claims_record_is_refused_by_name(tmp_path: Path) -> None:
-    """v1's only distinctness test was `preparer_context != reviewer_context`, so one
-    agent writing two different strings satisfied the distinct-observer floor completely.
-    Continuing to accept v1 would leave that path open next to the repaired one."""
-    invoke, record, _prepared, _narrative = _distinctness_invoke(tmp_path)
-    with pytest.raises(SystemExit, match="superseded schema"):
-        invoke(record(schema_version="charness.release.claims-review.v1"))
-
-
 def test_distinctness_must_be_declared_not_inferred(tmp_path: Path) -> None:
     """The reported defect exactly: two unequal strings and nothing that says what
     relationship they stand in. The publication boundary already requires the other

@@ -3,7 +3,7 @@
 
 # Every JSON-consuming stage (``propose_merges`` -> ``prepare_chunk_packet``
 -> ``prepare_ranker_packet`` -> ``draft_goal_from_chunk``) exposes one predictable input flag —
-``--input``/``-i`` plus its legacy stage-specific alias — defaulting to ``-``
+``--input``/``-i`` — defaulting to ``-``
 (stdin), so ``parse | propose | chunk-packet | prepare`` composes without a temp file or a
 per-stage ``--help`` round-trip.
 
@@ -28,19 +28,16 @@ from typing import Any
 def add_input_argument(
     parser: argparse.ArgumentParser,
     *,
-    legacy: tuple[str, ...] = (),
     help_text: str | None = None,
 ) -> None:
     """Add the uniform ``--input``/``-i`` JSON input flag to ``parser``.
 
-    ``legacy`` carries the stage's prior flag name(s) (e.g. ``--entries``) as
-    aliases so existing callers and tests keep working. The input defaults to
-    ``-`` (stdin) so the pipeline composes as a plain pipe.
+    The input defaults to ``-`` (stdin) so the pipeline composes as a plain pipe.
     """
-    flags = ["--input", "-i", *legacy]
     suffix = f" {help_text}" if help_text else ""
     parser.add_argument(
-        *flags,
+        "--input",
+        "-i",
         dest="input",
         default="-",
         help=(

@@ -5,15 +5,7 @@ skill body.
 
 ## Canonical Path
 
-Use `<repo-root>/.agents/debug-adapter.yaml` for new repos.
-
-Search order:
-
-1. `<repo-root>/.agents/debug-adapter.yaml`
-2. `.codex/debug-adapter.yaml`
-3. `.claude/debug-adapter.yaml`
-4. `<repo-root>/docs/debug-adapter.yaml`
-5. `debug-adapter.yaml` as compatibility fallback only
+Use `<repo-root>/.agents/debug-adapter.yaml`.
 
 ## Fields
 

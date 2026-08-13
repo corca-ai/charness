@@ -26,10 +26,6 @@ optional_string_list = _adapter_lib.optional_string_list
 
 ADAPTER_CANDIDATES = (
     Path(".agents/create-skill-adapter.yaml"),
-    Path(".codex/create-skill-adapter.yaml"),
-    Path(".claude/create-skill-adapter.yaml"),
-    Path("docs/create-skill-adapter.yaml"),
-    Path("create-skill-adapter.yaml"),
 )
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
@@ -152,12 +148,9 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     raw_data = raw if isinstance(raw, dict) else {}
     warnings: list[str] = []
     errors: list[str] = []
-    canonical_path = repo_root / ".agents" / "create-skill-adapter.yaml"
     shape_error = _mapping_shape_error(adapter_path, raw_data)
     if shape_error is not None:
         errors.append(shape_error)
-    if adapter_path.resolve() != canonical_path.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
     data, validation_errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
     errors.extend(validation_errors)
     warnings.extend(extra_warnings)

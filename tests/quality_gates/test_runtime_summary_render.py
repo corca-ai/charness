@@ -9,7 +9,6 @@ summary. Two scripts, two contracts — they share only the seeded repo helper.
 from __future__ import annotations
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
 
@@ -41,10 +40,10 @@ def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) 
     }
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
 
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["signals_present"] is True
     assert payload["markdown_lines"][:3] == [
         "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `default`.",
@@ -60,17 +59,14 @@ def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) 
     assert "transient" in interpretation["blind_spots"]  # the load-bearing blind spot
 
 
-def test_render_runtime_summary_yaml_summary_matches_json(tmp_path: Path) -> None:
+def test_render_runtime_summary_yaml_summary_is_structured(tmp_path: Path) -> None:
     signals = {
         "commands": {"pytest": {"latest": {"elapsed_ms": 15000, "status": "pass"}}}
     }
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
     args = ("--repo-root", str(repo), "--runtime-profile", "default", "--summary")
     yaml_result = run_script(RENDER_SCRIPT, *args)
-    json_result = run_script(RENDER_SCRIPT, *args, "--json")
-
-    assert yaml_result.returncode == json_result.returncode == 0
-    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml_result.returncode == 0
     assert yaml.safe_load(yaml_result.stdout)["runtime_hotspot_count"] == 1
 
 
@@ -121,10 +117,10 @@ def test_render_runtime_summary_names_excluded_stale_hotspots(tmp_path: Path) ->
     }
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
 
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert [item["label"] for item in payload["runtime_hotspots"]] == ["pytest"]
     assert [item["label"] for item in payload["stale_runtime_hotspots"]] == ["check-duplicates"]
     assert any("stale runtime hot spots excluded" in line for line in payload["markdown_lines"])
@@ -146,10 +142,10 @@ def test_render_runtime_summary_names_excluded_stale_hotspots_without_fresh_hots
     }
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
 
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["runtime_hotspots"] == []
     assert [item["label"] for item in payload["stale_runtime_hotspots"]] == ["retired-check"]
     assert payload["markdown_lines"][:3] == [
@@ -229,9 +225,9 @@ def test_render_runtime_summary_omits_interpretation_without_hotspots(tmp_path: 
     # Cardinal-error guard: no hot spots -> no inference-layer declaration (it must
     # never attach to an empty report; only a produced ranking is re-interpreted).
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=None)
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["runtime_hotspots"] == []
     assert "interpretation" not in payload
     assert not any("runtime interpretation" in line for line in payload["markdown_lines"])
@@ -261,10 +257,10 @@ def test_render_runtime_summary_reports_missing_structured_signals(tmp_path: Pat
 def test_render_runtime_summary_escalates_empty_runtime_visibility(tmp_path: Path) -> None:
     repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
 
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert [finding["type"] for finding in payload["runtime_visibility_findings"]] == [
         "runtime_visibility_missing_budgets",
         "runtime_visibility_missing_startup_probes",

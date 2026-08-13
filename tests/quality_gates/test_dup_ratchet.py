@@ -89,7 +89,7 @@ def test_check_help_describes_repo_root_and_structured_modes(capsys) -> None:
     )
 
 
-def test_check_summary_yaml_matches_json_for_inert_gate(tmp_path: Path, capsys) -> None:
+def test_check_summary_yaml_reports_inert_gate(tmp_path: Path, capsys) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / ".agents" / "quality-adapter.yaml").write_text(
@@ -98,11 +98,9 @@ def test_check_summary_yaml_matches_json_for_inert_gate(tmp_path: Path, capsys) 
     )
 
     assert check.main(["--repo-root", str(repo), "--summary"]) == 0
-    yaml_output = capsys.readouterr().out
-    assert check.main(["--repo-root", str(repo), "--summary", "--json"]) == 0
-    json_output = capsys.readouterr().out
-
-    assert yaml.safe_load(yaml_output) == json.loads(json_output)
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "inert"
+    assert payload["ok"] is True
 
 
 def _evaluate(**over):
@@ -375,12 +373,12 @@ def _run_gate(repo: Path, tmp_path: Path, *, code_ids: list[str], doc_sigs: list
     return run_script(
         str(CHECK_SCRIPT), "--repo-root", str(repo),
         "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--json", *(extra or []), cwd=ROOT,
+        "--detail", *(extra or []), cwd=ROOT,
     )
 
 
 def _verdict(result: subprocess.CompletedProcess[str]) -> dict:
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_cli_consumer_new_code_family_blocks(tmp_path: Path) -> None:
@@ -456,7 +454,7 @@ def test_cli_empty_real_scan_with_nonempty_baseline_degrades(tmp_path: Path) -> 
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     result = run_script(
         str(CHECK_SCRIPT), "--repo-root", str(repo),
-        "--doc-inventory", str(doc_json), "--json", cwd=ROOT,
+        "--doc-inventory", str(doc_json), "--detail", cwd=ROOT,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     verdict = _verdict(result)
@@ -506,7 +504,7 @@ def test_real_nose_family_id_rotates_on_member_line_shift(tmp_path: Path) -> Non
             capture_output=True, text=True, check=False,
         )
         assert result.returncode == 0, result.stderr
-        return {fam["id"] for fam in json.loads(result.stdout).get("families", [])}
+        return {fam["id"] for fam in yaml.safe_load(result.stdout).get("families", [])}
 
     before = family_ids()
     assert len(before) == 1, f"expected exactly one clone family, got {before}"
@@ -557,7 +555,7 @@ def _single_family_fingerprints(nose_bin: str, repo_root: Path) -> set:
         cwd=repo_root, capture_output=True, text=True, check=False,
     )
     assert result.returncode == 0, result.stderr
-    families = json.loads(result.stdout).get("families", [])
+    families = yaml.safe_load(result.stdout).get("families", [])
     assert len(families) == 1, f"expected exactly one clone family, got {len(families)}"
     return {fingerprint.family_content_fingerprint(fam, repo_root) for fam in families}
 
@@ -602,7 +600,7 @@ def test_cli_write_baseline_from_injected_inventory(tmp_path: Path) -> None:
     code_json = _code_inventory(tmp_path / "code.json", ["a", "b", "a"])
     result = run_script(
         str(CHECK_SCRIPT), "--repo-root", str(repo), "--code-inventory", str(code_json),
-        "--write-baseline", "--json", cwd=ROOT,
+        "--write-baseline", "--detail", cwd=ROOT,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     written = json.loads((repo / "q" / "dup-ratchet-baseline.json").read_text(encoding="utf-8"))
@@ -680,8 +678,8 @@ def test_inproc_C_large_delta_with_confirm_rebaselines(tmp_path: Path) -> None:
 def test_inproc_main_json_inert_exit_0(tmp_path: Path, capsys) -> None:
     repo = _consumer_repo(tmp_path, with_block=False)
     code_json = _code_inventory(tmp_path / "code.json", ["x"])
-    rc = check.main(["--repo-root", str(repo), "--code-inventory", str(code_json), "--json"])
-    payload = json.loads(capsys.readouterr().out)
+    rc = check.main(["--repo-root", str(repo), "--code-inventory", str(code_json), "--detail"])
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert rc == 0 and payload["status"] == "inert"
 
 

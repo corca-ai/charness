@@ -96,16 +96,7 @@ def test_release_real_host_proof_clean_changeset_does_not_trigger() -> None:
     assert payload["checklist"] == []
 
 
-def test_release_real_host_proof_supports_hidden_json_and_summary_output() -> None:
-    json_result = run_loaded_script_main(
-        "check_real_host_proof.py",
-        _REAL_HOST,
-        "--repo-root",
-        str(ROOT),
-        "--json",
-        "--paths",
-        "docs/retro-self-improvement-spec.md",
-    )
+def test_release_real_host_proof_supports_summary_output() -> None:
     summary_result = run_loaded_script_main(
         "check_real_host_proof.py",
         _REAL_HOST,
@@ -115,8 +106,7 @@ def test_release_real_host_proof_supports_hidden_json_and_summary_output() -> No
         "docs/retro-self-improvement-spec.md",
     )
 
-    assert json_result.returncode == summary_result.returncode == 0
-    assert json.loads(json_result.stdout)["required"] is False
+    assert summary_result.returncode == 0
     assert summary_result.stdout.startswith("real_host=not-required: ")
     assert summary_result.stderr == ""
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -49,7 +48,6 @@ def parse_args() -> argparse.Namespace:
         help="Immutable full-object-ID range BASE..HEAD whose changed paths this command resolves",
     )
     parser.add_argument("--detail", action="store_true", help="Emit the full proof-trigger payload as YAML")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -176,12 +174,10 @@ def main() -> int:
         payload.pop("changed_paths", None)
         payload["evidence_provenance"] = provenance
     if payload.get("configuration_status") == "broken":
-        rendered = json.dumps(payload, ensure_ascii=False, indent=2) if args.json else yaml_output.render_yaml(payload)
+        rendered = yaml_output.render_yaml(payload)
         print(rendered, file=sys.stderr, end="" if rendered.endswith("\n") else "\n")
         return 1
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    elif args.detail:
+    if args.detail:
         yaml_output.emit_yaml(payload)
     else:
         print(f"real_host={'required' if payload['required'] else 'not-required'}: {payload['reason']}")

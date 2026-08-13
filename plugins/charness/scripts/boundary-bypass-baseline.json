@@ -4,11 +4,11 @@
   "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
   "call_site_fingerprint_algo_version": "1",
   "summary": {
-    "candidate_count": 47,
+    "candidate_count": 48,
     "convertible_count": 0,
     "internal_boundary_count": 34,
-    "keep_boundary_count": 25,
-    "candidate_key_count": 47
+    "keep_boundary_count": 26,
+    "candidate_key_count": 48
   },
   "candidate_keys": [
     "06661433f0e37fc3",
@@ -29,6 +29,7 @@
     "49d95eaeb09e056f",
     "5493ebee5a359cb9",
     "58d8f43ecea03063",
+    "5aaa8310abddb4cc",
     "5e4d972e5574129b",
     "5e513ba08483e3dc",
     "5e810e663bf20edd",
@@ -40,19 +41,19 @@
     "8f4dcccce3e774b4",
     "8fef6017d0b758fc",
     "9337a774dfde198e",
-    "9e3fa6223ce5f0c8",
     "a1f129a58a967aef",
     "a2e58703680dd423",
+    "ab0ac3bc4108d15a",
     "b01f54994c12d25d",
     "b300d515f1f0ee1a",
     "b38232c4c4d88452",
     "b6f9c0cc608a652b",
-    "b9256854b81cb7b7",
     "bf01aab36e7fb624",
     "c210abf239e03765",
     "c7373cd57b8a60c7",
     "caa0c3208cf01abc",
     "d11a41b4d1b636a0",
+    "e47a116e9526f3c8",
     "ebd1be4c5afc46f4",
     "ed9d50431430820f",
     "f06293daee84ea6c",
@@ -188,12 +189,6 @@
       "test_file": "tests/quality_gates/test_maintainer_hooks.py",
       "import_safe_targets": [
         "scripts/validate_maintainer_setup.py"
-      ]
-    },
-    {
-      "test_file": "tests/quality_gates/test_migrate_backtick_file_refs.py",
-      "import_safe_targets": [
-        "scripts/migrate_backtick_file_refs.py"
       ]
     },
     {
@@ -394,6 +389,13 @@
       ]
     },
     {
+      "test_file": "tests/test_contract_register.py",
+      "import_safe_targets": [
+        "scripts/apply_contract_transition.py",
+        "scripts/record_contract_graduation_proposal.py"
+      ]
+    },
+    {
       "test_file": "tests/test_debug_artifact.py",
       "import_safe_targets": [
         "scripts/validate_debug_artifact.py"
@@ -415,6 +417,12 @@
       "test_file": "tests/test_ideation_artifact.py",
       "import_safe_targets": [
         "scripts/validate_ideation_artifact.py"
+      ]
+    },
+    {
+      "test_file": "tests/test_lesson_lifecycle.py",
+      "import_safe_targets": [
+        "scripts/record_lesson_lifecycle.py"
       ]
     },
     {
@@ -448,5 +456,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "5d8ebb29afa7352d5e77f14e682275f34041497aaa5e85cffa912778f6a2fe09"
+  "writer_integrity_sha256": "d02191fb5be76bdbf7ed47a251ae0788d0188b13629ec803d6603ffe560624f8"
 }

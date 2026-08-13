@@ -130,9 +130,6 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
     source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
-    legacy_skills = home_root / ".agents" / "skills"
-    legacy_skills.parent.mkdir(parents=True, exist_ok=True)
-    legacy_skills.symlink_to(CLI.parents[1] / "skills" / "public", target_is_directory=True)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
@@ -148,8 +145,6 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
     assert payload["codex_host_install"]["status"] == "skipped"
     assert payload["codex_host_install"]["reason"] == "codex-cli-missing"
     assert payload["host_next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
-    assert payload["removed_legacy_skills_symlink"] is True
-    assert "legacy_skills_symlink_removed" in payload["completed_actions"]
     marketplace = json.loads((home_root / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8"))
     assert marketplace["plugins"][0]["name"] == "charness"
     assert marketplace["plugins"][0]["source"]["path"] == "./.codex/plugins/charness"
@@ -159,8 +154,6 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
     assert "charness@corca-charness" in installed_plugins["plugins"]
     assert (home_root / ".local" / "bin" / "charness").is_file()
     assert (home_root / ".local" / "bin" / "claude-charness").is_file()
-    assert legacy_skills.exists() is False
-    assert legacy_skills.is_symlink() is False
 
 
 @pytest.mark.release_only
@@ -314,7 +307,6 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["claude_wrapper_present"] is True
     assert payload["codex_marketplace_entry"]["name"] == "charness"
     assert payload["codex_marketplace_entry"]["source"]["path"] == "./.codex/plugins/charness"
-    assert payload["legacy_skills_symlink_present"] is False
     assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] is None
     assert payload["codex_source_cache_drift"] is False

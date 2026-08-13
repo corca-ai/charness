@@ -57,7 +57,6 @@ def _args(**overrides: object) -> SimpleNamespace:
         "part": None,
         "set_version": None,
         "detail": True,
-        "json": True,
     }
     values.update(overrides)
     return SimpleNamespace(**values)
@@ -286,7 +285,7 @@ def test_release_run_planner_preserves_blocked_host_signal_in_publish_packet(tmp
 
 
 def test_release_run_planner_plain_output(capsys, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(json=False, detail=False))
+    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=False))
     monkeypatch.setattr(
         _PLANNER,
         "build_plan",
@@ -302,26 +301,22 @@ def test_release_run_planner_plain_output(capsys, monkeypatch: pytest.MonkeyPatc
     assert "next_action=inspect_only: choose target" in capsys.readouterr().out
 
 
-def test_release_run_planner_main_emits_yaml_detail_and_hidden_json_in_process(
+def test_release_run_planner_main_emits_yaml_detail_in_process(
     capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     plan = {"next_action": {"kind": "inspect_only", "reason": "test"}}
     monkeypatch.setattr(_PLANNER, "build_plan", lambda _args: plan)
     monkeypatch.setattr(_PLANNER.SKILL_RUNTIME, "arm_cli_timeout", lambda label: (lambda: None))
 
-    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=True, json=False))
+    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=True))
     assert _PLANNER.main() == 0
     assert yaml.safe_load(capsys.readouterr().out) == plan
-
-    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=False, json=True))
-    assert _PLANNER.main() == 0
-    assert json.loads(capsys.readouterr().out) == plan
 
 
 def test_release_run_planner_plain_output_names_required_real_host_scope(
     capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(json=False, detail=False))
+    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=False))
     monkeypatch.setattr(
         _PLANNER,
         "build_plan",
@@ -387,39 +382,6 @@ def test_release_run_planner_help_describes_all_options(
         option_block = re.sub(r"\s+", " ", output[match.start() : end])
         assert description in option_block, f"missing help for {option}: {description}"
     assert "--json" not in output
-
-
-@pytest.mark.parametrize(
-    ("script", "extra"),
-    [
-        ("check_fresh_checkout_probes.py", []),
-        ("check_requested_review_gate.py", ["--skip-commands"]),
-    ],
-)
-def test_release_gate_helpers_are_yaml_first_with_hidden_json_compatibility(
-    tmp_path: Path, script: str, extra: list[str]
-) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    env = _release_env(tmp_path, bin_dir)
-    command = REPO_ROOT / "skills" / "public" / "release" / "scripts" / script
-
-    detail = subprocess.run(
-        ["python3", str(command), "--repo-root", str(repo), *extra, "--detail"],
-        cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
-    )
-    compat = subprocess.run(
-        ["python3", str(command), "--repo-root", str(repo), *extra, "--json"],
-        cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
-    )
-    help_result = subprocess.run(
-        ["python3", str(command), "--help"],
-        cwd=REPO_ROOT, env=env, check=True, capture_output=True, text=True,
-    )
-
-    assert detail.returncode == compat.returncode == 0
-    assert yaml.safe_load(detail.stdout) == json.loads(compat.stdout)
-    assert "--detail" in help_result.stdout
-    assert "--json" not in help_result.stdout
 
 
 def test_release_run_planner_bootstrap_missing_raises(monkeypatch: pytest.MonkeyPatch) -> None:

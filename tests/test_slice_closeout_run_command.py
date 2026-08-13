@@ -25,10 +25,10 @@ def test_run_command_times_out_and_reports_progress(monkeypatch, tmp_path: Path,
 
     assert result["returncode"] == 124
     assert "timed out after 0.05s" in result["stderr"]
-    assert "." in capsys.readouterr().err
+    assert "HEARTBEAT [timeout-probe] elapsed=" in capsys.readouterr().err
 
 
-def test_run_command_wraps_progress_dots_every_eighty(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_run_command_emits_structured_heartbeats(monkeypatch, tmp_path: Path, capsys) -> None:
     class FakeProcess:
         returncode = 0
 
@@ -37,7 +37,7 @@ def test_run_command_wraps_progress_dots_every_eighty(monkeypatch, tmp_path: Pat
 
         def communicate(self, timeout=None):
             self.calls += 1
-            if self.calls <= 80:
+            if self.calls <= 2:
                 raise subprocess.TimeoutExpired(["fake"], timeout)
             return "", ""
 
@@ -49,5 +49,5 @@ def test_run_command_wraps_progress_dots_every_eighty(monkeypatch, tmp_path: Pat
 
     assert result["returncode"] == 0
     stderr = capsys.readouterr().err
-    assert "." * 80 in stderr
-    assert "\nPASS [progress-wrap]" in stderr
+    assert stderr.count("HEARTBEAT [progress-wrap] elapsed=0.0s") == 2
+    assert "PASS [progress-wrap]" in stderr

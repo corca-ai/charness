@@ -15,8 +15,8 @@ complete (declaration: `references/inventory-consumer-fields.json`).
 Every script command in this dispatch exposes the same agent-facing output
 contract: use compact `--summary` YAML as the first-read triage surface and
 switch to `--detail` YAML only when a finding earns full attribution or
-disposition. Hidden JSON compatibility is for programmatic consumers, not agent
-review. A summary is not complete evidence; it is the bounded index that keeps
+disposition. YAML is the only structured output contract; programmatic consumers
+must read that same payload. A summary is not complete evidence; it is the bounded index that keeps
 quality review from spending context before a candidate earns it. The existing
 YAML contract test derives this command list directly from this document and
 also inventories every `inventory_*.py` script, so neither a new dispatch entry

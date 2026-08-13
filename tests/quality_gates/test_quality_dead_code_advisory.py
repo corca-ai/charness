@@ -4,11 +4,12 @@ import ast
 import contextlib
 import importlib.util
 import io
-import json
 import os
 import sys
 import textwrap
 from pathlib import Path
+
+import yaml
 
 from .support import ROOT, init_git_repo
 
@@ -30,7 +31,7 @@ def _run_dead_code_advisory_stdout(monkeypatch, bin_dir: Path, *args: str) -> st
 
 
 def _run_dead_code_advisory(monkeypatch, bin_dir: Path, *args: str) -> dict:
-    return json.loads(_run_dead_code_advisory_stdout(monkeypatch, bin_dir, *args))
+    return yaml.safe_load(_run_dead_code_advisory_stdout(monkeypatch, bin_dir, *args))
 
 
 def _seed_fake_vulture(bin_dir: Path, *, sweep_finding: str | None) -> None:
@@ -75,7 +76,7 @@ def test_dead_code_advisory_reports_primary_and_sweep(tmp_path: Path, monkeypatc
     (repo / "scripts").mkdir()
     (repo / "scripts" / "example.py").write_text("def old_helper():\n    pass\n", encoding="utf-8")
 
-    payload = _run_dead_code_advisory(monkeypatch, bin_dir, "--repo-root", str(repo), "--json")
+    payload = _run_dead_code_advisory(monkeypatch, bin_dir, "--repo-root", str(repo), "--detail")
 
     assert payload["primary"]["status"] == "clean"
     assert payload["sweep"]["status"] == "findings"
@@ -104,7 +105,7 @@ def test_dead_code_advisory_reports_not_applicable_for_typescript_only_repo(
     init_git_repo(repo, "src/app.ts", "package.json")
 
     payload = _run_dead_code_advisory(
-        monkeypatch, bin_dir, "--repo-root", str(repo), "--json"
+        monkeypatch, bin_dir, "--repo-root", str(repo), "--detail"
     )
     human = _run_dead_code_advisory_stdout(
         monkeypatch, bin_dir, "--repo-root", str(repo)
@@ -131,7 +132,7 @@ def test_dead_code_advisory_reports_partial_for_mixed_language_repo(
     init_git_repo(repo, "scripts/helper.py", "src/app.ts")
 
     payload = _run_dead_code_advisory(
-        monkeypatch, bin_dir, "--repo-root", str(repo), "--json"
+        monkeypatch, bin_dir, "--repo-root", str(repo), "--detail"
     )
     human = _run_dead_code_advisory_stdout(
         monkeypatch, bin_dir, "--repo-root", str(repo)
@@ -165,7 +166,7 @@ def test_dead_code_advisory_explicit_path_scopes_non_python_census(
         str(repo),
         "--path",
         "scripts",
-        "--json",
+        "--detail",
     )
 
     assert payload["applicability"] == "applicable-python-scope"
@@ -207,7 +208,6 @@ def test_dead_code_advisory_summary_omits_full_command_and_findings(tmp_path: Pa
         "--repo-root",
         str(repo),
         "--summary",
-        "--json",
     )
 
     assert payload["summary_note"].startswith("summary is triage output")

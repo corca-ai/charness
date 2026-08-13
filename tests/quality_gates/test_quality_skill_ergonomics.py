@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+import yaml
 
 from .skill_ergonomics_support import run_inventory_skill_ergonomics as _run
 
@@ -48,10 +49,10 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
         str(repo),
         "--max-core-lines",
         "20",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert skill["skill_id"] == "demo"
     assert skill["skill_type"] == "public"
@@ -104,10 +105,10 @@ def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_pat
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert "portable_helper_path_ambiguity" in skill["heuristics"]
     assert any("installed-bundle portability" in item for item in skill["review_prompts"])
@@ -142,10 +143,10 @@ def test_inventory_skill_ergonomics_ignores_inline_code_for_pressure_terms(tmp_p
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert "mode_pressure_terms_present" not in skill["heuristics"]
 
@@ -181,11 +182,11 @@ def test_inventory_skill_ergonomics_flags_issue_and_dated_incident_anchors(tmp_p
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert "issue_anchor_in_core" in skill["heuristics"]
     assert "dated_incident_in_core" in skill["heuristics"]
@@ -229,11 +230,11 @@ def test_inventory_skill_ergonomics_reports_package_host_and_reference_subchecks
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert "portable_package_host_surface_reference" in skill["heuristics"]
     assert "reference_discoverability_gap" in skill["heuristics"]
@@ -260,11 +261,11 @@ def test_inventory_skill_ergonomics_ignores_cache_files_for_reference_discoverab
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert "reference_discoverability_gap" not in skill["heuristics"]
     assert payload["subcheck_counts"]["reference_discoverability"] == 0
@@ -296,11 +297,11 @@ def test_inventory_skill_ergonomics_scans_whole_portable_package_for_issue_ancho
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert skill["skill_type"] == "support"
     assert payload["package_issue_anchor_count"] == 2
@@ -335,11 +336,11 @@ def test_inventory_skill_ergonomics_allows_version_fields_and_portable_placehold
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert skill["package_issue_anchor_count"] == 0
     assert "portable_package_issue_anchor" not in skill["heuristics"]
@@ -371,11 +372,11 @@ def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explici
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "issue_anchor_in_core" not in payload["skills"][0]["heuristics"]
 
     (skill_dir / "SKILL.md").write_text(
@@ -398,11 +399,11 @@ def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explici
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "issue_anchor_in_core" in payload["skills"][0]["heuristics"]
     assert "portable_package_issue_anchor" in payload["skills"][0]["heuristics"]
 
@@ -446,11 +447,11 @@ def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> 
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert [skill["skill_path"] for skill in payload["skills"]] == [
         "packages/official-skills/acme-native/skills/anniversary-roster-sync/SKILL.md"
     ]
@@ -462,10 +463,10 @@ def test_inventory_skill_ergonomics_reports_unconfigured_when_no_skills(tmp_path
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "unconfigured"
     assert payload["scope_status"] == "unconfigured_no_skill_surface"
     assert payload["finding_status"] == "not_evaluated"
@@ -485,10 +486,10 @@ def test_inventory_skill_ergonomics_reports_clean_when_skills_present(tmp_path: 
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "clean"
     assert payload["scope_status"] == "scanned"
     assert payload["finding_status"] == "zero_heuristic_findings"
@@ -534,11 +535,11 @@ def test_inventory_skill_ergonomics_reports_configured_scope_empty(tmp_path: Pat
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "unconfigured"
     assert payload["scope_status"] == "configured_scope_empty"
     assert payload["finding_status"] == "not_evaluated"
@@ -555,11 +556,11 @@ def test_inventory_skill_ergonomics_reports_requested_scope_empty(tmp_path: Path
         str(repo),
         "--skill-path",
         "missing-skill",
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "clean"
     assert payload["scope_status"] == "empty_requested_scope"
     assert payload["finding_status"] == "not_evaluated"
@@ -579,11 +580,11 @@ def test_inventory_skill_ergonomics_marks_heuristic_findings_and_prose_review(tm
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["scope_status"] == "scanned"
     assert payload["finding_status"] == "heuristics_present"
     assert payload["prose_review_status"] == "required"
@@ -626,11 +627,11 @@ def test_inventory_skill_ergonomics_surfaces_invalid_adapter_as_best_effort(tmp_
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["adapter_load_mode"] == "permissive"
     assert payload["adapter_valid"] is False
     assert "unknown rule `typo_rule`" in payload["adapter_errors"][0]
@@ -668,10 +669,10 @@ def test_inventory_skill_ergonomics_skips_vendored_paths(tmp_path: Path) -> None
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     paths = [skill["skill_path"] for skill in payload["skills"]]
     assert paths == ["skills/public/demo/SKILL.md"]
 
@@ -716,10 +717,10 @@ def test_inventory_skill_ergonomics_runtime_install_accepts_skill_md_suffix(tmp_
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert skill["skill_type"] == "runtime_install"
     assert "portable_helper_path_ambiguity" not in skill["heuristics"]
@@ -766,10 +767,10 @@ def test_inventory_skill_ergonomics_runtime_install_skips_portable_helper_heuris
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skill = payload["skills"][0]
     assert skill["skill_type"] == "runtime_install"
     assert skill["package_issue_anchor_count"] == 0

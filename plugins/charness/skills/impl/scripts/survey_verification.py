@@ -52,7 +52,7 @@ class ToolCheck:
 
 def _parse_spec(spec: str) -> tuple[str, str, str | None]:
     if ":" not in spec:
-        return "command", spec, "Tool spec should use an explicit prefix; treating bare name as cmd:<name>"
+        return "unknown", spec, "Tool spec must use an explicit `cmd:` or `skill:` prefix"
     prefix, _, name = spec.partition(":")
     prefix = prefix.strip()
     name = name.strip()

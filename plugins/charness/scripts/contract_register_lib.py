@@ -105,26 +105,6 @@ def _committed_state(repo_root: Path, path: Path) -> dict[str, Any] | None:
         _fail(f"committed register is invalid JSON: {exc.msg}")
     if not isinstance(previous, dict) or previous.get("kind") != KIND:
         _fail("committed register has an unsupported shape")
-    if previous.get("schema_version") == 1:
-        required = {
-            "unit_budget",
-            "units",
-            "citation_events",
-            "catch_events",
-            "graduation_proposals",
-        }
-        if not required <= set(previous):
-            _fail("committed register has invalid append-only streams")
-        if previous["graduation_proposals"]:
-            _fail("committed schema-v1 proposals need explicit evidence-session migration")
-        return {
-            "unit_budget": previous["unit_budget"],
-            "seed_units": previous["units"],
-            "citation_events": previous["citation_events"],
-            "catch_events": previous["catch_events"],
-            "graduation_proposals": [],
-            "applied_transitions": [],
-        }
     if previous.get("schema_version") != SCHEMA_VERSION or not TOP_LEVEL_KEYS <= set(previous):
         _fail("committed register has an unsupported shape")
     return previous

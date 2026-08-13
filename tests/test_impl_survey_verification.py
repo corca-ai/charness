@@ -23,6 +23,16 @@ def _load_module():
     return module
 
 
+def test_parse_spec_refuses_bare_tool_name() -> None:
+    module = _load_module()
+
+    assert module._parse_spec("python3") == (
+        "unknown",
+        "python3",
+        "Tool spec must use an explicit `cmd:` or `skill:` prefix",
+    )
+
+
 def test_detect_lint_gate_empty_repo_returns_not_detected(tmp_path: Path) -> None:
     module = _load_module()
     result = module.detect_lint_gate(tmp_path)

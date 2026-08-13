@@ -7,6 +7,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/public/quality/scripts/inventory_cli_ergonomics.py"
 SPEC = importlib.util.spec_from_file_location("inventory_cli_ergonomics", SCRIPT)
@@ -24,7 +26,7 @@ def run_inventory(*args: str) -> dict[str, object]:
             assert inventory_cli.main() == 0
     finally:
         sys.argv = old_argv
-    return json.loads(stdout.getvalue())
+    return yaml.safe_load(stdout.getvalue())
 
 
 def test_inventory_cli_ergonomics_flags_flat_help_registry(tmp_path: Path) -> None:
@@ -45,7 +47,7 @@ def test_inventory_cli_ergonomics_flags_flat_help_registry(tmp_path: Path) -> No
     payload = run_inventory(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert payload["findings"][0]["type"] == "flat_help_without_grouping"
     assert payload["findings"][0]["command_count"] == 12
@@ -57,7 +59,7 @@ def test_inventory_cli_ergonomics_reports_unconfigured_when_nothing_to_scan(tmp_
     payload = run_inventory(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert payload["status"] == "unconfigured"
     assert payload["registries"] == []
@@ -90,7 +92,7 @@ def test_inventory_cli_ergonomics_skips_vendored_registries(tmp_path: Path) -> N
     payload = run_inventory(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert payload["status"] == "unconfigured"
     assert payload["registries"] == []
@@ -124,7 +126,7 @@ def test_inventory_cli_ergonomics_flags_cross_archetype_contract_overlap(tmp_pat
     payload = run_inventory(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     finding_types = {finding["type"] for finding in payload["findings"]}
     assert "cross_archetype_schema_overlap" in finding_types
@@ -135,7 +137,7 @@ def test_committed_cli_ergonomics_inputs_are_scanned_clean() -> None:
     payload = run_inventory(
         "--repo-root",
         str(ROOT),
-        "--json",
+        "--detail",
     )
     assert payload["status"] == "clean"
     assert payload["scope_classification"] == "scanned"

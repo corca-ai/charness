@@ -9,13 +9,6 @@
     },
     {
       "class": "intentional",
-      "id": "004895e66d5b4132",
-      "note": "same-file near-duplicate inside skills/public/setup/references/agent-docs-policy.md (120-121 vs 143-144): two deliberately parallel host-mapping example blocks that document the same Codex subagent mapping in the live-AGENTS.md and generated-template sections; surfaced as 'new' by scan rotation, both members untouched this session (#441 rotation class)",
-      "reviewed_at": "2026-07-17",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "0077076d77f6ae1b",
       "note": "a single `print(message, file=sys.stderr)` line shared by report_validation_failure (which then appends the scaffold hint) and debug's _exit_not_a_violation (which deliberately does NOT). The whole point of the second function is that it stops where the first continues, so collapsing them re-introduces the misleading hint on a non-violation exit; there is nothing left to centralize in one stderr write.",
       "reviewed_at": "2026-07-27",
@@ -72,6 +65,13 @@
     },
     {
       "class": "intentional",
+      "id": "0363443bac0d5b80",
+      "note": "The lesson and contract migration entrypoints have parallel argparse/error exits because both are directly executable operator commands. Their error domains and candidate validators differ; a shared main wrapper would hide each command's accepted source schema for a small fixed boundary.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "03d10d6a644edf28",
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
@@ -81,6 +81,7 @@
       "class": "intentional",
       "id": "0541b0f5e8d22e3c",
       "note": "Module-bootstrap import header shared by two mutation-lane scripts: the `sys.path` repo-root insertion plus the `from scripts.changed_line_run_trust import (...)` block. An import statement cannot be factored out without an indirection module, and this repo deliberately keeps each script's bootstrap local so an exported script has no hidden loader dependency. The duplication IS the contract that both scripts depend on the same run-trust helpers, and it is visible where a reader of either script looks.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -262,6 +263,7 @@
       "class": "intentional",
       "id": "122d976e89c4d200",
       "note": "The cross-skill `spec_from_file_location` loader tail. Skills are INDEPENDENTLY EXPORTED packages: `release`, `handoff` and `achieve` ship as separate installable units, so a shared loader helper would create exactly the cross-skill coupling this pattern exists to avoid -- a consumer installing one skill would need another. `release_issue_closeout.py` names the pattern in its own docstring as 'the established way this repo shares a skill-owned library across skill boundaries'.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -270,13 +272,6 @@
       "note": "a multi-line `print(f\"...\" f\"...\")` operator-message block, shared by seven untouched sites (slice_closeout_advisories x4, check_references_link_inventory, check_test_repo_copy_invariants) that validate_inventory_consumption's extracted exemption helper joined on 2026-08-01. The duplication IS the message-emitting shape this repo uses everywhere; the content of every member differs entirely. Extracting it would mean a print wrapper, which is what print already is. Pre-existing family, new membership from a helper extraction that the complexity gate required.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "13741926e48b3ac1",
-      "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -322,9 +317,23 @@
     },
     {
       "class": "intentional",
+      "id": "1a35087b318ae0f5",
+      "note": "Both migrations lock, read, build a domain-specific candidate, validate it, and atomically replace only on execute. Locking/replacement are already shared by lesson_ledger_writer_lib; callback extraction of the remaining transaction would obscure which validator owns each migration and its preservation contract.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "1a7af8a4fd3cd328",
       "note": "Ledger and register validators each unpack their independently-versioned top-level schemas. The superficial generator/container guard has different fields and downstream replay meaning, so centralizing it would couple independent verdict owners.",
       "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1aa1432e75549dbf",
+      "note": "Direct-execution scripts bind runtime_bootstrap helpers locally so source and exported-plugin copies start without an installed package. This is the established standalone-script preamble; extracting it would require the import path it establishes.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -368,13 +377,6 @@
       "note": "the repo-standard gate entrypoint block: `if __name__ == \"__main__\": try: sys.exit(main()) except ValidationError as exc: print(str(exc), file=sys.stderr); sys.exit(1)`. NINE members across nine unrelated gates, EIGHT of them untouched (validate_public_skill_validation, check_skill_contracts, check_supply_chain, validate_cautilus_scenarios, validate_claim_fidelity_specs, validate_presets, validate_public_skill_dogfood, validate_scenario_conditional_reads) -- the family predates this slice and surfaced as new only because check_plugin_doc_links joined it. Centralizing it would put every gate's exit code and stderr contract behind one shared runner, and each script would still have to spell out the indirection; same reasoning as the accepted runtime_bootstrap preamble family 02923daf7e01c82e.",
       "reviewed_at": "2026-08-04",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1e790839dc306944",
-      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape — de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
-      "reviewed_at": "2026-08-08",
-      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -469,6 +471,13 @@
     },
     {
       "class": "intentional",
+      "id": "2741014d80cbb8d1",
+      "note": "Lesson and contract committed-state readers deliberately keep schema migration at their separate durable-state owners. A generic git-show/schema adapter would couple two append-only formats while still requiring domain callbacks for every meaningful branch.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "2826323f1e95a766",
       "note": "one-line status delegate wrappers for two hook kinds; extracting the call would obscure the public names without reducing behavior duplication",
       "reviewed_at": "2026-07-13",
@@ -511,6 +520,13 @@
     },
     {
       "class": "intentional",
+      "id": "2bbfba9a896d597d",
+      "note": "Small nonblank-argument guards stay beside independently executable mutation commands so their operator-facing error prefixes name the command that refused. A shared two-line helper would erase that local ownership or require passing the same label back in.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "2d3c005af60a8720",
       "note": "the per-module `importlib` sibling-loader preamble shared by goal_artifact_blocked_matrix, goal_artifact_operator_queue and goal_artifact_backlog. Surfaced as NEW purely by rotation: this slice DELETED the now-dead `_H2` / `_mask_fences` lines from the first two after migrating them onto floor_grammar's `masked_section_body`, and removing that intervening text is what let the remaining preambles hash together. All three preambles predate this slice and none was edited. Not extractable: it is the bootstrap that makes cross-module loading possible in the first place, so a shared home would itself need loading by the same preamble.",
       "reviewed_at": "2026-08-08",
@@ -521,6 +537,13 @@
       "id": "2dd39753778c7cb1",
       "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable — intentional",
       "reviewed_at": "2026-07-02",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2e2265948baf9447",
+      "note": "Two untouched goal-artifact readers use the same short heading-normalization guard. The family surfaced from branch-wide baseline drift, not this slice; their downstream grammars and evidence verdicts are different, so extracting nine lines would couple independent proof readers without centralizing a shared policy.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -549,6 +572,13 @@
       "id": "2e98240a5f7205ac",
       "note": "same chunker per-stage CLI skeleton as the accepted 0bc23ea0000c6cf9 and e870767ba8b3d1ab families: parse_handoff_entries and draft_goal_from_chunk are separate pipeline executables, so their timeout/parse/try-finally lifecycle remains explicit. Their stage work, input resolution, refusal payloads, and rollback contracts differ; extracting the surrounding main would couple independent stages behind a generic runner and hide which stage owns a failure. Surfaced as a fingerprint rotation because this slice changed draft_goal_from_chunk while parse_handoff_entries stayed untouched; the repeated skeleton was pre-existing and no new shared behavior was introduced.",
       "reviewed_at": "2026-08-04",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2f28dbd7894a1aa9",
+      "note": "The contract transition and retention-report commands share only direct-execution bootstrap imports. Each owns a different payload and mutation boundary, so a common entrypoint module would add coupling without centralizing domain behavior.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -599,13 +629,6 @@
       "note": "argparse/re/date/Path + runtime_bootstrap preamble shared by validate_critique_artifacts.py and validate_retro_artifact.py; converged because both gained the same `report_validation_failure` alias when the scaffold-hint helper was extracted - i.e. this family is the SYMPTOM of correctly sharing a helper, not duplicated logic",
       "reviewed_at": "2026-07-25",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "322d067a80402fbc",
-      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
-      "reviewed_at": "2026-06-30",
-      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -695,6 +718,7 @@
       "class": "intentional",
       "id": "38b6a66e6b45e15b",
       "note": "The `from scripts.mutation_baseline_abort_lib import (...)` block shared by the Python and JS mutation-score readers. That both consume the same baseline-abort vocabulary is the point (#590's collateral-marker fix depends on it); the shared surface is already the lib, and only the import naming it repeats.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -743,12 +767,14 @@
       "class": "intentional",
       "id": "3a880c28d15655c6",
       "note": "The `issue_local_import` sibling-loader header inside the issue skill. Introduced when the #591 fix split the rung-1 floors into their own module; the header is how a module in that skill loads a sibling without assuming a package layout, and it is per-module by design so each file is independently loadable by `runpy.run_path`.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
       "class": "intentional",
       "id": "3b04b31b04638e4b",
       "note": "A bare `sys.stdout.flush()`, four times in one file. One line, no logic, and the four sites flush different preceding writes in a script whose output ordering matters under CI buffering. Below any extractable unit.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -763,6 +789,13 @@
       "id": "3ba9cf87673ea820",
       "note": "The premise preflight and reviewed-input identity modules independently hash byte payloads under separate ownership. This two-line standard-library helper is not a shared semantic contract and does not justify cross-surface coupling.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3bd0684aec91ff45",
+      "note": "Standard direct-CLI failure footer shared across independently executable repo scripts: call main, catch the command's bounded error set, print to stderr, exit 1. The two lesson entrypoints newly join an existing 18-member portability idiom; a shared runner would hide each command's accepted failure boundary and require the import bootstrapping it is meant to protect.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -848,13 +881,6 @@
       "note": "cross-skill package-root discovery for source and installed layouts; this is bootstrap-before-import code and cannot live in a shared imported helper without circularly assuming the path it resolves",
       "reviewed_at": "2026-07-11",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "40a4e156b1efd17f",
-      "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -1054,6 +1080,20 @@
     },
     {
       "class": "intentional",
+      "id": "51b0e19cfcb37ca9",
+      "note": "Contract citation, migration, and transition commands repeat pathlib/json/typing bootstrap and repository-local module loading. This is portability scaffolding across standalone scripts, not a shared contract algorithm.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "522e71b786781f14",
+      "note": "Artifact scaffold payloads deliberately share the dated-record/template/validator shape while retaining skill-owned section order and write semantics. The shared extractable behavior already lives in scaffold_artifact_lib; the remaining retro, critique, and ideation bodies are explicit consumer contracts whose generic extraction would hide which sections each artifact promises.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "52327b5f48f32b03",
       "note": "prompt-mutation coverage and survival CLIs both accumulate fatal problem strings before returning nonzero, but the problem domains and report contracts differ; a shared formatter would obscure the owning command semantics",
       "reviewed_at": "2026-07-09",
@@ -1152,10 +1192,10 @@
     },
     {
       "class": "intentional",
-      "id": "57a52ad013e764b8",
-      "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
-      "reviewed_at": "2026-07-02",
-      "surface": "doc"
+      "id": "58780d7957a78f50",
+      "note": "two adjacent arms of the resume phase-classification decision table, inside code MOVED verbatim out of publish_release_resume.py when that file hit its length cap (both members are the same new file, publish_release_resume_state.py). They share the `elif (<multi-line condition>):` + phase-assignment shape and nothing else: one selects `post-publication-final` from a tag/grandparent/close-ref/subject match, the other selects `prepared-claims-review` from a prepared-record/parent-message/claims-evidence match. Collapsing them would fuse two different phase conditions behind a table-driven indirection, and the ORDER of these arms is load-bearing (an earlier arm matching first is how the classifier disambiguates). Surfaced as new because the file is new; no member was edited.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
     },
     {
       "class": "intentional",
@@ -1253,6 +1293,13 @@
       "id": "5bdec49283c0883e",
       "note": "paired uninstall tails deliberately keep each standalone hook's ownership, result labels, and cleanup lifecycle visible; a cross-hook helper would add coupling",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5dd8e91d6747af1d",
+      "note": "Lesson and contract writers use the repo's explicit runtime_bootstrap block so each file remains directly runnable in source and plugin layouts. A shared import wrapper cannot be loaded until this boundary is already established.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -1355,6 +1402,13 @@
     },
     {
       "class": "intentional",
+      "id": "62a2d1c487bedb21",
+      "note": "Debug and retro planners intentionally expose parallel required-read and gate-packet assembly under the shared run-plan envelope. Each is a portable skill-local planner with different adapter evidence, artifacts, trust text, and next actions; centralizing the large-looking control flow would couple two independently shipped workflows while obscuring their declared reads.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "62e19bb7ee0fbe0a",
       "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
       "reviewed_at": "2026-07-05",
@@ -1427,6 +1481,7 @@
       "class": "intentional",
       "id": "68d2e9a0b8476c56",
       "note": "The whole `_load_<x>_lib()` function around the loader tail of 122d976e89c4d200, matched between the release and handoff skills. Same export-boundary reason: the duplication is what keeps each skill installable alone. Both copies carry the source-tree vs installed `skills/public/<id>` / `skills/<id>` layout fallback, which is the part that must not drift and is pinned by each skill's own tests.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1557,6 +1612,13 @@
     },
     {
       "class": "intentional",
+      "id": "765234fbcb826726",
+      "note": "Portable skill planners independently locate skill_runtime_bootstrap before they can import repository and sibling modules. The retro loader joins the existing release, quality, and debug entrypoint idiom; extracting it would require the very import path the block establishes.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "7677ff735fdc1767",
       "note": "the stdlib+runtime_bootstrap import preamble shared by check_issue_closeout_commit_msg.py (untouched) and parity_harness.py. Same portability-preamble family already accepted as d7021cae01c1a7b0 / 3547c7c6d66c1f10 / 8202a3238a3765a0 -- it is the block that makes a script runnable from either the authoring tree or the exported mirror, so it cannot itself be imported from somewhere.",
       "reviewed_at": "2026-08-04",
@@ -1588,6 +1650,20 @@
       "id": "7829f2db48725111",
       "note": "two-line sibling-loader bootstrap in independently executable issue scripts; extraction would require importing before the loader can resolve local modules",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "788dd6b32574af6a",
+      "note": "Lesson lifecycle events and contract graduation proposals both validate evidence arrays, but one owns state transitions and the other owns multi-session proposal evidence. Their field sets, refusals, and downstream authorization differ; merging validators would create a misleading generic evidence schema.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "79ba72c5ceb24784",
+      "note": "A single dictionary-comprehension idiom appears in independent register validation and lesson preview ranking. It is below an extractable behavioral unit and has different key/value semantics at each owner.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -1739,13 +1815,6 @@
     },
     {
       "class": "intentional",
-      "id": "80c5b9827dc39f57",
-      "note": "the root AGENTS.md owns the live Subagent Delegation contract, while setup's copy-ready Markdown template must retain the same section heading so a generated host document is self-contained; a shared heading label is required interface shape, not an extractable prose block",
-      "reviewed_at": "2026-07-14",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "80e081c349d539cd",
       "note": "The final-bundle planner's repository-relative path guard is local boundary plumbing with its own BundleError contract. Similar two-line guards in premise and reviewed-input identity code deliberately map unsafe paths to different owners and refusal semantics; extracting them would couple independent proof surfaces.",
       "reviewed_at": "2026-08-06",
@@ -1886,9 +1955,23 @@
     },
     {
       "class": "intentional",
+      "id": "8ccdd836fc988bd5",
+      "note": "Standalone CLIs consistently print a domain error to stderr and exit 1 from __main__. The shared shape is the operator process contract; exception types and recovery text remain command-owned, and wrapping every entrypoint would hide those boundaries.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "8dc7bd9985a9904b",
       "note": "Each conditional goal-artifact floor binds its OWN `RULE_DATE` to the shared `goal_artifact_floor_grammar.is_floor_in_scope` helper through a two-line `applies()`. The extraction this family suggests has already been done: the date comparison and the fail-closed-on-missing-`Created:` semantics live in the grammar, and what repeats is only the per-floor binding of a distinct landing date. Collapsing those bindings would mean one shared rule date across floors that landed on different days, which would retroactively apply a new floor to goals shaped before it existed — the exact corpus-reddening the grandfather exists to prevent. blocked-matrix, operator-queue, and backlog-recount are three independent floors, not three copies of one.",
       "reviewed_at": "2026-08-08",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8e7a5c3ad0c28272",
+      "note": "The lesson-ledger and contract-register top-level validators are deliberately parallel closed-schema replay owners. Sharing their orchestration would couple distinct migrations, committed prefixes, projection types, and live-source checks while leaving nearly every step callback-specific.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -1965,6 +2048,7 @@
       "class": "intentional",
       "id": "9622a9ac568c97dc",
       "note": "The argparse-then-resolve preamble of two cosmic-ray entrypoints. The shapes rhyme because both take the same repo-root/config/session paths, but the flag SETS differ and each script's defaults are its contract with the workflow that invokes it. Factoring the common half would leave a helper whose only job is to be half of two argument parsers.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1976,9 +2060,9 @@
     },
     {
       "class": "intentional",
-      "id": "96e51c5bfcefa69d",
-      "note": "direct-execution import guards across nose reporting, release entrypoints, and markdown preview bootstrap each resolve a different optional/local dependency before normal imports; a shared guard would itself require the import path it is meant to establish",
-      "reviewed_at": "2026-07-19",
+      "id": "96d10bf816ea4d7c",
+      "note": "Several domain libraries use the idiomatic two-line nonblank predicate. A helper for isinstance(str) plus strip would be longer at call sites and would couple unrelated validation error domains.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -2077,6 +2161,13 @@
       "id": "a0e35d08243887cc",
       "note": "scan rotation, not new duplication: all four members (check_command_docs.py, check_cli_skill_surface.py, check_skill_surface_preflight.py, validate_quality_reference_catalog.py) are untouched this session, and the family is the same repo-root import/alias preamble class as 02923daf7e01c82e. Surfaced by the nose 0.19.0 -> 0.20.0 regroup the gate's own scanner-version warning names (#441 rotation class)",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a0ff581916c94487",
+      "note": "Small argparse main functions across unrelated report CLIs share parse-arguments, render JSON-or-human, and return-status scaffolding. The continuity reporter owns a distinct payload and exit verdict; a generic CLI runner would couple unrelated command contracts for five idiom-sized lines and conceal its fail-closed return condition.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -2200,13 +2291,6 @@
     },
     {
       "class": "intentional",
-      "id": "aca9e00fc6c5c3ae",
-      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
-      "reviewed_at": "2026-06-30",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "ad0b426cd3ffde59",
       "note": "the issue skill package's sibling-loader preamble, shared by issue_close.py and issue_runtime.py: the `runpy.run_path(... 'issue_local_import.py')['sibling_loader'](__file__)` line plus the `_BACKEND = _load_local('issue_backend', ...)` binding. This is the public-skill portability contract (a skill script must not import repo-internal modules), and every module in the package carries it by design -- it is the mechanism that makes factoring impossible, since the loader must exist before anything can be loaded. Surfaced as new because the close-comment carrier extraction shifted line offsets in issue_close.py; neither preamble was edited.",
       "reviewed_at": "2026-08-10",
@@ -2277,8 +2361,16 @@
     },
     {
       "class": "intentional",
+      "id": "b1f18cabee56e5b0",
+      "note": "the run-plan envelope preamble shared by skills/public/issue/scripts/issue_plan.py and skills/public/release/scripts/plan_release_run_packets.py: `_ENVELOPE = SimpleNamespace(**runpy.run_path(<shared>/run_plan_envelope.py))` plus its imports. Two independently shipped skill packages each have to locate the shared envelope standalone, which is the portability preamble the nose advisory already names as its own blind spot (same class as 6d0d4a83a2cc4d8f and the runtime_bootstrap families). Extracting it would require a module that itself has to be located the same way. Surfaced as new only because removing the RELEASE_RECORD_PATH constant from the release packets header shifted the block; the issue_plan member is untouched.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "b364d71c0ccd3a87",
       "note": "Same `issue_local_import` header as 3a880c28d15655c6, matched between the new rung-1 floors module and the body-check module it loads. Same reason; the pair exists because the #591 fix split one module into two and each half keeps its own loader.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2299,6 +2391,7 @@
       "class": "intentional",
       "id": "b46d1872e6a9a6c6",
       "note": "The four-line `spec is None or spec.loader is None -> module_from_spec -> exec_module -> return` core of the same cross-skill loader, matched across nine call sites in four skills plus one repo script. Idiom-sized and export-boundary-required, per 122d976e89c4d200. Nine members is not nine decisions: it is one convention applied nine times, and centralizing it would make every skill depend on whichever package owned it.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2317,10 +2410,10 @@
     },
     {
       "class": "intentional",
-      "id": "b56c1479ef7c3d0e",
-      "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
+      "id": "b5926d67f5d48e30",
+      "note": "a two-line `if not <optional>: return None` / early-return idiom shared across six unrelated owners (filter_cosmic_ray_mutants, dup_ratchet_git, nose_baseline_lib, plan_quality_run, publish_release_adapter_preflight, and the new plan_release_prepared_stop). Five of the six members are untouched by this slice. Idiom-sized guard-clause plumbing across independent verdict contracts, the same class already accepted as 349f5d577fe2588b and 003780cc89f2ccfd; extraction would couple six owners through a helper that removes no behavior.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
     },
     {
       "class": "intentional",
@@ -2347,6 +2440,7 @@
       "class": "intentional",
       "id": "b7ab6ebb33a6a5c4",
       "note": "Same bootstrap-header shape as 0541b0f5e8d22e3c, matched across the mutation-lane pair `check_changed_line_mutation_coverage` / `check_js_mutation_score`. Same reason: an import block is not extractable without adding the loader indirection the bootstrap convention exists to avoid.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2477,13 +2571,6 @@
     },
     {
       "class": "intentional",
-      "id": "c4b45fc90f69c007",
-      "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "c4e77235f970e39f",
       "note": "two adapter-BACKEND parsers converged: issue's `_parse_backend` (issue_backend key) and release's `release_backend.py` (release_backend key). Same shape -- id/binary/commands validation with per-key errors -- and genuinely the same rule, which is why this slice's addition of a fourth field made them collide. NOT consolidated here, and the reason is a contract decision rather than reviewer taste: they read DIFFERENT adapter keys owned by different skills, and the release copy has already DRIFTED from the issue owner on rendering (`if subs and \"{\" in part` versus `if \"{\" in part`), so unifying them changes at least one skill's observable refusals. That measurement is filed as #559 and is this goal's slice 3; folding it into an identity-floor slice would make one commit's reviewable intent two unrelated things. The addition here is a single optional key with its own validation, not a re-derivation of the shared part.",
       "reviewed_at": "2026-08-08",
@@ -2491,9 +2578,9 @@
     },
     {
       "class": "intentional",
-      "id": "c5351f3d95c22d52",
-      "note": "Each validator owns its own artifact JSON load and strict top-level schema refusal. The superficial decoder shape is boundary plumbing; sharing it would blur ledger-v2 versus register-v1 error semantics and has no reusable domain rule.",
-      "reviewed_at": "2026-08-12",
+      "id": "cdc2ea75a3a07c62",
+      "note": "The lesson ledger and contract register each own committed-state loading plus exact current-schema refusal. The decoder shape is boundary plumbing; sharing it would couple independent evidence owners and blur their domain-specific errors without removing a reusable domain rule.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2589,6 +2676,13 @@
     },
     {
       "class": "intentional",
+      "id": "cc538b48f712d450",
+      "note": "The two public validator wrappers read one JSON artifact, delegate to their domain replay validator, and return domain counts. Separate wrappers preserve independent checker APIs and failure prefixes; a generic loader would add indirection around three straightforward lines.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "cd1ac723f819c3e3",
       "note": "an 8-line scope-note rendering span shared by `critique_enforcement_scope` and `artifact_run_scope`. Idiom-sized and the two render different vocabularies; slice 3 rotated it by adding the worktree-included wording.",
       "reviewed_at": "2026-08-01",
@@ -2641,6 +2735,13 @@
       "id": "d1cc108c53cf4b55",
       "note": "paired one-line list comprehensions select delivery versus feedback event types; separate named functions make the discriminated-union vocabulary explicit, and nose reports zero shared lines",
       "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d217dbc76c0052a4",
+      "note": "The lesson session and lesson score writers intentionally spell the same lock-read-replay-copy-replay-replace transaction around different mutations. Locking and atomic replacement are already shared by lesson_ledger_writer_lib; keeping the replay and mutation order explicit in each writer prevents a callback abstraction from hiding which state is validated before and after each ledger event.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -2722,16 +2823,16 @@
     },
     {
       "class": "intentional",
-      "id": "d7d30b23074c4bc9",
-      "note": "shared 2-line phase-file header across the lifecycle-before/during/after.md split (2026-07-04 north-star P2 split of achieve lifecycle.md); each phase file states its own scope+owner line by design so a phase-scoped read is self-describing",
-      "reviewed_at": "2026-07-04",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "d841abf10fa05445",
       "note": "portable achieve/handoff modules each load siblings through a local importlib boundary before shared imports are available; the repeated loader is the package portability seam and remains local by design",
       "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d84cff6f03c4f686",
+      "note": "check_lesson_ledger and check_contract_register remain distinct operator commands with parallel argparse and receipt rendering. Their counts and explicit-vs-broad gate roles differ; a shared CLI would collapse two independently documented surfaces.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -2774,6 +2875,13 @@
       "id": "d9cee12a7ea21510",
       "note": "Domain-local _fail helpers prefix user-visible refusals with their owning state surface. The shared two-line raise idiom across ledger, selection preview, register, and score authoring has no independent behavior to centralize; a generic helper would hide the owner of a verdict rather than remove real duplication.",
       "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "da0269eaabd82d86",
+      "note": "Contract mutation commands intentionally spell lock-read-validate-copy-mutate-validate-replace transactions at each event owner. Atomic replacement is shared already; a generic callback transaction would hide the exact pre/post validation order that prevents unauthorized projection writes.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -2967,13 +3075,6 @@
     },
     {
       "class": "intentional",
-      "id": "e89e772efc0ba634",
-      "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
-      "reviewed_at": "2026-06-24",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "e8e4df2c0dc2536d",
       "note": "The cross-layout skill-module loader (`skills/public/<skill>` vs installed `skills/<skill>`), duplicated across the commit-msg authorization helper and five untouched achieve/handoff callers. This IS the bootstrap: a module cannot import the shared loader without already having loaded something. Rotated from 54055904847649e6.",
       "reviewed_at": "2026-08-07",
@@ -3012,13 +3113,6 @@
       "id": "eb626a1775c6bc79",
       "note": "The score and session entrypoints retain local direct-script bootstrap/import headers so each executable clearly declares its runtime dependencies. This portability preamble cannot be extracted before the import path it establishes exists.",
       "reviewed_at": "2026-08-12",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "ed09029cd9749d2f",
-      "note": "quality modules keep a small sibling-module loader guard for directly executable source and plugin layouts; cli side-effect probing and document duplicate inventory bind unrelated owners, so extraction would add cross-tool bootstrap coupling",
-      "reviewed_at": "2026-07-19",
       "surface": "code"
     },
     {
@@ -3130,6 +3224,21 @@
       "class": "intentional",
       "id": "f7c0f2b5a4ddab24",
       "note": "Two adjacent `append_*_summary` functions in one file sharing their three-line write tail (`mkdir` / read-existing / append-write). Idiom-sized append-to-report shape; the functions differ in the lines they build, which is all either one is about.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f8cc48617039b140",
+      "note": "Two untouched goal-artifact grammar helpers share a short normalized-heading scan but return different evidence shapes. This branch-wide family did not arise from the lesson slice; a common iterator would add a proof-reader dependency while leaving each caller's distinct filtering and refusal contract in place.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f94b53fa331464df",
+      "note": "Lesson lifecycle and contract transition writers have similar candidate assembly because both cross reviewed mutation boundaries, but they use different ledgers, event grammars, dry-run semantics, and projection checks. A combined writer would falsely imply one lifecycle schema.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -3151,6 +3260,13 @@
       "id": "fa452ae476fcdef5",
       "note": "The final-bundle planner's small subprocess wrapper is intentionally local because it returns a BundleError and is used for candidate evidence, while the packaging validation script runs a different command contract. The repeated subprocess shape is idiomatic plumbing across independent owners, not extractable verdict logic.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fac53898f7fbd3ed",
+      "note": "Lesson and contract committed-state migration branches are intentionally located beside their respective schema validators. Centralizing old-version recognition would make two independent append-only formats share a release cadence and refusal vocabulary.",
+      "reviewed_at": "2026-08-13",
       "surface": "code"
     },
     {
@@ -3232,6 +3348,13 @@
     },
     {
       "class": "intentional",
+      "id": "ff43506a5871365c",
+      "note": "Lesson lifecycle migration and event recording both validate a candidate ledger under the same lock, but one transforms schema and the other appends a reviewed event. The shared writer already owns locking/atomic replacement; callback extraction of the rest would obscure their different authorization semantics.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "ff84c95bf1ddf43e",
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
@@ -3239,213 +3362,87 @@
     },
     {
       "class": "intentional",
-      "id": "58780d7957a78f50",
-      "note": "two adjacent arms of the resume phase-classification decision table, inside code MOVED verbatim out of publish_release_resume.py when that file hit its length cap (both members are the same new file, publish_release_resume_state.py). They share the `elif (<multi-line condition>):` + phase-assignment shape and nothing else: one selects `post-publication-final` from a tag/grandparent/close-ref/subject match, the other selects `prepared-claims-review` from a prepared-record/parent-message/claims-evidence match. Collapsing them would fuse two different phase conditions behind a table-driven indirection, and the ORDER of these arms is load-bearing (an earlier arm matching first is how the classifier disambiguates). Surfaced as new because the file is new; no member was edited.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "004895e66d5b4132",
+      "note": "same-file near-duplicate inside skills/public/setup/references/agent-docs-policy.md (120-121 vs 143-144): two deliberately parallel host-mapping example blocks that document the same Codex subagent mapping in the live-AGENTS.md and generated-template sections; surfaced as 'new' by scan rotation, both members untouched this session (#441 rotation class)",
+      "reviewed_at": "2026-07-17",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "b1f18cabee56e5b0",
-      "note": "the run-plan envelope preamble shared by skills/public/issue/scripts/issue_plan.py and skills/public/release/scripts/plan_release_run_packets.py: `_ENVELOPE = SimpleNamespace(**runpy.run_path(<shared>/run_plan_envelope.py))` plus its imports. Two independently shipped skill packages each have to locate the shared envelope standalone, which is the portability preamble the nose advisory already names as its own blind spot (same class as 6d0d4a83a2cc4d8f and the runtime_bootstrap families). Extracting it would require a module that itself has to be located the same way. Surfaced as new only because removing the RELEASE_RECORD_PATH constant from the release packets header shifted the block; the issue_plan member is untouched.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "13741926e48b3ac1",
+      "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "b5926d67f5d48e30",
-      "note": "a two-line `if not <optional>: return None` / early-return idiom shared across six unrelated owners (filter_cosmic_ray_mutants, dup_ratchet_git, nose_baseline_lib, plan_quality_run, publish_release_adapter_preflight, and the new plan_release_prepared_stop). Five of the six members are untouched by this slice. Idiom-sized guard-clause plumbing across independent verdict contracts, the same class already accepted as 349f5d577fe2588b and 003780cc89f2ccfd; extraction would couple six owners through a helper that removes no behavior.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "1e790839dc306944",
+      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape — de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
+      "reviewed_at": "2026-08-08",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "2e2265948baf9447",
-      "note": "Two untouched goal-artifact readers use the same short heading-normalization guard. The family surfaced from branch-wide baseline drift, not this slice; their downstream grammars and evidence verdicts are different, so extracting nine lines would couple independent proof readers without centralizing a shared policy.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "322d067a80402fbc",
+      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
+      "reviewed_at": "2026-06-30",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "3bd0684aec91ff45",
-      "note": "Standard direct-CLI failure footer shared across independently executable repo scripts: call main, catch the command's bounded error set, print to stderr, exit 1. The two lesson entrypoints newly join an existing 18-member portability idiom; a shared runner would hide each command's accepted failure boundary and require the import bootstrapping it is meant to protect.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "40a4e156b1efd17f",
+      "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "522e71b786781f14",
-      "note": "Artifact scaffold payloads deliberately share the dated-record/template/validator shape while retaining skill-owned section order and write semantics. The shared extractable behavior already lives in scaffold_artifact_lib; the remaining retro, critique, and ideation bodies are explicit consumer contracts whose generic extraction would hide which sections each artifact promises.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "57a52ad013e764b8",
+      "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
+      "reviewed_at": "2026-07-02",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "62a2d1c487bedb21",
-      "note": "Debug and retro planners intentionally expose parallel required-read and gate-packet assembly under the shared run-plan envelope. Each is a portable skill-local planner with different adapter evidence, artifacts, trust text, and next actions; centralizing the large-looking control flow would couple two independently shipped workflows while obscuring their declared reads.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "80c5b9827dc39f57",
+      "note": "the root AGENTS.md owns the live Subagent Delegation contract, while setup's copy-ready Markdown template must retain the same section heading so a generated host document is self-contained; a shared heading label is required interface shape, not an extractable prose block",
+      "reviewed_at": "2026-07-14",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "765234fbcb826726",
-      "note": "Portable skill planners independently locate skill_runtime_bootstrap before they can import repository and sibling modules. The retro loader joins the existing release, quality, and debug entrypoint idiom; extracting it would require the very import path the block establishes.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "aca9e00fc6c5c3ae",
+      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
+      "reviewed_at": "2026-06-30",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "a0ff581916c94487",
-      "note": "Small argparse main functions across unrelated report CLIs share parse-arguments, render JSON-or-human, and return-status scaffolding. The continuity reporter owns a distinct payload and exit verdict; a generic CLI runner would couple unrelated command contracts for five idiom-sized lines and conceal its fail-closed return condition.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "b56c1479ef7c3d0e",
+      "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "d217dbc76c0052a4",
-      "note": "The lesson session and lesson score writers intentionally spell the same lock-read-replay-copy-replay-replace transaction around different mutations. Locking and atomic replacement are already shared by lesson_ledger_writer_lib; keeping the replay and mutation order explicit in each writer prevents a callback abstraction from hiding which state is validated before and after each ledger event.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "c4b45fc90f69c007",
+      "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "f8cc48617039b140",
-      "note": "Two untouched goal-artifact grammar helpers share a short normalized-heading scan but return different evidence shapes. This branch-wide family did not arise from the lesson slice; a common iterator would add a proof-reader dependency while leaving each caller's distinct filtering and refusal contract in place.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "d7d30b23074c4bc9",
+      "note": "shared 2-line phase-file header across the lifecycle-before/during/after.md split (2026-07-04 north-star P2 split of achieve lifecycle.md); each phase file states its own scope+owner line by design so a phase-scoped read is self-describing",
+      "reviewed_at": "2026-07-04",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "0363443bac0d5b80",
-      "note": "The lesson and contract migration entrypoints have parallel argparse/error exits because both are directly executable operator commands. Their error domains and candidate validators differ; a shared main wrapper would hide each command's accepted source schema for a small fixed boundary.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1a35087b318ae0f5",
-      "note": "Both migrations lock, read, build a domain-specific candidate, validate it, and atomically replace only on execute. Locking/replacement are already shared by lesson_ledger_writer_lib; callback extraction of the remaining transaction would obscure which validator owns each migration and its preservation contract.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1aa1432e75549dbf",
-      "note": "Direct-execution scripts bind runtime_bootstrap helpers locally so source and exported-plugin copies start without an installed package. This is the established standalone-script preamble; extracting it would require the import path it establishes.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2741014d80cbb8d1",
-      "note": "Lesson and contract committed-state readers deliberately keep schema migration at their separate durable-state owners. A generic git-show/schema adapter would couple two append-only formats while still requiring domain callbacks for every meaningful branch.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2bbfba9a896d597d",
-      "note": "Small nonblank-argument guards stay beside independently executable mutation commands so their operator-facing error prefixes name the command that refused. A shared two-line helper would erase that local ownership or require passing the same label back in.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2f28dbd7894a1aa9",
-      "note": "The contract transition and retention-report commands share only direct-execution bootstrap imports. Each owns a different payload and mutation boundary, so a common entrypoint module would add coupling without centralizing domain behavior.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "51b0e19cfcb37ca9",
-      "note": "Contract citation, migration, and transition commands repeat pathlib/json/typing bootstrap and repository-local module loading. This is portability scaffolding across standalone scripts, not a shared contract algorithm.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "5dd8e91d6747af1d",
-      "note": "Lesson and contract writers use the repo's explicit runtime_bootstrap block so each file remains directly runnable in source and plugin layouts. A shared import wrapper cannot be loaded until this boundary is already established.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "788dd6b32574af6a",
-      "note": "Lesson lifecycle events and contract graduation proposals both validate evidence arrays, but one owns state transitions and the other owns multi-session proposal evidence. Their field sets, refusals, and downstream authorization differ; merging validators would create a misleading generic evidence schema.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "79ba72c5ceb24784",
-      "note": "A single dictionary-comprehension idiom appears in independent register validation and lesson preview ranking. It is below an extractable behavioral unit and has different key/value semantics at each owner.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "8ccdd836fc988bd5",
-      "note": "Standalone CLIs consistently print a domain error to stderr and exit 1 from __main__. The shared shape is the operator process contract; exception types and recovery text remain command-owned, and wrapping every entrypoint would hide those boundaries.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "8e7a5c3ad0c28272",
-      "note": "The lesson-ledger and contract-register top-level validators are deliberately parallel closed-schema replay owners. Sharing their orchestration would couple distinct migrations, committed prefixes, projection types, and live-source checks while leaving nearly every step callback-specific.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "96d10bf816ea4d7c",
-      "note": "Several domain libraries use the idiomatic two-line nonblank predicate. A helper for isinstance(str) plus strip would be longer at call sites and would couple unrelated validation error domains.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "cc538b48f712d450",
-      "note": "The two public validator wrappers read one JSON artifact, delegate to their domain replay validator, and return domain counts. Separate wrappers preserve independent checker APIs and failure prefixes; a generic loader would add indirection around three straightforward lines.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d84cff6f03c4f686",
-      "note": "check_lesson_ledger and check_contract_register remain distinct operator commands with parallel argparse and receipt rendering. Their counts and explicit-vs-broad gate roles differ; a shared CLI would collapse two independently documented surfaces.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "da0269eaabd82d86",
-      "note": "Contract mutation commands intentionally spell lock-read-validate-copy-mutate-validate-replace transactions at each event owner. Atomic replacement is shared already; a generic callback transaction would hide the exact pre/post validation order that prevents unauthorized projection writes.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "f94b53fa331464df",
-      "note": "Lesson lifecycle and contract transition writers have similar candidate assembly because both cross reviewed mutation boundaries, but they use different ledgers, event grammars, dry-run semantics, and projection checks. A combined writer would falsely imply one lifecycle schema.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "fac53898f7fbd3ed",
-      "note": "Lesson and contract committed-state migration branches are intentionally located beside their respective schema validators. Centralizing old-version recognition would make two independent append-only formats share a release cadence and refusal vocabulary.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "ff43506a5871365c",
-      "note": "Lesson lifecycle migration and event recording both validate a candidate ledger under the same lock, but one transforms schema and the other appends a reviewed event. The shared writer already owns locking/atomic replacement; callback extraction of the rest would obscure their different authorization semantics.",
-      "reviewed_at": "2026-08-13",
-      "surface": "code"
+      "id": "e89e772efc0ba634",
+      "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
+      "reviewed_at": "2026-06-24",
+      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

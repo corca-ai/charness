@@ -5,6 +5,8 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
+import yaml
+
 
 def run_setup_inspect_states(
     root: Path,
@@ -207,9 +209,9 @@ def run_setup_compact_skill_routing_discoverability(
     with tempfile.TemporaryDirectory(prefix="charness-eval-setup-routing-") as tmpdir:
         tmp = Path(tmpdir)
 
-        compact_result = run_command(["python3", str(render_script), "--repo-root", str(tmp), "--json"], cwd=root)
+        compact_result = run_command(["python3", str(render_script), "--repo-root", str(tmp), "--detail"], cwd=root)
         expect_success(compact_result, "setup compact skill routing")
-        compact = json.loads(compact_result.stdout)
+        compact = yaml.safe_load(compact_result.stdout)
         if compact.get("skill_routing_mode") != "compact":
             raise error_type(f"setup compact skill routing: unexpected mode {compact.get('skill_routing_mode')!r}")
         if compact.get("skill_routing_mode_source") != "default":

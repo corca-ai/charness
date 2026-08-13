@@ -93,25 +93,15 @@ def test_reviewed_input_identity_is_ordered_and_content_addressed(tmp_path: Path
     assert edited["identity_sha256"] != staged_new["identity_sha256"]
 
 
-def test_v1_identities_still_verify_under_their_own_algorithm(tmp_path: Path) -> None:
+def test_noncurrent_identity_algorithm_is_refused(tmp_path: Path) -> None:
     _init_identity_repo(tmp_path)
-    (tmp_path / "reviewed.txt").write_text("unstaged\n", encoding="utf-8")
-    legacy = build_reviewed_input_identity(
-        repo_root=tmp_path, reviewed_paths=["reviewed.txt"], algorithm="sha256-v1"
+    current = build_reviewed_input_identity(
+        repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
     )
-    assert legacy["algorithm"] == "sha256-v1"
-    assert "auto_excluded_paths" not in legacy
-    assert verify_reviewed_input_identity(tmp_path, legacy) == (True, "current")
-
-    # A v1 binding keeps v1 semantics: staging a reviewed path stales it, as it
-    # always did. Only new packets get the content-addressed rule.
-    _run_git(tmp_path, "add", ".")
-    assert verify_reviewed_input_identity(tmp_path, legacy)[0] is False
-
-    unsupported = dict(legacy, algorithm="sha256-v9")
-    ok, reason = verify_reviewed_input_identity(tmp_path, unsupported)
+    retired = dict(current, algorithm="sha256-v1")
+    ok, reason = verify_reviewed_input_identity(tmp_path, retired)
     assert not ok
-    assert "unsupported reviewed input identity algorithm" in reason
+    assert "must use `sha256-v2`" in reason
 
 
 def test_directory_reviewed_path_is_rejected(tmp_path: Path) -> None:

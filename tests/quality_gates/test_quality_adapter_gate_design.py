@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import yaml
@@ -29,9 +28,9 @@ def test_quality_inventory_adapter_gate_design_emits_required_classes(tmp_path: 
         encoding="utf-8",
     )
 
-    result = _run_adapter_gate_design("--repo-root", str(repo), "--json")
+    result = _run_adapter_gate_design("--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert set(payload["finding_classes"]) == {
         "structural_fact",
         "contextual_recommendation",
@@ -75,9 +74,9 @@ def test_quality_inventory_adapter_gate_design_uses_configured_review_scope(tmp_
         encoding="utf-8",
     )
 
-    result = _run_adapter_gate_design("--repo-root", str(repo), "--json")
+    result = _run_adapter_gate_design("--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["review_scope_source"].endswith(".agents/quality-adapter.yaml")
     assert "custom/review_policy.py" in payload["reviewed_paths"]
     assert "scripts/ignored_policy.py" not in payload["reviewed_paths"]
@@ -89,10 +88,10 @@ def test_quality_inventory_adapter_gate_design_defaults_to_yaml_with_json_compat
     repo = seed_quality_repo(tmp_path)
 
     default = _run_adapter_gate_design("--repo-root", str(repo))
-    detail_json = _run_adapter_gate_design("--repo-root", str(repo), "--detail", "--json")
+    detail_json = _run_adapter_gate_design("--repo-root", str(repo), "--detail")
     summary = _run_adapter_gate_design("--repo-root", str(repo), "--summary")
-    summary_json = _run_adapter_gate_design("--repo-root", str(repo), "--summary", "--json")
+    summary_json = _run_adapter_gate_design("--repo-root", str(repo), "--summary")
 
     assert default.returncode == detail_json.returncode == summary.returncode == summary_json.returncode == 0
-    assert yaml.safe_load(default.stdout) == json.loads(detail_json.stdout)
-    assert yaml.safe_load(summary.stdout) == json.loads(summary_json.stdout)
+    assert yaml.safe_load(default.stdout) == yaml.safe_load(detail_json.stdout)
+    assert yaml.safe_load(summary.stdout) == yaml.safe_load(summary_json.stdout)

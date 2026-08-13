@@ -11,9 +11,8 @@ from pathlib import Path
 from typing import Any
 
 ALGORITHM = "sha256-v2"
-SUPPORTED_ALGORITHMS = ("sha256-v1", "sha256-v2")
-# v2 answers #460: v1 folded the index/worktree split and the untracked-set membership
-# into the digest, so a plain `git add` of an unchanged reviewed path stale-flagged a
+# The identity ignores the index/worktree split and untracked-set membership,
+# so a plain `git add` of an unchanged reviewed path does not stale-flag a
 # binding that was current a second earlier. In working-tree mode the bytes the
 # reviewers actually read are already covered by `reviewed_content`, so v2 keeps these
 # fields as provenance and drops them from the digest.
@@ -23,7 +22,7 @@ WORKING_TREE_PROVENANCE_FIELDS = (
     "unstaged_patch_sha256",
     "declared_untracked",
 )
-# Never digested in v2: what the auto sweep dropped is a report about the selection,
+# Never digested: what the auto sweep dropped is a report about the selection,
 # not an input, and `reviewed_paths` is the binding record of what was selected.
 PROVENANCE_FIELDS = ("auto_excluded_paths",)
 ARTIFACT_HEADING = "## Reviewed Input Identity"
@@ -99,19 +98,15 @@ def _checked_path(repo_root: Path, path: str) -> Path:
     return candidate
 
 
-def _worktree_content_sha256(repo_root: Path, path: str, algorithm: str = ALGORITHM) -> str | None:
+def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
     try:
         candidate = _checked_path(repo_root, path)
         if candidate.is_symlink():
             return _sha256(b"symlink\0" + os.fsencode(os.readlink(candidate)))
         if not candidate.is_file():
             return None
-        if algorithm == "sha256-v1":
-            return _sha256(b"file\0" + candidate.read_bytes())
-        # v2 folds the exec bit into the content digest. v1 caught a mode-only
-        # change through the (then-digested) unstaged patch bytes; dropping those
-        # from the digest would otherwise let `chmod +x` on a reviewed script pass
-        # as unchanged, since its bytes are identical.
+        # The exec bit belongs in the content digest: otherwise `chmod +x` on a
+        # reviewed script would pass as unchanged because its bytes are identical.
         mode_tag = b"x\0" if candidate.stat().st_mode & 0o111 else b"-\0"
         return _sha256(b"file\0" + mode_tag + candidate.read_bytes())
     except OSError:
@@ -119,10 +114,10 @@ def _worktree_content_sha256(repo_root: Path, path: str, algorithm: str = ALGORI
 
 
 def _unavailable(
-    reviewed_paths: list[str] | None, changed_ref: str | None, reason: str, algorithm: str = ALGORITHM
+    reviewed_paths: list[str] | None, changed_ref: str | None, reason: str
 ) -> dict[str, Any]:
     components = {
-        "algorithm": algorithm,
+        "algorithm": ALGORITHM,
         "status": "unavailable",
         "reason": reason,
         "reviewed_paths": sorted(set(reviewed_paths or [])),
@@ -134,11 +129,8 @@ def _unavailable(
 def _with_identity_digest(components: dict[str, Any]) -> dict[str, Any]:
     digest_components = dict(components)
     provenance_only = components.get("base_head_role") == "provenance-only"
-    if components.get("algorithm") == "sha256-v2":
-        for field in PROVENANCE_FIELDS + (WORKING_TREE_PROVENANCE_FIELDS if provenance_only else ()):
-            digest_components.pop(field, None)
-    elif provenance_only:
-        digest_components.pop("base_head", None)
+    for field in PROVENANCE_FIELDS + (WORKING_TREE_PROVENANCE_FIELDS if provenance_only else ()):
+        digest_components.pop(field, None)
     canonical = json.dumps(digest_components, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return {**components, "identity_sha256": _sha256(canonical.encode("utf-8"))}
 
@@ -150,14 +142,11 @@ def build_reviewed_input_identity(
     changed_ref: str | None = None,
     excluded_paths: list[str] | None = None,
     excluded_prefixes: list[str] | None = None,
-    algorithm: str = ALGORITHM,
 ) -> dict[str, Any]:
-    if algorithm not in SUPPORTED_ALGORITHMS:
-        raise ValueError(f"unsupported reviewed input identity algorithm `{algorithm}`")
     try:
         _git_bytes(repo_root, "rev-parse", "--is-inside-work-tree")
     except ValueError as exc:
-        return _unavailable(reviewed_paths, changed_ref, str(exc), algorithm)
+        return _unavailable(reviewed_paths, changed_ref, str(exc))
 
     auto_excluded: list[str] = []
     if reviewed_paths is None:
@@ -176,9 +165,7 @@ def build_reviewed_input_identity(
             continue
         candidate = _checked_path(repo_root, path)
         # A directory binds NOTHING in working-tree mode: its content digest is
-        # `null` and stays `null` however its files change. v1 accidentally
-        # covered it through the digested patch bytes (a directory pathspec
-        # sweeps everything beneath it); v2 must reject it outright rather than
+        # `null` and stays `null` however its files change. Reject it rather than
         # issue a binding that can never go stale.
         if candidate.is_dir() and not candidate.is_symlink():
             raise ValueError(
@@ -218,14 +205,14 @@ def build_reviewed_input_identity(
             content = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
             digest = _sha256(content) if content is not None else None
         else:
-            digest = _worktree_content_sha256(repo_root, path, algorithm)
+            digest = _worktree_content_sha256(repo_root, path)
         entry = {"path": path, "content_sha256": digest}
         reviewed_content.append(entry)
         if path in untracked:
             declared_untracked.append(entry)
 
     captured: dict[str, Any] = {
-        "algorithm": algorithm,
+        "algorithm": ALGORITHM,
         "status": "captured",
         "mode": "changed-ref" if changed_ref else "working-tree",
         "changed_ref": changed_ref,
@@ -239,14 +226,15 @@ def build_reviewed_input_identity(
         "unstaged_patch_sha256": _sha256(unstaged_patch),
         "declared_untracked": declared_untracked,
     }
-    if algorithm == "sha256-v2":
-        captured["auto_excluded_paths"] = auto_excluded
+    captured["auto_excluded_paths"] = auto_excluded
     return _with_identity_digest(captured)
 
 
 def verify_reviewed_input_identity(repo_root: Path, identity: dict[str, Any]) -> tuple[bool, str]:
     if identity.get("status") != "captured":
         return False, "reviewed input identity was unavailable when the packet was produced"
+    if identity.get("algorithm") != ALGORITHM:
+        return False, f"reviewed input identity must use `{ALGORITHM}`"
     if not identity.get("reviewed_paths"):
         # An empty path set digests to the same constant in every repo forever, so
         # it would verify as `current` while proving nothing. Reject it as a
@@ -257,9 +245,6 @@ def verify_reviewed_input_identity(repo_root: Path, identity: dict[str, Any]) ->
             repo_root=repo_root,
             reviewed_paths=list(identity["reviewed_paths"]),
             changed_ref=identity.get("changed_ref"),
-            # Recompute under the algorithm the packet was produced with, so a digest
-            # rule change does not retroactively stale every binding already written.
-            algorithm=identity.get("algorithm", "sha256-v1"),
         )
     except (KeyError, TypeError, ValueError) as exc:
         return False, f"cannot reconstruct reviewed input identity: {exc}"

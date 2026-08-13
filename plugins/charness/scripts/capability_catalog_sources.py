@@ -33,10 +33,6 @@ TEXT_REPLACEMENTS = {
 }
 ADAPTER_CANDIDATES = (
     Path(".agents/capability-catalog-adapter.yaml"),
-    Path(".codex/capability-catalog-adapter.yaml"),
-    Path(".claude/capability-catalog-adapter.yaml"),
-    Path("docs/capability-catalog-adapter.yaml"),
-    Path("capability-catalog-adapter.yaml"),
 )
 
 

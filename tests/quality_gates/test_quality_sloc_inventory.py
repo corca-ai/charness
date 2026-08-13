@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
+
+import yaml
 
 from .support import run_script
 
@@ -26,10 +27,10 @@ def test_inventory_sloc_reports_degraded_when_tokei_missing(tmp_path: Path) -> N
     repo.mkdir()
     (repo / "main.py").write_text("print('hi')\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", env=_path_without_tokei(tmp_path))
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", env=_path_without_tokei(tmp_path))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "degraded"
     assert payload["engine"] == "tokei"
     assert payload["tokei_version"] is None
@@ -56,17 +57,17 @@ def test_inventory_sloc_ignores_mutable_charness_runtime_state(tmp_path: Path) -
     (repo / "main.py").write_text("print('versioned source')\n", encoding="utf-8")
     runtime_record.write_text('{"phase":"before"}\n', encoding="utf-8")
 
-    before = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    before = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert before.returncode == 0, before.stderr
-    before_payload = json.loads(before.stdout)
+    before_payload = yaml.safe_load(before.stdout)
     assert before_payload["status"] == "ok"
     assert ".charness" in before_payload["exclude"]
 
     runtime_record.write_text('{"phase":"after","detail":"' + ("x" * 20_000) + '"}\n', encoding="utf-8")
-    after = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    after = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
 
     assert after.returncode == 0, after.stderr
-    after_payload = json.loads(after.stdout)
+    after_payload = yaml.safe_load(after.stdout)
     assert after_payload["totals"] == before_payload["totals"]
     assert after_payload["languages"] == before_payload["languages"]
 
@@ -77,15 +78,15 @@ def test_inventory_sloc_output_does_not_measure_itself(tmp_path: Path) -> None:
     repo.mkdir()
     (repo / "main.py").write_text("print('versioned source')\n", encoding="utf-8")
 
-    first = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--json")
+    first = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--detail")
     assert first.returncode == 0, first.stderr
     first_bytes = output.read_bytes()
 
-    second = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--json")
+    second = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--detail")
 
     assert second.returncode == 0, second.stderr
     assert output.read_bytes() == first_bytes
-    payload = json.loads(second.stdout)
+    payload = yaml.safe_load(second.stdout)
     assert payload["languages"]["Python"]["files"] == 1
     assert all("reports/current.json" not in item for item in payload["exclude"])
 
@@ -98,10 +99,10 @@ def test_inventory_sloc_keeps_source_beneath_same_named_directory(tmp_path: Path
     (repo / "main.py").write_text("print('main')\n", encoding="utf-8")
     same_named_source.write_text('{"must_remain_visible":true}\n', encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--detail")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["languages"]["Python"]["files"] == 1
     assert payload["languages"]["JSON"]["files"] == 1
 
@@ -113,11 +114,11 @@ def test_inventory_sloc_treats_output_metacharacters_as_literal_path(tmp_path: P
     legitimate_source.parent.mkdir(parents=True)
     legitimate_source.write_text('{"source":true}\n', encoding="utf-8")
 
-    first = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--json")
+    first = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--detail")
     assert first.returncode == 0, first.stderr
     first_bytes = output.read_bytes()
-    second = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--json")
+    second = run_script(SCRIPT, "--repo-root", str(repo), "--output", str(output), "--detail")
 
     assert second.returncode == 0, second.stderr
     assert output.read_bytes() == first_bytes
-    assert json.loads(second.stdout)["languages"]["JSON"]["files"] == 1
+    assert yaml.safe_load(second.stdout)["languages"]["JSON"]["files"] == 1

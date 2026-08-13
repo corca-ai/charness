@@ -20,10 +20,6 @@ BUILTIN_KINDS = frozenset({"handoff", "issues", "path"})
 
 ADAPTER_CANDIDATES = (
     Path(".agents/announcement-adapter.yaml"),
-    Path(".codex/announcement-adapter.yaml"),
-    Path(".claude/announcement-adapter.yaml"),
-    Path("docs/announcement-adapter.yaml"),
-    Path("announcement-adapter.yaml"),
 )
 STRING_FIELDS = (
     "repo",
@@ -52,14 +48,12 @@ VALID_DELIVERY_ROLES = {"single", "parent", "thread_reply"}
 
 # Canonical delivery-kind vocabulary. Shared with record_announcement.py's
 # --delivery-kind CLI choices so a self-attested record can only ever name a
-# kind this adapter contract recognizes (case/alias-normalized first).
+# kind this adapter contract recognizes (case-normalized first).
 DELIVERY_KINDS = ("none", "release-notes", "human-backend")
-DEPRECATED_DELIVERY_KIND_ALIASES = {"command": "human-backend"}
 
 
 def normalize_delivery_kind(value: str) -> str:
-    normalized = (value or "").strip().lower()
-    return DEPRECATED_DELIVERY_KIND_ALIASES.get(normalized, normalized)
+    return (value or "").strip().lower()
 
 
 def _validate_outputs(value: Any, errors: list[str]) -> list[dict[str, Any]] | None:
@@ -238,9 +232,6 @@ def _apply_structured_fields(
 def _delivery_warnings(
     data: dict[str, Any], validated: dict[str, Any], warnings: list[str], errors: list[str]
 ) -> None:
-    if validated["delivery_kind"] == "command":
-        validated["delivery_kind"] = "human-backend"
-        warnings.append("delivery_kind `command` is deprecated; rename it to `human-backend`.")
     if validated["delivery_kind"] not in DELIVERY_KINDS:
         errors.append(f"delivery_kind must be one of: {', '.join(DELIVERY_KINDS)}")
     if data.get("repo") == "CHANGE_ME":
@@ -390,11 +381,8 @@ def load_announcement_adapter(repo_root: Path) -> dict[str, Any]:
     raw = load_yaml_file(adapter_path)
     raw_data = raw if isinstance(raw, dict) else {}
     warnings: list[str] = []
-    canonical_path = repo_root / ".agents" / "announcement-adapter.yaml"
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    if adapter_path.resolve() != canonical_path.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
     data, errors, extra_warnings = validate_announcement_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
     contract = delivery_contract(data)

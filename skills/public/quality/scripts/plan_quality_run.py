@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -325,7 +324,6 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
         or (ref.get("role") == "scope-primer" and ref.get("scope") == "skill-authoring" and skills_in_scope)
     ]
     on_demand_reads = [ref for ref in references if ref.get("role") == "on-demand"]
-    required_refs = [str(ref["path"]) for ref in required_reads]
     on_demand_trigger_map = {
         str(ref["path"]): str(ref["trigger"])
         for ref in on_demand_reads
@@ -335,7 +333,7 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
     brief = _quality_brief(repo_root, catalog)
     phase_barriers = [
         "Read declaration_lifecycle before gates; declared-only, unreachable, missing, and not-run are not covered verdicts.",
-        "Read required_reads (also exposed as required_primer_refs for compatibility) before broad gates.",
+        "Read required_reads before broad gates.",
         "The brief carries the load-bearing classification/automation/maintainer-enforcement discipline and the inventory-dispatch routing index (concern area -> inventories + detail_refs) inline; apply it and open a brief detail_ref only when its trigger fires.",
         "Run deterministic gates as evidence packets, then analyze the report against the primer refs before fixing.",
         "Use gate trust_model/cost_tier/parallel_group to decide whether to trust, parallelize, or manually inspect a packet.",
@@ -359,7 +357,6 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
             f"found {len(skills)} checked-in skill package(s)" if skills else "no skills/public or skills/support SKILL.md files found"
         ),
         sample_skill_paths=skills[:8],
-        required_primer_refs=required_refs,
         structural_review_packet=structural_packet,
         gate_plan="report_first",
         phase_barriers=phase_barriers,
@@ -382,13 +379,10 @@ def main() -> int:
     )
     parser.add_argument("--target-skill", help="Optional skill id or SKILL.md path for target-vs-ambient structural review")
     parser.add_argument("--detail", action="store_true", help="Emit the full quality run plan as YAML.")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     plan = build_plan(args.repo_root.resolve(), target_skill=args.target_skill)
-    if args.json:
-        print(json.dumps(plan, ensure_ascii=False, indent=2, sort_keys=True))
-    elif args.detail:
+    if args.detail:
         _emit_yaml(plan)
     else:
         print(format_human(plan))

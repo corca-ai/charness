@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = (
@@ -158,14 +158,14 @@ def test_release_only_sentinel_inventory_cli_accepts_selected_files(tmp_path: Pa
             str(tmp_path),
             "--path",
             "tests/test_release_flow.py",
-            "--json",
+            "--detail",
         ],
         text=True,
         capture_output=True,
         check=True,
     )
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["release_only_test_count"] == 1
     assert payload["standing_test_count"] == 0
     assert "files" in payload
@@ -199,7 +199,7 @@ def test_release_only_sentinel_inventory_summary_omits_full_test_names(tmp_path:
             str(tmp_path),
             "--path",
             "tests/test_release_flow.py",
-            "--json",
+            "--detail",
         ],
         text=True,
         capture_output=True,
@@ -214,14 +214,13 @@ def test_release_only_sentinel_inventory_summary_omits_full_test_names(tmp_path:
             "--path",
             "tests/test_release_flow.py",
             "--summary",
-            "--json",
         ],
         text=True,
         capture_output=True,
         check=True,
     )
 
-    payload = json.loads(summary.stdout)
+    payload = yaml.safe_load(summary.stdout)
     assert payload["release_only_test_count"] == 1
     assert payload["missing_standing_sentinel_file_count"] == 1
     assert payload["missing_standing_sentinel_files_sample"] == ["tests/test_release_flow.py"]

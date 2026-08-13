@@ -73,7 +73,11 @@ def test_run_quality_emits_progress_before_a_slow_phase_finishes(gate_repo: Path
         "import time\ntime.sleep(30)\n",
         encoding="utf-8",
     )
-    env = {**os.environ, "CHARNESS_QUALITY_LABELS": "validate-retro-artifact"}
+    env = {
+        **os.environ,
+        "CHARNESS_QUALITY_LABELS": "validate-retro-artifact",
+        "CHARNESS_QUALITY_HEARTBEAT_SECONDS": "1",
+    }
     transcript = gate_repo / "run-quality-progress.log"
     with transcript.open("w", encoding="utf-8") as stream:
         process = subprocess.Popen(
@@ -88,19 +92,22 @@ def test_run_quality_emits_progress_before_a_slow_phase_finishes(gate_repo: Path
         try:
             observed = ""
             deadline = time.monotonic() + 5
-            expected_wait = (
-                "run-quality: WAIT checks=1 first=validate-retro-artifact "
+            expected_batch = (
+                "run-quality: BATCH_START checks=1 first=validate-retro-artifact "
                 "last=validate-retro-artifact"
             )
             while time.monotonic() < deadline:
                 observed = transcript.read_text(encoding="utf-8")
-                if "run-quality: START " in observed and expected_wait in observed:
+                if "run-quality: HEARTBEAT remaining=1 " in observed:
                     break
                 if process.poll() is not None:
                     break
                 time.sleep(0.05)
             assert "requested_scope=validate-retro-artifact" in observed, observed
-            assert expected_wait in observed, observed
+            assert "run-quality: CHECK_START label=validate-retro-artifact" in observed, observed
+            assert expected_batch in observed, observed
+            assert "run-quality: HEARTBEAT remaining=1 " in observed, observed
+            assert "running=validate-retro-artifact:" in observed, observed
             assert process.poll() is None, "progress arrived only after the slow gate exited"
         finally:
             with contextlib.suppress(ProcessLookupError):

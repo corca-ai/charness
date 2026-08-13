@@ -3,10 +3,11 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
-import json
 import sys
 from pathlib import Path
 from typing import NamedTuple
+
+import yaml
 
 from .support import ROOT
 
@@ -77,10 +78,10 @@ def test_inventory_brittle_source_guards_flags_wrapped_fixed_pattern(tmp_path: P
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary"]["brittle_count"] == 1
     finding = payload["findings"][0]
     assert finding["status"] == "brittle"
@@ -100,10 +101,10 @@ def test_inventory_brittle_source_guards_reports_policy_without_tool(tmp_path: P
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["policy"] == {
         "policy_declared": True,
         "enforcement_tools": [],
@@ -133,11 +134,11 @@ def test_inventory_brittle_source_guards_skips_unreadable_markdown_specs(tmp_pat
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary"]["source_guard_count"] == 1
     assert payload["warnings"] == [
         {
@@ -171,11 +172,11 @@ def test_inventory_brittle_source_guards_ignores_hidden_workflow_dirs(tmp_path: 
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary"]["source_guard_count"] == 1
     assert payload["warnings"] == []
 
@@ -215,11 +216,11 @@ def test_inventory_brittle_source_guards_uses_bounded_default_roots(tmp_path: Pa
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["scan_roots"] == ["AGENTS.md", "README.md", "docs", "specs"]
     assert payload["summary"]["source_guard_count"] == 1
     assert payload["findings"][0]["spec_path"] == "docs/spec.md"
@@ -244,11 +245,11 @@ def test_inventory_brittle_source_guards_scan_root_overrides_defaults(tmp_path: 
         str(repo),
         "--scan-root",
         "notes",
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["scan_roots"] == ["notes"]
     assert payload["summary"]["source_guard_count"] == 1
     assert payload["findings"][0]["spec_path"] == "notes/extra.md"

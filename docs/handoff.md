@@ -2,46 +2,77 @@
 
 ## Workflow Trigger
 
-- Continue the active [open-backlog `achieve` goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md): read back live tracker state into the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md), reconcile the goal with the [latest release record](../charness-artifacts/release/latest.md), then decide goal closeout before selecting another issue.
+- Continue the `quality`-led current-contract cleanup from the
+  [current quality record](../charness-artifacts/quality/latest.md): select one owner cohort, prove
+  equal current capability, then delete or simplify it as a complete slice.
 
 ## Continuation Capability
 
-- [Open-backlog goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md) — owns the fixed cohort, acceptance contract, boundaries, and slice plan.
-- [Execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md) — owns per-issue premise, carrier, evidence, tracker disposition, and Late Arrivals.
-- [Latest release record](../charness-artifacts/release/latest.md) — owns publication, distinct-channel, installed-version, doctor, observer, and baton-reconcile observations.
+- [Current quality record](../charness-artifacts/quality/latest.md) — owns the
+  compatibility residue, runner-visibility inventory, PLR2004 posture, proof
+  status, and ordered next moves.
+- [Session retro](../charness-artifacts/retro/2026-08-14-session-retro.md) — owns
+  the durable lessons, sibling search, and `atomic_capture` versus
+  `monitored_phase` distinction.
+- [Implementation discipline](./conventions/implementation-discipline.md) —
+  owns the standing isolated-bodies/streamed-lifecycle contract.
+- [#617 specification](../charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md)
+  — owns exact lesson-bundle production, receipt commitment, and non-claims.
+- [Current-contract critique](../charness-artifacts/critique/2026-08-14-current-contract-cleanup-review.md)
+  — owns the two bounded review rounds and capped-round repair disclosure.
 
 ## Current State
 
-- [Release notes](../charness-artifacts/release/2026-08-13-v5.2.0-notes.md) — hold the published value, update path, migration and rollback boundaries, proof limits, and issue boundary.
-- [Claims review](../charness-artifacts/release-review/2026-08-13-v5.2.0-claims-review.md) — holds the independent prepared-record audit and the repaired update-surface claim.
-- [#614](https://github.com/corca-ai/charness/issues/614), [#615](https://github.com/corca-ai/charness/issues/615), and [#616](https://github.com/corca-ai/charness/issues/616) — own their tracker `CLOSED` state after the direct carriers reached hosted `main`.
-- [Session retro](../charness-artifacts/retro/2026-08-13-session-retro.md) — holds pre-release waste, proof-population lessons, and the lesson-evaluation disposition.
-- [Release auto-retro](../charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md) — holds release-triggered lessons and its explicit session-coverage limits.
-- [#616 quality review](../charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md) — owns the production-only PLR2004/no-magic-numbers baseline recommendation.
-- [Lesson and contract register](../charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md) — owns lifecycle, proposal, transition, retention, and non-authorization semantics.
+- [Current quality record](../charness-artifacts/quality/latest.md) — holds the
+  implemented current-only cleanup, #617 behavior, runner lifecycle evidence,
+  and active weaknesses rather than replaying receipts here.
+- [Session retro](../charness-artifacts/retro/2026-08-14-session-retro.md) — holds
+  why capture sites require owner classification rather than a global lint.
+- [#617](https://github.com/corca-ai/charness/issues/617) — remains the tracker
+  owner until the implementation reaches hosted history and its issue closeout
+  floor is satisfied.
+- [Latest release record](../charness-artifacts/release/latest.md) — remains the
+  owner of the last published state; this cleanup has no publication claim.
+- [Open-backlog goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md)
+  and [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md)
+  — remain the owners of the earlier fixed cohort and must be reconciled after
+  the current slice's tracker/publication disposition is known.
 
-Refresh kept: publication truth stays in the [latest release record](../charness-artifacts/release/latest.md); the active [goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md) and [ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md) remain because their stale routing now changes the first action.
+Refresh kept: current-only owner cleanup, durable lesson bundles, long-runner
+lifecycle visibility, and the still-open publication/tracker boundary change
+the next action.
 
-Refresh non-claims: the configured real-host trigger did not match; this machine observed update, version, and doctor readback, not a restarted host session or provider behavior. No live lesson lifecycle or contract-membership transition was applied.
+Refresh non-claims: no new push, release, installed-host readback, hosted CI, or
+issue closure is claimed; exact test counts, commit IDs, and version receipts
+stay in their owning artifacts or regenerating commands.
 
 ## Next Session
 
-1. Run `gh issue list --repo corca-ai/charness --state all --limit 100` to regenerate the live tracker set, then reconcile the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md)'s stale issue states.
-2. [Open-backlog goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md) — reconcile its Active Operating Frame, final slice, verification, and status with the tracker-aligned ledger and latest release record, then decide goal closeout.
-3. Only after that goal decision, run `gh issue list --repo corca-ai/charness --state open --limit 100` if another issue is to be selected.
-4. [#616 quality review](../charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md) — production-only PLR2004 baseline/no-increase move, separate from lifecycle semantics.
-5. [Score-policy evidence goal](../charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md) — remains dormant until declared sessions contain naturally varied scores.
-6. [#584](https://github.com/corca-ai/charness/issues/584) — remains held by the [execution ledger's Umbrella Closure Contract](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md#umbrella-closure-contract).
-7. [Operating contract](./conventions/operating-contract.md) — owns critique, frozen verification, and independent readbacks for any later publication boundary.
+1. [Current quality record](../charness-artifacts/quality/latest.md) — take the
+   release execution owner first: preserve atomic query capture but stop
+   long-running release phases from swallowing child lifecycle output.
+2. [Session retro](../charness-artifacts/retro/2026-08-14-session-retro.md) — use
+   one shared monitored primitive, then cover skill A/B, mutation, eval fan-out,
+   worktree prepare, and skill-surface preflight in owner-sized slices.
+3. [Current quality record](../charness-artifacts/quality/latest.md) — continue
+   compatibility deletion only after a current-state premise scan; keep strict
+   old-form rejection and historical evidence that still serve live capability.
+4. [#617](https://github.com/corca-ai/charness/issues/617) — run the issue
+   closeout floor only after its carrier reaches hosted history through a fresh
+   phase-scoped publication grant.
+5. [Open-backlog goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md)
+   — reconcile goal, execution ledger, tracker, and latest release after #617's
+   final disposition.
 
 ## Discuss
 
-- [#527](https://github.com/corca-ai/charness/issues/527) remains the owner of any destructive-skill selection product decision; its deferral does not authorize implementation.
-- Whether machine-local observation should cover meaningful work that produces no durable retro without creating noisy per-chat repository state; the [continuity contract](../charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md) currently claims durable-retro continuity only.
-- Whether a typed public evaluator-adapter schema is warranted after more than one repo-local evaluator shows generic evidence discovery is insufficient.
+- Whether to grant a fresh push/release phase for the materially expanded
+  current-contract cleanup.
+- Whether the production-only PLR2004 classification should follow the release
+  runner slice or wait until the remaining compatibility owner cohort shrinks.
 
 ## References
 
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [Current quality record](../charness-artifacts/quality/latest.md)
-- [Latest release record](../charness-artifacts/release/latest.md)
+- [Design north star](./design-north-star.md)
+- [Operating contract](./conventions/operating-contract.md)

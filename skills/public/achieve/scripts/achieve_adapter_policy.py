@@ -12,10 +12,6 @@ from typing import Any
 
 ADAPTER_CANDIDATES = (
     Path(".agents/achieve-adapter.yaml"),
-    Path(".codex/achieve-adapter.yaml"),
-    Path(".claude/achieve-adapter.yaml"),
-    Path("docs/achieve-adapter.yaml"),
-    Path("achieve-adapter.yaml"),
 )
 
 PUBLICATION_MODES = frozenset({"audit-only", "handoff-only", "direct-commit", "pull-request", "release", "manual"})
@@ -295,11 +291,8 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     raw = _adapter_lib.load_yaml_file(adapter_path)
     raw_data = raw if isinstance(raw, dict) else {}
     warnings: list[str] = []
-    canonical = repo_root / ".agents" / "achieve-adapter.yaml"
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    if adapter_path.resolve() != canonical.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical}.")
     data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
     return {

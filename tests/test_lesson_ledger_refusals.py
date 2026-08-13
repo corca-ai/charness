@@ -71,7 +71,6 @@ def _payload() -> dict:
         ],
         "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
         "lifecycle_events": [],
-        "legacy_score_event_count": 0,
         "session_events": [],
         "score_events": [],
         "lessons": {
@@ -186,10 +185,9 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         ),
     ):
         with pytest.raises(ValueError, match=message):
-            ledger._replay_scores(
-                events,
-                0,
-                copy.deepcopy(replayed),
+               ledger._replay_scores(
+                   events,
+                   copy.deepcopy(replayed),
                 {"a": {"charness-artifacts/retro/source.md"}},
                 sessions,
             )
@@ -232,21 +230,6 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
     )
     with pytest.raises(ValueError, match="committed ledger is invalid JSON"):
         ledger._committed_state(tmp_path, path)
-    monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, json.dumps({"kind": ledger.KIND, "transitions": [], "schema_version": 1}), ""
-        ),
-    )
-    assert ledger._committed_state(tmp_path, path) == (
-        [],
-        [],
-        0,
-        [],
-        ledger.ACTIVE_LESSON_BUDGET,
-        [],
-    )
     monkeypatch.setattr(
         ledger.subprocess,
         "run",

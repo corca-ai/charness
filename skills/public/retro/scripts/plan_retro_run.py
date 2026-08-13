@@ -13,7 +13,6 @@ handoff / quality / issue / gather / release planner family.
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import subprocess
 from pathlib import Path
@@ -336,16 +335,12 @@ def main() -> int:
         help="Repository root used to resolve adapter state, artifacts, and changed paths.",
     )
     parser.add_argument("--changed-paths", nargs="*", help="Explicit paths for work-class classification (defaults to working tree, then recent commits)")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     payload = build_plan(
         args.repo_root.resolve(),
                 changed_paths=args.changed_paths,
     )
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        yaml_output.emit_yaml(payload)
+    yaml_output.emit_yaml(payload)
     return 0 if payload["ok"] else 1
 
 

@@ -54,7 +54,6 @@ def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
             stderr=subprocess.PIPE,
             text=True,
         )
-        dot_count = 0
         while True:
             try:
                 stdout, stderr = process.communicate(timeout=_progress_interval_seconds())
@@ -66,10 +65,12 @@ def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
                 )
                 break
             except subprocess.TimeoutExpired:
-                dot_count += 1
-                print(".", end="", file=sys.stderr, flush=True)
-                if dot_count % 80 == 0:
-                    print("", file=sys.stderr, flush=True)
+                elapsed = time.monotonic() - started_at
+                print(
+                    f"HEARTBEAT [{phase}] elapsed={elapsed:.1f}s {display_command}",
+                    file=sys.stderr,
+                    flush=True,
+                )
             if time.monotonic() - started_at > COMMAND_TIMEOUT_SECONDS:
                 process.kill()
                 stdout, stderr = process.communicate()
@@ -81,8 +82,6 @@ def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
                     stderr,
                 )
                 break
-        if dot_count:
-            print("", file=sys.stderr, flush=True)
         elapsed = time.monotonic() - started_at
         status = "PASS" if result.returncode == 0 else "FAIL"
         print(f"{status} [{phase}] {elapsed:.1f}s {display_command}", file=sys.stderr, flush=True)

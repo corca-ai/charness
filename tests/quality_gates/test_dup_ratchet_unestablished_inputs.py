@@ -68,6 +68,27 @@ def test_inproc_empty_doc_inventory_degrades_instead_of_clean(tmp_path: Path) ->
     assert any("no output" in reason for reason in report["degraded_reasons"])
 
 
+def test_inproc_non_yaml_doc_inventory_degrades(tmp_path: Path) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    bad_doc = tmp_path / "bad-doc.yaml"
+    bad_doc.write_text("families: [unterminated", encoding="utf-8")
+    code_json = _code_inventory(tmp_path / "code.json", ["known1"])
+
+    report = _run_inproc(
+        repo,
+        "--code-inventory",
+        str(code_json),
+        "--doc-inventory",
+        str(bad_doc),
+    )
+
+    assert report["status"] == "degraded"
+    assert any(
+        "doc inventory YAML unreadable" in reason
+        for reason in report["degraded_reasons"]
+    )
+
+
 def test_inproc_doc_inventory_without_families_list_degrades(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
     bad_doc = _write_json(tmp_path / "nofam.json", {"status": "ok"})

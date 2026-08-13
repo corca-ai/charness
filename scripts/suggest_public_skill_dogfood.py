@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -27,7 +26,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--skill-id", action="append", default=[])
     parser.add_argument("--detail", action="store_true", help="Emit the full dogfood matrix payload as YAML.")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -35,9 +33,7 @@ def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     if report := policy_applicability_report(repo_root):
-        if args.json:
-            print(json.dumps(report, ensure_ascii=False, indent=2))
-        elif args.detail:
+        if args.detail:
             emit_yaml(report)
         else:
             print(format_human(report))
@@ -51,9 +47,7 @@ def main() -> int:
         return 1
 
     report = build_matrix(repo_root, requested)
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    elif args.detail:
+    if args.detail:
         emit_yaml(report)
     else:
         print(format_human(report))

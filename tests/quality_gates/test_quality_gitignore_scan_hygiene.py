@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from .support import ROOT
 
@@ -12,13 +13,13 @@ SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_gitigno
 
 def _run_hygiene(repo: Path, *args: str) -> dict[str, object]:
     result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json", *args],
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--detail", *args],
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
     )
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_gitignore_scan_hygiene_warns_on_repo_wide_rglob(tmp_path: Path) -> None:

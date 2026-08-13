@@ -8,10 +8,6 @@ from scripts.source_guard_scan_lib import DEFAULT_SOURCE_GUARD_SCAN_ROOTS, fixed
 
 ADAPTER_CANDIDATES = (
     Path(".agents/setup-adapter.yaml"),
-    Path(".codex/setup-adapter.yaml"),
-    Path(".claude/setup-adapter.yaml"),
-    Path("docs/setup-adapter.yaml"),
-    Path("setup-adapter.yaml"),
 )
 
 def load_setup_adapter(repo_root: Path) -> tuple[dict[str, Any], str | None, list[dict[str, str]]]:

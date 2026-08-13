@@ -11,7 +11,7 @@ boy-scout dup-ratchet spec for the full contract.
 The classification logic lives in ``dup_review_lib`` (pure, unit-tested);
 this CLI is the integration seam that collects inventories and persists the
 overlay. Pass ``--code-inventory`` / ``--doc-inventory`` to inject a
-pre-collected ``--json`` payload (the portable/testable path); without them the
+pre-collected structured payload (the portable/testable path); without them the
 sibling inventory scripts are run with their default baseline behavior.
 """
 
@@ -25,6 +25,8 @@ import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 
 def _load_skill_runtime_bootstrap():
@@ -44,6 +46,17 @@ DOC_INVENTORY = _SCRIPTS_DIR / "inventory_doc_duplicates.py"
 
 
 NON_SCAN_STATUSES = frozenset({"missing", "version-too-old", "error", "baseline-written"})
+_TIMESTAMP_TAG = "tag:yaml.org,2002:timestamp"
+
+
+class _StringDateSafeLoader(yaml.SafeLoader):
+    """Safe YAML loader that preserves ISO date scalars as contract strings."""
+
+
+_StringDateSafeLoader.yaml_implicit_resolvers = {
+    key: [(tag, pattern) for tag, pattern in rules if tag != _TIMESTAMP_TAG]
+    for key, rules in yaml.SafeLoader.yaml_implicit_resolvers.items()
+}
 
 
 def _families_from_payload(text: str, source: str) -> tuple[list[dict], str | None]:
@@ -55,9 +68,9 @@ def _families_from_payload(text: str, source: str) -> tuple[list[dict], str | No
     if not text or not text.strip():
         return [], f"{source} produced no output; the inventory produced nothing to read"
     try:
-        payload = json.loads(text)
-    except json.JSONDecodeError as exc:
-        return [], f"{source} did not emit JSON: {exc}"
+        payload = yaml.load(text, Loader=_StringDateSafeLoader)
+    except yaml.YAMLError as exc:
+        return [], f"{source} did not emit YAML: {exc}"
     if not isinstance(payload, dict):
         return [], f"{source} payload is not a report object"
     status = payload.get("status")
@@ -71,7 +84,7 @@ def _families_from_payload(text: str, source: str) -> tuple[list[dict], str | No
 
 def _run_inventory(script: Path, repo_root: Path) -> tuple[list[dict], str | None]:
     completed = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(repo_root), "--json"],
+        [sys.executable, str(script), "--repo-root", str(repo_root), "--detail"],
         cwd=repo_root,
         check=False,
         capture_output=True,
@@ -102,9 +115,7 @@ def _load_existing(output_path: Path) -> tuple[dict, str | None]:
     Unparseable is not the only unreadable: `dup_review_lib.build_review` does
     ``(existing or {}).get("entries") or []``, so a payload that is a list, a scalar, or a
     dict whose `entries` key was renamed or lost in a partial hand-edit ALSO yields zero
-    prior entries — the same silent wipe through a parse that succeeded. This mirrors
-    `migrate_dup_fingerprints._load_review_data`, which the same repair round gave the
-    stronger check; the two overlay readers must not disagree about what "readable" means."""
+    prior entries — the same silent wipe through a parse that succeeded."""
     if not output_path.is_file():
         return {}, None
     unreadable = f"{output_path} is present but unreadable"
@@ -150,11 +161,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, required=True, help="Repository root whose duplicate inventories and overlay should be managed")
     parser.add_argument("--output", default=DEFAULT_OUTPUT_REL, help=f"Overlay path (repo-relative; default {DEFAULT_OUTPUT_REL}).")
-    parser.add_argument("--code-inventory", type=Path, help="Pre-collected inventory_nose_clones --json file (else the script is run).")
-    parser.add_argument("--doc-inventory", type=Path, help="Pre-collected inventory_doc_duplicates --json file (else the script is run).")
+    parser.add_argument("--code-inventory", type=Path, help="Pre-collected inventory_nose_clones structured file (else the script is run).")
+    parser.add_argument("--doc-inventory", type=Path, help="Pre-collected inventory_doc_duplicates structured file (else the script is run).")
     parser.add_argument("--reviewed-at", default=datetime.date.today().isoformat(), help="ISO date stamp for newly auto-seeded entries (default today).")
     parser.add_argument("--write", action="store_true", help="Write the overlay to --output (else dry-run preview).")
-    parser.add_argument("--json", action="store_true", help="Emit the seed result as JSON")
     args = parser.parse_args()
 
     result = build_result(args)
@@ -162,8 +172,6 @@ def main() -> int:
         sys.stderr.write("dup-review seed refused: an input established no family set:\n")
         for reason in result["unestablished_reasons"]:
             sys.stderr.write(f"  - {reason}\n")
-        if args.json:
-            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
         return 1
     review = result["review"]
     errors = dup_review.validate_review(review)
@@ -176,15 +184,12 @@ def main() -> int:
         out = Path(result["output_path"])
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(review, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    if args.json:
-        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        action = "wrote" if args.write else "previewed (dry-run; pass --write to persist)"
-        print(
-            f"dup-review {action}: {len(review['entries'])} classified entries "
-            f"(fixable_ceiling={review['fixable_ceiling']}) from {result['code_family_count']} code + "
-            f"{result['doc_family_count']} doc families -> {result['output']}"
-        )
+    action = "wrote" if args.write else "previewed (dry-run; pass --write to persist)"
+    print(
+        f"dup-review {action}: {len(review['entries'])} classified entries "
+        f"(fixable_ceiling={review['fixable_ceiling']}) from {result['code_family_count']} code + "
+        f"{result['doc_family_count']} doc families -> {result['output']}"
+    )
     return 0
 
 

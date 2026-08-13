@@ -66,6 +66,12 @@ Preferred deterministic guards:
 If the repo depends on logs, traces, or machine-readable diagnostics for normal
 operation or debugging:
 
+- for a long-running runner, isolate each child command's diagnostic body but
+  stream lifecycle events: runner start, child start, child completion plus
+  elapsed time, a bounded heartbeat while work remains, and the final receipt
+- report a child when it actually finishes rather than waiting for queue order or
+  the slowest sibling; buffering bodies prevents interleaving, while buffering
+  status only creates an unobservable control plane
 - check whether the useful signal appears early enough for an agent or operator
   to act on it
 - keep the default standing-gate stream compact enough that phase-level signal

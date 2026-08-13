@@ -7,10 +7,6 @@ from typing import Any, Callable
 
 RELEASE_ADAPTER_CANDIDATES = (
     ".agents/release-adapter.yaml",
-    ".codex/release-adapter.yaml",
-    ".claude/release-adapter.yaml",
-    "docs/release-adapter.yaml",
-    "release-adapter.yaml",
 )
 REAL_HOST_FIELDS = {
     "real_host_required_surfaces",

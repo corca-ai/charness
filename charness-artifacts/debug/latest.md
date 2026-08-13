@@ -1,1 +1,1 @@
-2026-08-13-issue-614-unbounded-local-artifact-retention.md
+2026-08-14-lesson-presentation-lost-across-compaction.md

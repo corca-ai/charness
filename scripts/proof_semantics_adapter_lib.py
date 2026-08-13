@@ -38,10 +38,6 @@ from scripts.adapter_lib import load_yaml_file, optional_string, validate_adapte
 
 ADAPTER_CANDIDATES = (
     Path(".agents/proof-semantics-adapter.yaml"),
-    Path(".codex/proof-semantics-adapter.yaml"),
-    Path(".claude/proof-semantics-adapter.yaml"),
-    Path("docs/proof-semantics-adapter.yaml"),
-    Path("proof-semantics-adapter.yaml"),
 )
 STRING_FIELDS = ("repo", "language")
 
@@ -247,9 +243,6 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     warnings: list[str] = []
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    canonical = repo_root / ".agents" / "proof-semantics-adapter.yaml"
-    if adapter_path.resolve() != canonical.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical}.")
     data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
     return {

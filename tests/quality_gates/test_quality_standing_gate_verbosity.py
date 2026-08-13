@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT
 
 # In-process boundary conversion (testability-dsl-initiative goal 1): load the
@@ -288,12 +290,11 @@ def test_inventory_standing_gate_verbosity_cli_summary_omits_full_surfaces(
             "--repo-root",
             str(repo),
             "--summary",
-            "--json",
         ],
     )
 
     assert _MODULE.main() == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
 
     assert "surfaces" not in payload
     assert "findings" not in payload

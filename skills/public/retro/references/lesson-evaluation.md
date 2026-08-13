@@ -6,9 +6,13 @@ imply one, and repos whose evidence declares no evaluator have no lesson-scoring
 duty.
 
 Append sparse scores only for lessons selected and actually presented by a
-contemporaneous agent-authored session-start action before the affected work. A
-stored snapshot or command-side receipt proves neither display nor use.
-Retro-time inspection is not presentation.
+contemporaneous agent-authored session-start action before the affected work.
+When the evaluator persists a session bundle, recover the explicit session ID
+and bundle path from the affected work's durable artifact, then load the frozen
+bundle before judging effects. Do not substitute a newest-file guess, mutable
+lesson source, or host transcript search. A valid bundle proves the issued
+content, not human readback, lesson use, or positive effect; retro-time
+inspection alone does not justify a score.
 
 When the repo-owned evaluator defines a disposition grammar:
 

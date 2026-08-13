@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .issue_closeout_support import bug_closeout_body
 from .release_publish_fixtures import (
@@ -535,10 +536,10 @@ def test_requested_review_gate_allows_explicit_waiver(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = _run_review_gate(repo, "--json")
+    result = _run_review_gate(repo, "--detail")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "waived"
     assert payload["unavailable_hits"]
     assert payload["waiver_hits"]
@@ -565,10 +566,10 @@ def test_requested_review_gate_warns_when_commands_are_empty(tmp_path: Path) -> 
         encoding="utf-8",
     )
 
-    result = _run_review_gate(repo, "--json")
+    result = _run_review_gate(repo, "--detail")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "ok"
     assert payload["configuration_status"] == "not_configured"
     assert "requested_review_commands is empty" in payload["warnings"][0]
@@ -601,10 +602,10 @@ def test_requested_review_gate_honors_advisory_only_policy(tmp_path: Path) -> No
         encoding="utf-8",
     )
 
-    result = _run_review_gate(repo, "--json")
+    result = _run_review_gate(repo, "--detail")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["configuration_status"] == "advisory_only"
     assert payload["warnings"] == []
 
@@ -636,10 +637,10 @@ def test_requested_review_gate_blocks_failed_command_under_advisory_only_policy(
         encoding="utf-8",
     )
 
-    result = _run_review_gate(repo, "--json")
+    result = _run_review_gate(repo, "--detail")
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["configuration_status"] == "configured"
     assert payload["requested_review_policy"] == "advisory-only"
     assert "requested review command failed" in payload["blockers"][0]

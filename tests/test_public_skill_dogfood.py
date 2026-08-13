@@ -220,10 +220,10 @@ def test_suggest_public_skill_dogfood_cli_covers_json_human_and_unknown_paths(
     seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
 
     json_result = run_suggest_public_skill_dogfood(
-        monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--json"
+        monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--detail"
     )
     assert json_result.returncode == 0
-    assert json.loads(json_result.stdout)["matrix"][0]["skill_id"] == "demo"
+    assert yaml.safe_load(json_result.stdout)["matrix"][0]["skill_id"] == "demo"
 
     human_result = run_suggest_public_skill_dogfood(
         monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo"

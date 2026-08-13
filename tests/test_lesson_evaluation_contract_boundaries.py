@@ -20,6 +20,29 @@ def _receipt() -> dict[str, object]:
 
 
 @pytest.mark.parametrize(
+    ("bundle_bytes", "message"),
+    [
+        (None, "session bundle is unreadable"),
+        (b"short\n", "session bundle byte count does not match receipt"),
+        (b"PREVIEW\n", "session bundle digest does not match receipt"),
+    ],
+)
+def test_validate_receipt_rejects_missing_or_tampered_bundle(
+    tmp_path: Path, bundle_bytes: bytes | None, message: str
+) -> None:
+    receipt = _receipt()
+    if bundle_bytes is not None:
+        continuity.write_bundle(continuity.bundle_path(tmp_path, "s-1"), bundle_bytes)
+
+    with pytest.raises(continuity.LessonEvaluationError, match=message):
+        continuity.validate_receipt(
+            receipt,
+            sessions={"s-1": {"snapshot_sha256": "a" * 64}},
+            output_dir=tmp_path,
+        )
+
+
+@pytest.mark.parametrize(
     ("value", "message"),
     [
         (None, "must be an object"),
@@ -143,20 +166,22 @@ def test_build_receipt_rejects_invalid_snapshot_or_time(
     ],
 )
 def test_validate_receipt_rejects_invalid_contract_fields(
-    field: str, value: object, message: str
+    tmp_path: Path, field: str, value: object, message: str
 ) -> None:
     receipt = _receipt()
+    continuity.write_bundle(continuity.bundle_path(tmp_path, "s-1"), b"preview\n")
     receipt[field] = value
     with pytest.raises(ValueError, match=message):
         continuity.validate_receipt(
             receipt,
             sessions={"s-1": {"snapshot_sha256": "a" * 64}},
+            output_dir=tmp_path,
         )
 
 
-def test_validate_receipt_rejects_unknown_session() -> None:
+def test_validate_receipt_rejects_unknown_session(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="unknown session"):
-        continuity.validate_receipt(_receipt(), sessions={})
+        continuity.validate_receipt(_receipt(), sessions={}, output_dir=tmp_path)
 
 
 @pytest.mark.parametrize("progress", [None, 0, True, 999])

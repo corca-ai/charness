@@ -20,6 +20,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -574,8 +575,7 @@ def test_parity_gate_names_a_job_level_reusable_workflow_call(tmp_path: Path) ->
 
 
 def test_parity_named_scope_refusal_carries_a_payload(tmp_path: Path) -> None:
-    """A refusal a `--json` consumer cannot read is indistinguishable from a crash.
-    The sibling rule is already pinned above for check_bootstrap_shim_consistency."""
+    """The structured refusal stays readable by the current YAML consumer."""
     repo = _workflow_repo(tmp_path, "ci.yml", _PARITY_WORKFLOW)
     result = run_gate(
         "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
@@ -583,10 +583,10 @@ def test_parity_named_scope_refusal_carries_a_payload(tmp_path: Path) -> None:
         str(repo),
         "--workflow-glob",
         ".github/workflows/*.toml",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "named-scope-empty"
     assert payload["jobs_evaluated"] == 0
     assert "Remedy" in payload["reason"]
@@ -620,12 +620,12 @@ def test_parity_require_evaluated_scope_has_both_arms(tmp_path: Path) -> None:
         "--repo-root",
         str(evaluated),
         "--require-evaluated-scope",
-        "--json",
+        "--detail",
     )
     assert passed.returncode == 0, passed.stdout + passed.stderr
     # A nonzero denominator, asserted: every other pin on these fields is a zero,
     # so a refactor that made `jobs_evaluated` always 0 would pass all of them.
-    assert json.loads(passed.stdout)["jobs_evaluated"] == 1
+    assert yaml.safe_load(passed.stdout)["jobs_evaluated"] == 1
 
 
 def test_per_file_floor_over_an_all_exempt_population_is_not_enforced() -> None:

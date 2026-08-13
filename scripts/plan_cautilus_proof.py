@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
-import json
 import re
 import sys
 from pathlib import Path
@@ -234,15 +233,12 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to current git diff.")
     parser.add_argument("--detail", action="store_true", help="Print the full plan as YAML.")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     changed_paths = [normalize_repo_path(path) for path in args.paths] if args.paths else collect_changed_paths(repo_root)
     plan = plan_cautilus_proof(repo_root, changed_paths)
-    if args.json:
-        print(json.dumps(plan, ensure_ascii=False, indent=2))
-    elif args.detail:
+    if args.detail:
         emit_yaml(plan)
     else:
         print(f"status: {plan['status']}")

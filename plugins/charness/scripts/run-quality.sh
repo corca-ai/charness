@@ -62,7 +62,7 @@ export CHARNESS_QUALITY_MODE="$RUN_QUALITY_MODE"
 # verdict/reporting contract stays machine-consumable, and emit it before discovery
 # or queue construction can introduce another silent interval.
 RUN_QUALITY_PROGRESS_SCOPE="${CHARNESS_QUALITY_LABELS:-all}"
-printf 'run-quality: START mode=%s release=%s requested_scope=%s (phase output is buffered)\n' \
+printf 'run-quality: START mode=%s release=%s requested_scope=%s outputs=isolated status=streamed\n' \
   "$RUN_QUALITY_MODE" "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" "$RUN_QUALITY_PROGRESS_SCOPE" >&2
 
 RUN_QUALITY_GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || true)"
@@ -126,6 +126,11 @@ assert_label_in_universe() {
 
 RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
 RUN_QUALITY_LABELS="${CHARNESS_QUALITY_LABELS:-}"
+RUN_QUALITY_HEARTBEAT_SECONDS="${CHARNESS_QUALITY_HEARTBEAT_SECONDS:-15}"
+if [[ ! "$RUN_QUALITY_HEARTBEAT_SECONDS" =~ ^[0-9]+$ ]]; then
+  echo "run-quality: CHARNESS_QUALITY_HEARTBEAT_SECONDS must be a non-negative integer" >&2
+  exit 2
+fi
 RUN_QUALITY_RUNTIME_PROFILE="${CHARNESS_RUNTIME_PROFILE:-}"
 # A label-filtered run measures the SAME gate against a different amount of
 # competition, and the sample records only elapsed time. Pooled with full-queue
@@ -177,6 +182,7 @@ declare -a PHASE_LABELS=()
 declare -a PHASE_PIDS=()
 declare -a PHASE_LOGS=()
 declare -a PHASE_METAS=()
+declare -a PHASE_STARTED_NS=()
 declare -a COMPLETED_LABELS=()
 declare -a COMPLETED_ELAPSED_MS=()
 declare -a COMPLETED_STATUSES=()
@@ -405,10 +411,12 @@ queue_timed() {
   local slug="${label//[^A-Za-z0-9_.-]/_}"
   local log_path="$RUN_QUALITY_TMPDIR/${slug}.log"
   local meta_path="$RUN_QUALITY_TMPDIR/${slug}.meta"
+  local started_ns
+  started_ns="$(date +%s%N)"
 
   (
     local start_ns end_ns elapsed_ms rc status timestamp
-    start_ns="$(date +%s%N)"
+    start_ns="$started_ns"
     if "$@" >"$log_path" 2>&1; then
       rc=0
       status="pass"
@@ -423,7 +431,8 @@ queue_timed() {
     end_ns="$(date +%s%N)"
     elapsed_ms="$(((end_ns - start_ns) / 1000000))"
     timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-    printf '%s\n%s\n%s\n%s\n' "$elapsed_ms" "$status" "$timestamp" "$rc" >"$meta_path"
+    printf '%s\n%s\n%s\n%s\n' "$elapsed_ms" "$status" "$timestamp" "$rc" >"${meta_path}.tmp"
+    mv "${meta_path}.tmp" "$meta_path"
     exit 0
   ) &
 
@@ -431,6 +440,8 @@ queue_timed() {
   PHASE_PIDS+=("$!")
   PHASE_LOGS+=("$log_path")
   PHASE_METAS+=("$meta_path")
+  PHASE_STARTED_NS+=("$started_ns")
+  printf 'run-quality: CHECK_START label=%s\n' "$label" >&2
 }
 
 label_is_selected() {
@@ -537,11 +548,111 @@ print_phase_output() {
   fi
 }
 
-flush_phase() {
-  local rc=0
+PHASE_RC=0
+
+consume_phase_result() {
+  local i="$1"
   local pid label log_path meta_path elapsed_ms status timestamp cmd_rc
-  local phase_count first_label last_label
-  local -a meta_lines
+  local failure_slug failure_log recovery_spec meta_line
+  local -a meta_lines=()
+
+  pid="${PHASE_PIDS[$i]}"
+  label="${PHASE_LABELS[$i]}"
+  log_path="${PHASE_LOGS[$i]}"
+  meta_path="${PHASE_METAS[$i]}"
+  wait "$pid" || true
+  while IFS= read -r meta_line; do
+    meta_lines+=("$meta_line")
+  done <"$meta_path"
+  elapsed_ms="${meta_lines[0]}"
+  status="${meta_lines[1]}"
+  timestamp="${meta_lines[2]}"
+  cmd_rc="${meta_lines[3]}"
+  queue_runtime_record "$label" "$elapsed_ms" "$status" "$timestamp"
+
+  print_phase_output "$label" "$status" "$elapsed_ms" "$log_path"
+  COMPLETED_LABELS+=("$label")
+  COMPLETED_ELAPSED_MS+=("$elapsed_ms")
+  COMPLETED_STATUSES+=("$status")
+  if [[ "$status" == "pass" ]]; then
+    MEASURED_LABELS+=("$label")
+    TOTAL_PASSES=$((TOTAL_PASSES + 1))
+  elif [[ "$status" == "unestablished" ]]; then
+    TOTAL_UNESTABLISHED=$((TOTAL_UNESTABLISHED + 1))
+    UNESTABLISHED_LABELS="$(append_label "$UNESTABLISHED_LABELS" "$label")"
+  else
+    TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
+    failure_slug="${label//[^A-Za-z0-9_.-]/_}"
+    failure_log="$RUN_QUALITY_FAILURE_LOG_DIR/${failure_slug}.log"
+    if mkdir -p "$RUN_QUALITY_FAILURE_LOG_DIR" 2>/dev/null && cp "$log_path" "$failure_log" 2>/dev/null; then
+      recovery_spec="available:${failure_log#"$REPO_ROOT"/}"
+    else
+      printf 'WARN: could not save full output for %s to %s; its log is NOT available.\n' \
+        "$label" "$failure_log" >&2
+      recovery_spec="unavailable:full output could not be copied"
+    fi
+    FAILED_RECEIPT_SUBJECTS+=("$label")
+    FAILED_RECEIPT_RECOVERY_SPECS+=("$recovery_spec")
+  fi
+
+  if [[ "$cmd_rc" != "0" && "$status" != "unestablished" ]]; then
+    PHASE_RC="$cmd_rc"
+  fi
+}
+
+print_phase_heartbeat() {
+  local now_ns="$1"
+  local remaining="$2"
+  local i elapsed_ms item running_sample="" shown=0
+  local -n done_ref="$3"
+
+  for i in "${!PHASE_LABELS[@]}"; do
+    if [[ "${done_ref[$i]:-0}" == "1" ]]; then
+      continue
+    fi
+    elapsed_ms="$(((now_ns - PHASE_STARTED_NS[i]) / 1000000))"
+    item="${PHASE_LABELS[$i]}:$(format_elapsed "$elapsed_ms")"
+    if [[ -z "$running_sample" ]]; then
+      running_sample="$item"
+    else
+      running_sample="${running_sample},${item}"
+    fi
+    shown=$((shown + 1))
+    if (( shown == 5 )); then
+      break
+    fi
+  done
+  if (( remaining > shown )); then
+    running_sample="${running_sample},+$((remaining - shown))-more"
+  fi
+  printf 'run-quality: HEARTBEAT remaining=%s running=%s\n' \
+    "$remaining" "${running_sample:-none}" >&2
+}
+
+synthesize_missing_phase_meta() {
+  local i="$1"
+  local pid="${PHASE_PIDS[$i]}"
+  local meta_path="${PHASE_METAS[$i]}"
+  local log_path="${PHASE_LOGS[$i]}"
+  local now_ns elapsed_ms timestamp
+
+  if [[ -f "$meta_path" ]] || kill -0 "$pid" 2>/dev/null; then
+    return 1
+  fi
+  wait "$pid" || true
+  now_ns="$(date +%s%N)"
+  elapsed_ms="$(((now_ns - PHASE_STARTED_NS[i]) / 1000000))"
+  timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  printf 'run-quality: child exited without writing its completion metadata\n' >>"$log_path"
+  printf '%s\nfail\n%s\n2\n' "$elapsed_ms" "$timestamp" >"${meta_path}.tmp"
+  mv "${meta_path}.tmp" "$meta_path"
+  return 0
+}
+
+flush_phase() {
+  local phase_count first_label last_label remaining made_progress i now_ns next_heartbeat_ns
+  local heartbeat_interval_ns
+  local -a phase_done=()
 
   if ((${#PHASE_LABELS[@]} == 0)); then
     return 0
@@ -550,74 +661,38 @@ flush_phase() {
   phase_count="${#PHASE_LABELS[@]}"
   first_label="${PHASE_LABELS[0]}"
   last_label="${PHASE_LABELS[$((phase_count - 1))]}"
-  printf 'run-quality: WAIT checks=%s first=%s last=%s\n' \
+  remaining="$phase_count"
+  heartbeat_interval_ns="$((RUN_QUALITY_HEARTBEAT_SECONDS * 1000000000))"
+  now_ns="$(date +%s%N)"
+  next_heartbeat_ns="$((now_ns + heartbeat_interval_ns))"
+  PHASE_RC=0
+  printf 'run-quality: BATCH_START checks=%s first=%s last=%s\n' \
     "$phase_count" "$first_label" "$last_label" >&2
 
-  for pid in "${PHASE_PIDS[@]}"; do
-    wait "$pid" || true
-  done
-
-  for i in "${!PHASE_LABELS[@]}"; do
-    label="${PHASE_LABELS[$i]}"
-    log_path="${PHASE_LOGS[$i]}"
-    meta_path="${PHASE_METAS[$i]}"
-
-    meta_lines=()
-    while IFS= read -r meta_line; do
-      meta_lines+=("$meta_line")
-    done <"$meta_path"
-    elapsed_ms="${meta_lines[0]}"
-    status="${meta_lines[1]}"
-    timestamp="${meta_lines[2]}"
-    cmd_rc="${meta_lines[3]}"
-    queue_runtime_record "$label" "$elapsed_ms" "$status" "$timestamp"
-
-    print_phase_output "$label" "$status" "$elapsed_ms" "$log_path"
-    COMPLETED_LABELS+=("$label")
-    COMPLETED_ELAPSED_MS+=("$elapsed_ms")
-    COMPLETED_STATUSES+=("$status")
-    if [[ "$status" == "pass" ]]; then
-      MEASURED_LABELS+=("$label")
-      TOTAL_PASSES=$((TOTAL_PASSES + 1))
-    elif [[ "$status" == "unestablished" ]]; then
-      TOTAL_UNESTABLISHED=$((TOTAL_UNESTABLISHED + 1))
-      UNESTABLISHED_LABELS="$(append_label "$UNESTABLISHED_LABELS" "$label")"
-    else
-      TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
-      # Copied at the moment of failure, because the batch's log paths are reset
-      # between phases and the tmpdir is gone by the time the summary prints.
-      #
-      # The slug is the SAME rule `queue_timed` uses for the tmp log, deliberately: two
-      # rules for one label meant the summary could name a filename that was never
-      # written, and a label containing `/` would send `cp` into a directory that does
-      # not exist.
-      #
-      # And the failure is REPORTED, not swallowed. A bare `|| true` next to an
-      # unconditional "the log is here" claim is how a reader gets pointed at a
-      # PREVIOUS run's log for the same label and diagnoses a failure that is already
-      # fixed -- a stale log at a promised path is worse than no log, and swallowing
-      # the copy error is the exact silent-loss shape this whole change removes.
-      local failure_slug failure_log recovery_spec
-      failure_slug="${label//[^A-Za-z0-9_.-]/_}"
-      failure_log="$RUN_QUALITY_FAILURE_LOG_DIR/${failure_slug}.log"
-      if mkdir -p "$RUN_QUALITY_FAILURE_LOG_DIR" 2>/dev/null && cp "$log_path" "$failure_log" 2>/dev/null; then
-        recovery_spec="available:${failure_log#"$REPO_ROOT"/}"
-      else
-        printf 'WARN: could not save full output for %s to %s; its log is NOT available.\n' \
-          "$label" "$failure_log" >&2
-        recovery_spec="unavailable:full output could not be copied"
+  while (( remaining > 0 )); do
+    made_progress=0
+    for i in "${!PHASE_LABELS[@]}"; do
+      if [[ "${phase_done[$i]:-0}" == "1" ]]; then
+        continue
       fi
-      FAILED_RECEIPT_SUBJECTS+=("$label")
-      FAILED_RECEIPT_RECOVERY_SPECS+=("$recovery_spec")
-    fi
+      if [[ ! -f "${PHASE_METAS[$i]}" ]]; then
+        synthesize_missing_phase_meta "$i" || continue
+      fi
+      consume_phase_result "$i"
+      phase_done[i]=1
+      remaining=$((remaining - 1))
+      made_progress=1
+    done
 
-    # An unestablished gate does not fail the run. It must not be counted as
-    # passing either, and the summary says so -- the point is to remove the
-    # green, not to add a blocker where the lane deliberately has none.
-    # Keyed on the resolved STATUS, not on the raw code: a label that is not
-    # unestablished-capable exiting 3 must still fail the run.
-    if [[ "$cmd_rc" != "0" && "$status" != "unestablished" ]]; then
-      rc="$cmd_rc"
+    if (( remaining > 0 && heartbeat_interval_ns > 0 )); then
+      now_ns="$(date +%s%N)"
+      if (( now_ns >= next_heartbeat_ns )); then
+        print_phase_heartbeat "$now_ns" "$remaining" phase_done
+        next_heartbeat_ns="$((now_ns + heartbeat_interval_ns))"
+      fi
+    fi
+    if (( remaining > 0 && made_progress == 0 )); then
+      sleep 0.1
     fi
   done
 
@@ -627,7 +702,8 @@ flush_phase() {
   PHASE_PIDS=()
   PHASE_LOGS=()
   PHASE_METAS=()
-  return "$rc"
+  PHASE_STARTED_NS=()
+  return "$PHASE_RC"
 }
 
 print_final_summary() {

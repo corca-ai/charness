@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import json
 import subprocess
 import sys
@@ -9,76 +8,16 @@ from pathlib import Path
 import pytest
 
 from scripts import lesson_ledger_lib as ledger
-from scripts import migrate_lesson_lifecycle as lifecycle_migration
 from scripts import record_lesson_lifecycle as lifecycle_recorder
 from tests.test_lesson_ledger import (
     ROOT,
     _git,
     _ledger,
-    _materialize,
-    _payload,
     _retro,
     _score_event,
     _session_event,
     _validate,
 )
-
-
-def test_v3_migration_preserves_streams_and_initializes_active_state() -> None:
-    v4 = _materialize(
-        _payload(
-            session_events=[_session_event()],
-            score_events=[_score_event(session_id="session-a", score=1)],
-        )
-    )
-    v3 = copy.deepcopy(v4)
-    v3["schema_version"] = 3
-    v3.pop("active_lesson_budget")
-    v3.pop("lifecycle_events")
-    for lesson in v3["lessons"].values():
-        lesson.pop("state")
-        lesson.pop("last_lifecycle_event_id")
-
-    migrated = lifecycle_migration.migration_candidate(v3)
-
-    assert migrated["transitions"] == v3["transitions"]
-    assert migrated["session_events"] == v3["session_events"]
-    assert migrated["score_events"] == v3["score_events"]
-    assert migrated["active_lesson_budget"] == 50
-    assert migrated["lifecycle_events"] == []
-    assert migrated["lessons"]["a"]["state"] == "active"
-
-
-def test_lesson_migration_cli_is_dry_run_then_execute(tmp_path: Path) -> None:
-    _retro(tmp_path, "source.md", "a")
-    path = _ledger(tmp_path)
-    v3 = json.loads(path.read_text(encoding="utf-8"))
-    v3["schema_version"] = 3
-    v3.pop("active_lesson_budget")
-    v3.pop("lifecycle_events")
-    for lesson in v3["lessons"].values():
-        lesson.pop("state")
-        lesson.pop("last_lifecycle_event_id")
-    path.write_text(json.dumps(v3), encoding="utf-8")
-    before = path.read_bytes()
-    command = [
-        sys.executable,
-        str(ROOT / "scripts/migrate_lesson_lifecycle.py"),
-        "--repo-root",
-        str(tmp_path),
-    ]
-
-    preview = subprocess.run(command, check=False, capture_output=True, text=True)
-    assert preview.returncode == 0, preview.stderr
-    assert json.loads(preview.stdout)["executed"] is False
-    assert path.read_bytes() == before
-
-    executed = subprocess.run(
-        [*command, "--execute"], check=False, capture_output=True, text=True
-    )
-    assert executed.returncode == 0, executed.stderr
-    assert json.loads(executed.stdout)["executed"] is True
-    assert json.loads(path.read_text(encoding="utf-8"))["schema_version"] == 4
 
 
 def test_archive_and_resurrection_preserve_scores_and_refuse_invalid_transition(

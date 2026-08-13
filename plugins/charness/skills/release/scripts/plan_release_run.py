@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -101,7 +100,6 @@ def parse_args() -> argparse.Namespace:
         help="Explicit target version to include in the release plan.",
     )
     parser.add_argument("--detail", action="store_true", help="Emit the full release plan as YAML.")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -314,9 +312,7 @@ def main() -> int:
     try:
         args = parse_args()
         payload = build_plan(args)
-        if args.json:
-            print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-        elif args.detail:
+        if args.detail:
             yaml_output.emit_yaml(payload)
         else:
             print(f"next_action={payload['next_action']['kind']}: {payload['next_action']['reason']}")

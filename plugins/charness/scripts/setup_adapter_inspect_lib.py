@@ -13,10 +13,6 @@ WORKTREE_ADAPTER_SEED_COMMAND = (
 ACTIVE_WORKTREE_THRESHOLD = 1
 SETUP_ADAPTER_CANDIDATES: tuple[Path, ...] = (
     Path(".agents/setup-adapter.yaml"),
-    Path(".codex/setup-adapter.yaml"),
-    Path(".claude/setup-adapter.yaml"),
-    Path("docs/setup-adapter.yaml"),
-    Path("setup-adapter.yaml"),
 )
 
 

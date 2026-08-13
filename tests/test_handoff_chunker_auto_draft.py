@@ -425,7 +425,7 @@ def test_cli_writes_artifact_and_reports_check_goal_ok(tmp_path, lib, chunk_from
         [
             "python3",
             str(DRAFTER_SCRIPT),
-            "--chunk",
+            "--input",
             "-",
             "--date",
             "2026-05-28",
@@ -465,7 +465,7 @@ def test_cli_next_step_routes_through_achieve_before_phase(
         [
             "python3",
             str(DRAFTER_SCRIPT),
-            "--chunk",
+            "--input",
             "-",
             "--date",
             "2026-05-28",
@@ -502,7 +502,7 @@ def test_cli_refuses_to_overwrite_existing_artifact(tmp_path, lib, chunk_from_en
     args = [
         "python3",
         str(DRAFTER_SCRIPT),
-        "--chunk",
+        "--input",
         "-",
         "--date",
         "2026-05-28",

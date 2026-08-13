@@ -22,11 +22,9 @@ _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scri
 
 VALIDATOR_SCRIPT_NAMES = ("validate_retro_artifact.py", "validate-retro-artifact.py")
 
-# The retro validator (scripts/validate_retro_artifact.py) is opt-in: it only
-# enforces the `## Sibling Search` follow-up grammar. The scaffold emits the
-# canonical retro sections plus a `## Sibling Search` bullet carrying a valid
-# `follow-up:` so the part the validator actually checks passes unedited and an
-# author sees the exact format the follow-up rule demands.
+# The scaffold emits every current structural field in a validating state. The
+# author replaces the honest missing-start lesson disposition only when a
+# declared session actually existed.
 
 
 def default_title(title: str | None) -> str:
@@ -76,6 +74,14 @@ def render_template(*, title: str, date_text: str, artifact_sections: list[str] 
     )
     if artifact_sections:
         lines.extend([*artifact_sections, ""])
+    lines.extend(
+        [
+            "## Lesson Evaluation",
+            "",
+            'Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}',
+            "",
+        ]
+    )
     lines.extend(["## Next Improvements", "", "- workflow: TODO", "- capability: TODO", "- memory: TODO", ""])
     lines.extend(["## Persisted", "", "Persisted: yes: TODO path", ""])
     return "\n".join(lines).rstrip() + "\n"

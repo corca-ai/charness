@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -57,10 +58,10 @@ def test_inventory_entrypoint_docs_ergonomics_reports_advisory_flags(tmp_path: P
         str(repo),
         "--max-core-lines",
         "20",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     doc = payload["documents"][0]
     assert doc["doc_path"] == "AGENTS.md"
     assert set(doc["heuristics"]) == {
@@ -97,11 +98,10 @@ def test_inventory_entrypoint_docs_ergonomics_summary_omits_full_doc_rows(tmp_pa
         "--max-core-lines",
         "20",
         "--summary",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary_note"].startswith("summary is triage output")
     assert payload["document_count"] == 1
     assert payload["documents_with_heuristics_count"] == 1
@@ -164,11 +164,11 @@ def test_inventory_entrypoint_docs_ergonomics_flags_agents_runbook_pressure(tmp_
         capsys,
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     doc = payload["documents"][0]
     assert doc["numbered_procedure_count"] == 4
     assert "host_instruction_runbook_pressure" in doc["heuristics"]
@@ -190,11 +190,11 @@ def test_inventory_entrypoint_docs_ergonomics_reports_inbound_and_audience_signa
         capsys,
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     docs_by_path = {item["doc_path"]: item for item in payload["documents"]}
     assert docs_by_path["docs/guide.md"]["inbound_internal_doc_links"] == ["README.md"]
     assert "top_level_doc_audience_folder_review" in docs_by_path["docs/guide.md"]["heuristics"]

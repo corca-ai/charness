@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
 
@@ -120,9 +119,9 @@ def test_machine_runtime_profile_uses_detected_system(monkeypatch) -> None:
 
 def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:
     repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["budgets_configured"] == 0
     assert payload["runtime_profile"] == "default"
     assert payload["violations"] == []
@@ -136,14 +135,12 @@ def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:
     assert "WEAK  runtime_visibility_missing_budgets" in plain_result.stdout
 
 
-def test_runtime_budget_summary_yaml_matches_json(tmp_path: Path) -> None:
+def test_runtime_budget_summary_yaml_is_structured(tmp_path: Path) -> None:
     repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
     args = ("--repo-root", str(repo), "--runtime-profile", "default", "--summary")
     yaml_result = run_script(SCRIPT, *args)
-    json_result = run_script(SCRIPT, *args, "--json")
-
-    assert yaml_result.returncode == json_result.returncode == 0
-    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml_result.returncode == 0
+    assert yaml.safe_load(yaml_result.stdout)["budgets_configured"] == 0
 
 
 def test_runtime_budget_summary_bounds_diagnostic_lists() -> None:
@@ -171,10 +168,10 @@ def test_runtime_budget_summary_bounds_diagnostic_lists() -> None:
 def test_runtime_budget_gate_reports_explicit_empty_runtime_fields(tmp_path: Path) -> None:
     repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None, explicit_empty_budgets=True, startup_probes=[])
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert [finding["type"] for finding in payload["runtime_visibility_findings"]] == [
         "runtime_visibility_missing_budgets",
         "runtime_visibility_missing_startup_probes",
@@ -190,10 +187,10 @@ def test_runtime_budget_gate_reports_empty_selected_profile_budget(tmp_path: Pat
         startup_probes=[],
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "ci")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "ci")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["budgets_configured"] == 0
     assert payload["runtime_visibility_findings"][0]["type"] == "runtime_visibility_missing_budgets"
 
@@ -215,18 +212,18 @@ def test_runtime_budget_gate_has_no_visibility_findings_when_budget_and_probe_ex
         ],
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
 
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["runtime_visibility_findings"] == []
+    assert yaml.safe_load(result.stdout)["runtime_visibility_findings"] == []
 
 
 def test_runtime_budget_gate_passes_when_within_budget(tmp_path: Path) -> None:
     signals = {"commands": {"pytest": {"latest": {"elapsed_ms": 15000, "status": "pass"}}}}
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["violations"] == []
     assert payload["latest_spikes"] == []
     assert payload["checked"][0] == {
@@ -245,9 +242,9 @@ def test_runtime_budget_gate_passes_when_within_budget(tmp_path: Path) -> None:
 def test_runtime_budget_gate_fails_when_over_budget(tmp_path: Path) -> None:
     signals = {"commands": {"pytest": {"latest": {"elapsed_ms": 30000, "status": "pass"}}}}
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["violations"] == [
         {
             "label": "pytest",
@@ -282,9 +279,9 @@ def test_runtime_budget_gate_reports_latest_spike_without_failing(tmp_path: Path
         }
     }
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals, smoothing=smoothing)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["violations"] == []
     assert payload["latest_spikes"] == [
         {
@@ -311,10 +308,10 @@ def test_runtime_budget_gate_reports_latest_spike_without_failing(tmp_path: Path
 def test_runtime_budget_gate_summary_carries_visibility_advisory_contract(tmp_path: Path) -> None:
     repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default", "--summary")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default", "--summary")
 
     assert result.returncode == 0, result.stderr
-    contract = json.loads(result.stdout)["advisory_contracts"]["runtime_visibility_findings"]
+    contract = yaml.safe_load(result.stdout)["advisory_contracts"]["runtime_visibility_findings"]
     assert contract == {
         "severity": "weak",
         "reason": "configuration review gap; render_runtime_summary.py is the final consumer for the recommended action",
@@ -342,9 +339,9 @@ def test_runtime_budget_gate_reports_advisory_ewma_without_enforcing_it(tmp_path
         }
     }
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals, smoothing=smoothing)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["violations"] == []
     assert payload["checked"][0]["status"] == "ok"
     assert payload["checked"][0]["ewma_advisory_elapsed_ms"] == 45000.5
@@ -367,9 +364,9 @@ def test_runtime_budget_gate_fails_on_recent_median_drift(tmp_path: Path) -> Non
         }
     }
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["violations"] == [
         {
             "label": "pytest",
@@ -382,18 +379,18 @@ def test_runtime_budget_gate_fails_on_recent_median_drift(tmp_path: Path) -> Non
 
 def test_runtime_budget_gate_warns_on_missing_sample(tmp_path: Path) -> None:
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals={"commands": {}})
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["missing_samples"] == ["pytest"]
     assert payload["violations"] == []
 
 
 def test_runtime_budget_gate_auto_selects_machine_profile(tmp_path: Path) -> None:
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals={"profiles": {}})
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["runtime_profile"].startswith("local-")
     assert payload["runtime_profile"].endswith("cpu")
 
@@ -428,9 +425,9 @@ def test_runtime_budget_gate_selects_named_profile_budget_and_samples(tmp_path: 
         },
         signals=signals,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "ci-slow")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "ci-slow")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["runtime_profile"] == "ci-slow"
     assert payload["checked"][0]["budget_ms"] == 540000
     assert payload["checked"][0]["median_recent_elapsed_ms"] == 290000
@@ -444,9 +441,9 @@ def test_runtime_budget_gate_fails_unknown_explicit_profile(tmp_path: Path) -> N
         budget_profiles={"local-fast": {"budgets": {"pytest": 45000}}},
         signals={"profiles": {}},
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "ci-slow")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "ci-slow")
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["profile_config_errors"] == [
         "runtime profile `ci-slow` is not configured in runtime_budget_profiles"
         " (derive a starting block with `check_runtime_budget.py"
@@ -476,7 +473,7 @@ def test_runtime_budget_gate_reports_top_runtime_hotspots(tmp_path: Path) -> Non
         SCRIPT,
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
         "--top-runtime-count",
         "2",
         "--runtime-profile",
@@ -484,7 +481,7 @@ def test_runtime_budget_gate_reports_top_runtime_hotspots(tmp_path: Path) -> Non
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["runtime_hotspots"] == [
         {
             "label": "pytest",
@@ -577,7 +574,7 @@ def test_runtime_budget_gate_excludes_stale_runtime_hotspots(tmp_path: Path) -> 
         SCRIPT,
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
         "--top-runtime-count",
         "2",
         "--runtime-profile",
@@ -585,7 +582,7 @@ def test_runtime_budget_gate_excludes_stale_runtime_hotspots(tmp_path: Path) -> 
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert [item["label"] for item in payload["runtime_hotspots"]] == ["current-pytest"]
     assert payload["stale_runtime_hotspots"][0]["label"] == "retired-check"
     assert payload["stale_runtime_hotspots"][0]["stale_days"] == 22
@@ -612,10 +609,10 @@ def test_runtime_budget_gate_keeps_invalid_timestamps_active(tmp_path: Path) -> 
     }
     repo = seed_runtime_budget_repo(tmp_path, budgets={"unknown-age": 50000}, signals=signals)
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert [item["label"] for item in payload["runtime_hotspots"]] == ["unknown-age"]
     assert payload["stale_runtime_hotspots"] == []
 
@@ -725,9 +722,9 @@ def test_budget_slack_advisory_never_changes_exit_code(tmp_path: Path) -> None:
             }
         },
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     slack = payload["budget_slack_findings"]
     assert [f["label"] for f in slack] == ["pytest"]
     assert payload["violations"] == []
@@ -871,12 +868,10 @@ def test_suggest_budgets_source_is_a_token_matching_the_enforcement_report() -> 
 
 
 def test_suggest_budgets_refuses_machine_readable_output_modes(tmp_path: Path) -> None:
-    """The fragment is commented YAML. `--json` would either drop the comments that
-    carry evidence depth or hand YAML to a caller that parses JSON, so the
-    combination is a usage error instead of a silently wrong shape."""
+    """The comment-carrying fragment refuses the ordinary report modes."""
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 1000}, signals=None)
 
-    for mode in ("--json", "--summary", "--detail"):
+    for mode in ("--summary", "--detail"):
         result = run_script(SCRIPT, "--repo-root", str(repo), "--suggest-budgets", mode)
         assert result.returncode == 2, f"{mode}: {result.stdout}"
         assert "cannot be combined" in result.stderr

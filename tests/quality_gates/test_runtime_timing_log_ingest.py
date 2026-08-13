@@ -12,6 +12,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_script
 
 SKILL_SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
@@ -252,9 +254,9 @@ def test_render_runtime_summary_ingests_command_timing_log(tmp_path: Path) -> No
             {"command": "specdown", "elapsed_ms": 12000},
         ],
     )
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["commands_source"] == "command_timing_log"
     assert payload["timing_log"]["source_used"] is True
     assert payload["timing_log"]["samples_total"] == 2
@@ -270,9 +272,9 @@ def test_runtime_signals_take_precedence_over_timing_log(tmp_path: Path) -> None
         log_rows=[{"command": "pytest", "elapsed_ms": 60000}],
         signals={"commands": {"pytest": {"latest": {"elapsed_ms": 5}, "median_recent_elapsed_ms": 5}}},
     )
-    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["commands_source"] == "runtime_signals"
     assert payload["timing_log"]["source_used"] is False
     pytest_hot = next(h for h in payload["runtime_hotspots"] if h["label"] == "pytest")
@@ -285,9 +287,9 @@ def test_check_runtime_budget_violation_from_timing_log(tmp_path: Path) -> None:
         adapter_lines=[*_TIMING_ADAPTER, "runtime_budgets:", "  pytest: 1000"],
         log_rows=[{"command": "pytest", "elapsed_ms": 60000}],
     )
-    result = run_script(BUDGET_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(BUDGET_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 1, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["commands_source"] == "command_timing_log"
     assert [v["label"] for v in payload["violations"]] == ["pytest"]
 
@@ -303,7 +305,7 @@ def test_check_runtime_budget_fails_loud_on_misconfigured_timing_log(tmp_path: P
         "    label: command",  # elapsed deliberately omitted
     ]
     repo = _seed_repo(tmp_path, adapter_lines=bad_adapter, log_rows=[{"command": "pytest", "elapsed_ms": 100}])
-    result = run_script(BUDGET_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(BUDGET_SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 1, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert any("command_timing_log" in err for err in payload["profile_config_errors"])

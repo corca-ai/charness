@@ -7,7 +7,6 @@ from the inventory's bucket/footprint accounting.
 """
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
 
@@ -67,9 +66,9 @@ def test_standing_test_economics_counts_mjs_test_files_and_nested_cli(tmp_path: 
     (repo / "tests" / "flow.spec.mjs").write_text("export const value = 1;\n", encoding="utf-8")
     (repo / "tests" / "test_py.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
 
-    result = _run_discovery_cli(repo, tmp_path, "--json")
+    result = _run_discovery_cli(repo, tmp_path, "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["test_file_count"] == 3
     assert payload["test_files_by_extension"].get(".mjs") == 2
@@ -89,9 +88,9 @@ def test_standing_test_economics_extends_discovery_with_adapter_patterns(tmp_pat
     (repo / "tests" / "test_py.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
     _write_discovery_adapter(repo, {"patterns": ["*.integration.mjs"], "patterns_mode": "extend"})
 
-    result = _run_discovery_cli(repo, tmp_path, "--json")
+    result = _run_discovery_cli(repo, tmp_path, "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     # extend keeps the built-in defaults (the .py file) AND adds the adapter glob.
     assert payload["test_discovery"]["source"] == "adapter-patterns"
@@ -107,9 +106,9 @@ def test_standing_test_economics_replaces_discovery_with_adapter_patterns(tmp_pa
     (repo / "tests" / "test_py.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
     _write_discovery_adapter(repo, {"patterns": ["*.spec.custom"], "patterns_mode": "replace"})
 
-    result = _run_discovery_cli(repo, tmp_path, "--json")
+    result = _run_discovery_cli(repo, tmp_path, "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     # replace drops the built-in defaults: the default .py match is excluded.
     assert payload["test_discovery"]["source"] == "adapter-patterns"
@@ -129,9 +128,9 @@ def test_standing_test_economics_consumes_adapter_discovery_command(tmp_path: Pa
     (repo / "tests" / "test_py.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
     _write_discovery_adapter(repo, {"command": "echo tests/only_via_command.node"})
 
-    result = _run_discovery_cli(repo, tmp_path, "--json")
+    result = _run_discovery_cli(repo, tmp_path, "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["test_discovery"]["source"] == "command"
     assert payload["test_discovery"]["command_status"] == "ok"
@@ -147,9 +146,9 @@ def test_standing_test_economics_marks_degraded_when_discovery_command_fails(tmp
     (repo / "tests" / "test_py.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
     _write_discovery_adapter(repo, {"command": "false"})
 
-    result = _run_discovery_cli(repo, tmp_path, "--json")
+    result = _run_discovery_cli(repo, tmp_path, "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     # A broken authoritative lister must surface as a degraded measurement, not a
     # silent undercount: fall back to defaults but flag degraded with the error.
@@ -171,9 +170,9 @@ def test_standing_test_economics_flags_empty_authoritative_command(tmp_path: Pat
     (repo / "tests" / "test_py.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
     _write_discovery_adapter(repo, {"command": "true"})
 
-    result = _run_discovery_cli(repo, tmp_path, "--json")
+    result = _run_discovery_cli(repo, tmp_path, "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     # An empty authoritative surface is a degraded measurement, not a clean zero,
     # and must NOT silently fall back to the default globs (which would re-create
@@ -196,9 +195,9 @@ def test_standing_test_economics_discovery_command_non_utf8_degrades_without_cra
     # (UnicodeDecodeError is a ValueError, outside the subprocess-error catch).
     _write_discovery_adapter(repo, {"command": "printf '\\377\\n'"})
 
-    result = _run_discovery_cli(repo, tmp_path, "--json")
+    result = _run_discovery_cli(repo, tmp_path, "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["test_discovery"]["source"] == "command"
     assert payload["test_discovery"]["degraded"] is True
@@ -210,9 +209,9 @@ def test_standing_test_economics_surfaces_invalid_discovery_adapter(tmp_path: Pa
     (repo / "tests" / "test_py.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
     _write_discovery_adapter(repo, {"patterns_mode": "bogus"})
 
-    result = _run_discovery_cli(repo, tmp_path, "--json")
+    result = _run_discovery_cli(repo, tmp_path, "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["adapter_valid"] is False
     assert any("patterns_mode" in error for error in payload["adapter_errors"])

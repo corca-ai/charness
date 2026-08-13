@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -53,18 +52,18 @@ def test_inventory_dual_implementation_defaults_to_yaml_with_json_compatibility(
 
     default = subprocess.run(command, check=False, capture_output=True, text=True)
     detail_json = subprocess.run(
-        [*command, "--detail", "--json"], check=False, capture_output=True, text=True
+        [*command, "--detail"], check=False, capture_output=True, text=True
     )
     summary = subprocess.run(
         [*command, "--summary"], check=False, capture_output=True, text=True
     )
     summary_json = subprocess.run(
-        [*command, "--summary", "--json"], check=False, capture_output=True, text=True
+        [*command, "--summary"], check=False, capture_output=True, text=True
     )
 
     assert default.returncode == detail_json.returncode == summary.returncode == summary_json.returncode == 0
-    assert yaml.safe_load(default.stdout) == json.loads(detail_json.stdout)
-    assert yaml.safe_load(summary.stdout) == json.loads(summary_json.stdout)
+    assert yaml.safe_load(default.stdout) == yaml.safe_load(detail_json.stdout)
+    assert yaml.safe_load(summary.stdout) == yaml.safe_load(summary_json.stdout)
 
 
 def test_quality_skill_carries_dual_implementation_lens() -> None:

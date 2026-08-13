@@ -71,9 +71,9 @@ def test_public_skill_dogfood_wrappers_report_missing_policy_without_a_traceback
         assert payload["applicability"] == "not-applicable-missing-public-skill-validation-policy"
         assert payload["matrix"] == []
 
-    root_json = run_script(commands[0], "--repo-root", str(consumer), "--json")
+    root_json = run_script(commands[0], "--repo-root", str(consumer), "--detail")
     assert root_json.returncode == 0, root_json.stderr
-    assert json.loads(root_json.stdout)["applicability"] == "not-applicable-missing-public-skill-validation-policy"
+    assert yaml.safe_load(root_json.stdout)["applicability"] == "not-applicable-missing-public-skill-validation-policy"
 
     human = run_script(commands[1], "--repo-root", str(consumer))
     assert human.returncode == 0, human.stderr

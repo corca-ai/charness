@@ -214,16 +214,6 @@ def test_validate_adapter_data_incomparable_list_form_and_change_me_warning(tmp_
     assert any("CHANGE_ME" in w for w in warns2)
 
 
-def test_load_adapter_non_canonical_path_and_non_mapping_file(tmp_path: Path) -> None:
-    # A compatibility-fallback path (.codex/...) warns to prefer the canonical path.
-    fallback = tmp_path / ".codex" / "proof-semantics-adapter.yaml"
-    fallback.parent.mkdir(parents=True, exist_ok=True)
-    fallback.write_text("proof_levels:\n  - smoke\n", encoding="utf-8")
-    adapter = psa.load_adapter(tmp_path)
-    assert adapter["found"] is True
-    assert any("compatibility fallback" in w for w in adapter["warnings"])
-
-
 def test_load_adapter_non_mapping_yaml_uses_defaults(tmp_path: Path, monkeypatch) -> None:
     # Defensive branch: a YAML loader that returns a non-mapping -> warn + defaults.
     target = tmp_path / ".agents" / "proof-semantics-adapter.yaml"

@@ -79,11 +79,10 @@ def main() -> int:
 
     if args.suggest_budgets:
         # The output is a YAML fragment with comments carrying the evidence depth.
-        # Honoring `--json`/`--summary` here would either drop those comments or emit
-        # YAML to a caller that parses JSON, so the combination is a usage error
-        # rather than a silently wrong shape.
-        if args.json or args.summary or args.detail:
-            parser.error("--suggest-budgets emits a YAML fragment; it cannot be combined with --json/--summary/--detail")
+        # Summary/detail would replace the comment-carrying fragment with the
+        # ordinary report shape, so the combination is a usage error.
+        if args.summary or args.detail:
+            parser.error("--suggest-budgets emits a YAML fragment; it cannot be combined with --summary/--detail")
         profile, suggestions, commands_source = runtime_budget_sizing_lib.suggest_budgets(
             args.repo_root.resolve(),
             load_adapter,
@@ -112,19 +111,17 @@ def main() -> int:
         print(runtime_budget_lib.format_human(report))
 
     if report["profile_config_errors"]:
-        if not args.json:
-            for error in report["profile_config_errors"]:
-                print(f"runtime profile configuration error: {error}", file=sys.stderr)
+        for error in report["profile_config_errors"]:
+            print(f"runtime profile configuration error: {error}", file=sys.stderr)
         return 1
     if report["violations"]:
-        if not args.json:
-            for v in report["violations"]:
-                print(
-                    "runtime budget exceeded: "
-                    f"{v['label']} recent median {v['median_recent_elapsed_ms']}ms "
-                    f"(latest {v['latest_elapsed_ms']}ms, budget {v['budget_ms']}ms)",
-                    file=sys.stderr,
-                )
+        for v in report["violations"]:
+            print(
+                "runtime budget exceeded: "
+                f"{v['label']} recent median {v['median_recent_elapsed_ms']}ms "
+                f"(latest {v['latest_elapsed_ms']}ms, budget {v['budget_ms']}ms)",
+                file=sys.stderr,
+            )
         return 1
     return 0
 

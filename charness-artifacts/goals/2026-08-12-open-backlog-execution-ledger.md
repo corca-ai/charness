@@ -98,6 +98,11 @@ requirement for this goal.
   proposal/application, retirement, and retention surfaces with 85 focused tests
   and two review rounds. No live lifecycle decision, push, GitHub closure, or
   publication occurred; it does not alter the fixed cohort.
+- [#617](https://github.com/corca-ai/charness/issues/617) — a presented #614
+  lesson list was later marked `presentation-unproven` after compaction although
+  the Codex rollout retained the exact message. This late-arrival bug is tracked
+  outside the cohort; #617 now owns a receipt-bound, human-readable lesson
+  session bundle rather than a normal-path host-log lookup.
 
 New tracker issues after the opening recount are late arrivals. They stay outside
 this cohort unless the goal is explicitly amended; they are recorded as an

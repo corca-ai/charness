@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import json
 import os
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -30,9 +31,9 @@ def _write_workflow(tmp_path: Path, body: str) -> Path:
 def test_silent_when_no_workflows(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # Still exact-equality, and still a clean exit: a DISCOVERED empty scope stays
     # a pass (`test_empty_scope_refusals.py`'s rule). What the payload gained is the
     # denominator — `workflows_not_exempt` / `jobs_evaluated` — because scanned-but-
@@ -63,9 +64,9 @@ jobs:
       - run: npm run lint:strict
 """,
     )
-    full_json = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    full_json = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert full_json.returncode == 0, full_json.stderr
-    assert "parity_issues" in json.loads(full_json.stdout)
+    assert "parity_issues" in yaml.safe_load(full_json.stdout)
 
     summary = run_script(SCRIPT, "--repo-root", str(repo), "--summary")
     assert summary.returncode == 0, summary.stderr
@@ -76,9 +77,9 @@ jobs:
     assert detail.returncode == 0, detail.stderr
     assert "parity_issues:" in detail.stdout
 
-    summary_json = run_script(SCRIPT, "--repo-root", str(repo), "--summary", "--json")
+    summary_json = run_script(SCRIPT, "--repo-root", str(repo), "--summary")
     assert summary_json.returncode == 0, summary_json.stderr
-    assert json.loads(summary_json.stdout)["parity_issue_count"] == 1
+    assert yaml.safe_load(summary_json.stdout)["parity_issue_count"] == 1
 
 
 def test_strict_workflow_listing_fails_closed_outside_git(tmp_path: Path) -> None:
@@ -92,7 +93,7 @@ def test_strict_workflow_listing_fails_closed_outside_git(tmp_path: Path) -> Non
         "--repo-root",
         str(repo),
         "--require-git-file-listing",
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 1
@@ -116,9 +117,9 @@ jobs:
       - run: npm run coverage:floor:check
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     issue_runs = sorted(issue["run"] for issue in payload["parity_issues"])
     assert issue_runs == ["npm run coverage:floor:check", "npm run test:coverage"]
 
@@ -137,9 +138,9 @@ jobs:
       - run: pip install -r requirements.txt
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     classifications = sorted(
         entry["classification"]
         for workflow in payload["workflows"]
@@ -164,9 +165,9 @@ jobs:
         run: bash <(curl -s https://codecov.io/bash)
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["parity_issues"] == [
         {
             "workflow": str(repo / ".github/workflows/verify.yml"),
@@ -193,9 +194,9 @@ jobs:
       - run: bash <(curl -s https://codecov.io/bash)
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["parity_issues"][0]["classification"] == "ci-only-violation"
 
 
@@ -236,9 +237,9 @@ jobs:
       - run: mutmut run
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["parity_issues"] == []
     assert payload["jobs_without_canonical_gate"] == []
     assert len(payload["exempt_workflows"]) == 1
@@ -261,9 +262,9 @@ jobs:
       - run: ruff check scripts
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["parity_issues"] == []
     assert payload["jobs_without_canonical_gate"] == []
     assert len(payload["exempt_workflows"]) == 1
@@ -283,9 +284,9 @@ jobs:
       - run: mutmut run
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # Unknown keyword falls back to standard gate-parity enforcement,
     # so the workflow is NOT exempt and surfaces jobs_without_canonical_gate.
     assert payload["exempt_workflows"] == []
@@ -305,7 +306,7 @@ jobs:
       - run: mutmut run
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0
     assert "unknown gate-policy" in result.stderr
     assert "'scheduledd-deeper-check'" in result.stderr
@@ -325,9 +326,9 @@ jobs:
       - run: mutmut run
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # First marker keyword wins. Earlier unknown keyword means the workflow
     # is NOT exempt — operator must remove the dead marker for the real one
     # to take effect. The stderr warning surfaces the typo.
@@ -349,9 +350,9 @@ jobs:
           mutmut run
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # Marker buried inside a step body does not exempt: parser stops at the
     # first non-comment line (`name:`).
     assert payload["exempt_workflows"] == []
@@ -399,10 +400,10 @@ jobs:
         str(repo),
         "--canonical-gate-pattern",
         r"\./repo-gate\.sh",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert [issue["run"] for issue in payload["parity_issues"]] == [
         "extra-required-check"
     ]
@@ -428,10 +429,10 @@ jobs:
 """,
         )
 
-        result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+        result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
 
         assert result.returncode == 0, result.stderr
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         assert [issue["run"] for issue in payload["parity_issues"]] == [
             "required-after-runner"
         ]
@@ -467,11 +468,11 @@ jobs:
             "--repo-root",
             str(repo),
             "--require-canonical-gate-match",
-            "--json",
+            "--detail",
         )
 
         assert result.returncode == 1, result.stderr
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         assert payload["parity_issues"] == []
         assert payload["jobs_without_canonical_gate"] == [
             {"workflow": str(repo / ".github/workflows/verify.yml"), "jobs": ["verify"]}
@@ -496,10 +497,10 @@ jobs:
         "--repo-root",
         str(repo),
         "--require-empty-parity-issues",
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["parity_issues"] == []
     assert payload["workflows"][0]["jobs"] == []
     assert payload["jobs_without_canonical_gate"] == [
@@ -545,9 +546,9 @@ jobs:
       - run: npm run coverage:floor:check
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     issues = sorted(issue["run"] for issue in payload["parity_issues"])
     assert issues == ["npm run coverage:floor:check"]
 
@@ -566,9 +567,9 @@ jobs:
       - uses: actions/download-artifact@v4
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     classifications = sorted(
         entry["classification"]
         for workflow in payload["workflows"]
@@ -610,9 +611,9 @@ def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
     asserted directly, so a third workflow (exempt or not) fires this test, which
     is the signal #137 actually asked for.
     """
-    result = run_script(SCRIPT, "--repo-root", str(REPO_ROOT), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(REPO_ROOT), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["parity_issues"] == []
     assert payload["jobs_without_canonical_gate"] == []
     assert payload["jobs_gate_match_unestablished"] == []
@@ -648,9 +649,9 @@ jobs:
       - a bare string step
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     unestablished = payload["jobs_gate_match_unestablished"]
     assert len(unestablished) == 1
@@ -676,9 +677,9 @@ jobs:
   empty_job:
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["jobs_gate_match_unestablished"] == []
     assert payload["jobs_evaluated"] == 0
@@ -710,10 +711,9 @@ jobs:
         "--workflow-glob",
         ".github/workflows/*.toml",
         "--summary",
-        "--json",
     )
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # The summary key set is present, so a summary consumer does not raise.
     assert payload["parity_issue_count"] == 0
     assert payload["jobs_evaluated"] == 0
@@ -724,11 +724,7 @@ jobs:
 
 
 def test_named_scope_refusal_summary_yaml_names_the_glob(tmp_path: Path) -> None:
-    """The YAML arm of summary mode carries the same refusal keys.
-
-    `emit_selected` branches on `--json` before `--summary`, so the YAML path is a
-    separate exit from the one above and needs its own assertion.
-    """
+    """Summary mode carries the refusal keys needed by its consumer."""
     repo = _write_workflow(
         tmp_path,
         """name: verify

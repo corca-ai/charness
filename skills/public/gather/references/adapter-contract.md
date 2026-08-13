@@ -5,15 +5,7 @@ skill body.
 
 ## Canonical Path
 
-Use `<repo-root>/.agents/gather-adapter.yaml` for new repos.
-
-Search order:
-
-1. `<repo-root>/.agents/gather-adapter.yaml`
-2. `.codex/gather-adapter.yaml`
-3. `.claude/gather-adapter.yaml`
-4. `<repo-root>/docs/gather-adapter.yaml`
-5. `gather-adapter.yaml` as compatibility fallback only
+Use `<repo-root>/.agents/gather-adapter.yaml`.
 
 ## Fields
 

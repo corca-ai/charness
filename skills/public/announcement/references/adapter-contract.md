@@ -5,15 +5,7 @@ delivery seams from a repo adapter.
 
 ## Canonical Path
 
-Use `<repo-root>/.agents/announcement-adapter.yaml` for new repos.
-
-Search order:
-
-1. `<repo-root>/.agents/announcement-adapter.yaml`
-2. `.codex/announcement-adapter.yaml`
-3. `.claude/announcement-adapter.yaml`
-4. `<repo-root>/docs/announcement-adapter.yaml`
-5. `announcement-adapter.yaml`
+Use `<repo-root>/.agents/announcement-adapter.yaml`.
 
 ## Shared Core
 

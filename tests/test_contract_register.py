@@ -12,7 +12,6 @@ import pytest
 from scripts import apply_contract_transition as transition_writer
 from scripts import contract_register_lib as register
 from scripts import lesson_ledger_lib as lesson_ledger
-from scripts import migrate_contract_register as register_migration
 from scripts import record_contract_citation as citation_writer
 from scripts import record_contract_graduation_proposal as proposal_writer
 from scripts import render_contract_retention_review as retention_review
@@ -72,7 +71,7 @@ def _ledger(repo: Path) -> None:
     path = repo / "charness-artifacts/retro/lesson-ledger.json"
     payload = {
         "kind": "charness.lesson-ledger",
-        "schema_version": 4,
+        "schema_version": lesson_ledger.SCHEMA_VERSION,
         "transitions": [
             {
                 "sequence": 1,
@@ -99,7 +98,6 @@ def _ledger(repo: Path) -> None:
                 "score": 0,
             },
         ],
-        "legacy_score_event_count": 0,
         "session_events": [_session("session-1"), _session("session-2")],
         "lessons": {
             "a": {
@@ -225,68 +223,6 @@ def test_register_requires_displacement_for_a_budgeted_graduation_proposal(tmp_p
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="reuses a contract unit identity"):
         _validate(tmp_path)
-
-
-def test_v1_migration_freezes_seed_units_and_refuses_unmigratable_proposals(
-    tmp_path: Path,
-) -> None:
-    _contract_sources(tmp_path)
-    v2 = register.initial_contract_register(tmp_path)
-    v1 = {
-        "kind": register.KIND,
-        "schema_version": 1,
-        "unit_budget": v2["unit_budget"],
-        "units": v2["units"],
-        "citation_events": [],
-        "catch_events": [],
-        "graduation_proposals": [],
-    }
-
-    migrated = register_migration.migration_candidate(v1)
-
-    assert migrated["seed_units"] == v1["units"]
-    assert migrated["unit_budget"] == v1["unit_budget"]
-    assert migrated["retired_units"] == []
-    assert migrated["applied_transitions"] == []
-    v1["graduation_proposals"] = [{"proposal_id": "legacy"}]
-    with pytest.raises(ValueError, match="explicit evidence sessions"):
-        register_migration.migration_candidate(v1)
-
-
-def test_contract_migration_cli_is_dry_run_then_execute(tmp_path: Path) -> None:
-    _contract_sources(tmp_path)
-    v2 = register.initial_contract_register(tmp_path)
-    path = tmp_path / "charness-artifacts/retro/contract-register.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    v1 = {
-        "kind": register.KIND,
-        "schema_version": 1,
-        "unit_budget": v2["unit_budget"],
-        "units": v2["units"],
-        "citation_events": [],
-        "catch_events": [],
-        "graduation_proposals": [],
-    }
-    path.write_text(json.dumps(v1), encoding="utf-8")
-    before = path.read_bytes()
-    command = [
-        sys.executable,
-        str(ROOT / "scripts/migrate_contract_register.py"),
-        "--repo-root",
-        str(tmp_path),
-    ]
-
-    preview = subprocess.run(command, check=False, capture_output=True, text=True)
-    assert preview.returncode == 0, preview.stderr
-    assert json.loads(preview.stdout)["executed"] is False
-    assert path.read_bytes() == before
-
-    executed = subprocess.run(
-        [*command, "--execute"], check=False, capture_output=True, text=True
-    )
-    assert executed.returncode == 0, executed.stderr
-    assert json.loads(executed.stdout)["executed"] is True
-    assert json.loads(path.read_text(encoding="utf-8"))["schema_version"] == 2
 
 
 def test_proposal_apply_and_retention_review_preserve_retired_history(tmp_path: Path) -> None:
@@ -541,7 +477,7 @@ def test_register_rejects_committed_invalid_shapes(tmp_path: Path, monkeypatch) 
     cases = [
         ("{", "invalid JSON"),
         ("{}", "unsupported shape"),
-        (json.dumps({"kind": register.KIND, "schema_version": 1}), "invalid append-only"),
+        (json.dumps({"kind": register.KIND, "schema_version": 1}), "unsupported shape"),
     ]
     for stdout, message in cases:
         monkeypatch.setattr(

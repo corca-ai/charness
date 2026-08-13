@@ -71,7 +71,6 @@ def _payload(
     source: str = "charness-artifacts/retro/source.md",
     score_events: list[dict] | None = None,
     session_events: list[dict] | None = None,
-    legacy_score_event_count: int | None = None,
 ) -> dict:
     events = [] if score_events is None else score_events
     return {
@@ -82,9 +81,6 @@ def _payload(
         ],
         "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
         "lifecycle_events": [],
-        "legacy_score_event_count": 0
-        if legacy_score_event_count is None
-        else legacy_score_event_count,
         "session_events": [] if session_events is None else session_events,
         "score_events": events,
         "lessons": {
@@ -138,7 +134,7 @@ def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
-def test_ledger_replays_legacy_cited_scores_and_checker_cli(
+def test_ledger_replays_session_cited_scores_and_checker_cli(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     _retro(tmp_path, "source.md", "a")
@@ -207,9 +203,7 @@ def test_session_snapshot_and_new_scores_are_coupled_without_rerendering(tmp_pat
     event = _score_event(
         event_id="new-score", session_id="session-a", score=2, anchor="decision evidence"
     )
-    path = _ledger(
-        tmp_path, session_events=[session], score_events=[event], legacy_score_event_count=0
-    )
+    path = _ledger(tmp_path, session_events=[session], score_events=[event])
     assert _validate(tmp_path)["score_event_count"] == 1
     payload = json.loads(path.read_text(encoding="utf-8"))
     invalids: list[tuple[dict, str]] = []
@@ -361,16 +355,6 @@ def test_score_authoring_refuses_a_lesson_absent_from_an_existing_session(tmp_pa
         )
     assert path.read_bytes() == before
 
-
-def test_uncommitted_v3_ledger_cannot_declare_legacy_scores(tmp_path: Path) -> None:
-    _retro(tmp_path, "source.md", "a")
-    _ledger(
-        tmp_path,
-        score_events=[_score_event(score=1)],
-        legacy_score_event_count=1,
-    )
-    with pytest.raises(ValueError, match="only allowed when migrating"):
-        _validate(tmp_path)
 
 
 def test_score_authoring_requires_containing_session_and_leaves_refusals_unwritten(
@@ -694,98 +678,3 @@ def test_two_concurrent_score_writers_preserve_both_events(tmp_path: Path) -> No
         "concurrent-b",
     }
     assert _validate(tmp_path)["score_event_count"] == 2
-
-
-def _commit_v2_ledger(repo: Path) -> Path:
-    _git(repo, "init")
-    _git(repo, "config", "user.email", "test@example.com")
-    _git(repo, "config", "user.name", "Test User")
-    _retro(repo, "source.md", "a")
-    _retro(repo, "second.md", "a")
-    events = [
-        _score_event(score=2, anchor="decision evidence"),
-        _score_event(event_id="score-b", source="charness-artifacts/retro/second.md", score=-1),
-    ]
-    payload = _materialize(_payload(score_events=events))
-    payload = {
-        key: value
-        for key, value in payload.items()
-        if key not in {"legacy_score_event_count", "session_events"}
-    }
-    payload["schema_version"] = 2
-    path = repo / "charness-artifacts/retro/lesson-ledger.json"
-    path.write_text(json.dumps(payload), encoding="utf-8")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "v2 scored ledger")
-    return path
-
-
-def test_v2_migration_and_v3_session_score_prefixes_are_append_only(tmp_path: Path) -> None:
-    path = _commit_v2_ledger(tmp_path)
-    v3 = _materialize(
-        _payload(
-            score_events=[
-                _score_event(score=2, anchor="decision evidence"),
-                _score_event(
-                    event_id="score-b", source="charness-artifacts/retro/second.md", score=-1
-                ),
-            ],
-            legacy_score_event_count=2,
-        )
-    )
-    path.write_text(json.dumps(v3), encoding="utf-8")
-    assert _validate(tmp_path)["score_event_count"] == 2
-    _git(tmp_path, "add", ".")
-    _git(tmp_path, "commit", "-m", "migrate v3")
-    rewritten_transition = copy.deepcopy(v3)
-    rewritten_transition["transitions"][0]["transition_id"] = "rewritten-seed"
-    rewritten_transition["lessons"]["a"]["transition_id"] = "rewritten-seed"
-    path.write_text(json.dumps(rewritten_transition), encoding="utf-8")
-    with pytest.raises(ValueError, match="committed transitions"):
-        _validate(tmp_path)
-    rewritten_v2 = copy.deepcopy(v3)
-    rewritten_v2["score_events"][0]["score"] = 1
-    _materialize(rewritten_v2)
-    path.write_text(json.dumps(rewritten_v2), encoding="utf-8")
-    with pytest.raises(ValueError, match="committed score events"):
-        _validate(tmp_path)
-    path.write_text(json.dumps(v3), encoding="utf-8")
-    with pytest.raises(ValueError, match="committed legacy_score_event_count"):
-        changed_cutoff = copy.deepcopy(v3)
-        changed_cutoff["legacy_score_event_count"] = 1
-        path.write_text(json.dumps(changed_cutoff), encoding="utf-8")
-        _validate(tmp_path)
-    _retro(tmp_path, "third.md", "a")
-    appended = copy.deepcopy(v3)
-    appended["session_events"] = [
-        _session_event(session_id="session-a"),
-        _session_event(session_id="session-b", seed="seed-b"),
-    ]
-    appended["score_events"].append(
-        _score_event(
-            event_id="score-c",
-            source="charness-artifacts/retro/third.md",
-            score=3,
-            anchor="third evidence",
-            session_id="session-a",
-        )
-    )
-    _materialize(appended)
-    path.write_text(json.dumps(appended), encoding="utf-8")
-    assert _validate(tmp_path)["score_event_count"] == 3
-    _git(tmp_path, "add", ".")
-    _git(tmp_path, "commit", "-m", "append sessions and score")
-    for mutation in ("rewrite", "delete", "reorder"):
-        invalid = copy.deepcopy(appended)
-        if mutation == "rewrite":
-            invalid["session_events"][0]["snapshot"]["seed"] = "rewritten"
-            invalid["session_events"][0]["snapshot_sha256"] = ledger.snapshot_sha256(
-                invalid["session_events"][0]["snapshot"]
-            )
-        elif mutation == "delete":
-            invalid["session_events"] = invalid["session_events"][:1]
-        else:
-            invalid["session_events"].reverse()
-        path.write_text(json.dumps(invalid), encoding="utf-8")
-        with pytest.raises(ValueError, match="committed session events"):
-            _validate(tmp_path)

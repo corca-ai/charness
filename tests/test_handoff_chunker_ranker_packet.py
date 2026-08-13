@@ -245,7 +245,7 @@ def test_parse_ranked_chunks_round_trips_reasoning(lib, merge_proposal):
 def test_cli_emits_valid_packet_from_merge_proposal_stdin(tmp_path, lib, merge_proposal):
     payload = json.dumps(merge_proposal.to_dict())
     result = subprocess.run(
-        ["python3", str(PACKET_SCRIPT), "--merge-proposal", "-"],
+        ["python3", str(PACKET_SCRIPT), "--input", "-"],
         input=payload,
         capture_output=True,
         text=True,

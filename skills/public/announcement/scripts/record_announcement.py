@@ -96,7 +96,7 @@ def main() -> None:
     parser.add_argument("--head-commit", required=True, help="HEAD commit sha covered by this announcement record")
     parser.add_argument(
         "--delivery-kind", default="none", type=normalize_delivery_kind, choices=DELIVERY_KINDS,
-        help=f"Delivery channel kind for this announcement; one of: {', '.join(DELIVERY_KINDS)} (case-insensitive; `command` normalizes to `human-backend`)",
+        help=f"Delivery channel kind for this announcement; one of: {', '.join(DELIVERY_KINDS)} (case-insensitive)",
     )
     parser.add_argument("--delivery-target", default="", help="Delivery target identifier such as a channel name, URL, or release tag")
     parser.add_argument("--delivery-handle", default="", help="Opaque delivery handle captured from the backend (e.g. a message ts/url/id), when available")

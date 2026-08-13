@@ -342,8 +342,8 @@ def test_cli_rejects_foreign_delivery_kind(tmp_path: Path, monkeypatch, capsys) 
     assert not (repo / ".charness" / "announcement" / "announcements.jsonl").exists()
 
 
-def test_cli_normalizes_delivery_kind_case_and_deprecated_alias(tmp_path: Path, monkeypatch, capsys) -> None:
-    for raw, expected in (("Human-Backend", "human-backend"), ("COMMAND", "human-backend"), ("NONE", "none")):
+def test_cli_normalizes_delivery_kind_case(tmp_path: Path, monkeypatch, capsys) -> None:
+    for raw, expected in (("Human-Backend", "human-backend"), ("NONE", "none")):
         repo, artifact = _prepare_artifact(tmp_path / raw)
         extra = ["--verification-status", "confirmed"] if expected == "human-backend" else []
         result = _run(monkeypatch, capsys, *_record_args(repo, artifact, "--delivery-kind", raw, *extra))

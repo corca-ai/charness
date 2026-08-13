@@ -15,10 +15,7 @@ FINDING_CLASSES = {
     "migration_gap", "brittle_hard_gate_smell",
 }
 ENFORCEMENT_TIERS = {"AUTO_EXISTING", "AUTO_CANDIDATE", "NON_AUTOMATABLE"}
-QUALITY_ADAPTER_CANDIDATES = tuple(Path(path) for path in (
-    ".agents/quality-adapter.yaml", ".codex/quality-adapter.yaml",
-    ".claude/quality-adapter.yaml", "docs/quality-adapter.yaml", "quality-adapter.yaml",
-))
+QUALITY_ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"),)
 DEFAULT_REVIEW_GLOBS = (".agents/*-adapter.yaml", "skills/public/*/adapter.example.yaml", "scripts/*.py")
 
 

@@ -5,15 +5,7 @@ of the public skill body.
 
 ## Canonical Path
 
-Use `<repo-root>/.agents/quality-adapter.yaml` for new repos.
-
-Search order:
-
-1. `<repo-root>/.agents/quality-adapter.yaml`
-2. `<repo-root>/.codex/quality-adapter.yaml`
-3. `<repo-root>/.claude/quality-adapter.yaml`
-4. `<repo-root>/docs/quality-adapter.yaml`
-5. `<repo-root>/quality-adapter.yaml` as compatibility fallback only
+Use `<repo-root>/.agents/quality-adapter.yaml`.
 
 ## Fields
 

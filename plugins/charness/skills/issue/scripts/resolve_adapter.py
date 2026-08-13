@@ -40,10 +40,6 @@ _CAPTURE_CAPABILITY = _load_capture_capability()
 
 ADAPTER_CANDIDATES = (
     Path(".agents/issue-adapter.yaml"),
-    Path(".codex/issue-adapter.yaml"),
-    Path(".claude/issue-adapter.yaml"),
-    Path("docs/issue-adapter.yaml"),
-    Path("issue-adapter.yaml"),
 )
 
 
@@ -339,10 +335,6 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         raw_data.get("feature_brief_pause"), errors
     )
     data["harness_upstream"] = _parse_harness_upstream(raw_data.get("harness_upstream"), errors)
-
-    canonical_path = repo_root / ".agents" / "issue-adapter.yaml"
-    if adapter_path.resolve() != canonical_path.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
 
     return {
         "found": True,

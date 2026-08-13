@@ -207,19 +207,9 @@ def create_issue(
         "milestone": milestone,
         "body_bytes": len(body_text.encode("utf-8")),
         "body_preview": body_text[:BODY_PREVIEW_CHARS],
-        # `number` and `url` are the canonical names: they match `issue_read.py`'s payload
-        # and the ledger the skill contract tells the agent to report from. `created_*` are
-        # kept as aliases because charness installs into consumer repos, where something may
-        # already read them; they are not the names to document or to add new readers for.
-        #
-        # The split they came from is the reported defect: `issue_read.py` emitted `number`,
-        # this helper emitted `created_number`, and the docs were written in the read
-        # helper's vocabulary. An agent following them read nulls on a create that had
-        # SUCCEEDED, and a retry would have filed a duplicate.
+        # `number` and `url` match `issue_read.py` and the verified ledger contract.
         "number": created_number,
         "url": created_url,
-        "created_url": created_url,
-        "created_number": created_number,
         "body_verified": None,
         "verification": None,
     }
@@ -252,7 +242,6 @@ def create_issue(
     if payload["url"] is None:
         readback_url = verified["url"]
         payload["url"] = readback_url
-        payload["created_url"] = readback_url
     payload["body_verified"] = verified["body_verified"]
     if not payload["body_verified"]:
         payload["stored_body_bytes"] = verified["stored_body_bytes"]

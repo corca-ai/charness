@@ -194,20 +194,6 @@ def test_create_skill_adapter_resolver_rejects_non_mapping_host_extensions(tmp_p
     assert "host_extensions must be a mapping" in payload["errors"]
 
 
-def test_create_skill_adapter_resolver_warns_on_compatibility_path(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "create-skill-adapter.yaml").write_text(
-        "version: 1\nimplementation_identity_terms:\n  - shared implementation\n",
-        encoding="utf-8",
-    )
-
-    payload = _resolve(repo)
-    assert payload["found"] is True
-    assert payload["valid"] is True
-    assert "compatibility fallback" in "\n".join(payload["warnings"])
-
-
 def test_create_skill_init_adapter_writes_canonical_adapter(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

@@ -66,9 +66,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Repeatable. NAME is an arm in --ab-dir's results.json; VALUE is 'BASELINE' (exactly one "
         "arm) or a unit_id from --mutant-manifest.",
     )
-    parser.add_argument(
-        "--json", action="store_true", help="Present for CLI-shape compatibility; output is JSON unless --markdown."
-    )
     parser.add_argument("--markdown", action="store_true", help="Print a human-readable report instead of JSON.")
     return parser
 

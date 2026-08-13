@@ -3,7 +3,7 @@
 
 Extracted from ``check_dup_ratchet.py`` (module-length split, item 5). This is the
 leaf that turns the world into identity sets: it derives the current code
-content-fingerprint set (from a full ``nose query`` scan or an injected ``--json``
+content-fingerprint set (from a full ``nose query`` scan or an injected structured
 inventory) and the doc drift-signature set (from ``inventory_doc_duplicates`` or an
 injected file). The gate CLI (``check_dup_ratchet.py``) and its baseline maintenance
 commands both consume this; it depends only on the nose scan/report/fingerprint
@@ -23,6 +23,8 @@ import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 
 def _load_skill_runtime_bootstrap():
@@ -92,9 +94,7 @@ def scan_families(repo_root: Path, scope_paths: list[str]) -> tuple[list[dict] |
     ``family_fingerprint`` / ``family_member_hashes``, plus ``locations`` for a
     caller that needs the raw member spans), or ``None`` with a reason on a missing
     nose binary or a scan error. `scan_code_members` builds on this (one nose
-    invocation per caller, never a double-scan for the perf budget); it is also the
-    reusable entrypoint an algo-migration tool (``migrate_dup_fingerprints.py``)
-    needs to compute BOTH the old and new algo's identity from one live scan."""
+    invocation per caller, never a double-scan for the perf budget)."""
     nose_bin = _inventory.resolve_nose_bin()
     if nose_bin is None:
         return None, "nose binary not found; code clone scan skipped", ""
@@ -168,7 +168,7 @@ def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str
 
 
 def payload_string_field(text: str | None, field: str) -> str:
-    """One top-level string field of an injected inventory --json payload, or ``""`` when
+    """One top-level string field of an injected structured payload, or ``""`` when
     the payload is absent/unreadable or the field is missing or not a string.
 
     Two fields are read this way and neither gets its own wrapper: ``status`` (read ONLY to
@@ -224,7 +224,7 @@ def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[
 
 def run_doc_inventory(repo_root: Path) -> str:
     completed = subprocess.run(
-        [sys.executable, str(DOC_INVENTORY), "--repo-root", str(repo_root), "--json"],
+        [sys.executable, str(DOC_INVENTORY), "--repo-root", str(repo_root), "--detail"],
         cwd=repo_root, check=False, capture_output=True, text=True,
     )
     return completed.stdout
@@ -243,9 +243,9 @@ def doc_drift_signatures(args, repo_root: Path) -> tuple[set[str], str | None]:
     if not text or not text.strip():
         return set(), "doc inventory produced no output; the doc scan produced nothing to read"
     try:
-        payload = json.loads(text)
-    except json.JSONDecodeError:
-        return set(), "doc inventory JSON unreadable"
+        payload = yaml.safe_load(text)
+    except yaml.YAMLError:
+        return set(), "doc inventory YAML unreadable"
     if not isinstance(payload, dict):
         return set(), "doc inventory payload malformed"
     # `baseline-written` belongs here with the other non-drift statuses: that payload

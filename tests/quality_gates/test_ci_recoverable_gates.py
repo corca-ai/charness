@@ -184,9 +184,9 @@ def test_cli_ranks_recoverable_and_keeps_local(tmp_path: Path) -> None:
             {"command": "ruff-check", "elapsed_ms": 800},
         ],
     )
-    result = run_script(INVENTORY, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+    result = run_script(INVENTORY, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["commands_source"] == "command_timing_log"
     candidate_labels = {c["label"] for c in payload["candidates"]}
     keep_local_labels = {g["label"] for g in payload["keep_local"]}
@@ -197,7 +197,7 @@ def test_cli_ranks_recoverable_and_keeps_local(tmp_path: Path) -> None:
     assert "specdown" not in candidate_labels  # safety: never recommend moving non-recoverable proof
 
 
-def test_cli_summary_yaml_matches_json(tmp_path: Path) -> None:
+def test_cli_summary_yaml_reports_candidates(tmp_path: Path) -> None:
     repo = _seed_repo(
         tmp_path,
         adapter_lines=_ADAPTER_WITH_LOG,
@@ -206,10 +206,7 @@ def test_cli_summary_yaml_matches_json(tmp_path: Path) -> None:
     )
     args = ("--repo-root", str(repo), "--runtime-profile", "default", "--summary")
     yaml_result = run_script(INVENTORY, *args)
-    json_result = run_script(INVENTORY, *args, "--json")
-
-    assert yaml_result.returncode == json_result.returncode == 0
-    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert yaml_result.returncode == 0
     assert yaml.safe_load(yaml_result.stdout)["candidate_count"] == 1
 
 

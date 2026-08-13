@@ -3,8 +3,9 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
-import json
 from pathlib import Path
+
+import yaml
 
 from .support import ROOT
 
@@ -12,7 +13,7 @@ from .support import ROOT
 # inventory entrypoint by file and drive its `main()` with a captured stdout
 # buffer instead of spawning a subprocess. This entrypoint wraps its lib output
 # with adapter-derived fields inside main(), so calling main() (not the bare lib
-# function) preserves that contract; `--json` mode serializes the same payload.
+# function) preserves that contract; `--detail` mode serializes the same payload.
 _SPEC = importlib.util.spec_from_file_location(
     "inventory_lint_ignores",
     ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_lint_ignores.py",
@@ -25,13 +26,13 @@ _SPEC.loader.exec_module(_MODULE)
 def _inventory_json(repo: Path) -> dict:
     buffer = io.StringIO()
     saved_argv = _MODULE.sys.argv
-    _MODULE.sys.argv = ["inventory_lint_ignores.py", "--repo-root", str(repo), "--json"]
+    _MODULE.sys.argv = ["inventory_lint_ignores.py", "--repo-root", str(repo), "--detail"]
     try:
         with contextlib.redirect_stdout(buffer):
             assert _MODULE.main() == 0
     finally:
         _MODULE.sys.argv = saved_argv
-    return json.loads(buffer.getvalue())
+    return yaml.safe_load(buffer.getvalue())
 
 
 def _inventory_summary(repo: Path) -> dict:
@@ -42,14 +43,13 @@ def _inventory_summary(repo: Path) -> dict:
         "--repo-root",
         str(repo),
         "--summary",
-        "--json",
     ]
     try:
         with contextlib.redirect_stdout(buffer):
             assert _MODULE.main() == 0
     finally:
         _MODULE.sys.argv = saved_argv
-    return json.loads(buffer.getvalue())
+    return yaml.safe_load(buffer.getvalue())
 
 
 def test_inventory_lint_ignores_reports_file_level_and_inline_suppressions(tmp_path: Path) -> None:

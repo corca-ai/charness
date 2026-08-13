@@ -257,7 +257,7 @@ def test_cli_emits_proposal_from_parser_payload_stdin(lib, tmp_path):
         "entries": [entry.to_dict() for entry in entries],
     }
     result = subprocess.run(
-        ["python3", str(MERGE_SCRIPT), "--entries", "-"],
+        ["python3", str(MERGE_SCRIPT), "--input", "-"],
         input=json.dumps(parser_payload),
         capture_output=True,
         text=True,

@@ -3,10 +3,11 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
-import json
 import sys
 from pathlib import Path
 from typing import NamedTuple
+
+import yaml
 
 from .support import ROOT
 
@@ -87,10 +88,10 @@ def test_inventory_public_spec_quality_flags_reader_facing_drift(tmp_path: Path)
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     spec = payload["public_specs"][0]
     assert spec["spec_path"] == "docs/specs/current-product.spec.md"
     assert set(spec["heuristics"]) == {
@@ -151,11 +152,10 @@ def test_inventory_public_spec_quality_summary_omits_full_spec_attribution(tmp_p
         "--repo-root",
         str(repo),
         "--summary",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary_note"].startswith("summary is triage output")
     assert "public_specs" not in payload
     assert payload["summary"]["flagged_spec_count"] == 1
@@ -177,10 +177,10 @@ def test_inventory_public_spec_quality_detects_duplicate_public_examples(tmp_pat
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary"]["duplicate_command_count"] == 1
     duplicate = payload["layering"]["duplicate_command_examples"][0]
     assert duplicate["command"] == "demo status --json"
@@ -221,10 +221,10 @@ def test_inventory_public_spec_quality_recognizes_specdown_run_shell_blocks(tmp_
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     spec = payload["public_specs"][0]
     assert spec["spec_path"] == "specs/index.spec.md"
     assert spec["command_examples"] == ["demo doctor --json"]
@@ -270,10 +270,10 @@ def test_inventory_public_spec_quality_rolls_up_top_source_guard_specs(
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary"]["source_guard_row_count"] == 3
     assert payload["summary"]["source_guard_token_count"] == 3
     assert payload["summary"]["source_guard_pressure_spec_count"] == 2
@@ -335,10 +335,10 @@ def test_inventory_public_spec_quality_exempts_contract_sections(tmp_path: Path)
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    spec = json.loads(result.stdout)["public_specs"][0]
+    spec = yaml.safe_load(result.stdout)["public_specs"][0]
     assert "implementation_guard_pressure" not in spec["heuristics"]
     assert "future_state_mixed" not in spec["heuristics"]
     assert spec["implementation_path_ref_exempt_count"] == 2
@@ -381,10 +381,10 @@ def test_inventory_public_spec_quality_still_scans_unexempt_headings(tmp_path: P
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    spec = json.loads(result.stdout)["public_specs"][0]
+    spec = yaml.safe_load(result.stdout)["public_specs"][0]
     assert "implementation_guard_pressure" in spec["heuristics"]
     assert "future_state_mixed" in spec["heuristics"]
 
@@ -410,10 +410,10 @@ def test_inventory_public_spec_quality_uses_path_density_floor(tmp_path: Path) -
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    spec = json.loads(result.stdout)["public_specs"][0]
+    spec = yaml.safe_load(result.stdout)["public_specs"][0]
     assert spec["implementation_path_ref_count"] == 2
     assert spec["implementation_path_ref_density"] < spec["implementation_path_ref_density_floor"]
     assert "implementation_guard_pressure" not in spec["heuristics"]
@@ -435,10 +435,10 @@ def test_inventory_public_spec_quality_uses_path_density_floor(tmp_path: Path) -
     stricter = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert stricter.returncode == 0, stricter.stderr
-    stricter_spec = json.loads(stricter.stdout)["public_specs"][0]
+    stricter_spec = yaml.safe_load(stricter.stdout)["public_specs"][0]
     assert "implementation_guard_pressure" in stricter_spec["heuristics"]
 
 
@@ -475,10 +475,10 @@ def test_inventory_public_spec_quality_recognizes_pointer_specs(tmp_path: Path) 
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    specs = {item["spec_path"]: item for item in json.loads(result.stdout)["public_specs"]}
+    specs = {item["spec_path"]: item for item in yaml.safe_load(result.stdout)["public_specs"]}
     pytest_spec = specs["specs/pytest-pointer.spec.md"]
     frontmatter_spec = specs["specs/frontmatter-pointer.spec.md"]
     assert "no_executable_proof_blocks" not in pytest_spec["heuristics"]
@@ -510,10 +510,10 @@ def test_inventory_public_spec_quality_exempts_wrapped_pytest_pointer_blocks(tmp
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    spec = json.loads(result.stdout)["public_specs"][0]
+    spec = yaml.safe_load(result.stdout)["public_specs"][0]
     assert spec["implementation_path_ref_count"] == 0
     assert spec["implementation_path_ref_total_count"] == 4
     assert spec["implementation_path_ref_exempt_count"] == 4
@@ -545,10 +545,10 @@ def test_inventory_public_spec_quality_skips_implementation_guard_on_small_specs
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    spec = json.loads(result.stdout)["public_specs"][0]
+    spec = yaml.safe_load(result.stdout)["public_specs"][0]
     assert "implementation_guard_pressure" not in spec["heuristics"]
     assert spec["total_line_count"] < spec["implementation_guard_min_lines"]
     assert spec["implementation_guard_min_lines"] == 100
@@ -590,10 +590,10 @@ def test_inventory_public_spec_quality_honors_adapter_implementation_guard_min_l
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    spec = json.loads(result.stdout)["public_specs"][0]
+    spec = yaml.safe_load(result.stdout)["public_specs"][0]
     assert "implementation_guard_pressure" in spec["heuristics"]
 
 
@@ -623,10 +623,10 @@ def test_inventory_public_spec_quality_skips_vendored_specs(tmp_path: Path) -> N
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    spec_paths = [spec["spec_path"] for spec in json.loads(result.stdout)["public_specs"]]
+    spec_paths = [spec["spec_path"] for spec in yaml.safe_load(result.stdout)["public_specs"]]
     assert spec_paths == ["specs/own.spec.md"]
 
 
@@ -652,7 +652,7 @@ def test_inventory_public_spec_quality_rejects_invalid_adapter(tmp_path: Path) -
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 1
     assert "Invalid quality adapter" in result.stderr

@@ -19,6 +19,10 @@ CURRENT_RELEASE = load_script_module(
     "tests.quality_gates.script_behaviors_current_release",
     ROOT / "skills/public/release/scripts/current_release.py",
 )
+FRESH_CHECKOUT_PROBES = load_script_module(
+    "tests.quality_gates.script_behaviors_fresh_checkout_probes",
+    ROOT / "skills/public/release/scripts/check_fresh_checkout_probes.py",
+)
 SYNTHESIZE_OPERATOR_ACCEPTANCE = load_script_module(
     "tests.quality_gates.script_behaviors_synthesize_operator_acceptance",
     ROOT / "skills/public/setup/scripts/synthesize_operator_acceptance.py",
@@ -38,6 +42,45 @@ def test_release_current_release_reports_packaging_version(monkeypatch, capsys) 
     cli_payload = json.loads(capsys.readouterr().out)
     assert cli_payload["package_id"] == "charness"
     assert cli_payload["surface_versions"]["packaging_manifest"] == expected
+
+
+def test_release_fresh_checkout_detail_emits_payload(tmp_path: Path, monkeypatch) -> None:
+    payload = {
+        "status": "configured",
+        "fresh_checkout_probes": ["echo ok"],
+        "probe_results": [],
+        "blockers": [],
+    }
+    emitted: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        FRESH_CHECKOUT_PROBES,
+        "build_payload",
+        lambda _root, *, run_probes: payload,
+    )
+    monkeypatch.setattr(
+        FRESH_CHECKOUT_PROBES.yaml_output,
+        "emit_yaml",
+        emitted.append,
+    )
+    monkeypatch.setattr(
+        FRESH_CHECKOUT_PROBES.SKILL_RUNTIME,
+        "arm_cli_timeout",
+        lambda **_kwargs: lambda: None,
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "check_fresh_checkout_probes.py",
+            "--repo-root",
+            str(tmp_path),
+            "--detail",
+        ],
+    )
+
+    assert FRESH_CHECKOUT_PROBES.main() == 0
+    assert emitted == [payload]
 
 
 def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path, monkeypatch, capsys) -> None:

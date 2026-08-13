@@ -150,9 +150,6 @@ def build_parser() -> argparse.ArgumentParser:
         "section, which distinguishes load-bearing prose from decoration within a "
         "section that survives as a whole.",
     )
-    split_parser.add_argument(
-        "--json", action="store_true", help="Present for CLI-shape compatibility; output is always JSON."
-    )
     split_parser.set_defaults(func=_cmd_split)
 
     generate_parser = subparsers.add_parser(

@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_doc_duplicates.py"
@@ -55,7 +57,7 @@ def _write_fake_nose(path: Path, *, version: str) -> None:
 
 
 def _run(repo: Path, nose_bin: str | None, *extra: str) -> subprocess.CompletedProcess[str]:
-    return _run_with_output(repo, nose_bin, "--json", *extra)
+    return _run_with_output(repo, nose_bin, "--detail", *extra)
 
 
 def _run_with_output(
@@ -89,11 +91,11 @@ def test_doc_dup_missing_nose_is_advisory_but_require_fails(tmp_path: Path) -> N
     repo.mkdir()
     advisory = _run(repo, None)
     assert advisory.returncode == 0, advisory.stderr
-    assert json.loads(advisory.stdout)["status"] == "missing"
+    assert yaml.safe_load(advisory.stdout)["status"] == "missing"
 
     required = _run(repo, None, "--require-nose")
     assert required.returncode == 1
-    assert json.loads(required.stdout)["status"] == "missing"
+    assert yaml.safe_load(required.stdout)["status"] == "missing"
 
 
 def test_doc_dup_version_too_old_blocks_under_require(tmp_path: Path) -> None:
@@ -104,7 +106,7 @@ def test_doc_dup_version_too_old_blocks_under_require(tmp_path: Path) -> None:
 
     advisory = _run(repo, str(fake))
     assert advisory.returncode == 0, advisory.stderr
-    assert json.loads(advisory.stdout)["status"] == "version-too-old"
+    assert yaml.safe_load(advisory.stdout)["status"] == "version-too-old"
 
     required = _run(repo, str(fake), "--require-nose")
     assert required.returncode == 1
@@ -140,11 +142,11 @@ def test_doc_dup_error_status_blocks_under_require(tmp_path: Path) -> None:
 
     advisory = _run(repo, str(fake))
     assert advisory.returncode == 0, advisory.stderr
-    assert json.loads(advisory.stdout)["status"] == "error"
+    assert yaml.safe_load(advisory.stdout)["status"] == "error"
 
     required = _run(repo, str(fake), "--require-nose")
     assert required.returncode == 1
-    assert json.loads(required.stdout)["status"] == "error"
+    assert yaml.safe_load(required.stdout)["status"] == "error"
 
 
 def test_doc_dup_reports_new_family_then_baseline_filters_it(tmp_path: Path) -> None:
@@ -155,7 +157,7 @@ def test_doc_dup_reports_new_family_then_baseline_filters_it(tmp_path: Path) -> 
 
     first = _run(repo, str(fake))
     assert first.returncode == 0, first.stderr
-    payload = json.loads(first.stdout)
+    payload = yaml.safe_load(first.stdout)
     assert payload["status"] == "ok"
     assert payload["total_family_count"] == 1
     assert payload["family_count"] == 1  # no baseline yet -> reported as new
@@ -166,7 +168,7 @@ def test_doc_dup_reports_new_family_then_baseline_filters_it(tmp_path: Path) -> 
     assert (repo / "charness-artifacts" / "quality" / "doc-nose-baseline.json").is_file()
 
     after = _run(repo, str(fake))
-    payload_after = json.loads(after.stdout)
+    payload_after = yaml.safe_load(after.stdout)
     assert payload_after["total_family_count"] == 1
     assert payload_after["family_count"] == 0  # accepted by baseline (drift posture)
     assert payload_after["accepted_count"] == 1
@@ -195,7 +197,7 @@ def test_doc_dup_help_explains_root_and_json_options() -> None:
         assert fragment in option_block, f"missing help for {option}: {fragment}"
 
 
-def test_doc_dup_output_modes_preserve_json_and_json_out_payloads(tmp_path: Path) -> None:
+def test_doc_dup_yaml_modes_and_json_out_payload(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     fake = repo / "nose-cur"
@@ -210,14 +212,6 @@ def test_doc_dup_output_modes_preserve_json_and_json_out_payloads(tmp_path: Path
     detail = _run_with_output(repo, str(fake), "--detail")
     assert detail.returncode == 0, detail.stderr
     assert "families:" in detail.stdout
-
-    full_json = _run(repo, str(fake))
-    assert full_json.returncode == 0, full_json.stderr
-    assert "families" in json.loads(full_json.stdout)
-
-    summary_json = _run(repo, str(fake), "--summary")
-    assert summary_json.returncode == 0, summary_json.stderr
-    assert json.loads(summary_json.stdout)["family_count"] == 1
 
     written = _run_with_output(repo, str(fake), "--summary", "--json-out", str(json_out))
     assert written.returncode == 0, written.stderr

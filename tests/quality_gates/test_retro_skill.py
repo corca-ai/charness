@@ -62,7 +62,7 @@ def test_retro_lesson_evaluation_requires_contemporaneous_presentation() -> None
     ).read_text(encoding="utf-8")
     normalized = " ".join((RETRO_SKILL + "\n" + reference).split())
     assert "contemporaneous agent-authored session-start" in normalized
-    assert "A stored snapshot or command-side receipt proves neither display nor use" in normalized
+    assert "A valid bundle proves the issued content, not human readback, lesson use, or positive effect" in normalized
     assert "record absent or uncertain presentation honestly without appending a score" in normalized
     assert "affirmative no-effect judgment as distinct from merely having zero score events" in normalized
     assert "Never backfill scores" in normalized

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+import yaml
 
 from .skill_ergonomics_support import run_inventory_skill_ergonomics as _run
 from .support import ROOT
@@ -16,9 +17,9 @@ def test_inventory_skill_ergonomics_emits_interpretation_self_declaration(tmp_pa
         encoding="utf-8",
     )
 
-    result = _run("--repo-root", str(repo), "--json")
+    result = _run("--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     interpretation = payload["interpretation"]
     assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
     assert all(interpretation[field].strip() for field in interpretation)

@@ -15,10 +15,6 @@ from scripts.artifact_naming_lib import RECORD_PATTERN
 
 ADAPTER_CANDIDATES = (
     Path(".agents/narrative-adapter.yaml"),
-    Path(".codex/narrative-adapter.yaml"),
-    Path(".claude/narrative-adapter.yaml"),
-    Path("docs/narrative-adapter.yaml"),
-    Path("narrative-adapter.yaml"),
 )
 STRING_FIELDS = (
     "repo",
@@ -180,11 +176,8 @@ def load_narrative_adapter(repo_root: Path) -> dict[str, Any]:
     raw = load_yaml_file(adapter_path)
     raw_data = raw if isinstance(raw, dict) else {}
     warnings: list[str] = []
-    canonical_path = repo_root / ".agents" / "narrative-adapter.yaml"
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    if adapter_path.resolve() != canonical_path.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
     data, errors, extra_warnings = validate_narrative_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
     return {

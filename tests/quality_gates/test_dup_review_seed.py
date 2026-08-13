@@ -170,7 +170,7 @@ def test_seed_cli_writes_overlay(tmp_path: Path) -> None:
     result = run_script(
         str(SEED_SCRIPT), "--repo-root", str(tmp_path),
         "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--reviewed-at", "2026-06-19", "--write", "--json", cwd=ROOT,
+        "--reviewed-at", "2026-06-19", "--write", cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
     overlay = json.loads((tmp_path / "charness-artifacts" / "quality" / "dup-review.json").read_text(encoding="utf-8"))
@@ -235,7 +235,7 @@ def test_families_from_payload_separates_declared_empty_from_unestablished() -> 
     assert seed._families_from_payload(json.dumps({"families": [{"family_id": "x"}]}), "src") == (
         [{"family_id": "x"}], None)
     for text, fragment in (
-        ("not json", "did not emit JSON"),
+        ("[not: yaml", "did not emit YAML"),
         ("", "produced no output"),
         ("   \n", "produced no output"),
         (json.dumps({"families": "bad"}), "declares no families list"),
@@ -301,18 +301,17 @@ def test_main_refuses_to_reseed_over_a_corrupt_overlay(tmp_path: Path, monkeypat
     assert overlay.read_text(encoding="utf-8") == '{"entries": [{"surface": "code",'  # untouched
 
 
-def test_main_inprocess_write_json(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_main_inprocess_write(tmp_path: Path, monkeypatch, capsys) -> None:
     code_json = _write_inventory(tmp_path / "code.json", [_code_family("mid", ["a/resolve_adapter.py", "b/resolve_adapter.py"])])
     doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(
         sys, "argv",
         ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json),
          "--doc-inventory", str(doc_json),
-         "--reviewed-at", "2026-06-19", "--write", "--json"],
+         "--reviewed-at", "2026-06-19", "--write"],
     )
     assert seed.main() == 0
-    out = json.loads(capsys.readouterr().out)
-    assert out["code_family_count"] == 1
+    assert "1 code" in capsys.readouterr().out
     assert (tmp_path / "charness-artifacts" / "quality" / "dup-review.json").is_file()
 
 
@@ -369,9 +368,7 @@ def test_load_existing_refuses_a_parseable_overlay_that_lost_its_entries_list(tm
         assert "refusing to reseed" in reason, payload
 
 
-def test_main_refusal_still_emits_the_payload_under_json(tmp_path: Path, monkeypatch, capsys) -> None:
-    # The refusal exits 1 on stderr prose; a `--json` caller parsing stdout would
-    # otherwise get nothing at all to distinguish "refused" from "crashed".
+def test_main_refusal_names_the_unreadable_input(tmp_path: Path, monkeypatch, capsys) -> None:
     unreadable = tmp_path / "code-dir.json"
     unreadable.mkdir()
     # The DOC arm is injected as a declared-empty inventory even though this test is
@@ -384,33 +381,25 @@ def test_main_refusal_still_emits_the_payload_under_json(tmp_path: Path, monkeyp
     monkeypatch.setattr(
         sys, "argv",
         ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(unreadable),
-         "--doc-inventory", str(doc_json), "--reviewed-at", "2026-06-19", "--json"],
+         "--doc-inventory", str(doc_json), "--reviewed-at", "2026-06-19"],
     )
 
     assert seed.main() == 1
 
     captured = capsys.readouterr()
-    payload = json.loads(captured.out)
-    assert payload["ok"] is False
-    # Exactly one reason, and it is the code arm's: with the doc arm established the
-    # refusal can no longer be over-determined by an ambient missing binary.
-    assert payload["unestablished_reasons"] == [
-        reason for reason in payload["unestablished_reasons"] if "cannot read" in reason
-    ]
-    assert any(str(unreadable) in reason for reason in payload["unestablished_reasons"])
+    assert captured.out == ""
+    assert "cannot read" in captured.err
+    assert str(unreadable) in captured.err
     assert "refused" in captured.err
 
 
-def test_main_help_documents_repo_root_and_json(monkeypatch, capsys) -> None:
+def test_main_help_documents_repo_root(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sys, "argv", ["seed", "--help"])
     with pytest.raises(SystemExit) as exc_info:
         seed.main()
     assert exc_info.value.code == 0
     output = capsys.readouterr().out
-    expected = {
-        "--repo-root": "Repository root whose duplicate inventories and overlay should be managed",
-        "--json": "Emit the seed result as JSON",
-    }
+    expected = {"--repo-root": "Repository root whose duplicate inventories and overlay should be managed"}
     for option, fragment in expected.items():
         match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
         assert match, f"missing help option: {option}"

@@ -19,13 +19,7 @@ ExtraPayload = Callable[[dict[str, Any], dict[str, Any], bool], dict[str, Any]]
 
 
 def adapter_candidates(skill_id: str) -> tuple[Path, ...]:
-    return (
-        Path(f".agents/{skill_id}-adapter.yaml"),
-        Path(f".codex/{skill_id}-adapter.yaml"),
-        Path(f".claude/{skill_id}-adapter.yaml"),
-        Path(f"docs/{skill_id}-adapter.yaml"),
-        Path(f"{skill_id}-adapter.yaml"),
-    )
+    return (Path(f".agents/{skill_id}-adapter.yaml"),)
 
 
 def searched_adapter_paths(repo_root: Path, skill_id: str) -> list[str]:
@@ -113,14 +107,11 @@ def load_adapter_contract(
         )
     raw_data = raw if isinstance(raw, dict) else {}
     warnings = uninterpreted_warnings(uninterpreted)
-    canonical_path = repo_root / ".agents" / f"{skill_id}-adapter.yaml"
     # `load_yaml` always returns a dict, so this guard can never fire; the uninterpreted
     # report above is what actually surfaces a non-mapping document now. Kept because
     # removing it would be a behavior claim this slice has not proven for every caller.
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    if adapter_path.resolve() != canonical_path.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
     data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
     return _payload(

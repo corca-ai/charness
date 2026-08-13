@@ -33,6 +33,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 QUALITY_SCRIPTS = REPO_ROOT / "skills" / "public" / "quality" / "scripts"
@@ -753,9 +754,9 @@ def test_print_human_findings_warns_on_version_skew(capsys) -> None:
 
 def test_main_json_and_human(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(inv, "resolve_nose_bin", lambda: None)
-    monkeypatch.setattr(sys, "argv", ["inv", "--repo-root", str(tmp_path), "--json"])
+    monkeypatch.setattr(sys, "argv", ["inv", "--repo-root", str(tmp_path), "--detail"])
     assert inv.main() == 3
-    assert json.loads(capsys.readouterr().out)["status"] == "missing"
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "missing"
 
     monkeypatch.setattr(sys, "argv", ["inv", "--repo-root", str(tmp_path)])
     assert inv.main() == 3
@@ -784,4 +785,4 @@ def test_main_help_documents_clone_inventory_options(monkeypatch, capsys) -> Non
         end = match.end() + next_option.start() if next_option else len(output)
         option_block = re.sub(r"\s+", " ", output[match.start() : end])
         assert fragment in option_block, f"missing help for {option}: {fragment}"
-    assert "--json" not in output
+        assert "--json" not in output

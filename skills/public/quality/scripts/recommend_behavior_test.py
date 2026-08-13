@@ -140,8 +140,8 @@ def summarize(payload: dict[str, object]) -> dict[str, object]:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    if args.markdown and (args.summary or args.detail or args.json):
-        parser.error("--markdown cannot be combined with --summary, --detail, or --json")
+    if args.markdown and (args.summary or args.detail):
+        parser.error("--markdown cannot be combined with --summary or --detail")
     if args.state == "executed" and not args.report_ref:
         parser.error("--state executed requires --report-ref")
     payload = build_payload(args)

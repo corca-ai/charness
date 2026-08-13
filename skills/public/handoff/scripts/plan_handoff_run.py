@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -409,7 +408,6 @@ def main() -> None:
     )
     parser.add_argument("--invoked-directly", action="store_true",
                         help="Declare that the skill was launched bare with no task, which routes to chunked routing.")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     try:
         args = parser.parse_args()
         plan = build_plan(
@@ -417,10 +415,7 @@ def main() -> None:
             intent=args.intent,
             invoked_directly=args.invoked_directly,
         )
-        if args.json:
-            print(json.dumps(plan, ensure_ascii=False, indent=2, sort_keys=True))
-        else:
-            yaml_output.emit_yaml(plan)
+        yaml_output.emit_yaml(plan)
     finally:
         cancel_timeout()
 

@@ -218,7 +218,6 @@ def _restamp_reviewed_binding(repo: Path) -> None:
         repo_root=repo,
         reviewed_paths=list(declared["reviewed_paths"]),
         changed_ref=declared.get("changed_ref"),
-        algorithm=declared.get("algorithm", "sha256-v1"),
     )
     packet_json.write_text(json.dumps(packet, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     packet_md.write_text(render_markdown(packet), encoding="utf-8")

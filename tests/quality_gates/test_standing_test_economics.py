@@ -68,9 +68,9 @@ def test_standing_test_economics_surfaces_runner_startup_shape(tmp_path: Path) -
     for index in range(52):
         (tests / f"case{index}.test.ts").write_text("import { spawnSync } from 'node:child_process';\n", encoding="utf-8")
 
-    result = _run_inventory_cli("--repo-root", str(repo), "--json")
+    result = _run_inventory_cli("--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["test_file_count"] == 52
     finding_types = {finding["type"] for finding in payload["findings"]}
@@ -105,11 +105,10 @@ def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Pa
         "--repo-root",
         str(repo),
         "--summary",
-        "--json",
         env={**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)},
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["nested_cli_file_count"] == 12
     assert payload["nested_cli_all_release_only_file_count"] == 0
@@ -146,17 +145,17 @@ def test_standing_test_economics_summary_yaml_is_compact_and_parseable(tmp_path:
             encoding="utf-8",
         )
 
-    json_result = _run_inventory_cli("--repo-root", str(repo), "--summary", "--json")
-    yaml_result = _run_inventory_cli("--repo-root", str(repo), "--summary")
-    assert json_result.returncode == 0, json_result.stderr
-    assert yaml_result.returncode == 0, yaml_result.stderr
-    payload = yaml.safe_load(yaml_result.stdout)
+    detail_result = _run_inventory_cli("--repo-root", str(repo), "--detail")
+    summary_result = _run_inventory_cli("--repo-root", str(repo), "--summary")
+    assert detail_result.returncode == 0, detail_result.stderr
+    assert summary_result.returncode == 0, summary_result.stderr
+    payload = yaml.safe_load(summary_result.stdout)
 
     assert payload["nested_cli_file_count"] == 12
     assert payload["nested_cli_standing_file_count"] == 12
     assert payload["nested_cli_standing_or_mixed_file_count"] == 12
     assert "nested_cli_files" not in payload
-    assert len(yaml_result.stdout.encode("utf-8")) < len(json_result.stdout.encode("utf-8"))
+    assert len(summary_result.stdout.encode("utf-8")) < len(detail_result.stdout.encode("utf-8"))
 
 
 def test_standing_test_economics_summary_yaml_falls_back_without_pyyaml(monkeypatch) -> None:
@@ -201,9 +200,9 @@ def test_standing_test_economics_splits_module_release_only_nested_cli_files(tmp
         encoding="utf-8",
     )
 
-    result = _run_inventory_cli("--repo-root", str(repo), "--summary", "--json")
+    result = _run_inventory_cli("--repo-root", str(repo), "--summary")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["nested_cli_file_count"] == 3
     assert payload["nested_cli_all_release_only_file_count"] == 1
@@ -240,9 +239,9 @@ def test_standing_test_economics_routes_empty_nested_cli_test_modules_to_standin
         encoding="utf-8",
     )
 
-    result = _run_inventory_cli("--repo-root", str(repo), "--summary", "--json")
+    result = _run_inventory_cli("--repo-root", str(repo), "--summary")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["nested_cli_file_count"] == 2
     assert payload["nested_cli_standing_file_count"] == 1
@@ -650,9 +649,9 @@ def test_standing_test_economics_ignores_generated_mutant_tree(tmp_path: Path) -
     mutant_tests.mkdir(parents=True)
     (mutant_tests / "test_generated.py").write_text("def test_generated():\n    assert True\n", encoding="utf-8")
 
-    result = _run_inventory_cli("--repo-root", str(repo), "--json")
+    result = _run_inventory_cli("--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["test_file_count"] == 1
 
@@ -669,9 +668,9 @@ def test_standing_test_economics_reports_pytest_temp_footprint(tmp_path: Path) -
     (top_test / "payload.bin").write_bytes(b"x" * 13)
 
     env = {**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)}
-    result = _run_inventory_cli("--repo-root", str(repo), "--json", env=env)
+    result = _run_inventory_cli("--repo-root", str(repo), "--detail", env=env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     footprint = payload["pytest_temp_footprint"]
 
     assert footprint["status"] == "available"
@@ -698,9 +697,9 @@ def test_standing_test_economics_counts_charness_run_session_dirs(tmp_path: Path
     (seed / "payload.bin").write_bytes(b"x" * 11)
 
     env = {**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)}
-    result = _run_inventory_cli("--repo-root", str(repo), "--json", env=env)
+    result = _run_inventory_cli("--repo-root", str(repo), "--detail", env=env)
     assert result.returncode == 0, result.stderr
-    footprint = json.loads(result.stdout)["pytest_temp_footprint"]
+    footprint = yaml.safe_load(result.stdout)["pytest_temp_footprint"]
 
     assert footprint["session_count"] == 1
     assert footprint["worker_dir_count"] == 1
@@ -725,9 +724,9 @@ def test_standing_test_economics_does_not_double_count_nested_seed_dirs(tmp_path
     (nested / "nested.bin").write_bytes(b"x" * 13)
 
     env = {**os.environ, "PYTEST_DEBUG_TEMPROOT": str(tmp_path)}
-    result = _run_inventory_cli("--repo-root", str(repo), "--json", env=env)
+    result = _run_inventory_cli("--repo-root", str(repo), "--detail", env=env)
     assert result.returncode == 0, result.stderr
-    footprint = json.loads(result.stdout)["pytest_temp_footprint"]
+    footprint = yaml.safe_load(result.stdout)["pytest_temp_footprint"]
 
     assert footprint["seed_totals"]["charness-repo-seed"]["count"] == 1
     assert footprint["seed_totals"]["charness-repo-seed"]["bytes"] >= 24
@@ -744,9 +743,9 @@ def test_standing_test_economics_emits_interpretation_self_declaration(tmp_path:
     (repo / "tests").mkdir()
     (repo / "tests" / "test_real.py").write_text("def test_real():\n    assert True\n", encoding="utf-8")
 
-    result = _run_inventory_cli("--repo-root", str(repo), "--json")
+    result = _run_inventory_cli("--repo-root", str(repo), "--detail")
     assert result.returncode == 0, result.stderr
-    interpretation = json.loads(result.stdout)["interpretation"]
+    interpretation = yaml.safe_load(result.stdout)["interpretation"]
     assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
     assert all(interpretation[field].strip() for field in interpretation)
 

@@ -172,8 +172,9 @@ brief:
       into scope; advisory inventories are review prompts, not mandates. Use
       `--summary` YAML for every dispatch script's first-read triage and switch
       to `--detail` YAML only when a finding needs full attribution or disposition.
-      Hidden JSON compatibility is for programmatic consumers. The existing
-      YAML contract test derives every dispatch script command from the routing
+      YAML is the only structured output contract; the removed hidden JSON mode
+      is not a supported programmatic seam. The existing YAML contract test
+      derives every dispatch script command from the routing
       document and inventories every inventory_*.py script so new entries cannot
       bypass the contract. An inventory cited in the artifact's
       `## Commands Run` must engage >=2 declared non-headline fields (one is

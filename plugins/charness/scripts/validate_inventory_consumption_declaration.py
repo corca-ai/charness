@@ -2,7 +2,7 @@
 
 """Fail when an inventory in skills/public/quality/references/inventory-consumer-fields.json
 declares a non-headline field that is no longer present as a key in the
-inventory script's actual `--json` output.
+inventory script's actual `--detail` YAML output.
 
 Closes the drift hole in the issue #145 v2 consumer contract: without this
 check, a maintainer can rename or remove a field in the inventory script and
@@ -23,6 +23,8 @@ import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+import yaml
 
 DEFAULT_CONSUMER_FIELDS_PATH = "skills/public/quality/references/inventory-consumer-fields.json"
 INVENTORY_DIR = "skills/public/quality/scripts"
@@ -55,7 +57,7 @@ def _collect_keys(node: object, sink: set[str]) -> None:
 def _run_inventory(script_path: Path, repo_root: Path) -> tuple[object | None, str | None]:
     try:
         completed = subprocess.run(
-            [sys.executable, str(script_path), "--repo-root", str(repo_root), "--json"],
+            [sys.executable, str(script_path), "--repo-root", str(repo_root), "--detail"],
             capture_output=True,
             text=True,
             check=False,
@@ -69,9 +71,9 @@ def _run_inventory(script_path: Path, repo_root: Path) -> tuple[object | None, s
         stderr = completed.stderr.strip().splitlines()[-1] if completed.stderr.strip() else "(no stderr)"
         return None, f"exit {completed.returncode}: {stderr}"
     try:
-        return json.loads(completed.stdout), None
-    except json.JSONDecodeError as exc:
-        return None, f"non-JSON stdout: {exc}"
+        return yaml.safe_load(completed.stdout), None
+    except yaml.YAMLError as exc:
+        return None, f"non-YAML stdout: {exc}"
 
 
 def main() -> int:
@@ -117,7 +119,7 @@ def main() -> int:
             if error is not None:
                 failures.append(
                     f"declared inventory `{inventory_name}` could not be executed for drift "
-                    f"check ({error}); either fix the script's --json output or move the entry "
+                    f"check ({error}); either fix the script's --detail YAML output or move the entry "
                     f"to `non_headline_fields: []` with an `opt_out_reason`."
                 )
                 continue
@@ -129,7 +131,7 @@ def main() -> int:
                 failures.append(
                     f"declared inventory `{inventory_name}` lists non_headline_field(s) "
                     f"{', '.join(repr(field) for field in missing)} that no longer appear as "
-                    f"keys in the script's --json output; update {relative} or restore the "
+                    f"keys in the script's --detail YAML output; update {relative} or restore the "
                     f"field in the inventory script."
                 )
             else:

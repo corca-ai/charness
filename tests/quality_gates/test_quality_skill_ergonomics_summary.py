@@ -34,10 +34,10 @@ def test_inventory_skill_ergonomics_summary_keeps_review_payload_compact(tmp_pat
         encoding="utf-8",
     )
 
-    result = _run("--repo-root", str(repo), "--summary", "--json")
+    result = _run("--repo-root", str(repo), "--summary")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["checked_skill_count"] == 1
     assert payload["heuristic_finding_count"] == 1
     assert payload["prose_review_status"] == "required"
@@ -107,13 +107,13 @@ def test_inventory_skill_ergonomics_summary_yaml_is_compact_and_parseable(tmp_pa
         encoding="utf-8",
     )
 
-    json_result = _run("--repo-root", str(repo), "--summary", "--json")
-    yaml_result = _run("--repo-root", str(repo), "--summary")
+    detail_result = _run("--repo-root", str(repo), "--detail")
+    summary_result = _run("--repo-root", str(repo), "--summary")
 
-    assert json_result.returncode == 0, json_result.stderr
-    assert yaml_result.returncode == 0, yaml_result.stderr
-    assert len(yaml_result.stdout.encode()) < len(json_result.stdout.encode())
-    assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
+    assert detail_result.returncode == 0, detail_result.stderr
+    assert summary_result.returncode == 0, summary_result.stderr
+    assert len(summary_result.stdout.encode()) < len(detail_result.stdout.encode())
+    assert yaml.safe_load(summary_result.stdout)["heuristic_finding_count"] == 1
 
 
 def test_inventory_skill_ergonomics_summary_yaml_falls_back_without_pyyaml(monkeypatch) -> None:

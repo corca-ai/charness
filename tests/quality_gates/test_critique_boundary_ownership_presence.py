@@ -163,8 +163,8 @@ def test_boundary_scaffold_default_stub_fails_validation_post_cutoff(tmp_path: P
     """The scaffold's own unedited `## Boundary Ownership` Verdict stub must NOT
     satisfy the boundary floor once dated post-cutoff — defense-in-depth against
     a future change pre-filling a real verdict (the same loophole the fresh-eye
-    stub test guards). `--report-all` surfaces both floors so the boundary
-    message is asserted even though the unedited fresh-eye stub also fails."""
+    stub test guards). Default one-pass reporting surfaces both floors, so the
+    boundary message is asserted even though the unedited fresh-eye stub also fails."""
     import sys
 
     sys.path.insert(0, str(ROOT / "skills" / "public" / "critique" / "scripts"))
@@ -176,7 +176,7 @@ def test_boundary_scaffold_default_stub_fails_validation_post_cutoff(tmp_path: P
     artifact.parent.mkdir(parents=True)
     artifact.write_text(template, encoding="utf-8")
 
-    result = _run(repo, "charness-artifacts/critique/2026-07-06-critique-review.md", "--report-all")
+    result = _run(repo, "charness-artifacts/critique/2026-07-06-critique-review.md")
 
     assert result.returncode == 1
     assert "Boundary Ownership" in result.stderr
@@ -294,7 +294,6 @@ def test_hook_parse_args_defaults_to_no_flags(monkeypatch) -> None:
     args = hook.parse_args()
     assert args.changed_path is None
     assert args.changed_ref is None
-    assert args.json is False
     assert args.detail is False
 
 

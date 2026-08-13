@@ -36,7 +36,7 @@ from scripts.quality_policy_defaults import (
     validate_skill_ergonomics_gate_rules,
 )
 
-ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"), Path(".codex/quality-adapter.yaml"), Path(".claude/quality-adapter.yaml"), Path("docs/quality-adapter.yaml"), Path("quality-adapter.yaml"))
+ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"),)
 
 
 class BootstrapValidationError(Exception):

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
 import pytest
+import yaml
 
 from .support import ROOT
 
@@ -31,13 +31,13 @@ def _write(path: Path, text: str) -> None:
 
 def _run_json(repo: Path) -> dict:
     result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--detail"],
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
     )
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_structural_waste_reports_duplicate_pytest_collection(tmp_path: Path) -> None:
@@ -138,6 +138,21 @@ def test_structural_waste_does_not_flag_visible_prefilter(tmp_path: Path) -> Non
 
     assert payload["broad_scanner_candidates"] == []
     assert payload["findings"] == []
+
+
+def test_structural_waste_skips_worktree_deleted_tracked_source(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    source = repo / "scripts" / "deleted.py"
+    _write(source, "import ast\nast.parse('x')\n")
+    subprocess.run(["git", "add", "scripts/deleted.py"], cwd=repo, check=True)
+    source.unlink()
+
+    payload = _run_json(repo)
+
+    assert payload["python_source_count"] == 0
+    assert payload["broad_scanner_candidates"] == []
 
 
 def test_structural_waste_accepts_token_regex_prefilter_name(tmp_path: Path) -> None:

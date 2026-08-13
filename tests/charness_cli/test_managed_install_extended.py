@@ -179,7 +179,6 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_
     assert payload["removed_plugin_root"] is True
     assert payload["removed_codex_marketplace_entry"] is True
     assert payload["removed_codex_cache"] is True
-    assert payload["removed_legacy_skills_symlink"] is False
     assert payload["removed_codex_config_entries"] == ["charness@charness"]
     assert payload["removed_claude_plugin"] is True
     assert payload["removed_claude_marketplace"] is True

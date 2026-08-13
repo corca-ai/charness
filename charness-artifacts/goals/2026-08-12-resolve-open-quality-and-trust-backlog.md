@@ -387,6 +387,11 @@ premise, owner, evidence channel, and tracker-visible outcome.
   locally with v4/v2 replay, operator commands, 85 focused tests, locked broad
   proof, and two review rounds; no live transition, push, or tracker closure is
   claimed. It remains an independent fix unit and does not expand the cohort.
+- [#617](https://github.com/corca-ai/charness/issues/617) — the #614 retro
+  rendered `presentation-unproven` after compaction even though the existing
+  Codex session log retained the exact pre-work lesson presentation. This is an
+  off-goal bug; #617 owns a durable session-specific lesson bundle, while the
+  log remains forensic-only. It does not expand the fixed cohort.
 
 ## Final Verification
 

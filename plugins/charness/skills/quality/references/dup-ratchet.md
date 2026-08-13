@@ -161,16 +161,9 @@ the false-block slice 4 removed.)
    longer needs a full re-baseline. A GROW (a copy added) is NOT a reduction and
    still reads as a new family — verify it is genuine new/changed duplication, not a
    laundered clone, then re-baseline.
-3. **Fingerprint-algorithm bump.** A change to the normalization (e.g. the v1->v2
-   token/comment-aware landing, item 5 slice D) bumps `fingerprint_algo_version`;
-   the gate surfaces an algo-skew WARNING so the drifted fingerprints read as
-   re-baseline. A repo-wide algo bump uses the one-shot migration tool
-   (`migrate_dup_fingerprints.py`, dry-run by default) rather than a fresh
-   `--write-baseline`: it remaps every accepted family old-fingerprint ->
-   new-fingerprint (preserving `dup-review.json`'s manual classifications
-   verbatim), drops anything genuinely vanished, and refuses to silently absorb a
-   live family that was not previously accepted (`requires_review`, named in via
-   `--accept-new-family`).
+3. **Fingerprint-algorithm bump.** A change to normalization bumps
+   `fingerprint_algo_version`; the gate surfaces an algo-skew warning so the
+   drifted fingerprints are reviewed and re-baselined deliberately.
 4. **Reviewed batch accept.** You genuinely accept new fixable families after review.
 
 **Prefer the scoped mode for routine churn.** `--write-baseline` is a full-scan

@@ -47,7 +47,7 @@ def build_report(repo_root: Path, *, as_of: date) -> dict[str, Any]:
     )
     payload = json.loads(ledger_path.read_text(encoding="utf-8"))
     sessions = {event["session_id"]: event for event in payload["session_events"]}
-    score_events = payload["score_events"][payload["legacy_score_event_count"] :]
+    score_events = payload["score_events"]
 
     candidates = _retro_candidates(repo_root)
     dispositions: list[tuple[str, dict[str, Any]]] = []
@@ -65,9 +65,11 @@ def build_report(repo_root: Path, *, as_of: date) -> dict[str, Any]:
         session_id = path.stem
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
-            receipt = _continuity.validate_receipt(raw, sessions=sessions)
-            if receipt["session_id"] != session_id:
+            if raw.get("session_id") != session_id:
                 raise _continuity.LessonEvaluationError("receipt filename does not match session_id")
+            receipt = _continuity.validate_receipt(
+                raw, sessions=sessions, output_dir=output_dir
+            )
             receipts[session_id] = receipt
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             receipt_violations.append(

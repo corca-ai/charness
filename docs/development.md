@@ -87,13 +87,18 @@ fresh-eye, provider, installed-consumer, remote-CI, push, or release proof.
 
 The lesson ledger has a deliberately local eligibility path. At session start,
 use the one command that declares the frozen session, writes the deterministic
-preview, and leaves a subordinate command receipt. Present that selected list
-in the active conversation before affected work:
+Markdown bundle, emits those same bytes, and leaves a subordinate receipt:
 
 ```bash
 python3 scripts/open_lesson_session.py --repo-root . \
   --session-id <unique-session-id> --seed <deterministic-seed>
 ```
+
+Record the session ID and derived bundle path
+`charness-artifacts/retro/lesson-session-receipts/<session-id>.md` in the affected
+work's durable artifact. After context loss, read that exact bundle before
+evaluating lesson effects; do not reconstruct it from mutable lesson sources or
+search a host transcript.
 
 At retro, add only sparse cited scores for effects observed after that
 presentation, then validate the replayed state:
@@ -106,13 +111,13 @@ python3 scripts/check_lesson_ledger.py --repo-root .
 ```
 
 The session is a local declaration of the deterministic snapshot at record
-time. Its emission receipt proves only that the command's stdout write and
-flush returned for the recorded bytes. A valid cited score proves only that its
-lesson occurred in that declared list. Neither record proves that a person saw,
-read, used, or benefited from it, and neither authorizes contract graduation.
-The contemporaneous presentation is an agent-authored conversation action. If
-it is absent or uncertain, append no score and use the exact `not-evaluated`
-form below. Never backfill from retro-time inspection.
+time. Its receipt proves the bundle matches the completed stdout bytes; the
+bundle makes the selected content recoverable. A valid cited score proves only
+that its lesson occurred in that declared list. Neither record proves that a
+person saw, used, or benefited from it, and neither authorizes contract
+graduation. If contemporaneous presentation is absent or uncertain, append no
+score and use the exact `not-evaluated` form below. Never backfill from
+retro-time inspection.
 
 ### Lesson Evaluation Disposition
 
@@ -146,22 +151,18 @@ usefulness.
 ### Lesson Lifecycle
 
 The ledger keeps at most 50 active lessons. Archive and resurrection are explicit
-reviewed events; scores never change lifecycle state automatically. Existing
-schema-v3 state migrates deterministically, with a dry run by default:
+reviewed events; scores never change lifecycle state automatically:
 
 ```bash
-python3 scripts/migrate_lesson_lifecycle.py --repo-root .
-python3 scripts/migrate_lesson_lifecycle.py --repo-root . --execute
 python3 scripts/record_lesson_lifecycle.py --repo-root . \
   --event-id <unique-event-id> --lesson-id <lesson-id> --action archive \
   --decision-ref <reviewed-markdown-path> --rationale '<why this state changed>'
 python3 scripts/check_lesson_ledger.py --repo-root .
 ```
 
-Unlike the migration command, `record_lesson_lifecycle.py` has no preview mode:
-after validating the complete candidate it appends the event immediately. Commit
-or otherwise preserve the current repo-local ledger before recording a reviewed
-archive or resurrection.
+`record_lesson_lifecycle.py` has no preview mode: after validating the complete
+candidate it appends the event immediately. Commit or otherwise preserve the
+current repo-local ledger before recording a reviewed archive or resurrection.
 
 Use `--action resurrect` to return an archived lesson to the active cohort. The
 selection preview draws its recent, value, and uncertainty slots only from active
@@ -173,13 +174,7 @@ preview selection or lifecycle events.
 ### Contract Graduation and Retirement
 
 The contract register freezes its original H2 inventory and unit budget, then
-replays reviewed membership transitions. Migrate schema v1 before recording new
-work:
-
-```bash
-python3 scripts/migrate_contract_register.py --repo-root .
-python3 scripts/migrate_contract_register.py --repo-root . --execute
-```
+replays reviewed membership transitions.
 
 A graduation proposal must cite one seeded lesson and at least two distinct
 declared sessions in which that lesson received a score. This is an evidence

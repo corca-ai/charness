@@ -644,6 +644,13 @@ The session declaration and emission receipt exist, but this continuation cannot
 prove that its exact selected list was presented before the affected work. No
 score was appended or backfilled.
 
+Correction (2026-08-14): the Codex rollout and direct user readback prove that
+the exact ten-item list was presented before #614 work. The historical score is
+not backfilled; the false `presentation-unproven` premise and its durable
+lesson-session bundle repair are owned by
+`charness-artifacts/retro/2026-08-14-compaction-lesson-presentation-miss-retro.md`
+and [#617](https://github.com/corca-ai/charness/issues/617).
+
 ## Persisted
 
 Persisted: yes: charness-artifacts/retro/2026-08-13-session-retro.md

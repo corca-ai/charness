@@ -237,7 +237,7 @@ def test_render_cli_reference_renders_contract_order_and_examples(monkeypatch) -
     assert "charness tool install --recommendation-role validation --next-skill-id quality" in rendered
 
 
-def test_root_cli_legacy_json_flag_appears_only_in_compatibility_tests() -> None:
+def test_root_cli_has_no_json_compatibility_flag() -> None:
     cli_test_dir = ROOT / "tests" / "charness_cli"
     files_with_legacy_flag = {
         path.name
@@ -248,10 +248,7 @@ def test_root_cli_legacy_json_flag_appears_only_in_compatibility_tests() -> None
         )
     }
 
-    assert files_with_legacy_flag == {
-        "test_task_envelope.py",
-        "test_version_surface.py",
-    }
+    assert files_with_legacy_flag == set()
 
 
 def test_root_cli_mutating_modes_have_side_effect_probe_contracts() -> None:

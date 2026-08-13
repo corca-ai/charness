@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -366,13 +365,9 @@ def main() -> int:
         default=Path.cwd(),
         help="Repository root to analyze; defaults to the current working directory",
     )
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     payload = build_plan(args.repo_root.resolve())
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        yaml_output.emit_yaml(payload)
+    yaml_output.emit_yaml(payload)
     return 0 if payload["ok"] else 1
 
 

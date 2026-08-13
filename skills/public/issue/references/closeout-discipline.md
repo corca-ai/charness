@@ -11,9 +11,7 @@ issue-specific instantiation of the shared
 `issue new` closeout must render only from a verified ledger.
 
 After every successful create, capture `{repo, number, url}` from the create
-helper's payload. Those are the exact key names it emits; `created_number` and
-`created_url` are deprecated aliases of the same two values, kept for existing
-readers.
+helper's payload. Those are the exact key names it emits.
 
 `state` is deliberately NOT in that set. No create path emits it — it belongs to
 the read/verify shape, and a just-created issue is `OPEN` by construction, so

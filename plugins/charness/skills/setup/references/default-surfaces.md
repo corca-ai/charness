@@ -134,9 +134,8 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   `SKILL.md` whose basename resolves to many tracked files is still allowed,
   because the linter treats multi-match basenames as conceptual references.
   See `<plugin-dir>/scripts/check_doc_links.py`,
-  `<plugin-dir>/scripts/check-links-internal.sh`, and
-  `<plugin-dir>/scripts/migrate_backtick_file_refs.py`
-  for the shipped reference implementation and one-shot migrator
+  and `<plugin-dir>/scripts/check-links-internal.sh>` for the shipped reference
+  implementation.
 
 Use `$SKILL_DIR/scripts/render_skill_routing.py` to render the block. Keep it short and
 bootstrap-heavy. On a mature repo whose `<repo-root>/AGENTS.md` lacks it, propose

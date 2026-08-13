@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import builtins
 import importlib.util
-import json
 import re
 import shlex
 import subprocess
@@ -158,11 +157,10 @@ def test_inventory_dispatch_commands_are_runnable_yaml_surfaces(
         ]
         command = f"skills/public/quality/scripts/{argv[0]}"
         summary = _run(command, *argv[1:])
-        compatibility = _run(command, *argv[1:], "--json")
         help_result = _run(command, "--help")
 
-        assert summary.returncode == compatibility.returncode, command
-        assert yaml.safe_load(summary.stdout) == json.loads(compatibility.stdout), command
+        assert summary.returncode == 0, command
+        assert isinstance(yaml.safe_load(summary.stdout), dict), command
         assert "--summary" in help_result.stdout
         assert "--detail" in help_result.stdout
         assert "--json" not in help_result.stdout
@@ -189,11 +187,10 @@ def test_every_quality_inventory_exposes_yaml_output_contract(
             )
             args = ("--repo-root", str(tmp_path), "--summary")
             summary = run_loaded_script_main(script_name, module, *args)
-            compatibility = run_loaded_script_main(script_name, module, *args, "--json")
             help_result = run_loaded_script_main(script_name, module, "--help")
 
-            assert summary.returncode == compatibility.returncode, script_name
-            assert yaml.safe_load(summary.stdout) == json.loads(compatibility.stdout), script_name
+            assert summary.returncode != 2, script_name
+            assert isinstance(yaml.safe_load(summary.stdout), dict), script_name
             assert "--summary" in help_result.stdout, script_name
             assert "--detail" in help_result.stdout, script_name
             assert "--json" not in help_result.stdout, script_name
@@ -245,35 +242,32 @@ def test_summary_and_detail_are_mutually_exclusive(command: str) -> None:
 
 
 @pytest.mark.parametrize("command", ALWAYS_STRUCTURED_COMMANDS)
-def test_default_yaml_preserves_hidden_json_compatibility(command: tuple[str, ...]) -> None:
+def test_default_yaml_is_structured(command: tuple[str, ...]) -> None:
     default = _run(*command)
-    legacy = _run(*command, "--json")
     help_result = _run(command[0], "--help")
 
-    assert default.returncode == legacy.returncode == 0
-    assert yaml.safe_load(default.stdout) == json.loads(legacy.stdout)
+    assert default.returncode == 0
+    assert isinstance(yaml.safe_load(default.stdout), dict)
     assert "--json" not in help_result.stdout
 
 
 @pytest.mark.parametrize("command", DETAIL_COMMANDS)
-def test_detail_yaml_preserves_hidden_json_compatibility(command: tuple[str, ...]) -> None:
+def test_detail_yaml_is_structured(command: tuple[str, ...]) -> None:
     detail = _run(*command, "--detail")
-    legacy = _run(*command, "--json")
     help_result = _run(command[0], "--help")
 
-    assert detail.returncode == legacy.returncode
-    assert yaml.safe_load(detail.stdout) == json.loads(legacy.stdout)
+    assert detail.returncode != 2
+    assert isinstance(yaml.safe_load(detail.stdout), dict)
     assert "--json" not in help_result.stdout
 
 
 @pytest.mark.parametrize("command", SUMMARY_COMMANDS)
-def test_summary_yaml_preserves_hidden_json_compatibility(command: tuple[str, ...]) -> None:
+def test_summary_yaml_is_structured(command: tuple[str, ...]) -> None:
     summary = _run(*command, "--summary")
-    legacy = _run(*command, "--summary", "--json")
     help_result = _run(command[0], "--help")
 
-    assert summary.returncode == legacy.returncode == 0
-    assert yaml.safe_load(summary.stdout) == json.loads(legacy.stdout)
+    assert summary.returncode == 0
+    assert isinstance(yaml.safe_load(summary.stdout), dict)
     assert "--json" not in help_result.stdout
 
 

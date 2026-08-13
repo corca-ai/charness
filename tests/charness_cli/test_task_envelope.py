@@ -161,18 +161,3 @@ def test_task_rejections_carry_recovering_next_step(tmp_path: Path) -> None:
     closed_abort_payload = yaml.safe_load(closed_abort.stdout)
     assert closed_abort_payload["status"] == "closed"
     assert ".charness/tasks/slice-3.json" in closed_abort_payload["next_step"]
-
-
-def test_task_legacy_json_flag_is_ignored_and_hidden(tmp_path: Path) -> None:
-    repo_root = tmp_path / "repo"
-    repo_root.mkdir()
-    root = Path(__file__).resolve().parents[2]
-
-    default = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "status")
-    legacy = run_cli_in_repo(root, "task", "--json", "--repo-root", str(repo_root), "status")
-    help_result = run_cli_in_repo(root, "task", "--help")
-
-    assert default.returncode == legacy.returncode == 0
-    assert legacy.stdout == default.stdout
-    assert yaml.safe_load(legacy.stdout)["event"] == "status-list"
-    assert "--json" not in help_result.stdout

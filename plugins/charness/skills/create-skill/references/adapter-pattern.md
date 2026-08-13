@@ -43,15 +43,9 @@ Anything beyond this needs a concrete justification tied to repeated work.
 Adapters may record capability ids, provider preferences, or env var names when
 those are genuinely repo-local defaults. They must not carry secret values.
 
-## Search Order
+## Location
 
-Prefer repo-owned adapter paths first:
-
-1. `<repo-root>/.agents/<skill-id>-adapter.yaml`
-2. `.codex/<skill-id>-adapter.yaml`
-3. `.claude/<skill-id>-adapter.yaml`
-4. `<repo-root>/docs/<skill-id>-adapter.yaml`
-5. `<skill-id>-adapter.yaml` as compatibility fallback only
+Use the single repo-owned path `<repo-root>/.agents/<skill-id>-adapter.yaml`.
 
 ## Design Rules
 

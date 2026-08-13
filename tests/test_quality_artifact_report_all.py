@@ -167,27 +167,3 @@ def test_validate_quality_artifact_fail_fast_stops_at_first_violation(tmp_path: 
     assert "runtime source must not be markdown" in result.stderr
     assert "rule violation(s)" not in result.stderr
     assert "passive recommended next quality moves" not in result.stderr
-
-
-def test_validate_quality_artifact_report_all_lists_every_violation(tmp_path: Path) -> None:
-    repo = seed_repo(tmp_path, _multi_violation_artifact())
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo), "--report-all")
-    assert result.returncode == 1
-    assert "quality artifact rule violation(s)" in result.stderr
-    assert "runtime source must not be markdown" in result.stderr
-    assert "none found by inventory" in result.stderr
-    assert "passive recommended next quality moves must explain" in result.stderr
-
-
-def test_validate_quality_artifact_report_all_passes_clean_artifact(tmp_path: Path) -> None:
-    repo = seed_repo(
-        tmp_path,
-        valid_quality_artifact(
-            runtime_source=(
-                "structured metrics from `artifacts/runtime-timing.jsonl` "
-                "rendered by `scripts/summarize-runtime.py`; profile `ci`."
-            ),
-        ),
-    )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo), "--report-all")
-    assert result.returncode == 0, result.stderr

@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -273,13 +274,13 @@ def test_cli_help_exits_zero() -> None:
     assert excinfo.value.code == 0
 
 
-def test_cli_json_and_markdown_both_work(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+def test_cli_default_json_and_markdown_both_work(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
     _write_fixture_skill(tmp_path)
     eval_dir = tmp_path / "evals" / "cautilus" / "x-claim-fidelity"
     _write_spec(eval_dir, "spec.json")
     _write_witness_map(eval_dir, "x", "s1", [])
 
-    rc = cli.main(["--repo-root", str(tmp_path), "--skill", "x", "--scenario", "s1", "--json"])
+    rc = cli.main(["--repo-root", str(tmp_path), "--skill", "x", "--scenario", "s1"])
     assert rc == 0
     out = capsys.readouterr().out
     payload = json.loads(out)
@@ -300,7 +301,7 @@ def test_cli_default_witness_map_path(tmp_path: Path, capsys: pytest.CaptureFixt
     _write_witness_map(eval_dir, "x", "s1", [])
     rc = cli.main(["--repo-root", str(tmp_path), "--skill", "x", "--scenario", "s1"])
     assert rc == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["ok"] is True
 
 

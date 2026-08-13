@@ -5,15 +5,7 @@ of the public skill body.
 
 ## Canonical Path
 
-Use `<repo-root>/.agents/retro-adapter.yaml` for new repos.
-
-Search order:
-
-1. `<repo-root>/.agents/retro-adapter.yaml`
-2. `<repo-root>/.codex/retro-adapter.yaml`
-3. `<repo-root>/.claude/retro-adapter.yaml`
-4. `<repo-root>/docs/retro-adapter.yaml`
-5. `<repo-root>/retro-adapter.yaml` as compatibility fallback only
+Use `<repo-root>/.agents/retro-adapter.yaml`.
 
 ## Fields
 

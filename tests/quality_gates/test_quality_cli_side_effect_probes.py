@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
+import yaml
+
 from .support import ROOT, write_executable
 
 # In-process boundary conversion (testability-dsl-initiative goal 1): load the
@@ -67,11 +69,11 @@ def test_inventory_cli_side_effect_probes_flags_missing_mutation_contract(tmp_pa
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     finding_types = {finding["type"] for finding in payload["findings"]}
     assert "mutating_command_missing_help_probe" in finding_types
     assert "mutating_command_missing_option_like_positional_probe" in finding_types
@@ -113,11 +115,11 @@ def test_inventory_cli_side_effect_probes_accepts_complete_contract(tmp_path: Pa
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["findings"] == []
     assert payload["contracts"][0]["command_count"] == 2
 
@@ -147,11 +149,11 @@ def test_inventory_cli_side_effect_probes_accepts_dry_run_waiver(tmp_path: Path)
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["findings"] == []
 
 
@@ -162,11 +164,11 @@ def test_inventory_cli_side_effect_probes_flags_missing_contract(tmp_path: Path)
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["findings"][0]["type"] == "cli_side_effect_probe_contract_missing"
     assert payload["status"] == "unconfigured"
 
@@ -204,10 +206,10 @@ def test_inventory_cli_side_effect_probes_skips_vendored_contracts(tmp_path: Pat
     result = _run(
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "unconfigured"
     assert payload["contracts"] == []
 
@@ -264,11 +266,11 @@ def test_inventory_cli_side_effect_probes_executes_safe_fixture_and_flags_mutati
         "--repo-root",
         str(repo),
         "--execute-probes",
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["findings"][0]["type"] == "probe_changed_side_effect_watch"
     assert payload["findings"][0]["probe_type"] == "help_probe"
 
@@ -311,10 +313,10 @@ def test_inventory_cli_side_effect_probes_times_out_safe_fixture(tmp_path: Path,
         str(contract_path),
         "--execute-probes",
         "--fail-on-findings",
-        "--json",
+        "--detail",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["findings"][0]["type"] == "probe_timed_out"
     assert payload["findings"][0]["timeout_seconds"] == 7

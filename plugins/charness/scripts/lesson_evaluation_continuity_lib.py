@@ -177,6 +177,10 @@ def receipt_path(output_dir: Path, session_id: str) -> Path:
     return receipt_directory(output_dir) / f"{validate_session_id(session_id)}.json"
 
 
+def bundle_path(output_dir: Path, session_id: str) -> Path:
+    return receipt_directory(output_dir) / f"{validate_session_id(session_id)}.md"
+
+
 def build_receipt(
     *, session_id: str, snapshot_sha256: str, stdout_bytes: bytes, emitted_at: str
 ) -> dict[str, Any]:
@@ -202,7 +206,9 @@ def build_receipt(
     return {**body, "receipt_sha256": hashlib.sha256(canonical_json(body).encode()).hexdigest()}
 
 
-def validate_receipt(receipt: Any, *, sessions: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def _validated_receipt_bundle(
+    receipt: Any, *, sessions: dict[str, dict[str, Any]], output_dir: Path
+) -> tuple[dict[str, Any], bytes]:
     if not isinstance(receipt, dict) or set(receipt) != _RECEIPT_KEYS:
         _fail(f"receipt requires exactly keys {sorted(_RECEIPT_KEYS)}")
     session_id = validate_session_id(receipt.get("session_id"))
@@ -230,27 +236,63 @@ def validate_receipt(receipt: Any, *, sessions: dict[str, dict[str, Any]]) -> di
     expected = hashlib.sha256(canonical_json(body).encode()).hexdigest()
     if receipt["receipt_sha256"] != expected:
         _fail(f"receipt integrity digest does not match session `{session_id}`")
-    return receipt
+    path = bundle_path(output_dir, session_id)
+    try:
+        content = path.read_bytes()
+    except OSError as exc:
+        _fail(f"session bundle is unreadable at `{path}`: {exc}")
+    if len(content) != receipt["stdout_byte_count"]:
+        _fail(f"session bundle byte count does not match receipt `{session_id}`")
+    if hashlib.sha256(content).hexdigest() != receipt["stdout_sha256"]:
+        _fail(f"session bundle digest does not match receipt `{session_id}`")
+    return receipt, content
 
 
-def write_receipt(path: Path, receipt: dict[str, Any]) -> None:
-    if path.exists():
-        _fail(f"receipt already exists at `{path}`")
+def validate_receipt(
+    receipt: Any, *, sessions: dict[str, dict[str, Any]], output_dir: Path
+) -> dict[str, Any]:
+    validated, _content = _validated_receipt_bundle(
+        receipt, sessions=sessions, output_dir=output_dir
+    )
+    return validated
+
+
+def load_session_bundle(
+    receipt: Any, *, sessions: dict[str, dict[str, Any]], output_dir: Path
+) -> bytes:
+    """Return the exact frozen lesson bytes after receipt and ledger validation."""
+    _validated, content = _validated_receipt_bundle(
+        receipt, sessions=sessions, output_dir=output_dir
+    )
+    return content
+
+
+def _write_once(path: Path, content: bytes, *, label: str) -> None:
+    if path.exists() or path.is_symlink():
+        _fail(f"{label} already exists at `{path}`")
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(
-            "w", encoding="utf-8", dir=path.parent, prefix=f".{path.name}.", delete=False
+            "wb", dir=path.parent, prefix=f".{path.name}.", delete=False
         ) as temporary:
             temporary_path = Path(temporary.name)
-            json.dump(receipt, temporary, ensure_ascii=False, indent=2)
-            temporary.write("\n")
+            temporary.write(content)
             temporary.flush()
             os.fsync(temporary.fileno())
         os.replace(temporary_path, path)
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
+
+
+def write_bundle(path: Path, content: bytes) -> None:
+    _write_once(path, content, label="session bundle")
+
+
+def write_receipt(path: Path, receipt: dict[str, Any]) -> None:
+    content = (json.dumps(receipt, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    _write_once(path, content, label="receipt")
 
 
 def is_eligible_retro(path: Path, text: str) -> bool:

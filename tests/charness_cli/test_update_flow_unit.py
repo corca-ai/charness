@@ -41,7 +41,6 @@ def test_update_all_flow_reuses_precomputed_support_results(monkeypatch, tmp_pat
         dry_run=False,
         skip_sync_support=False,
         upstream_checkouts=[],
-        json_mode=True,
         precomputed_support_results=support_results,
     )
 
@@ -75,7 +74,6 @@ def test_update_flow_syncs_support_when_reuse_is_not_available(monkeypatch, tmp_
         dry_run=False,
         skip_sync_support=False,
         upstream_checkouts=["../upstream"],
-        json_mode=True,
         precomputed_support_results=[{"tool_id": "demo", "status": "old"}],
     )
 
@@ -108,7 +106,6 @@ def test_update_all_flow_treats_refreshed_not_ready_as_failure(monkeypatch, tmp_
         dry_run=False,
         skip_sync_support=True,
         upstream_checkouts=[],
-        json_mode=True,
     )
 
     assert failed is True

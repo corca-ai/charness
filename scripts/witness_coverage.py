@@ -45,9 +45,6 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Defaults to evals/cautilus/<skill>-claim-fidelity/witness-map.json.",
     )
-    parser.add_argument(
-        "--json", action="store_true", help="Present for CLI-shape compatibility; output is JSON unless --markdown."
-    )
     parser.add_argument("--markdown", action="store_true", help="Print a compact human-readable debt report instead of JSON.")
     return parser
 

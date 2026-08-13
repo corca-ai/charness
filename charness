@@ -89,14 +89,6 @@ def default_plugin_root(home_root: Path) -> Path:
     return home_root / ".codex" / "plugins" / PACKAGE_ID
 
 
-def legacy_plugin_root(home_root: Path) -> Path:
-    return home_root / ".agents" / "plugins" / PACKAGE_ID
-
-
-def legacy_skills_path(home_root: Path) -> Path:
-    return home_root / ".agents" / "skills"
-
-
 def default_codex_marketplace_path(home_root: Path) -> Path:
     return home_root / ".agents" / "plugins" / "marketplace.json"
 
@@ -2130,7 +2122,6 @@ def maybe_reexec_refreshed_cli(
         emit_progress(
             "WARNING: running CLI still differs from the refreshed checkout after one re-exec; "
             "continuing without another re-exec — if this run fails, re-run the command.",
-            json_mode=True,
         )
         return {
             "status": "skipped",
@@ -2139,7 +2130,6 @@ def maybe_reexec_refreshed_cli(
         }
     emit_progress(
         "STEP: source checkout code differs from the running CLI; re-executing the checkout's CLI so the run matches its scripts",
-        json_mode=True,
     )
     env = dict(os.environ)
     env[_CLI_REEXEC_GUARD_ENV] = str(os.getpid())
@@ -2149,7 +2139,6 @@ def maybe_reexec_refreshed_cli(
         emit_progress(
             f"WARNING: re-exec of the refreshed CLI failed ({exc}); continuing with the running CLI — "
             "if this run fails, re-run the command.",
-            json_mode=True,
         )
         return {
             "status": "failed",
@@ -2169,14 +2158,6 @@ def install_surface(
     cli_path: Path | None,
     update: bool,
 ) -> dict[str, object]:
-    old_plugin_root = legacy_plugin_root(home_root)
-    if old_plugin_root != plugin_root and old_plugin_root.exists():
-        shutil.rmtree(old_plugin_root)
-    removed_legacy_skills_symlink = False
-    old_skills_path = legacy_skills_path(home_root)
-    if old_skills_path.is_symlink():
-        old_skills_path.unlink()
-        removed_legacy_skills_symlink = True
     invoke_repo_script(repo_root, "scripts/validate_packaging.py", "--repo-root", str(repo_root))
     invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
     install_output = invoke_repo_script(
@@ -2208,8 +2189,6 @@ def install_surface(
         isinstance(item, dict) and item.get("status") == "synced" for item in support_sync_results
     ):
         completed_actions.append("upstream_support_skills_synced")
-    if removed_legacy_skills_symlink:
-        completed_actions.append("legacy_skills_symlink_removed")
     if cli_path is not None:
         install_cli_binary(cli_path, source_path=repo_root / "charness")
         payload["cli_path"] = str(cli_path)
@@ -2231,7 +2210,6 @@ def install_surface(
     payload["completed_actions"] = completed_actions
     payload["host_next_steps"]["claude"] = claude_plugin_message
     payload["claude_marketplace_message"] = claude_marketplace_message
-    payload["removed_legacy_skills_symlink"] = removed_legacy_skills_symlink
     return payload
 
 
@@ -2270,10 +2248,6 @@ def build_doctor_payload(
         "latest_release_check": version_state.get("latest_release"),
         "plugin_root": str(plugin_root),
         "plugin_root_present": plugin_root.is_dir(),
-        "legacy_plugin_root": str(legacy_plugin_root(home_root)),
-        "legacy_plugin_root_present": legacy_plugin_root(home_root).is_dir(),
-        "legacy_skills_path": str(legacy_skills_path(home_root)),
-        "legacy_skills_symlink_present": legacy_skills_path(home_root).is_symlink(),
         "codex_marketplace_path": str(codex_marketplace_path),
         "codex_marketplace_entry": codex_marketplace_entry(codex_marketplace_path),
         "codex_source_manifest_path": str(codex_source_manifest_path(plugin_root)),
@@ -2503,10 +2477,6 @@ def print_human_summary(payload: dict[str, object]) -> None:
     print(f"PLUGIN_ROOT: {'present' if payload['plugin_root_present'] else 'missing'} {payload['plugin_root']}")
     if payload.get("codex_source_version"):
         print(f"CODEX_SOURCE_VERSION: {payload['codex_source_version']}")
-    if payload.get("legacy_plugin_root_present"):
-        print(f"LEGACY_PLUGIN_ROOT: present {payload['legacy_plugin_root']}")
-    if payload.get("legacy_skills_symlink_present"):
-        print(f"LEGACY_SKILLS_SYMLINK: present {payload['legacy_skills_path']}")
     _print_codex_marketplace(payload)
     _print_codex_cache(payload)
     _print_codex_config(payload)
@@ -2514,13 +2484,8 @@ def print_human_summary(payload: dict[str, object]) -> None:
     _print_next_actions(payload)
 
 
-def emit_progress(message: str, *, json_mode: bool) -> None:
-    """Keep progress out of the public structured stdout stream.
-
-    ``json_mode`` remains an internal call-site compatibility parameter while the
-    root CLI has one YAML stdout contract.
-    """
-    del json_mode
+def emit_progress(message: str) -> None:
+    """Keep progress out of the public structured stdout stream."""
     print(message, file=sys.stderr, flush=True)
 
 
@@ -3070,10 +3035,9 @@ def run_tool_update_flow(
     dry_run: bool,
     skip_sync_support: bool,
     upstream_checkouts: list[str],
-    json_mode: bool = False,
     precomputed_support_results: object | None = None,
 ) -> tuple[dict[str, object], bool]:
-    emit_progress("STEP: updating tracked external tools", json_mode=json_mode)
+    emit_progress("STEP: updating tracked external tools")
     update_args = ["--repo-root", str(repo_root), "--json"]
     for tool_id in tool_ids:
         update_args.extend(["--tool-id", tool_id])
@@ -3082,7 +3046,7 @@ def run_tool_update_flow(
     update_results = invoke_repo_json_script(repo_root, "scripts/update_tools.py", *update_args, allow_failure=True)
     support_results: object = []
     if not skip_sync_support:
-        emit_progress("STEP: syncing support surfaces", json_mode=json_mode)
+        emit_progress("STEP: syncing support surfaces")
         can_reuse_support = (
             precomputed_support_results is not None
             and not dry_run
@@ -3100,7 +3064,7 @@ def run_tool_update_flow(
             if not dry_run:
                 support_args.append("--execute")
             support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
-    emit_progress("STEP: refreshing tool doctor state", json_mode=json_mode)
+    emit_progress("STEP: refreshing tool doctor state")
     doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
     for tool_id in tool_ids:
         doctor_args.extend(["--tool-id", tool_id])
@@ -3964,7 +3928,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     )
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
     pre_update_cache_entries = codex_all_plugin_cache_entries(default_codex_cache_root(home_root))
-    emit_progress("STEP: refreshing source checkout", json_mode=True)
+    emit_progress("STEP: refreshing source checkout")
     checkout = ensure_checkout(
         repo_root,
         managed=managed_checkout,
@@ -3973,7 +3937,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         allow_pull=managed_checkout and not args.no_pull,
     )
     cli_reexec_state = maybe_reexec_refreshed_cli(Path(checkout["repo_root"]))
-    emit_progress("STEP: refreshing install surface", json_mode=True)
+    emit_progress("STEP: refreshing install surface")
     selected_wrapper_path = None if args.skip_claude_wrapper else claude_wrapper_path
     payload = install_surface(
         Path(checkout["repo_root"]),
@@ -4006,7 +3970,6 @@ def cmd_update(args: argparse.Namespace) -> int:
     )
     emit_progress(
         "STEP: skipping Codex host cache refresh" if args.skip_codex_cache_refresh else "STEP: refreshing Codex host cache",
-        json_mode=True,
     )
     codex_cache_refresh = maybe_install_codex_host(
         home_root=home_root,
@@ -4099,13 +4062,12 @@ def cmd_update(args: argparse.Namespace) -> int:
             dry_run=False,
             skip_sync_support=False,
             upstream_checkouts=[],
-            json_mode=True,
             precomputed_support_results=payload.get("support_sync"),
         )
         payload["tool_update"] = tool_update_payload
         if tool_update_payload["results"]:
             payload.setdefault("completed_actions", []).append("external_tools_updated")
-    emit_progress("DONE: update complete", json_mode=True)
+    emit_progress("DONE: update complete")
     emit_operational_response(
         args,
         payload,
@@ -4171,11 +4133,8 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, _managed_checkout = resolve_repo_root(home_root, args.repo_root)
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
-    old_plugin_root = legacy_plugin_root(home_root)
     removed_marketplace = remove_codex_marketplace_entry(codex_marketplace_path)
     removed_plugin_root = False
-    removed_legacy_plugin_root = False
-    removed_legacy_skills_symlink = False
     removed_codex_cache = False
     removed_codex_config_entries: list[str] = []
     removed_claude_plugin = False
@@ -4187,13 +4146,6 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     if plugin_root.exists():
         shutil.rmtree(plugin_root)
         removed_plugin_root = True
-    if old_plugin_root != plugin_root and old_plugin_root.exists():
-        shutil.rmtree(old_plugin_root)
-        removed_legacy_plugin_root = True
-    old_skills_path = legacy_skills_path(home_root)
-    if old_skills_path.is_symlink():
-        old_skills_path.unlink()
-        removed_legacy_skills_symlink = True
     codex_cache_path = default_codex_cache_root(home_root) / PACKAGE_ID
     if codex_cache_path.exists():
         shutil.rmtree(codex_cache_path)
@@ -4221,8 +4173,6 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "package_id": PACKAGE_ID,
         "removed_codex_marketplace_entry": removed_marketplace,
         "removed_plugin_root": removed_plugin_root,
-        "removed_legacy_plugin_root": removed_legacy_plugin_root,
-        "removed_legacy_skills_symlink": removed_legacy_skills_symlink,
         "removed_codex_cache": removed_codex_cache,
         "removed_codex_config_entries": removed_codex_config_entries,
         "removed_claude_plugin": removed_claude_plugin,
@@ -4705,7 +4655,6 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
         skip_sync_support=args.skip_sync_support,
         upstream_checkouts=args.upstream_checkout,
-        json_mode=True,
     )
     emit_operational_response(
         args,
@@ -5662,7 +5611,6 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
-    raw_argv = [argument for argument in raw_argv if argument != "--json"]
     if raw_argv == ["--version"]:
         raw_argv = ["version"]
     parser = build_parser()

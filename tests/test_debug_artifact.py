@@ -639,16 +639,6 @@ def test_validate_debug_artifact_fail_fast_stops_at_first_violation(tmp_path: Pa
     assert "Risk Class" not in result.stderr
 
 
-def test_validate_debug_artifact_report_all_is_accepted_no_op(tmp_path: Path) -> None:
-    # The deprecated flag must stay accepted so checked-in commands and older
-    # callers do not break on the flip; it changes nothing.
-    repo = seed_repo(tmp_path, _multi_violation_current_artifact())
-    default = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
-    deprecated = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--report-all")
-    assert deprecated.returncode == default.returncode == 1
-    assert deprecated.stderr == default.stderr
-
-
 # --- #366: dated Seam Risk enum parity with the closeout consumer -------------
 
 

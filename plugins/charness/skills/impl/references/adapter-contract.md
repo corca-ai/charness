@@ -5,15 +5,7 @@ artifact policy out of the public skill body.
 
 ## Canonical Path
 
-Use `<repo-root>/.agents/impl-adapter.yaml` for new repos.
-
-Search order:
-
-1. `<repo-root>/.agents/impl-adapter.yaml`
-2. `.codex/impl-adapter.yaml`
-3. `.claude/impl-adapter.yaml`
-4. `<repo-root>/docs/impl-adapter.yaml`
-5. `impl-adapter.yaml` as compatibility fallback only
+Use `<repo-root>/.agents/impl-adapter.yaml`.
 
 ## Fields
 
@@ -69,8 +61,7 @@ Supported prefixes:
 - `cmd:<name>` for a shell command resolved with `which`
 - `skill:<name>` for a local or globally installed Codex skill
 
-Bare names are treated as `cmd:<name>` only as a compatibility fallback. New
-adapters should always use an explicit prefix.
+Bare names are invalid; every tool uses an explicit prefix.
 
 ## Field Semantics
 

@@ -76,8 +76,7 @@ def test_public_body_shape_rejects_unknown_values(tmp_path: Path) -> None:
 
 def test_delivery_kind_rejects_unknown_value(tmp_path: Path) -> None:
     # `_apply_simple_fields` only checks that `delivery_kind` is a string, so an
-    # arbitrary string reaches `_delivery_warnings` unchanged. The deprecated
-    # `command` alias remaps first (a different branch); anything else outside
+    # arbitrary string reaches `_delivery_warnings` unchanged. Anything outside
     # DELIVERY_KINDS must be flagged as an error, not silently accepted.
     _validated, errors, _warnings = validate_announcement_adapter_data(
         {"delivery_kind": "webhook"}, tmp_path

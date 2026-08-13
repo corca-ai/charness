@@ -53,12 +53,6 @@ def git_changed_paths(repo_root: Path, *, artifact_label: str) -> list[str]:
     return sorted(paths)
 
 
-REPORT_ALL_DEPRECATED_HELP = (
-    "Deprecated no-op: reporting every violation in one pass is now the default. "
-    "Use --fail-fast to stop at the first violation."
-)
-
-
 def add_changed_artifact_args(parser, *, default_repo_root: Path, all_help: str) -> None:
     parser.add_argument("--repo-root", type=Path, default=default_repo_root)
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
@@ -68,15 +62,12 @@ def add_changed_artifact_args(parser, *, default_repo_root: Path, all_help: str)
 def add_one_pass_args(parser, *, fail_fast_help: str) -> None:
     """The one-pass control, declared once for every artifact validator.
 
-    `--fail-fast` is the ONLY knob: one-pass is the default across the family, and
-    `--report-all` stays accepted as a no-op so existing callers, docs, and
-    checked-in artifact commands do not break on the flip. Declaring both here —
-    rather than per validator — is what stops the D28 polarity split (opposite
+    `--fail-fast` is the only knob: one-pass is the default across the family.
+    Declaring it here rather than per validator is what stops the D28 polarity split (opposite
     defaults AND opposite flag names across sibling validators) from re-forming:
     a new artifact family cannot pick its own polarity without editing this.
     """
     parser.add_argument("--fail-fast", action="store_true", help=fail_fast_help)
-    parser.add_argument("--report-all", action="store_true", help=REPORT_ALL_DEPRECATED_HELP)
 
 
 def add_artifact_path_arg(parser, *, surface: str) -> None:
@@ -168,5 +159,4 @@ def unresolvable_named_paths(
                 entry for entry in result.stdout.decode("utf-8", errors="surrogateescape").split("\0") if entry
             )
     return [path for path in missing if path not in deleted]
-
 

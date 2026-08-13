@@ -134,8 +134,6 @@ def test_create_round_trips_hostile_body_byte_identical(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
-    assert payload["created_number"] == 777
-    assert "issues/777" in payload["created_url"]
     # The canonical names the skill contract tells the agent to report from. Asserted at
     # RUNTIME, not just as source literals: without these, deleting `number`/`url` from
     # the payload leaves this behavioral suite fully green and only the static doc-key
@@ -172,7 +170,6 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
     verified_payload = json.loads(verified.stdout)
     assert verified_payload["number"] == 538
     assert verified_payload["url"] == "https://tracker.example/acme/demo/issues/538"
-    assert verified_payload["created_url"] == verified_payload["url"]
     assert verified_payload["verification"] == {
         "command": "verify-create",
         "repo": "acme/demo",
@@ -189,7 +186,6 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
     skipped_payload = json.loads(skipped.stdout)
     assert skipped_payload["number"] == 538
     assert skipped_payload["url"] is None
-    assert skipped_payload["created_url"] is None
     assert skipped_payload["verification"]["command"] == "verify-create"
 
 
@@ -619,7 +615,7 @@ def test_create_allows_intentional_placeholder_title(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["created_number"] == 778
+    assert payload["number"] == 778
     assert payload["readback_skipped"] is True
     assert count_file.read_text().splitlines() == ["create"]
 
@@ -663,7 +659,7 @@ def test_no_verify_is_rejected_and_skip_readback_still_creates(tmp_path: Path) -
     )
     assert created.returncode == 0, created.stderr
     payload = json.loads(created.stdout)
-    assert payload["created_number"] == 778
+    assert payload["number"] == 778
     assert payload["body_verified"] is None
     assert payload["readback_skipped"] is True
     assert "issue created" in payload["verify_skipped"]

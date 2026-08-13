@@ -1,4 +1,4 @@
-"""Regression tests for scripts/validate_inventory_consumption.py.
+"""Regression tests for the inventory-consumption validators.
 
 Covers the consumer-side of issue #145: a quality artifact that cites an
 inventory in `## Commands Run` must engage with declared non-headline fields,
@@ -13,6 +13,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+from scripts import validate_inventory_consumption_declaration as declaration
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "validate_inventory_consumption.py"
 
@@ -24,6 +28,25 @@ def _run(repo_root: Path) -> subprocess.CompletedProcess[str]:
         text=True,
         check=False,
     )
+
+
+def test_declaration_runner_rejects_non_yaml_inventory_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        declaration.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            [], 0, "items: [unterminated", ""
+        ),
+    )
+
+    payload, error = declaration._run_inventory(
+        tmp_path / "inventory_example.py", tmp_path
+    )
+
+    assert payload is None
+    assert error is not None and error.startswith("non-YAML stdout:")
 
 
 def _write(path: Path, content: str) -> None:
@@ -71,7 +94,7 @@ def test_passes_when_two_declared_fields_are_cited(tmp_path: Path) -> None:
         "prose_review_status=still_required.\n"
         "- prose review result: trigger boundaries and progressive disclosure were reviewed; no blockers found.\n"
         "- structural review result: no helper-owned packet gap; no structural move now.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -92,7 +115,7 @@ def test_fails_when_only_one_of_two_declared_fields_is_cited(tmp_path: Path) -> 
         "- skill ergonomics clean; script_file_count is 0; prose_review_status=still_required.\n"
         "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "- structural review result: no helper-owned packet gap; no structural move now.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -113,7 +136,7 @@ def test_fails_when_inventory_cited_without_any_declared_field(tmp_path: Path) -
         "- skill ergonomics overall clean; prose_review_status=still_required.\n"
         "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "- structural review result: no helper-owned packet gap; no structural move now.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -139,7 +162,7 @@ def test_single_field_declaration_still_requires_only_one(tmp_path: Path) -> Non
         "- skill ergonomics clean; script_file_count is 0; prose_review_status=still_required.\n"
         "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "- structural review result: no helper-owned packet gap; no structural move now.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=declaration)
@@ -153,7 +176,7 @@ def test_inventory_outside_declaration_is_exempt(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
         "## Healthy\n- adapter gate design clean (no findings reported).\n"
-        "## Commands Run\n- `python3 inventory_adapter_gate_design.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_adapter_gate_design.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -175,7 +198,7 @@ def test_field_citation_inside_commands_run_does_not_count(tmp_path: Path) -> No
         "## Weak\n- prose_review_status=still_required.\n"
         "## Advisory\n- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "## Commands Run\n"
-        "- `python3 inventory_skill_ergonomics.py --repo-root . --json` (script_file_count visible)\n"
+        "- `python3 inventory_skill_ergonomics.py --repo-root . --detail` (script_file_count visible)\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -193,7 +216,7 @@ def test_skill_ergonomics_inventory_requires_prose_review_status(tmp_path: Path)
         f"{_TARGET_SCOPE_LINES}"
         "## Healthy\n- skill ergonomics clean; script_file_count 0 and reference_file_count 3.\n"
         "## Advisory\n- prose review result: trigger boundaries were reviewed; no blockers found.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -212,7 +235,7 @@ def test_skill_ergonomics_inventory_requires_prose_review_result(tmp_path: Path)
         "## Healthy\n"
         "- skill ergonomics clean; script_file_count 0 and reference_file_count 3; "
         "prose_review_status=still_required.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -232,7 +255,7 @@ def test_skill_ergonomics_inventory_requires_structural_review_result(tmp_path: 
         "- skill ergonomics clean; script_file_count 0 and reference_file_count 3; "
         "prose_review_status=still_required.\n"
         "## Advisory\n- prose review result: trigger boundaries were reviewed; no blockers found.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -252,7 +275,7 @@ def test_skill_ergonomics_inventory_requires_target_and_ambient_split(tmp_path: 
         "## Advisory\n"
         "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "- structural review result: no helper-owned packet gap; no structural move now.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
@@ -272,7 +295,7 @@ def test_artifact_predating_contract_start_is_skipped(tmp_path: Path) -> None:
         "Date: 2026-05-12\n"
         "\n"
         "## Healthy\n- skill ergonomics overall clean.\n"
-        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --detail`\n"
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)

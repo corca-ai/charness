@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import subprocess
 import tempfile
@@ -167,13 +166,10 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
     parser.add_argument("--run-probes", action="store_true", help="Clone the repo into a temp dir and execute the declared probes")
     parser.add_argument("--detail", action="store_true", help="Emit the full fresh-checkout probe payload as YAML")
-    parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     try:
         args = parser.parse_args()
         payload = build_payload(args.repo_root.resolve(), run_probes=args.run_probes)
-        if args.json:
-            print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-        elif args.detail:
+        if args.detail:
             yaml_output.emit_yaml(payload)
         else:
             print(f"fresh checkout probes: {payload['status']}")

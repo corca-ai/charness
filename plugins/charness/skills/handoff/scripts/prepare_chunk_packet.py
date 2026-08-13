@@ -35,11 +35,7 @@ def parse_args() -> argparse.Namespace:
     )
     chunked_routing_cli.add_input_argument(
         parser,
-        legacy=("--entries",),
-        help_text=(
-            "A parse_handoff_entries.py payload (with entries[]) or a bare "
-            "entries array. `--entries` is a kept alias."
-        ),
+        help_text="A parse_handoff_entries.py payload (with entries[]) or a bare entries array.",
     )
     return parser.parse_args()
 

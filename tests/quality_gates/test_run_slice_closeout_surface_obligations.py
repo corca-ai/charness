@@ -654,7 +654,7 @@ def test_run_slice_closeout_emits_heartbeat_for_long_running_commands(
     assert result["returncode"] == 0, result["stderr"]
     assert result["stdout"].strip() == "done"
     assert "RUN [verify]" in captured.err
-    assert "." in captured.err
+    assert "HEARTBEAT [verify] elapsed=" in captured.err
     assert "PASS [verify]" in captured.err
 
 
