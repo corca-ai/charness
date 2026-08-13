@@ -296,13 +296,23 @@ class _ClassifierCli:
     so the changed-line mutation gate reads them as untested, which is what it did.
     """
 
+    MARKER = "charness-release-state:prepared-awaiting-claims-review"
+
     def __init__(self, *, revs: dict[str, str], subject: str, messages: dict[str, str],
-                 tag_local: bool = True, close_refs: list[str] | None = None):
+                 tag_local: bool = True, close_refs: list[str] | None = None,
+                 marked: tuple[str, ...] = (), parents: dict[str, str] | None = None,
+                 children: dict[str, str] | None = None, evidence_changed: list[str] | None = None):
         self.revs = revs
         self.subject = subject
         self.messages = messages
         self.tag_local = tag_local
         self.close_refs = close_refs or []
+        # Commits whose release record carries the prepared marker. `prepared_record` also
+        # requires a single parent that does NOT carry it, so `parents` drives that arm.
+        self.marked = marked
+        self.parents = parents or {}
+        self.children = children or {}
+        self.evidence_changed = evidence_changed or ["charness-artifacts/release-review/r.json"]
         self._helpers = SimpleNamespace(
             tag_exists=lambda *_a, **_k: {"local": tag_local, "remote": True, "remote_tag_sha": revs.get("tag", "")},
             release_exists=lambda *_a, **_k: True,
@@ -314,14 +324,26 @@ class _ClassifierCli:
             return SimpleNamespace(returncode=0, stdout=self.subject)
         if args[:1] == ["rev-parse"]:
             return SimpleNamespace(returncode=0, stdout=self.revs.get(args[1], ""))
-        if args[:1] == ["rev-list"]:
-            return SimpleNamespace(returncode=0, stdout=self.revs.get("tag", ""))
+        if args[:3] == ["show", "-s", "--format=%P"]:
+            parent = self.parents.get(args[-1])
+            return SimpleNamespace(returncode=0 if parent is not None else 1, stdout=parent or "")
         if args[:2] == ["show", "-s"]:
             return SimpleNamespace(returncode=0, stdout=self.messages.get(args[-1], ""))
         if args[:1] == ["show"]:
-            # No release record anywhere: every prepared-record lookup declines, which is
-            # what the post-publication arms under test require.
-            return SimpleNamespace(returncode=1, stdout="")
+            commit = args[1].split(":", 1)[0]
+            if commit in self.marked:
+                return SimpleNamespace(returncode=0, stdout=f"# Release\n<!-- {self.MARKER} -->\n")
+            # An unmarked record still EXISTS; only the marker decides a prepared boundary.
+            return SimpleNamespace(returncode=0, stdout="# Release\n")
+        if args[:1] == ["rev-list"] and "--all" in args:
+            return SimpleNamespace(
+                returncode=0,
+                stdout="".join(f"{child} {parent}\n" for parent, child in self.children.items()),
+            )
+        if args[:1] == ["rev-list"]:
+            return SimpleNamespace(returncode=0, stdout=self.revs.get("tag", ""))
+        if args[:2] == ["diff-tree", "--no-commit-id"]:
+            return SimpleNamespace(returncode=0, stdout="\n".join(self.evidence_changed))
         if args[:1] == ["merge-base"]:
             return SimpleNamespace(returncode=0, stdout="")
         if args[:1] == ["ls-remote"]:
@@ -360,6 +382,50 @@ def test_the_post_publication_phase_arms_classify_in_process() -> None:
     )
     assert final["phase"] == "post-publication-final"
     assert final["head_grandparent_is_tag"] is True
+
+
+def test_the_prepared_claims_review_arms_classify_in_process() -> None:
+    """The two arms that select a prepared stop, which remote CI's broad mutation lane
+    named as uncovered while the local focused lane called the same range clean.
+
+    Both reach `prepared-claims-review` from different evidence: HEAD is the marked
+    prepared record itself, or HEAD is the claims-evidence child of a TAGGED prepared
+    record. Which one matched decides what `prepared` and `claims_evidence_commit` bind
+    to, so a collapsed arm publishes against the wrong boundary."""
+    # HEAD is the marked prepared record P; no tag yet.
+    at_prepared = RESUME_STATE.resumable_state(
+        Path("."), tag_name="v1.2.3", commit_message="Release demo 1.2.3", remote="origin",
+        branch="main", backend={}, record_path=_RECORD_PATH,
+        cli=_ClassifierCli(
+            revs={"HEAD": "p-sha", "HEAD^": "base-sha"},
+            subject="Release demo 1.2.3",
+            messages={"HEAD": "Release demo 1.2.3", "HEAD^": "base"},
+            tag_local=False,
+            marked=("p-sha",),
+            parents={"p-sha": "base-sha"},
+        ),
+    )
+    assert at_prepared["phase"] == "prepared-claims-review"
+    assert at_prepared["prepared"]["commit"] == "p-sha"
+    # No evidence commit can be inferred from P alone.
+    assert at_prepared["claims_evidence_commit"] == ""
+
+    # HEAD is R, the claims-evidence child of a TAGGED prepared record.
+    at_evidence = RESUME_STATE.resumable_state(
+        Path("."), tag_name="v1.2.3", commit_message="Release demo 1.2.3", remote="origin",
+        branch="main", backend={}, record_path=_RECORD_PATH,
+        cli=_ClassifierCli(
+            revs={"HEAD": "r-sha", "HEAD^": "tag-sha", "tag": "tag-sha"},
+            subject="Record claims review",
+            messages={"HEAD": "Record claims review", "HEAD^": "Release demo 1.2.3"},
+            marked=("tag-sha",),
+            parents={"tag-sha": "base-sha", "r-sha": "tag-sha"},
+            children={"tag-sha": "r-sha"},
+        ),
+    )
+    assert at_evidence["phase"] == "prepared-claims-review"
+    assert at_evidence["prepared"]["commit"] == "tag-sha"
+    assert at_evidence["claims_evidence_commit"] == "r-sha"
 
 
 def test_the_artifact_commit_pathspec_covers_the_adapter_record_without_a_phantom() -> None:
