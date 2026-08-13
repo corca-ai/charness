@@ -57,7 +57,12 @@ requirement for this goal.
   nothing, round 2 found the same fall-through reachable through a non-default
   adapter `output_dir`. Carrier `dd473642`; GitHub closure carried by this commit.
 - [#610](https://github.com/corca-ai/charness/issues/610) — the claims verdict
-  never reaches the published release record. Filed, not implemented.
+  never reaches the published release record. RESOLVED: every record written after
+  a validated claims review carries a fixed `## Claims Review` section naming the
+  record path, verdict, distinctness kind and signal, and the narrative, with
+  `unproven` stating the negative property rather than the bare token. Two rounds;
+  round 2 found the signal still able to satisfy three closeout sentinels, and an
+  assertion that passed with the repair reverted. Carrier: this commit.
 - [#611](https://github.com/corca-ai/charness/issues/611) — the claims resume lane
   never runs the notes-file preflight, so drafted notes and issue closeout can be
   silently dropped. Filed, not implemented; the planner names the arguments in its
