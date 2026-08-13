@@ -65,8 +65,12 @@ requirement for this goal.
   assertion that passed with the repair reverted. Carrier: this commit.
 - [#611](https://github.com/corca-ai/charness/issues/611) — the claims resume lane
   never runs the notes-file preflight, so drafted notes and issue closeout can be
-  silently dropped. Filed, not implemented; the planner names the arguments in its
-  resume packet as guidance, which is not enforcement.
+  silently dropped. RESOLVED for the notes half: the preflight runs on the lane,
+  above the artifact commit and guarded on `release_exists`, and the planner now
+  places `--notes-file` when exactly one candidate exists. The `--close-issue` half
+  stays unenforced on this lane and is recorded as such — no durable record of the
+  original intent exists at a prepared stop. Two rounds; round 2 found the gate
+  creating the state it then refuses. Carrier: this commit.
 - [#613](https://github.com/corca-ai/charness/issues/613) — the claims floor reads
   a hardcoded record path, so a non-default adapter `output_dir` made it blind.
   RESOLVED: the path is derived once from `output_dir` and consumed by the floor,
