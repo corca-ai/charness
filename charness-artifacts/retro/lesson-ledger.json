@@ -190,6 +190,36 @@
         ]
       },
       "snapshot_sha256": "9acc8de6861926f28a59632d1f36356eab176a59742dae536731f0bcdc98dd7e"
+    },
+    {
+      "session_id": "2026-08-13-issue-614",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 1,
+        "seed": "2026-08-13-issue-614",
+        "eligible_count": 16,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "guard-adjacent-to-action",
+          "durable-lesson-ledger-first",
+          "mutation-producer-selection",
+          "proof-surface-review-binding",
+          "goal-closeout-evidence-binding",
+          "counted-limit-retry-loop",
+          "graduation-is-proposal",
+          "closeout-authoring-rework",
+          "closeout-diagnostic-visibility",
+          "premise-not-checked-against-source"
+        ]
+      },
+      "snapshot_sha256": "4e1234f584ae7f3a1f9ff9e06cdb7b85d8280c738d2aa224c611f018702903a3"
     }
   ],
   "score_events": [

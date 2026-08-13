@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import runpy
 import shutil
 import subprocess
@@ -447,6 +448,196 @@ def test_standing_pytest_run_print_command_and_executes(tmp_path: Path, monkeypa
     assert captured["cwd"] == repo.resolve()
     assert captured["env"]["CHARNESS_QUALITY_MODE"] == "full"
     assert not basetemp.exists()
+
+
+def test_failed_basetemp_prune_keeps_newest_three_and_skips_active(
+    tmp_path: Path,
+) -> None:
+    from scripts import run_standing_pytest as runner
+
+    parent = tmp_path / "pytest-of-alice"
+    parent.mkdir()
+    roots = [parent / f"charness-run-{index}" for index in range(1, 7)]
+    for index, path in enumerate(roots, start=1):
+        path.mkdir()
+        os.utime(path, ns=(index, index))
+        runner._mark_basetemp(path, runner._FAILED_BASETEMP_MARKER)
+        os.utime(path / runner._FAILED_BASETEMP_MARKER, ns=(index, index))
+    unrelated = parent / "pytest-1"
+    unrelated.mkdir()
+    current = parent / "charness-run-7"
+
+    with runner._hold_basetemp_lock(roots[0]):
+        removed = runner.prune_failed_basetemps(parent, current_failed=current, keep=3)
+
+    assert {path.name for path in removed} == {"charness-run-2", "charness-run-3", "charness-run-4"}
+    assert roots[0].is_dir()
+    assert roots[4].is_dir() and roots[5].is_dir()
+    assert unrelated.is_dir()
+
+
+def test_failed_standing_run_prunes_only_default_owned_roots(tmp_path: Path, monkeypatch) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    parent = tmp_path / "pytest-of-alice"
+    parent.mkdir()
+    for index in range(1, 5):
+        path = parent / f"charness-run-{index}"
+        path.mkdir()
+        os.utime(path, ns=(index, index))
+        runner._mark_basetemp(path, runner._FAILED_BASETEMP_MARKER)
+        os.utime(path / runner._FAILED_BASETEMP_MARKER, ns=(index, index))
+    current = parent / "charness-run-5"
+    monkeypatch.setattr(runner, "default_basetemp", lambda repo_root: current)
+    monkeypatch.setattr(runner, "build_pytest_command", lambda *args, **kwargs: ["pytest"])
+
+    def fail(command, *, cwd, env, check):
+        current.mkdir()
+        return subprocess.CompletedProcess(command, returncode=1)
+
+    monkeypatch.setattr(runner.subprocess, "run", fail)
+    rc = runner.run_standing_pytest(
+        SimpleNamespace(
+            repo_root=repo,
+            basetemp=None,
+            include_release_only=False,
+            mode="read-only",
+            print_command=False,
+            keep_basetemp=False,
+            pytest_target=[],
+            extra_pytest_target=[],
+        )
+    )
+
+    assert rc == 1
+    assert sorted(path.name for path in parent.iterdir() if path.is_dir()) == [
+        "charness-run-3",
+        "charness-run-4",
+        "charness-run-5",
+    ]
+
+
+def test_custom_basetemp_failure_does_not_prune_its_parent(tmp_path: Path, monkeypatch) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    parent = tmp_path / "operator-owned"
+    parent.mkdir()
+    sibling = parent / "charness-run-1"
+    sibling.mkdir()
+    custom = parent / "custom"
+    monkeypatch.setattr(runner, "build_pytest_command", lambda *args, **kwargs: ["pytest"])
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda command, *, cwd, env, check: subprocess.CompletedProcess(command, returncode=1),
+    )
+
+    rc = runner.run_standing_pytest(
+        SimpleNamespace(
+            repo_root=repo,
+            basetemp=custom,
+            include_release_only=False,
+            mode="read-only",
+            print_command=False,
+            keep_basetemp=False,
+            pytest_target=[],
+            extra_pytest_target=[],
+        )
+    )
+
+    assert rc == 1
+    assert sibling.is_dir()
+
+
+def test_success_keeps_three_prior_failures_without_reserving_a_current_slot(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    parent = tmp_path / "pytest-of-alice"
+    parent.mkdir()
+    failures = [parent / f"charness-run-{index}" for index in range(1, 5)]
+    for index, path in enumerate(failures, start=1):
+        path.mkdir()
+        runner._mark_basetemp(path, runner._FAILED_BASETEMP_MARKER)
+        marker = path / runner._FAILED_BASETEMP_MARKER
+        os.utime(marker, ns=(index, index))
+    current = parent / "charness-run-5"
+    current.mkdir()
+    monkeypatch.setattr(runner, "default_basetemp", lambda repo_root: current)
+    monkeypatch.setattr(runner, "build_pytest_command", lambda *args, **kwargs: ["pytest"])
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda command, *, cwd, env, check: subprocess.CompletedProcess(command, returncode=0),
+    )
+
+    rc = runner.run_standing_pytest(
+        SimpleNamespace(
+            repo_root=repo,
+            basetemp=None,
+            include_release_only=False,
+            mode="read-only",
+            print_command=False,
+            keep_basetemp=False,
+            pytest_target=[],
+            extra_pytest_target=[],
+        )
+    )
+
+    assert rc == 0
+    assert not current.exists()
+    assert sorted(path.name for path in parent.iterdir() if path.is_dir()) == [
+        "charness-run-2",
+        "charness-run-3",
+        "charness-run-4",
+    ]
+
+
+def test_explicitly_kept_success_and_unmarked_legacy_roots_are_never_failure_candidates(
+    tmp_path: Path,
+) -> None:
+    from scripts import run_standing_pytest as runner
+
+    parent = tmp_path / "pytest-of-alice"
+    parent.mkdir()
+    kept = parent / "charness-run-1"
+    kept.mkdir()
+    runner._mark_basetemp(kept, runner._KEPT_BASETEMP_MARKER)
+    legacy = parent / "charness-run-2"
+    legacy.mkdir()
+    failures = [parent / f"charness-run-{index}" for index in range(3, 7)]
+    for index, path in enumerate(failures, start=3):
+        path.mkdir()
+        runner._mark_basetemp(path, runner._FAILED_BASETEMP_MARKER)
+        marker = path / runner._FAILED_BASETEMP_MARKER
+        os.utime(marker, ns=(index, index))
+
+    runner.prune_failed_basetemps(parent, current_failed=None, keep=3)
+
+    assert kept.is_dir() and legacy.is_dir()
+    assert not failures[0].exists()
+    assert all(path.is_dir() for path in failures[1:])
+
+
+def test_failed_basetemp_keep_override_defaults_safely_on_invalid_values(
+    monkeypatch, capsys
+) -> None:
+    from scripts import run_standing_pytest as runner
+
+    assert runner._failed_basetemp_keep({"CHARNESS_PYTEST_FAILED_BASETEMP_KEEP": "5"}) == 5
+    for raw in ("0", "-1", "not-a-number"):
+        assert (
+            runner._failed_basetemp_keep({"CHARNESS_PYTEST_FAILED_BASETEMP_KEEP": raw})
+            == runner.FAILED_BASETEMP_KEEP
+        )
+        assert "expected a positive integer" in capsys.readouterr().err
 
 
 def test_standing_pytest_main_print_modes(tmp_path: Path, monkeypatch, capsys) -> None:

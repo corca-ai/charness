@@ -165,7 +165,7 @@ stale, or otherwise non-comparable evidence.
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-08-13-issue-615-focused-changed-line-verdict-contract.md

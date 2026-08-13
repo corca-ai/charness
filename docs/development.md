@@ -166,6 +166,37 @@ resolve back to `~/.agents/src/charness`.
 Keep any proof-only host route out of operator docs unless it becomes a
 maintained, first-class install contract.
 
+## Local Mutation Report Retention
+
+`reports/mutation` is ignored machine-local state, but its regular producer outputs
+are still current proof inputs. Inspect its lifecycle before deleting anything:
+
+```bash
+python3 scripts/manage_mutation_reports.py --repo-root . --older-than-days 30
+```
+
+The command classifies adapter-declared and repo-owned fixed output paths as
+`managed`; they are never prune candidates. Old top-level regular files outside
+that set are reported as `prune_candidate` but remain untouched. After inspecting
+the exact paths and byte total, repeat with `--execute` and the emitted
+`--confirm-candidate-set-sha256 <digest>` to remove only that unchanged candidate
+set. A missing/mismatched digest, a replaced report root, or a candidate whose size
+or modification time changed at its pre-delete check refuses. The command anchors
+deletion to the inventoried directory and rechecks each candidate immediately before
+unlinking it. It is not a transaction across all files: do not run cleanup alongside
+a mutation producer, and a late concurrent change may leave an earlier candidate
+already removed before the later candidate is refused. Directories, symlinks, fresh
+files, and managed outputs are always preserved. Normal quality and mutation runs
+never invoke this cleanup implicitly.
+
+The standing pytest runner separately retains the newest three runner-owned failed
+basetemps. It skips live locked runs and never prunes a custom `--basetemp`. Set
+`CHARNESS_PYTEST_FAILED_BASETEMP_KEEP` to a positive integer for a machine-local
+inspection window override; invalid or non-positive values warn and fall back to
+three. Successful `--keep-basetemp` roots and legacy unmarked roots are preserved
+outside the failure-retention count, so enabling this policy never silently reclaims
+an earlier explicit keep or an ambiguously owned pre-policy root.
+
 ## Mutation Phase Barriers
 
 When validating this repo, keep state-changing work and verification in
