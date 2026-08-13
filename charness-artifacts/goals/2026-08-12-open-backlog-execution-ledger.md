@@ -55,7 +55,7 @@ requirement for this goal.
   commit, and a first-class `verdict: unproven`). Two rounds; round 1 found a
   second prepare over an outstanding marker fell through to a lane that validates
   nothing, round 2 found the same fall-through reachable through a non-default
-  adapter `output_dir`. Carrier `dd473642`. GitHub OPEN pending the closeout floor.
+  adapter `output_dir`. Carrier `dd473642`; GitHub closure carried by this commit.
 - [#610](https://github.com/corca-ai/charness/issues/610) — the claims verdict
   never reaches the published release record. Filed, not implemented.
 - [#611](https://github.com/corca-ai/charness/issues/611) — the claims resume lane
