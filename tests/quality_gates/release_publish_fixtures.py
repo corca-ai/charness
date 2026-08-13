@@ -206,11 +206,12 @@ def claims_review_record(
     narrative_path: str,
     verdict: str = "pass",
     kind: str = "separate-agent-context",
+    release_record_path: str = "charness-artifacts/release/latest.md",
 ) -> dict:
     record = {
         "schema_version": "charness.release.claims-review.v2",
         "prepared_commit": prepared_commit,
-        "release_record_path": "charness-artifacts/release/latest.md",
+        "release_record_path": release_record_path,
         "release_record_sha256": hashlib.sha256(prepared_record.encode("utf-8")).hexdigest(),
         "target_version": target_version,
         "tag_name": tag_name,
@@ -238,6 +239,7 @@ def commit_claims_review(
     stem: str,
     verdict: str = "pass",
     kind: str = "separate-agent-context",
+    release_record_path: str = "charness-artifacts/release/latest.md",
 ) -> str:
     """Write and commit the v2 record plus its narrative; return the record's path."""
     review_path = f"charness-artifacts/release-review/{stem}.json"
@@ -245,7 +247,7 @@ def commit_claims_review(
     record = claims_review_record(
         prepared_commit=prepared_commit, prepared_record=prepared_record,
         target_version=target_version, tag_name=tag_name, narrative_path=narrative_path,
-        verdict=verdict, kind=kind,
+        verdict=verdict, kind=kind, release_record_path=release_record_path,
     )
     paths = [review_path]
     (repo / review_path).parent.mkdir(parents=True, exist_ok=True)

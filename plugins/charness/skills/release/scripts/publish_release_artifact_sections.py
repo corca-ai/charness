@@ -51,6 +51,78 @@ def release_push_lines(public_release_verification: str) -> list[str]:
     return lines
 
 
+def flatten_signal(signal: object) -> str:
+    """The recorded distinctness signal as ONE line.
+
+    Owned here, beside its only caller, rather than next to the validator that refuses a
+    multi-line signal. Two copies of one rule is the shape this subsystem's own change-set
+    classifier warns about -- and the earlier split was worse than a duplicate, because the
+    validator-side copy had no production caller at all while the renderer inlined the rule.
+    """
+    return " ".join(str(signal).split())
+
+
+def claims_review_lines(claims_review: dict[str, Any] | None, *, prepared: bool = False) -> list[str]:
+    """The claims-review verdict, in the document readers outside the session actually get.
+
+    The stronger of the two release floors used to reach the release record not at all: the
+    critique artifact was recorded here while the claims verdict lived only in a separate
+    JSON, a stderr warning, and a stdout payload, none of which survive into what an outside
+    reader reads. `verdict: unproven` is a first-class state whose entire purpose is to be
+    visible, and it was the least visible thing the release produced.
+
+    One FIXED heading, never a data-dependent one: a heading whose name varies is what makes
+    a downstream substring check silently no-op, and this is a section other tools will grow
+    to read. The body varies instead.
+
+    The signal is flattened onto one line at render time as well as refused at the
+    validator, because a record committed under an earlier build never saw that refusal.
+    """
+    lines = ["", "## Claims Review", ""]
+    if prepared:
+        return lines + [
+            "- Claims review: not yet performed -- THIS record is the subject of the pending "
+            "independent review, and publication is stopped until that review is committed.",
+        ]
+    if not claims_review:
+        return lines + [
+            "- Claims review: not recorded by this helper invocation. This release did not "
+            "publish through the claims-review lane, so no distinct-observer property is claimed.",
+        ]
+    verdict = claims_review.get("verdict")
+    distinctness = claims_review.get("observer_distinctness") or {}
+    signal = flatten_signal(distinctness.get("signal", ""))
+    # `not recorded` rather than a literal `None`, on every field. The validator populates
+    # all of them today, so this is a rendering guarantee rather than a live branch -- but
+    # a record section whose worst output is the word `None` is a section that can report
+    # an absent field as a present one.
+    def _named(value: object) -> str:
+        return f"`{value}`" if isinstance(value, str) and value else "not recorded"
+
+    lines.append(f"- Claims review record: {_named(claims_review.get('path'))}.")
+    if verdict == "pass":
+        lines.append("- Claims review verdict: `pass`.")
+        lines.append(f"- Observer distinctness: {_named(distinctness.get('kind'))}.")
+        lines.append(f"- Recorded signal: {signal}")
+        lines.append(f"- Review narrative: {_named(distinctness.get('review_artifact'))}.")
+        return lines
+    # Not `- verdict: unproven.` and nothing else. A reader scanning headings sees a
+    # "Claims Review" section and infers a review happened; the token alone reproduces, in a
+    # new place, the exact fail-quiet this section exists to close. State the NEGATIVE
+    # property, in the same words the boundary warning uses.
+    lines.append(
+        f"- Claims review verdict: `{verdict}` -- the distinct-observer property was NOT "
+        "established for this release."
+    )
+    lines.append(
+        "- This is a recorded absence, not a passing review: no observer independent of the "
+        "release preparer is claimed to have reviewed the claims in this record."
+    )
+    lines.append(f"- Recorded signal: {signal}")
+    lines.append("- Review narrative: none. A `pass` carries the product of its review; this does not.")
+    return lines
+
+
 def review_proof_lines(review_proof: str | None) -> list[str]:
     if review_proof:
         return ["", "## Review Proof", "", f"- Review proof: `{review_proof}`."]

@@ -3236,6 +3236,27 @@
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "58780d7957a78f50",
+      "note": "two adjacent arms of the resume phase-classification decision table, inside code MOVED verbatim out of publish_release_resume.py when that file hit its length cap (both members are the same new file, publish_release_resume_state.py). They share the `elif (<multi-line condition>):` + phase-assignment shape and nothing else: one selects `post-publication-final` from a tag/grandparent/close-ref/subject match, the other selects `prepared-claims-review` from a prepared-record/parent-message/claims-evidence match. Collapsing them would fuse two different phase conditions behind a table-driven indirection, and the ORDER of these arms is load-bearing (an earlier arm matching first is how the classifier disambiguates). Surfaced as new because the file is new; no member was edited.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b1f18cabee56e5b0",
+      "note": "the run-plan envelope preamble shared by skills/public/issue/scripts/issue_plan.py and skills/public/release/scripts/plan_release_run_packets.py: `_ENVELOPE = SimpleNamespace(**runpy.run_path(<shared>/run_plan_envelope.py))` plus its imports. Two independently shipped skill packages each have to locate the shared envelope standalone, which is the portability preamble the nose advisory already names as its own blind spot (same class as 6d0d4a83a2cc4d8f and the runtime_bootstrap families). Extracting it would require a module that itself has to be located the same way. Surfaced as new only because removing the RELEASE_RECORD_PATH constant from the release packets header shifted the block; the issue_plan member is untouched.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b5926d67f5d48e30",
+      "note": "a two-line `if not <optional>: return None` / early-return idiom shared across six unrelated owners (filter_cosmic_ray_mutants, dup_ratchet_git, nose_baseline_lib, plan_quality_run, publish_release_adapter_preflight, and the new plan_release_prepared_stop). Five of the six members are untouched by this slice. Idiom-sized guard-clause plumbing across independent verdict contracts, the same class already accepted as 349f5d577fe2588b and 003780cc89f2ccfd; extraction would couple six owners through a helper that removes no behavior.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

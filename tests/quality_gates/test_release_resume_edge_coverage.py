@@ -31,12 +31,23 @@ CLAIMS = _load("publish_release_claims_review")
 
 
 class _ClaimsResumeCli:
-    def __init__(self, commands: list[list[str]]):
+    def __init__(self, commands: list[list[str]], *, notes_preflights: list[dict] | None = None,
+                 allow_create: bool = False):
         self.commands = commands
+        self.notes_preflights = notes_preflights if notes_preflights is not None else []
+        self.allow_create = allow_create
 
     def run(self, command, *, cwd, check=True):
         self.commands.append(command)
         return SimpleNamespace(returncode=0, stdout="https://example.test/v1.2.3")
+
+    def run_notes_file_preflight(self, repo_root, *, target_tag, notes_file, on_resume=False):
+        # Recorded, never executed against the real filesystem: the stub passes
+        # `repo_root=Path(".")`, so a real preflight here would read the AUTHORING repo's
+        # adapter and its drafted-notes directory against a fixture tag.
+        self.notes_preflights.append(
+            {"target_tag": target_tag, "notes_file": notes_file, "on_resume": on_resume}
+        )
 
     @staticmethod
     def backend_command(_backend, _operation, fallback):
@@ -74,9 +85,10 @@ class _ClaimsResumeCli:
     def finalize_release_payload(*_args, **_kwargs):
         return None
 
-    @staticmethod
-    def create_release(*_args, **_kwargs):
-        raise AssertionError("existing release should not be created again")
+    def create_release(self, *_args, **_kwargs):
+        if not self.allow_create:
+            raise AssertionError("existing release should not be created again")
+        return SimpleNamespace(returncode=0, stdout="https://example.test/v1.2.3")
 
 
 class _ClaimsResumeCommon:
@@ -97,13 +109,21 @@ class _ClaimsResumeCommon:
         return None
 
 
-def _resume_claims_publication_leg(*, remote_branch_sha: str, tag_remote: bool) -> tuple[list[list[str]], list[str]]:
+_ADAPTER = {"output_dir": "charness-artifacts/release"}
+_RECORD_PATH = "charness-artifacts/release/latest.md"
+
+
+def _resume_claims_publication_leg(
+    *, remote_branch_sha: str, tag_remote: bool, release_exists: bool = True,
+    notes_file=None, notes_preflights: list[dict] | None = None,
+) -> tuple[list[list[str]], list[str]]:
     commands: list[list[str]] = []
     committed: list[str] = []
     state = {
         "phase": "prepared-claims-review", "tag_local": True, "tag_remote": tag_remote,
         "remote_branch_sha": remote_branch_sha, "claims_evidence_commit": "claims-evidence",
-        "head_sha": "claims-evidence", "prepared": {"commit": "prepared"}, "release_exists": True,
+        "head_sha": "claims-evidence", "prepared": {"commit": "prepared"},
+        "release_exists": release_exists, "record_path": _RECORD_PATH,
         # The real `preflight_resume_state` always sets this for a claims phase, and
         # `resume_publish` now refuses a claims phase without it -- a reconstructed state
         # must not be able to reach tag/push/release create with the floor unrun.
@@ -120,12 +140,15 @@ def _resume_claims_publication_leg(*, remote_branch_sha: str, tag_remote: bool) 
         "payload": {"commit_message": "Release v1.2.3"}, "tag_name": "v1.2.3", "branch": "main",
         "backend": "github", "issue_repo": "example/demo", "release_content_paths": [], "title": "v1.2.3",
     }
-    args = SimpleNamespace(execute=True, remote="origin", notes_file=None, close_issue=[])
+    args = SimpleNamespace(execute=True, remote="origin", notes_file=notes_file, close_issue=[])
     RESUME_PUBLISH.resume_publish(
-        Path("."), args=args, plan=plan, adapter_data={}, cli=_ClaimsResumeCli(commands), state=state,
+        Path("."), args=args, plan=plan, adapter_data=_ADAPTER,
+        cli=_ClaimsResumeCli(commands, notes_preflights=notes_preflights, allow_create=not release_exists),
+        state=state,
         resumable_state=lambda *_args, **_kwargs: state, assert_resumable=lambda *_args, **_kwargs: None,
         common=_ClaimsResumeCommon(), resume_closeout=SimpleNamespace(),
         commit_artifact_before_push=lambda *_args, **_kwargs: committed.append("artifact"),
+        release_record_path=CLAIMS.release_record_path,
     )
     return commands, committed
 
@@ -264,6 +287,103 @@ def test_claims_resume_repairs_exactly_the_missing_publication_leg(
     assert committed == ["artifact"]
 
 
+def test_the_artifact_commit_pathspec_covers_the_adapter_record_without_a_phantom() -> None:
+    """`git add` exits 128 on a pathspec matching nothing (`git status` does not), and
+    `cli.run` is check=True -- so a candidate list containing an absent path would kill a
+    consumer's resume mid-lane. The caller statuses each candidate separately; this pins
+    what the candidates ARE, including the repo-root record whose directory is `.` and
+    would otherwise sweep the whole worktree or be dropped entirely."""
+    cases = {
+        "charness-artifacts/release/latest.md": ["charness-artifacts"],
+        "charness-artifacts/latest.md": ["charness-artifacts"],
+        "artifacts/release/latest.md": ["charness-artifacts", "artifacts/release"],
+        # The trailing slash in the prefix test is what keeps this a distinct directory.
+        "charness-artifacts-old/release/latest.md": ["charness-artifacts", "charness-artifacts-old/release"],
+        # `output_dir: .` or blank: the record FILE, never `.` as a pathspec.
+        "latest.md": ["charness-artifacts", "latest.md"],
+    }
+    for record_path, expected in cases.items():
+        assert RESUME._artifact_commit_candidates(record_path) == expected, record_path
+
+
+def test_the_claims_resume_lane_runs_the_notes_file_preflight_before_publishing() -> None:
+    """A floor that fires at PREPARE time did not fire at the boundary that publishes.
+    The prepare always stops at the marked record, so this lane is the only path to
+    `create_release`, and it ran no notes preflight at all -- a resume that dropped
+    `--notes-file` published `--generate-notes` instead of the notes the prepare
+    validated, with nothing refusing it. Twice: once early for a cheap message, once
+    immediately before the irreversible step, which is the call that is actually a gate."""
+    preflights: list[dict] = []
+    notes = Path("charness-artifacts/release/notes-v1.2.3.md")
+
+    _resume_claims_publication_leg(
+        remote_branch_sha="old-branch", tag_remote=True, release_exists=False,
+        notes_file=notes, notes_preflights=preflights,
+    )
+
+    assert [call["target_tag"] for call in preflights] == ["v1.2.3", "v1.2.3"]
+    assert all(call["notes_file"] == notes.resolve() for call in preflights)
+    # The resume-aware remedy arm: the generic blocker tells the operator to delete the
+    # drafted notes AND COMMIT that, which strands a resume behind a third commit.
+    assert all(call["on_resume"] is True for call in preflights)
+
+
+@pytest.mark.parametrize(("release_exists", "expected_calls"), [(True, 0), (False, 2)])
+def test_the_notes_preflight_fires_exactly_when_a_body_can_still_be_attached(
+    release_exists: bool, expected_calls: int
+) -> None:
+    """Both directions in one test, because `preflights == []` alone is satisfied equally
+    by "the guard works" and by "both production calls were deleted".
+
+    When the release already exists this resume is repairing a missing branch or tag push
+    and cannot attach a body at all, so the blocker's premise ("the published body would be
+    auto-generated") is false and refusing on it would be a wrong stop."""
+    preflights: list[dict] = []
+
+    commands, committed = _resume_claims_publication_leg(
+        remote_branch_sha="old-branch", tag_remote=True, release_exists=release_exists,
+        notes_file=None, notes_preflights=preflights,
+    )
+
+    assert len(preflights) == expected_calls
+    # The gate must not create the state it then refuses: the second call sits ABOVE the
+    # artifact commit, so a refusal there leaves no third commit for the next resume to
+    # fail to classify.
+    if expected_calls:
+        assert committed == ["artifact"]
+        assert commands, "the preflight must not be the only thing this lane did"
+
+
+def test_a_state_classified_against_another_record_path_cannot_publish() -> None:
+    """The state is classified against ONE release record path; everything after it
+    writes, commits, and reports against the path derived from the adapter. Production
+    always passes a preflighted state, which is exactly the kind of invariant that holds
+    until a second caller appears."""
+    commands: list[list[str]] = []
+    state = {
+        "phase": "prepared-claims-review", "tag_local": True, "tag_remote": False,
+        "remote_branch_sha": "old-branch", "claims_evidence_commit": "claims-evidence",
+        "head_sha": "claims-evidence", "prepared": {"commit": "prepared"},
+        "release_exists": True, "record_path": "artifacts/release/latest.md",
+    }
+    plan = {
+        "payload": {"commit_message": "Release v1.2.3"}, "tag_name": "v1.2.3", "branch": "main",
+        "backend": "github", "issue_repo": "example/demo", "release_content_paths": [], "title": "v1.2.3",
+    }
+    args = SimpleNamespace(execute=True, remote="origin", notes_file=None, close_issue=[])
+
+    with pytest.raises(SystemExit, match="refusing to publish across two record paths"):
+        RESUME_PUBLISH.resume_publish(
+            Path("."), args=args, plan=plan, adapter_data=_ADAPTER, cli=_ClaimsResumeCli(commands),
+            state=state, resumable_state=lambda *_a, **_k: state,
+            assert_resumable=lambda *_a, **_k: None, common=_ClaimsResumeCommon(),
+            resume_closeout=SimpleNamespace(),
+            commit_artifact_before_push=lambda *_a, **_k: None,
+            release_record_path=CLAIMS.release_record_path,
+        )
+    assert commands == []
+
+
 def test_resume_dry_run_validates_carrier_without_reconciling(capsys) -> None:
     observer = "charness-artifacts/probe/demo-v1.2.3-release-observer.json"
     message = "carrier message"
@@ -283,7 +403,8 @@ def test_resume_dry_run_validates_carrier_without_reconciling(capsys) -> None:
         "payload": {"issue_closeout_draft_validation": {"commit_message": message}},
         "issue_repo": "example/demo", "tag_name": "v1.2.3", "branch": "main",
     }
-    state = {"phase": "post-publication-carrier", "head_message": message, "head_sha": "carrier-sha", "remote_branch_sha": "old-sha"}
+    state = {"phase": "post-publication-carrier", "head_message": message, "head_sha": "carrier-sha",
+             "remote_branch_sha": "old-sha", "record_path": _RECORD_PATH}
     common = SimpleNamespace(preflight_close_issue_carrier=lambda *_args, **_kwargs: None)
 
     RESUME_CLOSEOUT.resume_post_publication_closeout(
@@ -371,6 +492,7 @@ def test_a_claims_phase_without_a_validated_review_cannot_publish() -> None:
         "phase": "prepared-claims-review", "tag_local": True, "tag_remote": False,
         "remote_branch_sha": "old-branch", "claims_evidence_commit": "claims-evidence",
         "head_sha": "claims-evidence", "prepared": {"commit": "prepared"}, "release_exists": True,
+        "record_path": _RECORD_PATH,
     }
     plan = {
         "payload": {"commit_message": "Release v1.2.3"}, "tag_name": "v1.2.3", "branch": "main",
@@ -380,11 +502,12 @@ def test_a_claims_phase_without_a_validated_review_cannot_publish() -> None:
 
     with pytest.raises(SystemExit, match="requires a validated claims review"):
         RESUME_PUBLISH.resume_publish(
-            Path("."), args=args, plan=plan, adapter_data={}, cli=_ClaimsResumeCli(commands),
+            Path("."), args=args, plan=plan, adapter_data=_ADAPTER, cli=_ClaimsResumeCli(commands),
             state=state, resumable_state=lambda *_a, **_k: state,
             assert_resumable=lambda *_a, **_k: None, common=_ClaimsResumeCommon(),
             resume_closeout=SimpleNamespace(),
             commit_artifact_before_push=lambda *_a, **_k: None,
+            release_record_path=CLAIMS.release_record_path,
         )
     assert commands == [], "refused before any git or gh command"
 
@@ -425,9 +548,10 @@ def test_a_claims_artifact_the_phase_will_not_read_is_refused_in_process() -> No
 
 
 def test_the_unproven_warning_fires_only_for_an_unproven_verdict() -> None:
-    """Publication proceeds on `unproven`, and the published release record does not yet
-    mirror the verdict, so stderr is the only channel that puts it in front of the
-    operator at the boundary."""
+    """Publication proceeds on `unproven`. The published release record now carries the
+    verdict too, but that record is read after the fact by someone outside the session;
+    stderr is what puts it in front of the operator standing at the boundary, while there
+    is still a decision to make."""
     written: list[str] = []
     CLAIMS.unproven_claims_warning(
         {"verdict": "unproven", "observer_distinctness": {"signal": "host refused the spawn"}},

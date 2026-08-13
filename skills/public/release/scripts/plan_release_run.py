@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
-import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -28,6 +27,8 @@ _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_pr
 _planner_packets = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_run_packets")
 _claims_review = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_claims_review")
 _publish_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
+_drafted_notes = SKILL_RUNTIME.load_local_skill_module(__file__, "drafted_release_notes")
+_prepared_stop = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_prepared_stop")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 load_adapter = _resolve_adapter.load_adapter
@@ -110,57 +111,6 @@ def _target_version(args: argparse.Namespace, current_version: str | None) -> st
     if not (args.publish_current or args.set_version or args.part):
         return None
     return release_plan_target_version(args, current_version)
-
-
-def _git(repo_root: Path, args: list[str]) -> tuple[int, str]:
-    result = subprocess.run(
-        ["git", "-C", str(repo_root), *args], check=False, capture_output=True, text=True
-    )
-    return result.returncode, result.stdout
-
-
-def _head_release_record(repo_root: Path) -> str | None:
-    """The release record AS COMMITTED at HEAD, which is what the publish helper reads."""
-    code, out = _git(repo_root, ["show", f"HEAD:{_planner_packets.RELEASE_RECORD_PATH}"])
-    return out if code == 0 else None
-
-
-def _committed_claims_record(repo_root: Path) -> str | None:
-    """The claims record already committed as HEAD's own change, when there is one.
-
-    Delegates the shape rule to the claims-review module rather than restating it, so the
-    planner cannot come to disagree with the publish helper about what R looks like."""
-    code, out = _git(repo_root, ["show", "--no-commit-id", "--name-only", "-r", "--format=", "HEAD"])
-    if code != 0:
-        return None
-    return _claims_review.claims_record_in_change_set(
-        [line for line in out.splitlines() if line]
-    )
-
-
-def _critique_acceptor(repo_root: Path, target_version: str | None):
-    """Return a predicate that answers the publish gate's OWN question about a candidate.
-
-    Binding alone is not what the gate asks: it also requires the artifact to be TRACKED
-    and to clear a stub-residual floor. A binding-only filter named candidates the gate
-    then refused, which is the refusal this planner exists to save the operator from.
-    """
-    tokens = release_binding_tokens(target_version)
-
-    def accepts(rel_path: str) -> bool:
-        if _git(repo_root, ["ls-files", "--error-unmatch", rel_path])[0] != 0:
-            return False
-        report = _closeout_evidence.check(
-            repo_root=repo_root,
-            required=["standalone_critique"],
-            evidence={"standalone_critique": rel_path},
-            skips={},
-            kind="release",
-            tokens=tokens,
-        )
-        return bool(report["ok"])
-
-    return accepts
 
 
 def resume_summary_lines(payload: dict[str, Any]) -> list[str]:
@@ -284,13 +234,25 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     review_payload = None
     if adapter.get("valid"):
         review_payload = build_review_gate_payload(repo_root, run_commands=False)
+    record_path = _prepared_stop.release_record_path(data)
     prepared_claims = prepared_claims_state(
         repo_root,
         current_version=current_version if isinstance(current_version, str) else None,
         binding_tokens=release_binding_tokens(current_version if isinstance(current_version, str) else None),
-        accepts=_critique_acceptor(repo_root, current_version if isinstance(current_version, str) else None),
-        marker_text=_head_release_record(repo_root),
-        committed_record=_committed_claims_record(repo_root),
+        accepts=_prepared_stop.critique_acceptor(
+            repo_root,
+            release_binding_tokens(current_version if isinstance(current_version, str) else None),
+            closeout_evidence=_closeout_evidence,
+        ),
+        marker_text=_prepared_stop.head_release_record(repo_root, record_path),
+        release_record=record_path or "",
+        committed_record=_prepared_stop.committed_claims_record(
+            repo_root, claims_record_in_change_set=_claims_review.claims_record_in_change_set
+        ),
+        drafted_notes=_prepared_stop.drafted_notes_candidates(
+            repo_root, data, f"v{current_version}" if isinstance(current_version, str) else None,
+            find_drafted_notes=_drafted_notes.find_drafted_notes,
+        ),
     )
     planned_next_action = next_action(
         args=args,

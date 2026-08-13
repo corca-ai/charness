@@ -107,6 +107,35 @@ def test_notes_file_preflight_refuses_generate_notes_over_a_drafted_note(tmp_pat
     GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=drafted)
 
 
+def test_the_resume_remedy_is_attached_only_to_the_drafted_notes_blocker(tmp_path: Path) -> None:
+    """The resume lane's remedy is the OPPOSITE of the generic one: deleting the drafted
+    notes and committing that adds a commit the resume then cannot classify. But it fits
+    only the drafted-notes blocker. Appended to every blocker it told an operator with a
+    mistyped path to "re-pass the candidate above" when no candidate was printed."""
+    repo = _seed_release_repo(tmp_path)
+    drafted = repo / "charness-artifacts" / "release" / "2026-05-13-v0.1.0-notes.md"
+    drafted.write_text("The operator's notes.\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as excinfo:
+        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=None, on_resume=True)
+    assert GATE.RESUME_REMEDY in str(excinfo.value)
+
+    # Off by default, so the prepare lane's message is unchanged.
+    with pytest.raises(SystemExit) as excinfo:
+        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=None)
+    assert GATE.RESUME_REMEDY not in str(excinfo.value)
+
+    # A blocker whose real remedy IS a worktree change must not carry it.
+    drafted.unlink()
+    with pytest.raises(SystemExit) as excinfo:
+        GATE.run_notes_file_preflight(
+            repo, target_tag="v0.1.0", notes_file=repo / "no-such-notes.md", on_resume=True
+        )
+    message = str(excinfo.value)
+    assert "notes file missing" in message
+    assert GATE.RESUME_REMEDY not in message
+
+
 def test_notes_file_preflight_names_a_missing_path_before_the_drafted_arm(tmp_path: Path) -> None:
     """A mistyped `--notes-file` must be told it does not exist.
 

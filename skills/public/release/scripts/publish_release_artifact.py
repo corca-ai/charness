@@ -11,6 +11,7 @@ from scripts.current_pointer_writer_lib import write_current_pointer_text
 _sections = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_artifact_sections.py")))
 )
+claims_review_lines = _sections.claims_review_lines
 issue_closeout_lines = _sections.issue_closeout_lines
 release_record_lines = _sections.release_record_lines
 release_push_lines = _sections.release_push_lines
@@ -61,6 +62,7 @@ def write_release_artifact(
     release_runtime: list[dict[str, Any]] | None = None,
     baton_reconcile: dict[str, Any] | None = None,
     release_observer: dict[str, Any] | None = None,
+    claims_review: dict[str, Any] | None = None,
     release_stage: str | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
@@ -111,6 +113,12 @@ def write_release_artifact(
     lines.extend(retro_trigger_evaluation_lines(retro_trigger_evaluation))
     lines.extend(real_host_lines(real_host_payload, install_refresh=install_refresh))
     lines.extend(review_proof_lines(review_proof))
+    # Beside the critique floor it is the stronger sibling of, and deliberately BELOW the
+    # `## Release State` ledger: the narrative audit terminates that ledger at the first
+    # following `## ` heading and then requires all five of its entries, so a section
+    # inserted above `## Public Release Verification` blocks release PREPARATION with four
+    # "missing required entry" blockers.
+    lines.extend(claims_review_lines(claims_review, prepared=prepared))
     lines.extend(requested_review_lines(requested_review_gate))
     lines.extend(post_publish_proof_lines(resolved_tag, public_release_verification))
     lines.extend(install_refresh_lines(install_refresh))
@@ -151,5 +159,6 @@ def write_current_artifact(
         distinct_channel_verification=payload.get("distinct_channel_verification"),
         published_notes_audit=payload.get("published_notes_audit"), lifecycle_capture=payload.get("lifecycle_capture"),
         release_runtime=payload.get("release_runtime"), baton_reconcile=payload.get("baton_reconcile"),
-        release_observer=payload.get("release_observer"), release_stage=release_stage or payload.get("release_stage"),
+        release_observer=payload.get("release_observer"), claims_review=payload.get("claims_review"),
+        release_stage=release_stage or payload.get("release_stage"),
     )

@@ -39,6 +39,12 @@ _PACKETS = _load_script_module(
     "plan_release_run_packets_test_module",
     "skills/public/release/scripts/plan_release_run_packets.py",
 )
+_PREPARED_STOP = _load_script_module(
+    "plan_release_prepared_stop_test_module",
+    "skills/public/release/scripts/plan_release_prepared_stop.py",
+)
+_CLOSEOUT_TOKENS = _PLANNER.release_binding_tokens
+_CLOSEOUT_EVIDENCE = _PLANNER._closeout_evidence
 
 
 def _args(**overrides: object) -> SimpleNamespace:
@@ -702,9 +708,20 @@ def test_planner_prepared_stop_helpers_are_exercised_in_process(tmp_path: Path) 
     _git(repo, "config", "user.email", "t@example.test")
     _git(repo, "config", "user.name", "T")
 
+    # The record path is derived from the adapter, and the planner is TOLERANT where the
+    # publish helper refuses: an adapter that declares no `output_dir` means "no prepared
+    # stop detected", not a crash in a read-only planner.
+    assert _PREPARED_STOP.release_record_path({"output_dir": "artifacts/release"}) == "artifacts/release/latest.md"
+    assert _PREPARED_STOP.release_record_path({"output_dir": "artifacts/release/"}) == "artifacts/release/latest.md"
+    assert _PREPARED_STOP.release_record_path({}) is None
+    assert _PREPARED_STOP.release_record_path({"output_dir": "  "}) is None
+    assert _PREPARED_STOP.head_release_record(repo, None) is None
+
     # No release record at HEAD (no commits yet) -> no marker, so no prepared stop.
-    assert _PLANNER._head_release_record(repo) is None
-    assert _PLANNER._committed_claims_record(repo) is None
+    assert _PREPARED_STOP.head_release_record(repo, "charness-artifacts/release/latest.md") is None
+    assert _PREPARED_STOP.committed_claims_record(
+        repo, claims_record_in_change_set=lambda changed: None
+    ) is None
 
     bound = repo / "charness-artifacts" / "critique" / "release-1-2-3.md"
     bound.write_text("# Release critique\n\nScope and risks for the 1.2.3 candidate.\n", encoding="utf-8")
@@ -715,14 +732,18 @@ def test_planner_prepared_stop_helpers_are_exercised_in_process(tmp_path: Path) 
     _git(repo, "add", str(bound), str(stub))
     _git(repo, "commit", "-m", "critique candidates")
 
-    accepts = _PLANNER._critique_acceptor(repo, "1.2.3")
+    accepts = _PREPARED_STOP.critique_acceptor(
+        repo, _CLOSEOUT_TOKENS("1.2.3"), closeout_evidence=_CLOSEOUT_EVIDENCE
+    )
     assert accepts("charness-artifacts/critique/release-1-2-3.md") is True
     # Untracked: the gate's dirty-worktree refusal never says "commit this first".
     assert accepts("charness-artifacts/critique/untracked-1-2-3.md") is False
     # Stub: the gate's refusal is the exact message the resume packet exists to prevent.
     assert accepts("charness-artifacts/critique/stub-1-2-3.md") is False
     # No resolvable version -> presence-only tokens; the acceptor still requires tracked.
-    assert _PLANNER._critique_acceptor(repo, None)("charness-artifacts/critique/untracked-1-2-3.md") is False
+    assert _PREPARED_STOP.critique_acceptor(
+        repo, _CLOSEOUT_TOKENS(None), closeout_evidence=_CLOSEOUT_EVIDENCE
+    )("charness-artifacts/critique/untracked-1-2-3.md") is False
 
 
 def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> None:
@@ -730,16 +751,19 @@ def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> Non
     `resume_prepared_claims_review` branch of `next_action` are only ever reached through
     a subprocess planner run."""
     marker = "<!-- charness-release-state:prepared-awaiting-claims-review -->"
+    RECORD = "artifacts/release/latest.md"
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "critique").mkdir(parents=True)
 
     assert _PACKETS.prepared_claims_state(
         repo, current_version="1.2.3", binding_tokens=["1.2.3"],
         accepts=lambda _rel: True, marker_text="no marker here",
+        release_record=RECORD,
     ) is None
     assert _PACKETS.prepared_claims_state(
         repo, current_version="1.2.3", binding_tokens=["1.2.3"],
         accepts=lambda _rel: True, marker_text=None,
+        release_record=RECORD,
     ) is None
 
     (repo / "charness-artifacts" / "critique" / "a.md").write_text("a\n", encoding="utf-8")
@@ -747,7 +771,7 @@ def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> Non
 
     one = _PACKETS.prepared_claims_state(
         repo, current_version="1.2.3", binding_tokens=["1.2.3"],
-        accepts=lambda rel: rel.endswith("a.md"), marker_text=marker,
+        accepts=lambda rel: rel.endswith("a.md"), marker_text=marker, release_record=RECORD,
     )
     assert one["critique_artifact_candidates"] == ["charness-artifacts/critique/a.md"]
     assert one["tag_name"] == "v1.2.3"
@@ -759,7 +783,7 @@ def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> Non
 
     both = _PACKETS.prepared_claims_state(
         repo, current_version="1.2.3", binding_tokens=["1.2.3"],
-        accepts=lambda _rel: True, marker_text=marker,
+        accepts=lambda _rel: True, marker_text=marker, release_record=RECORD,
         committed_record="charness-artifacts/release-review/r.json",
     )
     assert len(both["critique_artifact_candidates"]) == 2
@@ -769,7 +793,7 @@ def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> Non
 
     none_bound = _PACKETS.prepared_claims_state(
         repo, current_version="1.2.3", binding_tokens=["1.2.3"],
-        accepts=lambda _rel: False, marker_text=marker,
+        accepts=lambda _rel: False, marker_text=marker, release_record=RECORD,
     )
     base = {"found": True, "valid": True}
     payload = {"drift": [], "git_status": ""}
@@ -782,6 +806,10 @@ def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> Non
         )
         assert action["kind"] == "resume_prepared_claims_review"
         assert expected in action["reason"]
+        # The reason names the ADAPTER's record path. A second constant in the planner made
+        # it blind in exactly the repos the publish helper's copy made the claims floor
+        # blind: it read no marker and reported `inspect_only` at a live prepared stop.
+        assert RECORD in action["reason"]
 
 
 def test_resume_summary_lines_selects_only_resume_packets() -> None:

@@ -162,7 +162,13 @@ def resume_post_publication_closeout(
 ) -> None:
     payload = plan["payload"]
     issue_repo = plan["issue_repo"]
-    artifact_relpath = str(Path(adapter_data["output_dir"]) / "latest.md")
+    # The path the state was CLASSIFIED against, not a second derivation of it. The local
+    # `Path(adapter_data["output_dir"]) / "latest.md"` that used to sit here differed from
+    # the floor's `PurePosixPath` derivation on a platform whose separator is not `/`, where
+    # it produced backslashes while `git diff-tree --name-only` emits forward slashes --
+    # failing `_validate_carrier_evidence_tree` on a legitimate recovery. Two derivations of
+    # one path is the defect class this slice exists to close.
+    artifact_relpath = state["record_path"]
     _require_closeout_resume_inputs(args)
     common.preflight_close_issue_carrier(
         repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli,

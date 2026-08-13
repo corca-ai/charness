@@ -167,6 +167,15 @@ def _publish_and_finalize(
     *,
     cli: Any,
 ) -> None:
+    """Publish tail for the prepare process. UNREACHABLE in production, and coupled.
+
+    `execute_publish_plan` always stops at the prepared record, so nothing here calls this;
+    its only live callers are tests. Two couplings if it is ever re-wired: the prepare
+    process never validates a claims review, so its payload structurally cannot carry
+    `claims_review` and every record it writes would say "not recorded by this helper
+    invocation" on a PUBLISHED release; and it runs no notes-file preflight of its own past
+    the prepare step. Re-wiring it means giving it both, not just removing the stop.
+    """
     payload = state["payload"]
     branch = state["branch"]
     tag_name = state["tag_name"]

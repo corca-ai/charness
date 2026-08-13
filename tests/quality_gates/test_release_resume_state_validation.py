@@ -9,6 +9,8 @@ import pytest
 from .release_script_loading import load_release_script
 
 RESUME = load_release_script("publish_release_resume", suffix="state_validation")
+# The classification concept lives in its own module; the refusals stay in `RESUME`.
+RESUME_STATE = load_release_script("publish_release_resume_state", suffix="state_validation")
 HELPERS = load_release_script("publish_release_helpers", suffix="tag_identity")
 
 
@@ -131,7 +133,7 @@ def test_claims_evidence_classifier_rejects_a_non_direct_descendant() -> None:
                 return SimpleNamespace(returncode=0, stdout="prepared-sha intermediary-sha\n")
             raise AssertionError(f"unexpected command: {command}")
 
-    assert not RESUME._is_claims_evidence_commit(
+    assert not RESUME_STATE.is_claims_evidence_commit(
         Cli(), Path("."), prepared_commit="prepared-sha", evidence_commit="evidence-sha"
     )
 
@@ -143,7 +145,7 @@ def test_claims_child_and_prepared_state_refuse_missing_or_wrong_tag_bindings() 
                 return SimpleNamespace(returncode=0, stdout="other parent\n")
             raise AssertionError(f"unexpected command: {command}")
 
-    assert RESUME._claims_evidence_child(Cli(), Path("."), prepared_commit="prepared") == ""
+    assert RESUME_STATE.claims_evidence_child(Cli(), Path("."), prepared_commit="prepared") == ""
     with pytest.raises(SystemExit, match="lacks its release-record binding"):
         RESUME.assert_resumable({"phase": "prepared-claims-review", "prepared": None, "tag_local": False, "tag_remote": False}, tag_name="v1.2.3")
     state = {

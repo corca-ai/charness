@@ -20,13 +20,54 @@ POST_PUBLICATION = {
 }
 
 
+def _assert_one_record_path(state: dict[str, Any], record_path: str) -> None:
+    """Refuse a state classified against a different release record than this run derives.
+
+    The state was classified against ONE record path; everything after it writes, commits,
+    and reports against the path derived from the adapter. Production always passes a
+    preflighted state, so these agree -- and that is exactly the kind of invariant that
+    holds until a second caller appears.
+    """
+    if state.get("record_path") != record_path:
+        raise SystemExit(
+            f"--resume: this state was classified against release record {state.get('record_path')!r} "
+            f"but the adapter now derives {record_path!r}; refusing to publish across two record paths."
+        )
+
+
+def _notes_preflight(repo_root: Path, *, cli: Any, state: dict[str, Any], tag_name: str, notes_file) -> None:
+    """The drafted-notes refusal, on the lane that actually publishes.
+
+    A floor that fires at PREPARE time does not fire at the boundary that publishes. The
+    prepare refuses a tag with drafted notes and no `--notes-file`, but it now always stops
+    at the marked record, so this lane is the only path to `create_release` -- and it ran no
+    notes preflight at all. A resume that dropped the flag published `--generate-notes`
+    instead of the notes the prepare validated, with nothing refusing it.
+
+    Called on BOTH lanes: `run_narrative_audit` (non-claims lane only) is a strict superset
+    over the same helpers, so a duplicate call cannot disagree with it, and on that lane
+    this moves the refusal ahead of the pre-push quality gates and the fresh-checkout
+    probes, which is the preflight's own stated reason for existing.
+
+    Skipped once the release exists: that resume is repairing a missing branch or tag push
+    and cannot attach a body at all, so the blocker's premise ("the published body would be
+    auto-generated") is false and its refusal would be a wrong stop.
+    """
+    if state["release_exists"]:
+        return
+    cli.run_notes_file_preflight(repo_root, target_tag=tag_name, notes_file=notes_file, on_resume=True)
+
+
 def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_data: dict[str, Any], cli: Any,
                    state: dict[str, Any] | None, resumable_state, assert_resumable, common: Any,
-                   resume_closeout: Any, commit_artifact_before_push) -> None:
+                   resume_closeout: Any, commit_artifact_before_push, release_record_path) -> None:
     payload, tag_name, branch, backend = plan["payload"], plan["tag_name"], plan["branch"], plan["backend"]
+    record_path = release_record_path(adapter_data)
     state = state or resumable_state(repo_root, tag_name=tag_name, commit_message=payload["commit_message"],
-                                     remote=args.remote, branch=branch, backend=backend, cli=cli)
+                                     remote=args.remote, branch=branch, backend=backend,
+                                     record_path=record_path, cli=cli)
     assert_resumable(state, tag_name=tag_name)
+    _assert_one_record_path(state, record_path)
     # The claims floor lives in `preflight_resume_state`, a DIFFERENT function. A
     # reconstructed state (the `state or ...` fallback above) can resolve to a claims
     # phase, pass `assert_resumable`, carry no `claims_review`, and reach tag/push/release
@@ -39,10 +80,12 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
             "state carries none; refusing to publish through an unvalidated path."
         )
     payload["resume_state"] = state
-    # Top-level, not only nested inside `resume_state`: the claims verdict is the
-    # strongest floor this lane applies, and the published release record does not carry
-    # it (tracked separately), so the payload is where an auditor has to be able to find
-    # it without knowing the resume state's shape.
+    # Top-level, not only nested inside `resume_state`: the claims verdict is the strongest
+    # floor this lane applies, and an auditor has to be able to find it without knowing the
+    # resume state's shape. This is also what the artifact writer reads to emit the record's
+    # `## Claims Review` section, so every artifact write below this line carries the
+    # verdict and every write above it would not -- which is why it is here rather than
+    # near the writes.
     if state.get("claims_review"):
         payload["claims_review"] = {
             "path": state["claims_review"]["path"],
@@ -54,11 +97,14 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
                                                           state=state, common=common, cli=cli)
         return
     claims_lane = state["phase"] == "prepared-claims-review"
+    notes_file = args.notes_file.resolve() if args.notes_file else None
+    # Above the dry-run return, so the planner's own dry-run packet validates the argument
+    # its `repeat_original_arguments` field warns about instead of only advising it.
+    _notes_preflight(repo_root, cli=cli, state=state, tag_name=tag_name, notes_file=notes_file)
     if not args.execute:
         payload["resume"] = "dry-run: would re-validate gates, create missing refs, then publish the existing release commit"
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
-    notes_file = args.notes_file.resolve() if args.notes_file else None
     cli.run(cli.backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     common.preflight_close_issue_carrier(repo_root, args=args, issue_repo=plan["issue_repo"], payload=payload, cli=cli,
                                          carrier_source="release-resume")
@@ -75,7 +121,12 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     host = cli.safe_real_host_payload(repo_root, plan["release_content_paths"], build_payload=cli.build_real_host_payload)
     payload["retro_trigger_evaluation"] = cli.build_retro_trigger_evaluation(
         repo_root, plan["release_content_paths"], evaluated_at="final_release_paths", tag_name=tag_name, execute=True)
-    artifact = "charness-artifacts/release/latest.md"
+    # Adapter-derived, not a literal: on the claims lane the writer below is SKIPPED, so
+    # this value is what reaches `finalize_release_payload`, the post-publish artifact
+    # commit, and `state["artifact_relpath"]`. A literal there pointed a consumer's
+    # post-publish commit at a pathspec matching nothing -- and `git diff --quiet` over a
+    # pathspec that matches nothing exits 0, so that commit was skipped silently.
+    artifact = record_path
     if not claims_lane:
         artifact = cli.write_current_artifact(repo_root, adapter_data, payload, host, fresh_checkout_payload=fresh, release_url=expected_url)
         cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
@@ -84,7 +135,18 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # commit that follow-on evidence before the pre-push hook observes a dirty
     # worktree.  The tag remains anchored at P and the state retains R as the
     # bound review identity.
-    commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name)
+    # The gate, as opposed to the message: the early call is cheap, this one runs after the
+    # pre-push gates and the fresh-checkout probes have had their chance to leave a
+    # drafted-notes file in the tree. Read-only and silent on pass, so repeating it is free.
+    #
+    # ABOVE `commit_artifact_before_push`, not below. Below, a gate that FIRES strands the
+    # resume it stopped: the commit sweeps the very file the refusal is about into a third
+    # commit C on top of the claims evidence R, after which no single-parent prepared
+    # boundary is identifiable and the next resume refuses with the marker recovery text --
+    # whose advice is to reset past the committed claims record. A gate must not create the
+    # state it then refuses.
+    _notes_preflight(repo_root, cli=cli, state=state, tag_name=tag_name, notes_file=notes_file)
+    commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name, record_path=record_path)
 
     def publish() -> tuple[str, Any]:
         if not state["tag_local"]:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 MARKER = "charness-release-state:prepared-awaiting-claims-review"
@@ -12,7 +12,11 @@ SCHEMA_VERSION = "charness.release.claims-review.v2"
 # spawn-blocked session had `verdict: pass` as its only path forward.  Accepting v1 here
 # would leave that path open, so it is refused by name.
 SUPERSEDED_SCHEMA_VERSIONS = {"charness.release.claims-review.v1"}
-RELEASE_RECORD_PATH = "charness-artifacts/release/latest.md"
+RELEASE_RECORD_FILENAME = "latest.md"
+# NOT derived from `output_dir`, deliberately.  The claims record's location is defined by
+# this floor and has no adapter key; deriving it would make every already-committed claims
+# record unreadable in a repo that later moves its release output, and there is no contract
+# behind that move.  Only the RELEASE RECORD is adapter-owned.
 REVIEW_ROOT = "charness-artifacts/release-review/"
 VERDICTS = ("pass", "unproven")
 # Every accepted kind names a boundary the review actually crossed.  There is
@@ -23,6 +27,31 @@ DISTINCTNESS_KINDS = ("separate-agent-context", "separate-host", "separate-opera
 # verdict and two context strings and no review product at all.  It is not a proof that
 # a review happened; nothing checkable on the publishing machine is.
 MINIMUM_NARRATIVE_BYTES = 500
+# `signal` is the only operator-authored free text this floor accepts -- `verdict` and
+# `kind` are closed enums and both paths go through `_review_relative_path` -- and it is
+# now rendered into the PUBLISHED release record, which other gates parse.  A newline turns
+# one field into arbitrary lines of that record.  Two measured consequences: a line
+# reading `- target version: 9.9.9` makes `validate_current_pointer_freshness.py` refuse
+# every post-publication push with "disagreeing target-version claims", and the prepared
+# marker inside the signal makes `marker_at_commit` (a bare substring test) classify the
+# finished release as an outstanding prepared stop forever.  Refused at the validator, so
+# the record never reaches a tag, and flattened again at render time for records committed
+# under an older build.
+MAXIMUM_SIGNAL_BYTES = 600
+# Every string some other surface substring-matches IN the release record. A field
+# rendered into that document can satisfy any of them, which is one defect, not four --
+# refusing the marker alone left the same shape standing in three more places. This list is
+# the single owner of that rule, and it MUST grow whenever a new reader starts matching a
+# sentinel in the record; the two closeout ones below are read from raw text with no
+# code-stripping, so quoting the field is not a substitute.
+RECORD_SENTINELS = (
+    MARKER,
+    # `publish_release_resume_closeout.py` proves carrier and final closeout identity by
+    # asking whether these appear anywhere in the record.
+    "carrier-pending-state-verification",
+    "Issue closeout verification:",
+    "charness-artifacts/probe/",
+)
 
 
 def claims_record_in_change_set(changed: list[str]) -> str | None:
@@ -76,9 +105,10 @@ def assert_claims_artifact_is_read(phase: str, claims_review_artifact: str | Non
 def unproven_claims_warning(claims_review: dict[str, Any], *, write: Any) -> None:
     """Announce an `unproven` verdict at the boundary.
 
-    LOUD, because publication may proceed on `unproven` — that is the point of the
-    state — but the published release record does not yet mirror it, so stderr is the
-    only channel that puts it in front of the operator.
+    LOUD, because publication may proceed on `unproven` — that is the point of the state.
+    The published release record now carries the verdict too, but that record is read
+    AFTER the fact by someone outside the session; stderr is what puts it in front of the
+    operator standing at the boundary, while there is still a decision to make.
     """
     if claims_review.get("verdict") != "unproven":
         return
@@ -89,32 +119,77 @@ def unproven_claims_warning(claims_review: dict[str, Any], *, write: Any) -> Non
     )
 
 
-def assert_record_path_matches_adapter(output_dir: str | None) -> None:
-    """Refuse when the adapter writes the release record somewhere this module cannot read.
+def release_record_path(adapter_data: dict[str, Any]) -> str:
+    """The release record path THIS run must read, derived from the adapter's `output_dir`.
 
-    This module reads a HARDCODED record path while the artifact writer honours the
-    adapter's `output_dir`. In a consumer repo that sets a non-default one, every marker
-    lookup returns "no such file", the phase falls to the legacy marker-free lane, and the
-    release publishes with no claims review and no refusal -- the same fall-through the
+    A module constant here is what made the floor blind: the artifact writer has always
+    honoured `output_dir`, so a consumer that set a different one had every marker lookup
+    return "no such file", the resume fall through to the legacy marker-free lane, and the
+    release publish with no claims review and no refusal -- the same fall-through the
     marker guard closes, reached by a route that guard is structurally unable to see,
     because it re-asks the question that already returned "no file here".
 
-    Owned here rather than at the call site because this module is what pins the path and
-    therefore what knows when it has been aimed somewhere else.
+    A HARD key read, deliberately. `adapter_data.get("output_dir", "<the old default>")`
+    is the tempting repair when a caller or fixture omits the key, and it silently
+    reinstates exactly this defect for every such caller -- a default that is right for
+    the authoring repo and wrong for the repos the fix exists for. The adapter resolver
+    always supplies the key, so its absence is a caller defect and is named as one.
+
+    `PurePosixPath` rather than string concatenation: `output_dir: charness-artifacts/release/`
+    would otherwise derive `charness-artifacts/release//latest.md`, which git reads as a
+    miss (verified: `git show HEAD:a//b` exits 128) -- a formatting difference silently
+    reproducing the blindness. Absolute, `..`-bearing, and separator-mismatched values
+    normalize to something git still cannot read; `assert_record_readable` below is what
+    turns every one of those into a refusal instead of a miss.
+
+    The value is NOT stripped, and that is the point rather than an omission: the writer
+    does not strip it either, so any normalization this side alone applies is a way for the
+    floor and the writer to name two different files. `""` derives `latest.md`, matching the
+    writer's `repo_root / "" / "latest.md"` -- a blank `output_dir` is a declaration of the
+    repo root, not an absent one, and refusing it here while the prepare wrote a record
+    there made the prepared stop unresumable by either route.
     """
-    configured = str(output_dir or "").rstrip("/")
-    expected = RELEASE_RECORD_PATH.rsplit("/", 1)[0]
-    if configured and configured != expected:
+    output_dir = adapter_data.get("output_dir")
+    if not isinstance(output_dir, str):
         raise SystemExit(
-            f"--resume: adapter `output_dir` is {configured!r}, but the claims-review floor reads "
-            f"the release record at {expected!r}. Every marker lookup would miss, and the resume "
-            "would publish through the marker-free lane with no claims review. Refusing; the "
-            "record path needs threading through the claims module before a non-default "
-            "`output_dir` can publish."
+            "--resume: the release adapter declares no `output_dir`, so the claims-review floor "
+            "cannot resolve which release record to read. Refusing rather than assuming a "
+            "default: assuming one is what made this floor blind. Repair the adapter first."
+        )
+    return str(PurePosixPath(output_dir) / RELEASE_RECORD_FILENAME)
+
+
+def assert_record_readable(repo_root: Path, *, record_path: str, commit: str, run) -> None:
+    """Refuse when the release record is not readable at the adapter-derived path.
+
+    This is the replacement for the old value-comparison refusal, and it is strictly
+    wider. That one asked "is `output_dir` the default?", which caught a non-default
+    consumer only because it caught EVERY non-default consumer, and could not catch the
+    case it shares a cause with: the operator edits `output_dir` between the prepared stop
+    and the resume. The prepared stop is precisely where record blockers surface, so
+    editing the adapter there is an ordinary action -- and the record committed at the stop
+    lives at the OLD path while the resume derives the new one.
+
+    Asked positively, one refusal covers every way the derivation can fail to name a
+    readable file: absolute, `..`-bearing, empty, separator-mismatched, typo'd, and
+    changed-since-prepare. It is checkable because the same flow's writer must have put the
+    record there. Without it, deleting the old refusal converts each of those back into a
+    silent marker miss and an unreviewed publish.
+    """
+    result = run(["git", "show", f"{commit}:{record_path}"], cwd=repo_root, check=False)
+    if result.returncode != 0:
+        raise SystemExit(
+            f"--resume: the release record is not readable at {record_path!r} in `{commit}`, so the "
+            "claims-review floor cannot run and the resume would fall through to the legacy "
+            "marker-free lane, which validates no claims review at all. This path is derived from "
+            "the release adapter's `output_dir`; check that it matches the directory the release "
+            "record was actually written to -- including for a prepared stop whose adapter changed "
+            "since it was recorded, and that the record is TRACKED: a gitignored release output "
+            "directory reads here exactly like a wrong path."
         )
 
 
-def marker_at_commit(repo_root: Path, *, commit: str, run) -> bool:
+def marker_at_commit(repo_root: Path, *, commit: str, record_path: str, run) -> bool:
     """Whether ``commit``'s release record carries the prepared-stop marker at all.
 
     Distinct from ``prepared_record``, which answers the narrower "did this commit
@@ -125,12 +200,12 @@ def marker_at_commit(repo_root: Path, *, commit: str, run) -> bool:
     prepared branch declines and the resume silently falls through to the legacy
     marker-free lane, which never validates a claims review at all.
     """
-    result = run(["git", "show", f"{commit}:{RELEASE_RECORD_PATH}"], cwd=repo_root, check=False)
+    result = run(["git", "show", f"{commit}:{record_path}"], cwd=repo_root, check=False)
     return result.returncode == 0 and MARKER in result.stdout
 
 
-def prepared_record(repo_root: Path, *, commit: str, run) -> dict[str, str] | None:
-    result = run(["git", "show", f"{commit}:{RELEASE_RECORD_PATH}"], cwd=repo_root, check=False)
+def prepared_record(repo_root: Path, *, commit: str, record_path: str, run) -> dict[str, str] | None:
+    result = run(["git", "show", f"{commit}:{record_path}"], cwd=repo_root, check=False)
     if result.returncode != 0 or MARKER not in result.stdout:
         return None
     # The marker is intentionally inherited by descendants.  A prepared record
@@ -143,10 +218,14 @@ def prepared_record(repo_root: Path, *, commit: str, run) -> dict[str, str] | No
     parents = run(["git", "show", "-s", "--format=%P", commit], cwd=repo_root, check=False)
     if parents.returncode != 0 or len(parents.stdout.split()) != 1:
         return None
-    parent = run(["git", "show", f"{parents.stdout.split()[0]}:{RELEASE_RECORD_PATH}"], cwd=repo_root, check=False)
+    parent = run(["git", "show", f"{parents.stdout.split()[0]}:{record_path}"], cwd=repo_root, check=False)
     if parent.returncode == 0 and MARKER in parent.stdout:
         return None
-    return {"commit": commit, "path": RELEASE_RECORD_PATH, "sha256": blob_sha256(result.stdout)}
+    # `path` is what `validate_claims_review` binds `release_record_path` against, so it
+    # must be the DERIVED path too. Threading the three reads and leaving this one a
+    # constant yields a floor that reads the right file and then demands the record name
+    # the wrong one -- a refusal whose message points at neither.
+    return {"commit": commit, "path": record_path, "sha256": blob_sha256(result.stdout)}
 
 
 def _review_relative_path(value: object, field: str, suffix: str) -> str:
@@ -184,6 +263,39 @@ def _narrative_is_new(repo_root: Path, *, prepared_commit: str, evidence_commit:
     return False
 
 
+def _assert_signal_is_renderable(signal: str) -> None:
+    """Refuse a signal that would stop being one field of the published release record.
+
+    Refused HERE rather than sanitized at render time, because here is before the tag and
+    the GitHub release exist. Both blocked shapes fire only on the post-publication
+    commits, where the operator is already past the point of amending the record.
+    """
+    if any(character in signal for character in "\r\n") or any(ord(character) < 0x20 for character in signal):
+        raise SystemExit(
+            "--resume: claims-review `observer_distinctness.signal` must be a single line; it is "
+            "rendered into the published release record, and a newline there injects arbitrary "
+            "lines into a document other gates parse (a `target version:` line refuses every "
+            "later push; the prepared-stop marker permanently reclassifies the finished release "
+            "as an outstanding stop)."
+        )
+    for sentinel in RECORD_SENTINELS:
+        if sentinel in signal:
+            raise SystemExit(
+                f"--resume: claims-review `observer_distinctness.signal` must not contain "
+                f"{sentinel!r}. Another surface proves release state by matching that string as a "
+                "SUBSTRING of the published record, so a signal carrying it lets this field answer "
+                "a question it is not evidence for -- the marker one reclassifies a finished "
+                "release as an unresolved prepared stop, the closeout ones let free text stand in "
+                "for the closeout evidence they check."
+            )
+    if len(signal.encode("utf-8")) > MAXIMUM_SIGNAL_BYTES:
+        raise SystemExit(
+            f"--resume: claims-review `observer_distinctness.signal` exceeds {MAXIMUM_SIGNAL_BYTES} "
+            "bytes. It names the concrete distinctness signal in the published record; the review's "
+            "own narrative is where the reasoning belongs."
+        )
+
+
 def _observer_distinctness(data: dict[str, Any], *, verdict: str, prepared: dict[str, str],
                            target_version: str, evidence_commit: str, repo_root: Path, run) -> dict[str, Any]:
     """Read the RECORDED distinctness claim, in the shape the publication boundary
@@ -208,6 +320,7 @@ def _observer_distinctness(data: dict[str, Any], *, verdict: str, prepared: dict
             "--resume: claims-review `observer_distinctness.signal` must name the concrete "
             "signal behind the recorded kind"
         )
+    _assert_signal_is_renderable(signal)
     if verdict == "unproven":
         # The state `critique-boundary.md` already names and the validator never had:
         # record the concrete signal and publish with the review unproven rather than
@@ -285,8 +398,22 @@ def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidenc
     expected = {"schema_version": SCHEMA_VERSION, "prepared_commit": prepared["commit"],
                 "release_record_path": prepared["path"], "release_record_sha256": prepared["sha256"],
                 "target_version": target_version, "tag_name": tag_name}
-    if any(data.get(key) != value for key, value in expected.items()):
-        raise SystemExit("--resume: claims-review artifact does not bind the exact prepared release record")
+    # Name the mismatching FIELDS. `release_record_path` is now derived from the adapter
+    # rather than a constant an operator can copy out of the reference doc, and there is no
+    # scaffolder for this record, so a bare "does not bind" left the one hand-written field
+    # most likely to be wrong unnamed. The recovery is expensive enough to state: the
+    # evidence commit must be the direct child of the prepared record, so the only repair is
+    # to amend it in place.
+    mismatched = {key: value for key, value in expected.items() if data.get(key) != value}
+    if mismatched:
+        detail = "; ".join(
+            f"{key}: expected {value!r}, record carries {data.get(key)!r}" for key, value in sorted(mismatched.items())
+        )
+        raise SystemExit(
+            "--resume: claims-review artifact does not bind the exact prepared release record -- "
+            f"{detail}. Repair by AMENDING the evidence commit in place; a follow-on commit is not "
+            "the direct child of the prepared record and is refused."
+        )
     verdict = data.get("verdict")
     if verdict not in VERDICTS:
         raise SystemExit(f"--resume: claims-review `verdict` must be one of {list(VERDICTS)}")

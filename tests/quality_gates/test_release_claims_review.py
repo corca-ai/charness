@@ -19,6 +19,7 @@ from .release_publish_fixtures import (
 from .release_script_loading import load_release_script
 
 CLAIMS_REVIEW = load_release_script("publish_release_claims_review", suffix="topology")
+SECTIONS = load_release_script("publish_release_artifact_sections", suffix="claims")
 NARRATIVE_PATH = "charness-artifacts/release-review/narrative.md"
 
 
@@ -172,7 +173,9 @@ def test_prepared_record_refuses_merge_that_inherits_marker_from_second_parent(t
     _run(["git", "commit", "-m", "Merge prepared marker from second parent"], cwd=repo)
     merge = _run(["git", "rev-parse", "HEAD"], cwd=repo).stdout.strip()
 
-    assert CLAIMS_REVIEW.prepared_record(repo, commit=merge, run=_run) is None
+    assert CLAIMS_REVIEW.prepared_record(
+        repo, commit=merge, record_path="charness-artifacts/release/latest.md", run=_run
+    ) is None
 
 
 def test_claims_review_refuses_invalid_paths_tree_and_bindings(tmp_path: Path) -> None:
@@ -488,8 +491,9 @@ def test_a_claims_artifact_supplied_outside_the_claims_lane_is_refused(tmp_path:
 @pytest.mark.release_only
 def test_an_unproven_verdict_publishes_but_says_so_on_stderr(tmp_path: Path) -> None:
     """`unproven` is a first-class state: publication proceeds, and the operator is told
-    at the boundary that the distinct-observer property was never established. The
-    published release record does not yet mirror it, which is why stderr has to."""
+    at the boundary that the distinct-observer property was never established. stderr
+    carries it to the operator standing at the boundary; the published release record
+    carries it to the readers outside the session who only ever see that record."""
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
     prepared = _run_publish(repo, env, "--part", "patch", "--execute",
@@ -514,17 +518,76 @@ def test_an_unproven_verdict_publishes_but_says_so_on_stderr(tmp_path: Path) -> 
     final = json.loads(resumed.stdout)
     assert final["claims_review"]["verdict"] == "unproven"
     assert final["claims_review"]["observer_distinctness"]["review_artifact"] is None
+    # The record a reader outside the session gets. The bare token would reproduce the
+    # fail-quiet one layer over: a `## Claims Review` heading reads as "a review happened".
+    published = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "## Claims Review" in published
+    assert "the distinct-observer property was NOT established" in published
+    assert "recorded absence, not a passing review" in published
 
 
 
 @pytest.mark.release_only
-def test_a_non_default_output_dir_is_refused_rather_than_silently_unreviewed(tmp_path: Path) -> None:
-    """The claims floor reads a hardcoded record path while the artifact writer honours the
-    adapter's `output_dir`. In a consumer repo that sets a different one, every marker
-    lookup misses, the phase falls to the legacy marker-free lane, and the release
-    publishes with no claims review and no refusal — the same fall-through the marker
-    guard closes, through a route that guard cannot see because it re-asks the question
-    that already returned "no file here"."""
+def test_a_non_default_output_dir_publishes_through_the_claims_floor(tmp_path: Path) -> None:
+    """The floor used to read a hardcoded record path while the writer honoured the
+    adapter's `output_dir`, so a consumer that set a different one had every marker lookup
+    miss, the phase fall to the legacy marker-free lane, and the release publish with no
+    claims review and no refusal. The mitigation was a refusal that blocked such consumers
+    from publishing at all; the fix is that they publish THROUGH the floor."""
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    adapter = repo / ".agents" / "release-adapter.yaml"
+    adapter.write_text(
+        adapter.read_text(encoding="utf-8").replace(
+            "output_dir: charness-artifacts/release", "output_dir: artifacts/release"
+        ),
+        encoding="utf-8",
+    )
+    _run(["git", "add", "-A"], cwd=repo)
+    _run(["git", "commit", "-m", "Point the adapter at a different output_dir"], cwd=repo)
+    env = _release_env(tmp_path, bin_dir)
+
+    prepared = _run_publish(repo, env, "--part", "patch", "--execute",
+                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    assert prepared.returncode == 0, prepared.stderr
+    payload = json.loads(prepared.stdout)
+    commit = payload["prepared_release_commit"]
+    # The prepared stop is detected at the ADAPTER's path, which is where the writer put it.
+    record = _run(["git", "show", f"{commit}:artifacts/release/latest.md"], cwd=repo).stdout
+    assert "charness-release-state:prepared-awaiting-claims-review" in record
+    review_path = commit_claims_review(
+        repo, prepared_commit=commit, prepared_record=record,
+        target_version=payload["target_version"], tag_name=payload["tag_name"],
+        stem="non-default-output-dir", release_record_path="artifacts/release/latest.md",
+    )
+
+    resumed = _run_publish(repo, env, "--resume", "--publish-current", "--execute",
+                           "--claims-review-artifact", review_path,
+                           "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+
+    assert resumed.returncode == 0, resumed.stderr
+    final = json.loads(resumed.stdout)
+    assert final["claims_review"]["verdict"] == "pass"
+    assert final["artifact_path"] == "artifacts/release/latest.md"
+    published = (repo / "artifacts" / "release" / "latest.md")
+    assert published.is_file()
+    # The post-publish artifact commit used to guard itself with `git diff --quiet` over a
+    # HARDCODED pathspec. In a repo like this one that pathspec matches nothing, and git
+    # exits 0 for a pathspec that matches nothing -- so the commit was skipped silently and
+    # the refreshed record was left dirty in the worktree.
+    assert _run(["git", "status", "--porcelain", "--", "artifacts"], cwd=repo).stdout.strip() == ""
+    text = published.read_text(encoding="utf-8")
+    assert "## Claims Review" in text
+    assert "Claims review verdict: `pass`" in text
+    assert "`separate-agent-context`" in text
+
+
+@pytest.mark.release_only
+def test_an_output_dir_changed_after_the_prepared_stop_is_refused(tmp_path: Path) -> None:
+    """The case the old value-comparison refusal could not see, because it asked "is
+    `output_dir` the default?" rather than "is the record readable?". The prepared stop is
+    precisely where record blockers surface, so editing the adapter there is an ordinary
+    action — and the record committed at the stop lives at the OLD path while the resume
+    derives the new one. Every lookup misses and the publish is unreviewed."""
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
     prepared = _run_publish(repo, env, "--part", "patch", "--execute",
@@ -548,11 +611,93 @@ def test_a_non_default_output_dir_is_refused_rather_than_silently_unreviewed(tmp
                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
 
     assert refused.returncode != 0
-    assert "claims-review floor reads the release record at" in refused.stderr
+    assert "the release record is not readable at 'artifacts/release/latest.md'" in refused.stderr
     new_gh = json.loads(gh_log.read_text(encoding="utf-8"))[len(prior_gh):]
     new_git = json.loads(git_log.read_text(encoding="utf-8"))[len(prior_git):]
     assert not any(entry[:2] == ["release", "create"] for entry in new_gh)
     assert not any(entry and entry[0] == "push" for entry in new_git)
+
+
+def test_the_claims_review_section_renders_each_state_it_can_be_in() -> None:
+    """The section is the only channel that reaches readers outside the session, so every
+    state it can be in has to say the right thing on its own. The end-to-end publish tests
+    drive this through `subprocess` and cannot see the branches."""
+    heading = "## Claims Review"
+
+    # `pass`: the record path, verdict, distinctness kind, its signal, and the narrative.
+    rendered = "\n".join(SECTIONS.claims_review_lines({
+        "path": "charness-artifacts/release-review/r.json",
+        "verdict": "pass",
+        "observer_distinctness": {
+            "kind": "separate-agent-context",
+            "signal": "a bounded reviewer ran\nin a separate agent context",
+            "review_artifact": "charness-artifacts/release-review/r.md",
+        },
+    }))
+    assert heading in rendered
+    assert "`charness-artifacts/release-review/r.json`" in rendered
+    assert "verdict: `pass`" in rendered
+    assert "`separate-agent-context`" in rendered
+    assert "`charness-artifacts/release-review/r.md`" in rendered
+    # Flattened at render time too, not only refused at the validator: a record committed
+    # under an earlier build never saw that refusal, and one newline here turns a single
+    # field into arbitrary lines of a document other gates parse.
+    assert "a bounded reviewer ran in a separate agent context" in rendered
+    # Discriminating form. Counting `- Recorded signal:` lines is NOT: with flattening
+    # removed the injected remainder lands on its own line carrying no such prefix, so the
+    # count stays 1 and the assertion passes over the exact defect it names. Every emitted
+    # line must be blank, a heading, or a bullet -- an injected line is none of those.
+    assert all(
+        line == "" or line.startswith(("## ", "- "))
+        for line in rendered.splitlines()
+    ), rendered
+    assert "None" not in rendered
+
+    # `unproven`: the NEGATIVE property, not the bare token. A reader scanning headings
+    # sees a "Claims Review" section and infers a review happened.
+    rendered = "\n".join(SECTIONS.claims_review_lines({
+        "path": "charness-artifacts/release-review/r.json",
+        "verdict": "unproven",
+        "observer_distinctness": {"kind": "unproven", "signal": "host refused the spawn",
+                                  "review_artifact": None},
+    }))
+    assert "the distinct-observer property was NOT established" in rendered
+    assert "recorded absence, not a passing review" in rendered
+    assert "Review narrative: none" in rendered
+    assert "None" not in rendered, "a null narrative must branch, not render as `None`"
+
+    # The prepared record is the SUBJECT of the pending review, so "not recorded" on it
+    # reads to that reviewer like a defect in the record they are auditing.
+    rendered = "\n".join(SECTIONS.claims_review_lines(None, prepared=True))
+    assert "THIS record is the subject of the pending" in rendered
+
+    # A release that never went through the claims lane claims nothing.
+    rendered = "\n".join(SECTIONS.claims_review_lines(None))
+    assert "no distinct-observer property is claimed" in rendered
+
+    # A field the validator populates today still must not render the literal `None` if it
+    # ever stops being populated: a section whose worst output is the word `None` reports an
+    # absent field as a present one. Asserted on the `pass` branch too, which is the one
+    # that interpolates `review_artifact`.
+    for missing in ({"path": None, "verdict": "pass", "observer_distinctness": {}},
+                    {"verdict": "pass", "observer_distinctness": {"kind": "separate-host"}}):
+        rendered = "\n".join(SECTIONS.claims_review_lines(missing))
+        assert "None" not in rendered, rendered
+        assert "not recorded" in rendered
+
+    # One FIXED heading in every state: a heading whose name varies with data is what
+    # makes a downstream substring check silently no-op.
+    for lines in (
+        SECTIONS.claims_review_lines(None),
+        SECTIONS.claims_review_lines(None, prepared=True),
+        SECTIONS.claims_review_lines({"path": "p", "verdict": "pass",
+                                      "observer_distinctness": {"kind": "separate-host", "signal": "s",
+                                                                "review_artifact": "r"}}),
+        SECTIONS.claims_review_lines({"path": "p", "verdict": "unproven",
+                                      "observer_distinctness": {"kind": "unproven", "signal": "s",
+                                                                "review_artifact": None}}),
+    ):
+        assert [line for line in lines if line.startswith("## ")] == [heading]
 
 
 def test_claims_review_helper_refusals_are_exercised_in_process(tmp_path: Path) -> None:
@@ -563,14 +708,52 @@ def test_claims_review_helper_refusals_are_exercised_in_process(tmp_path: Path) 
     def absent(command: list[str], *, cwd: Path, check: bool = True):
         return subprocess.CompletedProcess(command, 1, stdout="")
 
-    # A commit whose record cannot be read carries no marker.
-    assert CLAIMS_REVIEW.marker_at_commit(tmp_path, commit="deadbeef", run=absent) is False
+    record_path = "charness-artifacts/release/latest.md"
 
-    # A non-default adapter output_dir is refused rather than silently unread.
-    CLAIMS_REVIEW.assert_record_path_matches_adapter(None)
-    CLAIMS_REVIEW.assert_record_path_matches_adapter("charness-artifacts/release/")
-    with pytest.raises(SystemExit, match="claims-review floor reads the release record at"):
-        CLAIMS_REVIEW.assert_record_path_matches_adapter("artifacts/release")
+    # A commit whose record cannot be read carries no marker.
+    assert CLAIMS_REVIEW.marker_at_commit(tmp_path, commit="deadbeef", record_path=record_path, run=absent) is False
+
+    # The record path is DERIVED from the adapter, and normalized: a trailing slash would
+    # otherwise derive `...release//latest.md`, which git reads as a miss — a formatting
+    # difference silently reproducing the blindness the derivation exists to end.
+    assert CLAIMS_REVIEW.release_record_path({"output_dir": "artifacts/release"}) == "artifacts/release/latest.md"
+    assert CLAIMS_REVIEW.release_record_path({"output_dir": "artifacts/release/"}) == "artifacts/release/latest.md"
+    # A blank `output_dir` is a declaration of the repo ROOT, not an absent one -- that is
+    # what the writer does with it, and a floor that refuses what the writer accepted leaves
+    # the prepared stop unresumable by either route. Not stripped, for the same reason:
+    # normalization applied on one side only is how the two come to name different files.
+    assert CLAIMS_REVIEW.release_record_path({"output_dir": ""}) == "latest.md"
+    assert CLAIMS_REVIEW.release_record_path({"output_dir": "."}) == "latest.md"
+    assert CLAIMS_REVIEW.release_record_path({"output_dir": " x "}) == " x /latest.md"
+    # A missing or non-string key is a caller defect and is named as one, never defaulted:
+    # assuming a default is what made this floor blind.
+    for adapter_data in ({}, {"output_dir": None}, {"output_dir": 7}):
+        with pytest.raises(SystemExit, match="declares no `output_dir`"):
+            CLAIMS_REVIEW.release_record_path(adapter_data)
+
+    # An unreadable derived path is a refusal, not a marker miss. Without this the fix
+    # converts every malformed, absolute, `..`-bearing, or changed-since-prepare
+    # `output_dir` back into a silent fall-through to the lane that validates nothing.
+    with pytest.raises(SystemExit, match="the release record is not readable at"):
+        CLAIMS_REVIEW.assert_record_readable(tmp_path, record_path=record_path, commit="HEAD", run=absent)
+
+    # A signal that would stop being one field of the published record. Every sentinel some
+    # other surface substring-matches IN that record is refused, not just the marker: one
+    # rendered field can satisfy any of them, and refusing only the marker left the same
+    # shape standing in the closeout-recovery identity checks.
+    for signal, message in (
+        ("two\nlines", "must be a single line"),
+        ("bell\x07", "must be a single line"),
+        ("x" * (CLAIMS_REVIEW.MAXIMUM_SIGNAL_BYTES + 1), "exceeds"),
+    ):
+        with pytest.raises(SystemExit, match=message):
+            CLAIMS_REVIEW._assert_signal_is_renderable(signal)
+    assert CLAIMS_REVIEW.MARKER in CLAIMS_REVIEW.RECORD_SENTINELS
+    for sentinel in CLAIMS_REVIEW.RECORD_SENTINELS:
+        with pytest.raises(SystemExit, match="must not contain"):
+            CLAIMS_REVIEW._assert_signal_is_renderable(f"host refused; see {sentinel} in the prior record")
+    CLAIMS_REVIEW._assert_signal_is_renderable("a bounded reviewer ran in a separate agent context")
+    assert SECTIONS.flatten_signal("two\nlines  here") == "two lines here"
 
     # Path shape refusals.
     for value, message in (

@@ -17,7 +17,7 @@ from __future__ import annotations
 import importlib.util
 import runpy
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 
@@ -46,185 +46,58 @@ def _load_resume_closeout():
 _resume_closeout = _load_resume_closeout()
 _claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
 _resume_publish = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_resume_publish.py")))
+_resume_state = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_resume_state.py")))
+
+# Re-exported: `resumable_state` is the resume surface's public entry point and several
+# callers and tests reach it through this module. The classification lives next door;
+# this name stays here so the split did not become a caller migration.
+resumable_state = _resume_state["resumable_state"]
 
 
-def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
-    return cli.run(["git", *args], cwd=repo_root).stdout.strip()
+def _artifact_commit_candidates(record_path: str) -> list[str]:
+    """The pathspecs a pre-push artifact commit should consider, most general first.
+
+    `charness-artifacts` alone was the whole pathspec, and it is the AUTHORING repo's own
+    tree: in a consumer whose adapter writes elsewhere the status read matched nothing, the
+    caller returned early, and the mitigation it exists for silently no-opped for exactly
+    the file its comment names. A record directory already under that parent adds nothing.
+
+    A record at the repo root (`output_dir: .` or blank) has `.` as its directory, which as
+    a pathspec would sweep the whole worktree; the record FILE is the honest scope there.
+    """
+    record_dir = str(PurePosixPath(record_path).parent)
+    paths = ["charness-artifacts"]
+    if record_dir in {".", ""}:
+        paths.append(record_path)
+    elif record_dir not in paths and not record_dir.startswith("charness-artifacts/"):
+        paths.append(record_dir)
+    return paths
 
 
-def _optional_git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
-    result = cli.run(["git", *args], cwd=repo_root, check=False)
-    return result.stdout.strip() if result.returncode == 0 else ""
-
-
-def _is_claims_evidence_commit(cli: Any, repo_root: Path, *, prepared_commit: str, evidence_commit: str) -> bool:
-    parents = _optional_git_out(cli, repo_root, ["show", "-s", "--format=%P", evidence_commit]).split()
-    if parents != [prepared_commit]:
-        return False
-    changed = [line for line in cli.run(
-        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", prepared_commit, evidence_commit],
-        cwd=repo_root,
-    ).stdout.splitlines() if line]
-    # The claims-review schema's `pass` verdict carries the review's own narrative
-    # alongside the JSON record, so R is one record plus at most its narrative -- never
-    # anything else. The shape rule has one owner; `validate_claims_review` is what binds
-    # the second path to the one the record actually names.
-    return _claims_review["claims_record_in_change_set"](changed) is not None
-
-
-def _claims_evidence_child(cli: Any, repo_root: Path, *, prepared_commit: str) -> str:
-    # ``rev-list --children -n 1`` selects a traversal tip, not necessarily P;
-    # inspect all reachable parent relationships so a remote-only R is found.
-    for line in _git_out(cli, repo_root, ["rev-list", "--all", "--parents"]).splitlines():
-        parts = line.split()
-        if len(parts) != 2 or parts[1] != prepared_commit:
-            continue
-        candidate = parts[0]
-        if _is_claims_evidence_commit(
-            cli, repo_root, prepared_commit=prepared_commit, evidence_commit=candidate
-        ):
-            return candidate
-    return ""
-
-
-def _commit_artifact_before_push(repo_root: Path, *, cli: Any, tag_name: str) -> None:
-    # B1: the resume refresh of charness-artifacts/release/latest.md (and
-    # any retro-trigger artifact) must be committed BEFORE the push, mirroring the
-    # normal flow's release commit. Otherwise charness-artifacts/ is dirty at push
-    # time and .githooks/pre-push's `git diff --quiet -- charness-artifacts` blocks
-    # with a false "mutated during a read-only quality run" attribution. Guarded on
-    # a real change (modified or new files) so an unchanged refresh stays
-    # idempotent ("nothing to commit").
-    status = cli.run(
-        ["git", "status", "--porcelain", "--", "charness-artifacts"], cwd=repo_root
-    ).stdout.strip()
-    if not status:
+def _commit_artifact_before_push(repo_root: Path, *, cli: Any, tag_name: str, record_path: str) -> None:
+    # B1: the resume refresh of the release record (and any retro-trigger artifact) must be
+    # committed BEFORE the push, mirroring the normal flow's release commit. Otherwise the
+    # artifact tree is dirty at push time and a pre-push hook's `git diff --quiet` blocks
+    # with a false "mutated during a read-only quality run" attribution. Guarded on a real
+    # change so an unchanged refresh stays idempotent ("nothing to commit").
+    #
+    # Each candidate is statused SEPARATELY and only the ones that matched are added.
+    # `git status` tolerates a pathspec matching nothing; `git add` does NOT -- it exits 128
+    # with `fatal: pathspec ... did not match any files` (verified) and `cli.run` is
+    # check=True, so passing both a present and an absent pathspec kills the resume mid-lane
+    # in exactly the consumer this threading exists for: one with no `charness-artifacts`.
+    dirty = [
+        candidate
+        for candidate in _artifact_commit_candidates(record_path)
+        if cli.run(["git", "status", "--porcelain", "--", candidate], cwd=repo_root).stdout.strip()
+    ]
+    if not dirty:
         return
-    cli.run(["git", "add", "--", "charness-artifacts"], cwd=repo_root)
+    cli.run(["git", "add", "--", *dirty], cwd=repo_root)
     cli.run(
         ["git", "commit", "-m", f"chore(release): commit {tag_name} artifact before resume push"],
         cwd=repo_root,
     )
-
-
-def resumable_state(
-    repo_root: Path,
-    *,
-    tag_name: str,
-    commit_message: str,
-    remote: str,
-    branch: str,
-    backend: dict[str, Any],
-    cli: Any,
-) -> dict[str, Any]:
-    head_subject = _git_out(cli, repo_root, ["log", "-1", "--format=%s"])
-    head_sha = _git_out(cli, repo_root, ["rev-parse", "HEAD"])
-    head_message = _git_out(cli, repo_root, ["show", "-s", "--format=%B", "HEAD"])
-    tag_state = cli._helpers.tag_exists(repo_root, tag_name, remote=remote)
-    tag_sha = ""
-    if tag_state["local"]:
-        tag_sha = _git_out(cli, repo_root, ["rev-list", "-n", "1", tag_name])
-    tag_is_ancestor_head = bool(tag_sha) and cli.run(
-        ["git", "merge-base", "--is-ancestor", tag_name, "HEAD"], cwd=repo_root, check=False
-    ).returncode == 0
-    parent_sha = _optional_git_out(cli, repo_root, ["rev-parse", "HEAD^"]) if head_sha != tag_sha else ""
-    grandparent_sha = (
-        _optional_git_out(cli, repo_root, ["rev-parse", "HEAD^^"])
-        if tag_sha and parent_sha and parent_sha != tag_sha
-        else ""
-    )
-    parent_message = _git_out(cli, repo_root, ["show", "-s", "--format=%B", "HEAD^"]) if parent_sha else ""
-    remote_result = cli.run(
-        ["git", "ls-remote", "--heads", remote, f"refs/heads/{branch}"],
-        cwd=repo_root,
-        check=False,
-    )
-    remote_branch_sha = remote_result.stdout.split(maxsplit=1)[0] if remote_result.returncode == 0 and remote_result.stdout.strip() else ""
-    close_refs = cli.release_content_close_keyword_refs(head_message)
-    parent_close_refs = cli.release_content_close_keyword_refs(parent_message)
-    phase = "release-content"
-    prepared_head = _claims_review["prepared_record"](repo_root, commit=head_sha, run=cli.run)
-    prepared = _claims_review["prepared_record"](repo_root, commit=parent_sha, run=cli.run) if parent_sha else None
-    tagged_prepared = _claims_review["prepared_record"](repo_root, commit=tag_sha, run=cli.run) if tag_sha else None
-    claims_evidence_commit = ""
-    tagged_claims_evidence = (
-        _claims_evidence_child(cli, repo_root, prepared_commit=tagged_prepared["commit"])
-        if tagged_prepared
-        else ""
-    )
-    if tag_sha and parent_sha == tag_sha and close_refs:
-        phase = "post-publication-carrier"
-    elif prepared_head and head_subject == commit_message:
-        # A marked P is a deliberate pause, never a legacy partial-publish
-        # recovery; no claims artifact can be inferred from P alone.
-        phase = "prepared-claims-review"
-        prepared = prepared_head
-    elif tagged_prepared and parent_sha == tagged_claims_evidence and close_refs:
-        phase = "post-publication-claims-carrier"
-        prepared = tagged_prepared
-        claims_evidence_commit = tagged_claims_evidence
-    elif (
-        tagged_prepared
-        and grandparent_sha == tagged_claims_evidence
-        and parent_close_refs
-        and head_subject == f"Record release issue closeout for {tag_name}"
-    ):
-        phase = "post-publication-claims-final"
-        prepared = tagged_prepared
-        claims_evidence_commit = tagged_claims_evidence
-    elif tagged_prepared and tagged_claims_evidence == head_sha:
-        phase = "prepared-claims-review"
-        prepared = tagged_prepared
-        claims_evidence_commit = tagged_claims_evidence
-    elif (
-        tag_sha
-        and grandparent_sha == tag_sha
-        and parent_close_refs
-        and head_subject == f"Record release issue closeout for {tag_name}"
-    ):
-        phase = "post-publication-final"
-    elif (
-        prepared
-        and parent_message.splitlines()[0:1] == [commit_message]
-        and _is_claims_evidence_commit(cli, repo_root, prepared_commit=prepared["commit"], evidence_commit=head_sha)
-    ):
-        phase = "prepared-claims-review"
-        claims_evidence_commit = head_sha
-    prepared_parent_sha = (
-        _optional_git_out(cli, repo_root, ["rev-parse", f"{prepared['commit']}^"])
-        if isinstance(prepared, dict)
-        else ""
-    )
-    remote_is_prepared_base = bool(remote_branch_sha and prepared_parent_sha) and cli.run(
-        ["git", "merge-base", "--is-ancestor", remote_branch_sha, prepared_parent_sha],
-        cwd=repo_root,
-        check=False,
-    ).returncode == 0
-    return {
-        "head_is_release_commit": head_subject == commit_message,
-        "phase": phase,
-        "marker_at_head": _claims_review["marker_at_commit"](repo_root, commit=head_sha, run=cli.run),
-        "prepared": prepared,
-        "claims_evidence_commit": claims_evidence_commit,
-        "prepared_parent_sha": prepared_parent_sha,
-        "remote_is_prepared_base": remote_is_prepared_base,
-        "head_sha": head_sha,
-        "head_message": head_message,
-        "head_close_refs": close_refs,
-        "tag_sha": tag_sha,
-        "head_parent_is_tag": bool(tag_sha) and parent_sha == tag_sha,
-        "parent_sha": parent_sha,
-        "grandparent_sha": grandparent_sha,
-        "parent_message": parent_message,
-        "head_grandparent_is_tag": bool(tag_sha) and grandparent_sha == tag_sha,
-        "remote_branch_sha": remote_branch_sha,
-        "tag_local": tag_state["local"],
-        "tag_remote": tag_state["remote"],
-        "remote_tag_sha": tag_state["remote_tag_sha"],
-        "tag_points_at_head": bool(tag_sha) and tag_sha == head_sha,
-        "tag_is_ancestor_head": tag_is_ancestor_head,
-        "release_exists": cli._helpers.release_exists(repo_root, tag_name, backend),
-    }
 
 
 def _assert_post_publication_resumable(state: dict[str, Any], *, tag_name: str) -> bool:
@@ -348,10 +221,16 @@ def preflight_resume_state(
     adapter_data: dict[str, Any],
     cli: Any,
 ) -> dict[str, Any]:
-    _claims_review["assert_record_path_matches_adapter"](adapter_data.get("output_dir"))
+    record_path = _claims_review["release_record_path"](adapter_data)
     current_version = cli.build_release_payload(repo_root)["surface_versions"]["packaging_manifest"]
     if not isinstance(current_version, str):
         raise SystemExit("current_release did not report a packaging manifest version")
+    # Before `resumable_state`, which spends a `git ls-remote` and a `gh release view` on the
+    # way to classifying a state this refusal invalidates anyway, and before `assert_resumable`,
+    # because the states this catches otherwise reach it looking ORDINARY: an unreadable path
+    # yields no marker, so the phase resolves to `release-content` and a HEAD that really is
+    # the release commit passes -- publication proceeds with the claims floor never invoked.
+    _claims_review["assert_record_readable"](repo_root, record_path=record_path, commit="HEAD", run=cli.run)
     # NOT gated on the release surface here, and that is a KNOWN GAP, not a decision this
     # slice is entitled to make: resume is the other path to `create_release`, so a
     # surface deleted or corrupted between the failed attempt and the resume reaches
@@ -364,8 +243,9 @@ def preflight_resume_state(
         tag_name=tag_name,
         commit_message=f"Release {adapter_data['package_id']} {current_version}",
         remote=args.remote,
-        branch=_git_out(cli, repo_root, ["rev-parse", "--abbrev-ref", "HEAD"]),
+        branch=_resume_state["git_out"](cli, repo_root, ["rev-parse", "--abbrev-ref", "HEAD"]),
         backend=adapter_data["release_backend"],
+        record_path=record_path,
         cli=cli,
     )
     assert_resumable(state, tag_name=tag_name)
@@ -392,4 +272,5 @@ def resume_publish(
         repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=cli, state=state,
         resumable_state=resumable_state, assert_resumable=assert_resumable, common=_common,
         resume_closeout=_resume_closeout, commit_artifact_before_push=_commit_artifact_before_push,
+        release_record_path=_claims_review["release_record_path"],
     )

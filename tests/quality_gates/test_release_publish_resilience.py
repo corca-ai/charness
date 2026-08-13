@@ -941,7 +941,7 @@ def test_resume_preflight_rejects_non_string_manifest_version(tmp_path: Path) ->
         resume.preflight_resume_state(
             tmp_path,
             args=SimpleNamespace(remote="origin"),
-            adapter_data={"package_id": "demo", "release_backend": {}},
+            adapter_data={"package_id": "demo", "release_backend": {}, "output_dir": "charness-artifacts/release"},
             cli=cli,
         )
     except SystemExit as exc:

@@ -11,7 +11,6 @@ _ENVELOPE = SimpleNamespace(
 )
 
 
-RELEASE_RECORD_PATH = "charness-artifacts/release/latest.md"
 PREPARED_MARKER = "charness-release-state:prepared-awaiting-claims-review"
 CRITIQUE_DIR = "charness-artifacts/critique"
 CLAIMS_REVIEW_DIR = "charness-artifacts/release-review"
@@ -28,7 +27,9 @@ def prepared_claims_state(
     binding_tokens: list[str],
     accepts: Any,
     marker_text: str | None,
+    release_record: str,
     committed_record: str | None = None,
+    drafted_notes: list[str] | None = None,
 ) -> dict[str, Any] | None:
     """Describe a `prepared-awaiting-claims-review` stop, or None when there is none.
 
@@ -64,13 +65,18 @@ def prepared_claims_state(
         )
     return {
         "marker": PREPARED_MARKER,
-        "release_record": RELEASE_RECORD_PATH,
+        # Passed in rather than a module constant. A second copy of the record path in the
+        # planner made the planner blind in exactly the repos the publish helper's own copy
+        # made the claims floor blind: it read no marker, skipped the prepared-stop branch,
+        # and reported `inspect_only` -- "nothing to do here" -- at a live prepared stop.
+        "release_record": release_record,
         "target_version": current_version,
         "tag_name": f"v{current_version}" if current_version else None,
         "critique_artifact_candidates": candidates,
         "critique_binding_tokens": binding_tokens,
         "claims_review_artifact_dir": CLAIMS_REVIEW_DIR,
         "committed_claims_record": committed_record,
+        "drafted_notes_candidates": sorted(drafted_notes or []),
     }
 
 
@@ -83,6 +89,13 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
     # Once the record is committed the path is fully derivable, and leaving it a hole in
     # exactly the state where it is knowable defeats the point of emitting the command.
     claims_value = prepared.get("committed_claims_record") or f"{CLAIMS_REVIEW_DIR}/<claims-review-record>.json"
+    # Same reasoning, and now load-bearing rather than convenient: the resume lane RUNS the
+    # notes-file preflight, so a command emitted without `--notes-file` in a repo that has
+    # drafted notes for this tag is a command the operator will be refused for running
+    # verbatim. Placed only when exactly one candidate exists; two candidates is a choice
+    # the planner must not make silently.
+    notes_candidates = prepared.get("drafted_notes_candidates") or []
+    notes = ["--notes-file", notes_candidates[0]] if len(notes_candidates) == 1 else []
 
     def packet(packet_id: str, *, execute: bool) -> dict[str, object]:
         command = [
@@ -90,6 +103,7 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
             "--resume", "--publish-current",
             "--claims-review-artifact", claims_value,
             "--critique-artifact", critique_value,
+            *notes,
         ]
         if execute:
             command.append("--execute")
@@ -102,10 +116,16 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
                 if execute
                 else "re-validate the prepared-stop gates without mutation"
             ),
-            # The claims lane skips the narrative audit and never runs the notes-file
-            # preflight, so a resume that drops `--notes-file` publishes with
-            # `--generate-notes` instead of the drafted notes the prepare validated, and a
-            # dropped `--close-issue*` simply leaves the issue open. Neither is refused.
+            # The notes half is now ENFORCED: the resume lane runs the notes-file preflight,
+            # so dropping `--notes-file` where drafted notes exist is refused rather than
+            # silently published as `--generate-notes`. It stays listed because the refusal
+            # is a stop, not a substitute for passing the flag, and because the preflight
+            # keys on a filename convention it admits it cannot see through.
+            # The `--close-issue*` half is NOT enforced on this lane and cannot be from
+            # here: no durable record of the original close-issue intent exists at a
+            # prepared stop, so a dropped flag simply leaves the issue open. (The
+            # post-publication lane does refuse the omission; this one has nothing to
+            # compare against.)
             "repeat_original_arguments": [
                 "--notes-file", "--close-issue", "--close-issue-classification",
                 "--close-issue-carrier-file",
@@ -329,7 +349,7 @@ def next_action(
             )
         return action(
             "resume_prepared_claims_review",
-            f"{RELEASE_RECORD_PATH} carries `{PREPARED_MARKER}` for "
+            f"{prepared_claims['release_record']} carries `{PREPARED_MARKER}` for "
             f"{prepared_claims['tag_name'] or 'the prepared version'}; commit the bound claims review, "
             f"then run the publish-resume packets. Critique: {critique_hint}.",
         )

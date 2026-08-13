@@ -78,7 +78,22 @@ def run_narrative_audit(
         )
 
 
-def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Path | None) -> None:
+RESUME_REMEDY = (
+    "On a resume, do NOT take this blocker's usual remedy of renaming or deleting the "
+    "drafted notes and committing that. On the claims lane it puts a third commit on top of "
+    "the claims evidence, after which no single-parent prepared boundary is identifiable and "
+    "the next resume refuses with `no single-parent prepared boundary could be identified` -- "
+    "whose own recovery text then tells you to reset past the committed claims record. "
+    "Re-pass `--notes-file <the candidate named above>` instead: a resume that repeats the "
+    "original arguments needs no worktree change at all. If you genuinely want DIFFERENT "
+    "notes than the prepare validated, that edit is a worktree change and belongs before the "
+    "prepared stop, not here."
+)
+
+
+def run_notes_file_preflight(
+    repo_root: Path, *, target_tag: str, notes_file: Path | None, on_resume: bool = False
+) -> None:
     # The drafted-notes refusal is a directory listing with no dependency on the
     # bump, the release surface, or the pre-push gates, and `run_narrative_audit`
     # — where it also fires — runs after all three. Refusing here too makes the
@@ -89,6 +104,7 @@ def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Pa
     # true, but it never says the path does not exist, and `audit_notes_file`'s
     # `notes file missing` is the message that names the actual mistake.
     notes_blockers = audit_notes_file(notes_file, target_tag=target_tag) if notes_file is not None else []
+    drafted_blockers: list[str] = []
     try:
         drafted = _drafted_notes_for(repo_root, target_tag=target_tag)
     except _audit_narrative.NotesDirectoryUnreadable as exc:
@@ -97,11 +113,18 @@ def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Pa
         # is the one that runs before the bump.
         notes_blockers.append(_preflight_unreadable_blocker(exc))
     else:
-        notes_blockers += _audit_narrative.drafted_notes_blockers(
+        drafted_blockers = _audit_narrative.drafted_notes_blockers(
             repo_root, drafted, target_tag=target_tag, notes_file=notes_file
         )
+        notes_blockers += drafted_blockers
     if notes_blockers:
+        # `RESUME_REMEDY` is scoped to the DRAFTED-NOTES blocker, not to every blocker this
+        # preflight can raise. Appended unconditionally it told an operator with a mistyped
+        # `--notes-file` and no drafted notes to "re-pass the candidate above" when no
+        # candidate was printed, and told an operator whose notes carry a mutable pointer
+        # that no worktree change is needed when editing that file is the only remedy.
         raise SystemExit(
             "public release notes preflight blocked publish:\n"
             + "\n".join(f"- {blocker}" for blocker in notes_blockers)
+            + (f"\n\n{RESUME_REMEDY}" if on_resume and drafted_blockers else "")
         )

@@ -59,7 +59,11 @@ the two sides in the operator's own words), and an `observer_distinctness` objec
   for a `pass`, or `unproven`. There is deliberately no `same-agent` value — a
   same-agent reread is the observer this floor exists to exclude.
 - `signal`: the concrete signal behind that kind (which reviewer ran, on what
-  host, or the host refusal that blocked the spawn).
+  host, or the host refusal that blocked the spawn). One line, under 600 bytes,
+  and it may not contain the prepared-stop marker: it is rendered verbatim into
+  the published release record, which other gates parse, so a newline there
+  injects arbitrary lines into that document. The reasoning belongs in the
+  review's own narrative.
 - `review_artifact`: for a `pass`, the Markdown narrative the round produced,
   naming the prepared commit and target version so an earlier release's record
   cannot be re-pointed. `null` for `unproven`.
@@ -67,9 +71,21 @@ the two sides in the operator's own words), and an `observer_distinctness` objec
 `verdict: unproven` is a first-class state, not a failure: it is how the
 paragraph above is actually written down. Publication may proceed on it, and the
 claims-review record says plainly that the distinct-observer property was never
-established. Note the scope of that sentence: the CLAIMS RECORD carries the
-verdict, and the published release record does not yet mirror it, so a reader of
-`<repo-root>/charness-artifacts/release/latest.md` alone cannot tell the two apart.
+established. The published release record mirrors it: every record written after
+a validated claims review carries a `## Claims Review` section naming the record
+path, the verdict, the distinctness kind and its signal, and the review
+narrative — and for `unproven` it states the negative property rather than the
+bare token, so a reader of the record alone can tell a release whose claims round
+had a distinct observer from one where none was ever established.
+
+The record's own location comes from the release adapter's `output_dir` (see
+[adapter-contract.md](./adapter-contract.md)), not from a fixed path. The floor
+derives it by joining `output_dir` and `latest.md` without normalizing the
+declared value, because any normalization applied on one side only is a way for
+the floor and the writer to name two different files. A repo whose adapter
+declares no `output_dir` at all, or whose release record is not readable at the
+derived path — including one whose release output directory is untracked — is
+refused rather than published through a lane that validates no claims review.
 
 An already-committed `v1` record is repaired by AMENDING that commit in place; a
 follow-on commit is not the direct child of the prepared record and is refused,

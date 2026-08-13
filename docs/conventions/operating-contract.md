@@ -52,6 +52,20 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   disarming a check, loosening a floor, or narrowing a test revokes the grant.
   A successful push still needs remote CI confirmation through a different
   observer and channel.
+- **A skipped gate is not a passed gate: before treating a local green as push
+  evidence, read which checks the local run did NOT establish.** Local and CI are
+  two different observers, and the local runner already prints the difference —
+  `run-quality.sh` renders a non-verdict as `UNPROVEN` rather than `PASS` and
+  names the labels, and the closeout prints its own skip policy (which broad
+  commands `--skip-broad-pytest` dropped). Neither was read. Measured 2026-08-13:
+  the local lane did not establish `check-changed-line-mutation-coverage`, the
+  push went out on "91 passed, 0 failed", and CI blocked on three lines — one red
+  CI run plus two locked closeout reruns. The failure is not a missing gate and
+  not a quiet warning; both existed and both fired. It is that a summary reporting
+  only totals answers a different question than the one a push asks, and the
+  answer to "did anything go unproven?" is a line the reader has to go look at.
+  Recorded here because the rolling lessons digest ranks a single-source lesson
+  out of its slots, which is how this class decays before it reaches a contract.
 - Reopening an issue, creating a PR, publishing a release, creating a tag,
   changing a version, and running any `cautilus evaluate` each require an
   explicit grant for that phase. Approval for one boundary does not carry to
