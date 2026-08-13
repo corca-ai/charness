@@ -318,7 +318,8 @@ premise, owner, evidence channel, and tracker-visible outcome.
   `32f9a637` (#607).
 - Boundary: pushed under an explicit phase-scoped grant; no release occurred. CI
   on `b0eb51d5` FAILED its changed-line mutation-coverage job on three
-  subprocess-only lines, repaired in `ae118905`/`23f0735f`. The three deferred
+  subprocess-only lines, repaired in `ae118905`/`23f0735f`; Quality Core on
+  `d316bca2` is `success` (both jobs). The three deferred
   residues are tracked as #610, #611, and #613 rather than carried as prose.
 - Retro: `../retro/2026-08-13-proof-surface-repair-retro.md`.
 

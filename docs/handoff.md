@@ -54,9 +54,8 @@ still own the 22-issue cohort reconciliation `5.1.0` deliberately did not close.
 
 Refresh non-claims. #597, #607, #590, and #609 are CLOSED and read back; nothing
 else was closed. **CI on `b0eb51d5` FAILED** its changed-line mutation-coverage
-job on three lines, repaired in `ae118905`/`23f0735f` and re-verified locally
-against CI's own base — the run on the current head was still in flight when this
-was written, so confirm it before the next push. The JS settlement repairs are
+job on three lines; repaired in `ae118905`/`23f0735f`, and Quality Core on the
+current head `d316bca2` is `success` (both jobs). The JS settlement repairs are
 fixture-proven and consumer-facing (this repo's test tree contains no JS/TS
 seams), and #590's log-tail and clamp branches remain unconfirmed because the
 reporting step only runs when the pipeline is already red.
