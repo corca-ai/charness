@@ -158,6 +158,11 @@ python3 scripts/record_lesson_lifecycle.py --repo-root . \
 python3 scripts/check_lesson_ledger.py --repo-root .
 ```
 
+Unlike the migration command, `record_lesson_lifecycle.py` has no preview mode:
+after validating the complete candidate it appends the event immediately. Commit
+or otherwise preserve the current repo-local ledger before recording a reviewed
+archive or resurrection.
+
 Use `--action resurrect` to return an archived lesson to the active cohort. The
 selection preview draws its recent, value, and uncertainty slots only from active
 lessons and its archive slot only from archived lessons. If no archived lesson
@@ -189,6 +194,10 @@ python3 scripts/record_contract_graduation_proposal.py --repo-root . \
   --rationale '<why review is warranted>' \
   --displacement-unit-id '<path#heading-slug>'
 ```
+
+The proposal recorder also appends immediately after full validation; it does not
+apply a contract membership change. Inspect the resulting proposal before editing
+contract docs or running the separate transition command.
 
 After a reviewer approves the exact membership change, edit the contract docs to
 the proposed H2 inventory. Then preview the matching transition and repeat with
