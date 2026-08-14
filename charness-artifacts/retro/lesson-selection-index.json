@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-14",
-  "source_artifact_count": 502,
-  "candidate_count": 2030,
+  "source_artifact_count": 503,
+  "candidate_count": 2033,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -21,15 +21,15 @@
       "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 5,
-      "independent_source_count": 5,
+      "source_count": 6,
+      "independent_source_count": 6,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "latest_source_date": "2026-08-14",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 3.4,
+      "selection_weight": 4.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -64,12 +64,78 @@
           "lesson": "**capability** — add a regenerate/accept flag to `check_boundary_bypass_ratchet.py` so its own error message names a runnable command, matching the dup ratchet's `--write-baseline` / `--accept-rotation` shape. Structural pattern: a gate that tells the operator to regenerate an artifact while providing no command to do it trains hand-editing, and its cross-check covers only some of the fields a rebuild would write. Triggering instance(s): three hand-edit cycles on one baseline in one session, two ENFORCED counts left stale. Destination: new issue."
         },
         {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when a durable record names a missing capability, grep for the half that may already exist before building — this slice's first draft duplicated `run_process` because the record said \"no shared primitive\" and only the monitored half was actually missing."
+        },
+        {
           "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
           "date": "2026-08-14",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:31f4eef90f1c",
+      "kind": "next_improvement",
+      "lesson": "**capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B.",
+      "normalized_key": "consider a dry run authoring diagnostic that aggregates all offending hand authored paths without",
+      "recurrence_class": "closeout-diagnostic-visibility",
+      "source_count": 5,
+      "independent_source_count": 5,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.6,
+      "selection_weight": 3.4,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "consider a dry-run authoring diagnostic that aggregates all offending hand-authored paths without executing any sync or behavior command."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: ship the capture/monitored-phase census as a repeatable command next to the primitive, so the remaining call sites can be classified without re-deriving the 230-marker inventory by hand."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: treat buffered diagnostic bodies and buffered lifecycle status as independent choices; non-interleaving must not create an unobservable control plane."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: do not wrap an observable gate in a silent outer redirection; retain evidence through the runner's owned logs/receipt or a stream-preserving wrapper."
         }
       ]
     },
@@ -132,11 +198,11 @@
       ]
     },
     {
-      "candidate_id": "class:31f4eef90f1c",
+      "candidate_id": "class:2c53fdd5a072",
       "kind": "next_improvement",
-      "lesson": "**capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B.",
-      "normalized_key": "consider a dry run authoring diagnostic that aggregates all offending hand authored paths without",
-      "recurrence_class": "closeout-diagnostic-visibility",
+      "lesson": "**workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout.",
+      "normalized_key": "proof surface review binding the first critique packet bound the wrong incomplete reviewed input",
+      "recurrence_class": "proof-surface-review-binding",
       "source_count": 4,
       "independent_source_count": 4,
       "generator_authored": 0,
@@ -148,12 +214,28 @@
       "selection_weight": 2.44,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
           "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "proof-surface-review-binding: the first critique packet bound the wrong/incomplete reviewed input shape and required regeneration before validation. This was caught locally, but packet identity should have been frozen before drafting the critique record."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+          "date": "2026-08-13",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "consider a dry-run authoring diagnostic that aggregates all offending hand-authored paths without executing any sync or behavior command."
+          "lesson": "**workflow**: freeze source, export, evidence receipt, and review inputs before minting one final packet; regenerate only when that reviewed identity truly changes."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: a second review round on a proof surface is not a formality; the round that read the REPAIRS found two blockers the first round could not have seen, both in code written to fix the first round's findings."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
@@ -161,23 +243,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory**: treat buffered diagnostic bodies and buffered lifecycle status as independent choices; non-interleaving must not create an unobservable control plane."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: do not wrap an observable gate in a silent outer redirection; retain evidence through the runner's owned logs/receipt or a stream-preserving wrapper."
+          "lesson": "**workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout."
         }
       ]
     },
@@ -220,48 +286,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:2c53fdd5a072",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout.",
-      "normalized_key": "proof surface review binding the first critique packet bound the wrong incomplete reviewed input",
-      "recurrence_class": "proof-surface-review-binding",
-      "source_count": 3,
-      "independent_source_count": 3,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-      "latest_source_date": "2026-08-14",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.36,
-      "selection_weight": 1.72,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "proof-surface-review-binding: the first critique packet bound the wrong/incomplete reviewed input shape and required regeneration before validation. This was caught locally, but packet identity should have been frozen before drafting the critique record."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: freeze source, export, evidence receipt, and review inputs before minting one final packet; regenerate only when that reviewed identity truly changes."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout."
         }
       ]
     },
@@ -519,15 +543,15 @@
       "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 5,
-      "independent_source_count": 5,
+      "source_count": 6,
+      "independent_source_count": 6,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "latest_source_date": "2026-08-14",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 3.4,
+      "selection_weight": 4.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -562,12 +586,78 @@
           "lesson": "**capability** — add a regenerate/accept flag to `check_boundary_bypass_ratchet.py` so its own error message names a runnable command, matching the dup ratchet's `--write-baseline` / `--accept-rotation` shape. Structural pattern: a gate that tells the operator to regenerate an artifact while providing no command to do it trains hand-editing, and its cross-check covers only some of the fields a rebuild would write. Triggering instance(s): three hand-edit cycles on one baseline in one session, two ENFORCED counts left stale. Destination: new issue."
         },
         {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when a durable record names a missing capability, grep for the half that may already exist before building — this slice's first draft duplicated `run_process` because the record said \"no shared primitive\" and only the monitored half was actually missing."
+        },
+        {
           "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
           "date": "2026-08-14",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:31f4eef90f1c",
+      "kind": "next_improvement",
+      "lesson": "**capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B.",
+      "normalized_key": "consider a dry run authoring diagnostic that aggregates all offending hand authored paths without",
+      "recurrence_class": "closeout-diagnostic-visibility",
+      "source_count": 5,
+      "independent_source_count": 5,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.6,
+      "selection_weight": 3.4,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "consider a dry-run authoring diagnostic that aggregates all offending hand-authored paths without executing any sync or behavior command."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: ship the capture/monitored-phase census as a repeatable command next to the primitive, so the remaining call sites can be classified without re-deriving the 230-marker inventory by hand."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: treat buffered diagnostic bodies and buffered lifecycle status as independent choices; non-interleaving must not create an unobservable control plane."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: do not wrap an observable gate in a silent outer redirection; retain evidence through the runner's owned logs/receipt or a stream-preserving wrapper."
         }
       ]
     },
@@ -630,11 +720,11 @@
       ]
     },
     {
-      "candidate_id": "class:31f4eef90f1c",
+      "candidate_id": "class:2c53fdd5a072",
       "kind": "next_improvement",
-      "lesson": "**capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B.",
-      "normalized_key": "consider a dry run authoring diagnostic that aggregates all offending hand authored paths without",
-      "recurrence_class": "closeout-diagnostic-visibility",
+      "lesson": "**workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout.",
+      "normalized_key": "proof surface review binding the first critique packet bound the wrong incomplete reviewed input",
+      "recurrence_class": "proof-surface-review-binding",
       "source_count": 4,
       "independent_source_count": 4,
       "generator_authored": 0,
@@ -646,12 +736,28 @@
       "selection_weight": 2.44,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
           "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "proof-surface-review-binding: the first critique packet bound the wrong/incomplete reviewed input shape and required regeneration before validation. This was caught locally, but packet identity should have been frozen before drafting the critique record."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+          "date": "2026-08-13",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "consider a dry-run authoring diagnostic that aggregates all offending hand-authored paths without executing any sync or behavior command."
+          "lesson": "**workflow**: freeze source, export, evidence receipt, and review inputs before minting one final packet; regenerate only when that reviewed identity truly changes."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: a second review round on a proof surface is not a formality; the round that read the REPAIRS found two blockers the first round could not have seen, both in code written to fix the first round's findings."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
@@ -659,23 +765,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory**: treat buffered diagnostic bodies and buffered lifecycle status as independent choices; non-interleaving must not create an unobservable control plane."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: do not wrap an observable gate in a silent outer redirection; retain evidence through the runner's owned logs/receipt or a stream-preserving wrapper."
+          "lesson": "**workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout."
         }
       ]
     },
@@ -718,48 +808,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:2c53fdd5a072",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout.",
-      "normalized_key": "proof surface review binding the first critique packet bound the wrong incomplete reviewed input",
-      "recurrence_class": "proof-surface-review-binding",
-      "source_count": 3,
-      "independent_source_count": 3,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-      "latest_source_date": "2026-08-14",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.36,
-      "selection_weight": 1.72,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "proof-surface-review-binding: the first critique packet bound the wrong/incomplete reviewed input shape and required regeneration before validation. This was caught locally, but packet identity should have been frozen before drafting the critique record."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: freeze source, export, evidence receipt, and review inputs before minting one final packet; regenerate only when that reviewed identity truly changes."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout."
         }
       ]
     },
@@ -1070,6 +1118,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:6d386d5fe076",
+      "kind": "current_focus",
+      "lesson": "This session took the release-runner visibility owner the previous retro named as its `capability` next-improvement, and shipped it.",
+      "normalized_key": "this session took the release runner visibility owner the previous retro named as its",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This session took the release-runner visibility owner the previous retro named as its `capability` next-improvement, and shipped it."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:ae4f65a06b29",
       "kind": "current_focus",
       "lesson": "This session turned three user corrections into one current-contract cleanup: retired migration and compatibility surfaces should be deleted rather than maintained, opened lesson content must survive compaction as readable bytes, and long-running runners must not hide their lifecycle merely because diagnostic bodies are isolated.",
@@ -1092,6 +1166,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This session turned three user corrections into one current-contract cleanup: retired migration and compatibility surfaces should be deleted rather than maintained, opened lesson content must survive compaction as readable bytes, and long-running runners must not hide their lifecycle merely because diagnostic bodies are isolated."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:3761b7954159",
+      "kind": "next_improvement",
+      "lesson": "**capability**: have the quality artifact scaffold report its line budget against a draft rather than only after a complete artifact, so the trim loop costs one pass instead of six.",
+      "normalized_key": "capability have the quality artifact scaffold report its line budget against a draft rather",
+      "recurrence_class": "artifact-contract-late-feedback",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: have the quality artifact scaffold report its line budget against a draft rather than only after a complete artifact, so the trim loop costs one pass instead of six."
         }
       ]
     },
@@ -1170,6 +1270,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: after opening a lesson session, retain its bundle path and reread that file after compaction and before retro."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:c853031906b3",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: when a gate's failure message instructs edits, verify each named surface still owns what the message claims before editing — two of the four named here were superseded by #596.",
+      "normalized_key": "workflow when a gate s failure message instructs edits verify each named surface still",
+      "recurrence_class": "proof-surface-message-drift",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when a gate's failure message instructs edits, verify each named surface still owns what the message claims before editing — two of the four named here were superseded by #596."
         }
       ]
     },

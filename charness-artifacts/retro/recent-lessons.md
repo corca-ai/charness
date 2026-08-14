@@ -3,7 +3,7 @@
 ## Current Focus
 
 - The user corrected the claim that #614's lesson presentation was unproven. (source: `charness-artifacts/retro/2026-08-14-compaction-lesson-presentation-miss-retro.md`)
-- This session turned three user corrections into one current-contract cleanup: retired migration and compatibility surfaces should be deleted rather than maintained, opened lesson content must survive compaction as readable bytes, and long-running runners must not hide their lifecycle merely because diagnostic bodies are isolated. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`)
+- This session took the release-runner visibility owner the previous retro named as its `capability` next-improvement, and shipped it. (source: `charness-artifacts/retro/2026-08-14-monitored-execution-retro.md`)
 
 ## Repeat Traps
 
@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
-- **workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 5)
+- **workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 6)
+- **capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 5)
 - **memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 5)
-- **capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 4)
-- **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
+- **workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 4)
 
 ## Selection Policy
 
@@ -34,7 +34,7 @@
 - `charness-artifacts/retro/2026-08-06-session-retro.md`
 - `charness-artifacts/retro/2026-08-07-session-retro.md`
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
-- `charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md`
 - `charness-artifacts/retro/2026-08-13-session-retro.md`
 - `charness-artifacts/retro/2026-08-14-compaction-lesson-presentation-miss-retro.md`
+- `charness-artifacts/retro/2026-08-14-monitored-execution-retro.md`
 - `charness-artifacts/retro/2026-08-14-session-retro.md`
