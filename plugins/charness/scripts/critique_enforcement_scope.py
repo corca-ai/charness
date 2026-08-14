@@ -37,6 +37,10 @@ from runtime_bootstrap import import_repo_module
 
 # One home for "the lines of a markdown section"; this module carried three copies.
 _sections = import_repo_module(__file__, "scripts.markdown_sections")
+# The base loader library, NOT the injected `adapter_lib` parameter: callers inject the
+# CRITIQUE adapter (which owns `load_adapter`), while the rule for reading that loader's
+# refusals lives with the loader that produces them.
+_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 
 # One home for the trigger that turns the reviewed-input binding floor on.
 # Accepts the bullet and bold forms the corpus writes, and a path on the FOLLOWING
@@ -343,8 +347,17 @@ def resolve_cross_surface_scope(
     Config is read first and cheaply: a repo that configures no globs and no
     surfaces is opt-out by design (spec DBD-4) and must not be reported the same
     way as a configured probe that was handed nothing to look at.
+
+    An adapter the loader REFUSED is a third thing again. Its keys were dropped, so
+    the config reads empty and the opt-out branch below would answer
+    `not-configured` -- an opt-out this repo never declared, over a file that failed
+    to parse. This consumer is the sibling of the impl stop-gate probe, and the same
+    discard was repaired there; the two must not disagree about the same adapter.
     """
-    probe = probe_lib.probe_config_from_adapter(adapter_lib.load_adapter(repo_root)["data"])
+    adapter = adapter_lib.load_adapter(repo_root)
+    probe = probe_lib.probe_config_from_adapter(adapter["data"])
+    if _adapter_lib_module.unreadable_reasons(adapter):
+        return CrossSurfaceScope(CROSS_SURFACE_NOT_ESTABLISHED, False)
     if not probe["globs"] and not probe["surfaces"]:
         return CrossSurfaceScope(CROSS_SURFACE_NOT_CONFIGURED, False)
     if not changed_ref and not changed_path and not include_worktree:

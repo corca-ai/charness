@@ -216,17 +216,17 @@ def validate_adapter_data(
         raw_list = data.get(key)
         if raw_list is None:
             continue
+        # `[]` is the explicit-empty spelling, and it is the ONLY one. A bare `key:`
+        # parses to an empty MAPPING, which is deliberately refused here: the parser
+        # also renders `key:` followed by dash-less children as `{}` (each child has no
+        # mapping separator, so it is silently dropped), and accepting `{}` as an
+        # opt-out would read a probe config the author clearly meant to declare as a
+        # deliberate "no probe" -- exit 0 over a broken config, which is the defect this
+        # whole surface exists to remove. Measured: `list_field_state` classifies `{}`
+        # as `configured` and only `[]` as `explicit-empty`, and this repo's own adapter
+        # spells the empty declaration `boundary_cross_surface_surfaces: []`.
         if isinstance(raw_list, list) and all(isinstance(item, str) for item in raw_list):
             validated[key] = list(raw_list)
-        elif raw_list == {}:
-            # `key:` with nothing under it. The parser renders that as an empty mapping,
-            # and it is how an author writes "declared, and deliberately empty" -- the
-            # same EXPLICIT-EMPTY declaration the sibling auto-retro probe already
-            # honours as a real opt-out rather than a malformation. It was being
-            # recorded as an error, which nothing noticed because the boundary probe
-            # discarded `errors` entirely; the moment that discard was fixed, every repo
-            # that had opted out this way would have started refusing instead.
-            validated[key] = []
         else:
             errors.append(f"{key} must be a list of strings")
 

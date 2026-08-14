@@ -219,24 +219,38 @@ def test_an_unconfigured_repo_is_still_an_opt_out_not_an_error(tmp_path: Path) -
     assert state["undetermined_reasons"] == []
 
 
-def test_a_declared_but_empty_probe_key_is_an_opt_out_not_a_malformation(
+def test_the_explicit_empty_list_is_an_opt_out_and_the_bare_key_is_not(
     tmp_path: Path,
 ) -> None:
-    """`boundary_cross_surface_globs:` with nothing under it is a DECLARATION.
+    """`[]` opts out; a bare `key:` is refused, and the difference is load-bearing.
 
-    The parser renders that as an empty mapping, and the adapter validator recorded it
-    as `must be a list of strings`. Nothing noticed, because the probe discarded the
-    loader's errors -- so the latent defect only became reachable at the moment that
-    discard was fixed, and it would have turned every repo that opted out this way into
-    a permanent refusal. The sibling auto-retro probe already treats an explicitly empty
-    field as a real opt-out; this pins the same reading here.
+    A round-3 review caught this pair being collapsed. `[]` is the spelling
+    `list_field_state` calls `explicit-empty` and the one this repo's own adapter uses.
+    A bare `key:` parses to an empty MAPPING, and so does `key:` followed by DASH-LESS
+    children -- the parser drops each child silently, leaving `{}` behind. Honouring
+    `{}` as an opt-out therefore reads a probe the author plainly declared as a
+    deliberate "no probe", and hands back exit 0 over a broken config: the exact defect
+    this surface exists to remove, which is how an earlier repair for the bare-key case
+    re-introduced it.
     """
-    repo = _repo(tmp_path, "boundary_cross_surface_globs:")
-
-    state, _, _ = boundary_probe_lib.resolve_probe_state(repo, changed_path=["scripts/x.py"])
-
+    opted_out = _repo(tmp_path / "opt", "boundary_cross_surface_globs: []")
+    state, _, _ = boundary_probe_lib.resolve_probe_state(
+        opted_out, changed_path=["scripts/x.py"]
+    )
     assert state["state"] == boundary_probe_lib.PROBE_NOT_CONFIGURED
     assert state["undetermined_reasons"] == []
+
+    dropped_children = _repo(
+        tmp_path / "dropped",
+        "boundary_cross_surface_globs:",
+        "  scripts/*_lib.py",
+        "  skills/shared/**",
+    )
+    state, _, _ = boundary_probe_lib.resolve_probe_state(
+        dropped_children, changed_path=["scripts/x.py"]
+    )
+    assert state["state"] == boundary_probe_lib.PROBE_NOT_ESTABLISHED
+    assert any("must be a list of strings" in reason for reason in state["undetermined_reasons"])
 
 
 def test_cross_surface_hit_keeps_its_bool_contract_for_positive_only_callers(

@@ -38,8 +38,8 @@
 - [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627)
   — closeout floor RUN, evidence posted to each, all ten OPEN by decision: the
   carrier is unpushed and `skills/public/issue/SKILL.md:102` refuses a close
-  before publication. Review found two defects inside the fixes being closed out;
-  both repaired and re-reviewed:
+  before publication. Three review rounds found defects inside the fixes being closed out; all
+  repaired and re-reviewed:
   [critique](../charness-artifacts/critique/2026-08-14-issue-618-628-closeout.md).
 - The lesson loop closed end to end for the first time; regenerate with
   `python3 scripts/check_lesson_evaluation_continuity.py --repo-root .`.

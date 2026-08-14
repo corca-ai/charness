@@ -104,10 +104,18 @@ def test_boundary_validator_grandfathers_missing_section_on_landing_day(tmp_path
 def _write_adapter_with_globs(repo: Path, *globs: str) -> None:
     adapter = repo / ".agents" / "critique-adapter.yaml"
     adapter.parent.mkdir(parents=True, exist_ok=True)
-    body = "version: 1\nrepo: demo\n" + "boundary_cross_surface_globs:\n" + "".join(
-        f'  - "{g}"\n' for g in globs
+    # `[]` when empty, not a bare `boundary_cross_surface_globs:`. The bare form parses
+    # to an empty MAPPING, which the adapter validator refuses -- and it refuses it on
+    # purpose, because dash-less children parse to the same `{}` after the parser drops
+    # them. This fixture spelled the refused form, which read as harmless only while the
+    # probe was discarding loader errors; once it stopped, the fixture was the thing
+    # asking for a malformed adapter to be honoured.
+    declaration = (
+        "boundary_cross_surface_globs:\n" + "".join(f'  - "{g}"\n' for g in globs)
+        if globs
+        else "boundary_cross_surface_globs: []\n"
     )
-    adapter.write_text(body, encoding="utf-8")
+    adapter.write_text("version: 1\nrepo: demo\n" + declaration, encoding="utf-8")
 
 
 def _write_with_verdict(repo: Path, name: str, verdict: str) -> str:

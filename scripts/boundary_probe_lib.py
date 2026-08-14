@@ -15,7 +15,15 @@ the probe is opt-in and a repo that configures nothing keeps the always-brief +
 presence-floor without the objective override (spec DBD-4) -- provided its
 adapter READ. A repo whose adapter the loader refused gets ``not-established``
 rather than that opt-in silence, because an unread adapter cannot declare an
-opt-out any more than it can declare a probe."""
+opt-out any more than it can declare a probe.
+
+Scoped claim, because a round-3 review found the unscoped one false: that refusal
+holds for ``resolve_probe_state`` and for the critique validator's entry branch.
+It does NOT hold for a partially-valid adapter reaching
+``critique_enforcement_scope.resolve_cross_surface_scope``'s post-hit path, which
+consumes ``resolve_hit`` and flattens the typed state to a bare bool, so a
+downgraded state still renders as ``evaluated ... (no match)`` there. Closing that
+means giving the second consumer the typed state instead of the flattened one."""
 
 from __future__ import annotations
 
