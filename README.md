@@ -1,11 +1,11 @@
 # Charness - Corca Harness
 
-It helps Claude Code and Codex turn repo instructions, skills, scripts, and
-checks into a repeatable product-development workflow.
+It helps Claude Code, Codex, and Grok Build turn repo instructions, skills,
+scripts, and checks into a repeatable product-development workflow.
 
 `charness` is a Claude Code / Codex plugin developed by
-[Corca](https://www.corca.ai/), with agent skills, scripts, and a CLI packaged
-as one harness.
+[Corca](https://www.corca.ai/), with a minimal Grok Build install path, agent
+skills, scripts, and a CLI packaged as one harness.
 
 It was built from the patterns Corca uses across the product-development loop,
 from ideation to release, and reflects the core philosophy the Corca AX team
@@ -68,7 +68,8 @@ do not need to name a skill.
   then activate it with `/goal` where your host provides it so progress, proof,
   and non-claims stay visible.
 - Known workflow: call a skill directly when that is clearer. Claude uses
-  `/charness:<skill>`; Codex uses `$charness:<skill>`.
+  `/charness:<skill>`; Codex uses `$charness:<skill>`; Grok Build uses
+  `/<skill>` (or `/charness:<skill>` when the name collides).
 
 For the longer route guide, including retros, Cautilus-backed review, and
 long-running goal examples, see [Workflow Routes](./docs/workflow-routes.md).

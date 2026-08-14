@@ -89,6 +89,10 @@ def default_plugin_root(home_root: Path) -> Path:
     return home_root / ".codex" / "plugins" / PACKAGE_ID
 
 
+def default_grok_plugin_root(home_root: Path) -> Path:
+    return home_root / ".grok" / "plugins" / PACKAGE_ID
+
+
 def legacy_plugin_root(home_root: Path) -> Path:
     return home_root / ".agents" / "plugins" / PACKAGE_ID
 
@@ -1458,6 +1462,61 @@ def ensure_claude_plugin(repo_root: Path, *, home_root: Path, update: bool) -> t
     return actions, "Restart Claude Code to load the updated charness plugin." if update else "Restart Claude Code to load charness."
 
 
+def ensure_grok_plugin(*, home_root: Path, plugin_root: Path) -> tuple[list[str], str]:
+    """Materialize the exported plugin tree into Grok's auto-trusted user plugin dir.
+
+    Grok does not need a marketplace for this path. Operators still list
+    `charness` in `~/.grok/config.toml` `[plugins].enabled`.
+    """
+    dest = default_grok_plugin_root(home_root)
+    if not plugin_root.is_dir():
+        return [], "Grok plugin source is missing; skipped Grok plugin install."
+    existed = dest.exists()
+    if existed:
+        shutil.rmtree(dest)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(plugin_root, dest)
+    action = "grok_plugin_updated" if existed else "grok_plugin_installed"
+    return [action], (
+        "Restart Grok Build to load `~/.grok/plugins/charness`. "
+        "List `charness` in `[plugins].enabled`; do not add a marketplace."
+    )
+
+
+def remove_grok_plugin(*, home_root: Path) -> bool:
+    dest = default_grok_plugin_root(home_root)
+    if not dest.exists():
+        return False
+    shutil.rmtree(dest)
+    return True
+
+
+def build_grok_host_guidance(*, grok_available: bool, grok_plugin_root: Path) -> dict[str, object]:
+    if not grok_available:
+        return {
+            "status": "unavailable",
+            "manual_action_required": False,
+            "message": "Grok CLI not detected on this machine.",
+        }
+    if grok_plugin_root.is_dir():
+        return {
+            "status": "installed",
+            "manual_action_required": False,
+            "message": (
+                "Grok plugin tree is present at `~/.grok/plugins/charness`. "
+                "List `charness` in `[plugins].enabled` (do not add a marketplace), then restart Grok Build."
+            ),
+        }
+    return {
+        "status": "needs-install",
+        "manual_action_required": False,
+        "message": (
+            "Grok CLI is available but `~/.grok/plugins/charness` is missing. "
+            "Run `charness update`, list `charness` in `[plugins].enabled`, and do not add a marketplace."
+        ),
+    }
+
+
 def codex_cache_entries(cache_root: Path) -> list[dict[str, str]]:
     return _codex_cache_entries(cache_root, plugin_glob=PACKAGE_ID)
 
@@ -1964,7 +2023,7 @@ def build_claude_host_guidance(
 
 def build_host_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
     host_next_steps: dict[str, str] = {}
-    for host in ("codex", "claude"):
+    for host in ("codex", "claude", "grok"):
         guidance = doctor_payload.get(f"{host}_host_guidance")
         if not isinstance(guidance, dict):
             continue
@@ -1981,7 +2040,7 @@ def build_host_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
 
 def build_doctor_next_action(doctor_payload: dict[str, object]) -> dict[str, object]:
     candidates: list[tuple[int, int, dict[str, object]]] = []
-    for host_index, host in enumerate(("codex", "claude")):
+    for host_index, host in enumerate(("codex", "claude", "grok")):
         guidance = doctor_payload.get(f"{host}_host_guidance")
         if not isinstance(guidance, dict):
             continue
@@ -2226,10 +2285,15 @@ def install_surface(
     claude_plugin_actions, claude_plugin_message = ensure_claude_plugin(
         repo_root, home_root=home_root, update=update
     )
+    grok_plugin_actions, grok_plugin_message = ensure_grok_plugin(
+        home_root=home_root, plugin_root=plugin_root
+    )
     completed_actions.extend(claude_marketplace_actions)
     completed_actions.extend(claude_plugin_actions)
+    completed_actions.extend(grok_plugin_actions)
     payload["completed_actions"] = completed_actions
     payload["host_next_steps"]["claude"] = claude_plugin_message
+    payload["host_next_steps"]["grok"] = grok_plugin_message
     payload["claude_marketplace_message"] = claude_marketplace_message
     payload["removed_legacy_skills_symlink"] = removed_legacy_skills_symlink
     return payload
@@ -2293,7 +2357,10 @@ def build_doctor_payload(
         "hosts": {
             "codex": shutil.which("codex") is not None,
             "claude": shutil.which("claude") is not None,
+            "grok": shutil.which("grok") is not None,
         },
+        "grok_plugin_root": str(default_grok_plugin_root(home_root)),
+        "grok_plugin_root_present": default_grok_plugin_root(home_root).is_dir(),
     }
     payload["claude_marketplace_name"] = claude_marketplace_name(repo_root) if source_manifest_present else None
     payload["claude_plugin_ref"] = claude_plugin_ref(repo_root) if source_manifest_present else None
@@ -2355,6 +2422,10 @@ def build_doctor_payload(
         marketplace_entry=payload["claude_marketplace_entry"],
         installed_entry=payload["claude_installed_entry"],
         enabled_status=payload["claude_enabled_status"],
+    )
+    payload["grok_host_guidance"] = build_grok_host_guidance(
+        grok_available=payload["hosts"]["grok"],
+        grok_plugin_root=default_grok_plugin_root(home_root),
     )
     if include_repo_onboarding:
         payload["repo_onboarding"] = build_repo_onboarding_payload(
@@ -3762,7 +3833,7 @@ def project_runtime_response(payload: dict[str, object], *, event: str) -> dict[
         compact = _compact_host_refresh(payload.get(source))
         if compact is not None:
             response[target] = compact
-    for host in ("codex", "claude"):
+    for host in ("codex", "claude", "grok"):
         guidance = _compact_guidance(payload.get(f"{host}_host_guidance"))
         if guidance is not None:
             response[f"{host}_host_guidance"] = guidance
@@ -3920,6 +3991,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_host_install"] = codex_host_install
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
+    payload["grok_host_guidance"] = doctor_payload.get("grok_host_guidance") or {}
     payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
     payload["host_next_steps"] = {**payload.get("host_next_steps", {}), **doctor_payload["host_next_steps"]}
     payload["next_action"] = doctor_payload["next_action"]
@@ -4060,6 +4132,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         payload["session_staleness"] = session_staleness
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
+    payload["grok_host_guidance"] = doctor_payload.get("grok_host_guidance") or {}
     payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
     payload["host_next_steps"] = {**payload.get("host_next_steps", {}), **doctor_payload["host_next_steps"]}
     payload["next_action"] = doctor_payload["next_action"]
@@ -4180,6 +4253,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     removed_codex_config_entries: list[str] = []
     removed_claude_plugin = False
     removed_claude_marketplace = False
+    removed_grok_plugin = False
     removed_checkout = False
     removed_wrapper = False
     removed_cli = False
@@ -4202,6 +4276,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     if has_source_manifest(repo_root):
         removed_claude_plugin = remove_claude_plugin(repo_root, home_root=home_root)
         removed_claude_marketplace = remove_claude_marketplace(repo_root, home_root=home_root)
+    removed_grok_plugin = remove_grok_plugin(home_root=home_root)
     wrapper_path = claude_wrapper_path
     if wrapper_path.exists():
         wrapper_path.unlink()
@@ -4227,6 +4302,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "removed_codex_config_entries": removed_codex_config_entries,
         "removed_claude_plugin": removed_claude_plugin,
         "removed_claude_marketplace": removed_claude_marketplace,
+        "removed_grok_plugin": removed_grok_plugin,
         "removed_claude_wrapper": removed_wrapper,
         "removed_cli": removed_cli,
         "removed_checkout": removed_checkout,

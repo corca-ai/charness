@@ -15,6 +15,7 @@ def _doctor_payload() -> dict[str, object]:
     return {
         "codex_host_guidance": {},
         "claude_host_guidance": {},
+        "grok_host_guidance": {},
         "repo_onboarding": {},
         "host_next_steps": {},
         "next_action": {},

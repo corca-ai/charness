@@ -81,6 +81,7 @@ def build_payload(repo_root: Path, consumer_root: Path) -> dict[str, object]:
         "update_hints": {
             "claude": "Run `charness update`, then restart Claude Code.",
             "codex": "Run `charness init` or `charness update`; both try Codex's official plugin/install path when the Codex CLI is available. Restart Codex only if the host state still needs to reload the installed plugin.",
+            "grok": "Run `charness update`, then restart Grok Build. Grok loads `~/.grok/plugins/charness` when `[plugins].enabled` lists `charness`. No marketplace step.",
         },
         "root_install_surface": evaluate_root_install_surface(repo_root),
         "readiness": collect_readiness_summary(repo_root),
@@ -98,6 +99,7 @@ def print_text(payload: dict[str, object]) -> None:
     print("UPDATE_HINTS:")
     print(f"- Claude: {payload['update_hints']['claude']}")
     print(f"- Codex: {payload['update_hints']['codex']}")
+    print(f"- Grok: {payload['update_hints']['grok']}")
     print("READINESS:")
     for entry in payload["readiness"]:
         print(f"- {entry['tool_id']}: {entry['status']}")

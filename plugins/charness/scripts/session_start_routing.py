@@ -193,6 +193,8 @@ def render_output(host: str, *, directive: str | None = None) -> str:
             },
             ensure_ascii=False,
         )
+    # Grok Build ignores SessionStart stdout today, so keep the plain-text
+    # fallback. The host flag is still recorded so installers can pass `--host grok`.
     return text
 
 
@@ -216,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--host",
-        choices=["claude", "codex", "unknown"],
+        choices=["claude", "codex", "grok", "unknown"],
         default="unknown",
         help="Host that fired the hook; selects the stdout injection format.",
     )
