@@ -43,24 +43,30 @@
   [#631](https://github.com/corca-ai/charness/issues/631)), four partly valid.
   That split has no checked-in ledger yet; the closeout floor requires one.
 
+- The release contract has been through a bounded three-angle review plus a
+  counterweight pass; seven blockers were repaired and six findings ruled
+  over-worry. Both boundary verifies returned `clean`, so nothing is quarantined.
+  Rulings are in the contract's `## Critique`.
+
 Non-claims: no push, tag, version bump, publish, hosted CI, installed-consumer
-readback, or issue closure. The release contract itself carries **no fresh-eye
-review** — this session's host prohibited subagent spawning.
+readback, or issue closure. No slice has been implemented — S1 has not started.
 
 ## Next Session
 
-1. **S1** of the release contract: the `what-reads-this` command
-   ([#599](https://github.com/corca-ai/charness/issues/599)) first, because every
-   later slice deletes or rewires something. Then
-   [#608](https://github.com/corca-ai/charness/issues/608)'s claims-review pause,
-   `--no-cache` on the ruff verification path, and
+1. **S1** of the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md):
+   the release-notes generator plus its over-claim gate and narrative-containment
+   lint FIRST — built at S1, run at S7, so every later slice lands under it. Then
+   the `what-reads-this` command
+   ([#599](https://github.com/corca-ai/charness/issues/599)), then
    [#630](https://github.com/corca-ai/charness/issues/630).
-2. **Get the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md)
-   reviewed by a different observer before S7** — it is a task-completing contract
-   on a proof surface and no fresh eye has read it.
-3. Then S2-S6 in order; S7 publishes and closes
-   [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627)
-   with the classification ledger and `verify-closeout --expect-state CLOSED`.
+2. Then S2-S6 in order. **S2's mechanism is subject identity, not date
+   coherence** — the review proved a generalized date-coherence guard is inert
+   against [#628](https://github.com/corca-ai/charness/issues/628) and would
+   break `debug`'s designed continue-in-place behavior.
+3. S7 publishes and closes
+   [#608](https://github.com/corca-ai/charness/issues/608) and
+   [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627);
+   the classification ledger commits BEFORE the prepared release record.
 
 ## Discuss
 
