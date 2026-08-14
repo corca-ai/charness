@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_INPUT_PATH = Path("evals/cautilus/chatbot-scenario-proposal-inputs.json")
@@ -17,6 +18,7 @@ DEFAULT_OUTPUT_DIR = Path("charness-artifacts/cautilus/chatbot-proposals")
 _scripts_portable_artifact_lib_module = import_repo_module(__file__, "scripts.portable_artifact_lib")
 sanitize_artifact_json = _scripts_portable_artifact_lib_module.sanitize_artifact_json
 sanitize_diagnostic_text = _scripts_portable_artifact_lib_module.sanitize_diagnostic_text
+portable_path_value = _scripts_portable_artifact_lib_module.portable_path_value
 _current_pointer_writer_module = import_repo_module(__file__, "scripts.current_pointer_writer_lib")
 write_current_pointer_json = _current_pointer_writer_module.write_current_pointer_json
 write_current_pointer_text = _current_pointer_writer_module.write_current_pointer_text
@@ -262,7 +264,6 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--input-file", type=Path, default=DEFAULT_INPUT_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -280,10 +281,10 @@ def main() -> int:
         command=result,
     )
     write_summary(output_dir, summary)
-    if args.json:
-        print(json.dumps(summary, ensure_ascii=False, indent=2))
-    else:
-        print(f"Wrote cautilus chatbot proposals to {output_dir}")
+    # `output_dir` is folded into the EMITTED payload only, never into the written
+    # artifact: the retired human line was the one place a reader learned where the
+    # proposals landed, and the artifact's own schema does not carry it.
+    emit_yaml({**summary, "output_dir": portable_path_value(repo_root, output_dir, external_label="external-output-dir")})
     return 0
 
 

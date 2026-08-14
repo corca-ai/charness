@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+
+import yaml
 
 from scripts import codex_session_audit_lib as audit_lib
 
@@ -84,10 +85,10 @@ def test_codex_audit_sqlite_filters_threads_and_reports_snapshots(tmp_path: Path
         "--thread-id",
         "thread-a",
         "--format",
-        "json",
+        "yaml",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["source"]["kind"] == "sqlite"
     assert payload["source"]["status"] == "used"
@@ -143,14 +144,14 @@ def test_codex_audit_lists_threads_and_marks_missing_thread_ids(tmp_path: Path) 
     home = tmp_path / "home"
     write_sqlite(home)
 
-    listed = run_script(AUDIT_SCRIPT, "--home", str(home), "--list-threads", "--format", "json")
+    listed = run_script(AUDIT_SCRIPT, "--home", str(home), "--list-threads", "--format", "yaml")
     assert listed.returncode == 0, listed.stderr
-    payload = json.loads(listed.stdout)
+    payload = yaml.safe_load(listed.stdout)
     assert [item["thread_id"] for item in payload["threads"][:2]] == ["thread-b", "thread-a"]
 
-    missing = run_script(AUDIT_SCRIPT, "--home", str(home), "--thread-id", "missing", "--format", "json")
+    missing = run_script(AUDIT_SCRIPT, "--home", str(home), "--thread-id", "missing", "--format", "yaml")
     assert missing.returncode == 0, missing.stderr
-    missing_payload = json.loads(missing.stdout)
+    missing_payload = yaml.safe_load(missing.stdout)
     assert missing_payload["status"] == "no_matching_threads"
     assert missing_payload["selection"]["missing_thread_ids"] == ["missing"]
     assert missing_payload["selection"]["selection_confidence"] == "low"
@@ -184,10 +185,10 @@ def test_codex_audit_tui_fallback_since_and_snippet_safety(tmp_path: Path) -> No
         "--max-auto-threads",
         "1",
         "--format",
-        "json",
+        "yaml",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["source"]["kind"] == "tui"
     assert payload["selection"]["thread_ids"] == ["thread-u"]
     assert payload["selection"]["excluded_thread_count"] == 1
@@ -206,7 +207,7 @@ def test_codex_audit_tui_fallback_since_and_snippet_safety(tmp_path: Path) -> No
         "8",
     )
     assert snippets.returncode == 0, snippets.stderr
-    snippet_payload = json.loads(snippets.stdout)
+    snippet_payload = yaml.safe_load(snippets.stdout)
     commands = [item["command"] for item in snippet_payload["largest_proxy_cost_tool_calls"]]
     assert commands and commands[0].endswith("...")
     assert len(commands[0]) <= 8
@@ -227,7 +228,7 @@ def test_codex_audit_markdown_invalid_since_and_missing_source(tmp_path: Path) -
 
     missing = run_script(AUDIT_SCRIPT, "--home", str(tmp_path / "missing-home"), "--source", "sqlite")
     assert missing.returncode == 0, missing.stderr
-    missing_payload = json.loads(missing.stdout)
+    missing_payload = yaml.safe_load(missing.stdout)
     assert missing_payload["status"] == "source_missing"
     assert missing_payload["waste_candidates"] == []
 
@@ -246,13 +247,13 @@ def test_codex_audit_auto_skips_unreadable_sqlite_for_tui(tmp_path: Path) -> Non
 
     auto = run_script(AUDIT_SCRIPT, "--home", str(home), "--source", "auto")
     assert auto.returncode == 0, auto.stderr
-    auto_payload = json.loads(auto.stdout)
+    auto_payload = yaml.safe_load(auto.stdout)
     assert auto_payload["source"]["kind"] == "tui"
     assert auto_payload["status"] == "ok"
 
     explicit = run_script(AUDIT_SCRIPT, "--home", str(home), "--source", "sqlite")
     assert explicit.returncode == 0, explicit.stderr
-    explicit_payload = json.loads(explicit.stdout)
+    explicit_payload = yaml.safe_load(explicit.stdout)
     assert explicit_payload["source"]["status"] == "unreadable"
     assert explicit_payload["status"] == "source_unreadable"
 
@@ -264,7 +265,7 @@ def test_codex_audit_session_id_routes_to_jsonl_and_reports_missing(tmp_path: Pa
     home = tmp_path / "home"
     home.mkdir()
 
-    result = run_script(AUDIT_SCRIPT, "--home", str(home), "--session-id", "nonexistent", "--format", "json")
+    result = run_script(AUDIT_SCRIPT, "--home", str(home), "--session-id", "nonexistent", "--format", "yaml")
     assert result.returncode == 2
     assert "No Codex rollout JSONL found" in result.stdout
     assert "nonexistent" in result.stdout
@@ -272,23 +273,25 @@ def test_codex_audit_session_id_routes_to_jsonl_and_reports_missing(tmp_path: Pa
 
 def test_codex_audit_list_threads_ignores_markdown_format(tmp_path: Path) -> None:
     # --list-threads short-circuits markdown rendering: `format == markdown and
-    # not list_threads` is False, so output must stay JSON. This kills the
-    # and->or / negation mutants on that guard.
+    # not list_threads` is False, so output must stay the structured payload.
+    # This kills the and->or / negation mutants on that guard.
     home = tmp_path / "home"
     write_sqlite(home)
 
     result = run_script(AUDIT_SCRIPT, "--home", str(home), "--list-threads", "--format", "markdown")
     assert result.returncode == 0, result.stderr
-    assert result.stdout.lstrip().startswith("{")
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
+    # A mapping, not a rendered document: markdown would parse as a scalar/None,
+    # so this is the surviving spelling of the old "output starts with `{`" pin.
+    assert isinstance(payload, dict)
     assert "threads" in payload
     assert "# Codex Session Efficiency Audit" not in result.stdout
 
 
-def test_codex_audit_json_preserves_non_ascii_command_snippets(tmp_path: Path) -> None:
-    # The audit prints JSON with ensure_ascii=False so non-ASCII command text
+def test_codex_audit_yaml_preserves_non_ascii_command_snippets(tmp_path: Path) -> None:
+    # The audit renders YAML with allow_unicode=True so non-ASCII command text
     # stays human-readable. Pinning that a literal multibyte char survives (and is
-    # not \u-escaped) kills the ensure_ascii False->True mutant on the json.dumps.
+    # not \u-escaped) kills the allow_unicode True->False mutant on the renderer.
     home = tmp_path / "home"
     log_path = home / ".codex" / "log" / "codex-tui.log"
     log_path.parent.mkdir(parents=True)
@@ -306,7 +309,7 @@ def test_codex_audit_json_preserves_non_ascii_command_snippets(tmp_path: Path) -
         "tui",
         "--include-command-snippets",
         "--format",
-        "json",
+        "yaml",
     )
     assert result.returncode == 0, result.stderr
     assert "café-ñ" in result.stdout
@@ -324,7 +327,7 @@ def test_codex_audit_rejects_schema_drifted_sqlite(tmp_path: Path) -> None:
 
     result = run_script(AUDIT_SCRIPT, "--home", str(home), "--source", "sqlite")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["source"]["status"] == "unreadable"
     assert payload["status"] == "source_unreadable"
     assert payload["waste_candidates"] == []

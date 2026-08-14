@@ -14,11 +14,11 @@ use the report to decide; CI does not hard-fail on the heuristic.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 from pathlib import Path
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -85,30 +85,41 @@ def survey(repo_root: Path) -> list[dict[str, object]]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root to survey.")
-    parser.add_argument("--report", action="store_true", help="Print the human-readable survey (default).")
-    parser.add_argument("--json", action="store_true", help="Emit the survey as JSON instead of text.")
+    parser.add_argument(
+        "--report",
+        action="store_true",
+        help="Accepted and inert: the survey is always emitted, as YAML, on every run.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     rows = survey(repo_root)
     gaps = [row for row in rows if row["gap"]]
 
-    if args.json:
-        print(json.dumps({"skills": rows, "gap_count": len(gaps)}, indent=2))
-        return 0
-
-    print("Closeout Schema Survey (advisory; always exits 0)")
-    for row in rows:
-        if not row["classifier_schema"]:
-            continue
-        status = "GAP — no validator" if row["gap"] else f"ok — {row['validator']}"
-        print(f"  {row['skill']}: classifier-bearing Output Shape -> {status}")
-    if gaps:
-        names = ", ".join(str(row["skill"]) for row in gaps)
-        print(f"\n{len(gaps)} skill(s) with a classifier-bearing Output Shape and no named validator: {names}")
-        print("See skills/public/create-skill/references/portable-authoring.md 'Closeout Schema Rule'.")
-    else:
-        print("\nNo classifier-bearing Output Shape without a validator. Closeout Schema Rule satisfied.")
+    # Unconditional YAML. The retired human survey said four things the bare
+    # `{skills, gap_count}` payload did not: that this lane is ADVISORY and always
+    # exits 0 (so a zero exit is not a passing gate), the per-skill gap verdict, the
+    # names of the gap skills, and where the rule is written down. Dropping them
+    # would leave an advisory survey reading like a green gate.
+    payload = {
+        "advisory": (
+            "Advisory survey, not a gate: it always exits 0. Whether a classifier field "
+            "needs a validator is a semantic judgment; a gap below is a prompt for an "
+            "author, not a failure."
+        ),
+        "rule_reference": (
+            "skills/public/create-skill/references/portable-authoring.md 'Closeout Schema Rule'"
+        ),
+        "skills": rows,
+        "gap_count": len(gaps),
+        "gap_skills": [str(row["skill"]) for row in gaps],
+        "gap_summary": (
+            f"{len(gaps)} skill(s) with a classifier-bearing Output Shape and no named validator."
+            if gaps
+            else "No classifier-bearing Output Shape without a validator. Closeout Schema Rule satisfied."
+        ),
+    }
+    emit_yaml(payload)
     return 0
 
 

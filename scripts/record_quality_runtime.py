@@ -14,6 +14,7 @@ from statistics import median
 from typing import Any, Callable
 
 from runtime_bootstrap import load_path_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 # `unestablished` is the runner's third status: a gate that ran and judged no
 # scope. It was rejected here, so the sample was dropped and every affected run
@@ -387,7 +388,9 @@ def main() -> int:
     else:
         payload["archive_path"] = str(archive_paths[0].relative_to(repo_root))
         payload["recorded"] = records[0]
-    print(json.dumps(payload, ensure_ascii=False))
+    # Receipt only. The runtime signals themselves are persisted as JSON under
+    # `.charness/quality/` by `update_summary` / `update_smoothing` / `append_archive`.
+    emit_yaml(payload)
     if batch_errors:
         # The good records above are already applied; this exit only reports the
         # runner bug that produced the bad ones.

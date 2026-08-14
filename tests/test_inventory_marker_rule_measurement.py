@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -205,8 +206,15 @@ def test_the_d47_snapshot_payload_obeys_its_measurement_invariants():
     )
 
 
-def test_the_human_render_names_every_refused_artifact(tmp_path):
-    """The default (non-`--json`) output is what an operator actually reads."""
+def test_the_emitted_payload_names_every_refused_artifact(tmp_path):
+    """The refused artifacts must be NAMED, not just counted.
+
+    The retired human summary printed one line per refused artifact under a count.
+    Output is unconditionally YAML now, so the same duty falls on the payload: a
+    count alone would tell an operator how much was refused and never which file
+    to open. `artifacts_refused_by_the_marker_rule` carries the names and
+    `artifacts_refused_count` the tally the summary computed inline.
+    """
     repo, fields = _corpus(
         tmp_path,
         _CITING
@@ -221,15 +229,21 @@ def test_the_human_render_names_every_refused_artifact(tmp_path):
     )
 
     assert result.returncode == 0, result.stderr
-    out = result.stdout
-    assert "top level only" in out
-    assert "field mentions clearing today's floor: 2" in out
-    assert "without a marker: 2" in out
-    assert "citations a marker rule would refuse: 1 across 1 artifact(s)" in out
-    assert "- charness-artifacts/quality/review.md" in out
+    payload = yaml.safe_load(result.stdout)
+    assert payload["scope"] == "top level only"
+    assert payload["field_mentions_clearing_todays_floor"] == 2
+    assert payload["field_mentions_without_a_marker"] == 2
+    assert payload["citations_refused_count"] == 1
+    assert payload["artifacts_refused_count"] == 1
+    assert payload["artifacts_refused_by_the_marker_rule"] == ["charness-artifacts/quality/review.md"]
 
 
-def test_the_recursive_render_says_so_in_its_scope_line(tmp_path):
+def test_the_recursive_run_says_so_in_its_scope_field(tmp_path):
+    """The scope word survived the render's deletion: `recursive` vs `top level only`.
+
+    Without it a reader cannot tell a clean shallow pass from a clean deep one,
+    and `recursive: true` alone is a flag the retired summary spelled out.
+    """
     repo, fields = _corpus(tmp_path, _CITING + "## Findings\n\n- `scope` covered everything\n")
     result = subprocess.run(
         [sys.executable, str(SCRIPT), "--repo-root", str(repo),
@@ -239,7 +253,9 @@ def test_the_recursive_render_says_so_in_its_scope_line(tmp_path):
     )
 
     assert result.returncode == 0, result.stderr
-    assert "(recursive)" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["scope"] == "recursive"
+    assert payload["recursive"] is True
 
 
 def test_a_corroborated_pre_contract_citation_is_skipped_and_named(tmp_path, monkeypatch):
@@ -259,11 +275,12 @@ def test_a_corroborated_pre_contract_citation_is_skipped_and_named(tmp_path, mon
     assert report["field_mentions_clearing_todays_floor"] == 0
 
 
-def test_main_renders_in_process_so_the_render_path_is_measurable(tmp_path, monkeypatch, capsys):
+def test_main_emits_in_process_so_the_emit_path_is_measurable(tmp_path, monkeypatch, capsys):
     """Driven through `main()` rather than a subprocess.
 
     The subprocess tests above prove the CLI contract, but in-process coverage cannot
-    see them, so the human-render path read as uncovered to the changed-line gate.
+    see them, so the emit path (the counts `main` folds in around `scan`) read as
+    uncovered to the changed-line gate.
     """
     repo, fields = _corpus(
         tmp_path,
@@ -278,23 +295,35 @@ def test_main_renders_in_process_so_the_render_path_is_measurable(tmp_path, monk
     ])
 
     assert MEASURE.main() == 0
-    out = capsys.readouterr().out
-    assert "top level only" in out
-    assert "citations a marker rule would refuse: 1 across 1 artifact(s)" in out
-    assert "- charness-artifacts/quality/review.md" in out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["scope"] == "top level only"
+    assert payload["citations_refused_count"] == 1
+    assert payload["artifacts_refused_count"] == 1
+    assert payload["artifacts_refused_by_the_marker_rule"] == ["charness-artifacts/quality/review.md"]
 
 
-def test_main_json_mode_returns_early_without_the_render(tmp_path, monkeypatch, capsys):
+def test_main_emits_exactly_one_payload_document_and_nothing_else(tmp_path, monkeypatch, capsys):
+    """What is left of the old json-mode test after the output modes collapsed.
+
+    There is no longer a mode that skips a render, so the original premise (early
+    return past the human summary) is gone. The surviving, still-distinct fact is
+    that a successful run puts exactly ONE parseable document on stdout and no
+    prose beside it -- the property that lets any caller pipe this straight into a
+    parser.
+    """
     repo, fields = _corpus(tmp_path, _CITING + "## Findings\n\n- `scope` covered everything\n")
     monkeypatch.setattr(sys, "argv", [
         "measure_inventory_marker_rule.py", "--repo-root", str(repo),
         "--corpus", str(repo / "charness-artifacts" / "quality"),
-        "--consumer-fields-path", str(fields), "--json",
+        "--consumer-fields-path", str(fields),
     ])
 
     assert MEASURE.main() == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["artifacts_scanned"] == 1
+    captured = capsys.readouterr()
+    documents = list(yaml.safe_load_all(captured.out))
+    assert len(documents) == 1, captured.out
+    assert documents[0]["artifacts_scanned"] == 1
+    assert captured.err == ""
 
 
 def test_main_refuses_an_empty_corpus_in_process(tmp_path, monkeypatch, capsys):

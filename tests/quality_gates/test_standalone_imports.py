@@ -15,13 +15,13 @@ not a lookalike.
 """
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -95,6 +95,18 @@ def _run_check(repo: Path, *args: str) -> subprocess.CompletedProcess:
     )
 
 
+def _report(result: subprocess.CompletedProcess) -> dict:
+    """The check's stdout is unconditionally YAML since the `--json` removal.
+
+    Parsed rather than grepped: the emitter wraps long scalars, so `scope_note` — the
+    field carrying the PARTIAL/denominator claim — is split across lines and a substring
+    search over raw stdout silently stops matching.
+    """
+    payload = yaml.safe_load(result.stdout)
+    assert isinstance(payload, dict), f"stdout was not a YAML mapping: {result.stdout[:400]!r}"
+    return payload
+
+
 def test_the_reconstruction_really_is_the_issues_cycle(repo_with_the_real_cycle: Path) -> None:
     """Before asking whether the check catches it, prove the fixture reproduces the
     defect and not something that merely fails to import."""
@@ -114,8 +126,14 @@ def test_the_check_catches_the_real_cycle(repo_with_the_real_cycle: Path) -> Non
     result = _run_check(repo_with_the_real_cycle)
 
     assert result.returncode == 1
-    assert "CYCLE scripts/quality_policy_merge.py" in result.stdout
-    assert "partially initialized" in result.stdout
+    payload = _report(result)
+    assert payload["verdict"] == "BLOCKED"
+    # Membership, not equality: every module that reaches the cycling one fails through
+    # the same cycle, so the collateral entries are the defect too. The claim is that
+    # the module carrying the defect is named as a CYCLE, with the issue's own text.
+    cycles = {item["path"]: item["detail"] for item in payload["cycles"]}
+    assert "scripts/quality_policy_merge.py" in cycles, payload
+    assert "partially initialized" in cycles["scripts/quality_policy_merge.py"]
 
 
 def test_a_changed_scope_run_catches_the_cycle_in_the_module_it_was_given(
@@ -135,7 +153,9 @@ def test_a_changed_scope_run_catches_the_cycle_in_the_module_it_was_given(
     result = _run_check(repo_with_the_real_cycle, "--changed", MERGE_REL)
 
     assert result.returncode == 1, result.stdout
-    assert "CYCLE scripts/quality_policy_merge.py" in result.stdout
+    assert [item["path"] for item in _report(result)["cycles"]] == [
+        "scripts/quality_policy_merge.py"
+    ]
 
 
 def test_a_partial_run_says_so_in_its_own_output(clean_repo: Path) -> None:
@@ -145,8 +165,10 @@ def test_a_partial_run_says_so_in_its_own_output(clean_repo: Path) -> None:
     partial = _run_check(clean_repo, "--changed", MERGE_REL)
 
     assert partial.returncode == 0, partial.stdout
-    assert "PARTIAL: checked 1 of" in partial.stdout
-    assert "UNCHECKED, not proven clean" in partial.stdout
+    payload = _report(partial)
+    assert payload["scope"] == "partial"
+    assert "PARTIAL: checked 1 of" in payload["scope_note"]
+    assert "UNCHECKED, not proven clean" in payload["scope_note"]
 
 
 def test_the_clean_tree_passes_and_says_what_it_covered(clean_repo: Path) -> None:
@@ -155,7 +177,9 @@ def test_the_clean_tree_passes_and_says_what_it_covered(clean_repo: Path) -> Non
     result = _run_check(clean_repo)
 
     assert result.returncode == 0, result.stdout
-    assert re.search(r"checked all \d+ discovered module\(s\)", result.stdout), result.stdout
+    payload = _report(result)
+    assert payload["verdict"] == "ok"
+    assert re.search(r"checked all \d+ discovered module\(s\)", payload["scope_note"]), payload
 
 
 def test_the_enumeration_reaches_both_module_families() -> None:
@@ -184,8 +208,10 @@ def test_an_empty_changed_scope_says_nothing_was_checked(clean_repo: Path) -> No
     result = _run_check(clean_repo, "--changed", "docs/handoff.md")
 
     assert result.returncode == 0
-    assert "NOTHING WAS CHECKED" in result.stdout
-    assert "unmatched: docs/handoff.md" in result.stdout
+    payload = _report(result)
+    assert "NOTHING WAS CHECKED" in payload["scope_note"]
+    assert "unmatched: docs/handoff.md" in payload["scope_note"]
+    assert payload["unmatched_changed"] == ["docs/handoff.md"]
 
 
 def test_changed_paths_resolve_against_the_repo_root_not_the_cwd(clean_repo: Path) -> None:
@@ -193,12 +219,12 @@ def test_changed_paths_resolve_against_the_repo_root_not_the_cwd(clean_repo: Pat
     in the repo being CHECKED, whatever directory the process happens to start in."""
     result = subprocess.run(
         [sys.executable, str(clean_repo / "scripts" / "check_standalone_imports.py"),
-         "--repo-root", str(clean_repo), "--changed", MERGE_REL, "--json"],
+         "--repo-root", str(clean_repo), "--changed", MERGE_REL],
         cwd=ROOT, capture_output=True, text=True,
     )
 
     assert result.returncode == 0, result.stdout
-    assert json.loads(result.stdout)["checked"] == 1, result.stdout
+    assert _report(result)["checked"] == 1, result.stdout
 
 
 def _mini_repo(root: Path, files: dict[str, str]) -> Path:
@@ -231,7 +257,7 @@ def test_a_cycle_a_module_turns_into_a_missing_sibling_is_still_caught(tmp_path:
     result = _run_check_at(repo)
 
     assert result.returncode == 1, result.stdout
-    assert "CYCLE" in result.stdout
+    assert [item["path"] for item in _report(result)["cycles"]], result.stdout
 
 
 def test_a_module_that_imports_in_no_shape_blocks(tmp_path: Path) -> None:
@@ -244,8 +270,14 @@ def test_a_module_that_imports_in_no_shape_blocks(tmp_path: Path) -> None:
     result = _run_check_at(repo)
 
     assert result.returncode == 1, result.stdout
-    assert "BROKEN scripts/broken.py" in result.stdout
-    assert "CYCLE" not in result.stdout, "a missing dependency is not a cycle"
+    payload = _report(result)
+    assert payload["verdict"] == "BLOCKED"
+    assert [item["path"] for item in payload["other_failures"]] == ["scripts/broken.py"]
+    # The two classes must stay split in the OUTPUT: this is not a cycle, and nothing in
+    # the payload may call it one (a missing dependency has a different fix).
+    assert payload["cycles"] == [], "a missing dependency is not a cycle"
+    assert "cycle_meaning" not in payload, "a missing dependency is not a cycle"
+    assert "not a cycle" in payload["other_failure_meaning"]
 
 
 def test_a_wrong_shape_sibling_error_still_falls_through(tmp_path: Path) -> None:
@@ -348,5 +380,6 @@ def test_a_partial_run_names_unmatched_paths_even_when_something_matched() -> No
     """
     result = _run_check(ROOT, "--changed", MERGE_REL, "docs/handoff.md")
 
-    assert "PARTIAL: checked 1 of" in result.stdout
-    assert "unmatched: docs/handoff.md" in result.stdout
+    payload = _report(result)
+    assert "PARTIAL: checked 1 of" in payload["scope_note"]
+    assert "unmatched: docs/handoff.md" in payload["scope_note"]

@@ -4,6 +4,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import yaml
+
 from .release_publish_fixtures import _release_env, _run_publish_patch, _seed_publish_release_repo
 
 
@@ -67,7 +69,7 @@ def test_publish_release_records_retro_trigger_evaluation_from_release_delta(tmp
     result = _run_publish_patch(repo, env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     retro_payload = payload["retro_trigger_evaluation"]
     assert retro_payload["triggered"] is True
     assert retro_payload["evaluated_at"] == "final_release_paths"
@@ -106,7 +108,7 @@ def test_publish_release_retro_trigger_includes_helper_generated_release_paths(t
     result = _run_publish_patch(repo, env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     retro_payload = payload["retro_trigger_evaluation"]
     assert retro_payload["triggered"] is True
     assert retro_payload["surface_hits"] == ["release-packaging"]

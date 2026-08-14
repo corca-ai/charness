@@ -22,6 +22,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import lesson_evaluation_records_lib as records
 from scripts import record_lesson_score as scorer
@@ -67,7 +68,9 @@ def _declare(repo: Path, session_id: str) -> None:
 def _seed_retro_memory(repo: Path) -> dict[str, object]:
     result = _run(str(SEED_RETRO_MEMORY), "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    # Command stdout is YAML now; the ledger ARTIFACT under `LEDGER_RELATIVE` is
+    # still JSON on disk and is still written/read as JSON below.
+    return yaml.safe_load(result.stdout)
 
 
 def test_setup_reports_the_lesson_loop_state_and_creates_no_ledger(tmp_path: Path) -> None:

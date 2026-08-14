@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ROOT, run_script
 
@@ -330,7 +330,9 @@ def test_skipped_invocations_are_counted_so_a_pass_cannot_over_claim(gate, tmp_p
         "placeholder-path": 1,
         "unresolved-path-owned-by-check-doc-links": 1,
     }
-    assert "Not proven (2 flag-bearing invocation(s) skipped)" in gate.render_report(report)
+    # `render_report` went away with `--json` on 2026-08-14; the not-proven tail it
+    # appended to the PASS output is a payload key now, and it must still ride on a pass.
+    assert "2 flag-bearing invocation(s) skipped" in gate.report_payload(report)["not_proven"]
 
 
 def test_skill_dir_parent_traversal_resolves_into_a_sibling_package(gate, tmp_path: Path) -> None:
@@ -548,22 +550,27 @@ def test_main_reports_findings_on_stderr_and_exits_one(gate, tmp_path, monkeypat
     monkeypatch.setattr("sys.argv", ["check_documented_command_flags.py", "--repo-root", str(root)])
     assert gate.main() == 1
     captured = capsys.readouterr()
-    assert "Documented command flag drift detected:" in captured.err
-    assert "`--gone`" in captured.err
+    # The `Documented command flag drift detected:` headline was deleted with `--json`;
+    # what has to survive is the STREAM choice — a failing verdict goes to stderr so a
+    # green run's stdout stays quotable — plus the finding and its remedy.
+    report = yaml.safe_load(captured.err)
+    assert report["status"] != "pass"
+    assert any("`--gone`" in finding for finding in report["findings"])
+    assert "Fix the doc or restore the flag" in report["fix_hint"]
     assert captured.out == ""
 
 
-def test_main_json_payload_goes_to_stdout_when_clean(gate, tmp_path, monkeypatch, capsys) -> None:
+def test_main_payload_goes_to_stdout_when_clean(gate, tmp_path, monkeypatch, capsys) -> None:
     root = _repo(
         tmp_path,
         scripts={"scripts/preflight.py": PLAIN_SCRIPT},
         doc="Run `python3 scripts/preflight.py --path X`.\n",
     )
     monkeypatch.setattr(
-        "sys.argv", ["check_documented_command_flags.py", "--repo-root", str(root), "--json"]
+        "sys.argv", ["check_documented_command_flags.py", "--repo-root", str(root)]
     )
     assert gate.main() == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["status"] == "pass"
     assert payload["invocations"] == 1
 
@@ -730,7 +737,11 @@ def test_module_entrypoint_exits_with_the_gate_verdict(gate, tmp_path: Path) -> 
         str(ROOT / "scripts" / "check_documented_command_flags.py"), "--repo-root", str(root)
     )
     assert clean.returncode == 0
-    assert "Validated 1 documented command invocation(s)" in clean.stdout
+    # The `Validated N documented command invocation(s)` sentence was deleted with
+    # `--json`; the same two numbers are payload keys on the clean run's stdout.
+    clean_payload = yaml.safe_load(clean.stdout)
+    assert clean_payload["status"] == "pass"
+    assert clean_payload["invocations"] == 1
 
 
 CHOICES_POSITIONAL_PLUS_SUBPARSERS_SCRIPT = """

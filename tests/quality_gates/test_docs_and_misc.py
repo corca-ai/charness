@@ -3,13 +3,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_script
 
 
 def test_narrative_map_sources_reports_checked_in_docs() -> None:
     result = run_script("skills/public/narrative/scripts/map_sources.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     source_paths = {entry["path"] for entry in payload["source_documents"]}
     assert "README.md" in source_paths
     assert "docs/handoff.md" in source_paths
@@ -89,7 +91,7 @@ def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> 
 
     result = run_script("skills/public/release/scripts/bump_version.py", "--repo-root", str(repo), "--part", "patch")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     manifest = json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))
     assert payload["old_version"] == "0.0.0-dev"
     assert payload["new_version"] == "0.0.1"
@@ -128,7 +130,7 @@ def test_release_bump_version_applies_valid_set_version_and_runs_sync(tmp_path: 
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     manifest = json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))
     assert payload["new_version"] == "1.2.3"
     assert manifest["version"] == "1.2.3"

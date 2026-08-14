@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 import sys
 from types import SimpleNamespace
+
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -26,7 +27,7 @@ def run_retro_resolve_adapter(monkeypatch, capsys, *args: str) -> SimpleNamespac
 def test_retro_adapter_exposes_recent_lessons_summary_path(monkeypatch, capsys) -> None:
     result = run_retro_resolve_adapter(monkeypatch, capsys, "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["data"]["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
 
 

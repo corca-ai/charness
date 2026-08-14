@@ -27,20 +27,35 @@ def test_bare_classification_honors_explicit_classification_line() -> None:
     assert checker._bare_classification(body) == "question"
 
 
-def test_format_failure_renders_staged_artifact_source_line() -> None:
+def test_report_payload_carries_staged_artifact_source_identity() -> None:
+    # Restated for the YAML migration: `_format_failure` rendered a
+    # `- <artifact>: #42` line, and the payload now carries that same identity
+    # structurally. The intent is unchanged -- the author must be able to see
+    # WHICH staged artifact carried WHICH issue numbers -- so pin it on the
+    # emitted payload instead of on the deleted renderer's line format.
     report = {
+        "ok": False,
         "reports": [
-            {"source_artifact": "charness-artifacts/issue/2026-06-12-demo.md", "numbers": [42]},
-        ]
+            {
+                "ok": False,
+                "source_artifact": "charness-artifacts/issue/2026-06-12-demo.md",
+                "numbers": [42],
+            },
+        ],
     }
-    rendered = checker._format_failure(report)
-    assert "- charness-artifacts/issue/2026-06-12-demo.md: #42" in rendered
+    payload = checker.report_payload(report)
+    assert payload["reports"][0]["source_artifact"] == "charness-artifacts/issue/2026-06-12-demo.md"
+    assert payload["reports"][0]["numbers"] == [42]
+    assert payload["summary"] == checker._FAILURE_SUMMARY
 
 
-def test_format_failure_renders_bare_close_keyword_line_when_no_artifact() -> None:
-    report = {"reports": [{"source_artifact": None, "numbers": [10, 11]}]}
-    rendered = checker._format_failure(report)
-    assert "- commit message close keyword (no staged closeout artifact): #10, #11" in rendered
+def test_report_payload_marks_a_bare_close_keyword_with_no_artifact() -> None:
+    # The bare close-keyword case used to be a distinct rendered sentence; the
+    # payload distinguishes it by a null `source_artifact` beside the numbers.
+    report = {"ok": False, "reports": [{"ok": False, "source_artifact": None, "numbers": [10, 11]}]}
+    payload = checker.report_payload(report)
+    assert payload["reports"][0]["source_artifact"] is None
+    assert payload["reports"][0]["numbers"] == [10, 11]
 
 
 def _advisory_fn():
@@ -92,11 +107,14 @@ def test_bare_classification_honors_bold_explicit_line() -> None:
     assert checker._bare_classification(body) == "question"
 
 
-def test_format_failure_pause_only_names_the_provenance_remedy() -> None:
-    # #444 F5: when every FAILING report is pause-triggered, the header and
-    # footer name the one-line `AI-provenance:` remedy instead of directing
-    # the author toward close keywords and the closeout ledger.
+def test_report_payload_pause_only_names_the_provenance_remedy() -> None:
+    # #444 F5: when every FAILING report is pause-triggered, the summary and
+    # remediation name the one-line `AI-provenance:` remedy instead of directing
+    # the author toward close keywords and the closeout ledger. The prose moved
+    # from the deleted renderer into `summary`/`remediation`; the swap contract
+    # is unchanged.
     report = {
+        "ok": False,
         "reports": [
             {
                 "ok": False,
@@ -105,19 +123,22 @@ def test_format_failure_pause_only_names_the_provenance_remedy() -> None:
                 "numbers": [7],
                 "ai_provenance": {"applies": True, "ok": False},
             }
-        ]
+        ],
     }
-    rendered = checker._format_failure(report)
-    assert "pausing resolution brief is missing its `AI-provenance:` line" in rendered
-    assert "Append one `AI-provenance:` line to the staged brief" in rendered
-    assert "Put the close keywords and closeout ledger" not in rendered
-    assert "without a valid closeout carrier" not in rendered
+    payload = checker.report_payload(report)
+    assert "pausing resolution brief is missing its `AI-provenance:` line" in payload["summary"]
+    assert any(
+        "Append one `AI-provenance:` line to the staged brief" in line
+        for line in payload["remediation"]
+    )
+    assert not any("Put the close keywords and closeout ledger" in line for line in payload["remediation"])
+    assert "without a valid closeout carrier" not in payload["summary"]
 
 
-def test_format_failure_keeps_generic_text_when_mixed_with_non_pause_failure() -> None:
+def test_report_payload_keeps_generic_text_when_mixed_with_non_pause_failure() -> None:
     # A passing non-pause report beside a failing pause report keeps the pause
     # remedy (only FAILING reports key the swap); a failing non-pause report
-    # restores the generic header/footer.
+    # restores the generic summary/remediation.
     passing_artifact = {
         "ok": True,
         "source_artifact": "charness-artifacts/issue/2026-01-01-issue-9.md",
@@ -130,13 +151,19 @@ def test_format_failure_keeps_generic_text_when_mixed_with_non_pause_failure() -
         "numbers": [7],
     }
     failing_bare = {"ok": False, "source_artifact": None, "numbers": [10]}
-    pause_beside_passing = checker._format_failure(
-        {"reports": [passing_artifact, failing_pause]}
+    pause_beside_passing = checker.report_payload(
+        {"ok": False, "reports": [passing_artifact, failing_pause]}
     )
-    assert "pausing resolution brief is missing its `AI-provenance:` line" in pause_beside_passing
-    mixed_failures = checker._format_failure({"reports": [failing_pause, failing_bare]})
-    assert "without a valid closeout carrier" in mixed_failures
-    assert "Put the close keywords and closeout ledger" in mixed_failures
+    assert (
+        "pausing resolution brief is missing its `AI-provenance:` line"
+        in pause_beside_passing["summary"]
+    )
+    mixed_failures = checker.report_payload({"ok": False, "reports": [failing_pause, failing_bare]})
+    assert "without a valid closeout carrier" in mixed_failures["summary"]
+    assert any(
+        "Put the close keywords and closeout ledger" in line
+        for line in mixed_failures["remediation"]
+    )
 
 
 def test_pause_vocabulary_tracks_resolution_brief_template() -> None:
@@ -183,15 +210,19 @@ def test_pause_brief_provenance_floor_is_unconditional_on_classification() -> No
     assert reports[0]["classification"] == "question"
 
 
-def test_format_failure_names_every_critique_evidence_failure_shape() -> None:
+def test_report_payload_names_every_critique_evidence_failure_shape() -> None:
     # This is the ONLY carrier that can block `git commit`, so each shape the
     # critique check can reject must reach the author by name: an invalid host
     # skip, an evidence file that is missing or empty, and a critique that does
     # not bind to the issue it was cited for. Nine generic words on this surface
-    # left the author with no diagnosis.
+    # left the author with no diagnosis. The renderer that spelled these out is
+    # gone; the payload must still carry every shape, per finding, with its own
+    # detail -- so pin the emitted structure rather than the rendered lines.
     report = {
+        "ok": False,
         "reports": [
             {
+                "ok": False,
                 "numbers": [42],
                 "resolution_critique_check": {
                     "ok": False,
@@ -205,12 +236,14 @@ def test_format_failure_names_every_critique_evidence_failure_shape() -> None:
         ]
     }
 
-    rendered = checker._format_failure(report)
+    payload = checker.report_payload(report)
 
-    assert "missing/invalid resolution critique evidence" in rendered
-    assert "resolution_critique: host signal too short" in rendered
-    assert (
-        "resolution_critique: evidence file missing or empty: charness-artifacts/critique/gone.md"
-        in rendered
-    )
-    assert "#42: critique cites no #42" in rendered
+    critique = payload["reports"][0]["resolution_critique_check"]
+    assert critique["ok"] is False
+    assert critique["invalid_skips"] == [
+        {"name": "resolution_critique", "detail": "host signal too short"}
+    ]
+    assert critique["missing_evidence_files"] == [
+        {"name": "resolution_critique", "path": "charness-artifacts/critique/gone.md"}
+    ]
+    assert critique["binding_failures"] == [{"number": 42, "reason": "critique cites no #42"}]

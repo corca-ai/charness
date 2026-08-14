@@ -18,6 +18,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from .support import ROOT, run_script
 
@@ -64,10 +65,10 @@ def test_no_base_sha_is_a_no_verdict_not_a_pass(gate, monkeypatch, capsys) -> No
     could not be resolved was reported the same way as a range with nothing wrong."""
     monkeypatch.setattr(gate._producer, "default_mutation_base_sha", lambda _root: "")
 
-    assert gate.main(["--repo-root", str(ROOT), "--json"]) == gate.NO_VERDICT_EXIT
+    assert gate.main(["--repo-root", str(ROOT)]) == gate.NO_VERDICT_EXIT
 
     captured = capsys.readouterr()
-    assert json.loads(captured.out)["status"] == "no-verdict"
+    assert yaml.safe_load(captured.out)["status"] == "no-verdict"
     assert "It is NOT a pass" in captured.err
 
 
@@ -81,10 +82,10 @@ def test_a_dead_producer_is_a_no_verdict_not_a_pass(gate, monkeypatch, capsys) -
 
     monkeypatch.setattr(gate._producer, "produce_command_coverage", _boom)
 
-    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == gate.NO_VERDICT_EXIT
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == gate.NO_VERDICT_EXIT
 
     captured = capsys.readouterr()
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert payload["status"] == "no-verdict"
     assert payload["reason"] == "focused producer failed"
     assert "This is NOT a pass" in captured.err
@@ -105,11 +106,11 @@ def test_nothing_mapped_warns_loudly_and_does_not_block(gate, monkeypatch, capsy
         lambda *_a, **_k: _recommendation(status="missing", mapped_tests_by_file={}),
     )
 
-    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
 
     assert code == 4, "an unanalyzed changed set must not wear a bare pass"
     captured = capsys.readouterr()
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert payload["status"] == "unproven"
     assert payload["unmapped_changed_pool_files"] == ["scripts/unmapped.py"]
     assert captured.err.startswith("WARNING")
@@ -121,10 +122,10 @@ def test_noop_is_quiet(gate, monkeypatch, capsys) -> None:
         gate._suggest, "build_recommendation", lambda *_a, **_k: _recommendation(status="noop")
     )
 
-    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == 0
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == 0
 
     captured = capsys.readouterr()
-    assert json.loads(captured.out)["status"] == "noop"
+    assert yaml.safe_load(captured.out)["status"] == "noop"
     assert "WARNING" not in captured.err
 
 
@@ -232,7 +233,7 @@ def test_focused_producer_exports_only_mapped_changed_files(gate, monkeypatch) -
         ),
     )
 
-    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == 0
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == 0
     assert captured["include_paths"] == ["scripts/mapped.py"]
 
 
@@ -368,11 +369,11 @@ def test_the_wrapper_does_not_rewrite_an_unestablished_status_into_partial(gate,
     )
 
     code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
     )
 
     assert code == 1
-    assert json.loads(capsys.readouterr().out)["status"] == gate.UNESTABLISHED_STATUS
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == gate.UNESTABLISHED_STATUS
 
 
 def test_a_partial_consumer_result_becomes_partial_and_never_refuses(gate, monkeypatch, capsys) -> None:
@@ -396,11 +397,11 @@ def test_a_partial_consumer_result_becomes_partial_and_never_refuses(gate, monke
         returncode=4,
     )
 
-    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
 
     assert code == 4
     captured = capsys.readouterr()
-    assert json.loads(captured.out)["status"] == gate.PARTIAL_STATUS
+    assert yaml.safe_load(captured.out)["status"] == gate.PARTIAL_STATUS
     assert "analyzed only PART of the changed mutation-pool set" in captured.err
 
 
@@ -423,11 +424,11 @@ def test_a_partial_consumer_result_still_does_not_refuse_at_push_time(gate, monk
     )
 
     code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
     )
 
     assert code == 4, "the partial state is non-blocking BY DECISION, at push time too"
-    assert json.loads(capsys.readouterr().out)["status"] == gate.PARTIAL_STATUS
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == gate.PARTIAL_STATUS
 
 
 def test_an_unestablished_result_refuses_at_push_time(gate, monkeypatch, capsys) -> None:
@@ -440,12 +441,12 @@ def test_an_unestablished_result_refuses_at_push_time(gate, monkeypatch, capsys)
     )
 
     code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
     )
 
     assert code == 1
     captured = capsys.readouterr()
-    assert json.loads(captured.out)["status"] == gate.UNESTABLISHED_STATUS
+    assert yaml.safe_load(captured.out)["status"] == gate.UNESTABLISHED_STATUS
     assert "an unestablished changed-line result is not a pass" in captured.err
 
 
@@ -461,11 +462,11 @@ def test_the_same_result_stays_non_blocking_mid_work(gate, monkeypatch, capsys) 
         gate, monkeypatch, {"ok": True, "blocking": [], "dirty_pool_unverified": True}, returncode=3
     )
 
-    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
 
     assert code == gate.UNESTABLISHED_EXIT
     captured = capsys.readouterr()
-    assert json.loads(captured.out)["status"] == gate.UNESTABLISHED_STATUS
+    assert yaml.safe_load(captured.out)["status"] == gate.UNESTABLISHED_STATUS
     assert "established no changed-line verdict" in captured.err
 
 
@@ -486,13 +487,13 @@ def test_policy_a_stays_non_blocking_even_at_push_time(gate, monkeypatch, capsys
     )
 
     code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
     )
 
     # Discriminating because the INPUT varies: `--refuse-unestablished` is passed.
     # Asserting `!= 1` right after `== 4` on the same value would restate it.
     assert code == 4, "policy (a) reports PARTIAL even at push time, not a refusal"
-    assert json.loads(capsys.readouterr().out)["status"] == "unproven"
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "unproven"
 
 
 def test_missing_focused_coverage_refuses_instead_of_stalling(gate, monkeypatch, capsys) -> None:
@@ -503,11 +504,11 @@ def test_missing_focused_coverage_refuses_instead_of_stalling(gate, monkeypatch,
     monkeypatch.setattr(gate._producer, "produce_command_coverage", lambda *_a, **_k: {"returncode": 0})
     monkeypatch.setattr(Path, "is_file", lambda _self: False)
 
-    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
 
     assert code == gate.NO_VERDICT_EXIT
     captured = capsys.readouterr()
-    assert json.loads(captured.out)["reason"] == "focused coverage missing after produce"
+    assert yaml.safe_load(captured.out)["reason"] == "focused coverage missing after produce"
     assert "wrote no coverage" in captured.err
 
 
@@ -522,10 +523,10 @@ def test_a_blocked_suggester_is_a_no_verdict(gate, monkeypatch, capsys) -> None:
         gate._suggest, "build_recommendation", lambda *_a, **_k: _recommendation(status="blocked")
     )
 
-    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == gate.NO_VERDICT_EXIT
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == gate.NO_VERDICT_EXIT
 
     captured = capsys.readouterr()
-    assert json.loads(captured.out)["reason"] == "suggester blocked"
+    assert yaml.safe_load(captured.out)["reason"] == "suggester blocked"
     assert "This is NOT a pass" in captured.err
 
 
@@ -534,33 +535,40 @@ def test_a_consumer_refusal_is_a_no_verdict(gate, monkeypatch, capsys) -> None:
     "no verdict". Passing that through as anything else would launder a refusal."""
     _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": []}, returncode=2)
 
-    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == gate.NO_VERDICT_EXIT
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == gate.NO_VERDICT_EXIT
 
     captured = capsys.readouterr()
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert payload["status"] == "no-verdict"
     assert "exit 2" in payload["reason"]
     assert "this is NOT a pass" in captured.err
 
 
-def test_human_output_reports_status_and_reason(gate, monkeypatch, capsys) -> None:
-    """Without --json this line IS the operator's whole view of the verdict; the
-    run-quality summary prints only the label and PASS/FAIL."""
+def test_output_reports_status_and_reason(gate, monkeypatch, capsys) -> None:
+    """This document IS the operator's whole view of the verdict; the run-quality
+    summary prints only the label and PASS/FAIL.
+
+    The `status -- reason` human line this used to read was deleted with `--json`
+    on 2026-08-14. Both facts it carried are payload keys now, so the assertion
+    moves to the keys rather than to the sentence that formatted them."""
     _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": [], "changed_pool_files": ["scripts/a.py"]})
 
     assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == 0
 
-    out = capsys.readouterr().out
-    assert "incremental changed-line coverage: clean -- " in out
-    assert "covered" in out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "clean"
+    assert "covered" in payload["reason"]
 
 
-def test_the_consumer_payload_reaches_stdout_without_json(gate, monkeypatch, capsys) -> None:
+def test_the_consumer_payload_reaches_the_operator(gate, monkeypatch, capsys) -> None:
+    """The consumer's own payload used to be written raw to stdout beside this
+    lane's human line. One YAML document cannot carry interleaved child bytes, so
+    it rides under `consumer_stdout` — the operator must still be able to read it."""
     _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": [], "marker": "PAYLOAD_MARKER"})
 
     gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
 
-    assert "PAYLOAD_MARKER" in capsys.readouterr().out
+    assert "PAYLOAD_MARKER" in yaml.safe_load(capsys.readouterr().out)["consumer_stdout"]
 
 
 def test_run_command_returns_the_producer_result_on_success(gate, tmp_path) -> None:
@@ -582,10 +590,10 @@ def test_an_unreadable_consumer_payload_refuses_end_to_end(gate, monkeypatch, ca
         lambda *_a, **_k: SimpleNamespace(returncode=0, stdout="<html>not json</html>", stderr=""),
     )
 
-    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == gate.NO_VERDICT_EXIT
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == gate.NO_VERDICT_EXIT
 
     captured = capsys.readouterr()
-    assert json.loads(captured.out)["status"] == "no-verdict"
+    assert yaml.safe_load(captured.out)["status"] == "no-verdict"
     assert "established no changed-line verdict" in captured.err
 
 
@@ -595,10 +603,10 @@ def test_a_consumer_error_is_still_a_no_verdict_not_an_unestablished(gate, monke
     failure into a non-blocking word."""
     _blocking_consumer_stub(gate, monkeypatch, {"ok": False, "blocking": []}, returncode=2)
 
-    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
 
     assert code == gate.NO_VERDICT_EXIT
-    assert json.loads(capsys.readouterr().out)["status"] == "no-verdict"
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "no-verdict"
 
 
 def test_an_unreadable_consumer_payload_stays_a_no_verdict_even_on_exit_three(
@@ -615,10 +623,10 @@ def test_an_unreadable_consumer_payload_stays_a_no_verdict_even_on_exit_three(
         lambda *_a, **_k: __import__("subprocess").CompletedProcess([], 3, "not json at all", ""),
     )
 
-    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
 
     assert code == gate.NO_VERDICT_EXIT
-    assert json.loads(capsys.readouterr().out)["status"] == "no-verdict"
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "no-verdict"
 
 
 def test_the_push_refusal_carries_the_payload_that_names_what_went_unproven(
@@ -635,11 +643,11 @@ def test_the_push_refusal_carries_the_payload_that_names_what_went_unproven(
     )
 
     code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
     )
 
     assert code == 1
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert "scripts/x.py" in payload["consumer_stdout"]
 
 
@@ -655,8 +663,8 @@ def test_an_empty_changed_set_is_clean_not_refusable(gate, monkeypatch, capsys) 
     )
 
     code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
     )
 
     assert code == 0
-    assert json.loads(capsys.readouterr().out)["status"] == "clean"
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "clean"

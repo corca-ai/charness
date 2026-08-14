@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import lesson_selection_preview_lib as preview
 from tests.script_loader import load_script_module
@@ -103,7 +104,7 @@ def test_preview_requires_a_nonempty_seed() -> None:
         _build("")
 
 
-def test_preview_renderer_cli_emits_json_and_flat_text(monkeypatch, capsys) -> None:
+def test_preview_renderer_cli_emits_payload_carrying_the_flat_text(monkeypatch, capsys) -> None:
     renderer = load_script_module(
         "render_lesson_selection_preview_for_test",
         ROOT / "scripts" / "render_lesson_selection_preview.py",
@@ -116,19 +117,16 @@ def test_preview_renderer_cli_emits_json_and_flat_text(monkeypatch, capsys) -> N
     monkeypatch.setattr(
         sys,
         "argv",
-        ["render_lesson_selection_preview.py", "--seed", "stable-preview-seed", "--json"],
-    )
-    assert renderer.main() == 0
-    assert json.loads(capsys.readouterr().out) == rendered
-    monkeypatch.setattr(
-        sys,
-        "argv",
         ["render_lesson_selection_preview.py", "--seed", "stable-preview-seed"],
     )
     assert renderer.main() == 0
-    assert (
-        capsys.readouterr().out == "Lesson selection preview (1/1 eligible):\n- a — useful lesson\n"
-    )
+    # One output mode now: the CLI payload is the in-process render plus the flat
+    # text, which stopped being a second mode and rides in `preview_text` -- the
+    # exact bytes `open_lesson_session.py` freezes into a session bundle.
+    assert yaml.safe_load(capsys.readouterr().out) == {
+        **rendered,
+        "preview_text": "Lesson selection preview (1/1 eligible):\n- a — useful lesson\n",
+    }
 
 
 def test_preview_renderer_script_entrypoint_exits_successfully(monkeypatch, capsys) -> None:
@@ -141,14 +139,13 @@ def test_preview_renderer_script_entrypoint_exits_successfully(monkeypatch, caps
             str(ROOT),
             "--seed",
             "stable-preview-seed",
-            "--json",
         ],
     )
     with pytest.raises(SystemExit, match="0"):
         runpy.run_path(
             str(ROOT / "scripts" / "render_lesson_selection_preview.py"), run_name="__main__"
         )
-    assert json.loads(capsys.readouterr().out)["kind"] == preview.KIND
+    assert yaml.safe_load(capsys.readouterr().out)["kind"] == preview.KIND
 
 
 def test_preview_rejects_closed_ledger_candidate_and_recent_shapes(

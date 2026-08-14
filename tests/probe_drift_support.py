@@ -14,8 +14,10 @@ versions of this message were each WORSE than the number they replaced, so every
 now checked against the probe files' actual keys and the actual source locations rather than
 against what seemed likely:
 
-- Version 1 said "copy each payload into the probe file". `--json` emits only the measured
-  payload; a probe file is `_provenance` PLUS that payload, and the recursive payload nests
+- Version 1 said "copy each payload into the probe file". The measure command emits only the
+  measured payload (it did so behind `--json` until that flag was retired repo-wide on
+  2026-08-14; output is unconditionally YAML now, and the constants below dropped the flag with
+  it); a probe file is `_provenance` PLUS that payload, and the recursive payload nests
   under `_provenance.recursive_variant`. Following it deleted `_provenance` and produced a bare
   `KeyError` next run — the diagnostic class this exists to remove.
 - Version 2 told the reader to `git diff` "the measuring scripts" to tell a rule change from a
@@ -76,12 +78,12 @@ CORPUS_LIB = "scripts/inventory_measurement_lib.py"
 
 # The command prints ONLY its measured payload. The script does not write a probe and does not
 # emit `_provenance`, so its output cannot be pasted over a probe file wholesale.
-FLOOR_COMMAND = "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json"
+FLOOR_COMMAND = "python3 scripts/measure_inventory_consumption_floor.py --repo-root ."
 # The counterfactual the floor probe and the gate comment BOTH transcribe. It is a different
 # invocation, not a different field of the same run, so it has to be re-run separately; it
 # exits non-zero by design at this floor, because everything it reports is a refusal.
 FLOOR_COUNTERFACTUAL_COMMAND = (
-    "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --floor 20 --json"
+    "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --floor 20"
 )
 
 # Surface -> the command whose output replaces it, or None where the edit is by hand. Paired
@@ -317,6 +319,17 @@ def probe_drift_message(key: str, *, probe: str) -> str:
 # failure here is almost never a re-record. It is a real finding about a real artifact.
 RESIDUAL_PROBE = "charness-artifacts/probe/2026-08-01-evidence-residual-floor.json"
 RESIDUAL_COMMAND = "python3 scripts/measure_evidence_residual.py --repo-root ."
+# The measure command reports; this RE-RECORDS. They are different commands because the
+# stored probe is a JSON artifact (read with `json.loads` by
+# tests/quality_gates/test_measure_evidence_residual.py) while command output is YAML.
+# Redirecting stdout straight into the artifact -- what this file used to instruct -- now
+# writes YAML into a file its only reader parses as JSON.
+RESIDUAL_RECORD_COMMAND = (
+    f"{RESIDUAL_COMMAND}"
+    " | python3 -c 'import json,sys,yaml; json.dump(yaml.safe_load(sys.stdin), sys.stdout,"
+    " indent=2, sort_keys=True); print()'"
+    f" > {RESIDUAL_PROBE}"
+)
 RESIDUAL_MEASURE_SCRIPT = "scripts/measure_evidence_residual.py"
 # The FILE, kept path-shaped so it stays usable with `ROOT /`. The symbol is a separate
 # constant: a `*_HOME` that ended in ` (SYMBOL)` broke the first time anyone joined it to a path.
@@ -335,8 +348,10 @@ RESIDUAL_TIMEBOX_TEST = "tests/quality_gates/test_goal_artifact_timebox.py"
 RESIDUAL_UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
     (
         f"{RESIDUAL_PROBE} — the whole file; it has NO `_provenance`, unlike the marker and floor"
-        " probes, so the command's stdout IS the file",
-        RESIDUAL_COMMAND,
+        " probes. Its stdout WAS the file verbatim until the 2026-08-14 --json removal made"
+        " command output YAML while the stored artifact stayed JSON, so the stdout now needs"
+        " the conversion in RESIDUAL_RECORD_COMMAND rather than a straight redirect",
+        RESIDUAL_RECORD_COMMAND,
     ),
     (
         f"{RESIDUAL_FLOOR_HOME} — the floor's own rationale comments transcribe the per-kind"

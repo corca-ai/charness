@@ -62,7 +62,6 @@ Three sources, because the runner has three ways to name a label:
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from pathlib import Path
@@ -71,6 +70,7 @@ from typing import Callable, TypeVar
 import adapter_lib
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -315,29 +315,20 @@ def read_or_refuse(gate_name: str, compute: Callable[[], T]) -> tuple[int, T | N
 def main() -> int:
     parser = argparse.ArgumentParser(description="Print the run-quality label universe.")
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true", help="emit the full payload")
     args = parser.parse_args()
     code, universe = read_or_refuse(
         "quality label universe", lambda: label_universe(args.repo_root.resolve())
     )
     if universe is None:
         return code
-    if args.json:
-        print(json.dumps(universe, indent=2, sort_keys=True))
-        return 0
-    if not universe["resolved"]:
-        # stderr, deliberately. `run-quality.sh` reads this stdout and inserts each
-        # line as a universe key; a prose sentence on stdout became a one-element
-        # universe, which defeated the runner's own "empty means do not assert"
-        # degrade and refused the first gate with a remedy about queue-line quoting.
-        # stdout is the machine surface and carries labels or nothing.
-        print(
-            f"quality label universe: not derivable -- {universe['reason']}",
-            file=sys.stderr,
-        )
-        return 0
-    for label in universe["labels"]:
-        print(label)
+    # ONE document, always. The bare-label lines this used to print on stdout were a
+    # machine contract with a shell consumer, and the `resolved: false` case answered
+    # on stderr with an EMPTY stdout so that consumer's "empty means do not assert"
+    # degrade would fire. Both facts now live in the payload -- `resolved` and
+    # `reason` say exactly what the stderr sentence said, and `labels` is the list --
+    # so a consumer reads the document instead of counting lines. A line-counting
+    # consumer must be updated with this change; it cannot be left to guess.
+    emit_yaml(universe)
     return 0
 
 

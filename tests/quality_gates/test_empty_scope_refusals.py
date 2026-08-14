@@ -15,7 +15,6 @@ every commit pay for every artifact family.
 """
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
@@ -82,7 +81,10 @@ def _empty_root(tmp_path: Path) -> Path:
     [
         ("scripts/validate_packaging.py", [], "no packaging manifests found"),
         ("scripts/check_export_safe_imports.py", [], "no export-surface Python files found"),
-        ("scripts/check_bootstrap_shim_consistency.py", [], "no bootstrap shim copies found"),
+        # The `no bootstrap shim copies found under <root>` sentence was deleted with
+        # `--json` on 2026-08-14; the same refusal now rides on `status: empty-scope`,
+        # `checked_files: 0`, `scanned_repo_root` and this remedy line.
+        ("scripts/check_bootstrap_shim_consistency.py", [], "nothing was compared"),
         # S42: zero SKILL.md under the named root.
         ("scripts/check_skill_bootstrap_vars.py", [], "no public/support SKILL.md files found"),
         # S46: no tests/ means the gate inspected no Python files.
@@ -103,13 +105,13 @@ def test_export_safe_zero_scope_refusal_is_not_an_unconditional_failure() -> Non
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_bootstrap_shim_json_names_the_empty_scope(tmp_path: Path) -> None:
-    """The JSON consumer must see a state distinct from `ok`, not `ok` with a
+def test_bootstrap_shim_payload_names_the_empty_scope(tmp_path: Path) -> None:
+    """The payload consumer must see a state distinct from `ok`, not `ok` with a
     zero count it has to notice on its own."""
     result = run_gate(
-        "scripts/check_bootstrap_shim_consistency.py", "--repo-root", str(_empty_root(tmp_path)), "--json"
+        "scripts/check_bootstrap_shim_consistency.py", "--repo-root", str(_empty_root(tmp_path))
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "empty-scope"
     assert payload["checked_files"] == 0
     assert result.returncode != 0
@@ -205,7 +207,7 @@ def test_mutation_run_proof_refuses_without_a_run(args: list[str], expected_frag
     its own discriminator (base_sha), which is why it tolerates an unknown event."""
     result = run_gate("scripts/check_mutation_run_proof.py", *args)
     assert result.returncode != 0, result.stdout + result.stderr
-    verdict = json.loads(result.stdout)
+    verdict = yaml.safe_load(result.stdout)
     assert verdict["provable"] is False
     assert expected_fragment in verdict["reason"]
 
@@ -216,7 +218,7 @@ def test_mutation_run_proof_still_confirms_a_green_identified_run() -> None:
         "--claim", "score", "--event", "schedule", "--conclusion", "success",
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    verdict = json.loads(result.stdout)
+    verdict = yaml.safe_load(result.stdout)
     assert verdict["provable"] is True
     assert verdict["conclusion_established"] is True
 
@@ -226,7 +228,7 @@ def test_provable_says_whether_the_run_was_known_green() -> None:
     could evaluate the claim", not "and the run was green". The verdict must not
     let one word carry both."""
     result = run_gate("scripts/check_mutation_run_proof.py", "--claim", "score", "--event", "schedule")
-    verdict = json.loads(result.stdout)
+    verdict = yaml.safe_load(result.stdout)
     assert verdict["provable"] is True
     assert verdict["conclusion_established"] is False
 
@@ -238,7 +240,7 @@ def test_known_red_run_is_distinguishable_from_unknown_conclusion() -> None:
         "scripts/check_mutation_run_proof.py",
         "--claim", "score", "--event", "schedule", "--conclusion", "failure",
     )
-    verdict = json.loads(red.stdout)
+    verdict = yaml.safe_load(red.stdout)
     assert red.returncode != 0
     assert verdict["provable"] is False
     assert verdict["conclusion_established"] is True
@@ -260,10 +262,9 @@ def test_skill_cut_safety_named_non_skill_path_refuses() -> None:
         "scripts/check_skill_cut_safety.py",
         "--repo-root", str(ROOT),
         "--path", "skills/public/release/references/critique-boundary.md",
-        "--json",
     )
     assert result.returncode != 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "unscoped"
     assert payload["unscoped_paths"] == ["skills/public/release/references/critique-boundary.md"]
 
@@ -272,10 +273,10 @@ def test_skill_cut_safety_named_skill_md_still_passes() -> None:
     """Control: a named SKILL.md with no broken pin is a real clean verdict."""
     result = run_gate(
         "scripts/check_skill_cut_safety.py",
-        "--repo-root", str(ROOT), "--path", "skills/public/release/SKILL.md", "--json",
+        "--repo-root", str(ROOT), "--path", "skills/public/release/SKILL.md",
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert json.loads(result.stdout)["status"] == "clean"
+    assert yaml.safe_load(result.stdout)["status"] == "clean"
 
 
 def test_skill_core_headroom_absolute_path_refuses() -> None:
@@ -285,10 +286,9 @@ def test_skill_core_headroom_absolute_path_refuses() -> None:
         "scripts/check_skill_surface_preflight.py",
         "--repo-root", str(ROOT),
         "--changed-skill-md", str(ROOT / "skills/public/impl/SKILL.md"),
-        "--json",
     )
     assert result.returncode != 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "unscoped"
     assert payload["checked"] == []
 
@@ -297,10 +297,10 @@ def test_skill_core_headroom_empty_list_stays_a_pass() -> None:
     """The asymmetry, at this gate: `--changed-skill-md` with NO values is the hook
     reporting an empty changed set -- a real answer that must stay a cheap pass."""
     result = run_gate(
-        "scripts/check_skill_surface_preflight.py", "--repo-root", str(ROOT), "--changed-skill-md", "--json"
+        "scripts/check_skill_surface_preflight.py", "--repo-root", str(ROOT), "--changed-skill-md"
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert json.loads(result.stdout)["status"] == "ok"
+    assert yaml.safe_load(result.stdout)["status"] == "ok"
 
 
 def test_skill_core_headroom_relative_path_still_passes() -> None:
@@ -308,10 +308,10 @@ def test_skill_core_headroom_relative_path_still_passes() -> None:
     caller names it, is really ratcheted."""
     result = run_gate(
         "scripts/check_skill_surface_preflight.py",
-        "--repo-root", str(ROOT), "--changed-skill-md", "skills/public/impl/SKILL.md", "--json",
+        "--repo-root", str(ROOT), "--changed-skill-md", "skills/public/impl/SKILL.md",
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "ok"
     assert [row["path"] for row in payload["checked"]] == ["skills/public/impl/SKILL.md"]
 
@@ -320,9 +320,9 @@ def test_python_lengths_headroom_without_paths_reports_every_gated_file() -> Non
     """S39: `args.paths or []` turned an OMITTED --paths into an explicit EMPTY
     selection, so the advisory whose --help promises per-gated-file headroom
     printed `{"headroom": []}`."""
-    result = run_gate("scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--headroom", "--json")
+    result = run_gate("scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--headroom")
     assert result.returncode == 0, result.stdout + result.stderr
-    rows = json.loads(result.stdout)["headroom"]
+    rows = yaml.safe_load(result.stdout)["headroom"]
     assert len(rows) > 1
     assert "scripts/check_python_lengths.py" in {row["path"] for row in rows}
 
@@ -361,16 +361,18 @@ def test_python_lengths_named_gated_path_still_validates() -> None:
     assert "Validated Python length limits for 1 file(s)." in result.stdout
 
 
-def test_skill_cut_safety_unscoped_human_output_names_the_paths_and_the_remedy() -> None:
+def test_skill_cut_safety_unscoped_payload_names_the_paths_and_the_remedy() -> None:
     """The operator-facing half of the S43 refusal.
 
-    In-process on purpose. The `--json` arm above is exercised through `run_gate`,
-    a subprocess the coverage mapper cannot attribute, so the human renderer's
-    `unscoped` branch read as untested and the armed changed-line gate blocked on
-    it. That is issue #465's class arriving in the very slice that closed S43.
+    In-process on purpose. The end-to-end arm above is exercised through
+    `run_gate`, a subprocess the coverage mapper cannot attribute, so the
+    `unscoped` branch of the emitted document read as untested and the armed
+    changed-line gate blocked on it. That is issue #465's class arriving in the
+    very slice that closed S43.
 
-    A refusal whose message does not name what it refused, or what to do instead,
-    is a refusal the operator can only work around.
+    `format_human` was deleted with `--json` on 2026-08-14 and its narration folded
+    into `report_payload`. A refusal whose payload does not name what it refused,
+    or what to do instead, is still a refusal the operator can only work around.
     """
     cut_safety = _MODULES["scripts/check_skill_cut_safety.py"]
     report = {
@@ -382,18 +384,19 @@ def test_skill_cut_safety_unscoped_human_output_names_the_paths_and_the_remedy()
         ],
     }
 
-    text = cut_safety.format_human(report)
+    payload = cut_safety.report_payload(report)
 
-    assert text.splitlines()[0] == "skill-cut-safety: unscoped"
+    assert payload["status"] == "unscoped"
     for path in report["unscoped_paths"]:
-        assert path in text
-    assert "nothing was checked" in text
-    assert "Name the SKILL.md" in text  # the remedy, not just the refusal
+        assert path in payload["summary"]
+    assert "nothing was checked" in payload["summary"]
+    assert "Name the SKILL.md" in payload["remedy"]  # the remedy, not just the refusal
 
     # Control: a real clean verdict does not borrow the unscoped narration.
-    clean = cut_safety.format_human({"status": "clean", "skills": []})
-    assert "nothing was checked" not in clean
-    assert "no changed public/support SKILL.md surfaces to check." in clean
+    clean = cut_safety.report_payload({"status": "clean", "skills": []})
+    assert "nothing was checked" not in clean["summary"]
+    assert clean["summary"] == "no changed public/support SKILL.md surfaces to check."
+    assert "remedy" not in clean
 
 
 # --- 2026-08-01, triage-sweep rows S1/S26/S30/S32. Same rule, four more surfaces:
@@ -661,15 +664,19 @@ def test_per_file_floor_over_an_all_exempt_population_is_not_enforced() -> None:
     assert mixed["files_evaluated"] == 1
 
 
-def test_per_file_floor_human_output_names_the_unestablished_scope() -> None:
-    """The human renderer is the operator surface (`run-quality.sh` runs this gate
-    without --json), and the new branch had no test — the exact shape #465 punished
-    when an unrendered branch met the armed changed-line gate."""
+def test_per_file_floor_payload_names_the_unestablished_scope() -> None:
+    """The emitted document is the operator surface, and the branch that says
+    "zero files reached the comparison" had no test — the exact shape #465 punished
+    when an unrendered branch met the armed changed-line gate.
+
+    `format_per_file_floor_line` was deleted with `--json` on 2026-08-14; the
+    caveat it carried is now `per_file_floor_caveat` on the emitted payload, and
+    `coverage_report` takes the WHOLE summary rather than the floor report alone."""
     check_coverage = _MODULES["scripts/check_coverage.py"]
     empty = {"measurement_scope": "empty", "files_received": 3, "files_evaluated": 0}
-    text = check_coverage.format_per_file_floor_line(empty, min_file_coverage=0.85)
-    assert "UNESTABLISHED" in text
-    assert "received 3" in text
+    caveat = check_coverage.coverage_report({"per_file_floor": empty})["per_file_floor_caveat"]
+    assert "UNESTABLISHED" in caveat
+    assert "received 3" in caveat
 
     populated = {
         "measurement_scope": "evaluated",
@@ -678,15 +685,15 @@ def test_per_file_floor_human_output_names_the_unestablished_scope() -> None:
         "violations": [{"path": "a.py", "coverage": 0.1}],
         "warn_band": [],
     }
-    assert "UNESTABLISHED" not in check_coverage.format_per_file_floor_line(
-        populated, min_file_coverage=0.85
+    assert "per_file_floor_caveat" not in check_coverage.coverage_report(
+        {"per_file_floor": populated}
     )
 
     # A payload MISSING the key must fail closed onto the caveat, not take the
     # green numeric arm — round 1, MINOR 2.
-    assert "UNESTABLISHED" in check_coverage.format_per_file_floor_line(
-        {"violations": [], "warn_band": []}, min_file_coverage=0.85
-    )
+    assert "UNESTABLISHED" in check_coverage.coverage_report(
+        {"per_file_floor": {"violations": [], "warn_band": []}}
+    )["per_file_floor_caveat"]
 
 
 def test_parity_gate_names_a_job_whose_steps_it_could_not_parse(tmp_path: Path) -> None:

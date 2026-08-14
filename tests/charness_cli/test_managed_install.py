@@ -53,7 +53,7 @@ def sync_root_plugin_manifests_inprocess(repo_root: Path) -> dict[str, object]:
     finally:
         os.chdir(saved_cwd)
         module.sys.argv = saved_argv
-    return json.loads(buffer.getvalue())
+    return yaml.safe_load(buffer.getvalue())
 
 
 def init_managed_home_from_repo(

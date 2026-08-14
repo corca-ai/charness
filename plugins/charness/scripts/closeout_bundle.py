@@ -4,10 +4,10 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _lib = import_repo_module(__file__, "scripts.closeout_bundle_lib")
@@ -84,7 +84,7 @@ def main(argv: list[str] | None = None) -> int:
             "bundle_id": args.bundle_id,
             "error": str(exc),
         }
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(payload)
     return 0 if payload.get("status") in {"ready", "completed"} else 1
 
 

@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import load_path_module
+from yaml_output import emit_yaml
 
 
 def _runtime_root() -> Path:
@@ -41,14 +41,13 @@ HELPER = load_path_module("validate_skill_ergonomics_entrypoint", HELPER_PATH)
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     report = HELPER.evaluate(args.repo_root.resolve())
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    else:
-        print(HELPER._format_human(report))
+    # Unconditional YAML. The retired `HELPER._format_human` rendering was a strict
+    # projection of the report's own `adapter_errors`, `rules`, `warnings`,
+    # `discovery_errors`, and `violations` entries, which the payload carries.
+    emit_yaml(report)
     return 1 if HELPER.has_failures(report) else 0
 
 

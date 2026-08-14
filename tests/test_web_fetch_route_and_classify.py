@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import load_path_module
 
@@ -59,7 +60,7 @@ def test_route_public_fetch_maps_reddit_to_feed_strategy() -> None:
         "https://www.reddit.com/r/python/",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["normalized_host"] == "reddit.com"
     assert payload["route_id"] == "reddit-feed"
     assert payload["route_family"] == "public-api"
@@ -269,7 +270,7 @@ def test_route_public_fetch_maps_github_to_grant_or_cli_strategy() -> None:
         "https://github.com/openai/openai-python",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["route_id"] == "github-grant-or-cli"
     assert payload["access_modes"][:2] == ["grant", "binary"]
     assert payload["github_mode"] == "direct-cli"
@@ -290,7 +291,7 @@ def test_route_public_fetch_honors_host_mediated_github_mode(tmp_path: Path) -> 
         str(tmp_path),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["route_id"] == "github-host-mediated"
     assert "gh" not in payload["required_tools"]
     assert payload["github_mode"] == "host-mediated"
@@ -311,7 +312,7 @@ def test_route_public_fetch_honors_none_github_mode(tmp_path: Path) -> None:
         str(tmp_path),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["route_id"] == "github-missing-capability"
     assert "gh" not in payload["required_tools"]
     assert payload["github_mode"] == "none"
@@ -324,7 +325,7 @@ def test_route_public_fetch_maps_naver_news_to_reader_fallback() -> None:
         "https://news.naver.com/main/read.naver?oid=001&aid=001",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["route_id"] == "reader-fallback"
     stage_ids = [stage["stage_id"] for stage in payload["acquisition_plan"]]
     assert "defuddle-reader-extraction" in stage_ids
@@ -339,7 +340,7 @@ def test_route_public_fetch_youtube_declares_ui_transcript_stage() -> None:
         "https://www.youtube.com/watch?v=abc123",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["route_id"] == "yt-dlp-metadata"
     stage_ids = [stage["stage_id"] for stage in payload["acquisition_plan"]]
     assert "domain-specific-route" in stage_ids
@@ -353,7 +354,7 @@ def test_classify_fetch_response_reports_login_wall() -> None:
         input_text="<html><body><h1>Sign in</h1><p>Please login to continue.</p></body></html>",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "login-wall"
     assert "clean-stop" in payload["fallback_candidates"]
 
@@ -399,7 +400,7 @@ def test_classify_fetch_response_reports_partial_content_for_og_only_page() -> N
         input_text=html_text,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "partial-content"
 
 
@@ -410,7 +411,7 @@ def test_classify_fetch_response_reports_success_for_long_article_text() -> None
         input_text=article,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "success"
     assert payload["confidence"] == "weak"
 
@@ -423,7 +424,7 @@ def test_classify_fetch_response_reports_strong_success_for_expected_text() -> N
         input_text="<html><body>short needle page</body></html>",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "success"
     assert payload["confidence"] == "strong"
     assert payload["proof"] == [{"type": "text", "value": "needle"}]
@@ -437,7 +438,7 @@ def test_classify_fetch_response_rejects_invalid_regex_proof() -> None:
         input_text="<html><body>useful content</body></html>",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "invalid-proof"
     assert payload["confidence"] == "none"
     assert payload["proof_errors"] == [{"type": "invalid-regex", "value": "["}]
@@ -451,7 +452,7 @@ def test_classify_fetch_response_blocker_signals_outrank_positive_proof() -> Non
         input_text="<html><body><h1>Sign in</h1><p>needle</p></body></html>",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "login-wall"
     assert payload["confidence"] == "none"
     assert payload["proof"] == [{"type": "text", "value": "needle"}]

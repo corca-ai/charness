@@ -22,9 +22,22 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import runpy
 import statistics
 from collections import Counter
 from pathlib import Path
+from types import SimpleNamespace
+
+
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 
 # Sibling of the usage-episode stream; keep in sync with the E1 emitter default
 # (scripts/slice_closeout_telemetry.CLOSEOUT_TELEMETRY_DEFAULT_PATH).
@@ -356,7 +369,7 @@ def main() -> int:
     else:
         result = mine(_read_lines(repo_root, args.stream_path), recur_min=args.recur_min)
     result["stream_path"] = str(args.stream_path)
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    emit_yaml(result)
     return 0
 
 

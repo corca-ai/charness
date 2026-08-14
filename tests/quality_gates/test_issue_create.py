@@ -15,6 +15,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.quality_gates.support import run_script
 
@@ -132,7 +133,7 @@ def test_create_round_trips_hostile_body_byte_identical(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     # The canonical names the skill contract tells the agent to report from. Asserted at
     # RUNTIME, not just as source literals: without these, deleting `number`/`url` from
@@ -167,7 +168,7 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
         "--repo-root", str(tmp_path), env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
     )
     assert verified.returncode == 0, verified.stderr
-    verified_payload = json.loads(verified.stdout)
+    verified_payload = yaml.safe_load(verified.stdout)
     assert verified_payload["number"] == 538
     assert verified_payload["url"] == "https://tracker.example/acme/demo/issues/538"
     assert verified_payload["verification"] == {
@@ -183,7 +184,7 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
         env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
     )
     assert skipped.returncode == 0, skipped.stderr
-    skipped_payload = json.loads(skipped.stdout)
+    skipped_payload = yaml.safe_load(skipped.stdout)
     assert skipped_payload["number"] == 538
     assert skipped_payload["url"] is None
     assert skipped_payload["verification"]["command"] == "verify-create"
@@ -211,7 +212,7 @@ def test_create_with_an_unparseable_backend_result_does_not_advertise_verify_cre
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["number"] is None
     assert payload["verification"] is None
     assert "could not parse" in payload["verify_error"]
@@ -242,7 +243,7 @@ def test_create_with_a_nonpositive_backend_number_does_not_advertise_verify_crea
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["number"] is None
     assert payload["verification"] is None
     assert "could not parse" in payload["verify_error"]
@@ -306,7 +307,7 @@ def test_create_applies_labels_and_milestone_as_flags(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert "create_argv" not in payload
     argv = json.loads(argv_store.read_text(encoding="utf-8"))
@@ -338,7 +339,7 @@ def test_create_reports_unverified_when_readback_differs(tmp_path: Path) -> None
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["body_verified"] is False
     assert payload["body_preview"] == HOSTILE_BODY
     assert "stored_body_bytes" in payload
@@ -367,7 +368,7 @@ def test_create_body_preview_is_bounded_to_closeout_excerpt(tmp_path: Path) -> N
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["body_preview"] == "A" * 1200
 
 
@@ -391,7 +392,7 @@ def test_create_fails_when_body_file_missing(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "body file not found" in payload["error"]
 
@@ -431,7 +432,7 @@ def test_create_refuses_private_provider_image_before_backend_mutation(
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["error_code"] == "private_provider_media_unpublished"
     assert "Media evidence unavailable:" in payload["error"]
     assert not count_file.exists()
@@ -557,7 +558,7 @@ def test_create_rejects_placeholder_title_before_backend_mutation(tmp_path: Path
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "placeholder title" in payload["error"]
     assert not count_file.exists()
@@ -585,7 +586,7 @@ def test_normal_verified_create_runs_create_then_view_once(tmp_path: Path) -> No
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["body_verified"] is True
     assert count_file.read_text().splitlines() == ["create", "view"]
 
@@ -614,7 +615,7 @@ def test_create_allows_intentional_placeholder_title(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["number"] == 778
     assert payload["readback_skipped"] is True
     assert count_file.read_text().splitlines() == ["create"]
@@ -658,7 +659,7 @@ def test_no_verify_is_rejected_and_skip_readback_still_creates(tmp_path: Path) -
         env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
     )
     assert created.returncode == 0, created.stderr
-    payload = json.loads(created.stdout)
+    payload = yaml.safe_load(created.stdout)
     assert payload["number"] == 778
     assert payload["body_verified"] is None
     assert payload["readback_skipped"] is True
@@ -688,7 +689,7 @@ def test_verify_create_keeps_deferred_readback_inside_the_issue_tool_grammar(tmp
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["readback_verified"] is True
     assert payload["body_verified"] is True
     assert payload["body_verification"] == "byte-identical"
@@ -713,7 +714,7 @@ def test_verify_create_without_a_body_file_does_not_claim_body_fidelity(tmp_path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["readback_verified"] is True
     assert payload["body_verified"] is None
     assert payload["body_verification"] == "not-requested"

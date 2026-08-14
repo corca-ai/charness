@@ -4,10 +4,10 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _lib = import_repo_module(__file__, "scripts.final_bundle_preflight_lib")
@@ -20,7 +20,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--critique-path", action="append", default=[])
     parser.add_argument("--behavior-channel", action="append", default=[])
     parser.add_argument("--paths", nargs="*", default=None, help="Diagnostic-only explicit paths; never certifies a full bundle.")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
     manifest = args.manifest if args.manifest.is_absolute() else repo_root / args.manifest
@@ -31,10 +30,11 @@ def main(argv: list[str] | None = None) -> int:
         behavior_channels=args.behavior_channel,
         explicit_paths=args.paths,
     )
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(_lib.render_text(payload), end="")
+    # Unconditional YAML. `_lib.render_text` was a strict projection of `status`,
+    # the four inventory lengths, `planned_commands`, and `blockers` (code, subject,
+    # message, remediation), every one of which the payload carries; it stays in the
+    # library for callers that want the prose rendering.
+    emit_yaml(payload)
     return 0 if payload["status"] == "ready" else 1
 
 

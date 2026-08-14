@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -100,7 +100,6 @@ def main() -> int:
     parser.add_argument("--tool-id", action="append", default=[])
     parser.add_argument("--upstream-checkout", action="append", default=[])
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -117,10 +116,9 @@ def main() -> int:
         )
         for manifest in selected
     ]
-    if args.json:
-        print(json.dumps(results, ensure_ascii=False, indent=2))
-    else:
-        lifecycle.print_tool_statuses(results)
+    # Unconditional YAML. The former human line was `tool_id: status`, a strict
+    # projection of `tool_id`/`status`, both of which every result already carries.
+    emit_yaml(results)
     return 0
 
 

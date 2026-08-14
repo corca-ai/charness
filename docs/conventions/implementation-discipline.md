@@ -98,10 +98,10 @@ the root instruction file but still apply to Charness maintenance work.
   two rounds (round-2 repairs are recorded as accepted-unreviewed rather than
   triggering a third). Satisfying "critique before producer" with round 1 alone
   buys back the exact rerun this rule exists to prevent.
-- `python3 scripts/sync_support.py --json` and
-  `python3 scripts/update_tools.py --json` are dry-run sanity checks.
-- Use `python3 scripts/doctor.py --json` only when intentionally collecting
-  real machine-state diagnostics.
+- `python3 scripts/sync_support.py` and `python3 scripts/update_tools.py` are
+  dry-run sanity checks.
+- Use `python3 scripts/doctor.py` only when intentionally collecting real
+  machine-state diagnostics.
 - Route evaluator-backed validation through `quality` before `hitl` or
   same-agent manual review.
 

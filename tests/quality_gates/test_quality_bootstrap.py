@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 from scripts.quality_adapter_lib import load_quality_adapter_permissive, load_quality_adapter_strict
 from scripts.quality_policy_defaults import DEFAULT_SKILL_ERGONOMICS_GATE_RULES
 from scripts.simple_skill_adapter_lib import validate_simple_adapter_data
@@ -32,7 +34,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     repo = seed_quality_repo(tmp_path)
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["adapter_status"] == "written"
     assert "customization_warning" not in payload
     assert result.stderr == ""
@@ -83,7 +85,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
 
     resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
-    resolved = json.loads(resolve_result.stdout)
+    resolved = yaml.safe_load(resolve_result.stdout)
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
     assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
     assert resolved["data"]["coverage_floor_policy"] == {
@@ -127,7 +129,7 @@ def test_quality_bootstrap_conflicts_when_defaulted_fields_are_missing(tmp_path:
     repo = seed_quality_repo(tmp_path)
     first = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert first.returncode == 0, first.stderr
-    assert json.loads(first.stdout)["adapter_status"] == "written"
+    assert yaml.safe_load(first.stdout)["adapter_status"] == "written"
 
     adapter_path = repo / ".agents" / "quality-adapter.yaml"
     canonical_text = adapter_path.read_text(encoding="utf-8")
@@ -141,7 +143,7 @@ def test_quality_bootstrap_conflicts_when_defaulted_fields_are_missing(tmp_path:
 
     second = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert second.returncode == 0, second.stderr
-    payload = json.loads(second.stdout)
+    payload = yaml.safe_load(second.stdout)
     assert payload["adapter_status"] == "conflict"
     assert payload["field_statuses"]["public_spec_implementation_guard_min_lines"] == "defaulted"
     assert "public_spec_implementation_guard_min_lines" in {
@@ -169,7 +171,7 @@ def test_quality_bootstrap_round_trips_unknown_top_level_fields(tmp_path: Path) 
 
     second = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert second.returncode == 0, second.stderr
-    payload = json.loads(second.stdout)
+    payload = yaml.safe_load(second.stdout)
     assert payload["adapter_status"] == "unchanged"
     assert payload["field_statuses"]["consumer_owned_gate"] == "preserved"
     assert adapter_path.read_text(encoding="utf-8") == extended
@@ -187,7 +189,7 @@ def test_quality_bootstrap_rewrite_keeps_unknown_fields(tmp_path: Path) -> None:
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["adapter_status"] == "migrated"
     assert payload["field_statuses"]["consumer_owned_gate"] == "preserved"
     rewritten = adapter_path.read_text(encoding="utf-8")
@@ -201,7 +203,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["adapter_status"] == "migrated"
     preserved_keys = (
         "gate_commands", "coverage_fragile_margin_pp", "coverage_floor_policy", "specdown_smoke_patterns",
@@ -217,7 +219,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
 
     resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
-    resolved = json.loads(resolve_result.stdout)
+    resolved = yaml.safe_load(resolve_result.stdout)
     assert resolved["data"]["gate_commands"] == ["python3 -m pytest -q"]
     assert resolved["data"]["coverage_fragile_margin_pp"] == 0.5
     assert resolved["data"]["coverage_floor_policy"] == {
@@ -325,7 +327,7 @@ def test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields(tmp_path: Pat
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["adapter_status"] == "migrated"
     assert payload["field_statuses"]["preset_version"] == "preserved"
     assert payload["field_statuses"]["spec_pytest_reference_format"] == "preserved"
@@ -345,7 +347,7 @@ def test_quality_bootstrap_does_not_materialize_pytest_defaults_for_node_go_repo
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["preset_lineage"] == ["go-quality"]
     assert payload["field_statuses"]["spec_pytest_reference_format"] == "deferred"
     assert any(item["field"] == "spec_pytest_reference_format" for item in payload["deferred_setup"])
@@ -445,7 +447,7 @@ def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
 
     result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["valid"] is False
     assert "recommendation_defaults_version must be a string" in payload["errors"]
     assert "adapter_review_sources must be a list of strings" in payload["errors"]
@@ -465,7 +467,7 @@ def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Pat
 
     resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
-    resolved = json.loads(resolve_result.stdout)
+    resolved = yaml.safe_load(resolve_result.stdout)
     assert resolved["data"]["gate_commands"] == ["python3 scripts/check_github_actions.py --repo-root ."]
 
 
@@ -475,13 +477,13 @@ def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["field_statuses"]["specdown_smoke_patterns"] == "inferred"
     assert "specdown-quality" in payload["preset_lineage"]
 
     resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
-    resolved = json.loads(resolve_result.stdout)
+    resolved = yaml.safe_load(resolve_result.stdout)
     assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
     assert resolved["data"]["coverage_floor_policy"]["min_statements_threshold"] == 30
     assert resolved["data"]["specdown_smoke_patterns"] == [
@@ -505,7 +507,7 @@ def test_quality_bootstrap_ignores_prose_specdown_documents_and_preserves_explic
 
     first = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
     assert first.returncode == 0, first.stderr
-    payload = json.loads(first.stdout)
+    payload = yaml.safe_load(first.stdout)
     assert payload["adapter_status"] == "migrated"
     assert "python-quality" in payload["preset_lineage"]
     assert "specdown-quality" not in payload["preset_lineage"]
@@ -515,7 +517,7 @@ def test_quality_bootstrap_ignores_prose_specdown_documents_and_preserves_explic
     canonical_text = adapter_path.read_text(encoding="utf-8")
     second = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert second.returncode == 0, second.stderr
-    assert json.loads(second.stdout)["adapter_status"] == "unchanged"
+    assert yaml.safe_load(second.stdout)["adapter_status"] == "unchanged"
     assert adapter_path.read_text(encoding="utf-8") == canonical_text
 
 
@@ -533,7 +535,7 @@ def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
 
     resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
-    resolved = json.loads(resolve_result.stdout)
+    resolved = yaml.safe_load(resolve_result.stdout)
     assert resolved["data"]["preset_lineage"] == ["specdown-quality"]
     assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
     assert resolved["data"]["coverage_floor_policy"]["gate_script_pattern"] == "*-quality-gate.sh"

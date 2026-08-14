@@ -20,6 +20,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -251,9 +252,9 @@ def test_a_probe_that_times_out_is_reported_as_a_timeout_not_a_cycle(tmp_path: P
     assert "did not finish within 1s" in result["detail"]
 
 
-def test_the_json_output_carries_the_scope_note_and_the_findings(tmp_path: Path) -> None:
-    """`--json` is the machine surface a gate consumes, so its shape is pinned rather
-    than inferred from the human line."""
+def test_the_emitted_payload_carries_the_scope_note_and_the_findings(tmp_path: Path) -> None:
+    """The emitted YAML is the machine surface a gate consumes, so its shape is pinned
+    rather than inferred from prose. There is no format selector to pass any more."""
     import subprocess
     import sys
 
@@ -264,12 +265,12 @@ def test_the_json_output_carries_the_scope_note_and_the_findings(tmp_path: Path)
 
     result = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_standalone_imports.py"),
-         "--repo-root", str(tmp_path), "--json"],
+         "--repo-root", str(tmp_path)],
         capture_output=True, text=True,
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["scope"] == "full"
     assert payload["cycles"] == [] and payload["other_failures"] == []

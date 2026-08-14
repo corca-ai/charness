@@ -50,8 +50,12 @@ if [[ "$saw_new_or_delete" == "1" || "$saw_ref" == "0" || "$force_full" == "1" ]
   reason="new/deleted ref, no refs on stdin, or CHARNESS_FORCE_FULL_GATE=1"
 else
   classification_payload="$(printf '%s\n' "$classify_input" | python3 scripts/classify_push_diff.py --paths-stdin --repo-root "$REPO_ROOT")"
-  classification="$(printf '%s' "$classification_payload" | python3 -c 'import json,sys; print(json.load(sys.stdin)["classification"])')"
-  reason="$(printf '%s' "$classification_payload" | python3 -c 'import json,sys; print(json.load(sys.stdin)["reason"])')"
+  # JSON first, then YAML -- the same tolerance the Python readers carry, because
+  # `render_yaml` emits compact JSON on an interpreter without PyYAML. A yaml-only
+  # parse here would abort the push with a traceback on exactly that interpreter.
+  read_field='import json,sys\nraw=sys.stdin.read()\ntry: d=json.loads(raw)\nexcept json.JSONDecodeError:\n    import yaml; d=yaml.safe_load(raw)\nprint(d[sys.argv[1]])'
+  classification="$(printf '%s' "$classification_payload" | python3 -c "$(printf '%b' "$read_field")" classification)"
+  reason="$(printf '%s' "$classification_payload" | python3 -c "$(printf '%b' "$read_field")" reason)"
 fi
 
 # Docs-only quality subset that still runs when classification = docs-artifact-only.

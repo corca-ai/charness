@@ -14,12 +14,13 @@ lives in skills/public/quality/references/mutation-testing.md.
 """
 from __future__ import annotations
 
-import json
 import shlex
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Callable
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -283,8 +284,8 @@ def run_focused_closeout_coverage(
 def _consumer_report(result: dict[str, object]) -> dict[str, object] | None:
     """Read the consumer's structured verdict without inventing a second policy."""
     try:
-        report = json.loads(str(result.get("stdout", "")))
-    except (TypeError, ValueError):
+        report = yaml.safe_load(str(result.get("stdout", "")))
+    except (TypeError, ValueError, yaml.YAMLError):
         return None
     return report if isinstance(report, dict) else None
 

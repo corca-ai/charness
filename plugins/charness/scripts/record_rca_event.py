@@ -16,8 +16,11 @@ from pathlib import Path
 
 try:
     from scripts import rca_ledger_lib as lib
+    from scripts.yaml_output import emit_yaml, render_yaml
 except ImportError:
     import rca_ledger_lib as lib
+
+    from yaml_output import emit_yaml, render_yaml
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -53,7 +56,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--ref", default=None)
     parser.add_argument("--note", default=None)
     parser.add_argument("--ts", default=None, help="UTC ISO8601 ...Z timestamp; defaults to now.")
-    parser.add_argument("--json", action="store_true")
     return parser.parse_args(argv)
 
 
@@ -88,10 +90,12 @@ def main(argv: list[str] | None = None) -> int:
             "upgrade's idempotency identity; without it a second upgrade for the same "
             "class is silently dropped as a duplicate"
         )
+        # stderr, as BOTH former output shapes were. A refusal is not the ledger
+        # receipt a caller reads off stdout, and moving it there would let a wrapper
+        # that only reads stdout treat "nothing was appended" as an append.
         print(
-            json.dumps({"status": "rejected", "appended": False, "error": message}, indent=2)
-            if args.json
-            else message,
+            render_yaml({"status": "rejected", "appended": False, "error": message}),
+            end="",
             file=sys.stderr,
         )
         return 1
@@ -105,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
         lib.validate_record(record, lib.load_schema())
     except jsonschema.ValidationError as exc:
         result = {"status": "rejected", "appended": False, "error": exc.message}
-        print(json.dumps(result, indent=2) if args.json else f"rejected: {exc.message}", file=sys.stderr)
+        print(render_yaml(result), end="", file=sys.stderr)
         return 1
 
     if lib.ledger_contains_event_identity(ledger_path, record):
@@ -115,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
             "ledger_path": lib.portable_path(repo_root, ledger_path),
             "class_key": record["class_key"],
         }
-        print(json.dumps(result, indent=2) if args.json else f"duplicate: {result['ledger_path']}")
+        emit_yaml(result)
         return 0
 
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
@@ -128,7 +132,7 @@ def main(argv: list[str] | None = None) -> int:
         "ledger_path": lib.portable_path(repo_root, ledger_path),
         "class_key": record["class_key"],
     }
-    print(json.dumps(result, indent=2) if args.json else f"appended: {result['ledger_path']}")
+    emit_yaml(result)
     return 0
 
 

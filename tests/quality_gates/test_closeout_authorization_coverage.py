@@ -29,6 +29,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.closeout_authorization_world import CROSSWALK_REL, build_protected_world
 
@@ -80,8 +81,8 @@ def test_a_lane_refusal_names_itself_on_both_channels_and_exits_nonzero(
     """No crosswalk means nothing can authorize a protected close, and both consumers
     must be able to see that.
 
-    The refusal goes to stdout as JSON for a caller that parses, and to stderr as a
-    named line for a human watching a terminal. Emitting only one is how a refusal
+    The refusal goes to stdout as the YAML payload for a caller that parses, and to
+    stderr as a named line for a human watching a terminal. Emitting only one is how a refusal
     becomes invisible to whichever consumer was not anticipated — and an operator who
     sees no complaint reads the run as a pass and proceeds to the close.
     """
@@ -95,7 +96,7 @@ def test_a_lane_refusal_names_itself_on_both_channels_and_exits_nonzero(
 
     captured = capsys.readouterr()
     assert exit_code == 1
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert payload["ok"] is False
     assert payload["error"] == "crosswalk_missing"
     assert payload["detail"]
@@ -124,7 +125,7 @@ def test_a_verified_crosswalk_returns_its_payload_with_a_silent_stderr(
     captured = capsys.readouterr()
     assert exit_code == 0
     assert captured.err == ""
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert payload["ok"] is True
     assert payload["matrix_state"] == "bootstrap"
     assert payload["authorization_status"]["authorizes_protected_close"] is False
@@ -239,15 +240,19 @@ def test_the_commit_hook_tells_a_blocked_author_what_was_refused_and_what_else_i
     message_file.write_text("Repair the boundary\n\nCloses #514\n", encoding="utf-8")
 
     report = hook.evaluate(tmp_path, message_file, "corca-ai/charness")
-    hook._emit_human_output(report)
+    payload = hook.report_payload(report)
 
     assert report["status"] == "refused"
-    stderr = capsys.readouterr().err
-    assert "REFUSED by the evidence-boundary closeout authorization" in stderr
-    assert "refusal: matrix_incomplete" in stderr
-    assert "protected issues: [514, 515, 518]" in stderr
-    assert "bare `#N` reference" in stderr
-    assert "unrelated closes are unaffected" in stderr
+    # The prose refusal renderer is gone; the payload the hook emits is the only
+    # diagnostic left, so every fact the renderer named has to be IN it.
+    assert "REFUSED by the evidence-boundary closeout authorization" in payload["summary"]
+    authorization = payload["closeout_authorization"]
+    assert authorization["refusal"] == "matrix_incomplete"
+    assert authorization["protected_issues"] == [514, 515, 518]
+    assert authorization["detail"]
+    remediation = "\n".join(payload["remediation"])
+    assert "bare `#N` reference" in remediation
+    assert "unrelated closes are unaffected" in remediation
 
 
 def test_the_commit_hook_refuses_to_run_at_all_without_its_authorization_sibling(

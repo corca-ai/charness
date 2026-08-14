@@ -44,7 +44,6 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import os
 import re
 import sys
@@ -64,7 +63,34 @@ def _load_record_module():
     return module
 
 
+def _load_yaml_output():
+    """Load the shared YAML renderer from the nearest tree root, by path.
+
+    Same both-layouts problem `_load_record_module` solves for a sibling, one
+    tier up: the helper is `<repo>/scripts/yaml_output.py` in the authoring tree
+    and `<plugin-root>/scripts/yaml_output.py` once exported, which sit at
+    different depths from here, so the root is walked to rather than counted.
+    The walk is BOUNDED for the reason `authoring_script_shim.locate` records --
+    an unbounded one climbs past the package into the CONSUMING repository and
+    would execute whatever `scripts/yaml_output.py` it found there."""
+    directory = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(5):
+        directory = os.path.dirname(directory)
+        candidate = os.path.join(directory, "scripts", "yaml_output.py")
+        if os.path.isfile(candidate):
+            spec = importlib.util.spec_from_file_location("charness_yaml_output", candidate)
+            if spec is None or spec.loader is None:
+                break
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scripts/yaml_output.py not found within 5 ancestors of this script")
+
+
 _RECORD = _load_record_module()
+_YAML = _load_yaml_output()
+render_yaml = _YAML.render_yaml
+emit_yaml = _YAML.emit_yaml
 DelegationError = _RECORD.DelegationError
 RecordWriteError = _RECORD.RecordWriteError
 read_delegation_record = _RECORD.read_delegation_record
@@ -340,22 +366,22 @@ def main(argv: list[str] | None = None) -> int:
                 note=args.note,
             )
     except DelegationError as exc:
-        print(json.dumps({"error": str(exc), "recorded": False}, indent=2), file=sys.stderr)
+        print(render_yaml({"error": str(exc), "recorded": False}), end="", file=sys.stderr)
         return 2
     except RecordWriteError as exc:
         print(
-            json.dumps(
+            render_yaml(
                 {
                     "error": str(exc),
                     "recorded": False,
                     "next_action": "the answer was NOT persisted; do not treat the question as asked",
-                },
-                indent=2,
+                }
             ),
+            end="",
             file=sys.stderr,
         )
         return 3
-    print(json.dumps(payload, indent=2))
+    emit_yaml(payload)
     return 0
 
 

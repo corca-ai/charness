@@ -71,8 +71,9 @@ check_prescribed_skill_executed.py
   --evidence <name>:<path>             # repeatable
   --skip <name>:<reason-text>          # repeatable
   --context-token <token>              # repeatable; see Context Binding
-  --json
 ```
+
+Output is unconditionally YAML; there is no output-format flag.
 
 For each `--evidence` the helper requires the path to exist and to be
 non-empty; a `--skip` for the same name is the only honest substitute. A

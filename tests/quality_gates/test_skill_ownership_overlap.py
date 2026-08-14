@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.support import ROOT, run_script
@@ -20,10 +21,10 @@ def run_ownership_overlap(monkeypatch, capsys, *args: str) -> SimpleNamespace:
 
 
 def test_current_repo_passes_with_seeded_allowlist() -> None:
-    result = run_script(SCRIPT, "--repo-root", str(ROOT), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(ROOT))
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["findings"] == []
     assert payload["scanned_skills"] >= 1
     assert payload["allowlist_size"] >= 1
@@ -46,10 +47,10 @@ def test_unallowlisted_cross_namespace_artifact_write_fails(tmp_path: Path, monk
     )
     (tmp_path / "scripts").mkdir()
 
-    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path), "--json")
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     findings = payload["findings"]
     assert len(findings) == 1
     finding = findings[0]
@@ -73,10 +74,10 @@ def test_allowlist_entry_silences_finding(tmp_path: Path, monkeypatch, capsys) -
         "demo:artifact:release:read-only cite\n", encoding="utf-8"
     )
 
-    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path), "--json")
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["findings"] == []
     assert payload["allowlist_size"] == 1
 
@@ -91,10 +92,10 @@ def test_unallowlisted_adapter_namespace_mention_fails(tmp_path: Path, monkeypat
     )
     (tmp_path / "scripts").mkdir()
 
-    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path), "--json")
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     finding = payload["findings"][0]
     assert finding["kind"] == "adapter"
     assert finding["owner"] == "quality"
@@ -138,10 +139,13 @@ def test_a_waiver_nobody_consumed_is_reported_as_stale(monkeypatch, capsys, tmp_
     result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
 
     assert result.returncode == 0, result.stdout
-    assert "alpha:artifact:gamma` looks stale" in result.stdout
+    payload = yaml.safe_load(result.stdout)
     # The consumed waiver must NOT be reported; a stale advisory that fires on live
     # entries is noise, and noise is how an advisory stops being read.
-    assert "alpha:adapter:beta` looks stale" not in result.stdout
+    assert [row["entry"] for row in payload["stale_allowlist"]] == ["alpha:artifact:gamma"]
+    # The hedge the deleted renderer carried alongside each stale row: without it a
+    # flagged waiver reads as a delete instruction rather than a re-check request.
+    assert "re-check the entry's reason before deleting" in payload["stale_allowlist_advisory"]
 
 
 def test_a_fully_consumed_allowlist_reports_no_stale_entries(monkeypatch, capsys, tmp_path: Path) -> None:
@@ -149,17 +153,20 @@ def test_a_fully_consumed_allowlist_reports_no_stale_entries(monkeypatch, capsys
     result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
 
     assert result.returncode == 0
-    assert "looks stale" not in result.stdout
-    assert "stale=0" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["stale_allowlist"] == []
+    # No stale rows means no advisory: an advisory that fires on a clean run is
+    # the noise that trains a reader to skip it.
+    assert "stale_allowlist_advisory" not in payload
 
 
 def test_the_checked_in_allowlist_has_no_stale_entries() -> None:
     """Pinned against the live tree: this is the state the fix established, and a waiver
     going stale again should be visible as a failing pin rather than a line nobody reads.
     """
-    result = run_script(SCRIPT, "--repo-root", str(ROOT), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    stale = json.loads(result.stdout)["stale_allowlist"]
+    stale = yaml.safe_load(result.stdout)["stale_allowlist"]
     assert stale == [], (
         "allowlist entries no longer produced by the scan: "
         f"{[e['entry'] for e in stale]}. Re-check each reason, then delete the entry — "
@@ -174,8 +181,8 @@ def test_a_tree_with_no_public_skills_claims_no_staleness(monkeypatch, capsys, t
     Worth pinning rather than leaving implicit: "no stale entries" after measuring
     nothing is the same declaration-without-a-reader shape this issue is about. The
     empty answer is the right one -- an unrun scan cannot call a waiver dead, and
-    listing all 25 would be pure noise -- but the ok line must still say `0 skills`
-    so the reader can tell an empty scan from a clean one.
+    listing all 25 would be pure noise -- but the payload must still report
+    `scanned_skills: 0` so the reader can tell an empty scan from a clean one.
     """
     (tmp_path / "scripts").mkdir(parents=True)
     (tmp_path / _ownership_overlap.ALLOWLIST_PATH).write_text(
@@ -184,6 +191,11 @@ def test_a_tree_with_no_public_skills_claims_no_staleness(monkeypatch, capsys, t
     result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
 
     assert result.returncode == 0
-    assert "looks stale" not in result.stdout
-    assert "0 skills" in result.stdout and "stale=0" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["stale_allowlist"] == []
+    assert "stale_allowlist_advisory" not in payload
+    # `0 skills` used to be the ok line's own words; `scanned_skills` is what lets a
+    # reader still tell an EMPTY scan from a clean one.
+    assert payload["scanned_skills"] == 0
+    assert payload["status"] == "ok"
 

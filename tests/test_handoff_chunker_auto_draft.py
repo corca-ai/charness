@@ -26,6 +26,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "handoff-snapshot-2026-05-28.md"
@@ -440,7 +441,7 @@ def test_cli_writes_artifact_and_reports_check_goal_ok(tmp_path, lib, chunk_from
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["status"] == "draft"
     written = Path(payload["path"])
@@ -480,7 +481,7 @@ def test_cli_next_step_routes_through_achieve_before_phase(
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     goal_rel = "charness-artifacts/goals/2026-05-28-test-next-step.md"
     # The artifact's own activation line is unchanged (correct goal field).
     assert payload["activation"] == f"/goal @{goal_rel}"
@@ -564,7 +565,7 @@ def test_an_empty_chunk_is_refused_instead_of_drafted(tmp_path: Path, lib, chunk
     # emptiness and not about the drafter having been broken.
     ok = _draft(chunk_from_entry_1.to_dict())
     assert ok.returncode == 0, ok.stderr
-    assert json.loads(ok.stdout)["ok"] is True
+    assert yaml.safe_load(ok.stdout)["ok"] is True
     assert list((tmp_path / "charness-artifacts" / "goals").glob("*.md"))
 
 
@@ -601,7 +602,7 @@ def test_auto_drafter_shares_goal_value_guards_before_writing(
 
     normalized = _draft(_payload(body="body\rwith a CR"), tmp_path / "normalized")
     assert normalized.returncode == 0, normalized.stderr
-    normalized_path = Path(json.loads(normalized.stdout)["path"])
+    normalized_path = Path(yaml.safe_load(normalized.stdout)["path"])
     assert "\r" not in normalized_path.read_text(encoding="utf-8")
 
     bad_slug = _draft(_payload(), tmp_path / "bad-slug", "--slug", "!!!")
@@ -611,7 +612,7 @@ def test_auto_drafter_shares_goal_value_guards_before_writing(
 
     auto_fallback = _draft(_payload(objective="!!!"), tmp_path / "auto-fallback")
     assert auto_fallback.returncode == 0, auto_fallback.stderr
-    auto_payload = json.loads(auto_fallback.stdout)
+    auto_payload = yaml.safe_load(auto_fallback.stdout)
     assert auto_payload["slug"] == "auto-draft"
 
 
@@ -646,7 +647,7 @@ def test_a_failed_gate_rolls_the_artifact_back_instead_of_leaving_it_on_disk(
     assert drafter.main() == 1
 
     captured = capsys.readouterr()
-    refusal = json.loads(captured.err)
+    refusal = yaml.safe_load(captured.err)
     assert refusal["ok"] is False
     assert refusal["error"] == "auto-drafted artifact failed check_goal_artifact"
     assert refusal["check_goal_issues"] == ["forced: missing required section"]

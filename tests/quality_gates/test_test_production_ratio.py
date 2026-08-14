@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ROOT, init_git_repo, run_script
 
@@ -132,8 +133,12 @@ def test_cli_under_threshold_returns_zero_on_synthetic_repo(tmp_path: Path, monk
     monkeypatch.setattr(sys, "argv", ["check_test_production_ratio.py", "--repo-root", str(repo)])
 
     rc = RATIO.main()
-    out = capsys.readouterr().out
+    payload = yaml.safe_load(capsys.readouterr().out)
 
     assert rc == 0
-    assert "Test-production ratio:" in out
-    assert "WARN:" not in out
+    # The "Test-production ratio: ..." sentence is gone; the same verdict is the
+    # payload's `ratio` + `status`. `advisory` is the key the WARN posture adds,
+    # so its absence is what "no WARN" means now.
+    assert payload["status"] == "within-max"
+    assert payload["ratio"] == pytest.approx(0.1)
+    assert "advisory" not in payload

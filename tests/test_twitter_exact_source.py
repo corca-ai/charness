@@ -10,6 +10,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 WEBFETCH = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 if str(WEBFETCH) not in sys.path:
@@ -226,7 +228,7 @@ def _run_acquire(tmp_path: Path, *, direct: str, seed: dict | None) -> dict:
         cmd += ["--domain-route-response-file", str(seed_file)]
     result = subprocess.run(cmd, cwd=ROOT, check=False, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 CAPTCHA = "<html><body>verify you are human captcha</body></html>"
@@ -262,7 +264,7 @@ def test_acquire_non_twitter_has_no_source_identity(tmp_path: Path) -> None:
         cwd=ROOT, check=False, capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stderr
-    assert "source_identity" not in json.loads(result.stdout)  # behavior-preserving for other sources
+    assert "source_identity" not in yaml.safe_load(result.stdout)  # behavior-preserving for other sources
 
 
 # --- gather_public_url.py: source_identity reaches the answer path (in-process) ---
@@ -372,7 +374,7 @@ def test_gather_writes_exact_source_blocked_record(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["acquisition_disposition"] == "blocked"
     assert payload["source_identity"] == "exact-blocked"
     assert payload["source_resolution"]["terminal_state"] == "exact-post-blocked-by-x"
@@ -426,7 +428,7 @@ def test_gather_writes_exact_source_fetched_record_with_resolution(tmp_path: Pat
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["acquisition_disposition"] == "success"
     assert payload["source_identity"] == "exact-fetched"
     assert payload["source_resolution"]["terminal_state"] == "exact-post-acquired"
@@ -465,7 +467,7 @@ def test_gather_writes_exact_source_unavailable_record(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["acquisition_disposition"] == "degraded"
     assert payload["source_identity"] == "exact-unavailable"
     assert payload["source_resolution"]["terminal_state"] == "authenticated-browser-required"
@@ -504,7 +506,7 @@ def test_gather_does_not_write_non_status_x_terminal_record(tmp_path: Path) -> N
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["source_identity"] == "exact-unavailable"
     assert payload["source_resolution"]["terminal_state"] == "unsupported-route"
     assert payload["source_resolution"]["terminal_category"] == "unsupported"

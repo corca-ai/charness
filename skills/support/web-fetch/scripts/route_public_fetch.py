@@ -3,13 +3,36 @@
 from __future__ import annotations
 
 import argparse
-import json
+import importlib.util
 import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
+
+
+def load_yaml_output():
+    """Load the shared YAML renderer from the nearest tree root, by path.
+
+    The helper is `<repo>/scripts/yaml_output.py` in the authoring tree and
+    `<plugin-root>/scripts/yaml_output.py` once exported, which sit at different
+    depths from a support package, so the root is walked to rather than counted.
+    The walk is BOUNDED for the reason `authoring_script_shim.locate` records:
+    an unbounded one climbs past the package into the CONSUMING repository and
+    would execute whatever `scripts/yaml_output.py` it found there."""
+    directory = SCRIPT_DIR
+    for _ in range(5):
+        directory = directory.parent
+        candidate = directory / "scripts" / "yaml_output.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("charness_yaml_output", candidate)
+            if spec is None or spec.loader is None:
+                break
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scripts/yaml_output.py not found within 5 ancestors of this script")
 
 from route_public_fetch_routes import (  # noqa: E402
     GITHUB_ROUTE_FOR_MODE,
@@ -93,7 +116,7 @@ def main() -> int:
     parser.add_argument("--url", required=True, help="Public URL whose acquisition route should be resolved.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repository root for capability and GitHub mode resolution.")
     args = parser.parse_args()
-    print(json.dumps(route_for_url(args.url, repo_root=args.repo_root), ensure_ascii=False, indent=2))
+    load_yaml_output().emit_yaml(route_for_url(args.url, repo_root=args.repo_root))
     return 0
 
 

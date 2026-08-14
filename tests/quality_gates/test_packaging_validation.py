@@ -9,6 +9,7 @@ from dataclasses import FrozenInstanceError
 from pathlib import Path
 
 import pytest
+import yaml
 
 import scripts.export_plugin as export_plugin_module
 import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module
@@ -215,7 +216,7 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
         "demo",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     summary = payload["change_summary"]
     assert "plugins/demo/README.md" in summary["added_paths"]
     assert summary["removed_paths"] == []
@@ -488,7 +489,7 @@ def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
         "--with-marketplace",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["version"] == "1.2.3"
 
     codex_manifest = output_root / "plugins" / "charness" / ".codex-plugin" / "plugin.json"

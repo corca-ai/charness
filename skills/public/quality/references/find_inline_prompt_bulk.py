@@ -5,13 +5,13 @@ from __future__ import annotations
 import argparse
 import ast
 import fnmatch
-import json
 import runpy
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from git_inventory_lib import visible_repo_files  # noqa: E402
+from summary_output_lib import emit_yaml  # noqa: E402
 
 
 def multiline_string_findings(path: Path, *, min_chars: int) -> list[dict[str, object]]:
@@ -107,9 +107,8 @@ def main() -> int:
         action="store_true",
         help="Use quality adapter prompt_asset_policy unless explicit CLI policy flags override it.",
     )
-    parser.add_argument("--summary", action="store_true", help="Emit compact JSON with a findings sample.")
-    parser.add_argument("--summary-limit", type=int, default=20)
-    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--summary", action="store_true", help="Emit a compact payload carrying a findings sample instead of every finding.")
+    parser.add_argument("--summary-limit", type=int, default=20, help="How many findings the --summary sample keeps.")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -185,15 +184,11 @@ def main() -> int:
             "errors": adapter_payload.get("errors", []),
             "warnings": adapter_payload.get("warnings", []),
         }
-    if args.summary:
-        print(json.dumps(_summary_payload(payload, limit=max(args.summary_limit, 0)), ensure_ascii=False, indent=2))
-    elif args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        if scope_classification.startswith("advisory_only"):
-            print(f"scope_classification={scope_classification}: {scope_reason}")
-        for finding in findings:
-            print(f"{finding['path']}:{finding['line']} chars={finding['char_count']} {finding['preview']}")
+    # Unconditional YAML; `--summary` selects payload DEPTH, never format. The
+    # advisory-scope warning the text path printed is not lost — it is
+    # `scope_classification` / `scope_reason`, which BOTH depths carry, so a
+    # summary run still states that a default `**/*.py` scan is advisory-only.
+    emit_yaml(_summary_payload(payload, limit=max(args.summary_limit, 0)) if args.summary else payload)
     return 0
 
 

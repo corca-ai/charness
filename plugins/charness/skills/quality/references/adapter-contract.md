@@ -231,9 +231,10 @@ afterwards. When a label has a single sample and no recorded window, that one
 sample is the basis. Exits non-zero when the profile has no samples at all,
 because an invented bar is worse than a missing one.
 
-The output is commented YAML, so the mode refuses `--json`, `--summary`, and
-`--detail` as a usage error rather than dropping the comments that carry the
-evidence depth or handing YAML to a caller that parses JSON.
+The output is commented YAML, so the mode refuses `--summary` and `--detail` as
+a usage error rather than dropping the comments that carry the evidence depth.
+(`--json` is not refused here specifically; it no longer exists on any
+repo-owned command, so argparse rejects it like any other unknown flag.)
 
 The header names the sample SOURCE, not just the profile. Suggestions fall back to
 a declared `command_timing_log` when `runtime-signals.json` has nothing for the

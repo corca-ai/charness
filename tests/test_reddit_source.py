@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
@@ -65,6 +67,8 @@ def test_reddit_source_helper_branches(monkeypatch) -> None:
 def test_acquire_public_url_uses_reddit_rss_before_generic_fallback(tmp_path: Path) -> None:
     direct = tmp_path / "direct.html"
     direct.write_text("<html><body>captcha verify you are human</body></html>", encoding="utf-8")
+    # The seed file is the REMOTE payload the route would have fetched, so it stays
+    # JSON. Only the acquire command's own stdout moved to YAML.
     seed = tmp_path / "reddit-seed.json"
     seed.write_text(
         json.dumps({
@@ -88,7 +92,7 @@ def test_acquire_public_url_uses_reddit_rss_before_generic_fallback(tmp_path: Pa
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert payload["route"]["route_id"] == "reddit-feed"
     assert payload["source_identity"] == "feed-fetched"
@@ -131,7 +135,7 @@ def test_reddit_seed_file_missing_endpoint_does_not_fetch_live(tmp_path: Path) -
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     domain_attempts = [attempt for attempt in payload["attempts"] if attempt["stage_id"] == "domain-specific-route"]
     assert [attempt["error"] for attempt in domain_attempts] == ["seed-missing", "seed-missing"]
     assert payload["source_identity"] == "feed-blocked"
@@ -156,7 +160,7 @@ def test_reddit_direct_page_fallback_has_coherent_source_identity(tmp_path: Path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     stages = [attempt["stage_id"] for attempt in payload["attempts"]]
     assert stages[:3] == ["domain-specific-route", "domain-specific-route", "direct-public-fetch"]
     assert payload["disposition"] == "success"
@@ -192,7 +196,7 @@ def test_reddit_feed_does_not_satisfy_missing_positive_proof(tmp_path: Path) -> 
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     domain_attempt = payload["attempts"][0]
     assert domain_attempt["stage_id"] == "domain-specific-route"
     assert domain_attempt["status"] == "unclear"

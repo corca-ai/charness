@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
+
+import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -74,12 +76,53 @@ def test_survey_repo_is_clean() -> None:
     assert payload["gap_count"] == 0, payload
 
 
-def test_survey_main_emits_json(monkeypatch, capsys) -> None:
+def test_survey_main_emits_yaml(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["validate_skill_output_schemas.py", "--repo-root", str(ROOT)],
+    )
+    assert _validate_skill_output_schemas.main() == 0
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["gap_count"] == 0, payload
+    # The deleted human report said four things the bare `{skills, gap_count}` pair
+    # did not, and each now has to be carried by the payload itself: that a zero exit
+    # is advisory rather than a passing gate, the gap verdict in words, the names of
+    # the gap skills, and where the rule is written down.
+    assert "always exits 0" in payload["advisory"]
+    assert payload["gap_skills"] == []
+    assert "Closeout Schema Rule satisfied" in payload["gap_summary"]
+    assert "portable-authoring.md" in payload["rule_reference"]
+
+
+def test_survey_main_report_flag_is_accepted_and_inert(monkeypatch, capsys) -> None:
+    """`--report` survived the flag removal as a no-op, so it must still parse and
+    must not change what is emitted."""
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["validate_skill_output_schemas.py", "--repo-root", str(ROOT)],
+    )
+    assert _validate_skill_output_schemas.main() == 0
+    without_flag = capsys.readouterr().out
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["validate_skill_output_schemas.py", "--repo-root", str(ROOT), "--report"],
+    )
+    assert _validate_skill_output_schemas.main() == 0
+    assert capsys.readouterr().out == without_flag
+
+
+def test_survey_main_rejects_the_removed_json_flag(monkeypatch) -> None:
+    """`--json` is gone with no back-compat: it must be an argparse error, not a
+    silently accepted no-op."""
     monkeypatch.setattr(
         sys,
         "argv",
         ["validate_skill_output_schemas.py", "--repo-root", str(ROOT), "--json"],
     )
-    assert _validate_skill_output_schemas.main() == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["gap_count"] == 0, payload
+    with pytest.raises(SystemExit) as exc_info:
+        _validate_skill_output_schemas.main()
+    assert exc_info.value.code == 2

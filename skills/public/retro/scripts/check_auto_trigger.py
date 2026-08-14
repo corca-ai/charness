@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
-import json
 import runpy
 import subprocess
 import sys
@@ -62,6 +61,10 @@ load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 resolve_trigger_surfaces = _scripts_surfaces_lib_module.resolve_trigger_surfaces
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
+
+_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+render_yaml = _yaml_output_module.render_yaml
+emit_yaml = _yaml_output_module.emit_yaml
 
 
 def parse_args() -> argparse.Namespace:
@@ -353,9 +356,9 @@ def main() -> int:
         head_ref=args.head_ref,
     )
     if payload.get("configuration_status") == "broken":
-        print(json.dumps(payload, ensure_ascii=False, indent=2), file=sys.stderr)
+        print(render_yaml(payload), end="", file=sys.stderr)
         return 1
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     # The payload goes to STDOUT in every non-refusing state so one parse works
     # everywhere; the BYTE is what stops a shell caller from reading an undetermined run
     # as a no. Without it `check_auto_trigger.py ... && skip_retro` was correct-looking
@@ -367,5 +370,5 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except SurfaceError as exc:
-        print(json.dumps(surface_error_payload(str(exc)), ensure_ascii=False, indent=2), file=sys.stderr)
+        print(render_yaml(surface_error_payload(str(exc))), end="", file=sys.stderr)
         raise SystemExit(1)

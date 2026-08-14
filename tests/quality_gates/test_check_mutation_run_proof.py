@@ -12,6 +12,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_script
 
 _GATE = "scripts/check_mutation_run_proof.py"
@@ -191,7 +193,7 @@ def test_main_run_id_branch_refuses_dispatch(monkeypatch, capsys) -> None:
     exit_code = GATE.main(["--claim", "changed-line", "--run-id", "123"])
     captured = capsys.readouterr()
     assert exit_code == 1
-    assert json.loads(captured.out)["class_key"] == GATE.CLASS_KEY
+    assert yaml.safe_load(captured.out)["class_key"] == GATE.CLASS_KEY
     assert GATE.CLASS_KEY in captured.err
 
 
@@ -209,7 +211,7 @@ def test_main_run_id_gh_failure_is_a_diagnostic_exit(monkeypatch, capsys) -> Non
 def test_cli_refuses_dispatch_changed_line_claim_with_class_key() -> None:
     result = run_script(_GATE, "--claim", "changed-line", "--event", "workflow_dispatch")
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["provable"] is False
     assert payload["class_key"] == GATE.CLASS_KEY
     assert "REFUSED" in result.stderr
@@ -247,7 +249,7 @@ def test_cli_accepts_changed_line_claim_with_base_sha_but_says_what_it_did_not_c
         _GATE, "--claim", "changed-line", "--event", "schedule", "--base-sha", "abc123"
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["provable"] is True
     assert payload["range_established"] is False
     assert "RANGE CONTENTS are not established" in result.stderr
@@ -271,7 +273,7 @@ def test_cli_judges_changed_line_claim_from_manifest(tmp_path: Path) -> None:
     manifest.write_text("- Base SHA: `(none)`\n", encoding="utf-8")
     refused = run_script(_GATE, "--claim", "changed-line", "--sample-manifest", str(manifest))
     assert refused.returncode == 1
-    assert json.loads(refused.stdout)["class_key"] == GATE.CLASS_KEY
+    assert yaml.safe_load(refused.stdout)["class_key"] == GATE.CLASS_KEY
 
     manifest.write_text("- Base SHA: `abc123`\n", encoding="utf-8")
     provable = run_script(_GATE, "--claim", "changed-line", "--sample-manifest", str(manifest))
@@ -302,7 +304,7 @@ def test_the_cli_refuses_an_empty_range_manifest(tmp_path: Path) -> None:
     result = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
                         "--sample-manifest", str(empty))
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["provable"] is False
     assert "EMPTY changed pool" in payload["reason"]
 
@@ -314,7 +316,7 @@ def test_the_cli_refuses_an_empty_range_manifest(tmp_path: Path) -> None:
     ok = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
                     "--sample-manifest", str(real))
     assert ok.returncode == 0, ok.stdout + ok.stderr
-    assert json.loads(ok.stdout)["range_established"] is True
+    assert yaml.safe_load(ok.stdout)["range_established"] is True
 
 
 def test_the_markdown_manifest_carries_the_same_range_fact(tmp_path: Path) -> None:
@@ -327,7 +329,7 @@ def test_the_markdown_manifest_carries_the_same_range_fact(tmp_path: Path) -> No
     result = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
                         "--sample-manifest", str(md))
     assert result.returncode == 1, result.stdout + result.stderr
-    assert "EMPTY changed pool" in json.loads(result.stdout)["reason"]
+    assert "EMPTY changed pool" in yaml.safe_load(result.stdout)["reason"]
 
     # Positive control on the SAME shape. Without it, a regex that matched the
     # wrong line or truncated the digits to 0 would turn every markdown manifest
@@ -342,7 +344,7 @@ def test_the_markdown_manifest_carries_the_same_range_fact(tmp_path: Path) -> No
     ok = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
                     "--sample-manifest", str(md))
     assert ok.returncode == 0, ok.stdout + ok.stderr
-    payload = json.loads(ok.stdout)
+    payload = yaml.safe_load(ok.stdout)
     assert payload["range_established"] is True
     # 7, not 608 and not 3: the changed-pool line, not its neighbours.
     assert "live over 7 changed pool file(s)" in payload["reason"]
@@ -371,7 +373,7 @@ def test_a_manifest_cannot_lend_its_range_to_a_base_it_never_analyzed(tmp_path: 
     abbreviated = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
                              "--base-sha", "b" * 12, "--sample-manifest", str(manifest))
     assert abbreviated.returncode == 0, abbreviated.stdout + abbreviated.stderr
-    assert json.loads(abbreviated.stdout)["range_established"] is True
+    assert yaml.safe_load(abbreviated.stdout)["range_established"] is True
 
     # A manifest with no base of its own cannot lend its count either.
     baseless = tmp_path / "baseless.json"
@@ -382,7 +384,7 @@ def test_a_manifest_cannot_lend_its_range_to_a_base_it_never_analyzed(tmp_path: 
     borrowed = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
                           "--base-sha", "a" * 40, "--sample-manifest", str(baseless))
     assert borrowed.returncode == 0, borrowed.stdout + borrowed.stderr
-    assert json.loads(borrowed.stdout)["range_established"] is False
+    assert yaml.safe_load(borrowed.stdout)["range_established"] is False
     assert "records no base SHA of its own" in borrowed.stderr
 
 

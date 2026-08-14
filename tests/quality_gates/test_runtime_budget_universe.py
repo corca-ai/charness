@@ -8,12 +8,12 @@ much and a test suite that only pins the teeth would let that recur.
 
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
@@ -68,12 +68,12 @@ def _run(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def _payload(result: subprocess.CompletedProcess[str]) -> dict:
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_universe_reads_every_queue_wrapper_not_only_queue_selected(tmp_path: Path) -> None:
     repo = _write_repo(tmp_path)
-    result = _run(UNIVERSE, "--repo-root", str(repo), "--json")
+    result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     sources = _payload(result)["sources"]
     # `beta-gate` reaches the queue through `queue_timed`, which the pre-2026-08-10
@@ -89,7 +89,7 @@ def test_universe_excludes_dispatcher_bodies_but_not_other_functions(
     LITERAL call inside an ordinary function is a real gate and must survive.
 
     The negative half alone was near-unfalsifiable: deleting the dispatcher
-    exclusion makes the reader RAISE, so the run would die in `json.loads` rather
+    exclusion makes the reader RAISE, so the run would die in `yaml.safe_load` rather
     than on the assertion it is named for. The positive half is the discriminating
     case for the function tracker, and it is what fails if the exclusion is widened
     from "dispatchers" to "any function".
@@ -101,7 +101,7 @@ phase_two() {
 phase_two
 """
     repo = _write_repo(tmp_path, runner=runner)
-    result = _run(UNIVERSE, "--repo-root", str(repo), "--json")
+    result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     labels = _payload(result)["labels"]
     assert not any("$" in label for label in labels)
@@ -118,7 +118,7 @@ queue_selected \\
   "wrapped-gate" python3 wrapped.py
 '''
     repo = _write_repo(tmp_path, runner=runner)
-    result = _run(UNIVERSE, "--repo-root", str(repo), "--json")
+    result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "wrapped-gate" in _payload(result)["labels"]
 
@@ -156,7 +156,7 @@ def test_universe_enumerates_all_four_aggregate_labels(tmp_path: Path) -> None:
     can observe more than one. Enumerating the cross-product is what stops the
     other three from reading as renamed."""
     repo = _write_repo(tmp_path)
-    aggregate = _payload(_run(UNIVERSE, "--repo-root", str(repo), "--json"))["sources"][
+    aggregate = _payload(_run(UNIVERSE, "--repo-root", str(repo)))["sources"][
         "aggregate"
     ]
     assert sorted(aggregate) == [
@@ -188,7 +188,7 @@ def test_startup_probes_are_admitted_only_when_standing(
         "    samples: 3\n"
     )
     repo = _write_repo(tmp_path, adapter=adapter)
-    payload = _payload(_run(UNIVERSE, "--repo-root", str(repo), "--json"))
+    payload = _payload(_run(UNIVERSE, "--repo-root", str(repo)))
     assert payload["sources"]["standing_startup_probes"] == expected
 
 
@@ -206,7 +206,7 @@ def test_probe_reader_stops_at_the_next_top_level_key(tmp_path: Path) -> None:
         "    class: standing\n"
     )
     repo = _write_repo(tmp_path, adapter=adapter)
-    payload = _payload(_run(UNIVERSE, "--repo-root", str(repo), "--json"))
+    payload = _payload(_run(UNIVERSE, "--repo-root", str(repo)))
     assert payload["sources"]["standing_startup_probes"] == ["charness-version"]
 
 
@@ -224,7 +224,7 @@ def test_probe_reader_handles_several_probes_and_a_flush_free_list_style(
         "  class: standing\n"
     )
     repo = _write_repo(tmp_path, adapter=adapter)
-    payload = _payload(_run(UNIVERSE, "--repo-root", str(repo), "--json"))
+    payload = _payload(_run(UNIVERSE, "--repo-root", str(repo)))
     assert payload["sources"]["standing_startup_probes"] == ["second-probe"]
 
 
@@ -237,7 +237,7 @@ def test_gate_is_not_armed_when_the_runner_names_no_gate_labels(
     operator to delete correct bars."""
     adapter = "runtime_budgets:\n  some-gate: 1000\n"
     repo = _write_repo(tmp_path, runner="#!/usr/bin/env bash\necho hi\n", adapter=adapter)
-    result = _run(GATE, "--repo-root", str(repo), "--json")
+    result = _run(GATE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert _payload(result)["armed"] is False
 
@@ -260,8 +260,13 @@ def test_gate_refuses_a_budget_whose_label_the_runner_cannot_name(tmp_path: Path
     repo = _write_repo(tmp_path, adapter=adapter)
     result = _run(GATE, "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "alpha-gatte" in result.stderr
-    assert "alpha-gate " not in result.stderr.replace("alpha-gatte", "")
+    payload = _payload(result)
+    # The typo alone. `alpha-gate` IS a name the runner queues, and listing it here
+    # would send the operator to delete a correct bar -- the exact remedy that got
+    # the previous repair on this surface reverted.
+    assert [entry["label"] for entry in payload["unknown_labels"]] == ["alpha-gatte"]
+    assert "can never be exercised" in payload["summary"]
+    assert "delete it" in payload["remedy"]
 
 
 def test_gate_checks_every_budget_block_not_only_the_selected_profile(
@@ -282,8 +287,11 @@ def test_gate_checks_every_budget_block_not_only_the_selected_profile(
     repo = _write_repo(tmp_path, adapter=adapter)
     result = _run(GATE, "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "ghost-gate" in result.stderr
-    assert "runtime_budget_profiles.never-selected-here" in result.stderr
+    unknown = {entry["label"]: entry["blocks"] for entry in _payload(result)["unknown_labels"]}
+    assert "ghost-gate" in unknown
+    # The block is what makes the finding actionable: the operator has to know WHICH
+    # of the four budget blocks holds the orphan before they can repair it.
+    assert unknown["ghost-gate"] == ["runtime_budget_profiles.never-selected-here"]
 
 
 def test_gate_does_not_refuse_a_conditional_label_that_never_runs(tmp_path: Path) -> None:
@@ -311,20 +319,23 @@ def test_gate_reads_no_sample_history(tmp_path: Path) -> None:
 def test_gate_degrades_loudly_when_the_runner_is_absent(tmp_path: Path) -> None:
     """A consumer repo installs the quality skill without vendoring the runner.
     Refusing its budgets would be a blocking false red telling the operator to
-    delete correct bars; passing SILENTLY would re-create #546 there. The line is
-    WARN-prefixed because `print_phase_output` surfaces a phase log only on a
-    WARN/ADVISORY marker -- an unprefixed degrade renders as a bare green PASS."""
+    delete correct bars; passing SILENTLY would re-create #546 there. The payload's
+    `advisory` line is WARN-prefixed because `print_phase_output` surfaces a phase
+    log only on a WARN/ADVISORY marker -- an unprefixed degrade renders as a bare
+    green PASS."""
     adapter = "runtime_budgets:\n  anything-at-all: 1000\n"
     repo = _write_repo(tmp_path, runner=None, adapter=adapter)
     result = _run(GATE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    assert result.stdout.startswith("WARN ")
-    assert "not armed" in result.stdout
+    payload = _payload(result)
+    assert payload["armed"] is False
+    assert payload["advisory"].startswith("WARN ")
+    assert "not armed" in payload["advisory"]
 
 
 def test_gate_is_inert_without_an_adapter(tmp_path: Path) -> None:
     repo = _write_repo(tmp_path, adapter=None)
-    result = _run(GATE, "--repo-root", str(repo), "--json")
+    result = _run(GATE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert _payload(result)["armed"] is False
 
@@ -349,7 +360,7 @@ def test_this_repo_has_no_orphaned_budget(tmp_path: Path) -> None:
     """The live blast-radius measurement, kept as a test rather than a claim:
     every budgeted label across all four blocks is a name the runner still knows,
     so arming this gate refused nothing that previously passed."""
-    result = _run(GATE, "--repo-root", str(REPO_ROOT), "--json")
+    result = _run(GATE, "--repo-root", str(REPO_ROOT))
     assert result.returncode == 0, result.stderr
     payload = _payload(result)
     assert payload["armed"] is True
@@ -418,21 +429,29 @@ def test_a_probe_that_is_simply_not_standing_is_not_a_refusal(tmp_path: Path) ->
     repo = _write_repo(
         tmp_path, adapter="startup_probes:\n  - label: release-probe\n    class: release\n"
     )
-    result = _run(UNIVERSE, "--repo-root", str(repo), "--json")
+    result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert _payload(result)["sources"]["standing_startup_probes"] == []
 
 
-def test_stdout_carries_labels_or_nothing_never_prose(tmp_path: Path) -> None:
-    """`run-quality.sh` inserts each stdout line into the universe as a key. A prose
-    sentence on stdout became a one-element universe, which defeated the runner's
-    own "empty means do not assert" degrade and refused the first gate with a remedy
-    about queue-line quoting. stdout is the machine surface."""
+def test_an_underivable_universe_answers_in_the_payload_never_in_prose(tmp_path: Path) -> None:
+    """The not-derivable case, which used to answer on stderr with an EMPTY stdout.
+
+    A prose sentence on stdout once became a one-element universe, which defeated
+    the runner's own "empty means do not assert" degrade and refused the first gate
+    with a remedy about queue-line quoting. stdout is still the machine surface;
+    what changed is that it now carries a document on every path, so "no universe"
+    has to be readable as `resolved: false` plus a reason rather than as an absence
+    a consumer would have to infer from zero lines. An empty `labels` list with
+    `resolved` missing or true is the regression this pins.
+    """
     repo = _write_repo(tmp_path, runner=None)
     result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    assert result.stdout == ""
-    assert "not derivable" in result.stderr
+    payload = _payload(result)
+    assert payload["resolved"] is False
+    assert payload["labels"] == []
+    assert "does not vendor the run-quality surface" in payload["reason"]
 
 
 def test_the_gate_surfaces_a_reader_refusal_instead_of_a_verdict(tmp_path: Path) -> None:
@@ -445,18 +464,27 @@ def test_the_gate_surfaces_a_reader_refusal_instead_of_a_verdict(tmp_path: Path)
     assert result.returncode == 1
     assert "runtime budget universe:" in result.stderr
     assert "non-literal label" in result.stderr
+    # The "instead of" half, which only became assertable once every verdict emits a
+    # document: a refusal emits none, so there is nothing downstream can read as one.
+    assert result.stdout == ""
 
 
-def test_plain_output_prints_one_label_per_line(tmp_path: Path) -> None:
-    """`run-quality.sh` consumes exactly this: one label per line on stdout, which
-    it inserts as universe keys. The `--json` shape is for humans and tests."""
+def test_a_derived_universe_carries_every_label_in_one_document(tmp_path: Path) -> None:
+    """The resolved half of the pair above. There is one output shape now -- a single
+    YAML document -- so `labels` is the list a consumer reads instead of counting
+    bare stdout lines, and it must still carry a queued label and an aggregate one.
+    """
     repo = _write_repo(tmp_path)
     result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    lines = result.stdout.splitlines()
-    assert "alpha-gate" in lines
-    assert "run-quality-full" in lines
-    assert all(line.strip() == line and line for line in lines)
+    payload = _payload(result)
+    assert payload["resolved"] is True
+    labels = payload["labels"]
+    assert "alpha-gate" in labels
+    assert "run-quality-full" in labels
+    # Labels are keys downstream: a stray surrounding space or an empty entry makes
+    # a universe member nothing can ever match.
+    assert all(isinstance(label, str) and label.strip() == label and label for label in labels)
 
 
 def test_a_file_ending_mid_continuation_still_yields_its_last_line(

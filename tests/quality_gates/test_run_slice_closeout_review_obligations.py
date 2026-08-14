@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_script
 
 
@@ -41,11 +43,10 @@ def test_run_slice_closeout_blocks_public_skill_review_until_acknowledged() -> N
         "--skip-sync",
         "--skip-verify",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert "public-skill validation review is required" in payload["error"]
     assert "--ack-cautilus-skill-review" in payload["error"]
@@ -70,11 +71,10 @@ def test_run_slice_closeout_allows_acknowledged_public_skill_review() -> None:
         "--skip-verify",
         "--ack-cautilus-skill-review",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "planned"
     assert payload["cautilus_plan"]["scenario_registry_review_required"] is True
     assert payload["executed_commands"] == []
@@ -91,11 +91,10 @@ def test_run_slice_closeout_blocks_hitl_recommended_public_skill_review_until_ac
         "--skip-sync",
         "--skip-verify",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["cautilus_plan"]["run_mode"] == "ask"
     assert payload["cautilus_plan"]["status"] == "ready-for-validation"
@@ -227,9 +226,8 @@ def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refres
         "--paths",
         "README.md",
         "charness-artifacts/debug/latest.md",
-        "--json",
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["risk_interrupt_plan"]["status"] == "blocked"

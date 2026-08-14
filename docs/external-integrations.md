@@ -215,7 +215,7 @@ The current external-tool command surface is nested under `charness tool`:
   - update integrated external tools where safe
   - for a `manual`/`advisory` tool it cannot auto-bump (e.g. `cautilus`), it still
     prints a behind-latest `ADVISORY:` line (and an `update_advisory` field in
-    `--json`) by comparing the detected version against the probed latest release,
+    the payload) by comparing the detected version against the probed latest release,
     so a manual tool does not lag unnoticed
 - `charness tool doctor`
   - verify tool availability, version expectations, and support-skill materialization

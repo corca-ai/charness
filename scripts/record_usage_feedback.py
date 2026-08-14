@@ -40,6 +40,8 @@ from usage_episode_records import (
     schema_root as _schema_root,
 )
 
+from yaml_output import emit_yaml
+
 DEFAULT_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
 
 
@@ -144,17 +146,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--evidence-kind", choices=["artifact", "issue", "release", "review"], required=True)
     parser.add_argument("--evidence-ref", required=True)
     parser.add_argument("--execute", action="store_true", help="Append the event; default is a no-write preview.")
-    parser.add_argument("--json", action="store_true")
     return parser.parse_args()
-
-
-def _print(payload: dict[str, Any], as_json: bool) -> None:
-    if as_json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(f"{payload['status']}: feedback_id={payload.get('feedback_id', '<none>')}")
-        for error in payload.get("errors", []):
-            print(f"- {error}")
 
 
 def _run_feedback_transaction(
@@ -166,7 +158,6 @@ def _run_feedback_transaction(
     record: dict[str, Any],
     feedback_id: str,
     execute: bool,
-    as_json: bool,
 ) -> int:
     lock = _stream_lock(records_path) if execute else nullcontext()
     try:
@@ -176,18 +167,18 @@ def _run_feedback_transaction(
         with lock:
             existing, read_errors = read_schema_valid_records(records_path, schema)
             if read_errors:
-                _print({"status": "invalid_feedback", "executed": False, "feedback_id": feedback_id, "errors": read_errors}, as_json)
+                emit_yaml({"status": "invalid_feedback", "executed": False, "feedback_id": feedback_id, "errors": read_errors})
                 return 2
             errors = semantic_feedback_errors([*existing, record])
             replay = next((item for item in existing if item.get("event_type") == "usage_feedback" and item.get("feedback_id") == feedback_id), None)
             if replay is not None:
                 if {key: replay[key] for key in record if key != "timestamp"} == {key: record[key] for key in record if key != "timestamp"}:
-                    _print({"status": "replay_noop", "executed": False, "feedback_id": feedback_id, "records_path": _portable_path(repo_root, records_path), "errors": []}, as_json)
+                    emit_yaml({"status": "replay_noop", "executed": False, "feedback_id": feedback_id, "records_path": _portable_path(repo_root, records_path), "errors": []})
                     return 0
-                _print({"status": "conflicting_feedback_id", "executed": False, "feedback_id": feedback_id, "errors": errors}, as_json)
+                emit_yaml({"status": "conflicting_feedback_id", "executed": False, "feedback_id": feedback_id, "errors": errors})
                 return 2
             if errors:
-                _print({"status": "invalid_feedback", "executed": False, "feedback_id": feedback_id, "errors": errors}, as_json)
+                emit_yaml({"status": "invalid_feedback", "executed": False, "feedback_id": feedback_id, "errors": errors})
                 return 2
             payload = {"status": "dry_run", "executed": False, "feedback_id": feedback_id, "record": record, "records_path": _portable_path(repo_root, records_path), "errors": []}
             if execute:
@@ -200,10 +191,10 @@ def _run_feedback_transaction(
                 with records_path.open("a", encoding="utf-8") as handle:
                     handle.write(serialized)
                 payload.update({"status": "appended", "executed": True})
-            _print(payload, as_json)
+            emit_yaml(payload)
             return 0
     except FeedbackLockError as exc:
-        _print({"status": "feedback_lock_error", "executed": False, "feedback_id": feedback_id, "errors": [str(exc)]}, as_json)
+        emit_yaml({"status": "feedback_lock_error", "executed": False, "feedback_id": feedback_id, "errors": [str(exc)]})
         return 2
 
 
@@ -211,35 +202,35 @@ def main() -> int:
     args = _parse_args()
     repo_root = args.repo_root.resolve()
     if not signal_allowed_for_source(args.source_kind, args.feedback_signal):
-        _print({"status": "invalid_feedback", "executed": False, "errors": ["feedback_signal is not permitted for source_kind"]}, args.json)
+        emit_yaml({"status": "invalid_feedback", "executed": False, "errors": ["feedback_signal is not permitted for source_kind"]})
         return 2
     if args.execute and os.environ.get("CHARNESS_QUALITY_MODE"):
-        _print({"status": "readonly_quality_run", "executed": False, "errors": ["quality mode forbids feedback writes"]}, args.json)
+        emit_yaml({"status": "readonly_quality_run", "executed": False, "errors": ["quality mode forbids feedback writes"]})
         return 2
     adapter_path = args.adapter_path or repo_root / DEFAULT_ADAPTER
     if not adapter_path.is_absolute():
         adapter_path = repo_root / adapter_path
     if not adapter_path.is_file():
-        _print({"status": "no_adapter", "executed": False, "errors": ["usage-episodes adapter is required"]}, args.json)
+        emit_yaml({"status": "no_adapter", "executed": False, "errors": ["usage-episodes adapter is required"]})
         return 2
     try:
         schema_root = _schema_root(repo_root)
         adapter, adapter_error = load_validated_adapter(adapter_path, schema_root)
     except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
-        _print({"status": "invalid_adapter", "executed": False, "errors": [str(exc)]}, args.json)
+        emit_yaml({"status": "invalid_adapter", "executed": False, "errors": [str(exc)]})
         return 2
     if adapter is None:
-        _print({"status": "invalid_adapter", "executed": False, "errors": [str(adapter_error)]}, args.json)
+        emit_yaml({"status": "invalid_adapter", "executed": False, "errors": [str(adapter_error)]})
         return 2
     if not adapter.get("enabled", False) or "usage_feedback" not in adapter.get("events", ["usage_episode", "usage_feedback"]):
-        _print({"status": "disabled", "executed": False, "errors": ["usage_feedback is not enabled by the adapter"]}, args.json)
+        emit_yaml({"status": "disabled", "executed": False, "errors": ["usage_feedback is not enabled by the adapter"]})
         return 2
     records_path = resolve_records_path(repo_root, adapter, None)
     storage = records_path.parent
     try:
         records_path.relative_to(repo_root)
     except ValueError:
-        _print({"status": "invalid_records_path", "executed": False, "errors": ["records_path must stay under repo_root"]}, args.json)
+        emit_yaml({"status": "invalid_records_path", "executed": False, "errors": ["records_path must stay under repo_root"]})
         return 2
     evidence_ref = {"kind": args.evidence_kind, "ref": args.evidence_ref}
     feedback_id = feedback_id_for(product_id=args.product_id, target_episode_id=args.target_episode_id, feedback_signal=args.feedback_signal, source_kind=args.source_kind, evidence_ref=evidence_ref)
@@ -248,7 +239,7 @@ def main() -> int:
     try:
         jsonschema.validate(record, schema, format_checker=jsonschema.FormatChecker())
     except jsonschema.ValidationError as exc:
-        _print({"status": "invalid_feedback", "executed": False, "feedback_id": feedback_id, "errors": [str(exc)]}, args.json)
+        emit_yaml({"status": "invalid_feedback", "executed": False, "feedback_id": feedback_id, "errors": [str(exc)]})
         return 2
     return _run_feedback_transaction(
         repo_root=repo_root,
@@ -258,7 +249,6 @@ def main() -> int:
         record=record,
         feedback_id=feedback_id,
         execute=args.execute,
-        as_json=args.json,
     )
 
 

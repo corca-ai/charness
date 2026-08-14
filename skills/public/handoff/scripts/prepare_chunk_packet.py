@@ -6,7 +6,6 @@ Consumes the parser payload emitted by ``parse_handoff_entries.py`` or a bare
 response schema for the agentic package proposal stage.
 """
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -66,7 +65,7 @@ def main() -> int:
             staleness=payload.get("staleness") if isinstance(payload, dict) else None,
         )
         chunked_routing_cli.forward_carried_keys(payload, packet, CARRIED_KEYS)
-        sys.stdout.write(json.dumps(packet, ensure_ascii=False, indent=2) + "\n")
+        sys.stdout.write(chunked_routing_cli.render_yaml(packet))
         return 0
     finally:
         cancel_timeout()

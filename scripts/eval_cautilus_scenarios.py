@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -129,7 +130,7 @@ def main() -> int:
         skills=skills,
     )
     write_summary(args.output_dir.resolve(), summary)
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    emit_yaml(summary)
     if result.returncode != 0:
         raise EvalError("selected cautilus-backed eval scenarios failed")
     return 0

@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -21,7 +21,6 @@ upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 _scripts_doctor_lib_module = import_repo_module(__file__, "scripts.doctor_lib")
 inspect_capability_state = _scripts_doctor_lib_module.inspect_capability_state
 _scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
-healthcheck_attention_suffix = _scripts_control_plane_lifecycle_lib_module.healthcheck_attention_suffix
 print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
 _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
@@ -150,7 +149,6 @@ def main() -> int:
         action="store_true",
         help="Skip upstream release lookups while preserving local readiness and support checks.",
     )
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -170,15 +168,13 @@ def main() -> int:
         for capability in selected
     ]
 
+    # Advisories go to stderr (see `print_update_advisories`), so stdout stays a
+    # single parseable document.
     print_update_advisories(results)
-    if args.json:
-        print(json.dumps(results, ensure_ascii=False, indent=2))
-    else:
-        for result in results:
-            print(
-                f"{result['tool_id']}: {result['doctor_status']} "
-                f"({result['support_state']}){healthcheck_attention_suffix(result)}"
-            )
+    # Unconditional YAML. The retired per-tool line was a strict projection of
+    # `tool_id`, `doctor_status`, `support_state`, and `healthcheck.status`, all of
+    # which each result already carries.
+    emit_yaml(results)
 
     if any(result.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS for result in results):
         return 1

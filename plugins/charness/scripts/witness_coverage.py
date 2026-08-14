@@ -18,13 +18,13 @@ only.
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from witness_coverage_lib import WitnessCoverageError, compute_coverage, render_markdown
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -45,7 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Defaults to evals/cautilus/<skill>-claim-fidelity/witness-map.json.",
     )
-    parser.add_argument("--markdown", action="store_true", help="Print a compact human-readable debt report instead of JSON.")
+    parser.add_argument("--markdown", action="store_true", help="Print a compact human-readable debt report instead of YAML.")
     return parser
 
 
@@ -63,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.markdown:
         print(render_markdown(report), end="")
     else:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        emit_yaml(report)
 
     if not report["ok"]:
         problems = []

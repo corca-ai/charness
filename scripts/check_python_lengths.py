@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -280,7 +281,6 @@ def main() -> int:
             "gated separately by ruff PLR0915 (statement count)."
         ),
     )
-    parser.add_argument("--json", action="store_true", help="JSON output (with --headroom).")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
@@ -290,27 +290,22 @@ def main() -> int:
         # `select_targets` as an explicit empty selection and print nothing.
         rows = headroom_for(args.paths, root)
         near = [r["path"] for r in rows if r["near_limit"]]
-        if args.json:
-            payload: dict[str, object] = {"headroom": rows}
+        payload: dict[str, object] = {"headroom": rows}
+        if near:
             # The exact `limit - current` headroom values are verified facts; the
             # warn-band/near-limit judgment is the inference layer, so the
             # self-declaration rides only when a near-limit smell is present.
-            if near:
-                payload["interpretation"] = dict(INTERPRETATION)
-            print(json.dumps(payload, ensure_ascii=False, indent=2))
-        else:
-            for row in rows:
-                flag = " NEAR-LIMIT" if row["near_limit"] else ""
-                print(
-                    f"headroom: {row['path']}: {row['lines']}/{row['limit']} code lines "
-                    f"({row['headroom']} left){flag}"
-                )
-            if near:
-                print(
-                    f"WARN: {len(near)} file(s) near the length limit; consider a new "
-                    "module before adding more: " + ", ".join(near)
-                )
-                _print_warn_band_interpretation()
+            payload["interpretation"] = dict(INTERPRETATION)
+            # Folded in from the deleted human branch, which was the only carrier
+            # of the "choose a new module before adding more" advice and of the
+            # near-limit roll-up. Output is unconditionally YAML, so a per-row
+            # `near_limit: true` with no advice is all a reader would get.
+            payload["near_limit_paths"] = near
+            payload["advisory"] = (
+                f"WARN: {len(near)} file(s) near the length limit; consider a new "
+                "module before adding more."
+            )
+        emit_yaml(payload)
         return 0
     targets = select_targets(
         root, paths=args.paths, require_git=args.require_git_file_listing

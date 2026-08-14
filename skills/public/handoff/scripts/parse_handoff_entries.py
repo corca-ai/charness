@@ -6,8 +6,9 @@ CLI surface:
     python3 parse_handoff_entries.py --repo-root <path>
     python3 parse_handoff_entries.py --handoff-path <path>
 
-Emits a JSON array of HandoffEntry records on stdout. Used as the first
-step of the handoff chunked-routing pipeline. See
+Emits a YAML payload carrying the HandoffEntry records on stdout. Used as the
+first step of the handoff chunked-routing pipeline; every downstream stage reads
+it through ``chunked_routing_cli.read_pipeline_json``. See
 ``references/chunked-routing.md`` for the contract (in the charness source
 repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
 which is not vendored with the skill).
@@ -15,7 +16,6 @@ which is not vendored with the skill).
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -38,6 +38,7 @@ chunked_routing_issue_source = SKILL_RUNTIME.load_local_skill_module(
 chunked_routing_staleness = SKILL_RUNTIME.load_local_skill_module(
     __file__, "chunked_routing_staleness"
 )
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 def _explicit_handoff_path(args: argparse.Namespace) -> Path | None:
@@ -46,7 +47,7 @@ def _explicit_handoff_path(args: argparse.Namespace) -> Path | None:
 
 
 def _resolve_handoff_path(args: argparse.Namespace) -> Path:
-    # Source stage: input is the handoff doc, not pipeline JSON. A positional
+    # Source stage: input is the handoff doc, not a pipeline payload. A positional
     # path or --handoff-path both name it (positional wins); otherwise resolve
     # via the adapter from --repo-root. The positional makes the natural
     # direct `parse_handoff_entries.py docs/handoff.md` invocation work.
@@ -143,10 +144,10 @@ def main() -> int:
         handoff_path = _resolve_handoff_path(args)
         if not handoff_path.is_file():
             print(
-                json.dumps(
-                    {"ok": False, "error": f"handoff artifact not found: {handoff_path}"},
-                    ensure_ascii=False,
+                yaml_output.render_yaml(
+                    {"ok": False, "error": f"handoff artifact not found: {handoff_path}"}
                 ),
+                end="",
                 file=sys.stderr,
             )
             return 2
@@ -271,7 +272,7 @@ def main() -> int:
                 payload["issue_adapter_report"] = issue_adapter_report
             if handoff_adapter_report is not None:
                 payload["handoff_adapter_report"] = handoff_adapter_report
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+        sys.stdout.write(yaml_output.render_yaml(payload))
         return 0
     finally:
         cancel_timeout()

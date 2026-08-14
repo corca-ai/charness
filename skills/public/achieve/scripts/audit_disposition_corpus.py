@@ -51,8 +51,8 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import re
+import runpy
 from pathlib import Path
 
 GOAL_DIR = "charness-artifacts/goals"
@@ -64,6 +64,29 @@ def _load(name: str, rel: str):
     spec.loader.exec_module(module)
     return module
 
+
+def _load_yaml_output():
+    """Reach the repo-level YAML emitter from BOTH the authoring and installed layouts.
+
+    This module loads its siblings by relative path rather than through
+    `skill_runtime_bootstrap`, so the ancestor walk is the one spelling that finds
+    `scripts/yaml_output.py` at the repo root here and at the plugin root once
+    exported.
+    """
+    helper = next(
+        (
+            ancestor / "scripts" / "yaml_output.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "yaml_output.py").is_file()
+        ),
+        None,
+    )
+    if helper is None:
+        raise ImportError("scripts/yaml_output.py not found")
+    return runpy.run_path(str(helper))
+
+
+emit_yaml = _load_yaml_output()["emit_yaml"]
 
 _ce = _load("goal_artifact_closeout_evidence", "goal_artifact_closeout_evidence.py")
 _disp = _load("goal_artifact_disposition", "goal_artifact_disposition.py")
@@ -174,7 +197,7 @@ def summarize(rows: list[dict]) -> dict:
         ),
         "pre_rule_rung1a_refusals": len(pre_rule_refused),
         # COMPUTED, not a constant. As a constant this field asserted "this count
-        # CANNOT be non-zero" in the one run where it IS non-zero -- the JSON would
+        # CANNOT be non-zero" in the one run where it IS non-zero -- the report would
         # have told the reader the tripwire's only signal was not evidence, at the
         # exact moment it fired. A field that denies the thing it accompanies is
         # the class this audit surface exists to report.
@@ -228,7 +251,7 @@ def main() -> int:
     # if it were the intake -- a denominator that moves with a display flag.
     summary = summarize(audited)
     rows = [r for r in audited if r["status_normalized"] == "complete"] if args.completed_only else audited
-    print(json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml({"summary": summary, "rows": rows})
     if args.fail_on_pre_rule_refusal and summary["pre_rule_rung1a_refusals"]:
         return 1
     return 0

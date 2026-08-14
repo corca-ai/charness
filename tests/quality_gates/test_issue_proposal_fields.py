@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+import yaml
 
 from tests.quality_gates.support import ROOT, run_script, skill_package_text
 
@@ -51,7 +52,7 @@ def test_present_but_vague_passes(tmp_path: Path) -> None:
     # judges whether the generalization is good.
     result = _run_validator(tmp_path, PRESENT_VAGUE)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["missing"] == []
     assert payload["destination"] == "repo-local"
@@ -60,7 +61,7 @@ def test_present_but_vague_passes(tmp_path: Path) -> None:
 def test_markdown_bullet_style_passes(tmp_path: Path) -> None:
     result = _run_validator(tmp_path, BULLET_STYLE)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["destination"] == "upstream-harness"
 
@@ -68,7 +69,7 @@ def test_markdown_bullet_style_passes(tmp_path: Path) -> None:
 def test_missing_structural_pattern_fails(tmp_path: Path) -> None:
     result = _run_validator(tmp_path, MISSING_STRUCTURAL)
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "Structural pattern" in payload["missing"]
 
@@ -78,7 +79,7 @@ def test_empty_value_treated_as_missing(tmp_path: Path) -> None:
     # line as the field value.
     result = _run_validator(tmp_path, EMPTY_STRUCTURAL_VALUE)
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "Structural pattern" in payload["missing"]
     # the stolen-value bug would have set this to "Triggering instance(s):"
@@ -88,7 +89,7 @@ def test_empty_value_treated_as_missing(tmp_path: Path) -> None:
 def test_bad_destination_enum_fails(tmp_path: Path) -> None:
     result = _run_validator(tmp_path, BAD_DESTINATION)
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert any("Destination must be one of" in err for err in payload["errors"])
 
@@ -108,7 +109,7 @@ def test_resolve_destination_collapse_when_current_is_harness(tmp_path: Path) ->
         RESOLVE, "--repo-root", str(tmp_path), "resolve-destination", "--current", "corca-ai/charness"
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["mode"] == "collapse"
     assert payload["collapsed"] is True
     assert payload["upstream_target"] == "corca-ai/charness"
@@ -121,7 +122,7 @@ def test_resolve_destination_consumer_repo(tmp_path: Path) -> None:
         RESOLVE, "--repo-root", str(tmp_path), "resolve-destination", "--current", "corca-ai/consumer-app"
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["mode"] == "consumer"
     assert payload["collapsed"] is False
     assert payload["upstream_target"] == "corca-ai/charness"
@@ -134,7 +135,7 @@ def test_resolve_destination_unknown_without_pointer(tmp_path: Path) -> None:
         RESOLVE, "--repo-root", str(tmp_path), "resolve-destination", "--current", "corca-ai/consumer-app"
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["mode"] == "unknown"
     assert payload["ambiguous"] is True
     assert payload["upstream_target"] is None

@@ -80,6 +80,23 @@ def lib():
     return sibling("recount_premise_lib")
 
 
+def emit_yaml(payload: Any) -> None:
+    """Emit this command's stdout through the repo's one YAML renderer.
+
+    Routed through this file's own `_load_first` rather than a second loader: the
+    ancestor walk finds `scripts/yaml_output.py` at the repo root here and at the
+    plugin root once exported, and adding a near-identical private loader is
+    exactly what the duplicate ratchet named the last time this file grew one.
+    """
+    here = Path(__file__).resolve()
+    module = _load_first(
+        "charness_yaml_output",
+        tuple(ancestor / "scripts" / "yaml_output.py" for ancestor in here.parents),
+        "scripts/yaml_output.py not found above recount_premise_state.py",
+    )
+    module.emit_yaml(payload)
+
+
 def load_issue_module(repo_root: Path, name: str):
     """Import from the `issue` skill's scripts dir (route reuse, established in this repo).
 
@@ -345,14 +362,14 @@ def main(argv: list[str] | None = None) -> int:
     # `TypeError`/`ValueError` are caught too: round 1 found a malformed `--premise-file`
     # escaping as a traceback rather than as the `{"ok": false}` envelope callers parse.
     except (RuntimeError, OSError, ImportError, TypeError, ValueError) as exc:
-        print(json.dumps({"ok": False, "error": str(exc)}, indent=2))
+        emit_yaml({"ok": False, "error": str(exc)})
         return 1
     if args.state:
         # Filtering happens AFTER counts, so `counts` stays a whole-backlog denominator.
         # `counted` and `len(issues)` then disagree by design, so the filter is recorded.
         report["issues"] = [item for item in report["issues"] if item["state"] == args.state]
         report["scan_scope"]["state_filter"] = args.state
-    print(json.dumps({"ok": True, **report}, indent=2, ensure_ascii=False))
+    emit_yaml({"ok": True, **report})
     return 0
 
 

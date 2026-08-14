@@ -4,16 +4,15 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
-import json
 import os
 import shlex
 import signal
 import subprocess
-import sys
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 REQUIRED_PRODUCT_SURFACES = {"installable_cli", "bundled_skill"}
@@ -333,8 +332,17 @@ def build_payload(
         blockers.append("No command-docs file or `--help` probe delegates broad command discovery to the binary.")
     if not any(("doctor" in command or "--version" in command) for command in probes):
         blockers.append("No doctor/readiness or version probe demonstrates installable CLI readiness.")
-    if not (docs or any(token in " ".join(probes).lower() for token in ("example", "catalog", "registry", "--json"))):
-        blockers.append("No command-owned example, registry, catalog, or JSON probe is declared for packet/example shapes.")
+    # `--json` stays in this list even though THIS repo retired it on 2026-08-14: the
+    # gate also judges consuming repos, whose CLIs are not bound by that decision. But
+    # a migrated repo can no longer satisfy the heuristic through that token, so the
+    # structured-output flags it actually uses are recognized too — otherwise the only
+    # repo that followed the convention is the one the heuristic stops seeing.
+    structured_tokens = ("example", "catalog", "registry", "--json", "--detail", "--summary")
+    if not (docs or any(token in " ".join(probes).lower() for token in structured_tokens)):
+        blockers.append(
+            "No command-owned example, registry, catalog, or structured-output probe is "
+            "declared for packet/example shapes."
+        )
     for command in probes:
         unsafe_reason = _unsafe_agent_browser_probe(command)
         if unsafe_reason:
@@ -394,7 +402,6 @@ def main() -> int:
     parser.add_argument("--adapter-path", type=Path, default=Path(".agents/quality-adapter.yaml"))
     parser.add_argument("--changed-path", action="append", default=[])
     parser.add_argument("--run-probes", action="store_true")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     payload = build_payload(
         args.repo_root.resolve(),
@@ -402,14 +409,7 @@ def main() -> int:
         changed_paths=args.changed_path,
         run_probes=args.run_probes,
     )
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(f"CLI plus bundled-skill surface check: {payload['status']}")
-        for blocker in payload.get("blockers", []):
-            print(f"- {blocker}", file=sys.stderr)
-        for item in payload.get("unobserved", []):
-            print(f"- UNOBSERVED: {item}", file=sys.stderr)
+    emit_yaml(payload)
     return 1 if payload["status"] in {"blocked", "unobserved"} else 0
 
 

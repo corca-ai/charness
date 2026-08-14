@@ -14,6 +14,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "handoff-snapshot-2026-05-28.md"
@@ -120,7 +121,7 @@ def test_cli_preserves_issue_source_diagnostic(lib):
     )
 
     assert result.returncode == 0, result.stderr
-    output = json.loads(result.stdout)
+    output = yaml.safe_load(result.stdout)
     assert output["issue_source_diagnostic"] == payload["issue_source_diagnostic"]
 
 
@@ -264,7 +265,7 @@ def test_cli_emits_proposal_from_parser_payload_stdin(lib, tmp_path):
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    proposal_payload = json.loads(result.stdout)
+    proposal_payload = yaml.safe_load(result.stdout)
     assert "standalone" in proposal_payload
     assert "merged" in proposal_payload
     assert "shared_boundary_reason" in proposal_payload

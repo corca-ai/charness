@@ -29,7 +29,12 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
+import subprocess
+import sys
 from pathlib import Path
+
+import yaml
 
 from tests.probe_drift_support import (
     CORPUS_CAUSES,
@@ -133,9 +138,11 @@ def test_the_message_names_every_surface_that_carries_the_same_numbers() -> None
 def test_the_message_does_not_tell_a_reader_to_overwrite_provenance() -> None:
     """The first version's actual defect: it would have deleted `_provenance`.
 
-    `--json` emits only the measured payload. Pasting that over a probe file destroys
-    `_provenance`, and the next run then fails with a bare `KeyError: '_provenance'` — the
-    diagnostic class #536 exists to remove, reintroduced by the fix for #536.
+    The measure command emits only the measured payload (behind `--json` until that flag
+    was retired repo-wide on 2026-08-14; unconditionally YAML since). Pasting that over a
+    probe file destroys `_provenance`, and the next run then fails with a bare
+    `KeyError: '_provenance'` — the diagnostic class #536 exists to remove, reintroduced
+    by the fix for #536.
     """
     message = probe_drift_message("floor", probe=FLOOR_PROBE)
 
@@ -329,10 +336,42 @@ def test_each_command_carries_the_flags_that_make_it_the_command_it_is_paired_wi
     assert FLOOR_COMMAND.split()[1] == FLOOR_COUNTERFACTUAL_COMMAND.split()[1] == (
         FLOOR_MEASURE_SCRIPT
     ), "the two floor invocations no longer run the script the rule causes tell a reader to diff"
-    # And both must remain the same measured-payload shape: JSON, this repo, no probe write.
+    # And both must remain the same measured-payload shape: this repo, no probe write.
+    #
+    # This used to assert `"--json" in command`. That flag was retired repo-wide on
+    # 2026-08-14, so the assertion had inverted into a guarantee that the recorded
+    # operator command stays BROKEN: green here, `unrecognized arguments: --json` and
+    # exit 2 for anyone who actually ran it. The replacement asserts the property that
+    # was meant all along — the command runs — instead of pinning one spelling of it.
     for command in (FLOOR_COMMAND, FLOOR_COUNTERFACTUAL_COMMAND):
-        assert "--json" in command, command
+        assert "--json" not in command, command
         assert "--repo-root ." in command, command
+
+
+def test_the_recorded_floor_commands_actually_run() -> None:
+    """EXECUTE them. Every other pin in this file is an existence predicate.
+
+    That is precisely how the `--json` defect survived: the constants named a real
+    script, with a real `--repo-root .`, and a `--json` the script had stopped
+    accepting -- so every spelling assertion stayed green while an operator running
+    the recorded command got `unrecognized arguments: --json` and exit 2. A command
+    is only a reproduce-instruction if it reproduces; the file's own docstring says
+    existence pins cannot see supersession, and this is the cheapest thing that can.
+
+    Argparse rejection is exit 2. A non-zero exit is otherwise allowed: the
+    counterfactual exits non-zero BY DESIGN at this floor, because everything it
+    reports is a refusal.
+    """
+    for command in (FLOOR_COMMAND, FLOOR_COUNTERFACTUAL_COMMAND):
+        result = subprocess.run(
+            [sys.executable, *shlex.split(command)[1:]],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode != 2, f"{command}\n{result.stderr}"
+        assert "unrecognized arguments" not in result.stderr, f"{command}\n{result.stderr}"
+        assert yaml.safe_load(result.stdout), f"{command} emitted no parseable payload"
 
 
 def test_every_file_a_rule_cause_names_is_a_path_the_reader_is_told_to_diff() -> None:
@@ -675,17 +714,24 @@ def test_the_residual_message_names_where_the_floor_constant_actually_lives() ->
 def test_the_residual_probe_really_has_no_provenance_block() -> None:
     """An exclusive claim about the file, made by opening it rather than by assuming.
 
-    The message tells the reader the command's stdout is the WHOLE file — safe only because this
-    probe, unlike its two siblings, carries no `_provenance`. If one is ever added, that
-    instruction destroys it.
+    The message tells the reader to replace the WHOLE file — safe only because this probe,
+    unlike its two siblings, carries no `_provenance`. If one is ever added, that instruction
+    destroys it.
+
+    The instruction used to be a straight redirect of stdout, and this test pinned the words
+    "stdout IS the file". The 2026-08-14 `--json` removal made command output YAML while this
+    stored artifact stayed JSON, so a straight redirect would now write YAML into a file its
+    only reader parses with `json.loads`. The whole-file claim survives; the redirect does not,
+    and the pin moved with it.
     """
     payload = json.loads((ROOT / RESIDUAL_PROBE).read_text(encoding="utf-8"))
 
     assert "_provenance" not in payload
-    # Asserted on the unwrapped fragment: the full sentence spans a line break in the render,
+    # Asserted on unwrapped fragments: the full sentences span line breaks in the render,
     # which is how the sibling assertions above already handle wrapped claims.
-    assert "stdout IS the file" in residual_floor_message("floor")
+    assert "the whole file" in residual_floor_message("floor")
     assert "NO `_provenance`" in residual_floor_message("floor")
+    assert "straight redirect" in residual_floor_message("floor")
     # Every per-kind key the message names must exist. The first draft said `kinds[*].count`,
     # a key from the INVENTORY floor probe that this probe does not have — an assertion about a
     # file's contents made without opening it, which is the version-2 class exactly.

@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills" / "public" / "impl" / "scripts" / "survey_verification.py"
 
@@ -139,7 +141,7 @@ def test_survey_emits_lint_gate_block_in_json(tmp_path: Path) -> None:
         capture_output=True,
         text=True,
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["lint_gate"]["detected"] is True
     assert payload["lint_gate"]["command"] == "ruff check ."
     assert payload["summary"]["lint_gate_detected"] is True
@@ -153,7 +155,7 @@ def test_survey_emits_not_detected_warning_when_no_gate(tmp_path: Path) -> None:
         capture_output=True,
         text=True,
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["lint_gate"]["detected"] is False
     assert payload["summary"]["lint_gate_detected"] is False
     assert any("No standing lint gate detected" in warning for warning in payload["warnings"])

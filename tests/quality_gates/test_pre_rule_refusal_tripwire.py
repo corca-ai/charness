@@ -26,6 +26,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 MODULE = "skills/public/achieve/scripts/audit_disposition_corpus.py"
@@ -119,7 +120,10 @@ def test_the_flags_exit_path_turns_that_detection_into_a_failure(
         sys, "argv", ["audit", "--repo-root", str(tmp_path), "--fail-on-pre-rule-refusal"]
     )
     assert audit.main() == 1, "the flag did not refuse on a leak it detected"
-    assert '"pre_rule_rung1a_refusals": 1' in capsys.readouterr().out
+    # The refusal must be REPORTED, not just returned: parse the emitted YAML and
+    # pin the count, so a `main` that exits 1 while printing a clean summary fails.
+    reported = yaml.safe_load(capsys.readouterr().out)
+    assert reported["summary"]["pre_rule_rung1a_refusals"] == 1
 
     # Same leak, no flag: the runner is a read-only audit surface and must not gate.
     monkeypatch.setattr(sys, "argv", ["audit", "--repo-root", str(tmp_path)])

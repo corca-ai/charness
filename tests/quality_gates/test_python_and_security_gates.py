@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -602,9 +603,9 @@ def test_check_github_actions_flags_outdated_node24_baselines(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_github_actions.py", "--repo-root", str(repo), "--json")
+    result = run_script("scripts/check_github_actions.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    payload = json.loads(result.stderr)
+    payload = yaml.safe_load(result.stderr)
     assert [finding["category"] for finding in payload["findings"]] == [
         "node24_incompatible",
         "baseline_lag",
@@ -614,9 +615,16 @@ def test_check_github_actions_flags_outdated_node24_baselines(tmp_path: Path) ->
     assert payload["findings"][0]["recommended_reference"] == "v6"
     assert payload["findings"][1]["normalized_action"] == "actions/checkout"
     assert payload["findings"][2]["normalized_action"] == "actions/setup-node"
+    # The deleted renderer was the only carrier of the remedy prose. Each finding
+    # now owes a remedy row saying WHICH major to move to and why, plus the
+    # standing guidance that the rollout env vars are escape hatches, not fixes.
+    assert [remedy["use_instead"] for remedy in payload["remedies"]] == ["@v6", "@v6", "@v6"]
+    assert payload["remedies"][0]["reason"] == "below the Node 24-ready floor"
+    assert payload["remedies"][1]["reason"] == "behind the current documented major"
+    assert any("escape hatch" in line for line in payload["guidance"])
 
 
-def test_check_github_actions_json_output_is_stable_and_utf8(monkeypatch, capsys, tmp_path: Path) -> None:
+def test_check_github_actions_yaml_output_is_stable_and_utf8(monkeypatch, capsys, tmp_path: Path) -> None:
     spec = importlib.util.spec_from_file_location(
         "check_github_actions_under_test",
         ROOT / "scripts" / "check_github_actions.py",
@@ -637,13 +645,17 @@ def test_check_github_actions_json_output_is_stable_and_utf8(monkeypatch, capsys
     )
     monkeypatch.setattr(
         "sys.argv",
-        ["check_github_actions.py", "--repo-root", str(tmp_path), "--json"],
+        ["check_github_actions.py", "--repo-root", str(tmp_path)],
     )
 
     assert module.main() == 0
     captured = capsys.readouterr()
+    # A clean run stays on stdout so a passing gate's output is still quotable.
     assert captured.err == ""
-    assert captured.out.startswith('{\n  "checked_actions"')
-    assert '    "a_note": "first",' in captured.out
+    # Stable: one document, emitted in the payload's own key order, so a diff of
+    # two runs over the same tree is empty rather than a reshuffle.
+    assert captured.out.startswith("workflow_files:\n")
+    assert yaml.safe_load(captured.out)["guidance"] == {"z_note": "한글", "a_note": "first"}
+    # UTF-8 stays literal rather than escaped, in YAML as it did in JSON.
     assert "한글" in captured.out
     assert "\\ud55c" not in captured.out

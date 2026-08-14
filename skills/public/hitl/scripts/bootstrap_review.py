@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from string import Template
@@ -20,6 +19,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
 _scripts_render_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_yaml_render_lib")
 render_yaml_mapping = _scripts_render_lib_module.render_yaml_mapping
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 _SCRATCHPAD_TEMPLATE = Template(
@@ -186,7 +186,7 @@ def main() -> None:
     parser.add_argument("--scope", default="all", help="Review scope (all, code, or docs)")
     args = parser.parse_args()
     payload = bootstrap_review(args.repo_root.resolve(), args.session_id, args.target, args.base_ref, args.scope)
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    emit_yaml(payload)
 
 
 if __name__ == "__main__":

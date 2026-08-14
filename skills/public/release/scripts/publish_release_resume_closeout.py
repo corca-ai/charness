@@ -5,6 +5,12 @@ import json
 from pathlib import Path
 from typing import Any
 
+# Same reach as the sibling `publish_release_runtime.py`: this module is always
+# loaded through the publish CLI, which has already put the tree root on sys.path.
+# `json` stays for the release-observer ARTIFACT read below -- that file is stored
+# JSON and is not this command's stdout.
+from scripts.yaml_output import emit_yaml
+
 
 def _require_closeout_resume_inputs(args: Any) -> None:
     """Refuse to infer irreversible issue-close context from commit text."""
@@ -202,7 +208,7 @@ def resume_post_publication_closeout(
     payload["resume_state"] = state
     if not args.execute:
         payload["resume"] = f"dry-run: would reconcile {state['phase']} against the remote branch"
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        emit_yaml(payload)
         return
 
     _reconcile_push(
@@ -215,7 +221,7 @@ def resume_post_publication_closeout(
     )
     if final_phase:
         payload["resume"] = "final closeout artifact commit reconciled"
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        emit_yaml(payload)
         return
 
     expected_url = cli.expected_github_release_url(
@@ -262,4 +268,4 @@ def resume_post_publication_closeout(
         carrier_already_committed=True,
         carrier_source="release-resume-closeout",
     )
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)

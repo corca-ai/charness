@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -24,9 +23,17 @@ VALIDATE_DRAFT = _load_local("issue_validate_closeout_draft")
 PLAN = _load_local("issue_plan")
 
 
+_render_yaml = _load_local("issue_yaml_output", "issue_tool_yaml_output").render_yaml
+
+
 def emit(payload: dict[str, Any]) -> None:
-    rendered = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
-    sys.stdout.write(rendered + "\n")
+    """Write one payload to stdout as YAML.
+
+    Every subcommand's whole output. There is no output-format flag: repo-owned
+    command output is unconditionally YAML. `gh`'s own `--json` (read by the
+    backend helpers) is a third-party native API and is untouched by this.
+    """
+    sys.stdout.write(_render_yaml(payload))
 
 
 def _resolve_backend(repo_root: Path) -> dict[str, Any]:
@@ -69,19 +76,27 @@ def _run_adapter_payload(args: argparse.Namespace, call: Any, error_key: str = "
 def command_preflight(args: argparse.Namespace) -> int:
     resolved = _resolve_backend(args.repo_root.resolve())
     payload = BACKEND.build_preflight_payload(resolved)
+    payload["preflight_status"] = _preflight_status(payload)
+    emit(payload)
+    return 0 if payload["ok"] else 1
+
+
+def _preflight_status(payload: dict[str, Any]) -> str:
+    """The one-word diagnosis the former text line carried.
+
+    `ok: false` alone does not say WHICH of the three failures happened, and the
+    three want different actions: probe the backend, authenticate it, or install
+    it. Folded into the payload because there is no second human channel to carry
+    it any more.
+    """
     selected = payload["selected_backend"]
-    ok = payload["ok"]
-    if args.json:
-        emit(payload)
-    elif "found" not in selected:
-        print(payload["error"])
-    elif ok:
-        print(f"{selected['id']} backend ready")
-    elif selected["found"]:
-        print(f"{selected['id']} found but not authenticated/healthy")
-    else:
-        print(f"{selected['id']} backend binary {selected['binary']!r} missing")
-    return 0 if ok else 1
+    if "found" not in selected:
+        return "backend-probe-failed"
+    if payload["ok"]:
+        return "ready"
+    if selected["found"]:
+        return "found-but-not-authenticated-or-unhealthy"
+    return "backend-binary-missing"
 
 
 def command_resolve_target(args: argparse.Namespace) -> int:
@@ -271,7 +286,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     cwd_default = Path.cwd()
     preflight = subparsers.add_parser("preflight", help="Inspect the issue adapter and host readiness before invoking the backend")
-    preflight.add_argument("--json", action="store_true", help="Emit the full preflight payload as JSON")
     preflight.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     preflight.set_defaults(func=command_preflight)
 

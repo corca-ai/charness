@@ -54,7 +54,7 @@ def corpus_paths(corpus: Path, *, recursive: bool = False) -> list[Path]:
 
 
 def build_parser(description: str, *, recursive_flag: bool = False):
-    """The measurement CLI both scripts expose: repo-root / corpus / fields / --json."""
+    """The measurement CLI both scripts expose: repo-root / corpus / fields."""
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -69,7 +69,6 @@ def build_parser(description: str, *, recursive_flag: bool = False):
             help="Include nested directories such as charness-artifacts/quality/history/, "
                  "which the non-recursive default glob silently excludes.",
         )
-    parser.add_argument("--json", action="store_true")
     return parser
 
 

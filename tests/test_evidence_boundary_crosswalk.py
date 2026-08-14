@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.evidence_boundary_crosswalk import (
     CrosswalkError,
@@ -929,7 +930,7 @@ def test_the_crosswalk_cli_prints_the_authorization_record_and_exits_zero(tmp_pa
     )
 
     assert code == 0
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert payload["authorized"] is True
     assert payload["target"] == {"repository": "corca-ai/charness", "issue_number": 514}
 
@@ -946,7 +947,7 @@ def test_the_crosswalk_cli_exits_nonzero_on_a_refused_close(tmp_path, monkeypatc
     )
 
     assert code == 1
-    assert json.loads(captured.out)["refusal"] == "matrix_incomplete"
+    assert yaml.safe_load(captured.out)["refusal"] == "matrix_incomplete"
 
 
 def test_the_crosswalk_module_main_guard_executes(monkeypatch) -> None:
@@ -966,7 +967,7 @@ def test_the_validator_cli_prints_the_validation_payload_and_exits_zero(tmp_path
     )
 
     assert code == 0
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert payload["ok"] is True
     assert payload["matrix_state"] == "bootstrap"
 
@@ -983,7 +984,7 @@ def test_the_validator_cli_renders_a_refusal_on_both_channels_and_exits_one(tmp_
     )
 
     assert code == 1
-    assert json.loads(captured.out) == {
+    assert yaml.safe_load(captured.out) == {
         "ok": False, "error": "empty_protected_set",
         "detail": "the crosswalk protects no issues, so it authorizes nothing",
     }

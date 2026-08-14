@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -36,7 +37,7 @@ def test_acquire_public_url_rejects_non_http_scheme(tmp_path: Path) -> None:
         local_file.as_uri(),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "error"
     assert payload["route"]["route_id"] == "invalid-url-scheme"
     assert [attempt["stage_id"] for attempt in payload["attempts"]] == ["input-validation"]
@@ -56,7 +57,7 @@ def test_acquire_public_url_invalid_regex_never_succeeds(tmp_path: Path) -> None
         "[",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "error"
     assert payload["selected_attempt"]["status"] == "invalid-proof"
 
@@ -74,7 +75,7 @@ def test_acquire_public_url_invalid_regex_outranks_transport_error() -> None:
         "1",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "error"
     assert payload["selected_attempt"]["status"] == "invalid-proof"
     assert payload["selected_attempt"]["classification"]["proof_errors"] == [
@@ -108,7 +109,7 @@ def test_acquire_public_url_uses_defuddle_after_weak_direct_fetch(tmp_path: Path
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     stage_ids = [attempt["stage_id"] for attempt in payload["attempts"]]
     assert stage_ids[:3] == ["direct-public-fetch", "impersonated-public-fetch", "defuddle-reader-extraction"]
@@ -159,7 +160,7 @@ esac
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     render_index = next(
         index for index, attempt in enumerate(payload["attempts"]) if attempt["stage_id"] == "agent-browser-render-recon"
@@ -194,7 +195,7 @@ def test_acquire_public_url_records_missing_fallback_tools(tmp_path: Path) -> No
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     skipped = {
         attempt["stage_id"]: attempt["details"]["reason"]
         for attempt in payload["attempts"]
@@ -218,7 +219,7 @@ def test_acquire_public_url_records_all_planned_stages_as_attempts(tmp_path: Pat
         "off",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     planned = [stage["stage_id"] for stage in payload["route"]["acquisition_plan"]]
     attempted = [attempt["stage_id"] for attempt in payload["attempts"]]
     assert planned == attempted
@@ -260,7 +261,7 @@ esac
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "degraded"
     network_attempt = next(
         attempt for attempt in payload["attempts"] if attempt["stage_id"] == "agent-browser-network-recon"
@@ -285,7 +286,7 @@ def test_acquire_public_url_blocker_with_proof_is_blocked(tmp_path: Path) -> Non
         "off",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "blocked"
     assert payload["selected_attempt"]["status"] == "login-wall"
     assert payload["selected_attempt"]["classification"]["proof"] == [{"type": "text", "value": "needle"}]
@@ -312,7 +313,7 @@ def test_gather_public_url_writes_web_fetch_trace(tmp_path: Path) -> None:
         "--execute",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "updated"
     assert payload["record_status"] == "updated"
     assert payload["acquisition_disposition"] == "success"
@@ -357,7 +358,7 @@ def test_gather_public_url_persists_extracted_content_when_requested(tmp_path: P
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["content_persistence"] == "extracted"
     assert "selected_content" not in payload["acquisition"]
     record = Path(payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
@@ -396,7 +397,7 @@ def test_gather_public_url_persists_design_intent_and_blocks_real_login(tmp_path
         "--execute",
     )
     assert readable_result.returncode == 0, readable_result.stderr
-    readable_payload = json.loads(readable_result.stdout)
+    readable_payload = yaml.safe_load(readable_result.stdout)
     assert readable_payload["final_status"] == "success"
     assert readable_payload["content_persistence"] == "extracted"
     readable_record = Path(readable_payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
@@ -426,7 +427,7 @@ def test_gather_public_url_persists_design_intent_and_blocks_real_login(tmp_path
         "--execute",
     )
     assert blocked_result.returncode == 1
-    blocked_payload = json.loads(blocked_result.stdout)
+    blocked_payload = yaml.safe_load(blocked_result.stdout)
     assert blocked_payload["final_status"] == "login-wall"
     assert blocked_payload["write_record"] is None
     assert not (blocked_root / "charness-artifacts" / "gather" / "latest.md").exists()
@@ -444,7 +445,7 @@ def test_gather_public_url_does_not_write_error_acquisition(tmp_path: Path) -> N
         "--execute",
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["reason"] == "acquisition-error"
     assert payload["acquisition"]["disposition"] == "error"
@@ -471,7 +472,7 @@ def test_gather_public_url_does_not_write_invalid_regex_acquisition(tmp_path: Pa
         "--execute",
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["reason"] == "acquisition-error"
     assert payload["acquisition_disposition"] == "error"
@@ -500,7 +501,7 @@ def test_gather_public_url_does_not_write_blocked_acquisition(tmp_path: Path) ->
         "--execute",
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["reason"] == "acquisition-blocked"
     assert payload["acquisition_disposition"] == "blocked"
@@ -528,7 +529,7 @@ def test_gather_public_url_does_not_write_degraded_acquisition(tmp_path: Path) -
         "--execute",
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "degraded"
     assert payload["reason"] == "acquisition-degraded"
     assert payload["acquisition_disposition"] == "degraded"
@@ -570,8 +571,8 @@ def test_gather_public_url_default_slug_distinguishes_same_host_urls(tmp_path: P
     )
     assert first.returncode == 0, first.stderr
     assert second.returncode == 0, second.stderr
-    first_payload = json.loads(first.stdout)
-    second_payload = json.loads(second.stdout)
+    first_payload = yaml.safe_load(first.stdout)
+    second_payload = yaml.safe_load(second.stdout)
     first_record = Path(first_payload["write_record"]["record_artifact_path"])
     second_record = Path(second_payload["write_record"]["record_artifact_path"])
     assert first_record.name.startswith("2026-05-16-example-com-a-")
@@ -601,7 +602,7 @@ def test_gather_public_url_normalizes_encoded_uppercase_default_slug(tmp_path: P
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "updated"
     assert payload["record_status"] == "updated"
     record_path = Path(payload["write_record"]["record_artifact_path"])
@@ -630,7 +631,7 @@ def test_gather_public_url_reduces_encoded_non_ascii_default_slug_to_ascii(tmp_p
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     record_path = Path(payload["write_record"]["record_artifact_path"])
     assert record_path.name == "2026-05-16-example-com-pages-md-d38ce516.md"
     assert record_path.is_file()
@@ -651,7 +652,7 @@ def test_acquire_public_url_accepts_weak_direct_success_without_positive_proof(t
         "off",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert payload["attempts"][0]["stage_id"] == "direct-public-fetch"
     assert payload["attempts"][0]["status"] == "success"
@@ -676,7 +677,7 @@ def test_acquire_public_url_omits_selected_content_by_default(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert "selected_content" not in payload
 
@@ -702,7 +703,7 @@ def test_acquire_public_url_can_include_extracted_selected_content(tmp_path: Pat
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     selected_content = payload["selected_content"]
     assert selected_content["stage_id"] == "direct-public-fetch"
     assert selected_content["format"] == "text"

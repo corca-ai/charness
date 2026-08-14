@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import subprocess
 from datetime import datetime, timezone
 from typing import Any
@@ -195,30 +194,14 @@ def execute_comments(
     return 0
 
 
-def print_review_result(payload: dict[str, Any], *, as_json: bool) -> None:
-    if as_json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-        return
-    if payload.get("status") != "valid":
-        print(f"{payload['status']}: product-review report unavailable")
-        for error in payload.get("errors", []):
-            print(f"- {error}")
-        return
-    summary = payload["review_summary"]
-    print("ADVISORY: last-seen usage review is not churn or satisfaction proof.")
-    print(
-        f"Review window: {summary['usage_count']} usage record(s); "
-        f"first_seen_at={summary['first_seen_at']}; last_seen_at={summary['last_seen_at']}."
-    )
-    print(
-        "Signals: "
-        f"friction_or_followup={summary['friction_or_followup_count']}; "
-        f"missed_detection_candidates={summary['missed_detection_candidate_count']}; "
-        f"actionable_packets={payload['actionable_packet_count']}."
-    )
-    for packet in payload["reporter_packets"]:
-        print(f"\n--- {packet['signal_type']} ({packet['filing_mode']}) ---")
-        print(packet["body"])
+# `print_review_result` lived here until the YAML migration. It was a
+# format switch (`--json` payload vs a human rendering) around a payload its only
+# caller already holds, so with the flag gone `report_usage_product_review.py`
+# emits that payload directly through `emit_yaml`. Nothing the human rendering
+# stated was lost: the ADVISORY line is a `non_claims` entry, the review window
+# and signal counts are `review_summary` / `actionable_packet_count`, the
+# unavailable-report branch is `status` plus `errors`, and each packet's rendered
+# text is `reporter_packets[].body`.
 
 
 def _iso(value: datetime) -> str:

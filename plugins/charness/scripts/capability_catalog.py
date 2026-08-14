@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 from pathlib import Path
@@ -105,7 +104,6 @@ def main(argv: list[str] | None = None) -> int:
 
     def add_root(command: argparse.ArgumentParser) -> None:
         command.add_argument("--repo-root", type=Path, required=True)
-        command.add_argument("--json", action="store_true")
 
     list_parser = subparsers.add_parser(
         "list", help="Read the installed capability inventory without writing artifacts."
@@ -114,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     list_parser.add_argument(
         "--summary",
         action="store_true",
-        help="Emit compact YAML for hidden support and integration routing.",
+        help="Project the inventory down to the hidden support and integration routing view.",
     )
     refresh_parser = subparsers.add_parser(
         "refresh", help="Write the canonical capability catalog current pointers."
@@ -134,10 +132,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     resolve_parser.add_argument("--marketplace", default="local")
     resolve_parser.add_argument("--plugin", default="charness")
-    resolve_parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
-    if args.command == "list" and args.summary and args.json:
-        parser.error("--summary emits YAML and cannot be combined with --json")
     try:
         if args.command == "list":
             payload = list_catalog(_repo_root(args.repo_root))
@@ -156,18 +151,11 @@ def main(argv: list[str] | None = None) -> int:
                 plugin=args.plugin,
             )
     except CatalogRepoRootError as exc:
-        payload = {"error": str(exc), "repo_root": str(exc.repo_root)}
-        if args.json:
-            print(json.dumps(payload, ensure_ascii=False, indent=2))
-        else:
-            print(str(exc), file=sys.stderr)
+        # The message the dropped stderr line carried lives in `error`; emitting it
+        # on stdout as well would print the same failure twice.
+        emit_yaml({"error": str(exc), "repo_root": str(exc.repo_root)})
         return 2
-    if args.command == "list" and args.summary:
-        emit_yaml(payload)
-    elif args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     if args.command == "resolve-skill-path" and payload.get("resolved_path") is None:
         return 1
     return 0

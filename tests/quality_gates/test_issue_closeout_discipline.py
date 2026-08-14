@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
+
+import yaml
 
 from .support import ROOT, fake_gh_env, run_script
 
@@ -27,7 +28,7 @@ def _issue_plan(tmp_path: Path, *args: str) -> dict:
         env=fake_gh_env(tmp_path),
     )
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_issue_skill_pins_verified_ledger_for_new_closeout() -> None:

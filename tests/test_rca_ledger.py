@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 from scripts import rca_ledger_lib as lib
 from tests.rca_ledger_helpers import (
     COMMITTED_LEDGER,
@@ -14,6 +16,25 @@ from tests.rca_ledger_helpers import (
     write_ledger,
     write_raw,
 )
+
+
+# Output contract ---------------------------------------------------------------
+def test_repo_owned_rca_commands_reject_a_json_flag(tmp_path: Path) -> None:
+    # Output is unconditionally YAML; `--json` was removed outright with no
+    # backward compatibility, so passing it is an argparse error, not a silently
+    # ignored no-op that would let a stale caller believe it asked for JSON.
+    invocations = {
+        "validate_rca_ledger.py": ("--ledger", str(tmp_path / "ledger.jsonl")),
+        "aggregate_rca_ledger.py": ("--ledger", str(tmp_path / "ledger.jsonl")),
+        "record_rca_event.py": (
+            "--ledger", str(tmp_path / "ledger.jsonl"),
+            "--source", "retro", "--event-kind", "weak_proof", "--class-key", "k",
+        ),
+    }
+    for script, args in invocations.items():
+        res = run_script(script, *args, "--json")
+        assert res.returncode == 2, f"{script} accepted --json: {res.stdout}{res.stderr}"
+        assert "--json" in res.stderr, script
 
 
 # AC1 -------------------------------------------------------------------------
@@ -29,9 +50,9 @@ def test_ac1_validate_rejects_each_malformed_case(tmp_path: Path) -> None:
             json.dumps(event(ts="not-a-dateZ")),  # bad timestamp (ends in Z but not RFC3339)
         ],
     )
-    result = run_script("validate_rca_ledger.py", "--ledger", str(ledger), "--json")
+    result = run_script("validate_rca_ledger.py", "--ledger", str(ledger))
     assert result.returncode == 1, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["error_count"] == 5
     assert {entry["line"] for entry in payload["errors"]} == {1, 2, 3, 4, 5}
 
@@ -40,10 +61,10 @@ def test_ac1_validate_rejects_impossible_calendar_timestamp(tmp_path: Path) -> N
     ledger = tmp_path / "ledger.jsonl"
     write_ledger(ledger, [event(ts="2026-99-99T99:99:99Z")])
 
-    result = run_script("validate_rca_ledger.py", "--ledger", str(ledger), "--json")
+    result = run_script("validate_rca_ledger.py", "--ledger", str(ledger))
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["errors"][0]["line"] == 1
     assert "date-time" in payload["errors"][0]["error"]
 
@@ -73,43 +94,47 @@ def test_ac1_validate_accepts_committed_ledger() -> None:
 
 
 # #219 Slice 2: kill the validate_rca_ledger main() survivors -----------------
-# The #219 regression (commit 59841e0, source unchanged since) left three live
-# survivors in main(); existing tests asserted returncode/error_count but never
-# the status string, the exact JSON indent, or the text-mode error loop.
-def test_ac1_validate_json_status_field_reflects_validity(tmp_path: Path) -> None:
+# The #219 regression (commit 59841e0) left three live survivors in main();
+# existing tests asserted returncode/error_count but never the status string, the
+# exact serialization, or the per-malformed-line error reporting.
+def test_ac1_validate_status_field_reflects_validity(tmp_path: Path) -> None:
     """`"status": "valid" if not errors else "invalid"` survived because no test
     asserted the status string, so the `not errors` flip (Delete_Not / AddNot)
     went unnoticed. Pin both polarities."""
     clean = tmp_path / "clean.jsonl"
     write_ledger(clean, [event()])
-    ok = run_script("validate_rca_ledger.py", "--ledger", str(clean), "--json")
+    ok = run_script("validate_rca_ledger.py", "--ledger", str(clean))
     assert ok.returncode == 0, ok.stderr
-    assert json.loads(ok.stdout)["status"] == "valid"
+    assert yaml.safe_load(ok.stdout)["status"] == "valid"
 
     bad = tmp_path / "bad.jsonl"
     write_raw(bad, [json.dumps(event(source="slack"))])  # bad enum
-    invalid = run_script("validate_rca_ledger.py", "--ledger", str(bad), "--json")
+    invalid = run_script("validate_rca_ledger.py", "--ledger", str(bad))
     assert invalid.returncode == 1
-    assert json.loads(invalid.stdout)["status"] == "invalid"
+    assert yaml.safe_load(invalid.stdout)["status"] == "invalid"
 
 
-def test_ac1_validate_json_uses_two_space_indent(tmp_path: Path) -> None:
-    """`print(json.dumps(result, indent=2))` survived because every assertion
-    does `json.loads` (indent-agnostic). Pin the RAW 2-space formatting, the
-    same kill #251 applied to the aggregate output."""
+def test_ac1_validate_stdout_is_canonical_block_yaml(tmp_path: Path) -> None:
+    """Successor to the `indent=2` pin: every other assertion parses stdout, so a
+    serialization change is invisible to them. Pin the RAW rendering — block-style
+    YAML, unicode passed through, payload key order preserved — which is what a
+    reader/wrapper of this command actually consumes."""
     bad = tmp_path / "bad.jsonl"
     write_raw(bad, [json.dumps(event(source="slack"))])
-    result = run_script("validate_rca_ledger.py", "--ledger", str(bad), "--json")
+    result = run_script("validate_rca_ledger.py", "--ledger", str(bad))
     raw = result.stdout
-    payload = json.loads(raw)
-    assert raw.rstrip("\n") == json.dumps(payload, indent=2)
-    assert '\n  "' in raw  # a top-level key indented by exactly two spaces
+    payload = yaml.safe_load(raw)
+    assert raw == yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
+    # Block style, not the JSON-ish flow style a default dump would emit.
+    assert raw.startswith("status: invalid\n")
+    assert not raw.lstrip().startswith("{")
 
 
-def test_ac1_validate_text_mode_prints_each_malformed_line(tmp_path: Path) -> None:
-    """The non-`--json` error branch (`for entry in errors: print(... stderr)`)
-    was never exercised, so the ZeroIterationForLoop mutant survived. Run text
-    mode on a malformed ledger and assert each line's error is printed."""
+def test_ac1_validate_reports_each_malformed_line(tmp_path: Path) -> None:
+    """The retired text branch (`for entry in errors: print(... stderr)`) printed
+    one line per malformed record; the ZeroIterationForLoop mutant survived
+    because nothing exercised it. The information now lives in the payload's
+    `errors` list, so assert each malformed line is reported individually there."""
     bad = tmp_path / "bad.jsonl"
     write_raw(
         bad,
@@ -118,12 +143,15 @@ def test_ac1_validate_text_mode_prints_each_malformed_line(tmp_path: Path) -> No
             json.dumps(event(converted=False, durable_kind="gate")),  # invariant break
         ],
     )
-    result = run_script("validate_rca_ledger.py", "--ledger", str(bad))  # no --json
+    result = run_script("validate_rca_ledger.py", "--ledger", str(bad))
     assert result.returncode == 1
-    assert "invalid: 2 malformed line(s)" in result.stderr
-    # Each malformed line is reported individually; ZeroIterationForLoop drops these.
-    assert "line 1:" in result.stderr
-    assert "line 2:" in result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "invalid"
+    assert payload["error_count"] == 2
+    assert str(bad) in payload["ledger_path"]
+    # Each malformed line is reported individually with its own diagnostic.
+    assert [entry["line"] for entry in payload["errors"]] == [1, 2]
+    assert all(entry["error"] for entry in payload["errors"])
 
 
 # AC2 -------------------------------------------------------------------------
@@ -140,9 +168,9 @@ def test_ac2_aggregate_rate_and_breakdown(tmp_path: Path) -> None:
             event(source="retro", event_kind="bug", converted=False, durable_kind="none", seed=True),
         ],
     )
-    result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger), "--json")
+    result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     included = payload["seed_included"]
     assert included["total"] == 6 and included["converted"] == 3
@@ -157,24 +185,26 @@ def test_ac2_aggregate_rate_and_breakdown(tmp_path: Path) -> None:
     assert "retro" not in excluded["by_source"]
 
 
-# #251 Slice 3: kill the survived `indent=2` mutant -------------------------
-def test_aggregate_json_uses_two_space_indent(tmp_path: Path) -> None:
-    """``print(json.dumps(payload, indent=2))`` survived mutation because the
-    AC2 assertion does ``json.loads`` (indent-agnostic). The NumberReplacer
-    mutant on ``indent=2`` still emits parseable JSON, so pin the RAW 2-space
-    formatting instead (critique B3)."""
+# #251 Slice 3: pin the RAW aggregate serialization --------------------------
+def test_aggregate_stdout_is_canonical_block_yaml(tmp_path: Path) -> None:
+    """Successor to the ``indent=2`` pin (critique B3): the AC2 assertion parses
+    stdout and is therefore serialization-agnostic, so a formatting regression
+    survives it. Pin the RAW rendering — block-style YAML, unicode passed
+    through, payload key order preserved."""
     ledger = tmp_path / "ledger.jsonl"
     write_ledger(
         ledger,
         [event(source="debug", event_kind="bug", converted=True, durable_kind="gate")],
     )
-    result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger), "--json")
+    result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger))
     assert result.returncode == 0, result.stderr
     raw = result.stdout
-    payload = json.loads(raw)
-    # Exact 2-space indentation: any other indent value diverges here.
-    assert raw.rstrip("\n") == json.dumps(payload, indent=2)
-    assert '\n  "' in raw  # a top-level key indented by exactly two spaces
+    payload = yaml.safe_load(raw)
+    assert raw == yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
+    assert raw.startswith("auto_append_wired: true\n")
+    assert not raw.lstrip().startswith("{")
+    # allow_unicode: the folded caveat keeps its em dash instead of an escape.
+    assert "—" in raw and "\\u" not in raw
 
 
 # AC3 -------------------------------------------------------------------------
@@ -214,11 +244,10 @@ def test_ac3_record_optional_fields_round_trip(tmp_path: Path) -> None:
         "--seed",
         "--ref", "#211",
         "--note", "covers optional field branches",
-        "--json",
     )
 
     assert ok.returncode == 0, ok.stderr
-    payload = json.loads(ok.stdout)
+    payload = yaml.safe_load(ok.stdout)
     assert payload["appended"] is True
     [record] = lib.read_events(ledger)
     assert record["caught_by"] == "human"
@@ -250,11 +279,10 @@ def test_ac3_record_duplicate_identity_is_success_noop(tmp_path: Path) -> None:
         "--durable-kind", "issue",
         "--class-key", "duplicate-class",
         "--ref", "different-ref-does-not-change-identity",
-        "--json",
     )
 
     assert duplicate.returncode == 0, duplicate.stderr
-    payload = json.loads(duplicate.stdout)
+    payload = yaml.safe_load(duplicate.stdout)
     assert payload["status"] == "duplicate"
     assert payload["appended"] is False
     records = lib.read_events(ledger)
@@ -292,11 +320,10 @@ def test_ac3_record_duplicate_identity_does_not_rewrite_existing_duplicates(tmp_
         "--durable-kind", "issue",
         "--class-key", "preexisting-duplicate-class",
         "--ref", "third-should-not-append",
-        "--json",
     )
 
     assert duplicate.returncode == 0, duplicate.stderr
-    assert json.loads(duplicate.stdout)["status"] == "duplicate"
+    assert yaml.safe_load(duplicate.stdout)["status"] == "duplicate"
     assert ledger.read_text(encoding="utf-8") == before
 
 
@@ -347,11 +374,10 @@ def test_ac3_record_duplicate_scan_ignores_malformed_existing_lines(tmp_path: Pa
         "--converted",
         "--durable-kind", "issue",
         "--class-key", "blocked-by-invalid-ledger",
-        "--json",
     )
 
     assert duplicate.returncode == 0, duplicate.stderr
-    assert json.loads(duplicate.stdout)["status"] == "duplicate"
+    assert yaml.safe_load(duplicate.stdout)["status"] == "duplicate"
     assert ledger.read_text(encoding="utf-8").count("\n") == 2
 
     new_key = run_script(
@@ -429,21 +455,24 @@ def test_ac7_on_state_keeps_na_and_no_baseline_number(tmp_path: Path) -> None:
     # committed ledger so accruing real events cannot mask the guard.
     ledger = tmp_path / "seed_only.jsonl"
     write_ledger(ledger, seed_only_both_outcomes())
-    payload = json.loads(
-        run_script("aggregate_rca_ledger.py", "--ledger", str(ledger), "--json").stdout
-    )
+    result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger))
+    assert result.returncode == 0, result.stderr
+    payload = yaml.safe_load(result.stdout)
     assert payload["auto_append"] == lib.AUTO_APPEND_ON_BANNER
     assert payload["auto_append"].startswith("auto_append: ON")
     assert payload["auto_append_wired"] is True
     assert payload["seed_excluded"]["rate"] == lib.NA
     assert payload["baseline_rate_available"] is False
 
-    text = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger)).stdout
-    assert "auto_append: ON" in text
+    # The guards the retired text rendering carried now travel in the payload.
     # flipping OFF->ON must not strip the "do not quote" guard from the seed-only number
-    assert "do not quote" in text
-    baseline_line = next(line for line in text.splitlines() if "overall: n/a" in line)
-    assert "%" not in baseline_line  # no numeric baseline rate printed
+    assert "do not quote" in payload["seed_included_caveat"]
+    # no numeric baseline rate is reported while the seed-excluded window is empty:
+    # the note says n/a explicitly, and the only "%" it may carry is the "not 0%" guard
+    note = payload["baseline_rate_note"]
+    assert note.startswith("n/a, not 0%:")
+    assert "%" not in note.replace("not 0%", "")
+    assert not isinstance(payload["seed_excluded"]["rate"], float)
 
 
 def test_ac7_render_text_covers_empty_and_live_baseline_branches() -> None:
@@ -663,7 +692,10 @@ def test_conversion_upgrade_excluded_from_rates_and_window_denominator() -> None
     assert target["window"]["total"] == 2
 
 
-def test_conversion_upgrade_render_text_shows_upgrade_annotation(tmp_path: Path) -> None:
+def test_conversion_upgrade_report_shows_upgrade_annotation(tmp_path: Path) -> None:
+    # The retired text line read
+    # "c: converted 2026-06-01, recurred 2026-06-05 (artifact upgraded 2026-06-09, #358)";
+    # every field it carried is now a key on the emitted falsified-conversion entry.
     ledger = tmp_path / "ledger.jsonl"
     write_ledger(
         ledger,
@@ -675,7 +707,13 @@ def test_conversion_upgrade_render_text_shows_upgrade_annotation(tmp_path: Path)
     )
     result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger))
     assert result.returncode == 0, result.stderr
-    assert "c: converted 2026-06-01, recurred 2026-06-05 (artifact upgraded 2026-06-09, #358)" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    [entry] = payload["target"]["falsified_conversions"]
+    assert entry["class_key"] == "c"
+    assert entry["converted_ts"] == "2026-06-01T00:00:00Z"
+    assert entry["recurrence_ts"] == "2026-06-05T00:00:00Z"
+    assert entry["upgraded_ts"] == "2026-06-09T00:00:00Z"
+    assert entry["upgraded_ref"] == "#358"
 
 
 def test_conversion_upgrade_schema_requires_converted(tmp_path: Path) -> None:
@@ -710,10 +748,10 @@ def test_conversion_upgrade_recorder_flag_round_trip_and_distinct_identity(tmp_p
         "--ledger", str(ledger),
         "--source", "issue", "--event-kind", "weak_proof",
         "--converted", "--durable-kind", "gate", "--conversion-upgrade",
-        "--class-key", "upgrade-class", "--ref", "#358", "--json",
+        "--class-key", "upgrade-class", "--ref", "#358",
     )
     assert upgrade.returncode == 0, upgrade.stderr
-    assert json.loads(upgrade.stdout)["appended"] is True
+    assert yaml.safe_load(upgrade.stdout)["appended"] is True
     records = lib.read_events(ledger)
     assert len(records) == 2
     assert records[1]["conversion_upgrade"] is True
@@ -724,10 +762,10 @@ def test_conversion_upgrade_recorder_flag_round_trip_and_distinct_identity(tmp_p
         "--ledger", str(ledger),
         "--source", "issue", "--event-kind", "weak_proof",
         "--converted", "--durable-kind", "gate", "--conversion-upgrade",
-        "--class-key", "upgrade-class", "--ref", "#358", "--json",
+        "--class-key", "upgrade-class", "--ref", "#358",
     )
     assert duplicate.returncode == 0, duplicate.stderr
-    assert json.loads(duplicate.stdout)["status"] == "duplicate"
+    assert yaml.safe_load(duplicate.stdout)["status"] == "duplicate"
     assert len(lib.read_events(ledger)) == 2
 
     # An upgrade without --converted is refused before any write.
@@ -751,7 +789,10 @@ def test_conversion_upgrade_recorder_flag_round_trip_and_distinct_identity(tmp_p
         "--class-key", "upgrade-class",
     )
     assert refless.returncode == 1
-    assert "--conversion-upgrade requires --ref" in refless.stderr
+    refusal = yaml.safe_load(refless.stderr)
+    assert refusal["status"] == "rejected"
+    assert refusal["appended"] is False
+    assert "--conversion-upgrade requires --ref" in refusal["error"]
     assert len(lib.read_events(ledger)) == 2
 
 
@@ -790,7 +831,12 @@ def test_target_window_excludes_events_older_than_28_days() -> None:
     assert target["status"] == "met"
 
 
-def test_target_render_text_reports_floor_falsified_and_status(tmp_path: Path) -> None:
+def test_target_report_states_floor_falsified_and_status(tmp_path: Path) -> None:
+    # The retired text rendering stated the target definition, the all-time
+    # falsified count with each entry, and the status. All four now travel in the
+    # emitted payload, including the prose `target_definition` that spells out the
+    # second half of the criterion (zero falsified conversions), which is
+    # invisible from the bare `floor` number alone.
     ledger = tmp_path / "ledger.jsonl"
     write_ledger(
         ledger,
@@ -799,11 +845,21 @@ def test_target_render_text_reports_floor_falsified_and_status(tmp_path: Path) -
     )
     result = run_script("aggregate_rca_ledger.py", "--ledger", str(ledger))
     assert result.returncode == 0, result.stderr
-    text = result.stdout
-    assert "target (#184, set 2026-06-13): >=70% rolling 28d" in text
-    assert "falsified conversions (all-time, tripwire input): 1" in text
-    assert "c: converted 2026-06-01, recurred 2026-06-05" in text
-    assert "status: insufficient-n" in text
+    payload = yaml.safe_load(result.stdout)
+
+    definition = payload["target_definition"]
+    assert definition.startswith("#184, set 2026-06-13: >=70% rolling 28d")
+    assert "zero falsified conversions" in definition
+
+    target = payload["target"]
+    assert target["floor"] == 0.7
+    assert target["window_days"] == 28
+    assert len(target["falsified_conversions"]) == 1  # all-time, tripwire input
+    [entry] = target["falsified_conversions"]
+    assert entry["class_key"] == "c"
+    assert entry["converted_ts"] == "2026-06-01T00:00:00Z"
+    assert entry["recurrence_ts"] == "2026-06-05T00:00:00Z"
+    assert target["status"] == "insufficient-n"
 
 
 def test_target_committed_ledger_payload_is_structurally_judged() -> None:
@@ -837,10 +893,14 @@ def test_record_rejects_missing_source(tmp_path: Path) -> None:
     assert "--source" in res.stderr
 
 
-def test_record_conversion_upgrade_without_ref_rejection_json_uses_two_space_indent(tmp_path: Path) -> None:
-    # #361: the `--conversion-upgrade` without `--ref` rejection prints 2-space JSON.
-    # Kills record_rca_event.py:92 NumberReplacer on `indent=2` and :93 AddNot on the
-    # `if args.json` branch (every other assertion uses json.loads, indent-agnostic).
+def test_record_conversion_upgrade_without_ref_rejection_is_canonical_yaml_on_stderr(
+    tmp_path: Path,
+) -> None:
+    # #361: the `--conversion-upgrade` without `--ref` rejection is a structured
+    # refusal on stderr, never on stdout — a wrapper that reads only stdout must
+    # not be able to mistake "nothing was appended" for an append. Pin the RAW
+    # rendering as well: every other assertion parses it and so cannot see a
+    # serialization regression.
     res = run_script(
         "record_rca_event.py",
         "--ledger", str(tmp_path / "ledger.jsonl"),
@@ -848,19 +908,19 @@ def test_record_conversion_upgrade_without_ref_rejection_json_uses_two_space_ind
         "--event-kind", "bug",
         "--class-key", "k",
         "--conversion-upgrade",
-        "--json",
     )
     assert res.returncode == 1
-    payload = json.loads(res.stderr)
+    assert res.stdout == ""
+    payload = yaml.safe_load(res.stderr)
     assert payload["status"] == "rejected"
-    assert res.stderr.rstrip("\n") == json.dumps(payload, indent=2)
-    assert '\n  "' in res.stderr  # a top-level key indented by exactly two spaces
+    assert payload["appended"] is False
+    assert res.stderr == yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
+    assert res.stderr.startswith("status: rejected\n")
 
 
-def test_record_schema_rejection_json_uses_two_space_indent(tmp_path: Path) -> None:
-    # #361: a schema-invalid record (bad RFC3339 timestamp) is refused with 2-space
-    # JSON. Kills record_rca_event.py:108 NumberReplacer on `indent=2` in the
-    # jsonschema-rejection path.
+def test_record_schema_rejection_is_canonical_yaml_on_stderr(tmp_path: Path) -> None:
+    # #361: a schema-invalid record (bad RFC3339 timestamp) is refused with a
+    # structured payload on stderr, and nothing on stdout.
     res = run_script(
         "record_rca_event.py",
         "--ledger", str(tmp_path / "ledger.jsonl"),
@@ -868,10 +928,11 @@ def test_record_schema_rejection_json_uses_two_space_indent(tmp_path: Path) -> N
         "--event-kind", "weak_proof",
         "--class-key", "k",
         "--ts", "not-a-dateZ",
-        "--json",
     )
     assert res.returncode == 1
-    payload = json.loads(res.stderr)
+    assert res.stdout == ""
+    payload = yaml.safe_load(res.stderr)
     assert payload["status"] == "rejected"
-    assert res.stderr.rstrip("\n") == json.dumps(payload, indent=2)
-    assert '\n  "' in res.stderr
+    assert payload["appended"] is False
+    assert res.stderr == yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
+    assert res.stderr.startswith("status: rejected\n")

@@ -14,6 +14,7 @@ from runtime_bootstrap import (
     repo_root_from_script,
     require_repo_local_helper,
 )
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 INDEX_FILENAME = "seam-risk-index.json"
@@ -159,25 +160,35 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     payload = build_index(repo_root)
-    if args.write:
-        index_path = write_index(repo_root, payload)
-        result: dict[str, Any] = {
+    def _index_result(status: str, index_path: Path) -> dict[str, Any]:
+        """One shape for both verdicts of one command.
+
+        `status` carries what the dropped "Wrote <path>." line said and the bare path
+        does not: whether the index was REWRITTEN or only validated on this run.
+        Unlike its retro sibling this one takes the path, because the --check arm has
+        no written path to reuse and resolves its own.
+        """
+        return {
+            "status": status,
             "index_path": _relative(repo_root, index_path),
             "indexed_artifact_count": payload["indexed_artifact_count"],
             "source_artifact_count": payload["source_artifact_count"],
         }
-        print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else f"Wrote {result['index_path']}.")
+
+    if args.write:
+        emit_yaml(_index_result("written", write_index(repo_root, payload)))
         return 0
     if args.check:
         check_index(repo_root, payload)
-        print("Validated debug seam-risk index.")
+        emit_yaml(
+            _index_result("validated", _load_debug_output_dir(repo_root) / INDEX_FILENAME)
+        )
         return 0
-    print(_json_text(payload), end="")
+    emit_yaml(payload)
     return 0
 
 

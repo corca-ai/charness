@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.validate_retro_artifact import ValidationError as RetroValidationError
 from scripts.validate_retro_artifact import candidate_paths as retro_candidate_paths
@@ -116,11 +117,15 @@ packet_sections:
         str(tmp_path),
         "--prepared-for",
         "unit",
-        "--json",
+        "--slug",
+        "demo",
     )
 
     assert result.returncode == 0, result.stderr
-    packet = json.loads(result.stdout)
+    receipt = yaml.safe_load(result.stdout)
+    assert receipt["section_count"] == 1
+    # The packet itself is always written now; the receipt only points at it.
+    packet = json.loads((tmp_path / receipt["json_path"]).read_text(encoding="utf-8"))
     assert packet["kind"] == "charness.retro_prepare_packet"
     assert packet["section_count"] == 1
     assert packet["sections"][0]["content"] == "retro-body"
@@ -153,7 +158,7 @@ packet_sections:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     md_path = tmp_path / payload["md_path"]
     assert payload["json_path"] == "charness-artifacts/retro/demo-packet.json"
     assert md_path.is_file()
@@ -288,7 +293,7 @@ output_dir: charness-artifacts/retro
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["md_path"].startswith("charness-artifacts/retro/20")
     assert payload["md_path"].endswith("-packet.md")
 
@@ -311,7 +316,6 @@ output_dir: charness-artifacts/retro
         "HEAD",
         "--commit",
         "HEAD~1",
-        "--json",
     )
 
     assert result.returncode == 2
@@ -337,11 +341,10 @@ packet_sections:
         PREPARE,
         "--repo-root",
         str(tmp_path),
-        "--json",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["error"] == "retro adapter invalid"
 
@@ -367,7 +370,7 @@ output_dir: charness-artifacts/retro
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     text = (tmp_path / payload["md_path"]).read_text(encoding="utf-8")
     assert ".agents/retro-adapter.yaml" in text
     assert ".agents/critique-adapter.yaml" not in text
@@ -425,11 +428,14 @@ packet_sections:
         "head",
         "--changed-ref",
         "HEAD",
-        "--json",
+        "--slug",
+        "changed-ref",
     )
 
     assert result.returncode == 0, result.stderr
-    packet = json.loads(result.stdout)
+    receipt = yaml.safe_load(result.stdout)
+    assert receipt["changed_ref"] == "HEAD"
+    packet = json.loads((tmp_path / receipt["json_path"]).read_text(encoding="utf-8"))
     assert packet["changed_ref"] == "HEAD"
     section = packet["sections"][0]["content"]
     assert "Changed paths for ref `HEAD`:" in section

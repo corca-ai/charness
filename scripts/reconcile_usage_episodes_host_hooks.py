@@ -16,12 +16,12 @@ actual; 1 when status detects drift, a dangling state-tracked hook script
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 ADAPTER_RELATIVE = Path(".agents/usage-episodes-adapter.yaml")
@@ -83,7 +83,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--home", type=Path, default=Path.home(), help="User home directory; resolves host settings paths under it.")
     parser.add_argument("--mode", choices=["reconcile", "status", "install", "uninstall"], default="reconcile", help="Action to take.")
     parser.add_argument("--host", choices=["claude", "codex"], help="Restrict install/uninstall to a single host (mode=install|uninstall only).")
-    parser.add_argument("--json", action="store_true", help="Emit JSON payload to stdout.")
     args = parser.parse_args(argv)
 
     repo_root = args.repo_root.resolve()
@@ -150,11 +149,11 @@ def main(argv: list[str] | None = None) -> int:
     else:  # pragma: no cover - argparse rejects other values
         return 1
 
-    if args.json or args.mode in {"reconcile", "status"}:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        for host, result in payload.get("results", payload.get("actions", {})).items():
-            print(f"{host}: {json.dumps(result, ensure_ascii=False)}")
+    # One shape for every mode. `install`/`uninstall` used to fall back to a
+    # per-host line, which was `results` reformatted and dropped `hosts`,
+    # `failed_hosts`, and `mode` -- the three keys that say WHICH hosts were asked
+    # for and which of them refused.
+    emit_yaml(payload)
     return exit_code
 
 

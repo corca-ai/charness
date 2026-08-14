@@ -17,14 +17,15 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
-import sys
 from pathlib import Path
 
 try:
     from scripts.repo_file_listing import iter_matching_repo_files
+    from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
     from repo_file_listing import iter_matching_repo_files
+
+    from yaml_output import emit_yaml
 
 SHIM_NAME = "_load_skill_runtime_bootstrap"
 CANONICAL_SHIM = '''def _load_skill_runtime_bootstrap():
@@ -87,7 +88,6 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--require-git-file-listing", action="store_true")
     parser.add_argument("--fix", action="store_true", help="rewrite drifted module-level copies to the canonical block")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -118,34 +118,28 @@ def main() -> int:
     # "every copy matches" from "the root is wrong / the listing came back empty".
     # Report it as its own state so a green line never stands for zero comparisons.
     status = "empty-scope" if not shim_files else ("ok" if not drifted and not unfixable else "drift")
-    if args.json:
-        print(
-            json.dumps(
-                {
-                    "status": status,
-                    "checked_files": len(shim_files),
-                    "drifted": drifted,
-                    "fixed": fixed,
-                    "unfixable": unfixable,
-                },
-                indent=2,
-            )
-        )
-    elif status == "empty-scope":
-        print(
-            f"no bootstrap shim copies found under {repo_root}; nothing was compared. "
-            "Check --repo-root (and --require-git-file-listing if the listing came back empty).",
-            file=sys.stderr,
-        )
-    elif status == "ok":
-        note = f"; rewrote {len(fixed)}" if fixed else ""
-        print(f"bootstrap-shim consistency: {len(shim_files)} copies match the canonical block{note}")
-    else:
-        print(f"FAIL: {len(drifted) + len(unfixable)} bootstrap shim copy(ies) drift from the canonical block:", file=sys.stderr)
-        for rel in drifted + unfixable:
-            print(f"- {rel}", file=sys.stderr)
-        print("Run: python3 scripts/check_bootstrap_shim_consistency.py --repo-root . --fix", file=sys.stderr)
-        print("To evolve the shim deliberately, edit CANONICAL_SHIM in this gate first, then --fix to propagate.", file=sys.stderr)
+    payload: dict[str, object] = {
+        "status": status,
+        "scanned_repo_root": str(repo_root),
+        "checked_files": len(shim_files),
+        "drifted": drifted,
+        "fixed": fixed,
+        "unfixable": unfixable,
+    }
+    # Output is unconditionally YAML, so the remedies have to live in the payload.
+    # Each of these existed only inside the human branches, and a non-ok status
+    # that names no next step is a gate that reports a problem nobody can act on.
+    if status == "empty-scope":
+        payload["remedies"] = [
+            "Nothing was compared: this is not a passing comparison. Check --repo-root "
+            "(and --require-git-file-listing if the listing came back empty).",
+        ]
+    elif status == "drift":
+        payload["remedies"] = [
+            "Run: python3 scripts/check_bootstrap_shim_consistency.py --repo-root . --fix",
+            "To evolve the shim deliberately, edit CANONICAL_SHIM in this gate first, then --fix to propagate.",
+        ]
+    emit_yaml(payload)
     return 0 if status == "ok" else 1
 
 

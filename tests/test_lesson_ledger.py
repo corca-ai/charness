@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import lesson_ledger_lib as ledger
 from scripts import lesson_ledger_writer_lib as writer
@@ -478,7 +479,7 @@ def test_score_authoring_cli_emits_session_bound_event(tmp_path: Path, monkeypat
         ],
     )
     assert scorer.main() == 0
-    assert json.loads(capsys.readouterr().out)["session_id"] == "session-a"
+    assert yaml.safe_load(capsys.readouterr().out)["session_id"] == "session-a"
 
 
 def test_session_recorder_cli_emits_snapshot_and_requires_seed(
@@ -519,7 +520,7 @@ def test_session_recorder_cli_emits_snapshot_and_requires_seed(
         ],
     )
     assert session_recorder.main() == 0
-    assert json.loads(capsys.readouterr().out)["session_id"] == "cli-session"
+    assert yaml.safe_load(capsys.readouterr().out)["session_id"] == "cli-session"
     monkeypatch.setattr(
         sys,
         "argv",
@@ -797,7 +798,7 @@ def test_empty_ledger_bootstrap_entrypoint_reports_a_refusal_as_exit_one(
     _retro(tmp_path, "source.md", "a")
     _ledger(tmp_path)
     monkeypatch.setattr(
-        sys, "argv", ["init_lesson_ledger.py", "--repo-root", str(tmp_path), "--json"]
+        sys, "argv", ["init_lesson_ledger.py", "--repo-root", str(tmp_path)]
     )
 
     with pytest.raises(SystemExit) as caught:
@@ -805,7 +806,7 @@ def test_empty_ledger_bootstrap_entrypoint_reports_a_refusal_as_exit_one(
 
     assert caught.value.code == 1
     captured = capsys.readouterr()
-    # Nothing on stdout: a `--json` consumer must not be handed a half-receipt.
+    # Nothing on stdout: a payload consumer must not be handed a half-receipt.
     assert captured.out == ""
     assert "it is append-only" in captured.err
     assert "check_lesson_ledger.py" in captured.err

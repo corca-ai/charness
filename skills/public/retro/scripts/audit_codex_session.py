@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,6 +21,7 @@ codex_audit = SKILL_RUNTIME.load_repo_module_from_skill_script(
 jsonl_audit = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.codex_session_jsonl_audit"
 )
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 
 
 def parse_args() -> argparse.Namespace:
@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--thread-id", action="append", default=[], help="Restrict the aggregate audit to one or more thread ids (repeatable)")
     parser.add_argument("--list-threads", action="store_true", help="List candidate threads in the aggregate source instead of auditing")
     parser.add_argument("--since", help="Only include log lines at or after this ISO timestamp")
-    parser.add_argument("--format", choices=("json", "markdown"), default="json", help="Output format (default: json)")
+    parser.add_argument("--format", choices=("yaml", "markdown"), default="yaml", help="Output format (default: yaml)")
     parser.add_argument("--top", type=int, default=20, help="Cap how many ranked rows to include (default: 20)")
     parser.add_argument("--max-auto-threads", type=int, default=12, help="Cap auto-selected threads when none are named (default: 12)")
     parser.add_argument("--max-command-len", type=int, default=160, help="Truncate command snippets to this length (default: 160)")
@@ -61,7 +61,7 @@ def run_session_jsonl(args: argparse.Namespace) -> int:
     if args.format == "markdown":
         print(jsonl_audit.render_markdown(payload))
     else:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        emit_yaml(payload)
     return 0
 
 
@@ -95,7 +95,7 @@ def main() -> int:
     if args.format == "markdown" and not args.list_threads:
         print(codex_audit.render_markdown(payload))
     else:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        emit_yaml(payload)
     return 0
 
 

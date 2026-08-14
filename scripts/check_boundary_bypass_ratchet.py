@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -21,7 +22,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--exemptions", type=Path, default=ratchet_lib.DEFAULT_EXEMPTIONS_PATH)
     parser.add_argument("--write-baseline", action="store_true", help="Write a canonical baseline from the current inventory.")
     parser.add_argument("--confirm-baseline-delta", action="store_true", help="Confirm replacement of an existing baseline when --write-baseline changes it.")
-    parser.add_argument("--json", action="store_true", help="Emit the full ratchet report as JSON")
     return parser.parse_args()
 
 
@@ -71,7 +71,7 @@ def main() -> int:
             if changed and previous is not None and not args.confirm_baseline_delta:
                 report = {
                     "ok": False,
-                    "error": "baseline would change; rerun with --confirm-baseline-delta after reviewing the JSON delta",
+                    "error": "baseline would change; rerun with --confirm-baseline-delta after reviewing the emitted baseline_delta",
                     "baseline_delta": baseline_delta(previous, proposed),
                 }
             else:
@@ -85,17 +85,7 @@ def main() -> int:
             report = ratchet_lib.check_payload(payload, baseline, exemptions)
     except ratchet_lib.RatchetError as exc:
         report = {"ok": False, "error": str(exc)}
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    elif report["ok"]:
-        s = report["summary"]
-        print(
-            "boundary-bypass ratchet OK: "
-            f"{s['candidate_count']} candidates, {s['convertible_count']} clean-convertible, "
-            f"{s['internal_boundary_count']} internally-spawning, {s['keep_boundary_count']} likely keep-boundary"
-        )
-    else:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(report)
     return 0 if report["ok"] else 1
 
 

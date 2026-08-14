@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -21,6 +19,11 @@ _critique_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.critique_adapter_lib"
 )
 load_adapter = _critique_adapter_lib.load_adapter
+# Command output is unconditionally YAML since the 2026-08-14 --json removal. This main
+# hand-rolled its own `json.dump(..., sys.stdout)` instead of going through
+# `skill_runtime_bootstrap.run_adapter_cli` like its sibling resolvers, so the repo-wide
+# sweep of that driver did not reach it.
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 
 
 def main() -> int:
@@ -28,8 +31,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root for resolving the critique adapter")
     args = parser.parse_args()
     payload = load_adapter(args.repo_root.resolve())
-    json.dump(payload, sys.stdout, indent=2, ensure_ascii=False, sort_keys=True)
-    sys.stdout.write("\n")
+    emit_yaml(dict(sorted(payload.items())))
     return 0 if payload["valid"] else 1
 
 

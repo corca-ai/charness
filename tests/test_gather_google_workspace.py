@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,7 +95,7 @@ def test_advise_google_workspace_path_reports_host_mediated_mode(tmp_path: Path)
     assert "host's google_workspace capability command" in payload["operator_prompt"]
 
 
-def test_advise_google_workspace_path_cli_emits_json(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_advise_google_workspace_path_cli_emits_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path)
 
     result = run_script_main(
@@ -105,7 +107,7 @@ def test_advise_google_workspace_path_cli_emits_json(tmp_path: Path, monkeypatch
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["provider"] == "google-workspace"
     assert payload["provider_mode"] == "none"
 

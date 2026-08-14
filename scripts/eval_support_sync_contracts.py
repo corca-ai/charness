@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 
 class EvalError(Exception):
@@ -29,7 +30,6 @@ def main() -> int:
             "agent-browser",
             "--tool-id",
             "specdown",
-            "--json",
         ],
         cwd=repo_root,
         check=False,
@@ -39,7 +39,7 @@ def main() -> int:
     if result.returncode != 0:
         raise EvalError(result.stderr or "support-sync dry-run failed")
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     if len(payload) != 2:
         raise EvalError(f"unexpected payload {payload!r}")
 
@@ -59,6 +59,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except (EvalError, json.JSONDecodeError) as exc:
+    except (EvalError, yaml.YAMLError) as exc:
         print(str(exc), file=sys.stderr)
         sys.exit(1)

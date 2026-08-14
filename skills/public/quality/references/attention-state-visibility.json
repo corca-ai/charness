@@ -131,7 +131,7 @@
       "evidence_terms": [
         "skipped"
       ],
-      "rationale": "A documented invocation this gate cannot resolve to a runnable script -- a <placeholder> path for a consuming repo, or a path check_doc_links.py owns -- is counted by reason instead of dropped. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the --json payload as skipped, so a green run states how much of the documented command surface it did not prove rather than reading as full coverage."
+      "rationale": "A documented invocation this gate cannot resolve to a runnable script -- a <placeholder> path for a consuming repo, or a path check_doc_links.py owns -- is counted by reason instead of dropped. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the YAML payload as skipped, so a green run states how much of the documented command surface it did not prove rather than reading as full coverage."
     },
     "scripts/check_documented_subcommands.py": {
       "states": [
@@ -144,7 +144,7 @@
       "evidence_terms": [
         "skipped"
       ],
-      "rationale": "A documented `charness` invocation whose subcommand token is not a single subcommand name -- `charness tool install/update/doctor` names three of them in one prose span -- is counted by reason instead of guessed at. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the --json payload as skipped, so a green run states how much of the documented subcommand surface it did not prove rather than reading as full coverage."
+      "rationale": "A documented `charness` invocation whose subcommand token is not a single subcommand name -- `charness tool install/update/doctor` names three of them in one prose span -- is counted by reason instead of guessed at. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the YAML payload as skipped, so a green run states how much of the documented subcommand surface it did not prove rather than reading as full coverage."
     },
     "scripts/gate_report_emit.py": {
       "states": [
@@ -444,7 +444,7 @@
         "skipped",
         "uncomparable"
       ],
-      "rationale": "A path with no recoverable baseline cannot be compared, and that is NOT the same answer as \"this repair changed nothing\". Conflating them would report a reassuring zero for a slice the harness never examined -- the silent-zero shape this tool exists to prevent one level down. So uncomparable paths are counted by path with the reason (no baseline at that ref, or not captured by the reviewer snapshot, which stores Python sources only), printed in the success line, and carried per-path in the --json payload under `uncomparable` so a consumer can tell an empty result from an unexamined one."
+      "rationale": "A path with no recoverable baseline cannot be compared, and that is NOT the same answer as \"this repair changed nothing\". Conflating them would report a reassuring zero for a slice the harness never examined -- the silent-zero shape this tool exists to prevent one level down. So uncomparable paths are counted by path with the reason (no baseline at that ref, or not captured by the reviewer snapshot, which stores Python sources only), printed in the success line, and carried per-path in the YAML payload under `uncomparable` so a consumer can tell an empty result from an unexamined one."
     },
     "scripts/plan_cautilus_proof.py": {
       "states": [
@@ -499,7 +499,7 @@
         "skipped",
         "uncomparable"
       ],
-      "rationale": "A path with no baseline at the compared ref cannot be examined, and that is NOT the same answer as \"no name was removed\". On a shallow clone, a fresh clone, or a consumer repo with no remote-tracking base ref, EVERY path lands there -- and a silent pass would read as a clean check that never ran. Uncomparable paths are counted per path with the reason, printed on the success line, and carried under `uncomparable` in the --json payload, so a consumer can distinguish an empty result from an unexamined one. The sibling parity harness lost exactly this distinction in its first draft and had it restored by a bounded review."
+      "rationale": "A path with no baseline at the compared ref cannot be examined, and that is NOT the same answer as \"no name was removed\". On a shallow clone, a fresh clone, or a consumer repo with no remote-tracking base ref, EVERY path lands there -- and a silent pass would read as a clean check that never ran. Uncomparable paths are counted per path with the reason, printed on the success line, and carried under `uncomparable` in the YAML payload, so a consumer can distinguish an empty result from an unexamined one. The sibling parity harness lost exactly this distinction in its first draft and had it restored by a bounded review."
     },
     "scripts/report_usage_episodes.py": {
       "states": [
@@ -1047,6 +1047,7 @@
     },
     "skills/public/quality/scripts/validate_skill_ergonomics.py": {
       "states": [
+        "not_configured",
         "skipped"
       ],
       "visibility": [
@@ -1057,7 +1058,7 @@
         "WARNING:",
         "skill_ergonomics_gate_rules_empty"
       ],
-      "rationale": "Empty or disabled skill ergonomics enforcement remains exit-zero but emits warnings."
+      "rationale": "Empty or disabled skill ergonomics enforcement remains exit-zero but emits warnings. Since the 2026-08-14 --json removal the payload also names the state directly as `verdict: not-configured`, and each warning carries an `attention` field holding the `WARNING:` marker that previously existed only in the retired human renderer -- so an exit-zero run still says enforcement was never configured rather than that it passed."
     },
     "skills/public/release/scripts/check_fresh_checkout_probes.py": {
       "states": [
@@ -1322,6 +1323,20 @@
         "unset"
       ],
       "rationale": "This script used to seed `auto_session_trigger_surfaces: []` and `auto_session_trigger_path_globs: []` into a fresh adapter, which the probe then read as an INTENTIONAL opt-out the repo had never chosen — two mechanisms agreeing on the wrong default. It now leaves the keys unset so the probe reports `not_configured` and its remediation fires, and the seed report says so rather than implying a configured state."
+    },
+    "skills/public/quality/scripts/check_regenerable_facts.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "structured_warning",
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "diagnostics"
+      ],
+      "rationale": "The regenerable-facts gate refuses rather than passing when it is not configured for a repo or for docs. The 2026-08-14 --json removal folded that refusal, its remedy, and the unclassified-docs non-claim out of the retired human renderer and into the `status` and `diagnostics` payload keys, so a run that judged nothing cannot read as a clean verdict."
     }
   }
 }

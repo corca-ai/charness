@@ -50,7 +50,6 @@ at push time -- see ``PARTIAL_EXIT``.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 from pathlib import Path
@@ -104,6 +103,7 @@ from scripts.sample_mutation_files import list_changed, list_eligible  # noqa: E
 from scripts.subprocess_only_coverage_advisory import (  # noqa: E402
     subprocess_coverage_advisory_report,
 )
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 #: Re-export surface. These names moved to `changed_line_run_trust` when this file
 #: outgrew the length cap, but callers outside it — `mutation_coverage_producer` and
@@ -201,7 +201,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def _emit(report: dict) -> None:
-    print(json.dumps(report, indent=2, sort_keys=True))
+    emit_yaml(report)
 
 
 def _attach_warning(report: dict, warning: str | None) -> dict:

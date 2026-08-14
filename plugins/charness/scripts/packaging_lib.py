@@ -251,6 +251,13 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     runtime_bootstrap_path = repo_root / "runtime_bootstrap.py"
     if runtime_bootstrap_path.is_file():
         copy_file(runtime_bootstrap_path, plugin_root / "runtime_bootstrap.py")
+    # Ships for the same reason as the bootstrap shim above: ~96 exported `scripts/`
+    # modules import `yaml_output` bare, which only resolves from the repo root when
+    # this shim is present. Omitting it would export a tree whose scripts break the
+    # moment a consumer imports one as `scripts.<name>` instead of running it.
+    yaml_output_path = repo_root / "yaml_output.py"
+    if yaml_output_path.is_file():
+        copy_file(yaml_output_path, plugin_root / "yaml_output.py")
     skill_runtime_bootstrap_path = repo_root / "skill_runtime_bootstrap.py"
     if skill_runtime_bootstrap_path.is_file():
         copy_file(skill_runtime_bootstrap_path, plugin_root / "skill_runtime_bootstrap.py")

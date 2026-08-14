@@ -98,7 +98,7 @@ def test_issue_target_uses_default_org_for_bare_repo(tmp_path: Path) -> None:
     result = run_script(SCRIPT, "resolve-target", "--repo-root", str(tmp_path), "--target", "demo")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["target"]["full_name"] == "corca-ai/demo"
     assert payload["target"]["source"] == "argument-default-org"
 
@@ -116,7 +116,7 @@ def test_issue_target_infers_current_repo_from_git_remote(tmp_path: Path) -> Non
     result = run_script(SCRIPT, "resolve-target", "--repo-root", str(tmp_path))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["target"]["full_name"] == "corca-ai/charness"
     assert payload["target"]["source"] == "git-remote:origin"
 
@@ -127,8 +127,8 @@ def test_issue_selector_parses_single_and_range_without_github() -> None:
 
     assert single.returncode == 0, single.stderr
     assert ranged.returncode == 0, ranged.stderr
-    assert json.loads(single.stdout)["numbers"] == [17]
-    assert json.loads(ranged.stdout)["numbers"] == [17, 18, 19]
+    assert yaml.safe_load(single.stdout)["numbers"] == [17]
+    assert yaml.safe_load(ranged.stdout)["numbers"] == [17, 18, 19]
 
 
 def test_issue_selector_rejects_non_positive_number_and_range() -> None:
@@ -136,9 +136,9 @@ def test_issue_selector_rejects_non_positive_number_and_range() -> None:
     zero_range = run_script(SCRIPT, "select", "--repo", "corca-ai/charness", "--selector", "0-3")
 
     assert zero.returncode == 1
-    assert json.loads(zero.stdout)["ok"] is False
+    assert yaml.safe_load(zero.stdout)["ok"] is False
     assert zero_range.returncode == 1
-    assert json.loads(zero_range.stdout)["ok"] is False
+    assert yaml.safe_load(zero_range.stdout)["ok"] is False
 
 
 def test_issue_read_uses_comments_in_default_gh_view(tmp_path: Path) -> None:
@@ -167,7 +167,7 @@ def test_issue_read_uses_comments_in_default_gh_view(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["comments_read"] is True
     assert payload["comment_count"] == 1
     entries = json.loads(log.read_text(encoding="utf-8"))
@@ -187,7 +187,7 @@ def test_issue_brief_path_rejects_non_positive_number_with_structured_error(tmp_
     result = run_script(SCRIPT, "brief-path", "--repo-root", str(tmp_path), "--number", "0")
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "positive integer" in payload["error"]
 
@@ -198,7 +198,7 @@ def test_issue_brief_path_emits_payload_for_valid_number(tmp_path: Path) -> None
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["issue_number"] == 208
     assert payload["date"] == "2026-05-24"
@@ -209,7 +209,7 @@ def test_issue_resolve_invocation_treats_single_number_as_selector(tmp_path: Pat
     result = run_script(SCRIPT, "resolve-invocation", "--repo-root", str(tmp_path), "--", "120")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["target"]["full_name"] == f"corca-ai/{tmp_path.name}"
     assert payload["selector"] == "120"
     assert payload["numbers"] == [120]
@@ -220,7 +220,7 @@ def test_issue_resolve_invocation_accepts_repo_plus_selector(tmp_path: Path) -> 
     result = run_script(SCRIPT, "resolve-invocation", "--repo-root", str(tmp_path), "--", "acme", "120")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["target"]["full_name"] == "corca-ai/acme"
     assert payload["selector"] == "120"
     assert payload["numbers"] == [120]
@@ -237,7 +237,7 @@ def test_issue_target_uses_adapter_default_repo_without_remote(tmp_path: Path) -
     result = run_script(SCRIPT, "resolve-target", "--repo-root", str(tmp_path))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["target"]["full_name"] == "corca-ai/acme"
     assert payload["target"]["source"] == "adapter-default-repo-default-org"
 
@@ -276,7 +276,7 @@ def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["repo"] == "corca-ai/charness"
     assert payload["number"] == 42
@@ -325,7 +325,7 @@ def test_issue_close_with_comment_fails_when_final_state_remains_open(tmp_path: 
     )
 
     assert result.returncode == 2, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "is 'OPEN'" in payload["error"]
 
@@ -369,7 +369,7 @@ def test_issue_close_with_comment_surfaces_partial_state_when_close_fails(tmp_pa
     )
 
     assert result.returncode == 2, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "comment_succeeded=True" in payload["error"]
     assert "do not re-comment on retry" in payload["error"]
@@ -498,7 +498,7 @@ def test_issue_close_with_comment_requires_adapter_view_template(tmp_path: Path)
     )
 
     assert result.returncode == 2, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "requires backend commands.view" in payload["error"]
 
@@ -651,7 +651,7 @@ def test_issue_close_with_comment_rejects_adapter_template_with_unknown_placehol
     )
 
     assert result.returncode != 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "audit_id" in payload["error"]
     assert "unknown placeholders" in payload["error"]
@@ -681,7 +681,7 @@ def test_issue_plan_resolve_exposes_backend_refs_and_classification_actions(tmp_
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["next_action"]["kind"] == "read_selected_issues_with_comments_then_classify"
     assert payload["selected_backend"]["id"] == "gh"
     assert "auth_status" not in payload["selected_backend"]
@@ -708,7 +708,7 @@ def test_issue_plan_resolve_without_selector_selects_github_next_action(tmp_path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["numbers"] is None
     assert payload["selector_source"] == "github-newest-open"
     assert payload["next_action"]["kind"] == "select_newest_open_issue_from_github_then_read"
@@ -730,7 +730,7 @@ def test_issue_plan_reports_invalid_adapter_before_planning(tmp_path: Path) -> N
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["next_action"]["kind"] == "repair_issue_adapter"
 
@@ -749,7 +749,7 @@ def test_issue_plan_reports_invalid_resolve_invocation_flag(tmp_path: Path) -> N
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "unknown issue resolve flag" in payload["error"]
 
@@ -776,7 +776,7 @@ def test_issue_plan_resolve_rejects_ignored_target_flag(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "--target" in payload["error"]
 
@@ -797,7 +797,7 @@ def test_resolve_milestone_assigns_existing_match() -> None:
         SCRIPT, "resolve-milestone", "--requested", "v1.0", "--existing", "v1.0", "--existing", "backlog"
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["assignable"] is True
     assert payload["action"] == "assign"
     assert payload["milestone"] == "v1.0"
@@ -806,7 +806,7 @@ def test_resolve_milestone_assigns_existing_match() -> None:
 def test_resolve_milestone_never_invents_when_no_match() -> None:
     result = run_script(SCRIPT, "resolve-milestone", "--requested", "made-up", "--existing", "v1.0")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["assignable"] is False
     assert payload["action"] == "leave-unassigned"
     assert payload["milestone"] is None
@@ -816,7 +816,7 @@ def test_resolve_milestone_never_invents_when_no_match() -> None:
 def test_resolve_milestone_leaves_unassigned_when_none_requested() -> None:
     result = run_script(SCRIPT, "resolve-milestone", "--existing", "v1.0")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["assignable"] is False
     assert payload["milestone"] is None
     assert payload["reason"] == "no milestone requested"

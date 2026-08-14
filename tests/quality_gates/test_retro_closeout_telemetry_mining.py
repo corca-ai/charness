@@ -13,6 +13,8 @@ import json
 import math
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT, run_script
 
 MINER_PATH = ROOT / "skills" / "public" / "retro" / "scripts" / "mine_closeout_telemetry.py"
@@ -170,7 +172,7 @@ def test_cli_over_seeded_stream(tmp_path: Path) -> None:
     stream.write_text("\n".join(_gate_record("pytest -q", 200.0) for _ in range(3)) + "\n", encoding="utf-8")
     completed = run_script(str(MINER_PATH), "--repo-root", str(tmp_path))
     assert completed.returncode == 0, completed.stderr
-    result = json.loads(completed.stdout)
+    result = yaml.safe_load(completed.stdout)
     gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
     assert gate["disposition"] == "file-issue"
     assert gate["marker"] == "recurs:"
@@ -194,7 +196,7 @@ def test_detail_cli_audits_population_and_summarizes_entries(tmp_path: Path) -> 
     stream.write_text("\n".join(lines) + "\n", encoding="utf-8")
     completed = run_script(str(MINER_PATH), "--repo-root", str(tmp_path), "--detail")
     assert completed.returncode == 0, completed.stderr
-    result = json.loads(completed.stdout)
+    result = yaml.safe_load(completed.stdout)
     detail = result["detail"]
     population = detail["population"]
     assert detail["stream_read"] == {"status": "present"}
@@ -231,7 +233,7 @@ def test_detail_cli_audits_population_and_summarizes_entries(tmp_path: Path) -> 
 def test_detail_missing_stream_is_not_an_empty_clean_result(tmp_path: Path) -> None:
     completed = run_script(str(MINER_PATH), "--repo-root", str(tmp_path), "--detail")
     assert completed.returncode == 0, completed.stderr
-    result = json.loads(completed.stdout)
+    result = yaml.safe_load(completed.stdout)
     assert result["detail"]["stream_read"] == {"status": "missing"}
     assert result["detail"]["population"]["retained_records"] == 0
     assert result["detail"]["population"]["scope"].endswith("unknown")
@@ -252,7 +254,7 @@ def test_detail_recur_min_uses_only_retained_schema_records(tmp_path: Path) -> N
         str(MINER_PATH), "--repo-root", str(tmp_path), "--detail", "--recur-min", "3"
     )
     assert completed.returncode == 0, completed.stderr
-    result = json.loads(completed.stdout)
+    result = yaml.safe_load(completed.stdout)
     gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
     assert result["recur_min"] == 3
     assert gate["occurrences"] == 2

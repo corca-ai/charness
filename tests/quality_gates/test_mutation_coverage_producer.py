@@ -13,6 +13,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from .mutation_coverage_producer_fixtures import git as _git
 from .mutation_coverage_producer_fixtures import seed_mutation_coverage_repo as _seed_repo
@@ -810,7 +811,7 @@ def test_produced_consumer_command_reuses_exact_base_and_coverage_without_recoll
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["base_sha"] == base
     assert payload["head_sha"] == "HEAD"
     assert payload["blocking"] == []

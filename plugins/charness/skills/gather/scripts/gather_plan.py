@@ -3,9 +3,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 from urllib.parse import urlparse
@@ -51,6 +49,17 @@ def _load_resolve_adapter():
 
 def _load_route_module():
     return runpy.run_path(str(SUPPORT_WEB_FETCH))
+
+
+def emit_yaml(payload: object) -> None:
+    """Render this command's stdout through the repo's one YAML emitter.
+
+    Reached via the support router this file already loads: its `load_yaml_output`
+    carries the BOUNDED ancestor walk that finds `scripts/yaml_output.py` at the repo
+    root here and at the plugin root once exported, so this adds no fourth private
+    copy of that walk and depends on no root file a minimal exported layout omits.
+    """
+    _load_route_module()["load_yaml_output"]().emit_yaml(payload)
 
 
 def _source_kind(url: str) -> str:
@@ -232,7 +241,7 @@ def main() -> int:
     )
     args = parser.parse_args()
     payload = build_plan(args.repo_root.resolve(), args.url, intent=args.intent, browser_mode=args.browser_mode)
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    emit_yaml(dict(sorted(payload.items())))
     return 0 if payload["ok"] else 1
 
 

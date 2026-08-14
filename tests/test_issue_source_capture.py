@@ -17,6 +17,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 import scripts.capture_issue_source as capture_module
 import scripts.issue_source_capture_lib as capture_lib
@@ -440,7 +441,7 @@ def test_cli_resolves_a_relative_snapshot_against_the_repo_root_it_was_given(
     )
 
     assert code == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["ok"] is True
     assert payload["snapshot_path"] == "spec/source.json"
     assert payload["per_issue"] == [
@@ -469,7 +470,7 @@ def test_cli_renders_a_refusal_as_nonzero_json_and_writes_no_snapshot(
 
     assert code == 1
     captured = capsys.readouterr()
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert payload["ok"] is False
     assert payload["refusal"] == "unsupported_capability"
     assert "capture_issue_source: REFUSED (unsupported_capability)" in captured.err

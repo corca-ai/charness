@@ -30,7 +30,7 @@ def install_route(manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 def verify_command(tool_id: str) -> str:
-    return f"python3 scripts/doctor.py --repo-root . --json --tool-id {tool_id}"
+    return f"python3 scripts/doctor.py --repo-root . --tool-id {tool_id}"
 
 
 def why_recommended(manifest: dict[str, Any], *, next_skill_id: str) -> str:

@@ -7,9 +7,10 @@ in the sibling file.
 """
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
+
+import yaml
 
 from tests.quality_gates.support import run_script
 
@@ -78,7 +79,7 @@ def test_bug_closeout_without_critique_line_is_rejected(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["resolution_critique_check"]["missing"] == ["resolution_critique"]
 
@@ -113,7 +114,7 @@ def test_bug_closeout_with_critique_artifact_path_is_accepted(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["resolution_critique_check"]["ok"] is True
     via = {entry["via"] for entry in payload["resolution_critique_check"]["satisfied"]}
@@ -152,7 +153,7 @@ def test_bug_bundle_requires_issue_bound_critique_for_each_number(tmp_path: Path
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["resolution_critique_check"]["missing_issue_bindings"] == [184]
 
@@ -189,7 +190,7 @@ def test_bug_bundle_rejects_unqualified_single_issue_critique(tmp_path: Path) ->
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["resolution_critique_check"]["checks"] == []
     assert payload["resolution_critique_check"]["missing_issue_bindings"] == [184, 221]
@@ -231,7 +232,7 @@ def test_bug_bundle_accepts_explicit_multi_issue_critique_binding(tmp_path: Path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["resolution_critique_check"]["missing_issue_bindings"] == []
 
@@ -268,7 +269,7 @@ def test_bug_bundle_rejects_multi_issue_critique_artifact_missing_one_binding(tm
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["resolution_critique_check"]["missing_issue_bindings"] == [221]
     assert payload["resolution_critique_check"]["binding_failures"][0]["number"] == 221
@@ -308,7 +309,7 @@ def test_bug_closeout_ignores_fenced_critique_line(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["resolution_critique_check"]["missing"] == ["resolution_critique"]
 
@@ -340,7 +341,7 @@ def test_bug_closeout_with_blocked_critique_too_terse_is_rejected(tmp_path: Path
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["resolution_critique_check"]["ok"] is False
     invalid_names = {entry["name"] for entry in payload["resolution_critique_check"]["invalid_skips"]}
     assert "resolution_critique" in invalid_names
@@ -375,7 +376,7 @@ def test_question_closeout_does_not_require_critique(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["resolution_critique_check"].get("skipped_classification") == "question"
 
@@ -413,7 +414,7 @@ def test_feature_closeout_with_blocked_critique_is_accepted(tmp_path: Path) -> N
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["resolution_critique_check"]["ok"] is True
     assert payload["resolution_critique_check"]["skipped"][0]["name"] == "resolution_critique"
 
@@ -442,7 +443,7 @@ def test_bug_closeout_rejects_blocked_critique_signal_that_only_the_head_made_lo
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["resolution_critique_check"]["ok"] is False
     invalid = payload["resolution_critique_check"]["invalid_skips"][0]
     assert invalid["name"] == "resolution_critique"
@@ -462,7 +463,7 @@ def test_accepted_blocked_critique_is_reported_as_skipped_not_executed(tmp_path:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     check = payload["resolution_critique_check"]
     assert check["ok"] is True
     assert len(check["review_advisory"]) == 1
@@ -486,7 +487,7 @@ def test_verify_closeout_surfaces_the_skip_advisory_at_the_top_level(tmp_path: P
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert len(payload["review_advisory"]) == 1
     assert "was SKIPPED" in payload["review_advisory"][0]
@@ -513,6 +514,6 @@ def test_verify_closeout_top_level_advisory_is_empty_for_an_executed_critique(tm
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["review_advisory"] == []

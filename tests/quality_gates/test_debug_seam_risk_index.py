@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
@@ -141,9 +143,12 @@ def test_build_debug_seam_risk_index_writes_source_linked_entries(tmp_path: Path
         ("2026-04-22-host-seam.md", debug_artifact()),
         ("2026-04-10-legacy.md", legacy_debug_artifact()),
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--write", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--write")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
+    # `status` is what the dropped "Wrote <path>." line said and the bare path does
+    # not: this run REWROTE the index rather than reporting an existing one.
+    assert payload["status"] == "written"
     assert payload["index_path"] == "charness-artifacts/debug/seam-risk-index.json"
 
     index = json.loads((repo / payload["index_path"]).read_text(encoding="utf-8"))

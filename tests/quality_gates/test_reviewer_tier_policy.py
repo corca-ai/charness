@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 import subprocess
+
+import yaml
 
 from scripts.adapter_lib import load_yaml_file
 from scripts.critique_adapter_lib import validate_adapter_data
@@ -145,7 +146,7 @@ def test_missing_critique_adapter_does_not_infer_host_specific_tier(tmp_path) ->
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "reviewer_tiers" not in payload["data"]
 
 

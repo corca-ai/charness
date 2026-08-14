@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import lesson_ledger_lib as ledger
 from scripts import seed_lesson_transitions as seeder
@@ -273,6 +274,8 @@ def test_committed_transition_prefix_is_preserved_across_a_seed(tmp_path: Path) 
 
 
 def test_cli_dry_run_and_write_roundtrip(tmp_path: Path) -> None:
+    """The rehearsal must plan exactly what the write then performs, and must leave
+    the ledger byte-identical while it does."""
     _retro(tmp_path, "source.md", "a")
     path = _empty_ledger(tmp_path)
     command = [
@@ -280,30 +283,36 @@ def test_cli_dry_run_and_write_roundtrip(tmp_path: Path) -> None:
         str(ROOT / "scripts/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
-        "--json",
     ]
 
     rehearsal = subprocess.run([*command, "--dry-run"], check=False, capture_output=True, text=True)
     assert rehearsal.returncode == 0, rehearsal.stderr
-    planned = json.loads(rehearsal.stdout)
+    planned = yaml.safe_load(rehearsal.stdout)
     assert planned["dry_run"] is True and planned["seeded_count"] == 1
-    assert "unrepairably" in planned["freeze_note"]
+    # The ledger on disk stays JSON; only the command's own receipt moved to YAML.
     assert json.loads(path.read_text(encoding="utf-8"))["transitions"] == []
 
     applied = subprocess.run(command, check=False, capture_output=True, text=True)
     assert applied.returncode == 0, applied.stderr
-    assert json.loads(applied.stdout)["seeded"] == planned["seeded"]
+    applied_receipt = yaml.safe_load(applied.stdout)
+    assert applied_receipt["seeded"] == planned["seeded"]
+    assert applied_receipt["dry_run"] is False
     assert _validate(tmp_path)["lesson_count"] == 1
 
 
-def test_prose_receipt_carries_the_freeze_warning_on_both_paths(tmp_path: Path) -> None:
-    """The receipt an operator actually reads, not just the JSON field.
+def test_receipt_carries_the_freeze_warning_and_its_context_on_every_path(tmp_path: Path) -> None:
+    """The risk statement and the next step, on all three receipt shapes.
 
     The freeze warning was gated on the WRITE, so it arrived only after the bytes
     it warned about had landed -- while the dry run, the inspection moment the
-    whole mitigation rests on, stayed silent. Untested prose on a surface whose
+    whole mitigation rests on, stayed silent. Untested wording on a surface whose
     own job is stating a risk is the `proof-surface-message-drift` class this
-    slice seeded as a lesson.
+    slice seeded as a lesson, and it does not stop being untested because the
+    wording now travels as a payload field instead of a printed line.
+
+    `active_lesson_budget` is asserted for the same reason: it is the DENOMINATOR
+    for `active_lesson_count`, it lived only inside the deleted renderer, and a
+    count with no budget beside it cannot answer "is there room for another".
     """
     _retro(tmp_path, "source.md", "a")
     _empty_ledger(tmp_path)
@@ -316,20 +325,27 @@ def test_prose_receipt_carries_the_freeze_warning_on_both_paths(tmp_path: Path) 
 
     rehearsal = subprocess.run([*command, "--dry-run"], check=False, capture_output=True, text=True)
     assert rehearsal.returncode == 0, rehearsal.stderr
-    assert "Would seed 1 transition(s)" in rehearsal.stdout
-    assert "unrepairably" in rehearsal.stdout
-    assert "a <- charness-artifacts/retro/source.md" in rehearsal.stdout
+    planned = yaml.safe_load(rehearsal.stdout)
+    assert planned["dry_run"] is True and planned["seeded_count"] == 1
+    assert "unrepairably" in planned["freeze_note"]
+    assert planned["seeded"][0]["lesson_id"] == "a"
+    assert planned["seeded"][0]["source_retro"] == "charness-artifacts/retro/source.md"
+    assert planned["active_lesson_count"] == 1
+    assert planned["active_lesson_budget"] == ledger.ACTIVE_LESSON_BUDGET
 
     applied = subprocess.run(command, check=False, capture_output=True, text=True)
     assert applied.returncode == 0, applied.stderr
-    assert "Seeded 1 transition(s)" in applied.stdout
-    assert "unrepairably" in applied.stdout
+    written = yaml.safe_load(applied.stdout)
+    assert written["dry_run"] is False and written["seeded_count"] == 1
+    assert "unrepairably" in written["freeze_note"]
 
-    # And the nothing-to-do receipt names why, rather than printing an empty list.
+    # And the nothing-to-do receipt names why, rather than reporting an empty list.
     idle = subprocess.run(command, check=False, capture_output=True, text=True)
     assert idle.returncode == 0, idle.stderr
-    assert "No unseeded tagged classes" in idle.stdout
-    assert "recurrence-class" in idle.stdout
+    nothing = yaml.safe_load(idle.stdout)
+    assert nothing["seeded"] == [] and nothing["already_seeded_count"] == 1
+    assert "recurrence-class" in nothing["recurrence_tag_instruction"]
+    assert "unrepairably" in nothing["freeze_note"]
 
 
 def test_two_concurrent_seeders_smoke_check_the_shared_lock(tmp_path: Path) -> None:
@@ -357,7 +373,6 @@ def test_two_concurrent_seeders_smoke_check_the_shared_lock(tmp_path: Path) -> N
         str(ROOT / "scripts/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
-        "--json",
     ]
     first, second = (
         subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -368,7 +383,7 @@ def test_two_concurrent_seeders_smoke_check_the_shared_lock(tmp_path: Path) -> N
 
     assert codes == [0, 0], outputs
     # Whoever wins seeds both; the loser re-reads inside the lock and plans nothing.
-    seeded = sorted(json.loads(out)["seeded_count"] for out, _err in outputs)
+    seeded = sorted(yaml.safe_load(out)["seeded_count"] for out, _err in outputs)
     assert seeded == [0, 2], outputs
     payload = json.loads(
         (tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text(encoding="utf-8")

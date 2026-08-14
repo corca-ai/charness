@@ -243,11 +243,10 @@ def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(tmp
         doctor_module,
         "--repo-root",
         str(repo),
-        "--json",
         "--skip-release-probe",
     )
     assert doctor.returncode == 0, doctor.stderr
-    doctor_payload = json.loads(doctor.stdout)
+    doctor_payload = yaml.safe_load(doctor.stdout)
     assert doctor_payload[0]["doctor_status"] == "missing"
     assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
 
@@ -267,11 +266,10 @@ def test_doctor_missing_advisory_script_tool_is_exit_zero(tmp_path: Path) -> Non
         doctor_module,
         "--repo-root",
         str(repo),
-        "--json",
         "--skip-release-probe",
     )
     assert doctor.returncode == 0, doctor.stderr
-    doctor_payload = json.loads(doctor.stdout)
+    doctor_payload = yaml.safe_load(doctor.stdout)
     assert doctor_payload[0]["doctor_status"] == "missing"
     assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
 
@@ -297,11 +295,11 @@ def test_doctor_reuses_package_manager_prefix_probe_for_batch(tmp_path: Path, mo
     monkeypatch.setattr(
         sys,
         "argv",
-        ["doctor.py", "--repo-root", str(repo), "--json", "--skip-release-probe"],
+        ["doctor.py", "--repo-root", str(repo), "--skip-release-probe"],
     )
 
     assert doctor_module.main() == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert {item["tool_id"] for item in payload} == {"demo-tool", "demo-tool-two"}
     assert calls == 1
 
@@ -337,7 +335,7 @@ def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch
 
     env = os.environ.copy()
     env["PATH"] = f"{repo / 'bin'}:{env.get('PATH', '')}"
-    human_doctor = run_loaded_script_main(
+    cli_doctor = run_loaded_script_main(
         "doctor.py",
         doctor_module,
         "--repo-root",
@@ -345,9 +343,13 @@ def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch
         "--skip-release-probe",
         env=env,
     )
-    assert human_doctor.returncode == 0, human_doctor.stderr
-    assert "demo-tool: ok" in human_doctor.stdout
-    assert "healthcheck=not-configured" in human_doctor.stdout
+    assert cli_doctor.returncode == 0, cli_doctor.stderr
+    # The retired per-tool line ("demo-tool: ok ... healthcheck=not-configured")
+    # was a strict projection of these payload keys; assert them at the source.
+    cli_payload = yaml.safe_load(cli_doctor.stdout)
+    assert cli_payload[0]["tool_id"] == "demo-tool"
+    assert cli_payload[0]["doctor_status"] == "ok"
+    assert cli_payload[0]["healthcheck"]["status"] == "not-configured"
 
 
 def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path, monkeypatch) -> None:
@@ -552,11 +554,10 @@ def test_install_tools_add_dependency_creates_and_extends_dependencies_file(tmp_
         "demo-tool",
         "--execute",
         "--add-dependency",
-        "--json",
         env=env,
     )
     assert first.returncode == 0, first.stderr
-    payload = json.loads(first.stdout)
+    payload = yaml.safe_load(first.stdout)
     assert payload[0]["status"] in {"installed", "already-installed"}
     assert payload[0]["dependency_added"] is True
     deps_path = repo / "integrations" / "tools" / "dependencies.json"
@@ -572,11 +573,10 @@ def test_install_tools_add_dependency_creates_and_extends_dependencies_file(tmp_
         "demo-tool",
         "--execute",
         "--add-dependency",
-        "--json",
         env=env,
     )
     assert second.returncode == 0, second.stderr
-    payload2 = json.loads(second.stdout)
+    payload2 = yaml.safe_load(second.stdout)
     assert payload2[0]["dependency_added"] is False
     deps_after = json.loads(deps_path.read_text(encoding="utf-8"))
     assert deps_after == deps

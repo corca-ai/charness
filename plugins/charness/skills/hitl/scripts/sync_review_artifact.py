@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -20,6 +19,10 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _sync_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.hitl_review_artifact_lib")
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _current_pointer_writer = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.current_pointer_writer_lib")
+# Command output is unconditionally YAML since the 2026-08-14 --json removal. SKILL.md
+# teaches both of this script's invocations, so its stdout is a command surface, not an
+# artifact -- the durable artifact it syncs is written by `_sync_lib`, not printed here.
+_render_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").render_yaml
 load_adapter = _resolve_adapter.load_adapter
 write_current_pointer_text = _current_pointer_writer.write_current_pointer_text
 
@@ -50,7 +53,7 @@ def main() -> int:
         "runtime_updated_at": session["runtime_updated_at"],
         "errors": errors,
     }
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    sys.stdout.write(_render_yaml(payload))
     return 1 if errors else 0
 
 

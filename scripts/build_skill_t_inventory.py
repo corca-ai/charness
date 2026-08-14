@@ -4,9 +4,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:
+    from yaml_output import emit_yaml
 
 
 def parse_args() -> argparse.Namespace:
@@ -38,7 +42,7 @@ def main() -> int:
             if row["tier_c_events"]["status"] == "populated"
         ],
     }
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    emit_yaml(summary)
     return 0
 
 

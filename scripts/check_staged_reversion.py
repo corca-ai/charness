@@ -56,11 +56,15 @@ are ignored defensively; this repo has none.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import subprocess
 import sys
 from dataclasses import dataclass
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:
+    from yaml_output import emit_yaml
 
 _ENV_BYPASS = "CHARNESS_ALLOW_STAGED_REVERSION"
 _TRUTHY = {"1", "true", "yes", "on"}
@@ -258,20 +262,23 @@ def main(argv: list[str] | None = None) -> int:
             f"(also honored via the {_ENV_BYPASS} env var)."
         ),
     )
-    parser.add_argument(
-        "--json", action="store_true", help="Emit findings as JSON on stdout."
-    )
     args = parser.parse_args(argv)
     repo_root = os.path.abspath(args.repo_root)
 
     if _bypassed(args):
-        if args.json:
-            print(json.dumps({"state": "allowed", "findings": []}))
-        else:
-            print(
-                "check-staged-reversion: explicitly allowed "
-                f"(--allow-staged-reversion / {_ENV_BYPASS})"
-            )
+        emit_yaml(
+            {
+                "state": "allowed",
+                "findings": [],
+                # The escape must stay acknowledged rather than hidden behind a
+                # silent pass (module docstring); with output unconditionally
+                # YAML, the acknowledgement has to be a payload field.
+                "detail": (
+                    "explicitly allowed (--allow-staged-reversion / "
+                    f"{_ENV_BYPASS}); no staged path was inspected"
+                ),
+            }
+        )
         return 0
 
     try:
@@ -280,50 +287,48 @@ def main(argv: list[str] | None = None) -> int:
         # The index could not be read, so nothing was established. Report the
         # unestablished state instead of printing a clean verdict over a scope
         # this gate never saw.
-        if args.json:
-            print(
-                json.dumps(
-                    {"state": "unestablished", "findings": [], "error": str(exc)}
-                )
-            )
-        else:
-            print(
-                "check-staged-reversion: UNESTABLISHED — git could not read the "
-                f"index at {repo_root!r}, so no staged path was inspected.\n"
-                f"  git: {exc}\n"
-                "Fix the repository access (e.g. run from inside the repo, or "
-                "`git config --global --add safe.directory <path>` for a "
-                "dubious-ownership checkout) and re-run."
-            )
+        emit_yaml(
+            {
+                "state": "unestablished",
+                "findings": [],
+                "error": str(exc),
+                # Folded in from the deleted human renderer: the raw git error
+                # alone never said that NOTHING was inspected, nor how to make the
+                # index readable again.
+                "detail": (
+                    f"git could not read the index at {repo_root!r}, so no staged path "
+                    "was inspected."
+                ),
+                "remediation": (
+                    "Fix the repository access (e.g. run from inside the repo, or "
+                    "`git config --global --add safe.directory <path>` for a "
+                    "dubious-ownership checkout) and re-run."
+                ),
+            }
+        )
         return 1
 
-    if args.json:
-        print(
-            json.dumps(
-                {
-                    "state": "clean" if not findings else "blocked",
-                    "findings": [f.to_dict() for f in findings],
-                }
-            )
-        )
-    elif not findings:
-        print("check-staged-reversion: clean (no staged reversion of committed files)")
+    payload: dict = {
+        "state": "clean" if not findings else "blocked",
+        "findings": [f.to_dict() for f in findings],
+    }
+    if not findings:
+        payload["detail"] = "no staged reversion of committed files"
     else:
-        print(
-            "check-staged-reversion: BLOCKED — staged reversion of "
-            f"{len(findings)} already-committed file(s) detected.\n"
-            "The index holds a blob that is in neither the commit nor the "
-            "working copy; committing now would silently re-introduce removed "
-            "code with all gates green (#258).\n"
+        # Per-path recovery already rides on each finding; what only the deleted
+        # renderer carried is WHY this blocks (a commit now silently re-introduces
+        # removed code with every gate green) and the acknowledged escape.
+        payload["detail"] = (
+            f"staged reversion of {len(findings)} already-committed file(s) detected. "
+            "The index holds a blob that is in neither the commit nor the working copy; "
+            "committing now would silently re-introduce removed code with all gates "
+            "green (#258)."
         )
-        for finding in findings:
-            print(f"  - {finding.path} [{finding.case}]")
-            print(f"      {finding.recovery}")
-        print(
-            "\nIf this staged reversion is intentional, re-run with "
+        payload["escape"] = (
+            "If this staged reversion is intentional, re-run with "
             f"--allow-staged-reversion or set {_ENV_BYPASS}=1."
         )
-
+    emit_yaml(payload)
     return 0 if not findings else 1
 
 

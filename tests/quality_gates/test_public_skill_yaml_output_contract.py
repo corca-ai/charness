@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import ast
 import builtins
 import importlib.util
+import inspect
 import re
 import shlex
 import subprocess
@@ -12,7 +14,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts import yaml_output
+from scripts import gate_report_emit, yaml_output
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
@@ -75,6 +77,88 @@ SUMMARY_COMMANDS = (
 INVENTORY_DISPATCH = (
     ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
 ).read_text(encoding="utf-8")
+
+# --- the 2026-08-14 total `--json` removal ------------------------------------------
+#
+# The three assertions above ("`--json` is not in `--help`", "`--json` is not in the
+# docs") were the whole contract while `--json` still existed as a deprecated flag.
+# They cannot see the two shapes the total removal is actually about: a flag kept
+# alive under `argparse.SUPPRESS` (absent from help, still accepted), and a repo-owned
+# command whose stdout quietly went back to JSON. What follows pins the removal at the
+# source, at the argv boundary, and at the parse.
+
+# Where repo-owned commands live. `mutants/` and `.claude/worktrees/` are scratch
+# copies of this tree, not surfaces anyone runs.
+_OWNED_SOURCE_ROOTS = ("scripts", "skills", "hooks", "plugins")
+
+# One command per migrated family, with the minimum argv each needs, so a failure
+# names WHICH surface regressed rather than "something somewhere takes --json".
+# `--json` is rejected during parsing, before any of these does work, which is why a
+# closeout runner and a release-adjacent tool are safe to probe here.
+JSON_FLAG_MUST_BE_UNRECOGNIZED = (
+    ("scripts/check_cli_skill_surface.py", "--repo-root", "."),
+    ("scripts/check_closeout_floor_matrix.py", "--repo-root", "."),
+    ("scripts/check_command_docs.py", "--repo-root", "."),
+    ("scripts/check_github_actions.py", "--repo-root", "."),
+    ("scripts/check_issue_closeout_commit_msg.py", "--repo-root", ".", "--commit-msg-file", "README.md"),
+    ("scripts/check_public_doc_coupling.py", "--repo-root", "."),
+    ("scripts/check_skill_ownership_overlap.py", "--repo-root", "."),
+    ("scripts/dup_ratchet_edit_advisory.py", "--repo-root", ".", "--path", "README.md"),
+    ("scripts/eval_cautilus_chatbot_compare.py", "--repo-root", "."),
+    ("scripts/eval_cautilus_chatbot_proposals.py", "--repo-root", "."),
+    ("scripts/init_lesson_ledger.py", "--repo-root", "."),
+    ("scripts/inventory_skill_script_references.py", "--repo-root", ".", "--strict"),
+    ("scripts/measure_inventory_consumption_floor.py", "--repo-root", "."),
+    ("scripts/render_lesson_selection_preview.py", "--repo-root", ".", "--seed", "contract-probe"),
+    ("scripts/report_usage_episodes.py", "--repo-root", "."),
+    ("scripts/report_usage_product_review.py", "--repo-root", "."),
+    ("scripts/run_slice_closeout.py", "--repo-root", ".", "--paths", "README.md"),
+    ("scripts/session_start_lesson_context.py", "--repo-root", "."),
+    ("skills/public/setup/scripts/seed_dependencies.py", "--repo-root", ".", "--tool-id", "ruff"),
+    ("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", "."),
+)
+
+# The human renderers the migration DELETED, per module that owned them, and the
+# payload builder that replaced each where one was introduced. Pinned per module
+# rather than repo-wide: a same-named helper elsewhere may be a legitimate payload
+# builder, and a repo-wide ban would be a rule this contract cannot honestly make.
+DELETED_RENDERERS = (
+    ("scripts/report_usage_episodes.py", ("_print_result",), None),
+    ("scripts/usage_episode_product_review.py", ("print_review_result",), None),
+    ("scripts/check_command_docs.py", ("render_report",), None),
+    (
+        "scripts/check_issue_closeout_commit_msg.py",
+        ("_emit_human_output", "_format_failure", "_stub_evidence_lines", "_ledger_field_lines"),
+        "report_payload",
+    ),
+    ("scripts/check_github_actions.py", ("render_github_actions_report",), "report"),
+    ("scripts/inventory_skill_script_references.py", ("render_text", "print_text"), "report"),
+    ("scripts/check_documented_command_flags.py", ("render_report",), "report_payload"),
+    ("scripts/check_documented_subcommands.py", ("render_report",), "report_payload"),
+)
+
+
+def _owned_python_sources() -> list[Path]:
+    paths: list[Path] = []
+    for root in _OWNED_SOURCE_ROOTS:
+        paths.extend(sorted((ROOT / root).rglob("*.py")))
+    # The root `charness` executable is Python with NO `.py` extension, so `rglob`
+    # never reached the most public command surface in the repo -- the one CLAUDE.md
+    # tells every agent to run. A contract about repo-owned command output that cannot
+    # see `charness` is asserting less than it claims.
+    paths.append(ROOT / "charness")
+    assert paths
+    return paths
+
+
+def _module_level_names(path: Path) -> tuple[set[str], ast.Module]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    defined = {
+        node.name
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    return defined, tree
 
 
 def _run(*args: str) -> subprocess.CompletedProcess[str]:
@@ -284,6 +368,268 @@ def test_yaml_renderer_falls_back_to_json_syntax_valid_yaml(monkeypatch: pytest.
 
     assert rendered.startswith("{")
     assert yaml.safe_load(rendered) == {"message": "안녕하세요", "items": [1, 2]}
+
+
+def test_no_repo_owned_command_declares_a_json_flag() -> None:
+    """The removal, read off the parsers themselves rather than off `--help`.
+
+    `--help` cannot see an `argparse.SUPPRESS`ed flag, and a suppressed `--json`
+    is exactly the shape a "deprecate quietly" instinct produces: invisible in
+    help, still accepted, still selecting a second output format. The AST scan is
+    the only spelling that catches it. `plugins/` is included on purpose -- the
+    exported mirror is what installs run, and a mirror that lags the source is a
+    surface where `--json` is still live.
+    """
+    offenders: list[str] = []
+    for path in _owned_python_sources():
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if not isinstance(node, ast.Call):
+                continue
+            function = node.func
+            if not (isinstance(function, ast.Attribute) and function.attr == "add_argument"):
+                continue
+            if any(
+                isinstance(arg, ast.Constant) and arg.value == "--json" for arg in node.args
+            ):
+                offenders.append(f"{path.relative_to(ROOT)}:{node.lineno}")
+
+    assert offenders == [], f"repo-owned commands still declare --json: {offenders}"
+
+
+# stdout that is deliberately NOT this repo's output contract. Each entry is a wire
+# protocol some OTHER program parses, so rendering it as YAML would break that reader.
+JSON_STDOUT_EXEMPT = {
+    "scripts/post_edit_skill_anchor_guard.py": (
+        "the Claude PostToolUse hook envelope ({'hookSpecificOutput': ...}), parsed as "
+        "JSON by the HOST. Rendering it as YAML silently stops the advisory reaching "
+        "the agent -- the host does not report a parse failure."
+    ),
+    "scripts/session_start_routing.py": (
+        "the SessionStart hook envelope, parsed as JSON by BOTH Claude and Codex. Same "
+        "channel as post_edit_skill_anchor_guard, which names this file as its "
+        "precedent. Converting it would silently stop the routing directive and the "
+        "whole lesson block reaching the agent in every session, with no parse error "
+        "anywhere -- the only signal would be the absence of behavior nobody measures."
+    ),
+    "charness": (
+        "the root CLI's own inlined `render_yaml`, whose PyYAML-absent branch returns "
+        "compact JSON so a copied standalone CLI stays usable before the managed "
+        "bootstrap provisions PyYAML. Same renderer-fallback case as "
+        "scripts/yaml_output.py below; every command path in this file emits through "
+        "it, and no other site here writes JSON to stdout."
+    ),
+    "scripts/yaml_output.py": (
+        "the renderer ITSELF. `render_yaml` falls back to compact JSON when PyYAML is "
+        "absent, and `emit_yaml` prints it -- that fallback IS the output contract "
+        "(JSON is valid YAML, so every consumer still parses it). Flagging the emitter "
+        "for emitting its own documented fallback would make the gate refuse the thing "
+        "it exists to enforce."
+    ),
+    "scripts/outcome_judge_cmd.py": (
+        "a judge wire protocol, not a report: its stdout is read with `json.loads` by "
+        "grade_skill_outcome.judge_via_command, and `--judge-cmd` is a pluggable "
+        "third-party contract. A YAML block mapping is not valid JSON, so converting "
+        "this breaks the grader and any external scorer implementing the same shape."
+    ),
+}
+
+
+def _json_stdout_sites(tree: ast.Module) -> list[int]:
+    """Every spelling that puts JSON on stdout, not just the one a grep finds first.
+
+    This exists because the 2026-08-14 migration was declared complete three times and
+    was not: the first scan matched `print(json.dumps(...))`, the second also matched
+    `sys.stdout.write(json.dumps(...))`, and `json.dump(payload, sys.stdout)` still hid
+    four more commands after that -- including `gather/write_record.py`, whose own
+    consumer already read it with `yaml.safe_load`.
+    """
+    sites: list[int] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        function = node.func
+        if (
+            isinstance(function, ast.Attribute)
+            and function.attr == "dump"
+            and isinstance(function.value, ast.Name)
+            and function.value.id == "json"
+        ):
+            # `node.keywords` as well as positionals: `fp` is json.dump's real parameter
+            # name, so `json.dump(payload, fp=sys.stdout)` is the idiomatic keyword form
+            # of the exact spelling that hid four commands through two prior "complete"
+            # claims. Pinning only the positional form leaves that one keystroke open.
+            streams = list(node.args[1:]) + [kw.value for kw in node.keywords]
+            if any("stdout" in ast.unparse(stream) for stream in streams):
+                sites.append(node.lineno)
+            continue
+        writes_stdout = (
+            isinstance(function, ast.Name) and function.id == "print"
+        ) or (
+            isinstance(function, ast.Attribute)
+            and function.attr in {"write", "writelines"}
+            and "stdout" in ast.unparse(function.value)
+        )
+        if not writes_stdout:
+            continue
+        # `print(..., file=sys.stderr)` is NOT a stdout site. Machine-readable stderr
+        # diagnostics are a different channel, and flagging them pushes a legitimate
+        # design onto an exempt list documented as being about stdout wire protocols.
+        redirected = next(
+            (kw.value for kw in node.keywords if kw.arg == "file"), None
+        )
+        if redirected is not None and "stdout" not in ast.unparse(redirected):
+            continue
+        for argument in node.args:
+            for inner in ast.walk(argument):
+                if (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Attribute)
+                    and inner.func.attr == "dumps"
+                    and isinstance(inner.func.value, ast.Name)
+                    and inner.func.value.id == "json"
+                ):
+                    sites.append(node.lineno)
+    return sites
+
+
+def _json_text_producers(tree: ast.Module) -> set[str]:
+    """Names bound to a `json.dumps(...)` result, and functions that return one.
+
+    The scan matched only `print(json.dumps(x))`, so BOTH live survivors of the fourth
+    completeness pass hid behind one hop: `rendered = json.dumps(...); print(rendered)`
+    and a `render_output()` helper whose dict of lambdas holds the dumps. Following one
+    level of indirection is what turns this from a spelling check into a claim about
+    what reaches stdout.
+    """
+    producers: set[str] = set()
+
+    def _holds_dumps(node: ast.AST) -> bool:
+        return any(
+            isinstance(inner, ast.Call)
+            and isinstance(inner.func, ast.Attribute)
+            and inner.func.attr == "dumps"
+            and isinstance(inner.func.value, ast.Name)
+            and inner.func.value.id == "json"
+            for inner in ast.walk(node)
+        )
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and _holds_dumps(node.value):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    producers.add(target.id)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and _holds_dumps(node):
+            producers.add(node.name)
+    return producers
+
+
+def _indirect_json_stdout_sites(tree: ast.Module) -> list[int]:
+    """stdout writes whose argument is a name this module bound to JSON text."""
+    producers = _json_text_producers(tree)
+    if not producers:
+        return []
+    sites: list[int] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        function = node.func
+        writes_stdout = (
+            isinstance(function, ast.Name) and function.id == "print"
+        ) or (
+            isinstance(function, ast.Attribute)
+            and function.attr in {"write", "writelines"}
+            and "stdout" in ast.unparse(function.value)
+        )
+        if not writes_stdout:
+            continue
+        redirected = next((kw.value for kw in node.keywords if kw.arg == "file"), None)
+        if redirected is not None and "stdout" not in ast.unparse(redirected):
+            continue
+        for argument in node.args:
+            for inner in ast.walk(argument):
+                if isinstance(inner, ast.Name) and inner.id in producers:
+                    sites.append(node.lineno)
+                if (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Name)
+                    and inner.func.id in producers
+                ):
+                    sites.append(node.lineno)
+    return sites
+
+
+def test_no_repo_owned_command_writes_json_to_stdout() -> None:
+    """The half `--json`-absence cannot prove: that stdout is RENDERED as YAML.
+
+    JSON is valid YAML, so every `yaml.safe_load` assertion in this suite passes over a
+    command that never migrated. That is not hypothetical -- it is how 29 commands kept
+    emitting JSON through a green suite after the flag was gone from all 100 declaring
+    scripts. A flag-absence scan and a behavioral `--json`-is-rejected probe both report
+    clean on those commands, because neither asks what the bytes look like.
+    """
+    offenders: list[str] = []
+    for path in _owned_python_sources():
+        relative = path.relative_to(ROOT).as_posix()
+        if relative.removeprefix("plugins/charness/") in JSON_STDOUT_EXEMPT:
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for line in _json_stdout_sites(tree) + _indirect_json_stdout_sites(tree):
+            offenders.append(f"{relative}:{line}")
+
+    assert offenders == [], (
+        "repo-owned commands still write JSON to stdout; command output is "
+        f"unconditionally YAML: {offenders}"
+    )
+
+
+@pytest.mark.parametrize("command", JSON_FLAG_MUST_BE_UNRECOGNIZED, ids=lambda c: c[0])
+def test_a_json_flag_is_an_argparse_error_on_every_migrated_command(
+    command: tuple[str, ...],
+) -> None:
+    """Behavioral half of the removal: passing `--json` must FAIL, not be ignored.
+
+    A flag `argparse` merely does not know about and a flag it silently accepts
+    are indistinguishable from the source scan above if anything ever reaches for
+    `parse_known_args`. Exit 2 with `unrecognized arguments: --json` is what tells
+    a caller still passing the old flag that it is gone, instead of handing them a
+    payload they will read as the format they asked for.
+    """
+    result = _run(*command, "--json")
+
+    assert result.returncode == 2, f"{command[0]}: {result.stdout}{result.stderr}"
+    assert "unrecognized arguments: --json" in result.stderr, command[0]
+
+
+@pytest.mark.parametrize("case", DELETED_RENDERERS, ids=lambda c: c[0])
+def test_the_deleted_human_renderers_do_not_come_back(
+    case: tuple[str, tuple[str, ...], str | None],
+) -> None:
+    """The renderers stay deleted, and their replacement stays present.
+
+    Half of this contract is a deletion, and a deletion nothing pins is a
+    deletion that gets re-added by the next person who misses the prose. The
+    other half is the reason the deletion was safe: each renderer's content moved
+    INTO the payload, so the payload builder that received it has to still exist.
+    """
+    relative, deleted, replacement = case
+    defined, _tree = _module_level_names(ROOT / relative)
+
+    assert defined.isdisjoint(deleted), f"{relative} re-added {sorted(defined & set(deleted))}"
+    if replacement is not None:
+        assert replacement in defined, f"{relative} lost its payload builder `{replacement}`"
+
+
+def test_emit_findings_report_takes_only_the_report() -> None:
+    """The shared emitter's format switch is gone, not defaulted.
+
+    `emit_findings_report(report, as_json=..., render=...)` let one caller keep a
+    second output mode for the whole findings-shaped gate family. A parameter left
+    in place with a default would look retired while still being reachable, which
+    is the residue that made the previous migration look finished when it was not.
+    """
+    parameters = list(inspect.signature(gate_report_emit.emit_findings_report).parameters)
+
+    assert parameters == ["report"]
 
 
 def test_summary_output_reports_missing_canonical_renderer(

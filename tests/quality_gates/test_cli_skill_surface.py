@@ -9,6 +9,8 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script, write_executable
@@ -51,9 +53,9 @@ def test_cli_skill_surface_is_not_applicable_without_product_combo_or_inferred_s
         "version: 1\nproduct_surfaces:\n- installable_cli\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["status"] == "not_applicable"
+    assert yaml.safe_load(result.stdout)["status"] == "not_applicable"
 
 
 def test_cli_skill_surface_refuses_an_adapter_version_it_does_not_speak(
@@ -79,9 +81,9 @@ def test_cli_skill_surface_refuses_an_adapter_version_it_does_not_speak(
         + "\n",
     )
 
-    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "blocked"
     assert "version must be 1" in "\n".join(payload["blockers"])
@@ -100,9 +102,9 @@ def test_cli_skill_surface_treats_a_non_mapping_adapter_as_no_adapter(
     report `version must be 1` about a file that declares nothing."""
     repo = seed_repo(tmp_path, adapter_body="- installable_cli\n- bundled_skill\n")
 
-    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "version must be 1" not in json.dumps(payload)
     assert payload["product_surface_source"] == "inferred"
 
@@ -110,9 +112,9 @@ def test_cli_skill_surface_treats_a_non_mapping_adapter_as_no_adapter(
 def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path, adapter_body="version: 1\nproduct_surfaces: []\n")
 
-    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "blocked"
     assert payload["product_surface_source"] == "inferred"
@@ -127,8 +129,8 @@ def test_cli_skill_surface_blocks_declared_combo_without_binary_delegation(
         tmp_path,
         adapter_body="version: 1\nproduct_surfaces:\n- installable_cli\n- bundled_skill\n",
     )
-    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
-    payload = json.loads(result.stdout)
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "blocked"
     assert "No command-docs file or `--help` probe" in "\n".join(payload["blockers"])
@@ -153,8 +155,8 @@ def test_cli_skill_surface_accepts_declared_combo_with_probes_and_docs(tmp_path:
         ),
     )
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json")
-    payload = json.loads(result.stdout)
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes")
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "ok"
     assert payload["probe_commands"] == ["./demo --help", "./demo doctor --json"]
@@ -182,8 +184,8 @@ def test_cli_skill_surface_reports_probe_timeout(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.1"
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json", env=env)
-    payload = json.loads(result.stdout)
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env)
+    payload = yaml.safe_load(result.stdout)
 
     # Still refuses -- the floor is unchanged -- but as an UNOBSERVED readiness
     # rather than a failing CLI, and only after both attempts expired.
@@ -241,9 +243,9 @@ def test_cli_skill_surface_retries_a_starved_probe_before_concluding(
 
     monkeypatch.setattr(_check_cli_skill_surface, "_attempt_probe", fake_attempt)
     result = run_cli_skill_surface(
-        monkeypatch, capsys, "--repo-root", str(repo), "--run-probes", "--json"
+        monkeypatch, capsys, "--repo-root", str(repo), "--run-probes"
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "ok"
@@ -295,8 +297,8 @@ def test_cli_skill_surface_keeps_an_observed_failure_out_of_unobserved(tmp_path:
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
     write_executable(repo / "scripts" / "broken.py", "#!/usr/bin/env python3\nraise SystemExit(2)\n")
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json")
-    payload = json.loads(result.stdout)
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes")
+    payload = yaml.safe_load(result.stdout)
 
     assert result.returncode == 1
     assert payload["status"] == "blocked"
@@ -325,8 +327,8 @@ def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(tmp_path: 
     )
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
 
-    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
-    payload = json.loads(result.stdout)
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "blocked"
     assert "Unsafe CLI plus skill probe `agent-browser open https://example.com`" in "\n".join(payload["blockers"])
@@ -352,8 +354,8 @@ def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path:
     )
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
 
-    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
-    payload = json.loads(result.stdout)
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     blockers = "\n".join(payload["blockers"])
     assert "env FOO=1 agent-browser open https://example.com" in blockers
@@ -380,9 +382,9 @@ def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path:
     )
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
 
-    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "ok"
     assert "cli_skill_surface_skill_paths is empty" in "\n".join(payload["adapter_weaknesses"])
@@ -410,10 +412,9 @@ def test_cli_skill_surface_skips_irrelevant_release_change(tmp_path: Path, monke
         str(repo),
         "--changed-path",
         "docs/notes.md",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["status"] == "skipped"
+    assert yaml.safe_load(result.stdout)["status"] == "skipped"
 
 
 def _run_bounded_in_own_session(*args: str, env: dict[str, str], limit: float = 30.0) -> str | None:
@@ -536,8 +537,8 @@ def test_cli_skill_surface_separates_a_real_124_exit_from_an_unobserved_probe(tm
     repo = _probe_repo(tmp_path, "python3 scripts/exits124.py doctor --json")
     write_executable(repo / "scripts" / "exits124.py", "#!/usr/bin/env python3\nraise SystemExit(124)\n")
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json")
-    payload = json.loads(result.stdout)
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes")
+    payload = yaml.safe_load(result.stdout)
 
     assert result.returncode == 1
     assert payload["status"] == "blocked"
@@ -577,7 +578,7 @@ def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_
 
     try:
         result = _run_bounded_in_own_session(
-            "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json", env=env
+            "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
         )
         recorded_pids = _recorded_pids(pid_log)
         production_survivors = [pid for pid in recorded_pids if _owned_process_is_running(pid, str(stop_path))]
@@ -587,7 +588,7 @@ def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_
     assert recorded_pids, "the fixture never established an inherited pipe holder"
     assert not production_survivors, "the production group kill left an ordinary descendant running"
     assert not cleanup_survivors, "the fixture failed to clean every recorded descendant"
-    payload = json.loads(result)
+    payload = yaml.safe_load(result)
 
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
@@ -632,7 +633,6 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
             "--repo-root",
             str(repo),
             "--run-probes",
-            "--json",
             env=env,
         )
         elapsed = time.monotonic() - started
@@ -643,7 +643,7 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
     assert escaped_pids, "the fixture never established an escaped pipe holder"
     assert exited_pids == escaped_pids, "the fixture failed to stop every escaped pipe holder"
     assert not survivors
-    payload = json.loads(result)
+    payload = yaml.safe_load(result)
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
     assert len(escaped_pids) == payload["probe_results"][0]["attempts"]
@@ -734,7 +734,6 @@ def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(tm
             "--repo-root",
             str(repo),
             "--run-probes",
-            "--json",
             env=env,
         )
     finally:
@@ -743,7 +742,7 @@ def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(tm
     assert escaped_pids, "the fixture never established an escaped pipe holder"
     assert exited_pids == escaped_pids, "the fixture failed to stop every escaped pipe holder"
     assert not survivors
-    payload = json.loads(result)
+    payload = yaml.safe_load(result)
 
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
@@ -751,13 +750,14 @@ def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(tm
     assert "partial verdict that must survive the drain" in payload["probe_results"][0]["stdout_preview"]
 
 
-def test_cli_skill_surface_names_the_unobserved_probe_in_plain_output(tmp_path: Path) -> None:
-    """The human-visible line must say UNOBSERVED, not look like a failure.
+def test_cli_skill_surface_names_the_unobserved_probe_in_its_only_output(tmp_path: Path) -> None:
+    """The output must say UNOBSERVED, not look like a failure.
 
-    `run-quality.sh` invokes this check WITHOUT `--json`, so the plain path is
-    the only thing an operator ever reads -- and it was the one path no test
-    covered. That is how the original defect did its damage: the message, not
-    the payload, is what a session acts on.
+    `run-quality.sh` invokes this check with no format selector, and after the
+    `--json` removal the YAML payload is the only thing an operator ever reads.
+    The defect this pins misnamed a probe that never answered as one that
+    failed; the distinction now has to live in the payload, because there is no
+    second rendering left to carry it.
     """
     repo = _probe_repo(tmp_path, "python3 scripts/hang.py doctor --json")
     write_executable(repo / "scripts" / "hang.py", "#!/usr/bin/env python3\nimport time\ntime.sleep(30)\n")
@@ -767,9 +767,11 @@ def test_cli_skill_surface_names_the_unobserved_probe_in_plain_output(tmp_path: 
     result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env)
 
     assert result.returncode == 1
-    assert "CLI plus bundled-skill surface check: unobserved" in result.stdout
-    assert "UNOBSERVED:" in result.stderr
-    assert "verdict NOT OBSERVED" in result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "unobserved"
+    assert any("verdict NOT OBSERVED" in item for item in payload["unobserved"])
     # The word that misled a whole session must not appear for a probe that
-    # merely never answered.
+    # merely never answered -- in the payload or anywhere else on the surface.
+    assert payload["blockers"] == []
+    assert "probe failed" not in result.stdout
     assert "probe failed" not in result.stderr

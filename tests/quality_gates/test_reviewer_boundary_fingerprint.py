@@ -13,6 +13,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import yaml
+
 from .support import run_script
 
 SCRIPT = "skills/shared/scripts/reviewer_boundary_fingerprint.py"
@@ -54,12 +56,12 @@ def _verify(repo: Path, *args: str) -> tuple[int, dict]:
         str(repo / ".charness" / "reviewer-boundary" / "snapshot.json"),
         *args,
     )
-    return result.returncode, json.loads(result.stdout)
+    return result.returncode, yaml.safe_load(result.stdout)
 
 
 def _verify_default(repo: Path, *args: str) -> tuple[int, dict]:
     result = run_script(SCRIPT, "verify", "--repo-root", str(repo), *args)
-    return result.returncode, json.loads(result.stdout)
+    return result.returncode, yaml.safe_load(result.stdout)
 
 
 def _drift_paths(payload: dict) -> set[tuple[str, str | None]]:
@@ -70,7 +72,7 @@ def test_clean_verify_is_ok(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     snap = _snapshot(repo)
     assert snap.returncode == 0, snap.stdout + snap.stderr
-    assert json.loads(snap.stdout)["ok"] is True
+    assert yaml.safe_load(snap.stdout)["ok"] is True
 
     code, payload = _verify(repo)
     assert code == 0, payload
@@ -78,7 +80,7 @@ def test_clean_verify_is_ok(tmp_path: Path) -> None:
     assert payload["verdict"] == "clean"
     assert payload["drift"] == []
     assert payload["parent_attributed_drift"] == []
-    assert payload["window"]["id"] == json.loads(snap.stdout)["window"]["id"]
+    assert payload["window"]["id"] == yaml.safe_load(snap.stdout)["window"]["id"]
 
 
 def test_tracked_file_modified_is_flagged(tmp_path: Path) -> None:
@@ -172,7 +174,7 @@ def test_missing_snapshot_file_exits_two(tmp_path: Path) -> None:
         str(repo / "does-not-exist.json"),
     )
     assert result.returncode == 2, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
 
 
@@ -191,7 +193,7 @@ def test_corrupt_snapshot_file_exits_two(tmp_path: Path) -> None:
         str(snap_file),
     )
     assert result.returncode == 2, result.stdout + result.stderr
-    assert json.loads(result.stdout)["ok"] is False
+    assert yaml.safe_load(result.stdout)["ok"] is False
 
 
 def test_staged_rename_is_flagged_without_crash(tmp_path: Path) -> None:
@@ -325,7 +327,7 @@ def test_pathless_drift_is_never_parent_attributable(tmp_path: Path) -> None:
     assert payload["parent_attributed_drift"] == []
 
 
-def test_truncated_snapshot_refuses_as_json(tmp_path: Path) -> None:
+def test_truncated_snapshot_refuses_as_yaml(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     _snapshot(repo)
     snap_file = repo / ".charness" / "reviewer-boundary" / "snapshot.json"
@@ -424,6 +426,6 @@ def test_non_utf8_filename_does_not_crash_the_rail(tmp_path: Path) -> None:
         str(repo / ".charness" / "reviewer-boundary" / "snapshot.json"),
     )
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert any(d["kind"].startswith("untracked") for d in payload["drift"])

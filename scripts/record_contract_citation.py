@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script, require_repo_local_helper
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _register = import_repo_module(__file__, "scripts.contract_register_lib")
@@ -63,17 +64,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--unit-id", required=True)
     parser.add_argument("--anchor", required=True)
     args = parser.parse_args(argv)
-    print(
-        json.dumps(
-            append_citation(
-                repo_root=args.repo_root.resolve(),
-                event_id=args.event_id,
-                source_retro=args.source_retro,
-                unit_id=args.unit_id,
-                anchor=args.anchor,
-            ),
-            ensure_ascii=False,
-            sort_keys=True,
+    # Receipt only. The appended event itself is persisted as JSON inside the
+    # contract register by `append_citation` above; this is the stdout echo.
+    emit_yaml(
+        append_citation(
+            repo_root=args.repo_root.resolve(),
+            event_id=args.event_id,
+            source_retro=args.source_retro,
+            unit_id=args.unit_id,
+            anchor=args.anchor,
         )
     )
     return 0

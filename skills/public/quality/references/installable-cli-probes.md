@@ -6,8 +6,8 @@ treating one `doctor` or one passing smoke command as generic proof.
 
 Check these seams explicitly:
 
-- cheap startup probes such as `version`, `--version`, or lightweight
-  `doctor --json`
+- cheap startup probes such as `version`, `--version`, or a lightweight
+  `doctor`
 - help probes such as `--help`
 - mutating subcommand help probes that prove `cmd mutate --help` is read-only
 - option-looking positional probes such as `--help` or `--not-an-instance`

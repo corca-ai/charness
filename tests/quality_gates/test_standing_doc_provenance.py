@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import sys
 from pathlib import Path
 from types import ModuleType
+
+import yaml
 
 from .support import ROOT, run_script
 
@@ -79,10 +80,11 @@ def test_flags_dated_and_multiref_standing_doc_lines(tmp_path: Path) -> None:
             "Prefer deleting drift; see #257 and #260 for the precedent.",
         ],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo))
     assert result.returncode == 1, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
+    assert payload["verdict"] == "fail"
     flagged_lines = {finding["line"] for finding in payload["findings"]}
     assert flagged_lines == {3, 4}
     heuristics = {h for finding in payload["findings"] for h in finding["heuristics"]}
@@ -169,7 +171,11 @@ def test_inert_when_no_standing_docs_configured(tmp_path: Path) -> None:
     assert payload["inert"] is True
     assert payload["findings"] == []
 
-    assert "inert" in CHECKER._render_plain(payload)
+    # `ok: true` reads the same for an inert run and a scanned-clean one, so the
+    # verdict word is what tells a reader this repo opted out rather than passed.
+    verdict = CHECKER._verdict(payload)
+    assert verdict["verdict"] == "inert"
+    assert "inert" in verdict["verdict_detail"]
 
 
 def test_no_adapter_block_defaults_inert(tmp_path: Path) -> None:
@@ -242,11 +248,12 @@ def test_invalid_adapter_block_fails_with_error(tmp_path: Path) -> None:
         tmp_path,
         adapter_block=["standing_doc_provenance: not-a-mapping"],
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo))
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["adapter_errors"]
     assert "standing_doc_provenance must be a mapping" in payload["adapter_errors"][0]
+    assert payload["verdict"] == "adapter-invalid"
 
 
 def test_help_explains_repo_root_option() -> None:

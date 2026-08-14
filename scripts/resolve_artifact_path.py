@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 import argparse
-import json
 import shlex
 import subprocess
 from datetime import date
 from pathlib import Path
 
+import yaml
+
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -68,7 +70,7 @@ def load_adapter(repo_root: Path, skill_id: str) -> dict[str, object]:
     )
     if completed.returncode != 0:
         raise SystemExit(completed.stderr.strip() or f"{resolver} failed")
-    return json.loads(completed.stdout)
+    return yaml.safe_load(completed.stdout)
 
 
 def _refresh_current_pointer_argv(skill_id: str, record_path: Path) -> list[str]:
@@ -165,7 +167,7 @@ def main() -> int:
         intent=args.intent,
         artifact_date=artifact_date,
     )
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(dict(sorted(payload.items())))
     return 0
 
 

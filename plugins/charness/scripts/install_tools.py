@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -205,7 +205,6 @@ def main() -> int:
         action="store_true",
         help="Append successfully installed tool_ids to integrations/tools/dependencies.json",
     )
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -217,10 +216,11 @@ def main() -> int:
                 result["dependency_added"] = add_dependency(repo_root, str(result["tool_id"]))
             else:
                 result["dependency_added"] = False
-    if args.json:
-        print(json.dumps(results, ensure_ascii=False, indent=2))
-    else:
-        lifecycle.print_tool_statuses(results)
+    # Unconditional YAML. `lifecycle.print_tool_statuses` was a strict projection of
+    # `tool_id`, `status`, `version_transition`, and `healthcheck.status`, all of
+    # which each result carries; it stays in the lifecycle library for its other
+    # callers.
+    emit_yaml(results)
     if lifecycle.has_any_status(results, status_key="status", statuses=_FAILURE_STATUSES):
         return 1
     return 0

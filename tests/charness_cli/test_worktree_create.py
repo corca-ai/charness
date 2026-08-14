@@ -129,17 +129,42 @@ def test_create_with_failing_prepare_carries_recovering_next_step(tmp_path: Path
     assert payload["next_step"] == "Fix prepare failures, then re-run `charness worktree prepare`."
 
 
-def test_create_text_renders_next_step_affordance() -> None:
-    rendered = lib.render_create_text(
-        {
-            "target_path": "/tmp/wt",
-            "status": "fail",
-            "actions": [],
-            "next_step": "Run `charness worktree prepare --repo-root /tmp/wt`.",
-        }
+def test_failed_create_carries_the_next_step_affordance_to_stdout(tmp_path: Path) -> None:
+    """A failing create still hands the operator its recovery step.
+
+    Restated premise: this used to assert `render_create_text` printed the step as
+    `NEXT: ...`. That renderer was deleted, so the presentation contract it pinned
+    (uppercase prefix, no lowercase `next: `) no longer exists to assert. The
+    information it carried is now a `next_step` key in the payload the command
+    emits, so that is what this pins -- reachable by the operator, verbatim, and
+    on a run that FAILED, which is the case the affordance exists for.
+    """
+    repo = _make_primary(tmp_path)
+    target = tmp_path / "conflicting"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "charness"),
+            "worktree",
+            "create",
+            "--repo-root",
+            str(repo),
+            "--path",
+            str(target),
+            "--branch",
+            "conflicting",
+            "--detach",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
     )
-    assert "NEXT: Run `charness worktree prepare --repo-root /tmp/wt`." in rendered
-    assert "next: " not in rendered
+
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == lib.FAIL
+    assert payload["next_step"] == "`--branch` and `--detach` cannot be used together."
+    assert not target.exists()
 
 
 def test_cli_worktree_create_and_add_are_discoverable(tmp_path: Path) -> None:

@@ -26,7 +26,6 @@ gate is silent by construction:
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import shutil
 import subprocess
@@ -34,6 +33,7 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -269,37 +269,33 @@ _REMEDY = {
 }
 
 
-def format_human(result: dict[str, object]) -> str:
-    lines: list[str] = []
-    status = result["status"]
-    if status == "not-run":
-        lines.append(f"docs-graph: NOT RUN -- {result['reason']}")
-        return "\n".join(lines)
+def report(result: dict[str, object]) -> dict[str, object]:
+    """Fold the verdict-explaining text into the payload the gate actually emits.
 
-    summary = result["summary"]
-    observed = " ".join(
-        f"{key}={int(value) if float(value).is_integer() else value}"
-        for key, value in sorted(summary.items())
-    )
-    # The scanned population belongs on the verdict line, not only in the not-run
-    # branch: a PASS that does not say WHICH tree it read is a verdict over a scope it
-    # never stated, and everything outside this root is ungraphed.
-    scope = f" over {result.get('scan_root', '?')}/"
-    if status == "fail":
-        lines.append(f"docs-graph: FAIL{scope} ({observed})")
-        for metric, count in sorted(result["failures"].items()):
-            lines.append(f"  - {metric}={count}")
-            for name in result["named"].get(metric, []):
-                lines.append(f"    {_UNREACHABLE_LABEL[metric]}: {name}")
-        for metric in sorted(result["failures"]):
-            lines.append("  " + _REMEDY[metric])
-    else:
-        lines.append(f"docs-graph: PASS{scope} ({observed})")
-    lines.append(
-        "  did NOT judge: "
-        + "; ".join((*NOT_JUDGED, f"any page outside {result.get('scan_root', '?')}/, which this run never read"))
-    )
-    return "\n".join(lines)
+    Output is unconditionally YAML, so anything a reader needs has to live in the
+    payload. The remedies and the did-NOT-judge list used to exist only inside a
+    human renderer; emitting the bare result would have deleted them from the
+    gate's output while leaving it green, which is the fail-quiet shape the module
+    docstring's property 3 exists against.
+    """
+    payload = dict(result)
+    if result["status"] == "not-run":
+        # A not-run says nothing about what it did NOT judge, because it judged
+        # nothing. Listing exclusions here would dress an unobserved run up as a
+        # scoped verdict.
+        return payload
+    # The scanned population belongs on every real verdict, not only the not-run
+    # branch: a PASS that does not say WHICH tree it read is a verdict over a scope
+    # it never stated, and everything outside this root is ungraphed.
+    payload["did_not_judge"] = [
+        *NOT_JUDGED,
+        f"any page outside {result.get('scan_root', '?')}/, which this run never read",
+    ]
+    failures = result["failures"]
+    if failures:
+        payload["unreachable_label"] = {metric: _UNREACHABLE_LABEL[metric] for metric in failures}
+        payload["remedies"] = {metric: _REMEDY[metric] for metric in sorted(failures)}
+    return payload
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -314,11 +310,10 @@ def main(argv: list[str] | None = None) -> int:
             "NOT-RUN rather than a clean verdict."
         ),
     )
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
     result = evaluate(args.repo_root.resolve(), args.scan_root)
-    print(json.dumps(result, indent=2, sort_keys=True) if args.json else format_human(result))
+    emit_yaml(report(result))
     if result["status"] == "not-run":
         return UNESTABLISHED_EXIT
     return 1 if result["status"] == "fail" else 0

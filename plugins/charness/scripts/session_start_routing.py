@@ -50,6 +50,16 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:  # PyYAML is packaged, but this hook must never break a host session.
+    import yaml
+except ImportError:  # pragma: no cover - exercised only on a PyYAML-less interpreter
+    yaml = None
+
+# A repo script without PyYAML falls back to compact JSON (see `scripts/yaml_output.py`),
+# and this hook runs the resolver under its own interpreter, so JSON is exactly the
+# payload shape reachable when the import above failed.
+_YAML_ERRORS: tuple[type[BaseException], ...] = () if yaml is None else (yaml.YAMLError,)
+
 HANDOFF_ADAPTER_RELATIVE = Path(".agents/handoff-adapter.yaml")
 RESOLVER_TIMEOUT_SECONDS = 3
 
@@ -151,7 +161,7 @@ def _configured_handoff_state(cwd: object) -> tuple[str, bool] | None:
         )
         if completed.returncode != 0:
             return None
-        payload = json.loads(completed.stdout)
+        payload = json.loads(completed.stdout) if yaml is None else yaml.safe_load(completed.stdout)
         artifact_path = payload.get("artifact_path") if isinstance(payload, dict) else None
         if not isinstance(artifact_path, str) or not artifact_path.strip():
             return None
@@ -164,7 +174,7 @@ def _configured_handoff_state(cwd: object) -> tuple[str, bool] | None:
         except ValueError:
             return None
         return (relative.as_posix(), resolved.is_file())
-    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, ValueError):
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, ValueError, *_YAML_ERRORS):
         return None
 
 

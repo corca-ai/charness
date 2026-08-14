@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import closeout_bundle as cli
 from scripts import closeout_bundle_lib as lib
@@ -419,10 +420,13 @@ def test_cli_main_covers_execute_receipt_and_exception(monkeypatch: pytest.Monke
         "--critique-path", CRITIQUE, "--behavior-channel", "behavior=echo test", "--execute",
     ]
     assert cli.main(argv) == 0
-    assert "receipt_path" in capsys.readouterr().out
+    # stdout is YAML now, so the receipt path is read out of the parsed payload rather
+    # than matched as a JSON key substring. Same subject: the execute path tells the
+    # operator where the receipt landed.
+    assert "receipt_path" in yaml.safe_load(capsys.readouterr().out)
     monkeypatch.setattr(cli._lib, "build_plan", lambda *_args, **_kwargs: (_ for _ in ()).throw(cli._lib.BundleError("blocked")))
     assert cli.main(argv[:-1]) == 1
-    assert '"status": "blocked"' in capsys.readouterr().out
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "blocked"
 
 
 def test_this_repo_is_currently_closeout_bundle_ready() -> None:

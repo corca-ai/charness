@@ -199,11 +199,18 @@ def test_unreadable_cli_errors_instead_of_reporting_a_clean_run(gate, tmp_path: 
     assert "declares no subcommands" in report["findings"][0]
 
 
-def test_render_states_the_surface_it_did_not_prove(gate, tmp_path: Path) -> None:
+def test_the_payload_states_the_surface_it_did_not_prove(gate, tmp_path: Path) -> None:
+    """The not-proven tail rides on the PASS too, so it has to be in the payload.
+
+    It used to be a rendered line. With output unconditionally YAML there is no
+    renderer to carry it, so the same statement is asserted as a payload key --
+    a green `validated` count with no statement about the difference is exactly
+    the false full-coverage read this guards against.
+    """
     root = _repo(tmp_path, "`charness tool install/update/doctor` and `charness update`.\n")
-    rendered = gate.render_report(_report(gate, root))
-    assert "Validated" in rendered
-    assert "Not proven" in rendered
+    payload = gate.report_payload(_report(gate, root))
+    assert payload["validated"] == 1
+    assert "NOT proven" in payload["not_proven"]
 
 
 def test_cli_exit_code_fails_on_drift(gate, tmp_path: Path, monkeypatch, capsys) -> None:
@@ -346,7 +353,9 @@ def test_the_receipt_counts_only_what_it_proved(gate, tmp_path: Path) -> None:
     assert report["invocations"] == 2
     assert report["validated"] == 1
     assert sum(report["skipped"].values()) == 1
-    assert "Validated 1 documented" in gate.render_report(report)
+    payload = gate.report_payload(report)
+    assert payload["validated"] == 1
+    assert "1 documented invocation(s) skipped" in payload["not_proven"]
 
 
 def test_a_module_docstring_argparse_prints_is_operator_facing_text(gate, tmp_path: Path) -> None:

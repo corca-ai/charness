@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import apply_contract_transition as transition_writer
 from scripts import contract_register_lib as register
@@ -260,7 +261,7 @@ def test_proposal_apply_and_retention_review_preserve_retired_history(tmp_path: 
         text=True,
     )
     assert proposal_command.returncode == 0, proposal_command.stderr
-    assert json.loads(proposal_command.stdout)["proposal_id"] == "proposal-a"
+    assert yaml.safe_load(proposal_command.stdout)["proposal_id"] == "proposal-a"
     citation_writer.append_citation(
         repo_root=tmp_path,
         event_id="cite-alpha",
@@ -307,7 +308,7 @@ def test_proposal_apply_and_retention_review_preserve_retired_history(tmp_path: 
         text=True,
     )
     assert preview_command.returncode == 0, preview_command.stderr
-    preview = json.loads(preview_command.stdout)
+    preview = yaml.safe_load(preview_command.stdout)
     assert preview["executed"] is False
     assert path.read_bytes() == before_dry_run
     transition_writer.apply_transition(

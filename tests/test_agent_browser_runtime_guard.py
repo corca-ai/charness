@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 import scripts.doctor as doctor_module
 from tests.script_main import run_loaded_script_main
@@ -337,7 +338,7 @@ def test_assert_no_orphans_healthy_with_only_foreign_daemon(tmp_path: Path) -> N
     try:
         foreign_pid = markers.spawn(foreign_root)
         make_fake_ps(bin_dir, output=f"{foreign_pid} 1 10 node /tmp/agent-browser/dist/daemon.js")
-        result = _run_guard(["--assert-no-orphans", "--json"], bin_dir, owned_root)
+        result = _run_guard(["--assert-no-orphans"], bin_dir, owned_root)
         assert result.returncode == 0, result.stdout + result.stderr
         assert markers.alive(foreign_pid)
     finally:
@@ -365,8 +366,8 @@ def test_cleanup_preview_excludes_foreign_daemon(tmp_path: Path) -> None:
                 ]
             ),
         )
-        result = _run_guard(["--cleanup-orphans", "--json"], bin_dir, owned_root)
-        payload = json.loads(result.stdout)
+        result = _run_guard(["--cleanup-orphans"], bin_dir, owned_root)
+        payload = yaml.safe_load(result.stdout)
         assert payload["target_pids"] == [owned_pid]
         assert foreign_pid not in payload["target_pids"]
         assert markers.alive(owned_pid)
@@ -392,8 +393,8 @@ def test_cleanup_execute_targets_owned_and_spares_foreign(tmp_path: Path) -> Non
         foreign_line = f"{foreign_pid} 1 10 node /tmp/agent-browser/dist/daemon.js"
         # snapshot 1: both present; later snapshots: owned reaped, neighbor remains.
         make_fake_ps_sequence(bin_dir, outputs=["\n".join([owned_line, foreign_line]), foreign_line])
-        result = _run_guard(["--cleanup-orphans", "--execute", "--json"], bin_dir, owned_root)
-        payload = json.loads(result.stdout)
+        result = _run_guard(["--cleanup-orphans", "--execute"], bin_dir, owned_root)
+        payload = yaml.safe_load(result.stdout)
         assert payload["target_pids"] == [owned_pid]
         assert foreign_pid not in payload["target_pids"]
         assert payload["remaining_pids"] == []
@@ -448,10 +449,10 @@ def test_runtime_guard_assert_no_orphans_inspects_without_helpcheck(tmp_path: Pa
                 ]
             ),
         )
-        result = _run_guard(["--assert-no-orphans", "--json"], bin_dir, owned_root)
+        result = _run_guard(["--assert-no-orphans"], bin_dir, owned_root)
         assert result.returncode == 1
         assert "--cleanup-orphans --execute" in result.stderr
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         assert payload["runtime"]["orphan_tree_pids"] == sorted([daemon_pid, child_pid])
     finally:
         markers.close()
@@ -469,9 +470,9 @@ def test_assert_no_orphans_unhealthy_for_owned_reparented_chromium_residue(tmp_p
             bin_dir,
             output=f"{residue_pid} 1 64000 /opt/agent-browser/chrome-linux/chrome --headless --type=gpu-process",
         )
-        result = _run_guard(["--assert-no-orphans", "--json"], bin_dir, owned_root)
+        result = _run_guard(["--assert-no-orphans"], bin_dir, owned_root)
         assert result.returncode == 1, result.stdout
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         assert payload["healthy"] is False
         assert payload["runtime"]["orphan_daemon_count"] == 0
         assert payload["runtime"]["reparented_residue_pids"] == [residue_pid]
@@ -493,9 +494,9 @@ def test_assert_no_orphans_init_reap_guidance_for_reparented_only(tmp_path: Path
             bin_dir,
             output=f"{residue_pid} 1 64000 /opt/agent-browser/chrome-linux/chrome --headless --type=gpu-process",
         )
-        result = _run_guard(["--assert-no-orphans", "--json"], bin_dir, owned_root)
+        result = _run_guard(["--assert-no-orphans"], bin_dir, owned_root)
         assert result.returncode == 1, result.stdout
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         assert payload["healthy"] is False
         assert payload["runtime"]["orphan_tree_pids"] == []
         assert payload["next_step_kind"] == "init_reap"
@@ -527,9 +528,9 @@ def test_runtime_guard_cleanup_fails_when_orphan_respawns_after_clean_snapshot(t
                 ),
             ],
         )
-        result = _run_guard(["--cleanup-orphans", "--execute", "--json"], bin_dir, owned_root)
+        result = _run_guard(["--cleanup-orphans", "--execute"], bin_dir, owned_root)
         assert result.returncode == 1
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         assert payload["target_pids"] == []
         assert payload["remaining_pids"] == sorted([daemon_pid, child_pid])
     finally:
@@ -587,13 +588,12 @@ def test_doctor_marks_agent_browser_unhealthy_when_runtime_guard_fails(tmp_path:
             doctor_module,
             "--repo-root",
             str(ROOT),
-            "--json",
             "--tool-id",
             "agent-browser",
             env=env,
         )
         assert result.returncode == 1
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         assert payload[0]["doctor_status"] == "unhealthy"
         assert payload[0]["healthcheck"]["failure_hint"]
     finally:

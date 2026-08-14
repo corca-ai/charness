@@ -9,6 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from scripts import manage_mutation_reports as reports
 from scripts import run_standing_pytest as runner
@@ -132,7 +133,9 @@ def test_main_rejects_negative_age_and_script_entrypoint_is_read_only(
     with pytest.raises(SystemExit) as exit_result:
         runpy.run_path(str(ROOT / "scripts/manage_mutation_reports.py"), run_name="__main__")
     assert exit_result.value.code == 0
-    assert '"executed": false' in capsys.readouterr().out
+    # The entrypoint's stdout is YAML now; parse it rather than substring-matching,
+    # and keep asserting the field that proves the default run pruned nothing.
+    assert yaml.safe_load(capsys.readouterr().out)["executed"] is False
 
 
 def test_basetemp_helpers_preserve_on_os_errors(

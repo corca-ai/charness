@@ -6,6 +6,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import yaml
+
 from scripts.critique_adapter_lib import (
     adapter_has_sections,
     load_adapter,
@@ -630,7 +632,6 @@ packet_sections:
             "head",
             "--changed-ref",
             "HEAD",
-            "--json",
         ],
         capture_output=True,
         text=True,
@@ -639,12 +640,17 @@ packet_sections:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["ok"] is True
-    assert payload["changed_ref"] == "HEAD"
-    assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
-    assert "README.md" in payload["sections"][0]["content"]
-    assert "Changed paths for ref `HEAD`:" in payload["sections"][0]["content"]
+    # `--json` was not just a format on this command: it SUPPRESSED the artifact
+    # writes and put the whole packet on stdout. Since its removal on 2026-08-14 the
+    # packet is always written, and stdout carries a YAML receipt that points at it —
+    # so the section content is asserted where it now lives, on disk.
+    receipt = yaml.safe_load(result.stdout)
+    assert receipt["ok"] is True
+    assert receipt["changed_ref"] == "HEAD"
+    assert receipt["adapter_path"] == ".agents/critique-adapter.yaml"
+    packet = json.loads((tmp_path / receipt["json_path"]).read_text(encoding="utf-8"))
+    assert "README.md" in packet["sections"][0]["content"]
+    assert "Changed paths for ref `HEAD`:" in packet["sections"][0]["content"]
 
 
 def test_runner_cli_commit_alias_sets_changed_ref_and_prepared_for(tmp_path: Path) -> None:
@@ -689,15 +695,20 @@ packet_sections:
 
     runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
     result = subprocess.run(
-        ["python3", str(runner), "--repo-root", str(tmp_path), "--commit", "HEAD", "--json"],
+        ["python3", str(runner), "--repo-root", str(tmp_path), "--commit", "HEAD"],
         capture_output=True,
         text=True,
         check=False,
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["changed_ref"] == "HEAD"
-    assert payload["prepared_for"] == "HEAD"
-    assert "Changed paths for ref `HEAD`:" in payload["sections"][0]["content"]
-    assert "README.md" in payload["sections"][0]["content"]
+    # Same `--json`-was-a-MODE removal as above. `prepared_for` is not on the
+    # receipt, so the alias is proven against the written packet, which is the
+    # artifact a reviewer actually consumes.
+    receipt = yaml.safe_load(result.stdout)
+    assert receipt["changed_ref"] == "HEAD"
+    packet = json.loads((tmp_path / receipt["json_path"]).read_text(encoding="utf-8"))
+    assert packet["changed_ref"] == "HEAD"
+    assert packet["prepared_for"] == "HEAD"
+    assert "Changed paths for ref `HEAD`:" in packet["sections"][0]["content"]
+    assert "README.md" in packet["sections"][0]["content"]

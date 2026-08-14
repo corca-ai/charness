@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -652,7 +653,7 @@ def test_cli_split_prints_manifest_with_files_and_units(tmp_path: Path, capsys: 
     _write_skill_fixture(tmp_path, "y")
     rc = cli.main(["split", "--repo-root", str(tmp_path), "--skill", "y"])
     assert rc == 0
-    manifest = json.loads(capsys.readouterr().out)
+    manifest = yaml.safe_load(capsys.readouterr().out)
     assert manifest["skill"] == "y"
     assert manifest["granularity"] == "section"
     assert [f["path"] for f in manifest["files"]] == [

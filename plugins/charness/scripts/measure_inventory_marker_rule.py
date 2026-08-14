@@ -45,6 +45,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import inventory_measurement_lib as corpus_lib  # noqa: E402
 import validate_inventory_consumption as gate  # noqa: E402
 
+from yaml_output import emit_yaml  # noqa: E402
+
 DEFAULT_CORPUS = corpus_lib.DEFAULT_CORPUS
 # Every exemption state on which `validate_inventory_consumption` returns 0 without
 # running a floor. Only `REFUSED-uncorroborated` and `not-claimed` reach the floors.
@@ -178,29 +180,14 @@ def main() -> int:
         return 2
 
     report = scan(repo_root, corpus, fields_path, recursive=args.recursive)
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-        return 0
-    scope = "recursive" if report["recursive"] else "top level only"
-    print(
-        f"{report['artifacts_scanned']} artifact(s) under {report['corpus']} ({scope}); "
-        f"{report['artifacts_citing_a_declared_inventory']} cite a declared inventory."
-    )
-    print(
-        f"  field mentions clearing today's floor: {report['field_mentions_clearing_todays_floor']}"
-    )
-    print(
-        f"  of those, carrying a value marker: {report['field_mentions_carrying_a_value_marker']}"
-        f" ({report['marker_kinds']})"
-    )
-    print(f"  without a marker: {report['field_mentions_without_a_marker']}")
-    print(
-        "  citations a marker rule would refuse: "
-        f"{len(report['citations_refused_by_the_marker_rule'])} across "
-        f"{len(report['artifacts_refused_by_the_marker_rule'])} artifact(s)"
-    )
-    for path in report["artifacts_refused_by_the_marker_rule"]:
-        print(f"    - {path}")
+    # Unconditional YAML. The retired human summary was a projection of this same
+    # payload -- scope, the two mention counts, the marker-kind breakdown, and the
+    # refused citations/artifacts are all fields below -- plus two counts it
+    # computed inline, which are folded in so no number the summary stated is lost.
+    report["citations_refused_count"] = len(report["citations_refused_by_the_marker_rule"])
+    report["artifacts_refused_count"] = len(report["artifacts_refused_by_the_marker_rule"])
+    report["scope"] = "recursive" if report["recursive"] else "top level only"
+    emit_yaml(report)
     return 0
 
 

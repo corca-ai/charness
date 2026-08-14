@@ -4,6 +4,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -99,7 +101,12 @@ def test_no_inputs_reports_no_clean_proof_claim(capsys) -> None:
 
     rc = preflight.main([])
     assert rc == 0
-    assert "no input files supplied" in capsys.readouterr().out
+    # The retired prose renderer's "no input files supplied" line is now carried by
+    # the emitted payload itself. Assert the parsed fields, not a raw substring: the
+    # YAML emitter line-wraps long scalars, so `non_claim` spans several lines.
+    emitted = yaml.safe_load(capsys.readouterr().out)
+    assert emitted["no_inputs"] is True
+    assert "No input files were supplied" in emitted["non_claim"]
 
 
 def test_cli_probe_findings_remain_advisory_exit_zero(tmp_path: Path) -> None:

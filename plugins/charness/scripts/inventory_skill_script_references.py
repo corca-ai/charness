@@ -37,13 +37,16 @@ in the skill's own package. What makes the gate safe is those two invariants and
 the tests pinning them, not an appeal to determinism.
 
 ``--strict`` is the blocking mode and is what ``run-quality.sh`` runs; it refuses
-on findings AND on unreadable docs, in text and ``--json`` alike. The default
-stays exit-0 so the same command is still usable as a read-only inventory.
+on findings AND on unreadable docs. The default stays exit-0 so the same command
+is still usable as a read-only inventory.
+
+Output is unconditionally YAML, so every sentence a reader needs has to live in
+the payload -- ``report()`` folds in the advisories, the per-finding hints, and
+the two non-finding notes that used to exist only inside the human renderer.
 """
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from pathlib import Path
@@ -52,6 +55,8 @@ from typing import NamedTuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check_doc_links import PORTABLE_SKILL_KINDS  # noqa: E402
+
+from yaml_output import emit_yaml  # noqa: E402
 
 # ANY extension, not just `.py`. A `.py`-only regex cannot report that it is
 # `.py`-only -- it reports "0 remaining" with full confidence, which is exactly
@@ -453,6 +458,110 @@ def inventory(repo_root: Path) -> dict[str, object]:
     }
 
 
+_AUTHORING_MARKER_NOTE = (
+    "reference(s) use `<repo-root>/scripts/` for a file that is also a charness "
+    "authoring-repo script. NOT a finding, and not settled either: some are correct "
+    "as-is -- `rca-ledger-append.md` uses the path as an existence predicate the "
+    "READER evaluates, which is exactly what `<repo-root>/` should mean. A human "
+    "decides each; `<authoring-repo>/scripts/` is the spelling when the subject is "
+    "charness's own tree (#478). The full set is in `authoring_marker_candidates`."
+)
+_CONSUMER_PLACEHOLDER_NOTE = (
+    "shipped reference(s) resolve only against a consuming repo's own `scripts/` and "
+    "are unverifiable from here. Not a finding, and deliberately not silent: without "
+    "this line, `0 findings` reads as `every reference is fine`."
+)
+
+
+def report(payload: dict[str, object], *, strict: bool) -> dict[str, object]:
+    """Fold the verdict-explaining text into the payload this gate emits.
+
+    Output is unconditionally YAML, so anything a reader needs has to live in the
+    payload. The advisories, the per-finding hint, and the two NON-finding notes
+    used to exist only inside a human renderer; emitting the bare inventory would
+    have deleted them while leaving the exit code green, which is the fail-quiet
+    shape the `--strict` promotion exists against.
+    """
+    out = dict(payload)
+    denominator = payload["denominator"]
+    assert isinstance(denominator, dict)
+    findings = payload["findings"]
+    assert isinstance(findings, list)
+    unreadable = denominator["docs_unreadable"]
+    assert isinstance(unreadable, list)
+    blind = bool(unreadable)
+    scanned = denominator["references_scanned"]
+    assert isinstance(scanned, int)
+    packages = denominator["skill_packages_scanned"]
+
+    out["strict"] = strict
+    # `--strict` refuses on findings AND on "I could not look": an unreadable doc
+    # hides its references, so a green over it is the clean-verdict-over-nothing
+    # this tool exists to refuse.
+    out["refuse"] = bool(strict and (findings or blind))
+
+    advisories: list[str] = []
+    if blind:
+        # An unreadable doc hides its references; without this it is
+        # indistinguishable from a scanned-and-clean one. Listed BEFORE the
+        # zero-reference advisory, or the one path that returns green would be the
+        # only path that never mentions the blind spot.
+        advisories.append(
+            f"{len(unreadable)} doc(s) could not be read and were not scanned: "
+            + ", ".join(str(doc) for doc in unreadable[:5])
+        )
+    if not scanned:
+        # A clean verdict over nothing is the one failure an advisory can hide
+        # behind. Gate on REFERENCES, not packages: a repo can carry skill packages
+        # whose prose this scanner matches none of, and "all 0 references resolve"
+        # would be the same false all-clear one level down.
+        if blind:
+            detail = f"{payload['repo_root']} had no readable doc naming a script path"
+        elif not packages:
+            detail = f"no skill packages found under {payload['repo_root']}"
+        else:
+            detail = f"{packages} skill package(s) under {payload['repo_root']} name no script paths"
+        advisories.append(
+            f"{detail}; nothing was checked. Point --repo-root at a repo that carries "
+            "`skills/` or `plugins/*/skills/`."
+        )
+    out["advisories"] = advisories
+
+    if not scanned:
+        out["verdict"] = "not-run"
+    elif findings:
+        # FAIL under --strict (the gate mode); WARN otherwise, which run-quality.sh
+        # surfaces non-blocking. Same finding set either way -- only the exit code
+        # differs, so the read-only inventory and the gate cannot disagree.
+        out["verdict"] = "fail" if strict else "warn"
+    else:
+        out["verdict"] = "ok"
+
+    out["findings"] = [
+        {
+            **row,
+            "hint": (
+                f"file is at {row['found_at']}" if row["status"] == BROKEN else "resolves in no layout"
+            ),
+        }
+        for row in findings
+        if isinstance(row, dict)
+    ]
+
+    notes: list[str] = []
+    candidates = payload["authoring_marker_candidates"]
+    assert isinstance(candidates, list)
+    if candidates:
+        notes.append(f"{len(candidates)} {_AUTHORING_MARKER_NOTE}")
+    counts = payload["counts"]
+    assert isinstance(counts, dict)
+    placeholders = counts.get(SHIPPED, {}).get(CONSUMER_PLACEHOLDER, 0)
+    if placeholders:
+        notes.append(f"{placeholders} {_CONSUMER_PLACEHOLDER_NOTE}")
+    out["notes"] = notes
+    return out
+
+
 def build_parser() -> argparse.ArgumentParser:
     """The whole option surface, read by a test rather than grepped from source.
 
@@ -462,7 +571,6 @@ def build_parser() -> argparse.ArgumentParser:
     """
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--json", action="store_true")
     parser.add_argument(
         "--strict",
         action="store_true",
@@ -474,103 +582,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
 
-    payload = inventory(args.repo_root)
-    blind = bool(payload["denominator"]["docs_unreadable"])
-    # `--strict` refuses on findings AND on "I could not look": an unreadable doc
-    # hides its references, so a green over it is the clean-verdict-over-nothing
-    # this tool exists to refuse. Computed before the `--json` return so the
-    # machine-readable mode cannot silently disarm the gate.
-    refuse = bool(args.strict and (payload["findings"] or blind))
-    if args.json:
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-        return 1 if refuse else 0
-
-    findings = payload["findings"]
-    denominator = payload["denominator"]
-    scanned = denominator["references_scanned"]
-    split = "/".join(f"{count} {layout}" for layout, count in denominator["by_layout"].items())
-
-    if blind:
-        # An unreadable doc hides its references; without this it is
-        # indistinguishable from a scanned-and-clean one. Printed BEFORE the
-        # zero-reference return below, or the one path that returns green would
-        # be the only path that never mentions the blind spot.
-        print(
-            f"ADVISORY: {len(denominator['docs_unreadable'])} doc(s) could not be read "
-            "and were not scanned: " + ", ".join(denominator["docs_unreadable"][:5])
-        )
-
-    if not scanned:
-        # A clean verdict over nothing is the one failure an advisory can hide
-        # behind. Gate on REFERENCES, not packages: a repo can carry skill
-        # packages whose prose this scanner matches none of, and "all 0
-        # references resolve" would be the same false all-clear one level down.
-        #
-        # `refuse` is honoured here too. An unreadable doc that was a package's
-        # ONLY doc lands in exactly this branch, and an unconditional `return 0`
-        # made `--strict` green while `--strict --json` refused the same tree.
-        packages = denominator["skill_packages_scanned"]
-        if blind:
-            detail = f"{payload['repo_root']} had no readable doc naming a script path"
-        elif not packages:
-            detail = f"no skill packages found under {payload['repo_root']}"
-        else:
-            detail = (
-                f"{packages} skill package(s) under {payload['repo_root']} name no script paths"
-            )
-        print(
-            f"ADVISORY: {detail}; nothing was checked. Point --repo-root at a "
-            "repo that carries `skills/` or `plugins/*/skills/`."
-        )
-        return 1 if refuse else 0
-
-    if findings:
-        # FAIL under --strict (the gate mode); WARN otherwise, which run-quality.sh
-        # surfaces non-blocking. Same finding set either way -- only the exit
-        # code differs, so the read-only inventory and the gate cannot disagree.
-        prefix = "FAIL" if args.strict else "WARN"
-        print(
-            f"{prefix}: {len(findings)} of {scanned} ({split}) "
-            "skill script references do not resolve:"
-        )
-        for row in findings:
-            hint = (
-                f" (file is at {row['found_at']})"
-                if row["status"] == BROKEN
-                else " (resolves in no layout)"
-            )
-            print(f"  - [{row['layout']}] {row['doc']}:{row['line']}: `{row['reference']}`{hint}")
-    else:
-        print(f"all {scanned} ({split}) skill script references resolve")
-
-    candidates = payload["authoring_marker_candidates"]
-    if candidates:
-        # NOT a finding: `<repo-root>/scripts/X.py` naming a real charness script
-        # is the pre-split spelling, and whether public skill prose should point
-        # a consumer at an authoring-repo script is an open operator decision
-        # (#478). Surfaced so the remaining set stays visible instead of reading
-        # as settled.
-        print(
-            f"note: {len(candidates)} reference(s) use `<repo-root>/scripts/` for a file that "
-            "is also a charness authoring-repo script. Some are correct as-is -- "
-            "`rca-ledger-append.md` uses the path as an existence predicate the READER "
-            "evaluates, which is exactly what `<repo-root>/` should mean. A human decides "
-            "each; `<authoring-repo>/scripts/` is the spelling when the subject is "
-            "charness's own tree:"
-        )
-        for row in candidates[:10]:
-            print(f"  - {row['doc']}:{row['line']}: `{row['reference']}`")
-
-    placeholders = payload["counts"].get(SHIPPED, {}).get(CONSUMER_PLACEHOLDER, 0)
-    if placeholders:
-        # Not a finding, and deliberately not silent: `<repo-root>/scripts/X.py`
-        # resolves against the CONSUMING repo, which this tree cannot inspect.
-        # Without this line, "0 findings" reads as "every reference is fine".
-        print(
-            f"note: {placeholders} shipped reference(s) resolve only against a consuming "
-            "repo's own `scripts/` and are unverifiable from here."
-        )
-    return 1 if refuse else 0
+    payload = report(inventory(args.repo_root), strict=args.strict)
+    emit_yaml(payload)
+    return 1 if payload["refuse"] else 0
 
 
 if __name__ == "__main__":

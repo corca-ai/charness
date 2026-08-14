@@ -196,6 +196,20 @@ def advise_for_edited_file(
     head_sha = head.stdout.strip() if head is not None and head.returncode == 0 else None
     if _already_advised(repo_root, relpath, head_sha):
         return None
+    return advisory_message(relpath, added)
+
+
+def advisory_message(relpath: str, added: int) -> str:
+    """The advisory prose, with no dedupe state and no side effect.
+
+    Split out of `advise_for_edited_file` so the CLI can carry the remediation
+    text in its payload. The CLI emits unconditional YAML, and the remediation --
+    which command to run, and how to classify a deliberate family -- is the only
+    part of this module a reader cannot reconstruct from `advisory_state`. The
+    hook path still goes through `advise_for_edited_file` so its once-per-HEAD
+    dedupe (and the state write that implements it) stays where it was.
+    """
+
     return (
         f"ADVISORY (dup ratchet): {relpath} is inside the duplicate-ratchet scope "
         f"and this slice has added {added} lines to it. A new fixable duplicate "
@@ -226,20 +240,30 @@ def advisory_state(repo_root: Path, relpath: str, *, threshold: int = DEFAULT_AD
 
 def main(argv: list[str] | None = None) -> int:
     import argparse
+    import sys
+
+    # Resolved HERE, not at module import. This module also rides an edit-time
+    # PostToolUse hook, where it is imported as `scripts.dup_ratchet_edit_advisory`
+    # with the REPO ROOT on `sys.path`, while `python3 scripts/...` puts `scripts/`
+    # there instead. A single top-level spelling is wrong in one of the two
+    # contexts, and the hook path must not pay for the CLI's renderer at all.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from yaml_output import emit_yaml
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--path", required=True, help="Repo-relative path just edited.")
-    parser.add_argument("--json", action="store_true", help="Emit the structured decision.")
     parser.add_argument("--threshold", type=int, default=DEFAULT_ADDED_LINE_THRESHOLD)
     args = parser.parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    if args.json:
-        print(json.dumps(advisory_state(repo_root, args.path, threshold=args.threshold), indent=2))
-        return 0
-    message = advise_for_edited_file(repo_root, args.path, threshold=args.threshold)
-    if message:
-        print(message)
+    state = advisory_state(repo_root, args.path, threshold=args.threshold)
+    # The remediation prose rides along in the payload rather than on a second
+    # stream. The CLI reads the decision WITHOUT the once-per-HEAD dedupe write,
+    # because a diagnostic read must not silence the hook's next real advisory.
+    state["advisory"] = (
+        advisory_message(args.path, int(state["added_lines"])) if state["fires"] else None
+    )
+    emit_yaml(state)
     return 0
 
 

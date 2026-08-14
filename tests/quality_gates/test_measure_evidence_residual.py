@@ -12,6 +12,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 from tests.probe_drift_support import residual_floor_message
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -26,7 +28,9 @@ def _run(repo_root: Path) -> tuple[int, dict]:
         check=False,
         cwd=REPO_ROOT,
     )
-    return result.returncode, json.loads(result.stdout)
+    # Command stdout is YAML; the persisted probe artifact this is compared against
+    # is still JSON on disk and is still read with `json.loads` below.
+    return result.returncode, yaml.safe_load(result.stdout)
 
 
 def test_an_empty_corpus_does_not_read_as_the_floor_clearing_everything(tmp_path: Path) -> None:

@@ -9,6 +9,7 @@ from pathlib import Path
 from string import Template
 
 import pytest
+import yaml
 
 from scripts import check_artifact_surface_preflight as preflight
 
@@ -331,42 +332,70 @@ def test_describe_prefix_surface_includes_paths_and_failure_detail(
     assert "missing reviewer-tier section" in out
 
 
-def test_format_changed_renders_ok_and_blocked_reports() -> None:
+def test_changed_artifacts_report_carries_the_verdict_and_the_blocked_remedy() -> None:
+    """Was `test_format_changed_renders_ok_and_blocked_reports`, before the YAML migration.
+
+    `_format_changed` is gone with the text channel, and `changed_artifacts_report` is
+    what the `--changed-artifacts` arm now emits. Of the three things the text renderer
+    carried, two were already derivable from the report (`[ok]`/`[BLOCK]` is `returncode`,
+    the echoed detail is the row's own `stderr`/`stdout`) and one was NOT: what an
+    operator does about a block. So this asserts the derivable pair survives the fold
+    unaltered, and that the remedy — the only added information — is on the payload,
+    on the blocked report and only there.
+    """
     ok_report = {"status": "ok", "checked": [
         {"validator": "scripts/validate_critique_artifacts.py", "paths": ["a.md"], "returncode": 0, "stdout": "", "stderr": ""},
     ]}
-    ok_text = preflight._format_changed(ok_report)
-    assert "artifact-shape-preflight: ok" in ok_text
-    assert "[ok]" in ok_text
+    ok_payload = preflight.changed_artifacts_report(ok_report)
+    assert ok_payload["status"] == "ok"
+    assert ok_payload["checked"][0]["returncode"] == 0
+    # An `ok` report carries no remedy: there is nothing to remedy, and a remedy line
+    # printed beside a passing verdict is the misleading-verdict class this arm avoids.
+    assert "remedy" not in ok_payload
 
     blocked_report = {"status": "blocked", "checked": [
         {"validator": "scripts/validate_critique_artifacts.py", "paths": ["bad.md"], "returncode": 1, "stdout": "", "stderr": "missing section X"},
     ]}
-    blocked_text = preflight._format_changed(blocked_report)
-    assert "[BLOCK]" in blocked_text
-    assert "missing section X" in blocked_text
-    assert "owning validator failed at the commit boundary" in blocked_text
+    blocked_payload = preflight.changed_artifacts_report(blocked_report)
+    assert blocked_payload["status"] == "blocked"
+    assert blocked_payload["checked"][0]["returncode"] == 1
+    assert blocked_payload["checked"][0]["stderr"] == "missing section X"
+    assert "owning validator failed at the commit boundary" in blocked_payload["remedy"]
+    # The fold must not mutate its input: the arm emits a report it also returns to
+    # `main` for the exit code, and an in-place `remedy` would leak into that report.
+    assert "remedy" not in blocked_report
 
 
-def test_main_changed_artifacts_text_and_json(monkeypatch, capsys) -> None:
+def test_main_changed_artifacts_emits_the_blocked_report(monkeypatch, capsys) -> None:
+    """Was `test_main_changed_artifacts_text_and_json`: there is one channel now.
+
+    The old test ran `main` twice — once for the text arm, once for `--json` — because
+    the arm branched on the flag. `--json` is deleted and output is unconditionally
+    YAML, so the second run would be a re-run of the first; what is kept is the pair
+    the two runs jointly proved: the blocked exit code, and a machine-readable
+    document that names the failing validator and its detail.
+    """
     blocked = {"status": "blocked", "blocked": ["scripts/validate_critique_artifacts.py"], "checked": [
         {"validator": "scripts/validate_critique_artifacts.py", "paths": ["bad.md"], "returncode": 1, "stdout": "", "stderr": "boom"},
     ]}
     monkeypatch.setattr(preflight, "changed_artifacts", lambda repo_root, paths: blocked)
-    # text mode -> _format_changed, exit 1 on blocked
     monkeypatch.setattr(sys, "argv", ["x", "--changed-artifacts", "charness-artifacts/critique/bad.md"])
     assert preflight.main() == 1
-    assert "[BLOCK]" in capsys.readouterr().out
-    # json mode -> json.dumps arm
-    monkeypatch.setattr(sys, "argv", ["x", "--changed-artifacts", "charness-artifacts/critique/bad.md", "--json"])
-    assert preflight.main() == 1
-    assert '"status": "blocked"' in capsys.readouterr().out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "blocked"
+    assert payload["blocked"] == ["scripts/validate_critique_artifacts.py"]
+    # The `[BLOCK]` marker and the echoed stderr the text arm printed, on the payload.
+    assert payload["checked"][0]["returncode"] == 1
+    assert payload["checked"][0]["stderr"] == "boom"
+    assert "owning validator failed at the commit boundary" in payload["remedy"]
 
 
 def test_main_changed_artifacts_ok_returns_zero(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sys, "argv", ["x", "--changed-artifacts", "docs/unrelated.md"])
     assert preflight.main() == 0
-    assert "artifact-shape-preflight: ok" in capsys.readouterr().out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "ok"
+    assert payload["checked"] == []
 
 
 def test_main_type_describes_surface(monkeypatch, capsys) -> None:

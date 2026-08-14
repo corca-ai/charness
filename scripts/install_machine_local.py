@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -167,32 +168,29 @@ def main() -> int:
         write_json(marketplace_path, marketplace)
 
     detected_hosts = detect_hosts()
-    print(
-        json.dumps(
-            {
-                "package_id": args.package_id,
-                "source_checkout": str(repo_root),
-                "plugin_root": str(plugin_root),
-                "codex_marketplace_path": str(marketplace_path) if marketplace_path else None,
-                "codex_source_path": source_path,
-                "claude_plugin_dir": str(plugin_root),
-                "grok_plugin_root": str(default_grok_plugin_root(home_root, args.package_id)),
-                "detected_hosts": detected_hosts,
-                "host_next_steps": {
-                    "codex": (
-                        "Codex local source and personal marketplace were prepared. `charness init` or `charness update` should finish the official local plugin install when the Codex CLI is available."
-                        if marketplace_path
-                        else "Codex marketplace update skipped."
-                    ),
-                    "claude": f"Use `claude --plugin-dir {plugin_root}` to exercise the same exported install surface.",
-                    "grok": (
-                        "Copy the exported plugin tree to `~/.grok/plugins/charness` and list "
-                        "`charness` in `[plugins].enabled`. Do not add a Grok marketplace."
-                    ),
-                },
+    emit_yaml(
+        {
+            "package_id": args.package_id,
+            "source_checkout": str(repo_root),
+            "plugin_root": str(plugin_root),
+            "codex_marketplace_path": str(marketplace_path) if marketplace_path else None,
+            "codex_source_path": source_path,
+            "claude_plugin_dir": str(plugin_root),
+            "grok_plugin_root": str(default_grok_plugin_root(home_root, args.package_id)),
+            "detected_hosts": detected_hosts,
+            "host_next_steps": {
+                "codex": (
+                    "Codex local source and personal marketplace were prepared. `charness init` or `charness update` should finish the official local plugin install when the Codex CLI is available."
+                    if marketplace_path
+                    else "Codex marketplace update skipped."
+                ),
+                "claude": f"Use `claude --plugin-dir {plugin_root}` to exercise the same exported install surface.",
+                "grok": (
+                    "Copy the exported plugin tree to `~/.grok/plugins/charness` and list "
+                    "`charness` in `[plugins].enabled`. Do not add a Grok marketplace."
+                ),
             },
-            ensure_ascii=False,
-        )
+        }
     )
     return 0
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -32,6 +31,8 @@ _release_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release
 _release_runtime = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_runtime")
 _resume = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_resume")
 _execute = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_execute")
+_yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+emit_yaml = _yaml_output.emit_yaml
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 build_real_host_payload = _check_real_host.build_payload
@@ -335,7 +336,7 @@ def run_prep_update_instructions(args: argparse.Namespace, repo_root: Path) -> N
         previous_version=previous_version,
         update_instructions=adapter_data.get("update_instructions"),
     )
-    print(json.dumps(prep, ensure_ascii=False, indent=2))
+    emit_yaml(prep)
 
 
 def execute_publish_plan(
@@ -392,7 +393,7 @@ def main() -> None:
             )
             return
         if not args.execute:
-            print(json.dumps(plan["payload"], ensure_ascii=False, indent=2))
+            emit_yaml(plan["payload"])
             return
         execute_publish_plan(args, repo_root, plan, adapter_data)
     except BaseException as exc:

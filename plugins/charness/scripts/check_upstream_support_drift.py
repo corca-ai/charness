@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 GITHUB_CONTENTS_TEMPLATE = "https://api.github.com/repos/{repo}/contents/{path}?ref={ref}"
@@ -158,10 +159,25 @@ def collect_targets(repo_root: Path) -> list[dict[str, Any]]:
     return targets
 
 
+def record_label(record: dict[str, Any]) -> str:
+    """The operator-facing verdict word for one probed record.
+
+    `error` reads as `skipped` because a probe-blocked outcome is not drift (see
+    the module docstring). Output is unconditionally YAML now, so this mapping
+    lives in the payload: it used to exist only inside the human renderer, and a
+    raw `status: error` with no label reads as a failure it is not.
+    """
+    status = record["status"]
+    return {
+        "exists": "ok",
+        "missing": "DRIFT",
+        "error": f"skipped ({record.get('reason', 'unknown')})",
+    }.get(status, status)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true", help="Emit a machine-readable JSON report.")
     args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
     targets = collect_targets(repo_root)
@@ -170,29 +186,18 @@ def main(argv: list[str] | None = None) -> int:
     for target in targets:
         probe = probe_path(target["upstream_repo"], target["ref"], target["path"])
         record = {**target, **probe}
+        record["label"] = record_label(record)
         results.append(record)
         if probe["status"] == "missing":
             drift_count += 1
-    payload = {
-        "schema_version": 1,
-        "checked": results,
-        "drift_count": drift_count,
-        "target_count": len(targets),
-    }
-    if args.json:
-        print(json.dumps(payload, indent=2, sort_keys=True))
-    else:
-        for record in results:
-            status = record["status"]
-            label = {
-                "exists": "ok",
-                "missing": "DRIFT",
-                "error": f"skipped ({record.get('reason', 'unknown')})",
-            }.get(status, status)
-            print(
-                f"{label}: {record['tool_id']} -> {record['upstream_repo']}@{record['ref']}:{record['path']}"
-            )
-        print(f"{drift_count} drift / {len(targets)} checked")
+    emit_yaml(
+        {
+            "schema_version": 1,
+            "checked": results,
+            "drift_count": drift_count,
+            "target_count": len(targets),
+        }
+    )
     return 1 if drift_count else 0
 
 

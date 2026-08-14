@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AUDIT_SCRIPT = "skills/public/release/scripts/audit_public_release_narrative.py"
@@ -68,7 +68,6 @@ def _run_audit(repo: Path, *extra: str) -> subprocess.CompletedProcess:
             str(repo),
             "--target-tag",
             "v0.1.0",
-            "--json",
             *extra,
         ],
         cwd=REPO_ROOT,
@@ -85,7 +84,7 @@ def test_audit_passes_for_well_formed_artifact(tmp_path: Path) -> None:
     result = _run_audit(repo)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "passed"
     assert payload["blockers"] == []
 
@@ -98,7 +97,7 @@ def test_audit_blocks_when_tag_is_missing(tmp_path: Path) -> None:
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert any("target tag `v0.1.0`" in blocker for blocker in payload["blockers"])
 
@@ -111,7 +110,7 @@ def test_audit_blocks_when_required_heading_missing(tmp_path: Path) -> None:
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert any("`## Public Release Verification`" in blocker for blocker in payload["blockers"])
 
 
@@ -126,7 +125,7 @@ def test_audit_blocks_when_state_ledger_entry_missing(tmp_path: Path) -> None:
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert any("audit narrative" in blocker for blocker in payload["blockers"])
 
 
@@ -136,7 +135,7 @@ def test_audit_blocks_when_artifact_missing(tmp_path: Path) -> None:
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert any("durable release artifact missing" in blocker for blocker in payload["blockers"])
 
 
@@ -161,7 +160,7 @@ def test_audit_blocks_notes_file_pointing_at_mutable_ref(tmp_path: Path) -> None
         result = _run_audit(repo, "--notes-file", str(notes_path))
 
         assert result.returncode == 1, label
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         assert payload["notes_blockers"], label
         assert any("MUTABLE ref" in blocker for blocker in payload["blockers"]), label
 
@@ -183,7 +182,7 @@ def test_audit_passes_notes_file_pinned_to_an_immutable_ref(tmp_path: Path) -> N
         result = _run_audit(repo, "--notes-file", str(notes_path))
 
         assert result.returncode == 0, (label, result.stdout)
-        assert json.loads(result.stdout)["notes_blockers"] == [], label
+        assert yaml.safe_load(result.stdout)["notes_blockers"] == [], label
 
 
 def test_audit_passes_for_self_contained_notes_file(tmp_path: Path) -> None:
@@ -198,7 +197,7 @@ def test_audit_passes_for_self_contained_notes_file(tmp_path: Path) -> None:
     result = _run_audit(repo, "--notes-file", str(notes_path))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "passed"
     assert payload["notes_blockers"] == []
 
@@ -223,7 +222,7 @@ def test_audit_blocks_suffixed_release_state_heading_with_empty_ledger(tmp_path:
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     # All five entries must be reported, not silently skipped.
     assert len([b for b in payload["blockers"] if "missing required entry" in b]) == 5
@@ -239,7 +238,7 @@ def test_audit_accepts_a_suffixed_release_state_heading_with_a_full_ledger(tmp_p
     result = _run_audit(repo)
 
     assert result.returncode == 0, result.stdout
-    assert json.loads(result.stdout)["status"] == "passed"
+    assert yaml.safe_load(result.stdout)["status"] == "passed"
 
 
 def test_audit_does_not_accept_a_fenced_example_ledger_as_the_real_one(tmp_path: Path) -> None:
@@ -269,7 +268,7 @@ def test_audit_does_not_accept_a_fenced_example_ledger_as_the_real_one(tmp_path:
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert len([b for b in payload["blockers"] if "missing required entry" in b]) == 5
 
 
@@ -283,7 +282,7 @@ def test_audit_reports_one_coherent_blocker_when_the_state_section_is_absent(tmp
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    state_blockers = [b for b in json.loads(result.stdout)["blockers"] if "Release State" in b]
+    state_blockers = [b for b in yaml.safe_load(result.stdout)["blockers"] if "Release State" in b]
     assert len(state_blockers) == 1
     assert "missing section" in state_blockers[0]
 
@@ -313,7 +312,7 @@ def test_audit_notes_ref_classification_matrix(tmp_path: Path) -> None:
     ):
         notes_path.write_text(body, encoding="utf-8")
         result = _run_audit(repo, "--notes-file", str(notes_path))
-        blocked = json.loads(result.stdout)["notes_blockers"] != []
+        blocked = yaml.safe_load(result.stdout)["notes_blockers"] != []
         assert blocked is should_block, (label, result.stdout)
 
 
@@ -338,7 +337,7 @@ def test_audit_refuses_a_release_state_mentioned_only_in_prose(tmp_path: Path) -
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    state_blockers = [b for b in json.loads(result.stdout)["blockers"] if "Release State" in b]
+    state_blockers = [b for b in yaml.safe_load(result.stdout)["blockers"] if "Release State" in b]
     assert len(state_blockers) == 1
     assert "never checked" in state_blockers[0]
     assert "on its own heading line" in state_blockers[0]
@@ -380,7 +379,7 @@ def test_audit_blocks_when_drafted_notes_exist_but_publish_supplied_none(tmp_pat
     result = _run_audit(repo)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     blocker = next(b for b in payload["blockers"] if "drafted notes files match" in b)
     # The refusal names the file AND the flag that resolves it: a blocker that
@@ -398,7 +397,7 @@ def test_audit_does_not_block_when_the_drafted_notes_were_supplied(tmp_path: Pat
     result = _run_audit(repo, "--notes-file", str(drafted))
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "passed"
     assert payload["blockers"] == []
     # `drafted_notes` reports what discovery FOUND, not what was wrong with it —
@@ -418,7 +417,7 @@ def test_audit_stays_silent_for_a_repo_that_drafts_no_notes(tmp_path: Path) -> N
     result = _run_audit(repo)
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert json.loads(result.stdout)["drafted_notes"] == []
+    assert yaml.safe_load(result.stdout)["drafted_notes"] == []
 
 
 def test_drafted_notes_discovery_matches_the_naming_shapes_in_this_repos_release_dir(tmp_path: Path) -> None:
@@ -590,7 +589,7 @@ def test_audit_blocks_when_a_notes_file_other_than_the_draft_is_supplied(tmp_pat
     result = _run_audit(repo, "--notes-file", str(decoy))
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     blocker = next(b for b in payload["blockers"] if "drafted notes files match" in b)
     assert "which is none of them" in blocker
     assert "2026-05-13-v0.1.0-notes.md" in blocker

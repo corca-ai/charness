@@ -11,11 +11,11 @@ live tracker call is made.
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO_ROOT / "skills" / "public" / "handoff" / "scripts"
@@ -335,7 +335,7 @@ def test_parser_cli_reports_a_missing_path_without_dropping_the_entry(tmp_path):
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["staleness"]["paths_checked"] is True
     # No tracker call without --with-issues, so the issue half is NOT CHECKED
     # rather than silently reported as clean.
@@ -380,9 +380,9 @@ def test_the_checked_flags_survive_the_whole_pipeline_to_the_packet(tmp_path):
         ["--repo-root", str(repo), "--handoff-path", str(repo / "docs" / "handoff.md")],
     )
     merged = run("propose_merges.py", [], parsed)
-    packet = json.loads(run("prepare_chunk_packet.py", ["--repo-root", str(repo)], parsed))
+    packet = yaml.safe_load(run("prepare_chunk_packet.py", ["--repo-root", str(repo)], parsed))
 
-    assert json.loads(merged)["staleness"]["paths_checked"] is True
+    assert yaml.safe_load(merged)["staleness"]["paths_checked"] is True
     assert packet["staleness"]["paths_checked"] is True
     assert packet["staleness"]["issue_states_checked"] is False
     assert packet["sources"][0]["missing_paths"] == ["docs/gone.md"]

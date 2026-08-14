@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -171,7 +172,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--scenario-spec", type=Path, action="append", help="Scenario spec JSON to scan.")
     parser.add_argument("--transcript", type=Path, action="append", help="Captured transcript text to scan.")
     parser.add_argument("--text", type=Path, action="append", help="Additional text file to scan.")
-    parser.add_argument("--json", action="store_true")
     return parser.parse_args(argv)
 
 
@@ -182,18 +182,10 @@ def main(argv: list[str] | None = None) -> int:
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
         return 2
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        for finding in report["findings"]:
-            print(
-                f"{finding['severity']}: {finding['source']} {finding['field']} "
-                f"{finding['line']}:{finding['column']} {finding['rule']} ({finding['match']})"
-            )
-        if report["no_inputs"]:
-            print("prompt-mutation clean-proof preflight: no input files supplied; no clean-proof claim made")
-        elif not report["findings"]:
-            print("prompt-mutation clean-proof preflight: no visible git history/ref probe tokens found")
+    # The prose branch added nothing the report does not carry: its per-finding lines
+    # were `findings` reformatted, and both of its summary sentences are the
+    # `non_claim` this payload already computes for exactly those two states.
+    emit_yaml(report)
     return 0
 
 

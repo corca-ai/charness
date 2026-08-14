@@ -53,7 +53,7 @@ cli_skill_surface_probe_commands:
   - ./charness --help
   - ./charness doctor --help
   - ./charness --version
-  - env CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS=1 python3 scripts/doctor.py --repo-root . --json --skip-release-probe
+  - env CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS=1 python3 scripts/doctor.py --repo-root . --skip-release-probe
 cli_skill_surface_command_docs:
   - .agents/command-docs.yaml
 cli_skill_surface_change_globs:
@@ -651,7 +651,7 @@ concept_paths:
   - README.md
 preflight_commands:
   - python3 scripts/validate_maintainer_setup.py --repo-root .
-  - python3 scripts/doctor.py --json
+  - python3 scripts/doctor.py
 gate_commands:
   - ./scripts/run-quality.sh
 review_commands:

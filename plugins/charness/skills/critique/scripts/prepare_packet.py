@@ -15,9 +15,7 @@ Schema lives in
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -37,6 +35,7 @@ _critique_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
 _critique_packet_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.critique_packet_lib"
 )
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 load_adapter = _critique_adapter_lib.load_adapter
 build_packet = _critique_packet_lib.build_packet
 write_packet = _critique_packet_lib.write_packet
@@ -66,8 +65,6 @@ def main() -> int:
         default=None,
         help="Repo-relative path declared as reviewed (repeatable; defaults to changed paths).",
     )
-    parser.add_argument("--json", action="store_true",
-                        help="Emit the packet JSON to stdout instead of writing artifacts")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -80,23 +77,17 @@ def main() -> int:
         prepared_for = changed_ref
     adapter = load_adapter(repo_root)
     if not adapter["valid"]:
-        json.dump(
-            {"ok": False, "error": "critique adapter invalid", "adapter": adapter},
-            sys.stdout, indent=2, ensure_ascii=False, sort_keys=True,
-        )
-        sys.stdout.write("\n")
+        yaml_output.emit_yaml({"ok": False, "error": "critique adapter invalid", "adapter": adapter})
         return 1
     output_dir = repo_root / adapter["data"].get("output_dir", "charness-artifacts/critique")
     slug = args.slug or _default_slug()
-    excluded_paths = []
-    if not args.json:
-        excluded_paths = [
-            (output_dir / f"{slug}-packet.json").relative_to(repo_root).as_posix(),
-            (output_dir / f"{slug}-packet.md").relative_to(repo_root).as_posix(),
-        ]
-        collisions = sorted(set(args.reviewed_path or []) & set(excluded_paths))
-        if collisions:
-            parser.error(f"--reviewed-path collides with packet output: {', '.join(collisions)}")
+    excluded_paths = [
+        (output_dir / f"{slug}-packet.json").relative_to(repo_root).as_posix(),
+        (output_dir / f"{slug}-packet.md").relative_to(repo_root).as_posix(),
+    ]
+    collisions = sorted(set(args.reviewed_path or []) & set(excluded_paths))
+    if collisions:
+        parser.error(f"--reviewed-path collides with packet output: {', '.join(collisions)}")
     # The review record is not a reviewed input: the auto sweep drops every
     # artifact under the critique output dir — the artifact being authored, and any
     # packet already written this session — so writing the record cannot stale the
@@ -111,11 +102,6 @@ def main() -> int:
         excluded_reviewed_paths=excluded_paths,
         excluded_reviewed_prefixes=excluded_prefixes,
     )
-
-    if args.json:
-        json.dump(packet, sys.stdout, indent=2, ensure_ascii=False)
-        sys.stdout.write("\n")
-        return 0 if packet["ok"] else 1
 
     json_path, md_path = write_packet(packet, output_dir=output_dir, slug=slug)
     identity = packet["reviewed_input_identity"]
@@ -136,7 +122,7 @@ def main() -> int:
             "binding covers zero reviewed paths and proves nothing; re-run with "
             "explicit --reviewed-path values for what was actually reviewed"
         )
-    json.dump(
+    yaml_output.emit_yaml(
         {
             "ok": packet["ok"],
             "section_count": packet["section_count"],
@@ -145,10 +131,8 @@ def main() -> int:
             "changed_ref": packet["changed_ref"],
             "adapter_path": packet["adapter_path"],
             "reviewed_input_binding": binding,
-        },
-        sys.stdout, indent=2, ensure_ascii=False, sort_keys=True,
+        }
     )
-    sys.stdout.write("\n")
     return 0 if packet["ok"] else 1
 
 

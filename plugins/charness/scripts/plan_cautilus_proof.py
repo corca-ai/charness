@@ -8,9 +8,8 @@ import re
 import sys
 from pathlib import Path
 
-from yaml_output import emit_yaml
-
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _scripts_cautilus_adapter_lib_module = import_repo_module(__file__, "scripts.cautilus_adapter_lib")

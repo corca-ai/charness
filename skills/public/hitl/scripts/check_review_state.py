@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,6 +16,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _hitl_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.hitl_review_artifact_lib")
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 
@@ -41,7 +40,7 @@ def main() -> int:
         "session_id": session["session_id"],
         "errors": errors,
     }
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    emit_yaml(payload)
     return 1 if errors else 0
 
 

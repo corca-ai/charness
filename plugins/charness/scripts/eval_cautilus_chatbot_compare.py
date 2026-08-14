@@ -9,7 +9,10 @@ import sys
 import tempfile
 from pathlib import Path
 
+import yaml
+
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_OUTPUT_DIR = Path("charness-artifacts/cautilus/chatbot-benchmark")
@@ -35,7 +38,6 @@ def _run_proposal_summary(target_repo: Path, output_dir: Path) -> dict[str, obje
             str(target_repo),
             "--output-dir",
             str(output_dir),
-            "--json",
         ],
         cwd=REPO_ROOT,
         check=False,
@@ -46,12 +48,14 @@ def _run_proposal_summary(target_repo: Path, output_dir: Path) -> dict[str, obje
         raise EvalError(
             f"proposal summary failed for `{target_repo}`: {result.stderr.strip() or result.stdout.strip() or 'no output'}"
         )
+    # A repo-owned CLI, so its stdout is YAML. The `cautilus` call in
+    # `resolve_repo_pair` stays JSON: that is a third-party native API.
     try:
-        payload = json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
-        raise EvalError(f"proposal summary did not emit valid JSON for `{target_repo}`") from exc
+        payload = yaml.safe_load(result.stdout)
+    except yaml.YAMLError as exc:
+        raise EvalError(f"proposal summary did not emit valid YAML for `{target_repo}`") from exc
     if not isinstance(payload, dict):
-        raise EvalError(f"proposal summary output must be a JSON object for `{target_repo}`")
+        raise EvalError(f"proposal summary output must be a YAML mapping for `{target_repo}`")
     return payload
 
 
@@ -276,7 +280,6 @@ def main() -> int:
     parser.add_argument("--candidate-repo", type=Path)
     parser.add_argument("--baseline-ref")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -299,10 +302,10 @@ def main() -> int:
         candidate_summary=candidate_summary,
     )
     write_summary(output_dir, summary)
-    if args.json:
-        print(json.dumps(summary, ensure_ascii=False, indent=2))
-    else:
-        print(f"Wrote cautilus chatbot benchmark to {output_dir}")
+    # `output_dir` is folded into the EMITTED payload only, never into the written
+    # artifact: the retired human line was the one place a reader learned where the
+    # benchmark landed, and the artifact's own schema does not carry it.
+    emit_yaml({**summary, "output_dir": portable_path_value(REPO_ROOT, output_dir, external_label="external-output-dir")})
     return 0
 
 

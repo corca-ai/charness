@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -19,6 +17,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _render_skill_routing = SKILL_RUNTIME.load_local_skill_module(__file__, "render_skill_routing")
 _host_docs = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.setup_host_docs_lib")
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 def main() -> int:
@@ -33,7 +32,7 @@ def main() -> int:
         skill_routing_payload=_render_skill_routing.build_payload,
         execute=args.execute,
     )
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    yaml_output.emit_yaml(payload)
     return 1 if payload["status"] == "blocked" else 0
 
 

@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import load_path_module
 
 from .support import ROOT
@@ -47,7 +49,7 @@ def _run_quality_recommendations(monkeypatch, capsys, tmp_path: Path, *args: str
     captured = capsys.readouterr()
     result = SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def _run_recommendations(
@@ -71,7 +73,7 @@ def _run_recommendations(
         text=True,
         env={**os.environ, "PATH": _isolated_path()},
     )
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -137,7 +139,7 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
                     "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.sh",
                     "notes": ["Install cautilus."],
                 },
-                "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id cautilus",
+                "verify_command": "python3 scripts/doctor.py --repo-root . --tool-id cautilus",
                 "next_skill_id": "quality",
                 "manifest_origin": "user-repo",
                 "staged": None,
@@ -248,7 +250,7 @@ def test_narrative_tool_recommendations_emit_blocking_runtime_routes(tmp_path: P
                     "install_url": "https://github.com/charmbracelet/glow#installation",
                     "notes": ["Install glow."],
                 },
-                "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id glow",
+                "verify_command": "python3 scripts/doctor.py --repo-root . --tool-id glow",
                 "next_skill_id": "narrative",
                 "manifest_origin": "user-repo",
                 "staged": None,

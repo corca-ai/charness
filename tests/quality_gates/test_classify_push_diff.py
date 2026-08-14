@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LIB_PATH = REPO_ROOT / "scripts/classify_push_diff_lib.py"
@@ -123,7 +124,7 @@ def test_cli_emits_classification_for_explicit_path_list() -> None:
         text=True,
         check=True,
     )
-    payload = json.loads(process.stdout)
+    payload = yaml.safe_load(process.stdout)
     assert payload["classification"] == "docs-artifact-only"
 
 
@@ -153,6 +154,6 @@ def test_cli_emits_full_gate_for_unconditional_path_via_stdin() -> None:
         text=True,
         check=True,
     )
-    payload = json.loads(process.stdout)
+    payload = yaml.safe_load(process.stdout)
     assert payload["classification"] == "full-gate-required"
     assert "plugins/charness/SKILL.md" in payload["unconditional_full_gate_hits"]

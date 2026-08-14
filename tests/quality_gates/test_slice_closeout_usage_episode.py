@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 from .support import run_script
@@ -71,7 +73,6 @@ def _run_closeout(repo: Path, *, quality_mode: str | None = None):
         str(repo),
         "--paths",
         "README.md",
-        "--json",
         env=_closeout_env(quality_mode=quality_mode),
     )
 
@@ -96,7 +97,7 @@ def test_run_slice_closeout_emits_usage_episode_when_enabled(tmp_path: Path, mon
     result = _run_closeout(repo)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "completed"
     assert payload["usage_episode"]["status"] == "emitted"
     records_path = repo / ".charness" / "usage-episodes" / "usage_episode.jsonl"
@@ -115,15 +116,15 @@ def test_run_slice_closeout_emits_usage_episode_when_enabled(tmp_path: Path, mon
     assert record["classification_skipped"] == "diff_unavailable"
     assert "session_id" not in record
 
-    valid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    valid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo))
     assert valid.returncode == 0, valid.stderr
-    assert json.loads(valid.stdout)["valid_count"] == 1
+    assert yaml.safe_load(valid.stdout)["valid_count"] == 1
 
     with records_path.open("a", encoding="utf-8") as handle:
         handle.write('{"event_type": "usage_episode"}\n')
-    invalid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    invalid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo))
     assert invalid.returncode == 1
-    assert json.loads(invalid.stdout)["status"] == "invalid_records"
+    assert yaml.safe_load(invalid.stdout)["status"] == "invalid_records"
 
 
 def test_run_slice_closeout_skips_usage_episode_inside_quality_run(tmp_path: Path) -> None:
@@ -151,7 +152,7 @@ def test_run_slice_closeout_skips_usage_episode_inside_quality_run(tmp_path: Pat
     result = _run_closeout(repo, quality_mode="full")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "completed"
     assert payload["usage_episode"]["status"] == "readonly_quality_run"
     assert payload["usage_episode"]["emitted"] is False
@@ -165,7 +166,7 @@ def test_run_slice_closeout_skips_usage_episode_when_disabled(tmp_path: Path) ->
     result = _run_closeout(repo)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["usage_episode"]["status"] == "disabled"
     assert not (repo / ".charness" / "usage-episodes" / "usage_episode.jsonl").exists()
 
@@ -177,7 +178,7 @@ def test_run_slice_closeout_fails_usage_episode_invalid_adapter(tmp_path: Path) 
     result = _run_closeout(repo)
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "failed"
     assert payload["usage_episode"]["status"] == "invalid_adapter"
     assert payload["usage_episode"]["error"].endswith("ValidationError")
@@ -261,6 +262,6 @@ def test_run_slice_closeout_rotates_usage_episode_records(tmp_path: Path, monkey
 
     assert result.returncode == 0, result.stderr
     assert (records_dir / "usage_episode.1.jsonl").is_file()
-    valid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    valid = run_validate_usage_episodes(monkeypatch, capsys, "--repo-root", str(repo))
     assert valid.returncode == 0, valid.stderr
-    assert json.loads(valid.stdout)["valid_count"] == 1
+    assert yaml.safe_load(valid.stdout)["valid_count"] == 1

@@ -98,7 +98,33 @@ RUN_QUALITY_RUNTIME_BATCH="$RUN_QUALITY_TMPDIR/runtime-batch.jsonl"
 # nonzero instead of returning an empty set, and that is handled below.
 declare -A RUN_QUALITY_LABEL_UNIVERSE=()
 RUN_QUALITY_UNIVERSE_ERR="$RUN_QUALITY_TMPDIR/label-universe.err"
-if RUN_QUALITY_UNIVERSE_TEXT="$(python3 scripts/quality_label_universe.py --repo-root "$REPO_ROOT" 2>"$RUN_QUALITY_UNIVERSE_ERR")"; then
+if RUN_QUALITY_UNIVERSE_YAML="$(python3 scripts/quality_label_universe.py --repo-root "$REPO_ROOT" 2>"$RUN_QUALITY_UNIVERSE_ERR")"; then
+  # The reader emits one YAML document since the 2026-08-14 --json removal, not bare
+  # label lines. Reading it as lines made EVERY line ("resolved: true", "- label") a
+  # label, so the first queued gate failed the assertion and the runner exited 2.
+  # `resolved: false` still degrades to the empty set the block above describes: an
+  # unresolvable reader disables the assertion rather than refusing every gate.
+  RUN_QUALITY_UNIVERSE_TEXT="$(
+    printf '%s' "$RUN_QUALITY_UNIVERSE_YAML" | python3 -c '
+import json, sys
+raw = sys.stdin.read()
+try:
+    # JSON first, exactly like the Python readers (charness.parse_repo_script_payload
+    # and friends): `yaml_output.render_yaml` falls back to COMPACT JSON when PyYAML is
+    # absent, so on such an interpreter the producer emits JSON -- and requiring yaml
+    # here would refuse a payload the producer wrote perfectly well, while blaming YAML.
+    payload = json.loads(raw)
+except json.JSONDecodeError:
+    import yaml
+    payload = yaml.safe_load(raw)
+payload = payload or {}
+labels = payload.get("labels") or [] if payload.get("resolved") else []
+print("\n".join(labels))
+'
+  )" || {
+    echo "run-quality: FAIL could not parse the gate-label reader payload (tried JSON, then YAML)." >&2
+    exit 2
+  }
   while IFS= read -r universe_label; do
     if [[ -n "$universe_label" ]]; then
       RUN_QUALITY_LABEL_UNIVERSE["$universe_label"]=1
@@ -531,7 +557,15 @@ print_phase_output() {
 
   printf '%s %-24s %s\n' "$(uppercase_status "$status")" "$label" "$(format_elapsed "$elapsed_ms")"
 
-  if [[ -s "$log_path" ]] && grep -Eq '^(WARNING|WARN|WEAK|ADVISORY)(:|[[:space:]])' "$log_path"; then
+  # The marker no longer has to start a physical line. Gate output is unconditionally
+  # YAML since the 2026-08-14 --json removal, so an advisory that used to be printed as
+  # `WARN: ...` now rides inside a payload as `advisory: 'WARN: ...'` or a `- WARN: ...`
+  # list item. Anchoring on `^` alone silently retired the whole attention tier on
+  # PASSING runs -- a green gate that stops speaking is exactly the fail-quiet shape
+  # this block exists to prevent. So the marker is also accepted at the start of a YAML
+  # scalar (after `: `, `- `, or an opening quote). Matching a little too eagerly costs
+  # an extra printed log; matching too narrowly costs the advisory itself.
+  if [[ -s "$log_path" ]] && grep -Eq '(^|: |- |["'"'"'])(WARNING|WARN|WEAK|ADVISORY)(:|[[:space:]])' "$log_path"; then
     attention_output=1
   fi
 

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import json
 import shutil
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -84,16 +84,15 @@ def main() -> int:
         written_paths.append(rel_path)
     after = _snapshot(repo_root, [plugin_root, *root_artifact_paths, *stale_manifest_paths])
 
-    print(
-        json.dumps(
-            {
-                "package_id": args.package_id,
-                "written_paths": written_paths,
-                "removed_paths": removed_paths,
-                "change_summary": _change_summary(before, after),
-            },
-            ensure_ascii=False,
-        )
+    # The generated `.json` install-surface artifacts are written by `write_json`
+    # above and keep their storage format; only this run receipt is YAML.
+    emit_yaml(
+        {
+            "package_id": args.package_id,
+            "written_paths": written_paths,
+            "removed_paths": removed_paths,
+            "change_summary": _change_summary(before, after),
+        }
     )
     return 0
 

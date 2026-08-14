@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -82,7 +83,7 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(
         str(markdown_file),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/retro/weekly-2026-04-14.md"
     assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["lesson_selection_index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
@@ -135,7 +136,7 @@ def test_persist_retro_artifact_stamps_persisted_path(tmp_path: Path, monkeypatc
         str(markdown_file),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["persisted_line_stamped"] is True
     written = (output_dir / "2026-07-03-demo.md").read_text(encoding="utf-8")
     assert "Persisted: yes: charness-artifacts/retro/2026-07-03-demo.md" in written
@@ -178,7 +179,7 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(
         str(markdown_file),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["summary_refreshed"] is False
 
@@ -301,7 +302,7 @@ def test_goal_aware_persistence_accepts_matching_path_at_cli_boundary(
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["goal_path"] == "charness-artifacts/goals/2026-05-07-owner.md"
     assert payload["goal_slug"] == "owner"
     assert "Goal: charness-artifacts/goals/2026-05-07-owner.md" in (
@@ -423,7 +424,7 @@ def test_goal_aware_library_accepts_exact_slug_and_legacy_mode_stays_goal_free(
         str(legacy_file),
     )
     assert legacy.returncode == 0, legacy.stderr
-    assert "goal_path" not in json.loads(legacy.stdout)
+    assert "goal_path" not in yaml.safe_load(legacy.stdout)
 
 
 def test_achieve_closeout_contract_routes_owning_goal_to_persistence() -> None:
@@ -476,7 +477,7 @@ def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(
         str(markdown_file),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"].endswith(".md"), payload
     assert payload["artifact_path"] == "charness-artifacts/retro/2026-05-07-session-no-extension.md"
     assert payload["artifact_name_normalized"] is True
@@ -517,7 +518,7 @@ def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(
         str(markdown_file),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary_refreshed"] is False
     assert payload["summary_skipped_reason"] == "no_candidates_existing_summary_protected"
     preserved = legacy_summary.read_text(encoding="utf-8")
@@ -583,7 +584,7 @@ def test_persist_retro_artifact_emits_t_events_lesson_cited_when_adapter_present
         str(markdown_file),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["t_events"]["emitted_count"] == 2
     assert payload["t_events"]["cite_count"] == 2
 
@@ -641,7 +642,7 @@ def test_persist_retro_artifact_t_events_emit_silent_without_adapter(
         str(markdown_file),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["t_events"]["emitted_count"] == 0
     assert payload["t_events"]["cite_count"] == 1
     assert payload["t_events"]["reasons"] == {"no_adapter": 1}
@@ -681,7 +682,7 @@ def test_persist_retro_artifact_force_empty_summary_opts_in(
         "--force-empty-summary",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary_refreshed"] is True
     refreshed = legacy_summary.read_text(encoding="utf-8")
     assert "Hand-curated trap line that the operator has chosen to drop." not in refreshed

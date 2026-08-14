@@ -30,12 +30,12 @@ What this does NOT do, and why:
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
@@ -115,7 +115,6 @@ def init_lesson_ledger(*, repo_root: Path, output_dir: Path, summary_path: Path)
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=ROOT)
-    parser.add_argument("--json", action="store_true", help="Emit the structured receipt instead of prose.")
     args = parser.parse_args()
     root = args.repo_root.resolve()
     result = init_lesson_ledger(
@@ -124,14 +123,11 @@ def main() -> int:
         summary_path=root / "charness-artifacts/retro/recent-lessons.md",
     )
     step = next_step(root)
-    if args.json:
-        print(json.dumps({**result, "next_step": step}, ensure_ascii=False, sort_keys=True))
-        return 0
-    print(
-        f"Created empty lesson ledger `{result['path']}`: "
-        f"{result['lesson_count']} lessons, {result['transition_count']} seed transitions."
-    )
-    print(step)
+    # Unconditional YAML. The retired receipt line was a strict projection of
+    # `path`, `lesson_count`, and `transition_count`; `next_step` is the sentence
+    # that says an empty ledger is not a finished lifecycle, and it has always
+    # travelled in the payload rather than only in the prose.
+    emit_yaml({**result, "next_step": step})
     return 0
 
 

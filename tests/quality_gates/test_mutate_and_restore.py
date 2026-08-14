@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -260,19 +261,19 @@ def test_cli_exits_two_on_a_refused_baseline_and_one_on_a_survivor(tmp_path: Pat
 
     def run(plan_path: Path) -> subprocess.CompletedProcess:
         return subprocess.run(
-            [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path), "--json"],
+            [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path)],
             capture_output=True,
             text=True,
         )
 
     survived = run(survivor)
     assert survived.returncode == 1
-    assert json.loads(survived.stdout)["survived"] == 1
+    assert yaml.safe_load(survived.stdout)["survived"] == 1
 
     refused = run(broken)
     assert refused.returncode == 2
-    assert json.loads(refused.stdout)["baseline"]["earned"] is False
-    assert json.loads(refused.stdout)["mutants"] == []
+    assert yaml.safe_load(refused.stdout)["baseline"]["earned"] is False
+    assert yaml.safe_load(refused.stdout)["mutants"] == []
 
 
 def test_mutating_a_source_file_drops_its_stale_bytecode(tmp_path: Path) -> None:
@@ -554,7 +555,13 @@ def test_the_cli_exits_two_on_a_sweep_error(tmp_path: Path) -> None:
     assert "missing" in completed.stdout
 
 
-def test_the_human_summary_names_the_baseline_it_measured_against(tmp_path: Path) -> None:
+def test_the_summary_names_the_baseline_it_measured_against(tmp_path: Path) -> None:
+    """Counts nobody can attribute to a baseline are the shape this runner exists to stop.
+
+    The retired summary line said "over a baseline of 1 passing tests". The same fact
+    is the `baseline` block: `earned` (the sweep was allowed to render verdicts at
+    all) beside `passed` (how many tests those verdicts were measured against).
+    """
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     plan_path = tmp_path / "p.json"
     plan_path.write_text(
@@ -569,7 +576,10 @@ def test_the_human_summary_names_the_baseline_it_measured_against(tmp_path: Path
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert "over a baseline of 1 passing tests" in completed.stdout
+    payload = yaml.safe_load(completed.stdout)
+    assert payload["baseline"]["earned"] is True
+    assert payload["baseline"]["passed"] == 1
+    assert payload["killed"] == 1
 
 
 def test_main_in_process_covers_the_exit_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -760,10 +770,12 @@ def test_a_refused_mutant_is_unclassified_rather_than_counted_as_no_call_site(tm
 
 
 def test_the_cli_prints_the_call_site_count_and_the_non_claim(tmp_path: Path) -> None:
-    """Operator-visible through the real command, not only in `--json`.
+    """Operator-visible through the real command, not buried in the runner's internals.
 
-    The counts line is what a reader stops at, so the count belongs there; the non-claim
-    goes to stderr so it survives the `> file` redirect this repo requires for gates.
+    Both halves must survive the trip through the CLI: the count rides in the emitted
+    payload on stdout, and the non-claim is ALSO written to stderr so it survives the
+    `> file` redirect this repo requires for gates -- a reader who only watches the
+    terminal still cannot miss it.
     """
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     plan_path = tmp_path / "plan.json"
@@ -780,7 +792,9 @@ def test_the_cli_prints_the_call_site_count_and_the_non_claim(tmp_path: Path) ->
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert "0 call-site" in completed.stdout, completed.stdout
+    payload = yaml.safe_load(completed.stdout)
+    assert payload["call_site_mutants"] == 0, completed.stdout
+    assert "says nothing about whether" in payload["call_site_non_claim"], completed.stdout
     assert "NON-CLAIM" in completed.stderr, completed.stderr
 
 
@@ -1000,12 +1014,18 @@ def test_an_unearned_baseline_makes_no_call_site_claim_either_way() -> None:
 
 
 def test_the_human_line_marks_the_declaration_and_the_removals_readably() -> None:
-    """The `N call-site` count must be auditable from the human output, not only `--json`.
+    """The `call_site_mutants` count must be auditable per mutant while the sweep runs.
 
-    Under the declaration design the discriminating fact is the DECLARATION; removals
-    alone rendered a declared caller test and an incidental `.join` identically. The first
+    The payload carries `declared_call_site` and `removed_calls` on every mutant, but a
+    sweep is long and a reader of a truncated or still-running log only ever has the
+    streamed progress lines -- so the same pair has to be legible there too. Under the
+    declaration design the discriminating fact is the DECLARATION; removals alone
+    rendered a declared caller test and an incidental `.join` identically. The first
     attempt at this line mismatched its brackets and printed `[call-site;[removes print]`,
     which the tool's own self-sweep surfaced.
+
+    This reproduces the rendering rule rather than driving `run_sweep`, so it pins the
+    shape and not the call site that emits it.
     """
     lines: list[str] = []
     baseline = mar.Baseline(returncode=0, passed=1, output="1 passed in 0.01s")

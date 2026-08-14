@@ -2,14 +2,16 @@
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 from dataclasses import asdict, dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
+from yaml_output import emit_yaml
 
 _scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
 
@@ -84,10 +86,13 @@ def _run_resolver(repo_root: Path, skill_id: str, day: date) -> tuple[dict[str, 
     )
     if completed.returncode != 0:
         return None, completed.stderr.strip() or completed.stdout.strip() or "resolver failed"
+    # `resolve_artifact_path.py` is repo-owned, so its stdout is YAML.
     try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        return None, f"resolver returned invalid JSON: {exc}"
+        payload = yaml.safe_load(completed.stdout)
+    except yaml.YAMLError as exc:
+        return None, f"resolver returned invalid YAML: {exc}"
+    if not isinstance(payload, dict):
+        return None, "resolver returned a non-mapping payload"
     return payload, None
 
 
@@ -208,54 +213,11 @@ def _summary(items: list[LayoutItem]) -> dict[str, int]:
     return dict(sorted(counts.items()))
 
 
-def _markdown(items: list[LayoutItem]) -> str:
-    lines = [
-        "# Current Pointer Layout Inventory",
-        "",
-        "| Skill | Source | Class | On-Disk Layout | Artifact Path | Write Path | Target | Status |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
-    ]
-    for item in items:
-        target = item.current_pointer_target_path or ""
-        if item.current_pointer_target_exists is False:
-            target = f"{target} (missing)"
-        status = item.status if item.resolver_error is None else f"{item.status}: {item.resolver_error}"
-        lines.append(
-            "| "
-            + " | ".join(
-                _md_cell(value)
-                for value in (
-                    item.skill_id,
-                    item.discovery_source,
-                    item.artifact_class or "",
-                    item.on_disk_layout,
-                    item.artifact_path or "",
-                    item.write_artifact_path or "",
-                    target,
-                    status,
-                )
-            )
-            + " |"
-        )
-    lines.append("")
-    lines.append("## Summary")
-    lines.append("")
-    for layout, count in _summary(items).items():
-        lines.append(f"- `{layout}`: {count}")
-    return "\n".join(lines) + "\n"
-
-
-def _md_cell(value: str) -> str:
-    escaped = value.replace("|", "\\|")
-    return f"`{escaped}`" if escaped else ""
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--skill-id", action="append", help="Limit inventory to one skill id; repeatable.")
     parser.add_argument("--date", help="ISO date used for resolver payloads.")
-    parser.add_argument("--json", action="store_true")
     parser.add_argument("--require-resolved", action="store_true")
     args = parser.parse_args()
 
@@ -267,10 +229,11 @@ def main() -> int:
         "summary": _summary(items),
         "items": [asdict(item) for item in items],
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(_markdown(items), end="")
+    # Unconditional YAML. The retired markdown table was a strict projection of the
+    # `LayoutItem` fields each row already carries (`resolver_error` was folded into
+    # its Status cell, and the `(missing)` marker restated
+    # `current_pointer_target_exists`), plus the same `summary` counts.
+    emit_yaml(payload)
     if args.require_resolved and payload["status"] != "clean":
         return 1
     return 0

@@ -38,6 +38,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _freeze_lib = import_repo_module(__file__, "scripts.issue_source_freeze_lib")
@@ -334,7 +335,7 @@ def main() -> int:
         args.invoked, args.carrier, args.carrier_source,
         repo_root=args.repo_root.resolve(), crosswalk_path=args.crosswalk,
     )
-    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(result)
     return 0 if result["authorized"] else 1
 
 

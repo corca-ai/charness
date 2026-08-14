@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 COLLECT_COMMITS = ROOT / "skills" / "public" / "announcement" / "scripts" / "collect_commits.py"
@@ -31,7 +32,7 @@ def run_collect(repo: Path, *args: str) -> dict[str, object]:
         capture_output=True,
         text=True,
     )
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_collect_commits_includes_body_trailers_and_closing_references(tmp_path: Path) -> None:

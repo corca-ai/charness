@@ -16,6 +16,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import emit_yaml  # noqa: E402
+
 
 def _load_detail(path: Path) -> dict[str, Any]:
     try:
@@ -272,7 +275,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--ratchet-report", type=Path, help="Existing check_dup_ratchet --detail payload.")
     parser.add_argument("--code-inventory", type=Path, help="Existing inventory_nose_clones --detail payload.")
-    parser.add_argument("--json", action="store_true", help="Emit the triage packet as JSON.")
     return parser.parse_args(argv)
 
 
@@ -311,18 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
         return 2
-    if args.json:
-        output = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True)
-    else:
-        lines = [f"dup-ratchet triage: {report['family_count']} family(ies)"]
-        if report.get("unestablished_reason"):
-            lines.append(f"REFUSED: {report['unestablished_reason']}")
-        lines.extend(
-            f"- {family['id']}: {family['suggested_action']} -- {family['reason']}"
-            for family in report["families"]
-        )
-        output = "\n".join(lines)
-    print(output)
+    emit_yaml(report)
     return 0 if report["ok"] else 1
 
 

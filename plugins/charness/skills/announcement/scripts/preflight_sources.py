@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -34,6 +33,7 @@ def main() -> None:
         sys.path.insert(0, str(_repo_root()))
         from scripts.announcement_adapter_lib import load_announcement_adapter
         from scripts.announcement_preflight_lib import preflight_sources
+        from scripts.yaml_output import emit_yaml
 
         adapter = load_announcement_adapter(repo_root)
         adapter_data = adapter["data"]
@@ -43,7 +43,7 @@ def main() -> None:
             artifact_path = Path(adapter["artifact_path"])
             draft_path = artifact_path if artifact_path.is_absolute() else (repo_root / artifact_path)
         payload = preflight_sources(adapter_data, draft_path)
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        emit_yaml(dict(sorted(payload.items())))
         sys.exit(0 if payload["ok"] else 2)
     finally:
         cancel_timeout()

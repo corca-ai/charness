@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import os
 import runpy
 import subprocess
 import sys
 from datetime import date
 from pathlib import Path
+
+import yaml
 
 import scripts.export_plugin as export_plugin_module
 import scripts.refresh_current_pointer as refresh_current_pointer_module
@@ -182,7 +183,7 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
     assert by_skill["cautilus"].on_disk_layout == "regular_current_pointer"
 
 
-def test_inventory_current_pointer_layouts_default_discovery_and_format_helpers(tmp_path: Path) -> None:
+def test_inventory_current_pointer_layouts_default_discovery_and_path_helpers(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "skills" / "public" / "quality").mkdir(parents=True)
     artifact_dir = repo / "charness-artifacts" / "quality"
@@ -202,7 +203,6 @@ def test_inventory_current_pointer_layouts_default_discovery_and_format_helpers(
     directory_pointer.mkdir()
     assert INVENTORY._path_layout(repo, "charness-artifacts/quality/directory-pointer") == "non_file_current_pointer"
     assert INVENTORY._portable_path(repo, tmp_path / "outside.md") == str(tmp_path / "outside.md")
-    assert INVENTORY._md_cell("a|b") == "`a\\|b`"
 
 
 def test_inventory_current_pointer_layouts_error_and_symlink_branches(
@@ -228,6 +228,8 @@ def test_inventory_current_pointer_layouts_error_and_symlink_branches(
     }
     assert INVENTORY._unresolved_status("boom") == ("unresolved", "resolver_error")
 
+    # The resolver is repo-owned, so its stdout is YAML and a truncated document is
+    # reported as invalid YAML rather than invalid JSON.
     monkeypatch.setattr(
         INVENTORY.subprocess,
         "run",
@@ -237,10 +239,22 @@ def test_inventory_current_pointer_layouts_error_and_symlink_branches(
 
     assert payload is None
     assert error is not None
-    assert "invalid JSON" in error
+    assert "invalid YAML" in error
+
+    # A well-formed YAML document that is not a mapping parses cleanly, so it needs
+    # its own refusal instead of reaching the field readers as a list.
+    monkeypatch.setattr(
+        INVENTORY.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, "- not-a-mapping\n", ""),
+    )
+    payload, error = INVENTORY._run_resolver(repo, "quality", date(2026, 6, 16))
+
+    assert payload is None
+    assert error == "resolver returned a non-mapping payload"
 
 
-def test_inventory_current_pointer_layouts_markdown_and_require_resolved(
+def test_inventory_current_pointer_layouts_payload_and_require_resolved(
     tmp_path: Path,
     monkeypatch,
     capsys,
@@ -283,13 +297,22 @@ def test_inventory_current_pointer_layouts_markdown_and_require_resolved(
     )
 
     assert INVENTORY.main() == 1
-    output = capsys.readouterr().out
-    assert "# Current Pointer Layout Inventory" in output
-    assert "`missing-target.md (missing)`" in output
-    assert "`unresolved: bad resolver`" in output
+    # The retired markdown table carried three facts the payload now carries
+    # directly: the missing-target marker (`current_pointer_target_exists`), the
+    # `status: resolver_error` cell (`status` + `resolver_error`), and the report's
+    # own top-level verdict.
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "unresolved"
+    item = payload["items"][0]
+    assert item["skill_id"] == "broken"
+    assert item["status"] == "unresolved"
+    assert item["resolver_error"] == "bad resolver"
+    assert item["current_pointer_target_path"] == "missing-target.md"
+    assert item["current_pointer_target_exists"] is False
+    assert payload["summary"] == {"resolver_error": 1}
 
 
-def test_inventory_current_pointer_layouts_main_json_smoke(
+def test_inventory_current_pointer_layouts_main_yaml_smoke(
     tmp_path: Path,
     monkeypatch,
     capsys,
@@ -311,12 +334,11 @@ def test_inventory_current_pointer_layouts_main_json_smoke(
             "quality",
             "--date",
             "2026-06-16",
-            "--json",
         ],
     )
 
     assert INVENTORY.main() == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["status"] == "clean"
     assert payload["items"][0]["artifact_path"] == "charness-artifacts/quality/latest.md"
 
@@ -340,7 +362,6 @@ def test_inventory_current_pointer_layouts_dunder_main(
             str(repo),
             "--skill-id",
             "quality",
-            "--json",
         ],
     )
 
@@ -350,7 +371,7 @@ def test_inventory_current_pointer_layouts_dunder_main(
         assert exc.code == 0
     else:
         raise AssertionError("inventory_current_pointer_layouts.py did not exit through SystemExit")
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["status"] == "clean"
 
 
@@ -437,7 +458,7 @@ def test_refresh_current_pointer_copies_record_to_regular_current(tmp_path: Path
     )
 
     assert dry_run.returncode == 0, dry_run.stderr
-    dry_payload = json.loads(dry_run.stdout)
+    dry_payload = yaml.safe_load(dry_run.stdout)
     assert dry_payload["status"] == "planned"
     assert current.read_text(encoding="utf-8") == "# Quality Review\n\nOld.\n"
 
@@ -454,7 +475,7 @@ def test_refresh_current_pointer_copies_record_to_regular_current(tmp_path: Path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "updated"
     assert current.read_text(encoding="utf-8") == record.read_text(encoding="utf-8")
 
@@ -484,7 +505,7 @@ def test_refresh_current_pointer_repoints_existing_symlink(tmp_path: Path) -> No
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "updated"
     assert os.readlink(current) == "2026-04-15-quality-review.md"
 def test_invalid_artifact_class_fails_instead_of_defaulting_to_history(tmp_path: Path) -> None:
@@ -523,7 +544,7 @@ def test_simple_adapter_invalid_artifact_class_returns_invalid_payload(tmp_path:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["valid"] is False
     assert payload["data"]["artifact_class"] == "rolling"
     assert "artifact_class must be one of: current, history, rolling" in payload["errors"]
@@ -553,7 +574,7 @@ def test_refresh_current_pointer_blocks_external_record_path(tmp_path: Path) -> 
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["reason"] == "record artifact path is outside repo_root"
 
@@ -589,7 +610,7 @@ def test_refresh_current_pointer_symlink_strategy_refuses_to_clobber_regular_fil
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["reason"] == "symlink strategy would replace an existing regular file"
     assert payload["would_update"] is False
@@ -636,7 +657,7 @@ def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["intent"] == "current"
     assert payload["write_artifact_path"] == "charness-artifacts/quality/history/current-quality.md"
     assert payload["write_artifact_role"] == "current_pointer_target"
@@ -658,7 +679,7 @@ def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path
     )
 
     assert record_result.returncode == 0, record_result.stderr
-    record_payload = json.loads(record_result.stdout)
+    record_payload = yaml.safe_load(record_result.stdout)
     assert record_payload["refresh_current_pointer_argv"][1] == str(
         plugin_root / "scripts" / "refresh_current_pointer.py"
     )
@@ -670,6 +691,6 @@ def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path
         text=True,
     )
     assert refresh_result.returncode == 0, refresh_result.stderr
-    refresh_payload = json.loads(refresh_result.stdout)
+    refresh_payload = yaml.safe_load(refresh_result.stdout)
     assert refresh_payload["status"] == "updated"
     assert os.readlink(artifact_dir / "latest.md") == "2026-04-15-quality-review.md"

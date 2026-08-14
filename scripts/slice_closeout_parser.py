@@ -9,7 +9,6 @@ def build_parser(*, repo_root: Path, surfaces_path: Path) -> argparse.ArgumentPa
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=repo_root)
     parser.add_argument("--surfaces-path", type=Path, default=surfaces_path)
-    parser.add_argument("--json", action="store_true")
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to current git diff.")
     parser.add_argument(
         "--base",

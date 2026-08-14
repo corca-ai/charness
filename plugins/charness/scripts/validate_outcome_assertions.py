@@ -18,12 +18,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 import grade_skill_outcome
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 GLOB = "evals/cautilus/*-claim-fidelity/outcome-assertions.json"
@@ -54,31 +54,31 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Validate per-eval outcome-assertions.json sets against the grader schema.")
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true", help="Emit a machine-readable report.")
     args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
 
     results = validate_all(repo_root)
     problems = {rel: errs for rel, errs in results.items() if errs}
 
-    if args.json:
-        print(json.dumps({"checked": list(results), "problems": problems}, indent=2))
-        return 1 if problems else 0
-
+    # Unconditional YAML. The retired human rendering carried three things the bare
+    # `{checked, problems}` payload did not state: the per-file OK/FAIL verdict, the
+    # checked count, and the "none ship yet" reading of an EMPTY glob -- which is a
+    # pass over nothing, not a validated corpus. All three are folded in below so a
+    # zero-set run cannot be misread as a clean verdict over real sets.
+    payload = {
+        "status": "invalid" if problems else "valid",
+        "checked": list(results),
+        "checked_count": len(results),
+        "verdicts": {rel: ("fail" if errs else "ok") for rel, errs in results.items()},
+        "problems": problems,
+    }
     if not results:
-        print("No outcome-assertions.json sets found (none ship yet).")
-        return 0
-    for rel, errs in results.items():
-        if errs:
-            print(f"FAIL {rel}:", file=sys.stderr)
-            for err in errs:
-                print(f"  - {err}", file=sys.stderr)
-        else:
-            print(f"OK   {rel}")
-    if problems:
-        return 1
-    print(f"Validated {len(results)} outcome assertion set(s).")
-    return 0
+        payload["note"] = (
+            f"No outcome-assertions.json sets found under `{GLOB}` (none ship yet). "
+            "Nothing was validated; this is not a verdict over any assertion set."
+        )
+    emit_yaml(payload)
+    return 1 if problems else 0
 
 
 if __name__ == "__main__":

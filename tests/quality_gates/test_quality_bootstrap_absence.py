@@ -8,12 +8,12 @@ separately, because a single "the file did not change" assertion would hide one.
 
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.adapter_lib import load_yaml
 from scripts.adapter_yaml_render_lib import render_yaml_mapping
@@ -56,7 +56,9 @@ def _adapter(repo: Path) -> Path:
 def _bootstrap(repo: Path, *extra: str) -> dict:
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), *extra)
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    # `bootstrap_adapter.py` reports in YAML since the `--json` removal. YAML is a JSON
+    # superset, so this also reads the compact-JSON fallback used without PyYAML.
+    return yaml.safe_load(result.stdout)
 
 
 def _change(payload: dict, surface: str) -> dict:
@@ -416,7 +418,7 @@ def test_trailing_comment_does_not_break_empty_collections(tmp_path: Path) -> No
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["deliberately_absent"] == {}
+    assert yaml.safe_load(result.stdout)["deliberately_absent"] == {}
 
 
 def test_comment_counter_agrees_with_the_parser_on_apostrophes(tmp_path: Path) -> None:
@@ -470,7 +472,7 @@ def test_dry_run_claims_no_loss_when_a_real_run_would_not_write(tmp_path: Path) 
     _adapter(repo).write_text("# an annotation a real run would leave alone\n" + canonical, encoding="utf-8")
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--dry-run")
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["would_do"] == "unchanged"
     assert "comments_dropped" not in payload
@@ -779,7 +781,7 @@ def test_a_rewrite_that_reverts_nothing_says_nothing(tmp_path: Path) -> None:
     (repo / "charness-artifacts" / "quality" / "latest.md").write_text("# report\n", encoding="utf-8")
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["adapter_status"] == "conflict"
     assert "concept_paths" in {change["surface"] for change in payload["requested_changes"]}
@@ -912,7 +914,7 @@ def test_plugin_bootstrap_matches_source_for_issue_496_fixture(tmp_path: Path) -
 
     source_result = _run_quality_bootstrap_adapter("--repo-root", str(source_repo))
     assert source_result.returncode == 0, source_result.stderr
-    source = json.loads(source_result.stdout)
+    source = yaml.safe_load(source_result.stdout)
     plugin = subprocess.run(
         [
             sys.executable,
@@ -925,7 +927,7 @@ def test_plugin_bootstrap_matches_source_for_issue_496_fixture(tmp_path: Path) -
         check=False,
     )
     assert plugin.returncode == 0, plugin.stderr
-    plugin_payload = json.loads(plugin.stdout)
+    plugin_payload = yaml.safe_load(plugin.stdout)
     assert plugin_payload == source
     assert plugin.stderr == source_result.stderr
 

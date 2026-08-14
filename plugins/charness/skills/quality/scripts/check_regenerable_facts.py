@@ -8,10 +8,13 @@ the record-versus-forward-looking seam it enforces.
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import emit_yaml  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -27,11 +30,53 @@ load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter"
 lib = SKILL_RUNTIME.load_local_skill_module(__file__, "regenerable_facts_lib")
 
 
-def render(report: dict) -> list[str]:
+def explain(report: dict) -> dict:
+    """The verdict classification and its prose, folded into the emitted payload.
+
+    Output is unconditionally YAML, so this can no longer be a second human
+    channel. Every branch below carries something the raw counters do not: WHY a
+    zero is a refusal rather than a pass, which knob repairs it, and — on the two
+    NOT-CONFIGURED branches — that this run rendered no verdict at all. Emitting
+    the bare counters would have deleted all of that while leaving `checked: 0`
+    looking like a clean sweep, which is the exact claim this gate exists to
+    refuse.
+    """
+    status = _status(report)
+    return {"status": status, "diagnostics": _diagnostics(report, status)}
+
+
+def _status(report: dict) -> str:
     if report.get("adapter_refusal"):
-        return [f"regenerable-facts: {report['adapter_refusal']}"]
+        return "adapter-refusal"
     if report["checked"] == 0 and report["exempted"]:
-        # Checked FIRST, ahead of the undeclared branch. Files that matched and
+        return "all-matched-files-exempted"
+    if report["checked"] == 0 and not report.get("declared"):
+        return "not-configured"
+    if report["checked"] == 0:
+        return "declared-surfaces-matched-nothing"
+    if report["unreasoned_exemptions"]:
+        return "unreasoned-exemptions"
+    if not report["findings"] and report.get("unclassified_docs"):
+        return "not-configured-for-docs"
+    if not report["findings"]:
+        return "clean"
+    return "findings"
+
+
+def _diagnostics(report: dict, status: str) -> list[str]:
+    """Prose FOR a verdict, dispatched on it rather than re-deriving it.
+
+    This ladder used to re-test `_status`'s seven conditions in the same order, so the
+    classification was stated twice and could desynchronize -- a `status: clean` beside
+    a NOT-CONFIGURED diagnostic, or the reverse. On a gate whose whole purpose is that
+    `checked: 0` must never read as a clean sweep, two independently maintained ladders
+    is the defect the gate exists to refuse, one level up. Branch ORDER is load-bearing
+    (see the exempted-before-undeclared note below) and is now stated once, in `_status`.
+    """
+    if status == "adapter-refusal":
+        return [f"regenerable-facts: {report['adapter_refusal']}"]
+    if status == "all-matched-files-exempted":
+        # `_status` checks this FIRST, ahead of the undeclared branch. Files that matched and
         # were then exempted are not files that failed to match, and saying "no
         # file matched" over them is a statement about a scope this gate did
         # look at -- the exact class of claim this gate exists to refuse. It
@@ -43,7 +88,7 @@ def render(report: dict) -> list[str]:
             "so nothing was verified. Narrow the exemptions or widen "
             "`regenerable_facts.surfaces`."
         ]
-    if report["checked"] == 0 and not report.get("declared"):
+    if status == "not-configured":
         # No adapter config and nothing at the defaults: this repo has no
         # forward-looking prose where the gate looks. Report "no gate", do not
         # claim clean, and do not fail -- failing here would redden every
@@ -53,26 +98,26 @@ def render(report: dict) -> list[str]:
             "so this repo has no verdict from this gate. Name your forward-looking prose "
             "in `regenerable_facts.surfaces` to arm it."
         ]
-    if report["checked"] == 0:
+    if status == "declared-surfaces-matched-nothing":
         return [
             "regenerable-facts: the declared `regenerable_facts.surfaces` matched 0 files, "
             "so nothing was verified. Fix the globs — a declared scope that matches "
             "nothing is not a clean gate."
         ]
-    if report["unreasoned_exemptions"]:
+    if status == "unreasoned-exemptions":
         return [
             "regenerable-facts: exemption(s) with no recorded reason: "
             + ", ".join(report["unreasoned_exemptions"])
             + " -- an unexplained exemption is the claim this rule exists to remove"
         ]
-    if not report["findings"] and report.get("unclassified_docs"):
+    if status == "not-configured-for-docs":
         return [
             f"regenerable-facts: NOT CONFIGURED FOR DOCS — checked {report['checked']} canonical "
             f"forward-looking file(s), but {len(report['unclassified_docs'])} docs file(s) remain "
             "unclassified. Declare `regenerable_facts.surfaces` and reasoned exemptions before "
             "treating the docs tree as clean."
         ]
-    if not report["findings"]:
+    if status == "clean":
         return [
             f"no regenerable facts in {report['checked']} forward-looking file(s) "
             f"({len(report['exempted'])} exempted with a recorded reason)"
@@ -102,9 +147,6 @@ def main() -> int:
     )
     parser.add_argument(
         "--repo-root", type=Path, default=None, help="Repository root to scan (default: the repo owning this script)."
-    )
-    parser.add_argument(
-        "--json", action="store_true", help="Emit the findings, exemptions, and scanned surfaces as JSON."
     )
     args = parser.parse_args()
     repo_root = (args.repo_root or REPO_ROOT).resolve()
@@ -137,11 +179,7 @@ def main() -> int:
     else:
         report = lib.scan_repo(repo_root, adapter if isinstance(adapter, dict) else None)
     report["adapter_refusal"] = refusal
-    if args.json:
-        print(json.dumps(report, indent=2))
-    else:
-        for line in render(report):
-            print(line)
+    emit_yaml({**report, **explain(report)})
     # `checked == 0` is a REFUSAL, not a pass: a gate that matched no file has
     # verified nothing, and reporting that as clean is the defect this rule is
     # about. It is the shipped guard, not a test-only assertion.

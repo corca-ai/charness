@@ -11,6 +11,7 @@ import time
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+from yaml_output import emit_yaml
 
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter_strict = _quality_adapter.load_quality_adapter_strict
@@ -226,7 +227,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.execute
         else []
     )
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 

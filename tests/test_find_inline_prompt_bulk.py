@@ -3,10 +3,12 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "skills/public/quality/references/find_inline_prompt_bulk.py"
@@ -25,7 +27,10 @@ def run_prompt_bulk(*args: str) -> dict[str, object]:
             assert find_inline_prompt_bulk.main() == 0
     finally:
         sys.argv = old_argv
-    return json.loads(stdout.getvalue())
+    # Stdout is unconditionally YAML since the `--json` removal; `render_yaml` is
+    # allowed to fall back to JSON syntax when PyYAML is missing, and `safe_load`
+    # reads either.
+    return yaml.safe_load(stdout.getvalue())
 
 
 def init_git_repo(repo: Path, *tracked_paths: str) -> None:
@@ -57,7 +62,6 @@ def test_find_inline_prompt_bulk_reports_large_multiline_strings(tmp_path: Path)
         "src/**/*.py",
         "--min-multiline-chars",
         "400",
-        "--json",
     )
     assert payload["source_globs"] == ["src/**/*.py"]
     assert payload["min_multiline_chars"] == 400
@@ -89,7 +93,6 @@ def test_find_inline_prompt_bulk_ignores_docstrings(tmp_path: Path) -> None:
         "src/**/*.py",
         "--min-multiline-chars",
         "400",
-        "--json",
     )
 
     assert payload["findings"] == [
@@ -118,7 +121,6 @@ def test_find_inline_prompt_bulk_keeps_control_flow_string_expressions(tmp_path:
         "src/**/*.py",
         "--min-multiline-chars",
         "400",
-        "--json",
     )
 
     assert payload["findings"] == [
@@ -149,10 +151,13 @@ def test_find_inline_prompt_bulk_ignores_gitignored_files(tmp_path: Path) -> Non
     payload = run_prompt_bulk(
         "--repo-root",
         str(repo),
-        "--json",
     )
     assert payload["exemption_globs"] == []
     assert [finding["path"] for finding in payload["findings"]] == ["src/kept.py"]
+    # The retired text path printed `scope_classification=...: <reason>` ahead of the
+    # findings for a default scan. That advisory statement now rides in the payload.
+    assert payload["scope_classification"] == "advisory_only_no_canonical_prompt_asset_roots"
+    assert "advisory-only" in payload["scope_reason"]
 
 
 def test_find_inline_prompt_bulk_uses_quality_adapter_policy(tmp_path: Path) -> None:
@@ -238,3 +243,23 @@ def test_find_inline_prompt_bulk_summary_limits_findings(tmp_path: Path) -> None
     assert payload["finding_count"] == 3
     assert len(payload["findings_sample"]) == 2
     assert "findings" not in payload
+    # `--summary` selects payload depth, never format: the scope statement both the
+    # retired text path and the full payload carried survives at summary depth too.
+    assert payload["scope_classification"] == "scanned"
+    assert payload["scope_reason"]
+
+
+def test_find_inline_prompt_bulk_rejects_removed_json_flag(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    old_argv = sys.argv[:]
+    stderr = io.StringIO()
+    try:
+        sys.argv = [str(SCRIPT), "--repo-root", str(repo), "--json"]
+        with contextlib.redirect_stderr(stderr), pytest.raises(SystemExit) as excinfo:
+            find_inline_prompt_bulk.main()
+    finally:
+        sys.argv = old_argv
+
+    assert excinfo.value.code == 2
+    assert "--json" in stderr.getvalue()

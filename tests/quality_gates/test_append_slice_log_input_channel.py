@@ -19,6 +19,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[2]
 HELPER = ROOT / "skills" / "public" / "achieve" / "scripts" / "append_slice_log.py"
 PROSE = "the type check dropped it, the default won, and the report still said `preserved`"
@@ -47,7 +49,7 @@ def test_prose_through_a_shell_argument_is_silently_truncated(tmp_path: Path) ->
     result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=tmp_path)
 
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["action"] == "appended"  # exit 0, reports success
+    assert yaml.safe_load(result.stdout)["action"] == "appended"  # exit 0, reports success
     written = goal.read_text(encoding="utf-8")
     assert "preserved" not in written, "the shell ate it before the process started"
     assert "the default won, and the report still said" in written  # a hole, not a failure
@@ -166,7 +168,7 @@ def test_the_slug_and_date_selector_resolves_and_refuses(tmp_path: Path) -> None
 
     resolved = _run(tmp_path, "--slug", "g", "--date", "2026-08-06", "--fields-file", str(fields))
     assert resolved.returncode == 0, resolved.stderr
-    assert Path(json.loads(resolved.stdout)["path"]) == goal.resolve()
+    assert Path(yaml.safe_load(resolved.stdout)["path"]) == goal.resolve()
 
     partial = _run(tmp_path, "--slug", "g", "--date", "", "--fields-file", str(fields))
     assert partial.returncode != 0

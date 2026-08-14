@@ -4,6 +4,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -125,5 +127,5 @@ def test_scan_ab_dir_summarizes_tainted_bundles_and_cli_prints_json(tmp_path: Pa
 
     rc = blinding.main(["--ab-dir", str(ab_dir)])
     assert rc == 0
-    printed = json.loads(capsys.readouterr().out)
+    printed = yaml.safe_load(capsys.readouterr().out)
     assert printed["summary"]["tainted_runs"] == 1

@@ -317,7 +317,7 @@ def summarize_payload(payload: dict, *, sample_limit: int = 10) -> dict:
     return {
         "schemaVersion": payload["schemaVersion"],
         "status": payload["status"],
-        "summary_note": "summary is triage output; use --json for full candidate attribution",
+        "summary_note": "summary is triage output; drop --summary for full candidate attribution",
         "summary": payload["summary"],
         "clean_inprocess_samples": clean_samples,
         "keep_boundary_samples": keep_samples,

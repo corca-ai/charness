@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import lesson_ledger_lib as ledger
 from scripts import record_lesson_lifecycle as lifecycle_recorder
@@ -53,7 +54,7 @@ def test_archive_and_resurrection_preserve_scores_and_refuse_invalid_transition(
         text=True,
     )
     assert command.returncode == 0, command.stderr
-    assert json.loads(command.stdout)["event_id"] == "archive-a"
+    assert yaml.safe_load(command.stdout)["event_id"] == "archive-a"
     archived = json.loads(path.read_text(encoding="utf-8"))
     assert archived["lessons"]["a"]["score_total"] == 2
     assert archived["lessons"]["a"]["state"] == "archived"

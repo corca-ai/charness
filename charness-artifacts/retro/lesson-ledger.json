@@ -379,6 +379,64 @@
         ]
       },
       "snapshot_sha256": "50c2dc925d0114efc88880a0007a3580f43035c63188d22f3be86c4aed0d8a2f"
+    },
+    {
+      "session_id": "2026-08-14-json-removal",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 2,
+        "seed": "2026-08-14-json-removal",
+        "eligible_count": 33,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 0
+        },
+        "lesson_ids": [
+          "goal-closeout-evidence-binding",
+          "durable-lesson-ledger-first",
+          "guard-adjacent-to-action",
+          "agent-authored-score-role",
+          "proof-surface-review-binding",
+          "closeout-diagnostic-visibility",
+          "bar-recorded-as-prose",
+          "artifact-contract-late-feedback",
+          "premise-not-checked-against-source"
+        ]
+      },
+      "snapshot_sha256": "f564f9b61a17f444f69fac1fb6e963b0ed4a349adf7bfc94b476b1a3788c38a5"
+    },
+    {
+      "session_id": "2026-08-15-release-design",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 2,
+        "seed": "2026-08-15-release-design",
+        "eligible_count": 33,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 0
+        },
+        "lesson_ids": [
+          "premise-not-checked-against-source",
+          "closeout-diagnostic-visibility",
+          "agent-authored-score-role",
+          "artifact-contract-late-feedback",
+          "bar-recorded-as-prose",
+          "guard-adjacent-to-action",
+          "goal-closeout-evidence-binding",
+          "durable-lesson-ledger-first",
+          "proof-surface-review-binding"
+        ]
+      },
+      "snapshot_sha256": "74c7cf6ac5b6dc15268b40ea68e56f90d34511003f996e58dc58ad0a87062823"
     }
   ],
   "score_events": [
@@ -444,6 +502,22 @@
       "lesson_id": "premise-not-checked-against-source",
       "score": -2,
       "anchor": "Read at session start; failed to transfer three times. Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it in f149ad0bc. Published a reviewer's string-grep count of surviving --json flags without checking declarations versus gh call sites. Cited cli-command-flag-conventions.md:27 as live policy when the owner's decision had superseded it."
+    },
+    {
+      "event_id": "score-2026-08-15-review-binding",
+      "session_id": "2026-08-14-json-removal",
+      "source_retro": "charness-artifacts/retro/2026-08-15-json-to-yaml-migration-closeout.md",
+      "lesson_id": "proof-surface-review-binding",
+      "score": -2,
+      "anchor": "reviewer_boundary_fingerprint verify returned boundary-drift; repairs began inside the round-2 review window over 12 paths"
+    },
+    {
+      "event_id": "score-2026-08-15-child-visibility",
+      "session_id": "2026-08-14-json-removal",
+      "source_retro": "charness-artifacts/retro/2026-08-15-json-to-yaml-migration-closeout.md",
+      "lesson_id": "closeout-diagnostic-visibility",
+      "score": -2,
+      "anchor": "two full-suite runs lost to the 600s wrapper timeout, one truncated at 71 percent"
     }
   ],
   "lessons": {
@@ -522,8 +596,8 @@
     "closeout-diagnostic-visibility": {
       "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
       "transition_id": "seed-closeout-diagnostic-visibility",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": -2,
+      "score_count": 1,
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -546,8 +620,8 @@
     "proof-surface-review-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
       "transition_id": "seed-proof-surface-review-binding",
-      "score_total": 5,
-      "score_count": 2,
+      "score_total": 3,
+      "score_count": 3,
       "state": "active",
       "last_lifecycle_event_id": null
     },

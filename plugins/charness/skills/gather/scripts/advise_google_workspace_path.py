@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +17,11 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+# Command output is unconditionally YAML since the 2026-08-14 --json removal. This one
+# survived three completeness passes because the dumps was bound to a local first
+# (`rendered = json.dumps(...)`, then `print(rendered)`), which every scan that matched
+# `print(json.dumps(...))` walked straight past.
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 
 
 
@@ -105,9 +109,7 @@ def _selected_repo_root() -> Path:
 
 
 def main() -> None:
-    payload = payload_for(_selected_repo_root())
-    rendered = json.dumps(payload, ensure_ascii=False, indent=2)
-    print(rendered)
+    emit_yaml(payload_for(_selected_repo_root()))
 
 
 if __name__ == "__main__":

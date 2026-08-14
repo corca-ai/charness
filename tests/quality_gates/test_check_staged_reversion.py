@@ -8,12 +8,12 @@ stage, a mode-only stage, a new-file add, or a genuine deletion.
 from __future__ import annotations
 
 import importlib
-import json
 import os
 import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import run_script
 
@@ -115,8 +115,12 @@ def test_cli_blocks_phantom(tmp_path: Path) -> None:
     _stage_phantom(repo)
     result = run_script("scripts/check_staged_reversion.py", "--repo-root", str(repo))
     assert result.returncode == 1, result.stdout
-    assert "BLOCKED" in result.stdout
-    assert "f.py" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["state"] == "blocked"
+    assert [finding["path"] for finding in payload["findings"]] == ["f.py"]
+    # The blocking REASON travelled only in the deleted human banner; a payload that
+    # blocks without saying why is a gate nobody can act on.
+    assert "silently re-introduce removed code" in payload["detail"]
 
 
 def test_cli_flag_bypass_allows(tmp_path: Path, capsys) -> None:
@@ -155,19 +159,26 @@ def test_non_repo_root_raises_instead_of_returning_empty(tmp_path: Path) -> None
 
 
 def test_non_repo_root_cli_is_unestablished_not_clean(tmp_path: Path, capsys) -> None:
+    """The refusal half: exit 1, and the word `clean` appears NOWHERE in what the
+    operator reads. A gate that cannot read the index must not put a clean verdict in
+    front of anyone, in any field."""
     not_a_repo = tmp_path / "not-a-repo"
     not_a_repo.mkdir()
     assert csr.main(["--repo-root", str(not_a_repo)]) == 1
     out = capsys.readouterr().out
-    assert "UNESTABLISHED" in out
     assert "clean" not in out
+    # ...and the operator is told how to make the index readable again, which lived
+    # only in the deleted human branch.
+    assert "safe.directory" in out
 
 
-def test_non_repo_root_cli_json_is_unestablished(tmp_path: Path, capsys) -> None:
+def test_non_repo_root_cli_payload_is_unestablished(tmp_path: Path, capsys) -> None:
+    """The payload half: a machine reader sees the distinct `unestablished` state with
+    the underlying git error, not an empty finding list it would read as clean."""
     not_a_repo = tmp_path / "not-a-repo"
     not_a_repo.mkdir()
-    assert csr.main(["--repo-root", str(not_a_repo), "--json"]) == 1
-    payload = json.loads(capsys.readouterr().out)
+    assert csr.main(["--repo-root", str(not_a_repo)]) == 1
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["state"] == "unestablished"
     assert payload["error"]
 
@@ -192,10 +203,10 @@ def test_dubious_ownership_does_not_report_clean_over_a_real_phantom(
         pytest.skip("this git build does not honor GIT_TEST_ASSUME_DIFFERENT_OWNER")
 
     result = run_script(
-        "scripts/check_staged_reversion.py", "--repo-root", str(repo), "--json", env=env
+        "scripts/check_staged_reversion.py", "--repo-root", str(repo), env=env
     )
     assert result.returncode == 1, result.stdout + result.stderr
-    assert json.loads(result.stdout)["state"] == "unestablished"
+    assert yaml.safe_load(result.stdout)["state"] == "unestablished"
 
 
 def _git_probe(repo: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:

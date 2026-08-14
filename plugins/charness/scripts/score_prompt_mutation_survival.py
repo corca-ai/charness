@@ -24,7 +24,6 @@ one arm must carry it) or a `unit_id` exactly as minted by
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -36,6 +35,7 @@ from score_prompt_mutation_survival_lib import (
 )
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -66,7 +66,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Repeatable. NAME is an arm in --ab-dir's results.json; VALUE is 'BASELINE' (exactly one "
         "arm) or a unit_id from --mutant-manifest.",
     )
-    parser.add_argument("--markdown", action="store_true", help="Print a human-readable report instead of JSON.")
+    parser.add_argument("--markdown", action="store_true", help="Print a human-readable report instead of YAML.")
     return parser
 
 
@@ -91,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.markdown:
         print(render_markdown(report), end="")
     else:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        emit_yaml(report)
 
     if not report["experiment_valid"]:
         print("score_prompt_mutation_survival: EXPERIMENT-INVALID -- see experiment_invalid_reasons", file=sys.stderr)

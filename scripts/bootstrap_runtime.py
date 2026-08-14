@@ -11,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from yaml_output import emit_yaml
+
 
 class BootstrapRuntimeError(Exception):
     pass
@@ -306,7 +308,7 @@ def main() -> int:
     if args.print_python:
         print(payload["python"])
     else:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        emit_yaml(payload)
     return 0
 
 

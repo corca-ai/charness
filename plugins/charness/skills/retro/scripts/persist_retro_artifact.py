@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -28,6 +27,8 @@ load_adapter = _resolve_adapter_module.load_adapter
 
 _scripts_retro_persistence_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.retro_persistence_lib")
 persist_retro_artifact = _scripts_retro_persistence_lib_module.persist_retro_artifact
+
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 
 
 def parse_args() -> argparse.Namespace:
@@ -72,7 +73,7 @@ def main() -> int:
         force_empty_summary=args.force_empty_summary,
         goal_path=args.goal_path,
     )
-    print(json.dumps(result, ensure_ascii=False))
+    emit_yaml(result)
     return 0
 
 

@@ -21,6 +21,7 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import check_lesson_evaluation_continuity as checker
 from scripts import lesson_evaluation_continuity_lib as continuity
@@ -435,7 +436,7 @@ def test_retro_validator_grandfathers_pre_activation_artifact(tmp_path: Path) ->
     validate_retro_artifact.validate_retro_artifact(path)
 
 
-def test_reporter_on_disk_cohort_preserves_denominator_and_human_json_fields(
+def test_reporter_on_disk_cohort_preserves_denominator_and_payload_fields(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     output = tmp_path / "charness-artifacts/retro"
@@ -464,17 +465,19 @@ def test_reporter_on_disk_cohort_preserves_denominator_and_human_json_fields(
     monkeypatch.setattr(records.ledger_lib, "validate_lesson_ledger", lambda **_kwargs: {})
 
     report = checker.build_report(tmp_path, as_of=date(2026, 8, 14))
-    human = checker.render_human(report)
+    payload = checker.report_payload(report)
 
     assert report["ok"] is True
     assert report["eligible_retro_count"] == 1
     assert report["disposition_count"] == 1
     assert report["score_event_count"] == 0
-    summary_lines = human.splitlines()
-    assert len(summary_lines) == 1
-    assert "eligible durable retros=1" in summary_lines[0]
-    assert "score events (not a health measure)=0" in summary_lines[0]
-    assert "presentation-unproven=0" in summary_lines[0]
+    # The retired summary line carried the denominator label, the score-count
+    # non-claim, and every not-evaluated reason inline; each is a payload key now.
+    assert payload["denominator_label"] == "eligible durable retros"
+    assert payload["eligible_retro_count"] == 1
+    assert payload["score_event_count"] == 0
+    assert any("NOT a health measure" in claim for claim in payload["non_claims"])
+    assert payload["not_evaluated_reason_counts"]["presentation-unproven"] == 0
 
 
 def test_reporter_skips_generated_digest_and_prepare_packet(
@@ -614,12 +617,13 @@ def test_many_scores_incomplete_is_not_healthier_than_zero_score_complete() -> N
     assert incomplete["ok"] is False
     assert incomplete["score_event_count"] == 5
     assert incomplete["aggregate_violation_counts"]["score-count-mismatch"] == 1
-    assert "violations=0" in checker.render_human(complete).splitlines()[0]
-    assert "score-count-mismatch=1" in checker.render_human(incomplete).splitlines()[0]
-    assert "violations=1" in checker.render_human(incomplete).splitlines()[0]
+    # The retired summary line reported `violations=N`; the payload carries the
+    # same total, so the zero-score-complete row still reads as the healthier one.
+    assert complete["violation_count"] == 0
+    assert incomplete["violation_count"] == 1
 
 
-def test_cli_json_snapshot_and_exit_status(
+def test_cli_yaml_snapshot_and_exit_status(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -648,11 +652,11 @@ def test_cli_json_snapshot_and_exit_status(
     monkeypatch.setattr(
         checker.sys,
         "argv",
-        ["check_lesson_evaluation_continuity.py", "--repo-root", str(tmp_path), "--as-of", "2026-08-14", "--json"],
+        ["check_lesson_evaluation_continuity.py", "--repo-root", str(tmp_path), "--as-of", "2026-08-14"],
     )
 
     assert checker.main() == 0
-    clean = json.loads(capsys.readouterr().out)
+    clean = yaml.safe_load(capsys.readouterr().out)
     assert clean["denominator_label"] == "eligible durable retros"
     assert clean["eligible_retro_count"] == clean["disposition_count"] == 1
     assert clean["aggregate_violation_counts"] == {
@@ -669,7 +673,7 @@ def test_cli_json_snapshot_and_exit_status(
         encoding="utf-8",
     )
     assert checker.main() == 1
-    blocked = json.loads(capsys.readouterr().out)
+    blocked = yaml.safe_load(capsys.readouterr().out)
     assert blocked["eligible_retro_count"] == 1
     assert blocked["disposition_count"] == 0
     assert {item["id"] for item in blocked["violations"]} == {"missing-disposition"}
@@ -679,7 +683,7 @@ def test_cli_json_snapshot_and_exit_status(
         encoding="utf-8",
     )
     assert checker.main() == 1
-    mismatch = json.loads(capsys.readouterr().out)
+    mismatch = yaml.safe_load(capsys.readouterr().out)
     assert mismatch["aggregate_violation_counts"]["score-count-mismatch"] == 1
     assert {item["id"] for item in mismatch["violations"]} == {
         "effect-recorded-without-score",
@@ -687,7 +691,7 @@ def test_cli_json_snapshot_and_exit_status(
     }
 
 
-def test_reporter_cli_human_output_and_error_path(
+def test_reporter_cli_payload_output_and_error_path(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -707,7 +711,11 @@ def test_reporter_cli_human_output_and_error_path(
         ["check_lesson_evaluation_continuity.py", "--repo-root", str(tmp_path)],
     )
     assert checker.main() == 0
-    assert capsys.readouterr().out.startswith("Lesson evaluation continuity:")
+    # The default (only) output mode is the YAML report payload; the retired
+    # "Lesson evaluation continuity:" preamble is now `denominator_label`.
+    emitted = yaml.safe_load(capsys.readouterr().out)
+    assert emitted == checker.report_payload(clean)
+    assert emitted["denominator_label"] == "eligible durable retros"
 
     monkeypatch.setattr(
         checker,

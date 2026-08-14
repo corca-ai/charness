@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import runpy
 import signal
@@ -24,6 +23,8 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _subprocess_guard = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
+_yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+emit_yaml = _yaml_output.emit_yaml
 HELP_TIMEOUT_SECONDS = 10
 PS_TIMEOUT_SECONDS = 10
 DEFAULT_TERM_GRACE_SECONDS = 2.0
@@ -355,17 +356,13 @@ def print_next_step_guidance(payload: dict[str, object]) -> None:
         print(f"Run `{next_step}` to remove orphan agent-browser daemon trees.", file=sys.stderr)
 
 
-def print_payload(payload: dict[str, object], *, as_json: bool) -> None:
-    if as_json:
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-        return
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
+def print_payload(payload: dict[str, object]) -> None:
+    emit_yaml(payload)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true")
     parser.add_argument("--doctor-check", action="store_true")
     parser.add_argument("--cleanup-orphans", action="store_true")
     parser.add_argument("--assert-no-orphans", action="store_true")
@@ -376,7 +373,7 @@ def main() -> int:
 
     if args.cleanup_orphans:
         payload = cleanup_orphans(repo_root, execute=args.execute)
-        print_payload(payload, as_json=args.json)
+        print_payload(payload)
         return 0 if not payload["remaining_pids"] else 1
 
     if args.doctor_check:
@@ -387,7 +384,7 @@ def main() -> int:
             else:
                 print("agent-browser runtime healthy")
             return 0
-        print_payload(payload, as_json=args.json)
+        print_payload(payload)
         print_next_step_guidance(payload)
         return 1
 
@@ -399,11 +396,11 @@ def main() -> int:
             else:
                 print("agent-browser runtime has no orphan daemon trees")
             return 0
-        print_payload(payload, as_json=args.json)
+        print_payload(payload)
         print_next_step_guidance(payload)
         return 1
 
-    print_payload(inspect_payload(repo_root), as_json=args.json)
+    print_payload(inspect_payload(repo_root))
     return 0
 
 

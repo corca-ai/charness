@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -17,6 +15,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 
@@ -31,7 +30,6 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("docs/operator-acceptance.md"), help="Output path for the generated doc")
     parser.add_argument("--write", action="store_true", help="Write the doc to disk instead of stdout")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing output file")
-    parser.add_argument("--json", action="store_true", help="Emit JSON payload instead of markdown")
     args = parser.parse_args()
 
     payload = synthesize_operator_acceptance(
@@ -40,10 +38,11 @@ def main() -> None:
         write=args.write,
         force=args.force,
     )
-    if args.json:
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-    else:
-        sys.stdout.write(payload["markdown"])
+    # Unconditional YAML. The generated document is not lost by this: it rides in
+    # the payload as `markdown`, and `--write` remains the way to put it on disk.
+    # Raw markdown on stdout was the other half of the removed format flag, not a
+    # separate product.
+    yaml_output.emit_yaml(payload)
 
 
 if __name__ == "__main__":

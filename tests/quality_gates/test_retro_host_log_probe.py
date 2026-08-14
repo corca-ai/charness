@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 from scripts import host_log_probe_lib
 
@@ -116,7 +118,7 @@ def test_host_log_probe_reports_claude_and_codex_metric_availability(tmp_path: P
 
     result = run_probe_host_logs(monkeypatch, capsys, "--home", str(home))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     claude = payload["hosts"]["claude"]
     assert claude["metrics"]["token_count"]["status"] == "available"
@@ -186,7 +188,7 @@ def test_host_log_probe_reads_goal_metric_window(tmp_path: Path, monkeypatch, ca
         str(goal),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["goal_metric_window"]["status"] == "parsed"
     scoped = payload["hosts"]["codex"]["goal_window_audit"]
@@ -214,7 +216,7 @@ def test_host_log_probe_rejects_goal_window_without_session_file(tmp_path: Path,
         str(goal),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["goal_metric_window"]["status"] == "invalid"
     assert payload["goal_metric_window"]["missing"] == ["codex_session_file|claude_session_file"]
@@ -244,7 +246,7 @@ def test_host_log_probe_rejects_goal_window_with_missing_session_file(
         str(goal),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["goal_metric_window"]["status"] == "invalid"
     assert payload["goal_metric_window"]["missing_session_file"] == str(tmp_path / "missing.jsonl")
@@ -272,7 +274,7 @@ def test_host_log_probe_rejects_goal_window_with_invalid_timestamp(tmp_path: Pat
         str(goal),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["goal_metric_window"]["status"] == "invalid"
     assert payload["goal_metric_window"]["invalid_timestamps"] == ["started_at"]
@@ -325,7 +327,7 @@ def test_host_log_probe_degrades_honestly_when_logs_are_missing(tmp_path: Path, 
 
     result = run_probe_host_logs(monkeypatch, capsys, "--home", str(home))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     for host_id in ("claude", "codex"):
         metrics = payload["hosts"][host_id]["metrics"]
@@ -374,7 +376,7 @@ def test_host_log_probe_emits_claude_single_session_audit(tmp_path: Path, monkey
 
     result = run_probe_host_logs(monkeypatch, capsys, "--home", str(home))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     audit = payload["hosts"]["claude"]["session_audit"]
     assert audit["source"] == {"kind": "session-jsonl", "host": "claude", "path": str(session)}
@@ -416,7 +418,7 @@ def test_host_log_probe_scopes_goal_window_to_claude_session(tmp_path: Path, mon
         str(goal),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["goal_metric_window"]["status"] == "parsed"
     assert payload["goal_metric_window"]["session_host"] == "claude"
@@ -459,7 +461,7 @@ def test_host_log_probe_never_substitutes_a_missing_named_claude_session(tmp_pat
         str(project / "missing.jsonl"),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     claude = payload["hosts"]["claude"]
     assert "session_audit" not in claude
@@ -549,12 +551,19 @@ def test_probe_to_render_prefers_fresh_claude_over_stale_codex(tmp_path: Path) -
     assert "- session: " in block
 
 
-def test_host_log_probe_json_output_is_stable_readable_text(tmp_path: Path, monkeypatch, capsys) -> None:
-    """`json.loads(stdout)` is blind to every serialization choice this probe makes.
+def test_host_log_probe_output_is_stable_readable_text(tmp_path: Path, monkeypatch, capsys) -> None:
+    """A round-trip parse is blind to every serialization choice this probe makes.
+
     The probe's output is read by humans in a closeout artifact and diffed between
     runs, so the indentation, the key ordering that keeps those diffs minimal, and
     the non-ASCII passthrough that keeps a Korean/Japanese repo path legible are all
-    load-bearing. Assert the raw text, which a round-trip cannot do."""
+    load-bearing. Assert the raw text, which a round-trip cannot do.
+
+    The format is YAML since the 2026-08-14 --json removal, so the indent probe moved
+    from `\n  "hosts": {` to YAML's block form. The non-ASCII guarantee is unchanged in
+    substance and only changed in mechanism: `ensure_ascii=False` became the renderer's
+    `allow_unicode=True`, and escaping to \\uXXXX would still be a regression.
+    """
     home = tmp_path / "home"
     home.mkdir()
     repo_root = tmp_path / "리포"
@@ -569,18 +578,30 @@ def test_host_log_probe_json_output_is_stable_readable_text(tmp_path: Path, monk
     assert "리포" in result.stdout
     assert "\\u" not in result.stdout
     # Two-space indent, not compact and not some other width.
-    assert '\n  "hosts": {' in result.stdout
-    assert '\n   "hosts"' not in result.stdout
-    # Keys sorted, so run-to-run diffs show real changes only.
+    # Nested structure is rendered as an indented block, not inlined on one line --
+    # the property the JSON indent assertion was pinning.
+    assert "\nhosts:\n  " in result.stdout
+    assert "\nhosts:\n   " not in result.stdout
+    # Run-to-run diffs show real changes only. The MECHANISM inverted here and the
+    # assertion follows it rather than being dropped: the retired renderer used
+    # `sort_keys=True`, while `render_yaml` uses `sort_keys=False`, so top-level keys
+    # now follow the payload builder's insertion order. Sortedness is therefore FALSE
+    # by design, and what actually keeps diffs minimal is determinism -- two renders of
+    # one payload are byte-identical -- plus a fixed key order the builder controls.
     top_level = [
-        line[2:].split('"')[1]
+        line.split(":")[0]
         for line in result.stdout.splitlines()
-        if line.startswith('  "')
+        if line and not line[0].isspace() and ":" in line
     ]
-    assert top_level == sorted(top_level), top_level
-    # Exactly one trailing newline from print().
-    assert result.stdout.endswith("}\n")
-    assert not result.stdout.endswith("}\n\n")
+    assert top_level[0] == "schema_version", top_level
+    assert len(top_level) == len(set(top_level)), top_level
+    again = run_probe_host_logs(
+        monkeypatch, capsys, "--home", str(home), "--repo-root", str(repo_root)
+    )
+    assert again.stdout == result.stdout, "two renders of one payload must be identical"
+    # Exactly one trailing newline.
+    assert result.stdout.endswith("\n")
+    assert not result.stdout.endswith("\n\n")
 
 
 def test_host_log_probe_markdown_format_renders_the_metrics_block(
@@ -596,11 +617,15 @@ def test_host_log_probe_markdown_format_renders_the_metrics_block(
     markdown = run_probe_host_logs(monkeypatch, capsys, "--home", str(home), "--format", "markdown")
     assert markdown.returncode == 0, markdown.stderr
     assert markdown.stdout.startswith("## Goal Closeout Metrics\n")
-    assert not markdown.stdout.lstrip().startswith("{")
     assert not markdown.stdout.endswith("\n\n")
 
     default = run_probe_host_logs(monkeypatch, capsys, "--home", str(home))
-    assert default.stdout.lstrip().startswith("{")
+    # The default format is the structured payload, not the markdown block. Asserted as
+    # "parses to a mapping and is not the markdown heading" rather than "starts with {":
+    # the old probe tested JSON SYNTAX, which stopped being the contract, and would have
+    # passed for any brace-leading text.
+    assert not default.stdout.startswith("## Goal Closeout Metrics")
+    assert isinstance(yaml.safe_load(default.stdout), dict)
     assert default.stdout != markdown.stdout
 
 

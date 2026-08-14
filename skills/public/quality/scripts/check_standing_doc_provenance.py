@@ -12,16 +12,18 @@ Opt-in: empty `standing_doc_provenance.standing_docs` makes this a no-op
 (stack-neutral default). A consuming repo opts in by listing its rule docs.
 
 Exit 0 when clean or inert (opted out); exit 1 on a flagged line or an invalid
-adapter (it fails closed — errors surface in the JSON and on stderr).
+adapter (it fails closed — errors surface in the YAML payload and on stderr).
 """
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import emit_yaml  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -46,7 +48,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=Path("."),
         help="Repository root containing the quality adapter and standing docs",
     )
-    parser.add_argument("--json", action="store_true", help="Emit a JSON report.")
     return parser.parse_args(argv)
 
 
@@ -74,34 +75,44 @@ def run(repo_root: Path) -> dict[str, object]:
     }
 
 
-def _render_plain(report: dict[str, object]) -> str:
+def _verdict(report: dict[str, object]) -> dict[str, object]:
+    """The verdict word and the remedy, folded into the emitted payload.
+
+    Output is unconditionally YAML. `ok: true` on an INERT run and `ok: true` on a
+    scanned-and-clean run are the same byte with different meanings, and the
+    remedy sentence — which names where provenance belongs and what the one
+    allowed trailing ref is — existed nowhere else. Emitting the bare result would
+    have dropped both.
+    """
     if report["adapter_errors"]:
         joined = "; ".join(str(e) for e in report["adapter_errors"])
-        return f"quality adapter invalid: {joined}"
+        return {"verdict": "adapter-invalid", "verdict_detail": f"quality adapter invalid: {joined}"}
     if report["inert"]:
-        return "standing_doc_provenance.standing_docs is empty; check is inert (opted out)."
+        return {
+            "verdict": "inert",
+            "verdict_detail": "standing_doc_provenance.standing_docs is empty; check is inert (opted out).",
+        }
     if report["ok"]:
-        return f"OK: {len(report['scanned'])} standing doc(s) scanned; no drifted provenance."
-    lines = [f"FAIL: {len(report['findings'])} flagged line(s) in standing docs:"]
-    for finding in report["findings"]:
-        heuristics = ", ".join(finding["heuristics"])
-        lines.append(f"  {finding['path']}:{finding['line']} [{heuristics}] {finding['excerpt']}")
-    lines.append(
-        "Move stacked dates/incident-names to the record layer (retro/*, RCA, debug/*) + one "
-        "link; keep at most one load-bearing trailing (#NNN). See the standing-doc-provenance "
-        "quality reference."
-    )
-    return "\n".join(lines)
+        return {
+            "verdict": "ok",
+            "verdict_detail": f"{len(report['scanned'])} standing doc(s) scanned; no drifted provenance.",
+        }
+    return {
+        "verdict": "fail",
+        "verdict_detail": f"{len(report['findings'])} flagged line(s) in standing docs.",
+        "remedy": (
+            "Move stacked dates/incident-names to the record layer (retro/*, RCA, debug/*) + one "
+            "link; keep at most one load-bearing trailing (#NNN). See the standing-doc-provenance "
+            "quality reference."
+        ),
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     repo_root = args.repo_root.resolve()
     report = run(repo_root)
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-    else:
-        print(_render_plain(report))
+    emit_yaml({**report, **_verdict(report)})
     if report["adapter_errors"]:
         sys.stderr.write("standing-doc provenance check skipped: repair the quality adapter.\n")
         return 1

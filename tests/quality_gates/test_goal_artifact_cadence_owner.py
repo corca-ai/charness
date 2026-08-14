@@ -12,11 +12,12 @@ would learn to ignore), so most of what follows pins what it must NOT refuse.
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 _ROOT = Path(__file__).resolve().parents[2]
 _SCRIPTS = _ROOT / "skills/public/achieve/scripts"
@@ -395,7 +396,7 @@ def test_cli_surfaces_the_floor(tmp_path: Path) -> None:
         text=True,
     )
     assert proc.returncode == 1
-    assert json.loads(proc.stdout)["cadence_owner"]["ok"] is False
+    assert yaml.safe_load(proc.stdout)["cadence_owner"]["ok"] is False
 
 
 # --- the surfaces this run repaired ----------------------------------------

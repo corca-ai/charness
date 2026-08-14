@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 import argparse
-import json
 import re
-import sys
 from pathlib import Path
 
 try:
     from scripts.repo_file_listing import iter_matching_repo_files
+    from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
     from repo_file_listing import iter_matching_repo_files
+
+    from yaml_output import emit_yaml
 
 BULLET_RE = re.compile(r"^[-*]\s+")
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
@@ -39,7 +40,6 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Override the default markdown file globs to inspect.",
     )
-    parser.add_argument("--json", action="store_true")
     parser.add_argument("--require-git-file-listing", action="store_true")
     return parser.parse_args()
 
@@ -131,27 +131,23 @@ def main() -> int:
         "flagged_file_count": len(flagged),
         "flagged_files": flagged,
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-        return 1 if flagged else 0
-    if not flagged:
-        print(
-            f"`## References` link inventory clean across "
-            f"{payload['files_with_references_section']} file(s)."
-        )
-        return 0
-    print(
-        f"`## References` link inventory drift in {len(flagged)} file(s); "
-        f"each `## References` bullet must contain a markdown link or backticked path.",
-        file=sys.stderr,
+    # Folded in from the deleted human renderer: the RULE a flagged bullet broke
+    # existed only in its prose. Output is unconditionally YAML now, and a
+    # `bullet_without_link_or_path` token with no statement of the rule leaves the
+    # author guessing what would satisfy it.
+    payload["summary"] = (
+        f"`## References` link inventory clean across "
+        f"{payload['files_with_references_section']} file(s)."
+        if not flagged
+        else f"`## References` link inventory drift in {len(flagged)} file(s)."
     )
-    for entry in flagged:
-        for finding in entry["findings"]:
-            print(
-                f"{finding['path']}:{finding['line']}: {finding['type']}: {finding['snippet']}",
-                file=sys.stderr,
-            )
-    return 1
+    if flagged:
+        payload["rule"] = (
+            "Each `## References` bullet must contain a markdown link or a backticked path; "
+            "the section is a link/path inventory, not workflow prose."
+        )
+    emit_yaml(payload)
+    return 1 if flagged else 0
 
 
 if __name__ == "__main__":

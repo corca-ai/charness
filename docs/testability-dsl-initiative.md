@@ -141,7 +141,7 @@ structure — hence pairing it with a testability sensor.
    *Per conversion:* review the structured delta, then regenerate the
    [boundary-bypass baseline](../scripts/boundary-bypass-baseline.json) to canonical
    form with `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .
-   --write-baseline --confirm-baseline-delta --json` (the canonical writer remains
+   --write-baseline --confirm-baseline-delta` (the canonical writer remains
    `inventory_boundary_bypass_lib.find_boundary_bypass_candidates` →
    `boundary_bypass_ratchet_lib.build_baseline`, as commit `0604f3d2` did) and sync the
    plugin mirror — the `no_increase` ratchet tolerates decreases silently, so skipping

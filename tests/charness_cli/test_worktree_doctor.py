@@ -240,9 +240,19 @@ def test_manifest_doctor_check_failure_surfaces_next_step(tmp_path: Path) -> Non
     failing = next(check for check in payload["checks"] if check["id"] == "failing_probe")
     assert failing["status"] == "fail"
     assert payload["next_step"] == "do the thing"
-    rendered = lib.render_doctor_text(payload)
-    assert "NEXT: do the thing" in rendered
-    assert "next: " not in rendered
+    # The human-text renderer that used to prefix this with "NEXT: " is gone; the
+    # actionable step now has to reach the operator through the command payload
+    # itself, at the top level, as the manifest's own hint rather than the
+    # generic fallback.
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "charness"), "worktree", "doctor", "--repo-root", str(repo)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    emitted = yaml.safe_load(result.stdout)
+    assert emitted["status"] == "fail"
+    assert emitted["next_step"] == "do the thing"
 
 
 def test_prepare_with_passing_commands_but_failing_doctor_surfaces_next_step(tmp_path: Path) -> None:
@@ -267,9 +277,19 @@ def test_prepare_with_passing_commands_but_failing_doctor_surfaces_next_step(tmp
     assert payload["status"] == "fail"
     assert payload["next_step"] == payload["doctor"]["next_step"]
     assert payload["next_step"]
-    rendered = lib.render_prepare_text(payload)
-    assert f"NEXT: {payload['next_step']}" in rendered
-    assert "next: " not in rendered
+    # Renderer deleted: the post-prepare doctor's next step must still surface at
+    # the top level of the emitted prepare payload, not only nested under
+    # `doctor`, so the operator reads it without digging.
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "charness"), "worktree", "prepare", "--repo-root", str(repo)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    emitted = yaml.safe_load(result.stdout)
+    assert emitted["status"] == "fail"
+    assert emitted["next_step"] == emitted["doctor"]["next_step"]
+    assert emitted["next_step"]
 
 
 def test_prepare_runs_commands_when_doctor_was_passing_with_force(tmp_path: Path) -> None:

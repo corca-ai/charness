@@ -16,6 +16,7 @@ from usage_episode_records import resolve_records_path as _resolve_records_path
 from usage_episode_records import schema_root as _schema_root
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
@@ -67,25 +68,28 @@ def _no_records_payload(repo_root: Path, adapter_path: Path, records_path: Path)
     }
 
 
-def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
-    if as_json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-        return
-    for warning in payload.get("warnings", []):
-        print(f"WARNING: {warning['message']} Next action: {warning['next_action']}")
-    status = payload["status"]
-    if status == "valid":
-        print(f"Validated {payload['valid_count']} usage episode record(s).")
-    elif status == "no_adapter":
-        print(f"no_adapter: no adapter at {payload['adapter_path']}; validation skipped")
-    elif status == "disabled":
-        print(f"disabled: adapter at {payload['adapter_path']} has enabled:false; validation skipped")
-    elif status == "no_records":
-        print(f"no_records: adapter at {payload['adapter_path']} is enabled but no records file at {payload['records_path']}")
-    else:
-        print(f"{status}: {len(payload.get('errors', []))} error(s)")
-        for error in payload.get("errors", []):
-            print(f"- {error}")
+def _emit_result(payload: dict[str, Any]) -> None:
+    """Emit the result as YAML, carrying the retired human WARNING lines inside it.
+
+    The status/count lines the human renderer printed were projections of
+    `status`, `adapter_path`, `records_path`, `valid_count`, and `errors`, all of
+    which the payload already holds. Its WARNING lines were not: `no_adapter`,
+    `disabled`, and `no_records` are exit-ZERO attention states, and the prefixed
+    line was the visible marker that an exit 0 here is not a validated corpus.
+    That marker is folded into the payload rather than dropped -- which is also
+    the `WARNING:` evidence term this file's entry in
+    `skills/public/quality/references/attention-state-visibility.json` declares.
+    """
+    warnings = payload.get("warnings", [])
+    if warnings:
+        payload = {
+            **payload,
+            "attention": [
+                f"WARNING: {warning['message']} Next action: {warning['next_action']}"
+                for warning in warnings
+            ],
+        }
+    emit_yaml(payload)
 
 
 def main() -> int:
@@ -93,7 +97,6 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--adapter-path", type=Path)
     parser.add_argument("--records-path", type=Path)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -119,7 +122,7 @@ def main() -> int:
                 )
             ],
         }
-        _print_result(payload, as_json=args.json)
+        _emit_result(payload)
         return 0
 
     errors: list[str] = []
@@ -135,7 +138,7 @@ def main() -> int:
             "errors": [str(exc)],
             "warnings": [],
         }
-        _print_result(payload, as_json=args.json)
+        _emit_result(payload)
         return 1
 
     if not adapter.get("enabled", False):
@@ -153,7 +156,7 @@ def main() -> int:
                 )
             ],
         }
-        _print_result(payload, as_json=args.json)
+        _emit_result(payload)
         return 0
 
     records_path = _resolve_records_path(repo_root, adapter, args.records_path)
@@ -169,10 +172,10 @@ def main() -> int:
             "errors": ["records_path must stay under repo_root"],
             "warnings": [],
         }
-        _print_result(payload, as_json=args.json)
+        _emit_result(payload)
         return 1
     if not records_path.is_file():
-        _print_result(_no_records_payload(repo_root, adapter_path, records_path), as_json=args.json)
+        _emit_result(_no_records_payload(repo_root, adapter_path, records_path))
         return 0
     records, errors = read_valid_records(records_path, episode_schema)
     payload = {
@@ -184,7 +187,7 @@ def main() -> int:
         "errors": errors,
         "warnings": [],
     }
-    _print_result(payload, as_json=args.json)
+    _emit_result(payload)
     return 0 if not errors else 1
 
 

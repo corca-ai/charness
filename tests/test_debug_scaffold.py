@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import datetime as dt
-import json
 import shlex
 import subprocess
 from pathlib import Path
+
+import yaml
 
 import scripts.export_plugin as export_plugin_module
 from runtime_bootstrap import import_repo_module
@@ -214,7 +215,7 @@ def test_exported_debug_scaffold_validator_command_runs_from_consumer_repo(tmp_p
 
     result = run_script(str(scaffold), "--repo-root", str(consumer))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_role"] == "current_pointer"
     assert str(plugin_root / "scripts") in payload["validator_command"]
     assert "validate_debug_artifact.py" in payload["validator_command"]

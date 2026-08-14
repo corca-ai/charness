@@ -52,6 +52,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -380,6 +381,18 @@ def _render_repairs(repo_root: Path, paths: list[str], against: str) -> dict:
     return report
 
 
+# The next step a repair-shaped finding demands. Output is unconditionally YAML,
+# so this lives in the payload: it used to exist only in the human rendering, and
+# the report itself NAMES functions without ever saying what to do about them --
+# dropping it would leave a reader with a list and no obligation.
+NEXT_STEP = (
+    "State the INTENDED delta for each, then prove the complement is unchanged -- "
+    "load the baseline with `load_module_from_source(baseline_source(...))` and run "
+    "`compare_callables` over a real corpus. Identical outcomes on that corpus is "
+    "evidence about the corpus, not a proof of equivalence."
+)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -389,7 +402,6 @@ def main() -> int:
         help=f"a git ref, or `{REVIEW_SNAPSHOT}` for what the last bounded reviewer read",
     )
     parser.add_argument("--paths", nargs="*", default=None, help="defaults to the captured/changed set")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
@@ -412,23 +424,17 @@ def main() -> int:
             )
             paths = [line for line in proc.stdout.split() if line.endswith(".py")]
     report = _render_repairs(root, sorted(paths), args.against)
-
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-        return 0
-    skipped = f"skipped: {len(report['uncomparable'])} uncomparable path(s)"
-    if not report["files"]:
-        print(f"No repair-shaped function changes vs `{args.against}`. {skipped}")
-        return 0
-    print(f"Repair-shaped function changes vs `{args.against}` ({report['repair_count']}; {skipped}):")
-    for path, names in sorted(report["files"].items()):
-        print(f"  {path}: {', '.join(names)}")
-    print(
-        "State the INTENDED delta for each, then prove the complement is unchanged — "
-        "load the baseline with `load_module_from_source(baseline_source(...))` and run "
-        "`compare_callables` over a real corpus. Identical outcomes on that corpus is "
-        "evidence about the corpus, not a proof of equivalence."
-    )
+    # Unconditional YAML. Everything the retired rendering said EXCEPT the next step
+    # and the skip LABEL was a projection of `against`, `files`, `repair_count`, and
+    # `uncomparable`; the next step is only present when there is something to do about.
+    report["next_step"] = NEXT_STEP if report["files"] else None
+    # The retired line read `skipped: N uncomparable path(s)`. The COUNT is derivable
+    # from `uncomparable`, but the word that names this as an attention state is not:
+    # a bare per-path map reads as data, while `skipped` says these paths were never
+    # examined. `attention-state-visibility.json` declares this file's state as
+    # `skipped` for exactly that reason, so the label rides in the payload.
+    report["skipped"] = f"skipped: {len(report['uncomparable'])} uncomparable path(s)"
+    emit_yaml(report)
     return 0
 
 

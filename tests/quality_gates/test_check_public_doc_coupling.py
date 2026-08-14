@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import importlib
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from .support import run_script
 
@@ -35,7 +36,9 @@ def test_clean_tree_reports_clean_and_exits_zero(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path)
     result = run_script(SCRIPT, "--repo-root", str(repo))
     assert result.returncode == 0
-    assert "exported reusable guidance is clean" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "clean"
+    assert "exported reusable guidance is clean" in payload["advisory"]
 
 
 def test_issue_anchor_in_shared_reference_is_advisory_flagged(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -43,9 +46,9 @@ def test_issue_anchor_in_shared_reference_is_advisory_flagged(tmp_path: Path, mo
     (repo / "skills" / "shared" / "references" / "coupled.md").write_text(
         "This rule exists because of (#999) and stays portable.\n", encoding="utf-8"
     )
-    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "coupled"
     assert [(f["kind"], f["path"]) for f in payload["findings"]] == [
         ("issue_anchor", "skills/shared/references/coupled.md")
@@ -63,9 +66,9 @@ def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path, mon
         "An external 0.x tool pin like v0.4.0 also matches by design.\n",
         encoding="utf-8",
     )
-    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0
-    findings = json.loads(result.stdout)["findings"]
+    findings = yaml.safe_load(result.stdout)["findings"]
     assert [(f["kind"], f["line"]) for f in findings] == [
         ("self_version_pin", 1),
         ("self_version_pin", 5),
@@ -79,20 +82,27 @@ def test_allowed_anchor_context_is_not_flagged(tmp_path: Path, monkeypatch, caps
         "Use the placeholder https://github.com/<owner>/<repo>/.../issues/5 form.\n",
         encoding="utf-8",
     )
-    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_public_doc_coupling(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0
-    assert json.loads(result.stdout)["status"] == "clean"
+    assert yaml.safe_load(result.stdout)["status"] == "clean"
 
 
-def test_human_output_names_the_policy_owner(tmp_path: Path) -> None:
+def test_the_payload_names_the_policy_owner(tmp_path: Path) -> None:
+    """The advisory framing and the remedy have to survive in the payload.
+
+    They were the deleted renderer's only content: a finding list that says what
+    is coupled but not where provenance belongs sends the reader nowhere.
+    """
     repo = _seed_repo(tmp_path)
     (repo / "docs" / "generated" / "ref.md").write_text(
         "See issues/123 for history.\n", encoding="utf-8"
     )
     result = run_script(SCRIPT, "--repo-root", str(repo))
     assert result.returncode == 0
-    assert result.stdout.startswith("ADVISORY: public-doc-coupling")
-    assert "provenance-placement.md" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "coupled"
+    assert payload["advisory"].startswith("ADVISORY: public-doc-coupling")
+    assert "provenance-placement.md" in payload["remedy"]
 
 
 def test_real_repo_baseline_is_clean() -> None:

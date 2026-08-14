@@ -3,22 +3,24 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
 try:
     from scripts.repo_file_listing import iter_matching_repo_files, iter_repo_files
     from scripts.repo_layout import support_dir
+    from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:  # invoked as a script rather than a package module
     from repo_file_listing import iter_matching_repo_files, iter_repo_files
     from repo_layout import support_dir
 
+    from yaml_output import emit_yaml
+
 _SUPPORT_PATTERN_PREFIX = "skills/support"
 #: Namespace discriminator for a finding in an EXTERNAL support tree. Deliberately
 #: not a spellable repo path: naming such a file `skills/support/<rel>` collides
-#: with a real, different, in-repo file, so `--json` consumers and the clickable
-#: `path:line` output would point a reader at unrelated code. Round-2 review.
+#: with a real, different, in-repo file, so a consumer of the emitted `path`/`line`
+#: pair would be pointed at unrelated code. Round-2 review.
 _EXTERNAL_SUPPORT_PREFIX = "<external-support>"
 
 CURRENT_POINTER_NAMES = {"latest.md", "latest.json"}
@@ -401,7 +403,6 @@ def scan_repo(repo_root: Path, *, require_git: bool = False) -> list[Finding]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--json", action="store_true")
     parser.add_argument("--require-empty", action="store_true")
     # The cohort convention (~18 standing gates pass this). Without it, a run in a
     # tree where `git ls-files` fails silently swaps a gitignore-aware population
@@ -418,13 +419,7 @@ def main() -> int:
         "finding_count": len(findings),
         "findings": [asdict(item) for item in findings],
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    elif findings:
-        for item in findings:
-            print(f"{item.path}:{item.line}: {item.reason} (`{item.target}`)")
-    else:
-        print("No direct current-pointer writes found.")
+    emit_yaml(payload)
     return 1 if args.require_empty and findings else 0
 
 

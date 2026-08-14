@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import json
 import os
 import stat
 import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -82,7 +83,7 @@ def test_quality_bootstrap_markdown_preview_scaffolds_and_executes(tmp_path: Pat
     result = _run_quality_preview(repo, "--execute", env=env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "scaffolded"
     assert payload["config_status"] == "written"
     assert payload["config_path"] == ".agents/markdown-preview.yaml"
@@ -125,7 +126,7 @@ def test_quality_bootstrap_markdown_preview_preserves_existing_config(tmp_path: 
     result = run_quality_preview(monkeypatch, capsys, repo, "--execute", path_env=env["PATH"])
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "existing-config"
     assert payload["config_status"] == "preserved"
     assert payload["config_path"] == "docs/markdown-preview.yaml"
@@ -145,7 +146,7 @@ def test_quality_bootstrap_markdown_preview_reports_not_applicable(tmp_path: Pat
     result = run_quality_preview(monkeypatch, capsys, repo)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "not-applicable"
     assert payload["config_status"] == "not-written"
     assert payload["config_path"] is None
@@ -167,13 +168,13 @@ def test_quality_bootstrap_markdown_preview_reports_unchanged_on_a_rerun(tmp_pat
 
     first = run_quality_preview(monkeypatch, capsys, repo, "--output", output)
     assert first.returncode == 0, first.stderr
-    assert json.loads(first.stdout)["config_status"] == "written"
+    assert yaml.safe_load(first.stdout)["config_status"] == "written"
     written = (repo / output).read_text(encoding="utf-8")
 
     second = run_quality_preview(monkeypatch, capsys, repo, "--output", output)
 
     assert second.returncode == 0, second.stderr
-    payload = json.loads(second.stdout)
+    payload = yaml.safe_load(second.stdout)
     assert payload["config_status"] == "unchanged"
     assert payload["warnings"] == []
     assert (repo / output).read_text(encoding="utf-8") == written

@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -358,18 +359,26 @@ def test_an_unknown_head_never_suppresses(git_repo: Path, advisory) -> None:
     assert advisory._already_advised(git_repo, "scripts/seed.py", None) is False
 
 
-def test_the_cli_prints_the_advisory_and_the_structured_decision(git_repo: Path, advisory, capsys) -> None:
+def test_the_cli_emits_the_structured_decision_carrying_the_advisory(
+    git_repo: Path, advisory, capsys
+) -> None:
+    """One payload now carries both halves the two output modes used to split.
+
+    The decision (`fires`/`in_scope`) and the advisory prose were separate modes;
+    the prose is the only part a reader cannot reconstruct from the state, so it
+    rides in the payload as `advisory` rather than being deleted with the mode.
+    """
     (git_repo / "scripts/seed.py").write_text("\n".join(f"c{i} = {i}" for i in range(80)), encoding="utf-8")
-    assert advisory.main(["--repo-root", str(git_repo), "--path", "scripts/seed.py", "--json"]) == 0
-    state = json.loads(capsys.readouterr().out)
-    assert state["fires"] is True and state["in_scope"] is True
-
     assert advisory.main(["--repo-root", str(git_repo), "--path", "scripts/seed.py"]) == 0
-    assert "ADVISORY (dup ratchet)" in capsys.readouterr().out
+    state = yaml.safe_load(capsys.readouterr().out)
+    assert state["fires"] is True and state["in_scope"] is True
+    assert "ADVISORY (dup ratchet)" in state["advisory"]
 
-    # Silent path still exits 0 and prints nothing: the CLI is never a gate.
+    # Silent path still exits 0 and advises nothing: the CLI is never a gate.
     assert advisory.main(["--repo-root", str(git_repo), "--path", "docs/x.md"]) == 0
-    assert capsys.readouterr().out.strip() == ""
+    silent = yaml.safe_load(capsys.readouterr().out)
+    assert silent["fires"] is False
+    assert silent["advisory"] is None
 
 
 def test_the_threshold_is_a_knob_not_a_constant(git_repo: Path, advisory) -> None:

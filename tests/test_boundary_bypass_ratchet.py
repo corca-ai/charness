@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.dsl import Repo
 
@@ -248,16 +249,16 @@ def test_writer_integrity_refuses_other_persisted_verdict_inputs(tmp_path: Path,
 def test_writer_requires_confirmation_before_replacing_an_existing_baseline(tmp_path: Path) -> None:
     repo = _repo_with_candidate(tmp_path / "repo")
     baseline_path = tmp_path / "baseline.json"
-    common_args = ("--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline", "--json")
+    common_args = ("--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline")
 
     created = _run_ratchet(*common_args)
     assert created.returncode == 0
-    assert json.loads(created.stdout)["status"] == "baseline-written"
+    assert yaml.safe_load(created.stdout)["status"] == "baseline-written"
 
     baseline_path.write_text("{}\n", encoding="utf-8")
     refused = _run_ratchet(*common_args)
     assert refused.returncode == 1
-    refusal = json.loads(refused.stdout)
+    refusal = yaml.safe_load(refused.stdout)
     assert "--confirm-baseline-delta" in refusal["error"]
     expected_payload = INVENTORY.find_boundary_bypass_candidates(repo)
     assert refusal["baseline_delta"] == {
@@ -282,7 +283,7 @@ def test_writer_requires_confirmation_before_replacing_an_existing_baseline(tmp_
 
     replaced = _run_ratchet(*common_args, "--confirm-baseline-delta")
     assert replaced.returncode == 0
-    assert json.loads(replaced.stdout)["changed"] is True
+    assert yaml.safe_load(replaced.stdout)["changed"] is True
     assert RATCHET.load_baseline(baseline_path)[RATCHET.INTEGRITY_FIELD]
 
 
@@ -291,10 +292,10 @@ def test_cli_evaluates_a_matching_existing_baseline(tmp_path: Path) -> None:
     baseline_path = tmp_path / "baseline.json"
     baseline_path.write_text(json.dumps(RATCHET.build_baseline(INVENTORY.find_boundary_bypass_candidates(repo))), encoding="utf-8")
 
-    result = _run_ratchet("--repo-root", str(repo), "--baseline", str(baseline_path), "--json")
+    result = _run_ratchet("--repo-root", str(repo), "--baseline", str(baseline_path))
 
     assert result.returncode == 0
-    assert json.loads(result.stdout)["ok"] is True
+    assert yaml.safe_load(result.stdout)["ok"] is True
 
 
 def test_writer_refuses_malformed_existing_baseline_without_a_traceback(tmp_path: Path) -> None:
@@ -303,11 +304,11 @@ def test_writer_refuses_malformed_existing_baseline_without_a_traceback(tmp_path
     baseline_path.write_text("{not-json", encoding="utf-8")
 
     result = _run_ratchet(
-        "--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline", "--json"
+        "--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline"
     )
 
     assert result.returncode == 1
-    assert "invalid JSON" in json.loads(result.stdout)["error"]
+    assert "invalid JSON" in yaml.safe_load(result.stdout)["error"]
     assert "Traceback" not in result.stderr
 
 
@@ -317,11 +318,11 @@ def test_writer_refuses_an_existing_directory_baseline_without_a_traceback(tmp_p
     baseline_path.mkdir()
 
     result = _run_ratchet(
-        "--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline", "--json"
+        "--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline"
     )
 
     assert result.returncode == 1
-    assert "baseline path must be a regular file" in json.loads(result.stdout)["error"]
+    assert "baseline path must be a regular file" in yaml.safe_load(result.stdout)["error"]
     assert "Traceback" not in result.stderr
 
 
@@ -331,10 +332,10 @@ def test_evaluation_refuses_non_object_baseline_without_a_traceback(tmp_path: Pa
     baseline_path = tmp_path / "baseline.json"
     baseline_path.write_text(contents, encoding="utf-8")
 
-    result = _run_ratchet("--repo-root", str(repo), "--baseline", str(baseline_path), "--json")
+    result = _run_ratchet("--repo-root", str(repo), "--baseline", str(baseline_path))
 
     assert result.returncode == 1
-    assert "baseline must be a JSON object" in json.loads(result.stdout)["error"]
+    assert "baseline must be a JSON object" in yaml.safe_load(result.stdout)["error"]
     assert "Traceback" not in result.stderr
 
 

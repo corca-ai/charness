@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -18,6 +17,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _hitl_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.hitl_review_artifact_lib")
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 check_chunk_contract = _hitl_lib.check_chunk_contract
 
 
@@ -53,16 +53,14 @@ def main() -> int:
     try:
         chunk_text = _read_chunk(args)
     except ChunkInputError as exc:
-        sys.stdout.write(
-            json.dumps({"status": "error", "errors": [str(exc)]}, ensure_ascii=False, indent=2) + "\n"
-        )
+        emit_yaml({"status": "error", "errors": [str(exc)]})
         return 2
     errors = check_chunk_contract(chunk_text)
     payload = {
         "status": "blocked" if errors else "pass",
         "errors": errors,
     }
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    emit_yaml(payload)
     return 1 if errors else 0
 
 

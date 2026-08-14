@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -141,7 +142,7 @@ def test_a_renamed_or_moved_name_still_counts_as_removed(tmp_path: Path) -> None
 
 
 def test_the_advisory_writes_to_stderr_and_names_the_readers(tmp_path: Path, capsys) -> None:
-    """stdout carries the closeout `--json` payload; an advisory there breaks it."""
+    """stdout carries the closeout's one YAML document; an advisory there breaks it."""
     repo = seeded_repo(
         tmp_path / "repo",
         {
@@ -213,11 +214,10 @@ def test_the_cli_separates_a_clean_tree_from_an_unexamined_one(tmp_path: Path) -
         "--repo-root", str(repo),
         "--against", "no-such-ref",
         "--paths", "scripts/x.py",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["removed"] == {}
     assert payload["uncomparable_count"] == 1
     assert "scripts/x.py" in payload["uncomparable"]
@@ -348,7 +348,13 @@ def test_an_unreadable_scan_candidate_is_skipped_not_fatal(tmp_path: Path) -> No
 
 
 def test_the_cli_prints_both_branches(tmp_path: Path, capsys, monkeypatch) -> None:
-    """Clean and found both carry the skipped count; a silent success reads as unrun."""
+    """Clean and found both carry the skipped state; a silent success reads as unrun.
+
+    The retired prose branches said "No module-level names removed" or named the
+    module and its readers. Both are payload keys now — an empty versus a populated
+    `removed`/`consumers` — and `skipped` rides in both so an empty result never
+    reads as a check that did not run.
+    """
     import sys as _sys
 
     repo = seeded_repo(
@@ -363,19 +369,31 @@ def test_the_cli_prints_both_branches(tmp_path: Path, capsys, monkeypatch) -> No
         _sys, "argv", ["removed_name_consumers.py", "--repo-root", str(repo), "--paths", "scripts/owner.py"]
     )
     assert _removed.main() == 0
-    assert "No module-level names removed" in capsys.readouterr().out
+    clean = yaml.safe_load(capsys.readouterr().out)
+    assert clean["removed"] == {}
+    assert clean["consumers"] == {}
+    assert clean["skipped"] == {"reason": "uncomparable", "path_count": 0}
 
     (repo / "scripts" / "owner.py").write_text("", encoding="utf-8")
     monkeypatch.setattr(
         _sys, "argv", ["removed_name_consumers.py", "--repo-root", str(repo), "--paths", "scripts/owner.py"]
     )
     assert _removed.main() == 0
-    found = capsys.readouterr().out
-    assert "removed TOKEN" in found
-    assert "scripts/reader.py reads TOKEN" in found
+    found = yaml.safe_load(capsys.readouterr().out)
+    assert found["removed"] == {"scripts/owner.py": ["TOKEN"]}
+    assert found["consumers"]["scripts/owner.py"] == {"scripts/reader.py": ["TOKEN"]}
+    assert found["consumer_count"] == 1
+    assert found["skipped"] == {"reason": "uncomparable", "path_count": 0}
 
 
 def test_the_cli_says_so_when_a_removal_has_no_reader(tmp_path: Path, capsys, monkeypatch) -> None:
+    """A removal nobody reads is distinguishable from nothing having been removed.
+
+    The retired prose said "no candidate reader found". The payload states the same
+    fact as a PAIR: a populated `removed` beside a `consumers` map with no entry for
+    that module, and `consumer_count == 0`. Asserting the absence alone would also
+    hold for a run that removed nothing, so the removal is asserted with it.
+    """
     import sys as _sys
 
     repo = seeded_repo(tmp_path / "repo", {"scripts/lonely.py": "VALUE = 1\n"})
@@ -385,7 +403,10 @@ def test_the_cli_says_so_when_a_removal_has_no_reader(tmp_path: Path, capsys, mo
     )
 
     assert _removed.main() == 0
-    assert "no candidate reader found" in capsys.readouterr().out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["removed"] == {"scripts/lonely.py": ["VALUE"]}
+    assert "scripts/lonely.py" not in payload["consumers"]
+    assert payload["consumer_count"] == 0
 
 
 def test_a_permission_denied_scan_candidate_is_skipped(tmp_path: Path) -> None:

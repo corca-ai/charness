@@ -24,13 +24,13 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -210,25 +210,38 @@ def build_report(
     }
 
 
-def format_human(report: dict[str, Any]) -> str:
-    if report["status"] == "clean":
-        return "prose-pin: no likely test pins on changed doc/SKILL surfaces."
-    lines = [
-        f"WARN: prose-pin found {len(report['findings'])} likely test pin(s) on "
-        "changed doc/SKILL surfaces (fix before the broad suite pays for it):"
-    ]
-    for finding in report["findings"]:
-        if finding["kind"] == "prose":
-            lines.append(
-                f"- {finding['test']}:{finding['line']} pins prose from "
-                f"{finding['doc']}: \"{finding['phrase']}\""
-            )
-        else:
-            lines.append(
-                f"- {finding['test']}:{finding['line']} references "
-                f"renamed/deleted path {finding['doc']}"
-            )
-    return "\n".join(lines)
+# Folded in from the deleted human renderer. The finding rows already name the
+# test, line, doc and phrase; what only the prose carried was WHY a finding is
+# worth acting on now (before the broad suite pays for it) and what each kind
+# actually means. Output is unconditionally YAML, so it rides in the payload.
+_KIND_MEANING = {
+    "prose": "a tests/ string literal copies prose the diff removed/changed from this doc",
+    "path": "a tests/ literal references a doc/SKILL path the diff deleted or renamed away",
+}
+_REMEDY = (
+    "Fix the pinned literal now: this is an upstream pre-check, and the same break "
+    "surfaces minutes later from the broad pytest / mutation-coverage producer."
+)
+
+
+def report_payload(report: dict[str, Any]) -> dict[str, Any]:
+    payload = dict(report)
+    payload["advisory"] = (
+        "prose-pin: no likely test pins on changed doc/SKILL surfaces."
+        if report["status"] == "clean"
+        else (
+            f"WARN: prose-pin found {len(report['findings'])} likely test pin(s) on "
+            "changed doc/SKILL surfaces."
+        )
+    )
+    if report["status"] != "clean":
+        payload["kind_meaning"] = {
+            kind: _KIND_MEANING[kind]
+            for kind in sorted({finding["kind"] for finding in report["findings"]})
+            if kind in _KIND_MEANING
+        }
+        payload["remedy"] = _REMEDY
+    return payload
 
 
 def main() -> int:
@@ -245,7 +258,6 @@ def main() -> int:
         default=None,
         help="Test root to scan for pins (repeatable; defaults to tests/).",
     )
-    parser.add_argument("--json", action="store_true")
     parser.add_argument(
         "--strict",
         action="store_true",
@@ -258,10 +270,7 @@ def main() -> int:
     test_roots = [repo_root / name for name in test_root_names]
     report = build_report(repo_root, paths=args.paths, test_roots=test_roots)
 
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-    else:
-        print(format_human(report))
+    emit_yaml(report_payload(report))
     if args.strict and report["status"] == "findings":
         return 1
     return 0

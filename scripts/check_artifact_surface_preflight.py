@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
@@ -242,6 +243,29 @@ def _run_shape_command(repo_root: Path, surface: Surface, *, stub: bool) -> tupl
     )
 
 
+def _parse_structured_stdout(text: str) -> Any:
+    """Parse a repo-owned script's structured envelope, or None when it is not one.
+
+    Repo-owned scripts emit YAML, so this reads YAML. JSON stays parseable through
+    the same call (it is a YAML subset), and the JSON branch below is the mirror of
+    `yaml_output.render_yaml`'s own no-PyYAML fallback: in an environment without
+    PyYAML the producer emits JSON, so the consumer has to be able to read it.
+    Anything that is not a structured document (a scaffold printing plain markdown)
+    returns a non-mapping or None and the caller falls through to the raw text.
+    """
+    try:
+        import yaml
+    except ImportError:
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            return None
+    try:
+        return yaml.safe_load(text)
+    except yaml.YAMLError:
+        return None
+
+
 def _run_scaffold_template(repo_root: Path, scaffold: str) -> tuple[str, int]:
     """Run a scaffold script and return the rendered artifact text.
 
@@ -254,16 +278,14 @@ def _run_scaffold_template(repo_root: Path, scaffold: str) -> tuple[str, int]:
     string leaked into the JSON's structural text. Presence of the literal
     string `parent-delegated` in a scaffolded placeholder exposed this. A
     scaffold outside that convention (e.g. `goal_artifact_early_close_report.py`,
-    which prints plain markdown) fails `json.loads` and falls through to the raw
-    stdout unchanged — this stays a strict improvement, never a new failure mode.
+    which prints plain markdown) does not parse to an enveloped mapping and falls
+    through to the raw stdout unchanged — this stays a strict improvement, never a
+    new failure mode.
     """
     proc = _run(repo_root, ["python3", scaffold, "--repo-root", str(repo_root)])
     if proc.returncode != 0 or not proc.stdout.strip():
         return f"(could not render scaffold {scaffold}: {proc.stderr.strip() or 'no output'})", 1
-    try:
-        payload = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        return proc.stdout, 0
+    payload = _parse_structured_stdout(proc.stdout)
     template = payload.get("template") if isinstance(payload, dict) else None
     return (template, 0) if isinstance(template, str) else (proc.stdout, 0)
 
@@ -454,22 +476,23 @@ def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     return {"status": "blocked" if blocked else "ok", "blocked": blocked, "checked": results}
 
 
-def _format_changed(report: dict[str, Any]) -> str:
-    lines = [f"artifact-shape-preflight: {report['status']}"]
-    for row in report["checked"]:
-        verdict = "BLOCK" if row["returncode"] != 0 else "ok"
-        lines.append(f"- {row['validator']} on {len(row['paths'])} changed artifact(s) [{verdict}]")
-        if row["returncode"] != 0:
-            detail = (row["stderr"] or row["stdout"]).strip()
-            if detail:
-                lines.append(detail)
+def changed_artifacts_report(report: dict[str, Any]) -> dict[str, Any]:
+    """Fold the blocked-case remedy into the payload this arm actually emits.
+
+    Output is unconditionally YAML, so the one thing the dropped text renderer
+    added that the payload does not carry — what an operator DOES about a block —
+    has to live in the payload. Everything else it printed (the per-row verdict,
+    the validator's own detail) is already derivable from `returncode`/`stdout`/
+    `stderr` on each row.
+    """
+    payload = dict(report)
     if report["status"] == "blocked":
-        lines.append(
+        payload["remedy"] = (
             "An artifact's owning validator failed at the commit boundary (relocated "
             "from the broad gate). Fix the required shape — run "
             "`python3 scripts/check_artifact_surface_preflight.py --path <artifact>` to see it."
         )
-    return "\n".join(lines)
+    return payload
 
 
 def main() -> int:
@@ -479,13 +502,12 @@ def main() -> int:
     parser.add_argument("--type", dest="artifact_type", help="Artifact type (see the registry)")
     parser.add_argument("--emit-stub", action="store_true", help="Emit a starter stub via the owning scaffold or shape source")
     parser.add_argument("--changed-artifacts", nargs="*", help="Commit-boundary: relocate owning validator verdicts for these paths")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
 
     if args.changed_artifacts is not None:
         report = changed_artifacts(repo_root, args.changed_artifacts)
-        print(json.dumps(report, indent=2, sort_keys=True) if args.json else _format_changed(report))
+        emit_yaml(changed_artifacts_report(report))
         return 1 if report["status"] == "blocked" else 0
 
     target_rel = _resolve(repo_root, args.path) if args.path else None

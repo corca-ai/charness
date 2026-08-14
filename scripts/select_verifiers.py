@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -66,31 +66,10 @@ def bundle_status(payload: dict[str, object]) -> tuple[str, list[str]]:
     return "missing-bundle", notes
 
 
-def print_text(payload: dict[str, object]) -> None:
-    print(f"Bundle status: {payload['bundle_status']}")
-    print("Changed paths:")
-    for path in payload["changed_paths"] or ["(none)"]:
-        print(f"- {path}")
-    print("Recommended commands:")
-    recommendations = payload.get("recommended_commands", [])
-    if recommendations:
-        for item in recommendations:
-            surfaces = ", ".join(item["reason_surface_ids"]) or "no matched surfaces"
-            print(f"- [{item['phase']}] {item['command']}  ({surfaces})")
-    else:
-        print("- (none)")
-    notes = payload.get("notes", [])
-    if notes:
-        print("Notes:")
-        for note in notes:
-            print(f"- {note}")
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--surfaces-path", type=Path, default=SURFACES_PATH)
-    parser.add_argument("--json", action="store_true")
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to current git diff.")
     args = parser.parse_args()
 
@@ -104,10 +83,7 @@ def main() -> int:
     payload["recommended_commands"] = command_reasons(payload, "sync") + command_reasons(payload, "verify")
     payload["bundle_status"], payload["notes"] = bundle_status(payload)
 
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_text(payload)
+    emit_yaml(payload)
     return 0
 
 

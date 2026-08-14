@@ -9,13 +9,13 @@ budget").
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 _SCRIPTS = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"
 _ROOT = Path(__file__).resolve().parents[2]
@@ -754,7 +754,7 @@ def test_completed_only_trims_printed_rows_without_moving_the_summary(tmp_path: 
             text=True,
         )
         assert result.returncode == 0, result.stderr
-        return json.loads(result.stdout)
+        return yaml.safe_load(result.stdout)
 
     full = _run()
     trimmed = _run("--completed-only")

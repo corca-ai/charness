@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -24,6 +23,7 @@ adapter_policy = SKILL_RUNTIME.load_local_skill_module(__file__, "achieve_adapte
 # closeout); loaded via the repo-module path so its `from scripts.` imports resolve.
 proof_mismatch = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.proof_mismatch")
 phase_brief_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_phase_brief")
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 def _attach_phase_brief(payload: dict, status: str | None) -> None:
@@ -72,7 +72,7 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
     """Human-facing reasons the After-phase evidence gate refused the flip.
 
     Surfaces each rung's own reason (including the disposition-form rung 1c and the
-    recurrence-lineage rung 1d) so the CLI message is actionable, not just the JSON
+    recurrence-lineage rung 1d) so the CLI message is actionable, not just the structured
     report. Extracted from ``main`` to keep its cyclomatic complexity in budget.
     """
     bits: list[str] = []
@@ -156,7 +156,7 @@ def main() -> int:
     args = parse_args()
     path = goal_cli.resolve_goal_path(args, goal_lib)
     if not path.exists():
-        print(json.dumps({"ok": False, "issues": [f"goal artifact not found: {path}"]}, ensure_ascii=False, indent=2, sort_keys=True))
+        yaml_output.emit_yaml({"ok": False, "issues": [f"goal artifact not found: {path}"]})
         return 2
     text = path.read_text(encoding="utf-8")
     if args.pursue_ready:
@@ -166,7 +166,7 @@ def main() -> int:
         report = goal_lib.pursue_readiness(text, deploy_vocab=deploy_vocab)
         report["path"] = str(path)
         _attach_phase_brief(report, goal_lib.read_status(text))
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        yaml_output.emit_yaml(report)
         return 0 if report["pursue_ready"] else 1
     result = goal_lib.check_goal(text)
     result["path"] = str(path)
@@ -219,7 +219,7 @@ def main() -> int:
             result.setdefault("advisories", []).append(
                 "coordination opt-out census — " + aggregate["reason"]
             )
-    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    yaml_output.emit_yaml(result)
     return 0 if result["ok"] else 1
 
 

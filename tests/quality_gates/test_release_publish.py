@@ -36,7 +36,7 @@ def test_execute_prepares_claims_review_record_without_publication(tmp_path: Pat
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["release_stage"] == "prepared-awaiting-claims-review"
     assert payload["prepared_release_commit"]
     artifact = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
@@ -87,7 +87,7 @@ def test_exported_plugin_executes_claims_review_topology(tmp_path: Path) -> None
         cwd=REPO_ROOT, check=False, capture_output=True, text=True, env=env,
     )
     assert prepared.returncode == 0, prepared.stderr
-    payload = json.loads(prepared.stdout)
+    payload = yaml.safe_load(prepared.stdout)
     prepared_commit = payload["prepared_release_commit"]
     record = subprocess.run(
         ["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"],
@@ -136,7 +136,7 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     result = _run_publish_patch(repo, env, "--critique-artifact", "charness-artifacts/critique/demo.md")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     manifest = json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))
     assert payload["previous_version"] == "0.0.0"
     assert payload["target_version"] == "0.0.1"
@@ -282,7 +282,7 @@ def test_publish_release_records_distinct_channel_confirmation_before_issue_clos
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["distinct_channel_verification"]["status"] == "confirmed"
     assert payload["distinct_channel_verification"]["channel"] == "adapter-probe"
     # the distinct channel actually ran (a channel separate from `gh release view`)
@@ -312,7 +312,7 @@ def test_publish_release_records_distinct_channel_disposition_and_still_closes(t
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["distinct_channel_verification"]["status"] == "not-confirmed"
     state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
     assert state["44"] == "CLOSED"
@@ -333,7 +333,7 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["issue_closeout_preflight"]["status"] == "verified"
     assert payload["issue_closeout_preflight"]["issues"][0]["state"] == "OPEN"
     assert payload["issue_closeout_behavioral_verdict"]["ok"] is True
@@ -401,7 +401,7 @@ def test_publish_release_accepts_full_bug_closeout_carrier(tmp_path: Path) -> No
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     draft_validation = payload["issue_closeout_draft_validation"]
     assert draft_validation["ok"] is True
     assert draft_validation["missing_fields"] == []
@@ -472,7 +472,7 @@ def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path
     result = _run_publish_patch(repo, env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert payload["real_host_required"] is True
     assert payload["install_refresh"]["status"] == "refreshed"
@@ -732,7 +732,7 @@ def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_pa
     result = _run_publish_patch(repo, env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["fresh_checkout_probe_status"] == "passed"
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert "Fresh-checkout probe status: passed." in artifact_text

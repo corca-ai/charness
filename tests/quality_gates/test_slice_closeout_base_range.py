@@ -215,7 +215,12 @@ def test_predict_commit_rejects_base(monkeypatch: pytest.MonkeyPatch) -> None:
 
     from scripts import run_slice_closeout
 
-    monkeypatch.setattr(sys, "argv", ["run_slice_closeout.py", "--predict-commit", "--base", "--json"])
+    # No `--json`: repo-owned commands lost that flag in the 2026-08-14 removal, so
+    # leaving it here made argparse exit 2 on an UNRECOGNIZED ARGUMENT before main()
+    # could reach the `--base` refusal — the test would have passed for the wrong
+    # reason, or (as here) failed on the wrong one. What is under test is that
+    # `--base` is rejected with `--predict-commit`, so the argv carries only those.
+    monkeypatch.setattr(sys, "argv", ["run_slice_closeout.py", "--predict-commit", "--base"])
     with pytest.raises(SurfaceError, match="--base is not supported with --predict-commit"):
         run_slice_closeout.main()
 

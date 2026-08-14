@@ -302,17 +302,18 @@ def main() -> int:
     parser.add_argument("--intent", choices=("single", "collect"), default="single", help="Classification intent: one source or a collection.")
     args = parser.parse_args()
     raw = load_input(args.path)
-    print(
-        json.dumps(
-            classify(
-                raw,
-                expect_text=args.expect_text,
-                expect_regex=args.expect_regex,
-                expect_json_field=args.expect_json_field,
-                intent=args.intent,
-            ),
-            ensure_ascii=False,
-            indent=2,
+    # Imported here, not at module scope: this file is also imported as a library
+    # by siblings that put the package directory on `sys.path` themselves, and
+    # only the CLI entry (whose own directory is on `sys.path`) needs a renderer.
+    from route_public_fetch import load_yaml_output
+
+    load_yaml_output().emit_yaml(
+        classify(
+            raw,
+            expect_text=args.expect_text,
+            expect_regex=args.expect_regex,
+            expect_json_field=args.expect_json_field,
+            intent=args.intent,
         )
     )
     return 0

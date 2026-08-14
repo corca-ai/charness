@@ -6,9 +6,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from yaml_output import emit_yaml
-
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 

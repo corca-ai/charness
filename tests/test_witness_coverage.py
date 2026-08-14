@@ -283,7 +283,7 @@ def test_cli_default_json_and_markdown_both_work(tmp_path: Path, capsys: pytest.
     rc = cli.main(["--repo-root", str(tmp_path), "--skill", "x", "--scenario", "s1"])
     assert rc == 0
     out = capsys.readouterr().out
-    payload = json.loads(out)
+    payload = yaml.safe_load(out)
     assert payload["skill"] == "x"
     assert payload["scenario"] == "s1"
 

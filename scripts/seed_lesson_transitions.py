@@ -45,6 +45,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script, require_repo_local_helper
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
@@ -278,7 +279,6 @@ def main() -> int:
         action="store_true",
         help="Report the transitions that would be appended without writing the ledger.",
     )
-    parser.add_argument("--json", action="store_true", help="Emit the structured receipt instead of prose.")
     args = parser.parse_args()
     root = args.repo_root.resolve()
     receipt = seed_transitions(
@@ -288,24 +288,24 @@ def main() -> int:
         lesson_ids=args.lesson_ids,
         dry_run=args.dry_run,
     )
-    if args.json:
-        print(json.dumps({**receipt, "freeze_note": FREEZE_NOTE}, ensure_ascii=False, sort_keys=True))
-        return 0
+    # `freeze_note` is carried on BOTH the seeded and the nothing-to-seed shape. The
+    # dry run is the inspection moment this command's whole mitigation rests on, so
+    # gating the warning on the write made it arrive only after the bytes it was
+    # warning about had landed.
+    #
+    # `active_lesson_budget` and `recurrence_tag_instruction` used to exist only
+    # inside the prose renderer. The budget is the DENOMINATOR for
+    # `active_lesson_count` -- a count without it says nothing -- and the tag
+    # instruction is the only next step a repo with no unseeded classes can act on,
+    # so both are folded into the payload rather than deleted with the renderer.
+    payload = {
+        **receipt,
+        "freeze_note": FREEZE_NOTE,
+        "active_lesson_budget": _ledger.ACTIVE_LESSON_BUDGET,
+    }
     if not receipt["seeded"]:
-        print(
-            f"No unseeded tagged classes: {receipt['already_seeded_count']} lessons already in "
-            f"`{receipt['path']}`. {_ledger.RECURRENCE_TAG_INSTRUCTION}."
-        )
-        return 0
-    verb = "Would seed" if receipt["dry_run"] else "Seeded"
-    print(f"{verb} {receipt['seeded_count']} transition(s) into `{receipt['path']}`:")
-    for transition in receipt["seeded"]:
-        print(f"  {transition['lesson_id']} <- {transition['source_retro']}")
-    print(f"{receipt['active_lesson_count']} of {_ledger.ACTIVE_LESSON_BUDGET} lessons active.")
-    # Printed on BOTH paths. The dry run is the inspection moment this command's
-    # whole mitigation rests on, so gating the warning on the write meant it
-    # arrived only after the bytes it was warning about had landed.
-    print(FREEZE_NOTE)
+        payload["recurrence_tag_instruction"] = f"{_ledger.RECURRENCE_TAG_INSTRUCTION}."
+    emit_yaml(payload)
     return 0
 
 

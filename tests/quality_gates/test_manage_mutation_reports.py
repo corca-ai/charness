@@ -18,12 +18,12 @@ def _file(path: Path, *, age_days: int, text: str = "x") -> Path:
 def test_main_absent_report_root_is_empty_and_execute_is_noop(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
-    import json
+    import yaml
 
     monkeypatch.setattr(reports, "managed_paths", lambda repo_root: set())
 
     assert reports.main(["--repo-root", str(tmp_path)]) == 0
-    dry_run = json.loads(capsys.readouterr().out)
+    dry_run = yaml.safe_load(capsys.readouterr().out)
     assert dry_run["report_root_exists"] is False
     assert dry_run["report_root_device"] is None
     assert dry_run["report_root_inode"] is None
@@ -40,7 +40,7 @@ def test_main_absent_report_root_is_empty_and_execute_is_noop(
             dry_run["candidate_set_sha256"],
         ]
     ) == 0
-    executed = json.loads(capsys.readouterr().out)
+    executed = yaml.safe_load(capsys.readouterr().out)
     assert executed["executed"] is True
     assert executed["removed"] == []
     assert not (tmp_path / "reports" / "mutation").exists()
@@ -258,14 +258,14 @@ def test_adapter_declared_report_paths_are_managed(tmp_path: Path, monkeypatch) 
 def test_main_dry_run_confirmation_and_execute_are_operator_visible(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
-    import json
+    import yaml
 
     report_root = tmp_path / "reports" / "mutation"
     candidate = _file(report_root / "old-probe.json", age_days=60)
     monkeypatch.setattr(reports, "managed_paths", lambda repo_root: set())
 
     assert reports.main(["--repo-root", str(tmp_path), "--older-than-days", "30"]) == 0
-    dry_run = json.loads(capsys.readouterr().out)
+    dry_run = yaml.safe_load(capsys.readouterr().out)
     assert dry_run["executed"] is False and dry_run["removed"] == []
     assert candidate.is_file()
 
@@ -288,7 +288,7 @@ def test_main_dry_run_confirmation_and_execute_are_operator_visible(
             dry_run["candidate_set_sha256"],
         ]
     ) == 0
-    executed = json.loads(capsys.readouterr().out)
+    executed = yaml.safe_load(capsys.readouterr().out)
     assert executed["executed"] is True
     assert executed["removed"] == ["reports/mutation/old-probe.json"]
     assert not candidate.exists()

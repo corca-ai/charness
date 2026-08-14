@@ -34,13 +34,13 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -184,6 +184,12 @@ def build_report(repo_root: Path, paths: list[str], against: str) -> dict:
             report["consumers"][path] = readers
     report["consumer_count"] = sum(len(readers) for readers in report["consumers"].values())
     report["uncomparable_count"] = len(report["uncomparable"])
+    # The ATTENTION STATE, named in the payload rather than only in a prose line
+    # ("skipped: N uncomparable path(s)"). A neutral `uncomparable_count` does not
+    # say those paths went UNEXAMINED, and that distinction -- an empty result
+    # versus an unexamined one -- is the whole reason this file is declared in
+    # `skills/public/quality/references/attention-state-visibility.json`.
+    report["skipped"] = {"reason": "uncomparable", "path_count": report["uncomparable_count"]}
     return report
 
 
@@ -241,29 +247,17 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--against", default="HEAD")
     parser.add_argument("--paths", nargs="*", default=None)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
     paths = args.paths or _parity.changed_python_paths(root)
     report = build_report(root, paths, args.against)
 
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-        return 0
-    skipped = f"skipped: {report['uncomparable_count']} uncomparable path(s)"
-    if not report["removed"]:
-        print(f"No module-level names removed vs `{args.against}`. {skipped}")
-        return 0
-    print(f"Removed module-level names vs `{args.against}` ({skipped}):")
-    for module, gone in sorted(report["removed"].items()):
-        readers = report["consumers"].get(module)
-        detail = (
-            "; ".join(f"{reader} reads {', '.join(names)}" for reader, names in sorted(readers.items()))
-            if readers
-            else "no candidate reader found"
-        )
-        print(f"{module}: removed {', '.join(gone)} — {detail}")
+    # The prose branch restated `against`, `uncomparable_count`, `removed`, and
+    # `consumers` -- all payload keys. Its only added token was the phrase
+    # "no candidate reader found", which is the absence of a `consumers` entry for
+    # that module and is readable as such.
+    emit_yaml(report)
     return 0
 
 

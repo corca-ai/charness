@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module
+from yaml_output import emit_yaml
 
 _skill_iter_module = import_repo_module(__file__, "scripts.skill_iter")
 iter_skill_ids = _skill_iter_module.iter_skill_ids
@@ -207,14 +208,14 @@ def main() -> int:
     if not inventory_path.is_file():
         errors.append(f"inventory not found: {inventory_path}")
         report = {"valid": False, "errors": errors, "inventory_path": str(inventory_path)}
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        emit_yaml(report)
         return 1
     try:
         payload = json.loads(inventory_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         errors.append(f"inventory is not valid JSON: {exc}")
         report = {"valid": False, "errors": errors, "inventory_path": str(inventory_path)}
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        emit_yaml(report)
         return 1
     if _check_top_shape(payload, errors):
         _check_rows(
@@ -229,7 +230,7 @@ def main() -> int:
         "errors": errors,
         "skill_count": len(payload.get("skills", [])) if isinstance(payload, dict) else 0,
     }
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    emit_yaml(report)
     return 0 if valid else 1
 
 

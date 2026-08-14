@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -19,6 +18,8 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+emit_yaml = _yaml_output_module.emit_yaml
 load_yaml_file = _adapter_lib_module.load_yaml_file
 load_yaml_file_report = _adapter_lib_module.load_yaml_file_report
 uninterpreted_warnings = _adapter_lib_module.uninterpreted_warnings
@@ -368,10 +369,10 @@ def main() -> int:
             adapter = load_adapter(args.repo_root.resolve())
             payload = resolve_destination_target(args.current, adapter["data"].get("harness_upstream"))
             payload["adapter_found"] = adapter["found"]
-            print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+            emit_yaml(payload)
             return 0 if payload["ok"] else 1
         payload = load_adapter(args.repo_root.resolve())
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        emit_yaml(payload)
         return 0 if payload["valid"] else 1
     finally:
         cancel_timeout()

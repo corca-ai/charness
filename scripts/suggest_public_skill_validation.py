@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -94,47 +94,13 @@ def build_report(repo_root: Path) -> dict[str, object]:
     }
 
 
-def _format_human(report: dict[str, object]) -> str:
-    suggestions = report["suggestions"]
-    if not suggestions:
-        return f"No public skill policy gaps found in `{report['policy_path']}`."
-    lines = [f"Public skill policy gaps in `{report['policy_path']}`:"]
-    for item in suggestions:
-        lines.append(f"- `{item['skill_id']}`")
-        if item["choose_one_of"]["tiers"]:
-            lines.append(
-                "  tiers: choose one of "
-                + ", ".join(f"`{value}`" for value in item["choose_one_of"]["tiers"])
-            )
-        if item["choose_one_of"]["adapter_requirements"]:
-            lines.append(
-                "  adapter requirements: choose one of "
-                + ", ".join(
-                    f"`{value}`"
-                    for value in item["choose_one_of"]["adapter_requirements"]
-                )
-            )
-        if item["choose_one_of"]["fallback_policy"]:
-            lines.append(
-                "  fallback policy: choose one of "
-                + ", ".join(
-                    f"`{value}`" for value in item["choose_one_of"]["fallback_policy"]
-                )
-            )
-    return "\n".join(lines)
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     report = build_report(args.repo_root.resolve())
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    else:
-        print(_format_human(report))
+    emit_yaml(report)
     return 1 if report["suggestions"] else 0
 
 

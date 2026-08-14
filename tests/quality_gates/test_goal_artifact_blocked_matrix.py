@@ -7,10 +7,11 @@ stuck while a runnable lane remains.
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 _ROOT = Path(__file__).resolve().parents[2]
 _LIB = _ROOT / "skills/public/achieve/scripts/goal_artifact_lib.py"
@@ -199,7 +200,7 @@ def test_checker_surfaces_floor_on_already_blocked_goal(tmp_path: Path) -> None:
         text=True,
     )
     assert proc.returncode == 1
-    payload = json.loads(proc.stdout)
+    payload = yaml.safe_load(proc.stdout)
     assert payload["blocked_matrix"]["ok"] is False
     assert any("remaining-boundary-matrix floor" in issue for issue in payload["issues"])
 
@@ -213,7 +214,7 @@ def test_checker_passes_blocked_goal_with_clean_matrix(tmp_path: Path) -> None:
         capture_output=True,
         text=True,
     )
-    payload = json.loads(proc.stdout)
+    payload = yaml.safe_load(proc.stdout)
     assert payload["blocked_matrix"]["ok"] is True
     assert payload["ok"] is True
 

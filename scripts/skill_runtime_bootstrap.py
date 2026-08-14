@@ -27,8 +27,8 @@ def run_adapter_cli(
     """Shared CLI driver for skill adapter resolvers (resolve_adapter/review_adapter mains).
 
     Reproduces, verbatim, the main() tail every simple resolver duplicated: arm the
-    CLI timeout, parse a required ``--repo-root``, then emit sorted-keys JSON of
-    ``resolve(repo_root)``. The per-skill ``resolve`` callable, label, help text, and
+    CLI timeout, parse a required ``--repo-root``, then emit ``resolve(repo_root)`` as
+    YAML. The per-skill ``resolve`` callable, label, help text, and
     optional parser ``description`` stay local in each script; only this invariant
     driver is shared. ``description`` defaults to ``None`` -- the argparse default --
     so callers that did not set one are byte-identical, including ``--help``. It lives
@@ -36,17 +36,17 @@ def run_adapter_cli(
     SKILL_RUNTIME -- so sharing it adds no dependency the resolvers did not carry.
     """
     import argparse
-    import json
     import sys
 
+    render_yaml = load_path_module(
+        "scripts.yaml_output", Path(__file__).resolve().parent / "yaml_output.py"
+    ).render_yaml
     cancel_timeout = arm_cli_timeout(label=label)
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--repo-root", type=Path, required=True, help=repo_root_help)
     try:
         args = parser.parse_args()
-        sys.stdout.write(
-            json.dumps(resolve(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-        )
+        sys.stdout.write(render_yaml(resolve(args.repo_root.resolve())))
     finally:
         cancel_timeout()
 

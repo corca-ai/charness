@@ -47,7 +47,7 @@ def _failure_payload(stderr: str) -> dict:
     start = "BEGIN publish_release_failure_payload"
     end = "END publish_release_failure_payload"
     assert start in stderr and end in stderr, stderr
-    return json.loads(stderr.split(start, 1)[1].split(end, 1)[0].strip())
+    return yaml.safe_load(stderr.split(start, 1)[1].split(end, 1)[0].strip())
 
 
 def test_precommit_quality_failure_restores_clean_retryable_worktree(tmp_path: Path) -> None:

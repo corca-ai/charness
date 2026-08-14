@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
@@ -80,7 +82,7 @@ def test_flags_uncovered_changed_lines(tmp_path: Path) -> None:
     result = _run(repo, base, head, cov)
 
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "scripts/foo.py" in payload["blocking"]
     assert payload["blocking_detail"]["scripts/foo.py"]["changed_and_missing"] == [5, 6]
@@ -99,7 +101,7 @@ def test_passes_when_changed_lines_are_covered(tmp_path: Path) -> None:
     result = _run(repo, base, head, cov)
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert json.loads(result.stdout)["blocking"] == []
+    assert yaml.safe_load(result.stdout)["blocking"] == []
 
 
 def test_untracked_changed_file_blocks(tmp_path: Path) -> None:
@@ -112,7 +114,7 @@ def test_untracked_changed_file_blocks(tmp_path: Path) -> None:
     result = _run(repo, base, head, cov)
 
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "scripts/foo.py" in payload["blocking"]
     assert "not tracked" in str(payload["blocking_detail"]["scripts/foo.py"])
     assert payload["blocking_targets"]["scripts/foo.py"] == [
@@ -132,7 +134,7 @@ def test_no_base_sha_is_non_blocking_by_construction(tmp_path: Path) -> None:
     result = run_script(_TEETH, "--repo-root", str(repo), "--base-sha", "", "--reuse-coverage")
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["blocking"] == []
     assert "no base_sha" in payload["reason"]
@@ -159,7 +161,7 @@ def test_resolves_relative_coverage_json_under_repo_root(tmp_path: Path) -> None
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert json.loads(result.stdout)["blocking"] == []
+    assert yaml.safe_load(result.stdout)["blocking"] == []
 
 
 def test_passes_when_no_eligible_pool_file_changed(tmp_path: Path) -> None:
@@ -182,7 +184,7 @@ def test_passes_when_no_eligible_pool_file_changed(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["blocking"] == []
     assert "no eligible" in payload["reason"]
@@ -210,7 +212,7 @@ def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None
         "this run established nothing about a non-empty changed set; exit 0 printed "
         "PASS beside the payload that said so"
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["blocking"] == []
     assert "no coverage source" in payload["reason"]
@@ -252,7 +254,7 @@ def test_skip_if_no_coverage_still_blocks_when_present(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "scripts/foo.py" in payload["blocking"]
 
@@ -284,7 +286,7 @@ def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None
         "this run established nothing about a non-empty changed set; exit 0 printed "
         "PASS beside the payload that said so"
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["blocking"] == []
     assert "stale" in payload["reason"]
@@ -307,7 +309,7 @@ def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> 
         "this run established nothing about a non-empty changed set; exit 0 printed "
         "PASS beside the payload that said so"
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "stale" in payload["reason"]
     assert payload["coverage_not_verified"] is True  # #335: stale skip surfaces too
 
@@ -326,7 +328,7 @@ def test_require_fresh_coverage_fires_when_marker_matches_fingerprint(tmp_path: 
     )
 
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "scripts/foo.py" in payload["blocking"]
 
@@ -475,7 +477,7 @@ def test_a_dirty_pool_still_reports_unestablished_when_the_scope_was_also_partia
         "a dirty pool must not be downgraded to the non-refusable PARTIAL byte "
         "just because the scope was also limited"
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # The narrower fact is NOT lost by losing the byte — both channels still name it.
     assert payload["unanalyzed_changed_pool_files"] == ["scripts/bar.py"]
     assert "says NOTHING about the rest" in result.stderr
@@ -497,7 +499,7 @@ def test_false_green_warning_surfaces_in_report_and_stderr(tmp_path: Path) -> No
         "this run established nothing about a non-empty changed set; exit 0 printed "
         "PASS beside the payload that said so"
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True  # in-range verdict still clean
     assert "warning" in payload and "FALSE GREEN" in payload["warning"]
     assert "scripts/foo.py" in payload["warning"]
@@ -517,7 +519,7 @@ def test_refuses_fast_before_any_probe_when_pool_is_dirty(tmp_path: Path) -> Non
     result = run_script(_TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD")
 
     assert result.returncode == 2, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["refused"] is True
     assert payload["uncommitted_pool_files"] == ["scripts/foo.py"]
@@ -563,7 +565,7 @@ def test_allow_dirty_proceeds_but_records_the_result_as_unverified(tmp_path: Pat
         "this run established nothing about a non-empty changed set; exit 0 printed "
         "PASS beside the payload that said so"
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True  # advisory in-range verdict still stands
     assert payload["dirty_pool_unverified"] is True
     assert payload["uncommitted_pool_files"] == ["scripts/foo.py"]
@@ -584,7 +586,7 @@ def test_clean_worktree_does_not_refuse_and_reports_the_pinned_head(tmp_path: Pa
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "refused" not in payload
     assert payload["head_sha"] == "HEAD"  # unchanged field contract for consumers
     assert payload["resolved_head_sha"] == head
@@ -745,7 +747,7 @@ def test_limit_to_file_narrows_the_blocking_set_and_names_the_rest(tmp_path: Pat
     # spot at all -- while stderr said "A clean verdict says NOTHING about the
     # rest". The scope now reaches the verdict; it still does not refuse.
     assert result.returncode == 4, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["blocking"] == []
     # Scoped on all THREE channels now: stderr, the payload, and the exit code.
     assert payload["changed_line_proof"] == "partial"
@@ -766,7 +768,7 @@ def test_without_the_limit_the_same_coverage_still_blocks(tmp_path: Path) -> Non
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["blocking"] == ["scripts/bar.py"]
     assert "unanalyzed_changed_pool_files" not in payload
 
@@ -790,7 +792,7 @@ def test_a_limit_that_matches_nothing_refuses_to_report_an_empty_range(tmp_path:
         "this run established nothing about a non-empty changed set; exit 0 printed "
         "PASS beside the payload that said so"
     )
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "fell OUTSIDE --limit-to-file" in payload["reason"]
     assert "proves nothing about them" in payload["reason"]
     assert sorted(payload["unanalyzed_changed_pool_files"]) == ["scripts/bar.py", "scripts/foo.py"]
@@ -904,7 +906,7 @@ def test_a_scope_mismatch_does_not_make_an_empty_changed_set_refusable(tmp_path:
         _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", base, "--reuse-coverage"
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "no eligible" in json.loads(result.stdout)["reason"]
+    assert "no eligible" in yaml.safe_load(result.stdout)["reason"]
 
 def test_a_scope_mismatch_over_an_empty_scope_still_discloses_itself(tmp_path: Path) -> None:
     """Exit 0 is right; silence is not.
@@ -938,7 +940,7 @@ def test_a_scope_mismatch_over_an_empty_scope_still_discloses_itself(tmp_path: P
     result = _run(repo, base, mid, cov)
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # `reason` must NOT change: the consumer prefix-matches it to recognise an
     # empty scope, and rewriting it would turn this into a refusable blocker.
     assert payload["reason"].startswith("no eligible mutation-pool files changed")

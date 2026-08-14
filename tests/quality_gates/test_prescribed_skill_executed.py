@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LIB_PATH = REPO_ROOT / "scripts/check_prescribed_skill_executed_lib.py"
@@ -149,7 +149,7 @@ def test_cli_smoke_fails_with_exit_one(tmp_path: Path) -> None:
         check=False,
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["missing"] == ["retro_artifact"]
 
@@ -173,7 +173,7 @@ def test_cli_smoke_passes_with_real_file(tmp_path: Path) -> None:
         check=False,
     )
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
 
 

@@ -14,10 +14,11 @@ actually accept, and would trip the duplicate ratchet for no benefit.
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 _SIBLING = Path(__file__).resolve().parent / "test_goal_coordination_floors.py"
 _spec = importlib.util.spec_from_file_location("_coordination_floor_fixtures", _SIBLING)
@@ -82,7 +83,7 @@ def test_check_goal_artifact_hoists_the_census_into_advisories(tmp_path: Path) -
          "--repo-root", str(tmp_path), "--goal-path", str(path)],
         capture_output=True, text=True,
     )
-    payload = json.loads(proc.stdout)
+    payload = yaml.safe_load(proc.stdout)
     # The hoist is deliberately independent of the overall verdict: the census
     # matters on runs the gate PASSES, and this fixture is scoped to the
     # coordination floors rather than the full structural section set.
@@ -142,7 +143,7 @@ def test_check_goal_artifact_main_emits_the_advisory_in_process(tmp_path, capsys
         ["check_goal_artifact.py", "--repo-root", str(tmp_path), "--goal-path", str(path)],
     )
     cga.main()
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert any("coordination opt-out census" in a for a in payload["advisories"])
 
 

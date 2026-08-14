@@ -63,6 +63,10 @@ def test_prepare_packet_help_explains_packet_scope_and_output() -> None:
             "--commit": "Single commit whose changed files should define the packet scope.",
             "--range": "revision range whose changed files should define the packet scope.",
             "--slug": "defaults to the current UTC timestamp.",
-            "--json": "instead of writing packet files.",
         },
     )
+    # Output is no longer a mode the operator picks: packet files are always
+    # written and the receipt is always the structured payload. The help must not
+    # advertise an output-mode flag that no longer exists -- offering one and
+    # having argparse reject it is worse than saying nothing.
+    assert "--json" not in output

@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_main import run_loaded_script_main
 
@@ -66,18 +67,29 @@ def run_script(
 
 
 def inspect_setup_repo(repo: Path, *, env: dict[str, str] | None = None) -> dict[str, object]:
+    """Parse `inspect_repo.py`'s report payload.
+
+    Repo-owned command output is YAML since the 2026-08-14 `--json` removal, so this
+    parses with `yaml.safe_load`. YAML is a JSON superset, so a payload that is still
+    literal JSON -- including the compact-JSON fallback `render_yaml` uses when PyYAML
+    is absent -- parses here unchanged.
+    """
     result = run_loaded_script_main("inspect_repo.py", SETUP_INSPECT_REPO, "--repo-root", str(repo), env=env)
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def bundle_payload_or_report(result, label: str) -> dict:
     """Parse a bundle CLI's plan payload, and surface stderr when there is none to parse.
 
     A round found the first version of this in one test file only, so the OTHER surface still
-    failed a crash or an argparse error with a bare `JSONDecodeError` and dropped stderr. Both
+    failed a crash or an argparse error with a bare parse error and dropped stderr. Both
     use this now. Parsing before asserting the exit code is what made the loss possible: for a
     crashed run stdout is empty and everything the reader needs is on stderr.
+
+    Repo-owned command output is YAML since the 2026-08-14 `--json` removal, so this parses
+    with `yaml.safe_load`. YAML is a JSON superset, so a payload that is still literal JSON
+    parses here unchanged.
     """
     if not result.stdout.strip():
         raise AssertionError(
@@ -85,10 +97,10 @@ def bundle_payload_or_report(result, label: str) -> dict:
             f"stderr={result.stderr.strip()!r}"
         )
     try:
-        parsed = json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
+        parsed = yaml.safe_load(result.stdout)
+    except yaml.YAMLError as exc:
         raise AssertionError(
-            f"{label} stdout was not JSON ({exc}); returncode={result.returncode}, "
+            f"{label} stdout was not YAML ({exc}); returncode={result.returncode}, "
             f"stdout={result.stdout[:400]!r}, stderr={result.stderr.strip()!r}"
         ) from exc
     if not isinstance(parsed, dict):
@@ -590,7 +602,15 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # prove the runner works while proving nothing about the guard that keeps a
     # mis-parsed gate list from reaching a budget verdict. The real reader also makes
     # the harness's own copy of run-quality.sh the thing under test.
-    for real_name in ("quality_label_universe.py", "runtime_bootstrap.py", "adapter_lib.py"):
+    # yaml_output.py is copied for the same reason: the real label reader emits its
+    # payload through `from yaml_output import emit_yaml`, so a seeded repo without it
+    # makes every runner test fail on an import error instead of on runner behavior.
+    for real_name in (
+        "quality_label_universe.py",
+        "runtime_bootstrap.py",
+        "adapter_lib.py",
+        "yaml_output.py",
+    ):
         shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
         (scripts_dir / real_name).chmod(0o755)
     # Copied rather than stubbed: the runner's specdown step calls it for real, and a

@@ -14,7 +14,7 @@ Actions workflow template that calls those slots at runtime.
 - **declined**: `declined: true`. The propose probe stops re-asking. Remove
   the flag to reopen.
 
-The propose probe (`propose_mutation_testing.py`) emits JSON of shape
+The propose probe (`propose_mutation_testing.py`) emits YAML of shape
 `{status, recommendation, install_actions}` with `status` in
 `{installed, missing, declined, blocked}`. `blocked` is reserved for the case
 where adapter validator errors are non-empty; the propose stage runs only

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
 import json
 import sys
@@ -22,6 +23,9 @@ def _load_sibling(module_name: str) -> object:
 
 _LIB = _load_sibling("markdown_preview_lib")
 _RENDER = _load_sibling("markdown_preview_render")
+# After `_LIB`, never before: it is `markdown_preview_lib` that resolves this
+# package's tree root and puts it on `sys.path`, in either layout.
+emit_yaml = importlib.import_module("scripts.yaml_output").emit_yaml
 REPO_ROOT = _LIB.REPO_ROOT
 load_config = _LIB.load_config
 merge_cli = _LIB.merge_cli
@@ -53,25 +57,23 @@ def main() -> int:
         changed_only=args.changed_only,
     )
     if not config.enabled:
-        print(
-            json.dumps(
-                {
-                    "status": "disabled",
-                    "repo": repo_root.name,
-                    "config_path": config.config_path,
-                    "warnings": ["Markdown preview is disabled by config."],
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
+        emit_yaml(
+            {
+                "status": "disabled",
+                "repo": repo_root.name,
+                "config_path": config.config_path,
+                "warnings": ["Markdown preview is disabled by config."],
+            }
         )
         return 0
     targets, selection_warnings = select_targets(repo_root, config)
     payload = render_targets(repo_root, config, targets)
     payload["warnings"] = selection_warnings + payload["warnings"]
+    # The MANIFEST stays JSON: it is a persisted `.json` artifact other readers
+    # open by path, not this command's output. Only the stdout receipt is.
     manifest_path = repo_root / payload["artifact_dir"] / "manifest.json"
     manifest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 

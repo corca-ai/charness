@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -143,40 +142,3 @@ def run_create(
     if doctor.get("status") != PASS:
         payload["next_step"] = doctor.get("next_step") or f"Run `charness worktree prepare --repo-root {target_path}`."
     return payload
-
-
-def render_create_text(payload: dict[str, Any]) -> str:
-    lines = [
-        f"target: {payload.get('target_path')}",
-        f"status: {payload.get('status')}",
-    ]
-    if payload.get("dry_run"):
-        lines.append("dry-run: true")
-    branch = payload.get("branch")
-    if branch:
-        lines.append(f"branch: {branch}")
-    base = payload.get("base")
-    if base:
-        lines.append(f"base: {base}")
-    for action in payload.get("actions") or []:
-        command = " ".join(action.get("command") or [])
-        reason = f" -- {action['reason']}" if action.get("reason") else ""
-        lines.append(f"{action['id']}: {action['status']} {command}{reason}".rstrip())
-    doctor = payload.get("doctor")
-    if isinstance(doctor, dict):
-        lines.append(f"doctor: {doctor.get('status')}")
-    prepare = payload.get("prepare")
-    if isinstance(prepare, dict):
-        lines.append(f"prepare: {prepare.get('status')}")
-    if payload.get("error"):
-        lines.append(f"error: {payload['error']}")
-    if payload.get("next_step"):
-        lines.append(f"NEXT: {payload['next_step']}")
-    return "\n".join(lines)
-
-
-def emit_payload(payload: dict[str, Any], *, json_mode: bool) -> None:
-    if json_mode:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print(render_create_text(payload))

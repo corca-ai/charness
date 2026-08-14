@@ -14,13 +14,13 @@ the matcher wants is precisely how this class hides.
 from __future__ import annotations
 
 import collections
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -288,13 +288,13 @@ def test_the_documented_command_actually_runs_as_a_command(tmp_path: Path) -> No
     )
 
     result = subprocess.run(
-        [sys.executable, str(SCRIPT_PATH), "--repo-root", str(tmp_path), "--json"],
+        [sys.executable, str(SCRIPT_PATH), "--repo-root", str(tmp_path)],
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["denominator"]["references_scanned"] == 1
     assert payload["findings"] == []
 
@@ -461,12 +461,13 @@ def test_a_basename_in_both_a_package_and_the_root_is_not_refused(tmp_path: Path
     assert [row["status"] for row in rows] == [inventory_module.AUTHORING_REPO]
 
 
-@pytest.mark.parametrize("extra", [(), ("--json",)])
-def test_text_and_json_modes_always_agree_on_the_exit_code(tmp_path: Path, extra) -> None:
-    """The invariant behind the `--json` hole, pinned as an invariant.
+def test_no_second_output_mode_can_diverge_on_the_exit_code(tmp_path: Path) -> None:
+    """The invariant behind the old `--json` hole, pinned at its root.
 
-    A point test on one fixture would not have caught the second divergence,
-    which lived in the zero-references branch rather than the findings branch.
+    Two renderings of one verdict diverged twice -- once in the findings branch,
+    once in the zero-references branch -- because each computed its own exit. The
+    removal of `--json` makes that class unreachable rather than merely tested:
+    there is one payload, one exit code, and no selector to disagree with.
     """
     repo = _broken_reference_repo(tmp_path)
     result = run_loaded_script_main(
@@ -475,9 +476,12 @@ def test_text_and_json_modes_always_agree_on_the_exit_code(tmp_path: Path, extra
         "--repo-root",
         str(repo),
         "--strict",
-        *extra,
     )
     assert result.returncode == 1
+    assert yaml.safe_load(result.stdout)["refuse"] is True
+    with pytest.raises(SystemExit) as excinfo:
+        inventory_module.build_parser().parse_args(["--strict", "--json"])
+    assert excinfo.value.code == 2
 
 
 def test_strict_refuses_a_blind_scan_that_found_no_references_at_all(tmp_path: Path) -> None:
@@ -485,7 +489,7 @@ def test_strict_refuses_a_blind_scan_that_found_no_references_at_all(tmp_path: P
 
     An unreadable doc that was a package's ONLY doc took the early
     `nothing was checked` return, which was an unconditional 0 — so `--strict`
-    went green while `--strict --json` refused the same tree.
+    went green while the structured mode refused the same tree.
     """
     if os.geteuid() == 0:
         pytest.skip("root can read a chmod-000 file")
@@ -495,20 +499,19 @@ def test_strict_refuses_a_blind_scan_that_found_no_references_at_all(tmp_path: P
     locked.write_text("nothing readable\n", encoding="utf-8")
     locked.chmod(0o000)
     try:
-        codes = [
-            run_loaded_script_main(
-                "inventory_skill_script_references",
-                inventory_module,
-                "--repo-root",
-                str(tmp_path),
-                "--strict",
-                *extra,
-            ).returncode
-            for extra in ((), ("--json",))
-        ]
+        result = run_loaded_script_main(
+            "inventory_skill_script_references",
+            inventory_module,
+            "--repo-root",
+            str(tmp_path),
+            "--strict",
+        )
     finally:
         locked.chmod(0o644)
-    assert codes == [1, 1]
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["verdict"] == "not-run"
+    assert payload["refuse"] is True
 
 
 def test_strict_refuses_when_a_doc_could_not_be_read(tmp_path: Path) -> None:
@@ -539,11 +542,12 @@ def test_strict_refuses_when_a_doc_could_not_be_read(tmp_path: Path) -> None:
     assert "could not be read" in result.stdout
 
 
-def test_json_mode_cannot_disarm_strict(tmp_path: Path) -> None:
+def test_the_structured_output_cannot_disarm_strict(tmp_path: Path) -> None:
     """The machine-readable mode is the natural one to wire into CI.
 
     It used to print the findings and exit 0, so the gate's own structured
-    output was the one shape that could not refuse.
+    output was the one shape that could not refuse. That output is now the ONLY
+    output, so the same escape would take every consumer with it.
     """
     repo = _broken_reference_repo(tmp_path)
     result = run_loaded_script_main(
@@ -552,10 +556,11 @@ def test_json_mode_cannot_disarm_strict(tmp_path: Path) -> None:
         "--repo-root",
         str(repo),
         "--strict",
-        "--json",
     )
     assert result.returncode == 1
-    assert json.loads(result.stdout)["findings"]
+    payload = yaml.safe_load(result.stdout)
+    assert payload["findings"]
+    assert payload["verdict"] == "fail"
 
 
 def test_clean_output_reports_the_layout_split_and_the_unverifiable_count(tmp_path: Path) -> None:
@@ -583,9 +588,17 @@ def test_clean_output_reports_the_layout_split_and_the_unverifiable_count(tmp_pa
         "inventory_skill_script_references", inventory_module, "--repo-root", str(tmp_path)
     )
     assert result.returncode == 0
-    assert "skill script references resolve" in result.stdout
-    assert "(1 authoring/1 shipped)" in result.stdout
-    assert "1 shipped reference(s) resolve only against a consuming" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["verdict"] == "ok"
+    assert payload["findings"] == []
+    # The layout split and the unverifiable count used to be prose; they are the
+    # payload's own fields now, and the note stays because "0 findings" without it
+    # reads as "every reference is fine".
+    assert payload["denominator"]["by_layout"] == {"authoring": 1, "shipped": 1}
+    assert any(
+        "shipped reference(s) resolve only against a consuming" in note
+        for note in payload["notes"]
+    )
 
 
 def test_advisory_says_so_when_packages_exist_but_name_no_scripts(tmp_path: Path) -> None:
@@ -652,8 +665,7 @@ def test_advisory_says_so_when_it_scanned_nothing(tmp_path: Path) -> None:
     assert "resolve" not in result.stdout.split("nothing was checked")[0]
 
 
-@pytest.mark.parametrize("extra_args", [(), ("--json",)])
-def test_advisory_cannot_change_an_exit_code(tmp_path: Path, extra_args: tuple[str, ...]) -> None:
+def test_advisory_cannot_change_an_exit_code(tmp_path: Path) -> None:
     """The DEFAULT mode never fails a run; `--strict` does.
 
     Kept after the promotion because the read-only inventory is still a
@@ -667,10 +679,12 @@ def test_advisory_cannot_change_an_exit_code(tmp_path: Path, extra_args: tuple[s
         inventory_module,
         "--repo-root",
         str(repo),
-        *extra_args,
     )
     assert result.returncode == 0
-    assert "demo_helper.py" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["verdict"] == "warn"
+    assert payload["advisories"] == []
+    assert any("demo_helper.py" in finding["reference"] for finding in payload["findings"])
 
 
 def test_the_option_surface_is_exactly_what_the_gate_wiring_expects() -> None:
@@ -686,7 +700,7 @@ def test_the_option_surface_is_exactly_what_the_gate_wiring_expects() -> None:
         for action in inventory_module.build_parser()._actions
         for option in action.option_strings
     }
-    assert declared == {"-h", "--help", "--repo-root", "--json", "--strict"}
+    assert declared == {"-h", "--help", "--repo-root", "--strict"}
 
 
 def test_strict_refuses_on_a_broken_reference_and_default_does_not(tmp_path: Path) -> None:
@@ -706,9 +720,14 @@ def test_strict_refuses_on_a_broken_reference_and_default_does_not(tmp_path: Pat
 
     assert lenient.returncode == 0
     assert strict.returncode == 1
-    assert "WARN:" in lenient.stdout
-    assert "FAIL:" in strict.stdout
-    assert "demo_helper.py" in strict.stdout
+    lenient_payload = yaml.safe_load(lenient.stdout)
+    strict_payload = yaml.safe_load(strict.stdout)
+    # `WARN:`/`FAIL:` were renderer prefixes; the payload carries the same
+    # distinction as `verdict`, over an identical finding set.
+    assert lenient_payload["verdict"] == "warn"
+    assert strict_payload["verdict"] == "fail"
+    assert lenient_payload["findings"] == strict_payload["findings"]
+    assert any("demo_helper.py" in finding["reference"] for finding in strict_payload["findings"])
 
 
 def test_strict_passes_when_nothing_is_broken(tmp_path: Path) -> None:

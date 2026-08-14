@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 import scripts.capability_catalog as catalog
 import scripts.capability_catalog_sources as sources
@@ -237,7 +238,7 @@ def test_catalog_cli_dispatches_all_commands_and_direct_script_bootstraps_path(
     assert _repo_root(None) == Path.cwd().resolve()
     assert catalog_main(["list", "--repo-root", str(repo)]) == 0
     capsys.readouterr()
-    assert catalog_main(["refresh", "--repo-root", str(repo), "--json"]) == 0
+    assert catalog_main(["refresh", "--repo-root", str(repo)]) == 0
     capsys.readouterr()
     assert (
         catalog_main(
@@ -249,7 +250,6 @@ def test_catalog_cli_dispatches_all_commands_and_direct_script_bootstraps_path(
                 "missing",
                 "--reported-path",
                 str(repo / "missing"),
-                "--json",
             ]
         )
         == 1
@@ -270,28 +270,32 @@ def test_catalog_cli_dispatches_all_commands_and_direct_script_bootstraps_path(
         assert exc_info.value.code == 0
     finally:
         sys.path[:] = original_path
-    assert '"artifacts"' in capsys.readouterr().out
+    assert "artifacts:" in capsys.readouterr().out
 
 
 def test_catalog_direct_main_refresh_invalid_root_is_clean_and_nonzero(
     tmp_path: Path, capsys
 ) -> None:
+    # The refusal used to be a bare stderr line, with the same text repeated as a
+    # `--json` payload only when the flag was passed. It is one unconditional YAML
+    # payload on stdout now, so the message is asserted there, and stderr must still
+    # carry no traceback for either invalid-root shape.
     missing = tmp_path / "missing"
     assert catalog_main(["refresh", "--repo-root", str(missing)]) == 2
     output = capsys.readouterr()
-    assert "does not exist" in output.err
+    payload = yaml.safe_load(output.out)
+    assert "does not exist" in payload["error"]
+    assert payload["repo_root"] == str(missing.resolve())
     assert "Traceback" not in output.err
     assert not missing.exists()
-
-    assert catalog_main(["refresh", "--repo-root", str(missing), "--json"]) == 2
-    payload = json.loads(capsys.readouterr().out)
-    assert "does not exist" in payload["error"]
 
     file_root = tmp_path / "refresh-file-root"
     file_root.write_text("not a directory\n", encoding="utf-8")
     assert catalog_main(["refresh", "--repo-root", str(file_root)]) == 2
     output = capsys.readouterr()
-    assert "not a directory" in output.err
+    payload = yaml.safe_load(output.out)
+    assert "not a directory" in payload["error"]
+    assert payload["repo_root"] == str(file_root.resolve())
     assert "Traceback" not in output.err
 
 
@@ -333,10 +337,10 @@ def test_catalog_cli_dispatches_to_the_selected_handler(
         lambda **_kwargs: seen.append("resolve") or {"resolved_path": str(repo / "skill.md")},
     )
 
-    assert catalog_main(["list", "--repo-root", str(repo), "--json"]) == 0
-    assert json.loads(capsys.readouterr().out)["command"] == "list"
-    assert catalog_main(["refresh", "--repo-root", str(repo), "--json"]) == 0
-    assert json.loads(capsys.readouterr().out)["command"] == "refresh"
+    assert catalog_main(["list", "--repo-root", str(repo)]) == 0
+    assert yaml.safe_load(capsys.readouterr().out)["command"] == "list"
+    assert catalog_main(["refresh", "--repo-root", str(repo)]) == 0
+    assert yaml.safe_load(capsys.readouterr().out)["command"] == "refresh"
     assert (
         catalog_main(
             [
@@ -347,12 +351,11 @@ def test_catalog_cli_dispatches_to_the_selected_handler(
                 "impl",
                 "--reported-path",
                 str(repo / "old.md"),
-                "--json",
             ]
         )
         == 0
     )
-    assert json.loads(capsys.readouterr().out)["resolved_path"].endswith("skill.md")
+    assert yaml.safe_load(capsys.readouterr().out)["resolved_path"].endswith("skill.md")
     assert seen == ["list", "refresh", "resolve"]
 
 
@@ -379,9 +382,32 @@ def test_catalog_cli_summary_emits_compact_yaml(monkeypatch, tmp_path: Path, cap
     assert "description" not in output
 
 
-def test_catalog_cli_rejects_summary_json_output_conflict(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["list", "--summary", "--json"],
+        ["list", "--json"],
+        ["refresh", "--json"],
+        [
+            "resolve-skill-path",
+            "--skill-id",
+            "impl",
+            "--reported-path",
+            "/tmp/old.md",
+            "--json",
+        ],
+    ],
+)
+def test_catalog_cli_rejects_the_removed_json_flag(tmp_path: Path, argv: list[str]) -> None:
+    """`--json` is gone with no back-compat, so every subcommand must refuse it.
+
+    This replaces the old `--summary` + `--json` conflict guard: the conflict it
+    checked cannot arise once the flag is undeclared, and the guard it protected was
+    deleted with it. What still needs teeth is that no subcommand quietly accepts and
+    ignores the retired flag, which is how the previous YAML migration left residue.
+    """
     with pytest.raises(SystemExit) as exc_info:
-        catalog_main(["list", "--repo-root", str(tmp_path), "--summary", "--json"])
+        catalog_main([argv[0], "--repo-root", str(tmp_path), *argv[1:]])
     assert exc_info.value.code == 2
 
 

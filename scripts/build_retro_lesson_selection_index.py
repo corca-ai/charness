@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -15,7 +15,6 @@ _recent_lessons_module = import_repo_module(__file__, "scripts.recent_lessons_li
 build_lesson_selection_index = _recent_lessons_module.build_lesson_selection_index
 check_lesson_selection_index = _recent_lessons_module.check_lesson_selection_index
 lesson_selection_index_path = _recent_lessons_module.lesson_selection_index_path
-lesson_selection_index_text = _recent_lessons_module.lesson_selection_index_text
 write_lesson_selection_index = _recent_lessons_module.write_lesson_selection_index
 
 
@@ -67,7 +66,6 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -75,24 +73,35 @@ def main() -> int:
     payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     index_path = lesson_selection_index_path(output_dir)
 
+    def _index_result(status: str) -> dict:
+        """One shape for both verdicts of one command.
+
+        `status` carries what the dropped "Wrote <path>." line said and the bare path
+        does not: whether the index was REWRITTEN or only validated on this run. Both
+        arms were copied from each other when the --check arm gained a payload in this
+        slice, which is how the two verdicts of a single command become free to report
+        different fields.
+        """
+        return {
+            "status": status,
+            "index_path": _relative(repo_root, index_path),
+            "source_artifact_count": payload["source_artifact_count"],
+            "candidate_count": payload["candidate_count"],
+        }
+
     if args.write:
         # Through the library writer, not a local `write_text`: that writer owns the
         # helper-provenance refusal, and hand-writing the same bytes here bypassed it
         # (verified: a drifted installed copy wrote the index anyway).
         write_lesson_selection_index(repo_root, output_dir, summary_path)
-        result = {
-            "index_path": _relative(repo_root, index_path),
-            "source_artifact_count": payload["source_artifact_count"],
-            "candidate_count": payload["candidate_count"],
-        }
-        print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else f"Wrote {result['index_path']}.")
+        emit_yaml(_index_result("written"))
         return 0
     if args.check:
         check_lesson_selection_index(repo_root, output_dir, summary_path)
-        print("Validated retro lesson selection index.")
+        emit_yaml(_index_result("validated"))
         return 0
 
-    print(lesson_selection_index_text(payload), end="")
+    emit_yaml(payload)
     return 0
 
 

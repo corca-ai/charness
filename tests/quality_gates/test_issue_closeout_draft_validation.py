@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import json
 import re
 import runpy
 from argparse import Namespace
 from pathlib import Path
+
+import yaml
 
 from tests.quality_gates.support import ROOT, run_script
 
@@ -102,7 +103,7 @@ def test_validate_closeout_draft_accepts_pr_body_before_state_mutation(tmp_path:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["draft"] is True
     assert payload["status"] == "draft_verified"
@@ -134,7 +135,7 @@ def test_validate_closeout_draft_accepts_direct_commit_message_before_push(
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["carrier"] == "direct-commit"
     assert payload["draft"] is True
@@ -163,7 +164,7 @@ def test_validate_closeout_draft_direct_commit_requires_message_file(
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "direct-commit draft requires --commit-message-file" in payload["error"]
 
 
@@ -187,7 +188,7 @@ def test_validate_closeout_draft_rejects_missing_ledger_before_mutation(tmp_path
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "draft_failed"
     assert set(payload["missing_fields"]) >= {"root_cause", "debug_artifact", "siblings", "prevention"}
 
@@ -221,7 +222,7 @@ def test_validate_closeout_draft_blocks_undispositioned_proof_gap(tmp_path: Path
         "--body-file", str(body),
     )
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "draft_failed"
     assert payload["proof_mismatch"]["problem"] == "mismatch"
     assert payload["proof_mismatch"]["undispositioned"][0]["gap_kind"] == "proof-below-acceptance"
@@ -242,7 +243,7 @@ def test_validate_closeout_draft_accepts_dispositioned_proof_gap(tmp_path: Path)
         "--body-file", str(body),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert "proof_mismatch" not in payload
 
@@ -275,6 +276,6 @@ def test_validate_closeout_draft_accepts_manual_fallback_body(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["carrier"] == "manual-fallback"

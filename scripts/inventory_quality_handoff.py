@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import load_path_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -107,28 +107,10 @@ def inventory_quality_handoff(artifact_text: str, artifact_path: str) -> dict[st
     }
 
 
-def format_human(report: dict[str, object]) -> str:
-    findings = report["findings"]
-    assert isinstance(findings, list)
-    if not findings:
-        return "Quality HITL handoff inventory: no advisory findings."
-    lines = [f"Quality HITL handoff inventory: {len(findings)} advisory finding(s)."]
-    for finding in findings:
-        assert isinstance(finding, dict)
-        missing = finding["missing_fields"]
-        assert isinstance(missing, list)
-        lines.append(
-            "- NON_AUTOMATABLE recommendation is missing HITL handoff fields: "
-            + ", ".join(str(field) for field in missing)
-        )
-    return "\n".join(lines)
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--artifact", type=Path)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -145,10 +127,10 @@ def main() -> int:
         artifact_path.read_text(encoding="utf-8"),
         artifact_label,
     )
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    else:
-        print(format_human(report))
+    # Unconditional YAML. The retired `format_human` line was a strict projection of
+    # the finding count and each finding's `missing_fields`; the sentence it wrapped
+    # them in is the `type: missing_hitl_handoff` each finding already declares.
+    emit_yaml(report)
     return 0
 
 

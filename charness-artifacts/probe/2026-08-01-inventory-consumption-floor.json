@@ -1604,8 +1604,8 @@
     }
   ],
   "_provenance": {
-    "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality. The gate tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins this file's `floor`, `artifacts`, `field_mention_residuals`, and `label_value_residuals` against today's tree by equality; `exemption_counts`, `corpus`, and the per-artifact `rows` are recorded here but are NOT gate-pinned, so do not read their agreement as corroborated. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
-    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
+    "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality. The gate tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins this file's `floor`, `artifacts`, `field_mention_residuals`, and `label_value_residuals` against today's tree by equality; `exemption_counts`, `corpus`, and the per-artifact `rows` are recorded here but are NOT gate-pinned, so do not read their agreement as corroborated. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root .",
+    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root .",
     "counterfactual_floor_20": "Re-runnable with --floor 20: 11 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
     "date": "2026-08-14",
     "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own immutable snapshot at charness-artifacts/probe/2026-08-12-inventory-marker-rule-snapshot.json; read the marker counts there. This file measures no marker fields at all, so it can carry no copy of them. It measures this repo's corpus and licenses no claim about a consumer repo's.",

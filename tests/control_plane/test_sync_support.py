@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 
+import yaml
+
 import scripts.sync_support as sync_support_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
@@ -143,11 +145,10 @@ def test_sync_support_materializes_upstream_checkout_into_installed_plugin(tmp_p
         "--execute",
         "--upstream-checkout",
         f"example/demo-copy={upstream}",
-        "--json",
         env=env,
     )
     assert sync.returncode == 0, sync.stderr
-    payload = json.loads(sync.stdout)[0]
+    payload = yaml.safe_load(sync.stdout)[0]
     installed_root = plugin_root / "support" / "demo-copy"
     assert payload["materialized_paths"] == ["support/demo-copy"]
     assert payload["materialized_base"] == str(plugin_root.resolve())
@@ -222,10 +223,9 @@ def test_sync_support_uses_fixture_checkout_without_explicit_override(tmp_path: 
         "--plugin-root",
         str(plugin_root),
         "--execute",
-        "--json",
         env=env,
     )
     assert sync.returncode == 0, sync.stderr
-    payload = json.loads(sync.stdout)[0]
+    payload = yaml.safe_load(sync.stdout)[0]
     assert payload["status"] == "synced"
     assert (plugin_root / "support" / "fixture-skill" / "SKILL.md").is_file()

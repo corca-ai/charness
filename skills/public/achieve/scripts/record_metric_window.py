@@ -9,7 +9,6 @@ helper only writes them into the artifact idempotently.
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -24,6 +23,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 goal_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_lib")
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 def parse_args() -> argparse.Namespace:
@@ -49,7 +49,7 @@ def main() -> int:
     args = parse_args()
     path = args.goal_path.expanduser()
     if not path.is_file():
-        print(json.dumps({"action": "refused", "note": f"goal artifact not found: {path}"}, ensure_ascii=False))
+        yaml_output.emit_yaml({"action": "refused", "note": f"goal artifact not found: {path}"})
         return 2
     original = path.read_text(encoding="utf-8")
     try:
@@ -61,19 +61,12 @@ def main() -> int:
             claude_session_file=args.claude_session_file,
         )
     except ValueError as exc:
-        print(json.dumps({"action": "refused", "note": str(exc)}, ensure_ascii=False))
+        yaml_output.emit_yaml({"action": "refused", "note": str(exc)})
         return 2
     changed = updated != original
     if changed:
         path.write_text(updated, encoding="utf-8")
-    print(
-        json.dumps(
-            {"action": "updated" if changed else "unchanged", "path": str(path)},
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-        )
-    )
+    yaml_output.emit_yaml({"action": "updated" if changed else "unchanged", "path": str(path)})
     return 0
 
 

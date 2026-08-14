@@ -6,7 +6,6 @@ import json
 import re
 import runpy
 import shutil
-import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,6 +20,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 
@@ -305,7 +305,7 @@ def main() -> None:
             "lint_gate_detected": lint_gate["detected"],
         },
     }
-    sys.stdout.write(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    yaml_output.emit_yaml(output)
 
 
 if __name__ == "__main__":

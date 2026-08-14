@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -112,7 +113,7 @@ def test_narrative_resolve_adapter_preserves_scenario_surface_fields(tmp_path: P
 
     result = run_narrative_resolve_adapter(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["data"]["scenario_surfaces"] == ["Chatbot Regression", "Workflow Recovery"]
     assert payload["data"]["scenario_block_template"] == [
         "What You Bring",
@@ -129,7 +130,7 @@ def test_narrative_review_adapter_reports_missing_adapter_for_first_touch_work(t
 
     result = run_narrative_review_adapter(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "needs-repair"
     assert payload["adapter"]["found"] is False
     assert any(finding["type"] == "missing_adapter" for finding in payload["findings"])
@@ -176,7 +177,7 @@ def test_narrative_review_adapter_flags_volatile_and_missing_paths(tmp_path: Pat
 
     result = run_script(REVIEW_SCRIPT, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     finding_types = {finding["type"] for finding in payload["findings"]}
     assert payload["status"] == "needs-repair"
     assert "missing_adapter_path" in finding_types

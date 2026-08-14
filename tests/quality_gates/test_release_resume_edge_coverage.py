@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "skills" / "public" / "release" / "scripts"
@@ -552,7 +553,11 @@ def test_resume_dry_run_validates_carrier_without_reconciling(capsys) -> None:
         Path("."), args=args, plan=plan, adapter_data={"output_dir": "charness-artifacts/release"},
         state=state, common=common, cli=cli,
     )
-    assert '"resume": "dry-run: would reconcile post-publication-carrier against the remote branch"' in capsys.readouterr().out
+    # The payload is YAML now, and `emit_yaml` line-wraps long scalars, so pin
+    # the parsed field rather than a raw-stdout substring.
+    assert yaml.safe_load(capsys.readouterr().out)["resume"] == (
+        "dry-run: would reconcile post-publication-carrier against the remote branch"
+    )
     assert not any(command[:2] == ["git", "push"] for command in cli.commands)
 
 

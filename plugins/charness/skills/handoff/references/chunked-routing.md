@@ -129,7 +129,7 @@ step 4 is the active agent.
    judgment, not package decisions.
 4. **Rank.** Run
    [`prepare_ranker_packet.py`](../scripts/prepare_ranker_packet.py)
-   against the materialized package proposal. The script emits a self-contained JSON
+   against the materialized package proposal. The script emits a self-contained YAML
    packet (version + merge proposal + canonical Christopher Alexander
    generative-sequence prompt + response schema). The active agent
    fills the `ranked_chunks` array (one entry per candidate with

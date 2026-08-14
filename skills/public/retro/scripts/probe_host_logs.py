@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -28,11 +27,16 @@ build_payload = _scripts_host_log_probe_lib_module.build_payload
 
 _goal_metrics_render_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.goal_metrics_render_lib")
 render_goal_metrics_block = _goal_metrics_render_lib_module.render_goal_metrics_block
+# Command output is unconditionally YAML since the 2026-08-14 --json removal. The
+# format CHOICE was renamed with the payload: a flag literally spelled `json` that
+# emits YAML is the lying-flag shape the migration exists to remove, and `--format
+# json` was invisible to a scan looking only for `--json`.
+render_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").render_yaml
 
 
 # argparse and `render_output` read the same tuple, so a new format cannot be
 # accepted on the command line without a renderer behind it (or vice versa).
-FORMAT_CHOICES = ("json", "markdown")
+FORMAT_CHOICES = ("yaml", "markdown")
 
 
 def parse_args() -> argparse.Namespace:
@@ -48,8 +52,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--format",
         choices=FORMAT_CHOICES,
-        default="json",
-        help="json (default) for the raw payload, or markdown for the standardized provider-safe goal-closeout metrics block",
+        default="yaml",
+        help="yaml (default) for the raw payload, or markdown for the standardized provider-safe goal-closeout metrics block",
     )
     return parser.parse_args()
 
@@ -65,7 +69,7 @@ def render_output(payload: dict, output_format: str) -> str:
     cannot silently reintroduce one.
     """
     renderers = {
-        "json": lambda: json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        "yaml": lambda: render_yaml(payload),
         "markdown": lambda: render_goal_metrics_block(payload),
     }
     return renderers[output_format]()

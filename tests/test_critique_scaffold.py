@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import shlex
 import subprocess
 from pathlib import Path
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -67,7 +68,7 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
 
     result = run_script(SCAFFOLD, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"].startswith("charness-artifacts/critique/")
     assert payload["artifact_path"].endswith(".md")
     assert payload["artifact_role"] == "record"
@@ -146,7 +147,7 @@ def test_critique_scaffold_title_with_no_alnum_chars_falls_back_to_critique_slug
 
     result = run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "!!!")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["title"] == "!!!"
     assert payload["write_artifact_path"].endswith("-critique.md")
@@ -164,7 +165,7 @@ def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> N
 
     result = run_script(SCAFFOLD, "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stderr
-    enums = json.loads(result.stdout)["allowed_enums"]
+    enums = yaml.safe_load(result.stdout)["allowed_enums"]
 
     assert set(enums["structured_findings"]["bin"]) == set(validator.STRUCTURED_BINS)
     assert set(enums["structured_findings"]["evidence"]) == set(validator.STRUCTURED_EVIDENCE)
@@ -193,7 +194,7 @@ def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tm
 
     result = run_script(str(scaffold), "--repo-root", str(consumer))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_role"] == "record"
     assert str(plugin_root / "scripts") in payload["validator_command"]
     assert "validate_critique_artifacts.py" in payload["validator_command"]

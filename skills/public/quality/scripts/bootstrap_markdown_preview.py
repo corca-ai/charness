@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -26,6 +25,9 @@ DEFAULT_OUTPUT_PATH = _BOOTSTRAP_LIB.DEFAULT_OUTPUT_PATH
 DEFAULT_WIDTHS = _BOOTSTRAP_LIB.DEFAULT_WIDTHS
 scaffold_markdown_preview = _BOOTSTRAP_LIB.scaffold_markdown_preview
 run_markdown_preview = _BOOTSTRAP_LIB.run_markdown_preview
+
+_YAML_OUTPUT = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+emit_yaml = _YAML_OUTPUT.emit_yaml
 
 
 def parse_args() -> argparse.Namespace:
@@ -69,10 +71,10 @@ def main() -> int:
             "stderr": stderr or None,
         }
         if returncode != 0:
-            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            emit_yaml(payload)
             return returncode
 
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 

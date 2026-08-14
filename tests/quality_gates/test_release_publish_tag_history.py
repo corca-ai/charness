@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.quality_gates.release_publish_fixtures import _seed_publish_release_repo
 from tests.quality_gates.test_release_publish_real_host_delta import (
@@ -192,7 +193,7 @@ def test_publish_current_allows_no_previous_release_tags_after_successful_discov
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["execute"] is False
     assert payload["previous_version"] == "0.0.0"
     assert payload["target_version"] == "0.0.0"

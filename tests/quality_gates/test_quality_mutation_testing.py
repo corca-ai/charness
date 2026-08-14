@@ -18,6 +18,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
+import yaml
 
 from scripts import check_mutation_score
 from scripts.check_mutation_score import (
@@ -213,7 +214,9 @@ def _run_propose(repo: Path, execute: bool = False) -> dict:
         args.append("--execute")
     result = subprocess.run(args, check=False, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    # `propose_mutation_testing.py` reports in YAML since the `--json` removal. YAML is a
+    # JSON superset, so this also reads the compact-JSON fallback used without PyYAML.
+    return yaml.safe_load(result.stdout)
 
 
 def test_a3_missing_no_adapter(tmp_path: Path) -> None:

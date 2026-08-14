@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
+
+import yaml
 
 from runtime_bootstrap import load_path_module
 from scripts.public_skill_validation_lib import (
@@ -153,7 +154,7 @@ def _resolve_artifact(repo_root: Path, skill_id: str) -> str | None:
     )
     if result.returncode != 0:
         return None
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     return _artifact_path_from_payload(payload)
 
 

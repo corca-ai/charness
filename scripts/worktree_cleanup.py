@@ -7,12 +7,12 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
 _lib = import_repo_module(__file__, "scripts.worktree_cleanup_lib")
 run_cleanup = _lib.run_cleanup
-emit_payload = _lib.emit_payload
 PASS = _lib.PASS
 
 
@@ -34,7 +34,6 @@ def main() -> int:
     )
     parser.add_argument("--yes", action="store_true", help="Execute the planned cleanup. Defaults to dry-run.")
     parser.add_argument("--force", action="store_true", help="Pass --force to git worktree remove for dirty targets.")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON instead of human text.")
     args = parser.parse_args()
 
     payload = run_cleanup(
@@ -45,7 +44,7 @@ def main() -> int:
         yes=args.yes,
         force=args.force,
     )
-    emit_payload(payload, json_mode=args.json)
+    emit_yaml(payload)
     return 0 if payload.get("status") == PASS else 1
 
 

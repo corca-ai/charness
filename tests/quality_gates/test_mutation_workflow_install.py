@@ -16,11 +16,11 @@ checked-in plugin copy itself.
 """
 from __future__ import annotations
 
-import json
 import shutil
 from pathlib import Path
 
 import pytest
+import yaml
 
 from runtime_bootstrap import load_path_module
 from tests.repo_copy import clone_seeded_charness_repo
@@ -46,7 +46,7 @@ def test_plugin_copy_renders_the_workflow_into_a_fresh_repo(tmp_path: Path) -> N
     result = run_script(PLUGIN_PROPOSE, "--repo-root", str(repo), "--execute")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] != "missing", payload
 
     workflow = repo / ".github" / "workflows" / "mutation-tests.yml"
@@ -135,7 +135,7 @@ def test_dry_run_reports_a_template_source_that_exists(tmp_path: Path) -> None:
     result = run_script(PLUGIN_PROPOSE, "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     sources = [
         action["source"]
         for action in payload.get("install_actions", [])

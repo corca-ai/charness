@@ -4,12 +4,16 @@
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:
+    from yaml_output import emit_yaml
 
 SYMBOL_RE = re.compile(r"^\s*(?:def|class)\s+([A-Za-z_][A-Za-z0-9_]*)\b")
 CONSTANT_RE = re.compile(r"^\s*([A-Z][A-Z0-9_]{2,})\s*(?::[^=]+)?=")
@@ -149,7 +153,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--scan-root", action="append", default=[])
     parser.add_argument("--symbol", action="append", default=[], help="Also scan for an explicitly named deleted symbol.")
     parser.add_argument("--concept", action="append", default=[], help="Also scan for an explicitly named deleted concept.")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
     findings = find_residue(
@@ -158,15 +161,20 @@ def main(argv: list[str] | None = None) -> int:
         symbols=args.symbol,
         concepts=args.concept,
     )
-    if args.json:
-        print(json.dumps({"finding_count": len(findings), "findings": [f.to_dict() for f in findings]}, indent=2))
-        return 0
-    if not findings:
-        print("symbol-residue advisory: clean")
-        return 0
-    print(f"symbol-residue advisory: {len(findings)} possible stale reference(s)")
-    for finding in findings:
-        print(f"- {finding.path}:{finding.line}: {finding.symbol} via {finding.variant!r}")
+    # `advisory` is folded in from the deleted human renderer, which was the only
+    # place this scan said what it is: POSSIBLE stale references, never a verdict
+    # (it always exits 0). A bare finding list reads as a defect list.
+    emit_yaml(
+        {
+            "finding_count": len(findings),
+            "findings": [f.to_dict() for f in findings],
+            "advisory": (
+                "symbol-residue advisory: clean"
+                if not findings
+                else f"symbol-residue advisory: {len(findings)} possible stale reference(s)"
+            ),
+        }
+    )
     return 0
 
 

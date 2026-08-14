@@ -320,7 +320,6 @@ def build_plan(
                         ".",
                         "--manifest",
                         _manifest_rel(repo_root, manifest_path),
-                        "--json",
                     ]
                 ),
             )

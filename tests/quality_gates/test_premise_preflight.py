@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 import scripts.premise_preflight_lib as premise_lib
 from scripts.premise_preflight_lib import PremiseError, run_preflight
@@ -334,27 +335,29 @@ def test_dangling_decision_log_symlink_is_structured(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("cli_path", [SOURCE_CLI, PLUGIN_CLI])
-def test_cli_emits_shell_free_json_for_valid_fixture(tmp_path: Path, cli_path: Path) -> None:
+def test_cli_emits_shell_free_payload_for_valid_fixture(tmp_path: Path, cli_path: Path) -> None:
+    """The payload-shape half: one machine-parseable document on stdout, nothing on the
+    side channel. Output is YAML since the `--json` removal; YAML is a JSON superset, so
+    this stays the same shell-free/parse-it-don't-grep-it claim it always was."""
     repo, premise, issue, _ = _seed(tmp_path)
     result = subprocess.run(
-        ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue), "--json"],
+        ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
         cwd=ROOT,
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "accepted"
     assert payload["decision"]["repository"] == "acme/charness"
     assert result.stderr == ""
 
 
-def test_cli_returns_exit_two_for_invalid_issue_readback(tmp_path: Path) -> None:
+def test_cli_rejects_a_json_flag(tmp_path: Path) -> None:
+    """`--json` was removed repo-wide, not kept as a no-op: a caller still passing it is
+    told so (argparse exit 2) rather than silently getting a different contract."""
     repo, premise, issue, _ = _seed(tmp_path)
-    data = json.loads(issue.read_text())
-    del data["issue"]["comments"]
-    issue.write_text(json.dumps(data), encoding="utf-8")
     result = subprocess.run(
         ["python3", str(SOURCE_CLI), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue), "--json"],
         cwd=ROOT,
@@ -363,18 +366,40 @@ def test_cli_returns_exit_two_for_invalid_issue_readback(tmp_path: Path) -> None
         check=False,
     )
     assert result.returncode == 2
-    assert json.loads(result.stdout)["error"]["code"] == "invalid_issue_readback"
+    assert "unrecognized arguments: --json" in result.stderr
+
+
+def test_cli_returns_exit_two_for_invalid_issue_readback(tmp_path: Path) -> None:
+    repo, premise, issue, _ = _seed(tmp_path)
+    data = json.loads(issue.read_text())
+    del data["issue"]["comments"]
+    issue.write_text(json.dumps(data), encoding="utf-8")
+    result = subprocess.run(
+        ["python3", str(SOURCE_CLI), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 2
+    assert yaml.safe_load(result.stdout)["error"]["code"] == "invalid_issue_readback"
 
 
 @pytest.mark.parametrize("cli_path", [SOURCE_CLI, PLUGIN_CLI])
-def test_cli_human_mode_reports_accepted_and_refused_fixtures(tmp_path: Path, cli_path: Path) -> None:
+def test_cli_reports_accepted_and_refused_fixtures(tmp_path: Path, cli_path: Path) -> None:
+    """The verdict/exit-code half, run against BOTH the source CLI and the exported
+    mirror: an accepted run names the decision log it wrote, and a refused run names the
+    refusal instead of exiting 2 with a payload a reader could mistake for a pass."""
     repo, premise, issue, _ = _seed(tmp_path)
     accepted = subprocess.run(
         ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     assert accepted.returncode == 0
-    assert "premise-preflight: ACCEPTED" in accepted.stdout
+    accepted_payload = yaml.safe_load(accepted.stdout)
+    assert accepted_payload["status"] == "accepted"
+    # The deleted ACCEPTED line carried the decision-log path; it has to stay reachable.
+    assert accepted_payload["decision_log"] == ".fixture/decisions.jsonl"
 
     data = json.loads(issue.read_text())
     del data["issue"]["comments"]
@@ -384,7 +409,12 @@ def test_cli_human_mode_reports_accepted_and_refused_fixtures(tmp_path: Path, cl
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     assert refused.returncode == 2
-    assert "premise-preflight: REFUSED" in refused.stderr
+    refused_payload = yaml.safe_load(refused.stdout)
+    assert refused_payload["status"] == "refused"
+    # The deleted REFUSED line carried the detail; it is on the payload now, and the
+    # refusal is fully on the structured channel rather than split across stderr.
+    assert refused_payload["error"]["code"] == "invalid_issue_readback"
+    assert refused.stderr == ""
 
 
 def _raises(code: str, function: Any, *args: Any, **kwargs: Any) -> None:

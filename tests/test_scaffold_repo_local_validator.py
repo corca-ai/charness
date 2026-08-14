@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 # The checked-in plugin mirror is the canonical installed-like tree: it ships
@@ -80,7 +80,7 @@ def test_installed_like_scaffold_prefers_repo_local_validator_when_repo_owns_one
 
     result = run_script(str(scaffold), "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     command = payload["validator_command"]
 
     # Cites the repo-local validator (repo-relative), not the installed plugin copy.

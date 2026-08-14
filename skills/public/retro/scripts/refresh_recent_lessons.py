@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -31,6 +30,8 @@ build_recent_lessons = _scripts_recent_lessons_lib_module.build_recent_lessons
 build_indexed_recent_lessons = _scripts_recent_lessons_lib_module.build_indexed_recent_lessons
 write_lesson_selection_index = _scripts_recent_lessons_lib_module.write_lesson_selection_index
 
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -54,16 +55,13 @@ def main() -> int:
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(digest.summary_text, encoding="utf-8")
     index_path = write_lesson_selection_index(repo_root, output_dir, summary_path)
-    print(
-        json.dumps(
-            {
-                "summary_path": str(summary_path.relative_to(repo_root)),
-                "source_path": str(digest.source_path.relative_to(repo_root)),
-                "lesson_selection_index_path": str(index_path.relative_to(repo_root)),
-                "section_counts": digest.section_counts,
-            },
-            ensure_ascii=False,
-        )
+    emit_yaml(
+        {
+            "summary_path": str(summary_path.relative_to(repo_root)),
+            "source_path": str(digest.source_path.relative_to(repo_root)),
+            "lesson_selection_index_path": str(index_path.relative_to(repo_root)),
+            "section_counts": digest.section_counts,
+        }
     )
     return 0
 

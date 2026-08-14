@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -23,7 +24,6 @@ command_result_payload = _scripts_control_plane_lifecycle_lib_module.command_res
 detect_and_healthcheck = _scripts_control_plane_lifecycle_lib_module.detect_and_healthcheck
 evaluate_readiness = _scripts_control_plane_lifecycle_lib_module.evaluate_readiness
 has_any_status = _scripts_control_plane_lifecycle_lib_module.has_any_status
-print_tool_statuses = _scripts_control_plane_lifecycle_lib_module.print_tool_statuses
 print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
 select_by_tool_id = _scripts_control_plane_lifecycle_lib_module.select_by_tool_id
 _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
@@ -265,17 +265,17 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--tool-id", action="append", default=[])
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     selected = select_by_tool_id(load_manifests(repo_root), args.tool_id)
     results = [update_one(repo_root, manifest, execute=args.execute) for manifest in selected]
+    # Advisories stay on stderr (see print_update_advisories); stdout is the payload.
     print_update_advisories(results)
-    if args.json:
-        print(json.dumps(results, ensure_ascii=False, indent=2))
-    else:
-        print_tool_statuses(results)
+    # Unconditional YAML. The former human line was `tool_id: status [<from> -> <to>]
+    # [healthcheck=<status>]`, all projected from `status`, `version_transition`, and
+    # `healthcheck`, which every result already carries.
+    emit_yaml(results)
     if has_any_status(results, status_key="status", statuses={"failed", "updated-not-ready", "refreshed-not-ready"}):
         return 1
     return 0

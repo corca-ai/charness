@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 import sys
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -22,7 +23,7 @@ def run_narrative_resolve_adapter(monkeypatch, capsys, *args: str) -> SimpleName
 def test_narrative_resolve_adapter_reports_brief_template_for_current_repo(monkeypatch, capsys) -> None:
     result = run_narrative_resolve_adapter(monkeypatch, capsys, "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["valid"] is True
     assert payload["data"]["brief_template"] == [
         "One-Line Summary",

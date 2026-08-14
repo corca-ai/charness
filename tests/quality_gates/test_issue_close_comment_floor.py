@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.issue_closeout_support import bug_closeout_body
 from tests.quality_gates.support import ROOT, run_script, write_argv_logging_fake
@@ -53,7 +55,7 @@ def test_close_with_comment_refuses_silent_body_before_any_gh_call(tmp_path: Pat
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "rung-1" in payload["error"]
     assert "missing behavioral verdict" in payload["error"]
@@ -97,7 +99,7 @@ def test_close_with_comment_proceeds_with_compliant_body(tmp_path: Path) -> None
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     # This body's critique line is `blocked <signal>` — no fresh eye read the
     # resolution. `verify-closeout` said so already; the carrier that writes to
@@ -152,7 +154,7 @@ def test_close_with_comment_refuses_undispositioned_hotl_entry(tmp_path: Path) -
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "undispositioned HOTL entry #42" in payload["error"]
     # Isolation: prove the refusal came from the HOTL floor alone, not from a
@@ -241,7 +243,7 @@ def test_close_with_comment_accepts_typed_hotl_entry(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["ok"] is True
+    assert yaml.safe_load(result.stdout)["ok"] is True
 
 
 def test_close_with_comment_question_classification_emits_review_advisory(tmp_path: Path) -> None:
@@ -290,7 +292,7 @@ def test_close_with_comment_question_classification_emits_review_advisory(tmp_pa
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert len(payload["review_advisory"]) == 1
     assert payload["review_advisory"][0].startswith("REVIEW:")
@@ -328,7 +330,7 @@ def test_close_with_comment_refuses_on_missing_source_preservation_for_external_
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "source preservation" in payload["error"]
     assert not log.exists()
@@ -375,7 +377,7 @@ def test_close_with_comment_refuses_body_without_ai_provenance(tmp_path: Path) -
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "missing `AI-provenance:` marker" in payload["error"]
     # The other floors stayed silent, so this is the provenance check and not a

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -20,6 +19,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _report_mode_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.hitl_report_mode_lib")
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 load_adapter = _resolve_adapter_module.load_adapter
 render_report = _report_mode_lib.render_report
 ReportModeError = _report_mode_lib.ReportModeError
@@ -46,7 +46,7 @@ def main() -> int:
     except (ReportModeError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    yaml_output.emit_yaml(payload)
     return 0
 
 

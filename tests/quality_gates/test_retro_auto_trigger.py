@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -48,7 +49,7 @@ def test_retro_auto_trigger_hits_configured_install_surface() -> None:
         "README.md",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["triggered"] is True
     assert "checked-in-plugin-export" in payload["surface_hits"]
 
@@ -62,7 +63,7 @@ def test_retro_auto_trigger_skips_non_matching_slice() -> None:
         "docs/retro-self-improvement-spec.md",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "evaluated"
     assert payload["triggered"] is False
     assert payload["surface_hits"] == []
@@ -101,7 +102,7 @@ def test_retro_auto_trigger_is_undetermined_when_config_was_never_established(
     # Exit 3, not 0: a shell caller must not be silently told "no". `triggered` is absent
     # entirely, so a caller reading key #1 cannot mistake a failure mode for a verdict.
     assert result.returncode == 3, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "not-established"
     assert "triggered" not in payload
     assert payload["configuration_status"] == configuration_status
@@ -128,7 +129,7 @@ def test_retro_auto_trigger_distinguishes_intentional_empty_trigger_config(tmp_p
     # The ONE `triggered: false` that survives: an opt-out the repo wrote down, in an
     # adapter the loader read whole. Determined, so exit 0 and the key is present.
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "not-configured"
     assert payload["triggered"] is False
     assert payload["configuration_status"] == "intentional-empty"
@@ -159,7 +160,7 @@ def test_retro_auto_trigger_intentional_empty_is_not_credited_from_a_half_read_a
     )
 
     assert result.returncode == 3, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "not-established"
     assert "triggered" not in payload
     assert payload["configuration_status"] == "adapter-partially-uninterpreted"
@@ -177,7 +178,7 @@ def test_retro_auto_trigger_undetermined_on_empty_changed_set() -> None:
         "--paths",
     )
     assert result.returncode == 3, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "not-established"
     assert "triggered" not in payload
     assert payload["changed_paths"] == []
@@ -199,7 +200,7 @@ def test_retro_auto_trigger_hit_short_circuits_every_doubt(tmp_path: Path) -> No
     result = _run_main("--repo-root", str(repo), "--paths", "docs/handoff.md")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "evaluated"
     assert payload["triggered"] is True
     assert payload["path_hits"] == ["docs/handoff.md"]
@@ -248,7 +249,7 @@ def test_retro_auto_trigger_commit_range_survives_clean_tree(tmp_path: Path) -> 
         str(repo),
     )
     assert clean_result.returncode == 3, clean_result.stdout
-    clean_payload = json.loads(clean_result.stdout)
+    clean_payload = yaml.safe_load(clean_result.stdout)
     assert clean_payload["state"] == "not-established"
     assert "triggered" not in clean_payload
 
@@ -263,7 +264,7 @@ def test_retro_auto_trigger_commit_range_survives_clean_tree(tmp_path: Path) -> 
     )
 
     assert range_result.returncode == 0, range_result.stderr
-    payload = json.loads(range_result.stdout)
+    payload = yaml.safe_load(range_result.stdout)
     assert payload["state"] == "evaluated"
     assert payload["triggered"] is True
     assert payload["input"]["mode"] == "commit_range"
@@ -307,7 +308,7 @@ def test_retro_auto_trigger_fails_loud_on_unresolved_surface_id(tmp_path: Path) 
     # uniform ("not a no") while the byte still separates "fix this" from "ask again".
     assert result.returncode == 1
     assert "Traceback" not in result.stderr
-    payload = json.loads(result.stderr)
+    payload = yaml.safe_load(result.stderr)
     assert payload["state"] == "not-established"
     assert "triggered" not in payload
     assert payload["configuration_status"] == "broken"
@@ -332,7 +333,7 @@ def test_retro_auto_trigger_reports_missing_surfaces_remediation_when_configured
 
     assert result.returncode == 1
     assert "Traceback" not in result.stderr
-    payload = json.loads(result.stderr)
+    payload = yaml.safe_load(result.stderr)
     assert payload["state"] == "not-established"
     assert "triggered" not in payload
     assert "missing surfaces manifest" in payload["error"]

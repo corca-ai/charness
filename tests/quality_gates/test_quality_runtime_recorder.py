@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import record_quality_runtime
 
@@ -203,7 +204,7 @@ def test_record_quality_runtime_batch_skips_blank_lines(tmp_path: Path, monkeypa
     )
 
     assert _record(monkeypatch, repo, "--batch", str(batch_path)) == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["recorded_count"] == 1
     assert payload["malformed_lines"] == []
 
@@ -231,7 +232,7 @@ def test_record_quality_runtime_empty_batch_leaves_no_store_behind(
     batch_path.write_text("\n", encoding="utf-8")
 
     assert _record(monkeypatch, repo, "--batch", str(batch_path)) == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["recorded_count"] == 0
     assert not (repo / ".charness" / "quality" / "runtime-signals.json").exists()
     assert not (repo / ".charness" / "quality" / "runtime-smoothing.json").exists()

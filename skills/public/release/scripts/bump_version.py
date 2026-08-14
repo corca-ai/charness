@@ -24,6 +24,8 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+emit_yaml = _yaml_output_module.emit_yaml
 
 VERSION_RE = re.compile(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:-[0-9A-Za-z.-]+)?$")
 SYNC_TIMEOUT_SECONDS = 300
@@ -108,18 +110,14 @@ def main() -> None:
     old_version = write_packaging_version(manifest_path, target_version)
     run_sync(repo_root, data["sync_command"])
 
-    print(
-        json.dumps(
-            {
-                "package_id": data["package_id"],
-                "old_version": old_version,
-                "new_version": target_version,
-                "packaging_manifest_path": str(manifest_path),
-                "sync_command": data["sync_command"],
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
+    emit_yaml(
+        {
+            "package_id": data["package_id"],
+            "old_version": old_version,
+            "new_version": target_version,
+            "packaging_manifest_path": str(manifest_path),
+            "sync_command": data["sync_command"],
+        }
     )
 
 

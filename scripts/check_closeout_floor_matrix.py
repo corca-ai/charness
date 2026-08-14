@@ -25,6 +25,7 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+from yaml_output import emit_yaml
 
 _LIB = import_repo_module(__file__, "scripts.closeout_floor_matrix_lib")
 CARRIERS = _LIB.CARRIERS
@@ -167,7 +168,6 @@ def _pair_problems(key: str, declared: dict, observed: dict) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--json", action="store_true")
     parser.add_argument(
         "--emit-observed", type=Path, default=None,
         help="write the observed grid here (for authoring the declaration; never a substitute for it)",
@@ -185,24 +185,25 @@ def main(argv: list[str] | None = None) -> int:
         args.emit_observed.write_text(json.dumps(observed, indent=2) + "\n", encoding="utf-8")
     problems = _problems(declared, observed)
 
-    if args.json:
-        print(json.dumps({"ok": not problems, "problems": problems}, indent=2))
-    elif problems:
-        print(
-            "closeout floor matrix: the declaration disagrees with what the carriers "
-            f"actually do ({len(problems)} finding(s)).",
-            file=sys.stderr,
+    # Output is unconditionally YAML, so what the dropped text branches carried has
+    # to live in the payload: the population the verdict covers (`observed_pairs` --
+    # an agreement over zero pairs is not the same verdict as one over all of them)
+    # and, on a refusal, how to re-measure the grid the findings are about.
+    payload: dict[str, object] = {
+        "ok": not problems,
+        "observed_pairs": len(observed["pairs"]),
+        "problems": problems,
+    }
+    if problems:
+        payload["finding_summary"] = (
+            "the declaration disagrees with what the carriers actually do "
+            f"({len(problems)} finding(s))"
         )
-        for problem in problems:
-            print(f"  {problem}", file=sys.stderr)
-        print(
-            "  Re-measure with: python3 scripts/check_closeout_floor_matrix.py "
-            "--repo-root . --emit-observed /tmp/observed.json",
-            file=sys.stderr,
+        payload["remedy"] = (
+            "Re-measure with: python3 scripts/check_closeout_floor_matrix.py "
+            "--repo-root . --emit-observed /tmp/observed.json"
         )
-    else:
-        pairs = len(observed["pairs"])
-        print(f"closeout floor matrix: {pairs} pairs declared and observed in agreement.")
+    emit_yaml(payload)
     return 1 if problems else 0
 
 

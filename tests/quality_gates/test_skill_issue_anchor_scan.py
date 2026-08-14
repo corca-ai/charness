@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import check_skill_surface_preflight as preflight
 from scripts import skill_issue_anchor_scan as anchor_scan
@@ -147,19 +148,26 @@ def test_scan_cli_blocks_with_exit_one(tmp_path: Path, monkeypatch, capsys) -> N
         ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--scan-issue-anchors", rel],
     )
     assert preflight.main() == 1
-    assert "BLOCK" in capsys.readouterr().out
+    emitted = yaml.safe_load(capsys.readouterr().out)
+    assert emitted["status"] == "blocked"
+    assert emitted["blocked"] == [rel]
+    # The remediation the deleted human renderer used to print now rides on the
+    # payload, so a blocked author still learns what clears the block.
+    assert "validate_skill_ergonomics" in emitted["remedy"]
 
 
-def test_scan_cli_ok_exit_zero_json(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_scan_cli_ok_exit_zero(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     rel = "skills/public/demo/SKILL.md"
     _write(repo, rel, "# Demo\nclean prose with no anchors\n")
     monkeypatch.setattr(
         "sys.argv",
-        ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--scan-issue-anchors", rel, "--json"],
+        ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--scan-issue-anchors", rel],
     )
     assert preflight.main() == 0
-    assert '"status": "ok"' in capsys.readouterr().out
+    emitted = yaml.safe_load(capsys.readouterr().out)
+    assert emitted["status"] == "ok"
+    assert "remedy" not in emitted
 
 
 def test_scan_cli_bad_path_exit_two(tmp_path: Path, monkeypatch, capsys) -> None:

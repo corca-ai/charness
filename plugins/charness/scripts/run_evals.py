@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
-import json
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+import yaml
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
@@ -79,7 +80,7 @@ def expect_adapter_bootstrap(
 
         resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(tmp)], cwd=root)
         expect_success(resolve_result, f"{skill_id} adapter resolve")
-        payload = json.loads(resolve_result.stdout)
+        payload = yaml.safe_load(resolve_result.stdout)
         if payload.get("found") is not True or payload.get("valid") is not True:
             raise EvalError(f"{skill_id} adapter resolve: unexpected payload {payload!r}")
         if expected_artifact_path is not None and payload.get("artifact_path") != expected_artifact_path:
@@ -116,7 +117,7 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
     resolve_script = root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
     resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(root)], cwd=root)
     expect_success(resolve_result, "checked-in quality adapter resolve")
-    payload = json.loads(resolve_result.stdout)
+    payload = yaml.safe_load(resolve_result.stdout)
     if payload.get("found") is not True or payload.get("valid") is not True:
         raise EvalError(f"checked-in quality adapter resolve: unexpected payload {payload!r}")
     if payload.get("artifact_path") != "charness-artifacts/quality/latest.md":
@@ -152,7 +153,7 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
             cwd=root,
         )
         expect_success(bootstrap_result, "quality bootstrap posture")
-        payload = json.loads(bootstrap_result.stdout)
+        payload = yaml.safe_load(bootstrap_result.stdout)
         if payload["field_statuses"]["gate_commands"] != "installed":
             raise EvalError(f"quality bootstrap posture: unexpected gate status {payload!r}")
         if payload["field_statuses"]["preflight_commands"] != "deferred":
@@ -167,7 +168,7 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
             cwd=root,
         )
         expect_success(resolve_result, "quality bootstrap posture resolve")
-        resolved = json.loads(resolve_result.stdout)
+        resolved = yaml.safe_load(resolve_result.stdout)
         if resolved["data"]["gate_commands"] != ["./scripts/run-quality.sh"]:
             raise EvalError(f"quality bootstrap posture resolve: unexpected adapter payload {resolved!r}")
         if resolved["data"]["coverage_fragile_margin_pp"] != 1.0:
@@ -325,6 +326,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except (EvalError, json.JSONDecodeError, shutil.Error) as exc:
+    except (EvalError, yaml.YAMLError, shutil.Error) as exc:
         print(str(exc), file=sys.stderr)
         sys.exit(1)

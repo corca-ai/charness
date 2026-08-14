@@ -22,7 +22,6 @@ contract.
 """
 import argparse
 import importlib.util
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -224,7 +223,9 @@ def main() -> int:
                 f"`/goal @{goal_rel}` to activate the run."
             ),
         }
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+        # The same renderer `chunked_routing_cli.stage_refusal` already uses for this
+        # command's refusal path, so one command stops speaking two formats.
+        sys.stdout.write(chunked_routing_cli.render_yaml(payload))
         return 0
     finally:
         cancel_timeout()

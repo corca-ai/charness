@@ -40,7 +40,11 @@ def test_normalize_goal_closeout_help_describes_options() -> None:
         result.stdout,
         {
             "--goal-path": "Path to the goal closeout artifact to normalize.",
-            "--json": "Emit normalization results as JSON.",
+            # `--json` was deleted on 2026-08-14 (output is unconditionally YAML).
+            # The two flags that decide whether this command MUTATES are what an
+            # operator most needs the help to state, so they take its place here.
+            "--write": "Write changes in place. Default is dry-run.",
+            "--complete": "Also set `Status: complete`.",
         },
     )
 

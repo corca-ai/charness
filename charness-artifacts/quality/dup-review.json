@@ -51,6 +51,13 @@
     },
     {
       "class": "intentional",
+      "id": "0298c9e6578e1ccd",
+      "note": "the two adjacent early-exit arms of validate_skill_t_inventory.main (inventory-missing, invalid-JSON): each appends its OWN error sentence, then builds the same three-key `{valid: False, errors, inventory_path}` report and emits it. They were already identical modulo that sentence before the migration; replacing the shared `print(json.dumps(...))` with `emit_yaml(report)` shortened the arms enough to fingerprint them. Collapsing them saves one line and moves each precondition's verdict away from the point that detects it.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "029af5ead119d068",
       "note": "The two direct-execution import headers in check_lesson_ledger.py and check_contract_register.py each locate the same repository runtime bootstrap before importing their validator. A shared entrypoint would hide the command-specific module binding and give two independently executable checks a coupled CLI surface; the import preamble is the direct-run contract.",
       "reviewed_at": "2026-08-12",
@@ -170,6 +177,13 @@
     },
     {
       "class": "intentional",
+      "id": "0ba3df38f822e05f",
+      "note": "the two thin CLIs over scripts/surfaces_lib: check_changed_surfaces.py (migrated) and validate_surfaces.py (untouched) share the module-alias block, the `--repo-root`/`--surfaces-path` flag pair, and `load_surfaces(...)`. All matching behavior ALREADY lives in surfaces_lib; what repeats is two independent commands' flag preamble, and they diverge immediately after -- one matches changed paths and emits the match payload, the other only validates the manifest.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "0bc23ea0000c6cf9",
       "note": "what remains of the chunked-routing per-stage CLI entrypoint after the extractable half was actually extracted: `arm_cli_timeout` -> `parse_args` -> stage-specific work -> `sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2))` -> `return 0` -> `cancel_timeout()` in `finally`. Each pipeline stage is a standalone runnable script by design (the operator runs them individually and pipes between them), so this scaffolding is per stage for the same portability reason `resolve_adapter.py` is. The typed-refusal emit that review identified as genuinely shared is now `chunked_routing_cli.stage_refusal`, which is what shrank this family's span; wrapping the remaining try/finally in a decorator would hide each stage's own flow behind a framework for four call sites. The two mains this family pairs do not even share their input resolution (one reads a pipeline JSON, the other resolves --handoff).",
       "reviewed_at": "2026-07-28",
@@ -187,6 +201,13 @@
       "id": "0c39d39618394623",
       "note": "The two-line `if <x> is None: return []` empty-input guard, shared by check_command_docs.py, quality_bootstrap_lifecycle.py, chunked_routing_agentic.py, and three call sites in setup_adapter.py. Idiom-sized and below any extractable unit: a helper for `None -> []` would be longer at every call site than the branch it replaces, and each guard names a different absent input (a missing contract key, an absent adapter file, an unset routing chunk). All six members are untouched by this diff; it surfaced as new because deleting inventory_ubiquitous_language.py from the corpus re-formed the family. Same class already accepted here as 003780cc89f2ccfd and 349f5d577fe2588b. I could NOT identify a named predecessor entry for this family; what is established is that no member changed and that the only code deletion in the diff is the ubiquitous-language script.",
       "reviewed_at": "2026-08-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0c791197f415e529",
+      "note": "not one block: validate_usage_episodes.main (a 100-line adapter/records validator), check_issue_closeout_commit_msg.main (14 lines), and report_usage_episodes._parse_args (a bare flag list). The only literally shared span is the repo-standard CLI opening -- `ArgumentParser(description=__doc__)` plus `--repo-root type=Path default=Path.cwd()` -- and, in two of them, the now-identical `emit_yaml(...)` tail the migration created. That tail being identical everywhere is the migration's point; the bodies share nothing.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -275,6 +296,20 @@
     },
     {
       "class": "intentional",
+      "id": "126262f43e34da98",
+      "note": "overlapping windows across quality_bootstrap_detect.py's detect_preflight_commands / detect_gate_commands / detect_security_commands, each a four-line comprehension over its own two-row table of (probe path, command literal). The migration's ONLY edit here was dropping `--json` from the doctor.py command string, which brought the preflight table into structural range of its two siblings. The varying content IS the table; a `_detect(pairs)` helper would leave three one-line tables at the call sites and centralize no decision.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1266e3f020d057c8",
+      "note": "the six-line CLI body `args = parse_args(argv)` / `try: report = run(args)` / `except RuntimeError: print(...); return 2` / emit, shared by prompt_mutation_clean_proof_preflight.py and quality/draft_dup_ratchet_triage.py. The migration replaced two different prose branches with the same `emit_yaml(report)` line, which is exactly the convergence it intended; the two commands still disagree on the exit contract (constant 0 vs `0 if report['ok'] else 1`), and they live in different packages with no shared module.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "12fd6c4518a06d6c",
       "note": "a multi-line `print(f\"...\" f\"...\")` operator-message block, shared by seven untouched sites (slice_closeout_advisories x4, check_references_link_inventory, check_test_repo_copy_invariants) that validate_inventory_consumption's extracted exemption helper joined on 2026-08-01. The duplication IS the message-emitting shape this repo uses everywhere; the content of every member differs entirely. Extracting it would mean a print wrapper, which is what print already is. Pre-existing family, new membership from a helper extraction that the complexity gate required.",
       "reviewed_at": "2026-08-01",
@@ -303,6 +338,13 @@
     },
     {
       "class": "intentional",
+      "id": "14920b1eb51ba15b",
+      "note": "the repo's gate-CLI convention in check_skill_surface_preflight.main and check_artifact_surface_preflight.main: declare this gate's own flags, resolve `--repo-root`, branch on a mode flag, emit the gate's own payload builder, return 1 on `blocked`. The flag sets are disjoint and the artifact gate still writes literal stub text on one arm. Same two files already accepted for this shape as 119fa9bcafbd3048.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "14ac09c298338af0",
       "note": "argparse `_build_parser` scaffolding shared by the two CI-parity inventories and gather/write_record.py: `ArgumentParser(description=__doc__...)` plus a `--repo-root` line plus the shared option helper. The extractable half was already extracted this session (`ci_local_gate_parity_lib.add_workflow_glob_arg` / `resolve_workflow_globs`, which is what shrank this family from three long spans to this remnant); what is left is per-CLI boilerplate with different descriptions, different defaults and a third member in an unrelated skill package, where a shared parser factory would couple three CLIs to one option surface.",
       "reviewed_at": "2026-08-01",
@@ -327,6 +369,13 @@
       "id": "17606432cdcf318a",
       "note": "per-script `spec_from_file_location` sibling-import preamble, shared with an unrelated script (classify_push_diff.py); this is the portability boilerplate the nose advisory names as its own known blind spot -- a skill package must be able to load a sibling without a repo-level import root",
       "reviewed_at": "2026-07-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1a1f3bcfabbd7b9e",
+      "note": "The issue skill's sibling-loader prologue (`_load_local = runpy.run_path(.../issue_local_import.py)['sibling_loader'](__file__)`) plus the stdlib imports feeding it, across five skills/public/issue/scripts modules. Bootstrap by construction: these files load siblings by file path with no package context (issue_tool defers skill_runtime_bootstrap so read-only subcommands stay usable from an installed copy), so this line IS how a file reaches issue_local_import.py. The shared behavior is already extracted into sibling_loader; only the locate prologue is per-file.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -390,6 +439,13 @@
       "id": "1c91dcfb98ee878e",
       "note": "The inventory producer and ratchet consumer independently render the version-1 normalized call-site-content digest so each remains directly executable and owns its own input boundary. Their equality is pinned by the real-inventory moved-path ratchet test; importing the producer into the consumer would couple a generic verdict to the Python scanner it must be able to consume independently.",
       "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1cd99207f2fbe158",
+      "note": "The stage frame of two consecutive handoff pipeline stages (prepare_chunk_packet, prepare_ranker_packet): arm timeout, read_pipeline_json, build this stage's packet, write render_yaml, cancel timeout. Every shared behavior already lives in chunked_routing_cli; the residue is the try/finally frame plus each stage's own `stage=`/`expects=` strings and its own body. A shared runner would take label/stage/expects plus a builder callable, spelling the same per-stage facts through an indirection.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -478,6 +534,13 @@
     },
     {
       "class": "intentional",
+      "id": "243cd59fab7ee5b2",
+      "note": "`load_local_skill_module(__file__, 'summary_output_lib')` plus the argparse-then-emit tail in the quality skill's bootstrap_adapter.py and list_tool_recommendations.py. Convergence by construction at the tail; the flag declarations differ entirely (--output/--report-path/--dry-run/--migrate vs --recommendation-role/--next-skill-id/--include-ready) and bootstrap_adapter continues past the emit into a stderr warning loop the other has no analogue for.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "26933afae751e598",
       "note": "module docstring + sibling-loader preamble shared by the two chunker modules that both load siblings (chunked_routing_issue_source, chunked_routing_staleness); the loader is the same portability preamble class, and the docstring overlap is two modules documenting the same boundary set they deliberately share",
       "reviewed_at": "2026-07-27",
@@ -495,6 +558,13 @@
       "id": "26d50f9643d7284e",
       "note": "Ledger and contract-register committed-state readers both decode HEAD JSON, but own different schema migrations, stream meanings, and refusal messages. Extracting only their tiny git/JSON shell would couple two independent proof-surface verdict contracts without sharing their actual validation.",
       "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "26e8acc981eaefe5",
+      "note": "ROTATION of b3e08764961ab57c (the usage-episodes adapter-resolution preamble shared by validate_usage_episodes.py and report_usage_episodes.py). `git diff HEAD` on both files shows every line of that preamble as unchanged context -- only the `_print_result(..., as_json=args.json)` call sites became `_emit_result(payload)`, and the shorter tails pulled the two long-standing preambles into one family. Pre-existing, still unrepaired, and still belongs to the usage-episodes surface rather than to this migration.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -541,6 +611,13 @@
     },
     {
       "class": "intentional",
+      "id": "2b776d837952ffe4",
+      "note": "the header of export_plugin.py and install_machine_local.py: stdlib imports, `from yaml_output import emit_yaml`, `REPO_ROOT`, and the packaging_lib alias binds. All shared BEHAVIOR already lives in packaging_lib -- these are the two commands that consume it, and their bound-name sets differ. The migration added the same one-line emit_yaml import to both, extending an alias block that was already identical.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "2b952852d5c1e0f5",
       "note": "small JSON/YAML lifecycle setup shape shared by independent command owners; the quality bootstrap report is a consumer-owned output contract and should not import another command's formatter merely to erase two lines.",
       "reviewed_at": "2026-08-05",
@@ -558,6 +635,13 @@
       "id": "2bbfba9a896d597d",
       "note": "Small nonblank-argument guards stay beside independently executable mutation commands so their operator-facing error prefixes name the command that refused. A shared two-line helper would erase that local ownership or require passing the same label back in.",
       "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2c863d0fba3af98c",
+      "note": "the `_load_skill_runtime_bootstrap` parents-walk plus `load_repo_module_from_skill_script(__file__, 'scripts.yaml_output')`, in setup/seed_retro_memory.py and scripts/agent_browser_runtime_guard.py. The migration gave both the same emit binding on top of the by-construction bootstrap block: a script that must run in both the source tree and the exported plugin cannot import the locator it is in the middle of locating.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -688,6 +772,13 @@
     },
     {
       "class": "intentional",
+      "id": "33021a3e00a6ddd9",
+      "note": "check_skill_cut_safety.main and check_prose_pin.main, the repo's two tests/-pin scanners: they share the repeatable `--tests-root` flag with its two-line default expansion, a `--strict` flag, and the `emit_yaml(report_payload(report))` tail this migration made identical. `--strict` means different things in each and their scoping flags differ, so only the two-line default expansion is literally shareable.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "3329694eace14a33",
       "note": "the repo-standard gate `main()` shape: argparse --repo-root/--json, render json-or-human, return the verdict as an exit code. Every gate in scripts/ wears it, and extracting it would make each gate's exit contract -- the one thing a gate must own outright -- depend on a shared helper. The exit codes themselves DIFFER here (this gate adds UNESTABLISHED_EXIT), which is exactly why the shape is copied and the meaning is not (family id re-hashed when the gate gained --scan-root; same two members, same verdict)",
       "reviewed_at": "2026-08-09",
@@ -761,6 +852,13 @@
       "id": "36b2225b307ee288",
       "note": "an IMPORT block (`re`/`runpy`/`sys`, `pathlib.Path`, `types.SimpleNamespace`, `typing.Any`) shared by two quality inventories that both bootstrap a sibling module via runpy. Not extractable by construction — imports cannot be factored out — and it surfaced as new only because this session's S26/S30/S32 edits shifted the spans around it.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "37a2b32958a4424e",
+      "note": "the `main(argv)` shells of check_doc_authoring_preflight.py and check_docs_graph.py: parse_args, `--repo-root`, resolve, then `emit_yaml(<own payload builder>(result))` and a status-derived exit. Their flags are disjoint and their exit vocabularies differ (docs-graph returns UNESTABLISHED_EXIT for not-run). Same two gates already accepted for their shared stdlib header as da5d49ebac3c852d.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -940,6 +1038,20 @@
     },
     {
       "class": "intentional",
+      "id": "3f8eda9879be7815",
+      "note": "the tail of worktree_cleanup.py and worktree_doctor.py: `emit_yaml(payload)` / status-derived return / `__main__` guard. Both files are already pure three-line dispatch shims -- all behavior sits in their libs, and each imports its own PASS from its own lib. There is nothing left below the argparse block to extract that would not delete the entrypoints themselves.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4065d6cc832fb1ff",
+      "note": "the first guard of the new `verdict()` functions in quality/check_changed_line_coverage.py and validate_skill_ergonomics.py -- `if report.get('adapter_errors'): return {'verdict': 'adapter-invalid', ...}`. The migration turned each gate's deleted human renderer into a payload fragment, and the shared word `adapter-invalid` is a deliberate cross-gate vocabulary. The detail strings differ and so does every remaining branch; only two `verdict()` functions exist repo-wide, so there is no convention to centralize yet.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "40a4e156b1efd17f",
       "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
       "reviewed_at": "2026-06-27",
@@ -954,9 +1066,23 @@
     },
     {
       "class": "intentional",
+      "id": "41b1759e9f5693f4",
+      "note": "record_lesson_score.main and record_lesson_session.main: `--repo-root`, the same two fixed retro paths, a keyword-arg call into their own append function, then `emit_yaml(event)` as a receipt. The append-only ledger transaction they both need already lives in lesson_ledger_lib (accepted as 275d5bdd800e9f8c); the argument sets are disjoint, and the migration only replaced two different print calls with the same receipt emit.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "421086eaf4dcd873",
       "note": "The focused changed-line producer and structured-asset validator each need a direct command entrypoint with their own scope and exit contract. Extracting the shared main skeleton would couple unrelated proof surfaces and hide which command owns an unproven result.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "421daf07e4069c59",
+      "note": "six unrelated one-line `def f(arg) -> str: return f'<literal>'` helpers across adapter_lib, issue_source_normalize_lib, prompt_mutant_files_lib (x2), run_skill_efficiency_ab and tool_recommendation_lib. Nothing is shared but the shape of a single f-string return. Only tool_recommendation_lib carries `*`, and only because the migration deleted `--json` from the doctor command string it builds; the other five are byte-identical to HEAD.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1052,6 +1178,20 @@
     },
     {
       "class": "intentional",
+      "id": "48d74b0dd1dbb925",
+      "note": "the six-line import set argparse/re/runpy/sys/Path/SimpleNamespace that the `_load_skill_runtime_bootstrap` shim requires. normalize_goal_closeout.py converged onto it this session because reaching `scripts.yaml_output` from a skill script means carrying the shim; inventory_ci_local_gate_parity.py already had it and is untouched. The shim itself is deliberately copied per-file and byte-enforced by check_bootstrap_shim_consistency.py, so its imports cannot be hoisted anywhere.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4938c597fa1bad8c",
+      "note": "the migration's converged repo-script preamble in check_premise_preflight.py and render_lesson_selection_preview.py. Both reached it by dropping `import json` and adding the one emit_yaml import. `repo_root_from_script(__file__)` is per-file by construction -- a wrapper that hoisted it would resolve the wrapper's own path, not the caller's.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "494825ffed247a86",
       "note": "ROTATION of the repo-standard gate-skeleton families as check_plugin_dir_references joins them (main() argparse+resolve+report skeleton, the runtime_bootstrap portability preamble, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal -- 217bca482c08d1da, 606ea765fb3c8ee8, 804b8f9cc0c609cb, 3eb918907263eb6b, d7021cae01c1a7b0, 1d36956dff2fc82b and their rotations. Each new gate re-forms the cluster; the preamble cannot be imported (it IS the bootstrap), and a shared runner would own every gate's argument surface and its operator-facing summary wording, which is the part a reader relies on to tell one gate's silence from another's.",
       "reviewed_at": "2026-08-04",
@@ -1062,6 +1202,13 @@
       "id": "4a96811e2359119d",
       "note": "release, quality, and debug planners deliberately keep their skill-local bootstrap and run-plan envelopes directly executable; shared envelope construction is already factored, while the remaining adapter loading and required reads differ by skill",
       "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4af5fa8e1db8de9c",
+      "note": "the `--markdown` fork in witness_coverage.main and score_prompt_mutation_survival.main, bracketed by each command's OWN failure tail (a three-problem FATAL join versus an EXPERIMENT-INVALID/SENTINEL-FAILURE pair). The whole migration touch on both files is `print(json.dumps(...))` -> `emit_yaml(report)`; the genuinely shared part is that two-line emit fork, and the verdicts around it differ.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1080,9 +1227,23 @@
     },
     {
       "class": "intentional",
+      "id": "4c87d34aa920f43a",
+      "note": "PRE-EXISTING, merely re-fingerprinted: neither member (check_export_safe_imports.py, check_doc_links.py) is in this slice's diff. The span is the standard runtime_bootstrap preamble plus a shared `scripts.repo_file_listing` binding -- the two gates that walk tracked files. Adjacent edits elsewhere rotated the fingerprint; no code changed.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "4caa2f2ef23871ab",
       "note": "scanner reports zero shared lines across unrelated narrative and catalog-source control flow; there is no body to extract",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4cd27fd6b0b3dfac",
+      "note": "a same-file pair inside install_machine_local.py: `detect_hosts()`'s three-host `shutil.which` map and the identically keyed `host_next_steps` dict in main()'s payload. Same three host ids, unrelated values -- a which-binary probe versus operator instruction prose. The migration only dedented the payload out of `print(json.dumps(...))` into `emit_yaml(...)`, which rotated the fingerprint; neither dict's content changed.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1125,6 +1286,20 @@
       "id": "4fb906d492e93c84",
       "note": "the `print(summary); return 0` / `if __name__ == \"__main__\": raise SystemExit(main())` CLI tail, shared by scripts/check_skill_bootstrap_vars.py and scripts/check_markdown_inline_code.py. Every other member is untouched by this slice; the empty-scope refusal shifted the line numbers into an existing shape. The tail is the repo's uniform gate-CLI contract, not extractable debt.",
       "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4fd72d849bcabdff",
+      "note": "Rotation/widening of the accepted direct-execution entrypoint family (ae2be6fde5341c64, 1d36956dff2fc82b) at a 31-member boundary that now includes the `return 0` above the guard: the migration collapsed each command's human-vs-json tail into one emit followed by `return 0`. Nineteen of the 31 members are untouched. Each still names its OWN caught exception, and Python cannot factor out a module's own __main__ block.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "50a917f2f1aac2c4",
+      "note": "the same converged preamble plus `import json` and the first `import_repo_module` bind, in check_boundary_bypass_ratchet.py (binds inventory_boundary_bypass_lib) and plugin_preamble.py (binds control_plane_lib). Each file's diff this session is exactly `+from yaml_output import emit_yaml`; the two blocks became identical because there is one emitter and one bootstrap entrypoint, and the line that differs is the module each one actually needs.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1192,6 +1367,13 @@
     },
     {
       "class": "intentional",
+      "id": "53a1a53ee6b70508",
+      "note": "The repo-script preamble in its `require_repo_local_helper` spelling, shared by render_lesson_lifecycle_review.py and apply_contract_transition.py -- both ledger/register writers that must refuse a drifted installed copy. Newly identical because this slice swapped each file's `import json` for the same `from yaml_output import emit_yaml`; the line below the header still binds a different lib in each.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "54055904847649e6",
       "note": "The cross-layout skill-module loader (`skills/public/<skill>` vs installed `skills/<skill>`) duplicated across the release closeout, closeout-message, and authorization modules and the untouched handoff chunk drafter. This IS the bootstrap: a module cannot import the shared loader without already having loaded something. The layout knowledge is now centralized in issue_closeout_authorization.load_from/SKILL_RELS; what remains is the irreducible per-entrypoint bootstrap.",
       "reviewed_at": "2026-08-07",
@@ -1223,6 +1405,13 @@
       "id": "551f9b334fd4874a",
       "note": "The two route-stage catalog branches construct distinct stage records with different route semantics. The repeated short shape keeps the stage contract visible and is not shared executable behavior.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "556b6bc90de6fbe0",
+      "note": "The name-binding preamble of the two trigger probes (retro/check_auto_trigger, release/check_real_host_proof): the resolve_adapter load plus five scripts.surfaces_lib bindings and the yaml_output load. They bind the same names because they ask the same question over different surface ids. The release member is untouched; only the retro one changed, which rotated the fingerprint.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1346,6 +1535,13 @@
     },
     {
       "class": "intentional",
+      "id": "5b1bc729b6e6298d",
+      "note": "`parse_args` for the RCA ledger sibling pair (aggregate_rca_ledger, validate_rca_ledger): `--repo-root` and `--ledger` under differing descriptions. They were already identical apart from the description; deleting the `--json` line shortened both and rotated the fingerprint. Moving a five-line parser into rca_ledger_lib would hand a data library ownership of two commands' CLI surfaces to save two argument lines.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "5b3c7738502d380d",
       "note": "A one-line canonical-JSON dump matching the boundary-bypass ratchet's. Both are digest-input serializations owned by separate evidence contracts; sharing would let one contract's serialization change silently move the other's digests.",
       "reviewed_at": "2026-08-07",
@@ -1377,6 +1573,13 @@
       "id": "5bdec49283c0883e",
       "note": "paired uninstall tails deliberately keep each standalone hook's ownership, result labels, and cleanup lifecycle visible; a cross-hook helper would add coupling",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5c7acfbb36d804fd",
+      "note": "the dual-context import fallback `try: from scripts.X import ... except ModuleNotFoundError: from X import ...` in check_bootstrap_shim_consistency.py and check_references_link_inventory.py; both converged when the migration added `yaml_output.emit_yaml` beside the existing import. The block exists precisely so these gates import under both package and bare-file invocation -- it is the code that makes importing possible, so it cannot itself be imported.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1419,6 +1622,20 @@
       "id": "5f672b193b2f3c05",
       "note": "ROTATED from 5505a8794c55f12d (same reasoning, same pair) when round-2 review restructured the advisory's main() into build_parser()+main(). Members: scripts/inventory_skill_script_references.py and skills/public/handoff/scripts/prepare_chunk_packet.py -- `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option. Not extractable: a portable skill package must not import repo-level scripts/, and check_documented_command_flags/argparse_surface_lib read the option surface back off each script's own parser, so hiding declarations behind a builder would blind the documented-flag gate.",
       "reviewed_at": "2026-08-02",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5f9b3fe6ccb08cb5",
+      "note": "apply_contract_transition.py and record_contract_graduation_proposal.py share the contract-register preamble, an identical `_nonblank` guard, and the ledger-lock write envelope. ALL of that predates this migration: each file's entire diff is `+from yaml_output import emit_yaml` and one print swap. Re-fingerprinted, not introduced -- the `_nonblank` fan-out across five writers is real pre-existing debt whose home would be contract_register_lib, but this migration neither created nor widened it.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5feb489bd17a68cc",
+      "note": "the fifteen-line preamble shared by the five lesson/contract-register writers (apply_contract_transition, record_lesson_lifecycle, record_lesson_score, record_lesson_session, seed_lesson_transitions). Identical by construction -- these five write the same ledger with the same locking helper and now the same emitter, and the only per-file line is the lib each one binds.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1479,6 +1696,20 @@
     },
     {
       "class": "intentional",
+      "id": "61ea67ffed153fd3",
+      "note": "the `__main__` try-guard idiom across nine unrelated validators, with per-owner exception types and messages -- validate_public_skill_validation appends its own hint, build_retro_lesson_selection_index catches `(FileNotFoundError, ValueError)`, the rest catch `ValidationError` plainly. Only one member carries `*`, and `git diff` shows no hunk touching its guard: deleting the `--json` argument above it shifted the block two lines.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6214a7d01f41400a",
+      "note": "Two-member cluster of `emit_yaml(payload)` / `return 0` / __main__ try-guard in bootstrap_runtime.py and build_debug_seam_risk_index.py, whose guards catch DIFFERENT exceptions (BootstrapRuntimeError vs ValidationError). The family formed because the migration replaced each command's final human-or-json branch with the one identical emit tail.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "626f4126df442a5c",
       "note": "Premise and manifest validators each own a repository-boundary resolver with different symlink and error-code semantics. The repeated relative_to guard is small portability plumbing; sharing it would couple independent validators.",
       "reviewed_at": "2026-08-06",
@@ -1496,6 +1727,13 @@
       "id": "62e19bb7ee0fbe0a",
       "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
       "reviewed_at": "2026-07-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "633643023a7a2abe",
+      "note": "the worktree_cleanup / worktree_prepare main tails: `emit_yaml(payload)` + status-derived return + the bare main guard. This family IS the convergence: before the migration each called its own lib's `emit_payload(payload, json_mode=args.json)`, and the migration deleted BOTH bespoke emitters in favour of the single shared `yaml_output.emit_yaml`. What is left duplicated is the call to the shared helper.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1535,9 +1773,23 @@
     },
     {
       "class": "intentional",
+      "id": "65a227f88cabdc26",
+      "note": "The argparse tail of the two documented-command gates (--require-git-file-listing, parse, build_report, emit_findings_report(report_payload(report)), findings-based exit). Same two files already accepted as 45564df3e643de55; their shared behavior now lives in gate_report_emit.findings_payload, extracted in this same slice. The residue is each gate's own flag declaration, its own fix_hint/skipped_noun text, and its own exit rule.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "65da50d58d3ffcd9",
       "note": "stdlib import preamble (`from __future__`, hashlib/json/re, pathlib, typing) shared by scripts/hitl_review_artifact_lib.py and scripts/t_events_emit_lib.py; an import block cannot be extracted. Surfaced 2026-07-31 when `import re` was added to the first file, i.e. a membership rotation of the same boilerplate family already classified at 8a9078e2e55bf7ff",
       "reviewed_at": "2026-07-31",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "663eafdf7b69a12d",
+      "note": "PRE-EXISTING, merely re-fingerprinted: the main() of narrative/ and quality/list_tool_recommendations.py. `git diff HEAD` shows both argparse bodies byte-identical to their pre-slice versions with only the final emit line changed. The shared logic already sits in scripts/tool_recommendation_lib.py; what remains is two independently exported skills' own CLI surfaces differing in defaults.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1584,6 +1836,13 @@
     },
     {
       "class": "intentional",
+      "id": "69aa70184bc7eb05",
+      "note": "the `spec_from_file_location`/`module_from_spec`/`exec_module` core of three independent ancestor-walk loaders; the new member is web-fetch's route_public_fetch.load_yaml_output, which walks a BOUNDED five ancestors and `break`s rather than `continue`s because an unbounded walk would execute a consuming repo's own `scripts/yaml_output.py`. This is the code that finds shared code, and the first two live in separately exportable public skills that must not import across skill boundaries.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "6a1fa1d6288ff1cc",
       "note": "two DISTINCT refusal messages in the consolidated-close evaluator that share only the `problems.append(<prose> + ', '.join(...) + <prose>)` shape: one refuses an auto-closing carrier (GitHub renders a keyword close as `completed`, asserting the repair the disposition denies), the other refuses a carrier that asserts a repair field. They name different subjects, cite different lists, and prescribe different remedies; extracting a shared message builder would parameterize three prose fragments to save one line and would make both refusals harder to read at the moment someone is blocked by them.",
       "reviewed_at": "2026-08-10",
@@ -1612,9 +1871,23 @@
     },
     {
       "class": "intentional",
+      "id": "6c9169aabbf5f1e3",
+      "note": "the converged preamble extended by one line to include the first `import_repo_module` bind, across suggest_public_skill_validation, check_premise_preflight, closeout_bundle and final_bundle_preflight. `import_repo_module(__file__, ...)` resolves relative to the CALLING file, so hoisting it into a helper would bind against the helper's own path.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "6dc2bc9c360c0ace",
       "note": "the canonical skill-runtime bootstrap shim, which this repo deliberately duplicates across 107 copies and ENFORCES byte-identical with its own gate (scripts/check_bootstrap_shim_consistency.py, CANONICAL_SHIM). Extracting it is impossible by construction: the shim is what lets a portable skill script FIND the runtime before any import is available. Surfaced by scan rotation when skills/public/release/scripts/publish_release_narrative_gate.py added copy 108; every other member is untouched (#441 rotation class)",
       "reviewed_at": "2026-07-28",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6e7a1c32d7be88d5",
+      "note": "The repo-script portability header of check_github_actions.py and inventory_boundary_bypass.py, newly identical because this slice replaced each file's `import json` with the same `from yaml_output import render_yaml`. The rest is the accepted runtime_bootstrap preamble that IS the bootstrap making one file work in both the source tree and the exported plugin. Below the header the two share nothing.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1654,9 +1927,23 @@
     },
     {
       "class": "intentional",
+      "id": "70d40723a850f01b",
+      "note": "eval_setup.py's three `with tempfile.TemporaryDirectory(...)` inspect_repo scenarios. Each writes a DIFFERENT fixture tree and asserts a different field of the payload; the migration's entire touch is one line per block, `json.loads(result.stdout)` -> `yaml.safe_load(result.stdout)`. Parameterizing three scenarios that differ in both fixture and assertion would hide which repo state each one pins.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "710ba8de40a73793",
       "note": "idiom-sized `if <payload>.get(<key>) == <literal>: return <message>` guard-clause shape shared by three unrelated blockers: the D48 release-surface corroboration refusal (publish_release_preflight), the seed-fixture shared-temp-root advisory (check_seed_fixture_budget), and the support-manifest state classifier (support_sync_lib). Same class already accepted as 349f5d577fe2588b -- different conditions, different strings, different subsystems; a shared formatter would couple three independently-owned refusal surfaces through a message helper and obscure which one owns the verdict. Surfaced as new because D48 slice 2 added release_surface_blocker; the other two members are untouched. ROTATED to 003780cc89f2ccfd on the same day when the round-2 review rewrote the refusal message text; same three members, same reasoning.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "71c11aad51995f5f",
+      "note": "two-line zero-count guard opening two unrelated report readers: check_regenerable_facts._status returns a status token, measure_startup_probes._format_human returns an English sentence. Same `if report[<count>] == 0: return <x>` shape, different return contracts and different owners; only the first is in this diff.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1699,6 +1986,13 @@
       "id": "74fdf03457be94c9",
       "note": "three-term `bool(a or b or c)` predicate shared by the cautilus-plan visible-work check and the skill-ergonomics failure check; the families are unrelated domains whose key sets evolve independently, so a generic any-truthy-key helper would couple them behind a name that describes neither. Surfaced only after a dead `required` term was deleted from the cautilus predicate",
       "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "75e9d52122a4c7cd",
+      "note": "the quality-skill sibling-load prologue (Path/SimpleNamespace imports, `sys.path.insert(0, parent)`, then one `# noqa: E402` sibling import). Each of the three scripts imports a DIFFERENT sibling, and only check_changed_line_coverage.py is in this diff. This block IS how these scripts find their siblings; extracting it would need a loader to load the loader.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1752,6 +2046,13 @@
     },
     {
       "class": "intentional",
+      "id": "7864e49875a70a6e",
+      "note": "short `return {...}` dict-literal returns in seven unrelated owners -- the seed-budget within-limits detail, check_upstream_support_drift's `{'status': 'exists'}`, portable_artifact_lib's kind marker, plus four other one-liners. The shared span is 'return a dict literal', which is Python syntax, not a behavior any module could own.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "788dd6b32574af6a",
       "note": "Lesson lifecycle events and contract graduation proposals both validate evidence arrays, but one owns state transitions and the other owns multi-session proposal evidence. Their field sets, refusals, and downstream authorization differ; merging validators would create a misleading generic evidence schema.",
       "reviewed_at": "2026-08-13",
@@ -1762,6 +2063,13 @@
       "id": "79ba72c5ceb24784",
       "note": "A single dictionary-comprehension idiom appears in independent register validation and lesson preview ranking. It is below an extractable behavioral unit and has different key/value semantics at each owner.",
       "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "79f1726fc5592c98",
+      "note": "`_load_yaml_output()`: the stdlib-only ancestor walk for scripts/yaml_output.py in the five modules loaded BY FILE PATH with no package context, which therefore cannot use runtime_bootstrap or skill_runtime_bootstrap (scaffold_artifact_lib's own test forbids both seams). Bootstrap by construction -- a shared locator would itself need this walk to be found -- and it is also what resolves the emitter at the repo root here and at the plugin root once exported.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1808,6 +2116,13 @@
     },
     {
       "class": "intentional",
+      "id": "7c8cb6b2a5829127",
+      "note": "Five `if status == '<literal>': return [<message>]` arms in check_regenerable_facts._diagnostics. This is the RESIDUE OF THE REPAIR made in this same slice: _diagnostics used to re-test _status's seven conditions itself, so the classification was stated twice and could desynchronize on a gate whose purpose is that `checked: 0` must never read as clean. The ladder now lives once in _status; each arm's body is a distinct operator-facing message interpolating different report fields.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "7d265405fe859204",
       "note": "Within issue_source_capture_capability: the default, undeclared-backend, and parsed capability all return the same field set by construction, because they are three states of ONE contract. That is the point of the module; collapsing them would erase the distinction between a default, an unsupported backend, and a declared block.",
       "reviewed_at": "2026-08-07",
@@ -1825,6 +2140,13 @@
       "id": "7d465427b8198be1",
       "note": "Per-skill `resolve_adapter` shims. Each skill package ships its own so it stays self-contained in a consuming repo; that portability is the point, and #550 tracks the resolver-body duplication as its own decision rather than something a gate should force here.",
       "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7db6794c0153dc96",
+      "note": "The canonical repo-script header at its widest boundary yet -- `from yaml_output import emit_yaml` beside the runtime_bootstrap import and `REPO_ROOT = repo_root_from_script(__file__)` -- across 24 gates, each closing with the one `import_repo_module` binding it actually needs. Identical BY CONSTRUCTION: one emitter import per repo-owned command is exactly what the --json removal set out to produce, and `repo_root_from_script(__file__)` is per-file by definition (a hoisted wrapper would resolve the wrapper's own path).",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1881,6 +2203,13 @@
       "id": "7f2afc700c4874d3",
       "note": "The CLI's direct-execution sys.path/runtime bootstrap is intentional portable-script boilerplate shared across quality commands. It preserves standalone plugin/source-checkout execution and is not a domain helper to centralize.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7f2cca30ee93fc0f",
+      "note": "the canonical script prologue in its `typing.Any` spelling across three unrelated gates (check_artifact_surface_preflight, check_lesson_evaluation_continuity, apply_contract_transition). Identical by construction: one import pair per repo-owned command is the migration's whole point, and the members already differ in the bound name (REPO_ROOT vs ROOT) and helper set.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1969,6 +2298,20 @@
     },
     {
       "class": "intentional",
+      "id": "82da48042ad2fed6",
+      "note": "Rotation of the accepted ValidationError __main__ guard family (1d36956dff2fc82b) at a 14-member boundary that is exactly the ValidationError-catching gates. Nine are untouched by this slice -- the family predates it and re-formed as the five edited members' preceding lines converged on the shared emit. Centralizing it would put every gate's exit code and stderr contract behind one runner.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "840ad1d516d197ad",
+      "note": "argparse preamble plus `resolve(...)` and the `not found` refusal shared by the two cosmic-ray wrappers. run_cosmic_ray_mutation.py is untouched by this diff (its 96-line main orchestrates baseline/init/exec/dump); filter_cosmic_ray_mutants.py's 29-line main only filters a session. Nothing after the preamble overlaps -- same class as the accepted cautilus argparse-preamble family fce03d2223b4f9dc.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "8438b78f671dc3bf",
       "note": "A single-line `path.parent.mkdir(parents=True, exist_ok=True)`. Standard-library idiom shared with eight untouched writers.",
       "reviewed_at": "2026-08-07",
@@ -1993,6 +2336,13 @@
       "id": "858dfd6c7ff4dd3c",
       "note": "Two SessionStart implementations independently surface routing failure states. Their small conditional shape is shared plumbing, while their adapter and artifact behavior remains deliberately separate.",
       "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8612232a1d801776",
+      "note": "the six-key packet-result payload in critique and retro prepare_packet.py. `git show HEAD:` proves BOTH dicts already existed verbatim under `json.dump(..., sys.stdout, ...)`; the migration only swapped the surrounding call for `emit_yaml`, so no duplication was written. Critique's copy additionally carries `reviewed_input_binding`, which retro deliberately has no identity for.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2025,6 +2375,13 @@
     },
     {
       "class": "intentional",
+      "id": "89d656b459902259",
+      "note": "the leading two-line refusal guard of three unrelated classifiers, keyed on different fields (`capability_gap`, `adapter_refusal`, `errors`) returning different status vocabularies. Extraction would couple three gates' classification vocabularies to share one `if`.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "89d83f450e19e19b",
       "note": "#432 identity guard: the release preflight deliberately duplicates the repo-root check_git_identity resolve+check logic because the plugin ships standalone and cannot import repo-root scripts; the two copies are bound by the test_release_preflight_parity matrix so semantic drift fails a test instead of diverging silently",
       "reviewed_at": "2026-07-10",
@@ -2035,6 +2392,13 @@
       "id": "8a9078e2e55bf7ff",
       "note": "repo-script bootstrap header (stdlib imports + `REPO_ROOT = repo_root_from_script(__file__)` + an import_repo_module call) across check_command_docs / check_artifact_surface_preflight / check_cli_skill_surface / validate_quality_reference_catalog; an import preamble cannot be extracted without an indirection that hides which module each script actually loads. Surfaced on 2026-07-31 as a membership rotation when check_skill_surface_preflight.py's own header changed and left the family, not as new duplication: no member is in that slice's diff",
       "reviewed_at": "2026-07-31",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8b48128d1cb47aa0",
+      "note": "two branches of check_seed_fixture_budget._disposition. Both spell `if classification == <token>: return {'detail': (...)}` and the two prose bodies share no sentence -- this is the classification-to-prose table that preserves what the deleted human renderer said about each state, so the only 'extraction' available is relocating the strings.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2095,6 +2459,20 @@
     },
     {
       "class": "intentional",
+      "id": "8f1789aa22d7b4f5",
+      "note": "The same repo-standard ValidationError __main__ guard at a DIFFERENT eight-member cluster boundary, four of them untouched. The skill-side member (gather/write_record.py) is what makes this cluster distinct and is also why a shared runner is wrong: it ships in an exported plugin package where scripts/ is a sibling mirror, so a common entrypoint helper would have to be located before it could wrap the entrypoint.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8f305973fa2c937d",
+      "note": "entrypoint tail of two index builders: `emit_yaml(payload); return 0` then the `__main__` try-guard. The caught exception differs (FileNotFoundError/ValueError vs ValidationError), which is the only decision in the block.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "8f449e4de8a531be",
       "note": "root scripts/suggest_public_skill_dogfood.py and the quality-skill wrapper are a deliberate portable per-skill CLI copy pair (same precedent as the other auto-seeded portable per-skill copies); the 2026-07-17 prompt_fallback advisory loop was added identically to both by design, growing the pre-existing clone span",
       "reviewed_at": "2026-07-17",
@@ -2105,6 +2483,13 @@
       "id": "8fa0ef5da1477de2",
       "note": "idiom-sized two-line early return (`if not <value>:` / `return []`) across five unrelated subsystems: quality_bootstrap_lifecycle, subprocess_guard, vendored_path_lib, the release planner's resume-packet builder, and release_binding_tokens. Different values, different empty results, different owners; there is no shared behaviour to extract, only a Python spelling. Surfaced as new because the release planner added one member; the other four are untouched.",
       "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8fd7b85558eb09fa",
+      "note": "Convergence exactly as designed: narrative/list_tool_recommendations.py and setup/inspect_repo.py both gained the same `scripts.yaml_output` load and both now end main() with `emit_yaml(payload)`. The bodies share nothing else, and both previously wrote their own json.dumps line (one with sort_keys=True, one without) -- the divergence this slice removed.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2147,6 +2532,20 @@
       "id": "925b2e98584abeab",
       "note": "four-line direct-execution path bootstrap shared across independent repo, issue, release, and support entrypoints; extraction would defeat the bootstrap boundary",
       "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "93522c051404a4f6",
+      "note": "the detail+remediation branches of check_seed_fixture_budget._disposition (blocking scan-failure vs unowned temp root). Structurally identical two-key returns whose four strings share no sentence: one names a `du -d 4 -B1` recovery, the other repointing PYTEST_DEBUG_TEMPROOT.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "93835be8f0a26947",
+      "note": "Wider spelling of the accepted `_load_skill_runtime_bootstrap` preamble (7205c9cd09e28aee), now including the stdlib import block above it, across 14 portable skill scripts in six skills. The import block joined the family because deleting `import json` from every command left these headers with the identical five stdlib imports; four members are untouched. Not extractable by construction, and check_bootstrap_shim_consistency already guards the block against drift.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2196,6 +2595,13 @@
       "id": "97ebca5fdc836ccf",
       "note": "YAML-first/hidden-JSON CLI presentation overlaps across independently executable root and portable skill commands with different payloads, exit rules, timeout ownership, and exception contracts; a shared CLI runner would couple unrelated owners rather than centralize domain behavior",
       "reviewed_at": "2026-07-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9802d5ba1adac937",
+      "note": "The `load_path_module`-carrying variant of the runtime_bootstrap preamble in validate_debug_artifact.py (untouched by this slice) and build_retro_lesson_selection_index.py. Only the second member changed, and only above this span; the shared lines are the bootstrap that makes a script work in both the source tree and the exported plugin, so they cannot be imported without first importing them.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2256,6 +2662,27 @@
     },
     {
       "class": "intentional",
+      "id": "9dc291c14a2f34b5",
+      "note": "prologue shared by export_plugin.py and sync_root_plugin_manifests.py: same stdlib imports, emit_yaml, runtime_bootstrap, and the packaging_lib binding of PackagingError plus one differing symbol. Both already route real behavior through packaging_lib; only the import block repeats.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9e34bfb96cf304dc",
+      "note": "`print(<message>, file=sys.stderr)` in three owners: mutate_and_restore's progress emitter (stderr because stdout now carries one YAML document), artifact_validator.report_validation_failure, and validate_debug_artifact's exit path. The only shared helper available below this is print itself -- same disposition as fbfd9b794551cc30.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9e411078f8c3a75f",
+      "note": "the two `invalid_feedback` emits inside record_usage_feedback._run_feedback_transaction, one for schema-invalid rows read off disk and one for semantic errors. The identical pair predates this diff as `_print({...}, as_json)` calls; they must report the same status token by contract, and both sit inside one lock-held critical section where an extracted helper would obscure that ordering.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "9ee147f9cd673521",
       "note": "the sibling-floor import header: goal_artifact_coordination_floors and goal_artifact_phase_routing both open with the same `sys.path.insert` + `from goal_artifact_floor_grammar import ...` block, and the family appeared only because the phase-routing floor started importing MIN_OPTOUT_REASON from that shared grammar too. That is two floors reading ONE source, which is the single-sourcing this goal is about -- collapsing the import block itself would add a shim between a portable skill module and the grammar it already shares",
       "reviewed_at": "2026-08-09",
@@ -2273,6 +2700,20 @@
       "id": "9fba34eb678c4ff9",
       "note": "critique and retro expose parallel packet-scope CLI arguments but remain independently executable portable skill commands with different reviewed-input, timeout, and output contracts; a partial shared parser experiment increased live clone families from 12 to 14 and was reverted",
       "reviewed_at": "2026-07-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a00012c84d799ddb",
+      "note": "Rotation/widening of the accepted 111-member skill-runtime bootstrap family (7205c9cd09e28aee), now 117: the parents-walk for skill_runtime_bootstrap.py carried by every portable skill script. Chicken-and-egg by construction, and 65 of the 117 members are untouched by this slice. The shared LOGIC is already inside skill_runtime_bootstrap; only the locate prologue is per-script.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a0727ff671867cc2",
+      "note": "the two cautilus chatbot eval mains share only an argparse preamble, the output_dir resolution one-liner, and a `write_summary(...)` + single `emit_yaml(...)` tail. The bodies are different pipelines (dual-repo temp-dir comparison vs one scenarios-propose run), and the tail is already one call into the shared portable_artifact_lib both import.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2333,6 +2774,13 @@
     },
     {
       "class": "intentional",
+      "id": "a72bff1842c40899",
+      "note": "only the argparse head is actually shared -- `ArgumentParser(description=__doc__.splitlines()[0])` plus `--repo-root` -- between prepush_focused_changed_line_coverage.parse_args and check_plugin_asset_command_carriers.main. The remaining ~30 lines of the prepush window are two unique `help=` essays, and the carrier gate's member is untouched by this migration.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "a82bba62dcfd4317",
       "note": "ROTATION of 8c41129333077c9f (itself a rotation of c28c913feb04ce73) -- same two members, window shifted once more when `ruff --fix` reordered the import block. Per-module sys.path + import bootstrap shared by the two floors added this slice; unextractable by construction, since this block is the mechanism by which a module finds shared code. The real duplication these modules carried was extracted into goal_artifact_floor_grammar.grandfathered_report and both remaining inline copies migrated onto it.",
       "reviewed_at": "2026-08-01",
@@ -2343,6 +2791,13 @@
       "id": "a88306d0d9c48525",
       "note": "Direct script main functions keep their parser, repository path, payload, and exception boundary local. The new session and score commands follow the existing direct-execution convention; a common runner would hide command-specific write semantics.",
       "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a8cddb45d82ba7e7",
+      "note": "a seven-line stdlib import list shared by check_doc_authoring_preflight.py and check_docs_graph.py. Both are doc-surface checks that probe for an external binary and shell out to it, so both carry shutil+subprocess; there is no behavior in an import list to centralize, and the family surfaced only because each file gained an emit_yaml line just past the window.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2452,6 +2907,27 @@
     },
     {
       "class": "intentional",
+      "id": "ae975c6cbd5a6cad",
+      "note": "same two-line argparse head as a72bff1842c40899, here between prepush_focused_changed_line_coverage.parse_args and validate_retro_handoff_wiring.main. Everything after diverges immediately: the prepush member is help prose, the wiring member is three required path flags, a `validate_wiring` call, and a status-driven exit code.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "af00cb7ab59ec66c",
+      "note": "the issue package's sibling-loader bootstrap in issue_create.py and its untouched sibling issue_create_verify.py, each followed by a DIFFERENT `_load_local(...)` binding. The loader itself is already the extracted shared home; this migration's only change here is issue_create binding `issue_yaml_output.emit_yaml` through it, which is the extraction this session already made.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "af478ff19712c39d",
+      "note": "the `sys.path.insert(0, parent)` sibling-import bootstrap in five quality skill scripts, each followed by a different sibling import. Not extractable by construction -- it is the path setup that must run BEFORE any sibling import -- and already accepted in this exact class as c68b46f3e359c8fe and c9a1067198c8bb00.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "af879894e690c749",
       "note": "chunker per-stage CLI main() shape shared by prepare_chunk_packet and prepare_ranker_packet: arm timeout -> parse_args -> read_pipeline_json (naming its OWN stage in the refusal) -> emit the stage payload -> return 0 -> cancel timeout. Same class already accepted as 6ff3e380d6a8fcaf and 0bc23ea0000c6cf9: the shape IS the pipeline's CLI contract, because the stages run as independent piped processes and each must name the stage that read a malformed input. Surfaced as new only because D46 slice 1 added one forwarding line to prepare_chunk_packet; prepare_ranker_packet is untouched. The extractable half WAS extracted in this same slice, not argued away -- _restore_entries became chunked_routing_cli.entries_from_pipeline_payload and the three per-key forwarding blocks became chunked_routing_cli.forward_carried_keys, which removed the family the first ratchet run flagged between propose_merges and prepare_chunk_packet.",
       "reviewed_at": "2026-08-01",
@@ -2504,6 +2980,20 @@
       "id": "b1f18cabee56e5b0",
       "note": "the run-plan envelope preamble shared by skills/public/issue/scripts/issue_plan.py and skills/public/release/scripts/plan_release_run_packets.py: `_ENVELOPE = SimpleNamespace(**runpy.run_path(<shared>/run_plan_envelope.py))` plus its imports. Two independently shipped skill packages each have to locate the shared envelope standalone, which is the portability preamble the nose advisory already names as its own blind spot (same class as 6d0d4a83a2cc4d8f and the runtime_bootstrap families). Extracting it would require a module that itself has to be located the same way. Surfaced as new only because removing the RELEASE_RECORD_PATH constant from the release packets header shifted the block; the issue_plan member is untouched.",
       "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b299e6c13c166426",
+      "note": "a six-line import header shared by check_artifact_surface_preflight.py and validate_attention_state_visibility.py. The migration added the emit_yaml line to both, which is the point of the convergence. The two files share nothing past the header -- one binds path_portability_lib and shells out to git, the other AST-scans declared attention terms.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b339aa502fe27a9c",
+      "note": "CAUSED BY THE REPAIR IN THIS SLICE, and accepted deliberately. Both index builders' main() carried a copied write/check payload pair; collapsing each file's own duplication into a local `_index_result(status)` closure removed the intra-file copy and, in doing so, made the two mains converge. What remains parallel is the --write/--check/report command shape, already accepted cross-file as f47a6c0ed140b9fb, and the payload key sets still genuinely differ (`candidate_count` vs `indexed_artifact_count`) as do the writers, checkers, and output-dir resolvers. The debug closure additionally takes its path, because its --check arm has no written path to reuse. Merging the two builders would put a retro-corpus indexer and a debug-seam indexer behind one entrypoint to share an argparse block.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2627,6 +3117,13 @@
     },
     {
       "class": "intentional",
+      "id": "bcb6e825b9d8fba5",
+      "note": "the four-line `main()` head across parity_harness, removed_name_consumers, check_plugin_doc_links, and check_plugin_asset_command_carriers. The last two are untouched by this migration and still deliver findings by `ValidationError`/`print`; the first two now emit YAML repair reports. Four owners with four unrelated bodies sharing an argparse idiom is not a seam.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "bdbac9d808274ef8",
       "note": "the read-lines / enumerate / regex-per-line / append-a-{path,line,excerpt}-finding scan shape, shared by three unrelated owners: quality's skill-text heuristics (takes skip and review_context callbacks), the public-doc coupling check (takes a matcher callable), and the backlog residue scan (bifurcates into declining vs informational on a SECOND regex). A shared helper would have to take three different callback contracts and a bucket selector to serve all three, which couples the owners without centralizing any behavior.",
       "reviewed_at": "2026-08-10",
@@ -2637,6 +3134,13 @@
       "id": "be9c2c68c9ecef9c",
       "note": "A two-line regex-substitute/strip normalization matching adapter_lib and four untouched helpers. Standard-library idiom at independent normalization boundaries.",
       "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "bea329a2e9f203ea",
+      "note": "record_contract_citation.py and apply_contract_transition.py share the contract-register writer preamble, binding BOTH contract_register_lib and lesson_ledger_writer_lib because both mutate the register under the ledger lock. Their real shared behavior already lives in those two libs; what is left is the binding preamble.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2732,6 +3236,13 @@
     },
     {
       "class": "intentional",
+      "id": "c5331bd106013fa7",
+      "note": "ROTATION of 1bf0acd032a9b829 (same two members): both spans are inside setup/seed_retro_memory.py and shifted when this migration inserted the bootstrap block above them. nose measured 1/26 shared on the predecessor and the single shared line is the closing `)`: one member returns a Markdown seed, the other emits a setup receipt.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "c53dd99b2f613e7b",
       "note": "four-line hook result metadata tail is intentionally repeated between installer orchestration and the standalone session hook; payload ownership remains separate",
       "reviewed_at": "2026-07-13",
@@ -2802,6 +3313,13 @@
     },
     {
       "class": "intentional",
+      "id": "ca469d346aad710c",
+      "note": "the re/sys/Path + emit_yaml + runtime_bootstrap header in check_closeout_floor_matrix.py and measure_evidence_residual.py, each closing with one binding line to a different lib. A gate that observes floor firing and a measurement that counts evidence residue share an import header and nothing else.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "cadcd988ac605b86",
       "note": "Validator-local _fail helpers deliberately prefix errors with their own state domain. Centralizing a two-line raise would retain the per-validator message contract but hide the ownership of each refusal behind an otherwise behaviorless helper.",
       "reviewed_at": "2026-08-12",
@@ -2819,6 +3337,13 @@
       "id": "cb9922f40210b6c3",
       "note": "the same two-line guard-and-return shape across three unrelated scripts: an inert-gate line, a `du`-unavailable advisory token, and an adapter-error status token. Nothing is shared but the shape -- extracting a helper over three different conditions returning three different literals would replace three readable guards with an indirection each caller still has to spell out.",
       "reviewed_at": "2026-07-29",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cbc90c6d8e25538d",
+      "note": "The plain `from __future__ import annotations` + argparse/sys/Path + runtime_bootstrap-with-load_path_module opening across 11 gates, ten of which are untouched by this slice. build_retro_lesson_selection_index joined only because deleting its `--json` argument and its text renderer shortened the file enough to bring this header into a shared window. There is no behavior in an import block to centralize.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2935,9 +3460,23 @@
     },
     {
       "class": "intentional",
+      "id": "d4311184f5fc80ee",
+      "note": "select_verifiers.main and check_changed_surfaces.main share the surfaces-manifest CLI wiring, which pre-existed unchanged; the migration only replaced each file's bespoke `print_text` renderer with the identical `emit_yaml(payload)`, lengthening the shared window. The behavior is already centralized in surfaces_lib, and folding the two CLIs together would put a recommendation engine behind a plain change-matcher entrypoint.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "d44c7c8b2422d9a4",
       "note": "skill-script bootstrap preamble shared by the release and retro packages; the two files became byte-identical here only after four dead `REPO_ROOT / skills / public` constants were deleted, and the preamble is per-package portability boilerplate the plugin export copies verbatim -- extracting it would reintroduce the cross-package import the bootstrap exists to avoid",
       "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d474f1358908a2bc",
+      "note": "the narrower contract-register READER preamble shared by apply_contract_transition.py and render_contract_retention_review.py. Distinct from bea329a2e9f203ea in that this pair does not bind the ledger writer; the register validation both files call is already the shared home, and only the emit_yaml import is new.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2949,9 +3488,30 @@
     },
     {
       "class": "intentional",
+      "id": "d531c2017022c4e3",
+      "note": "ROTATION of b3e08764961ab57c: the shared span is the pre-existing `_load_json` / `_load_adapter` / `_portable_path` trio that validate_usage_episodes.py and report_usage_episodes.py have carried unchanged (verified identical at HEAD). Both members fall inside this diff only because the migration rewrote the ADJACENT code, shifting the window over the untouched trio.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "d57cca2dff594954",
       "note": "scanner reports zero shared lines between two distinct fresh-eye policy detectors in the same file; no common implementation body exists",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d5b4b5b5cacb6fdc",
+      "note": "the four-line RCA-ledger command prologue plus the emit/return tail, shared by the validate and aggregate commands over the SAME ledger. Every behavior they share is already in rca_ledger_lib; what is left is argument plumbing around one differing line, so extraction would mean a callback wrapper around two 8-line mains.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d5b74ee93ca90d5d",
+      "note": "the usage-episode adapter preflight cascade in report_usage_episodes.main and report_usage_product_review.main. Pre-existing: at HEAD both mains already ran this cascade with the same branches and exit codes, each calling its own printer with an identical `as_json=args.json` signature; this migration only collapsed those call lines to `emit_yaml(payload)`. The shared record work is already in usage_episode_records.py and the halves that remain differ.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -3019,6 +3579,13 @@
     },
     {
       "class": "intentional",
+      "id": "d8a62e9a4cd5ebf5",
+      "note": "the `validate_adapter_data` prologue in the hotl and release per-skill resolve_adapter copies. Neither file is touched by this migration (`git diff HEAD` is empty for both). The cross-skill logic is already extracted into the shared adapter helpers both call; what repeats is each skill's own field set, and the bodies diverge immediately after.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "d9425947a12f79f2",
       "note": "same-file renderer overlap inside worktree_doctor_lib.py (doctor vs prepare renderers): deliberately parallel per-command renderers; rotation-surfaced, members untouched (#441 rotation class)",
       "reviewed_at": "2026-07-17",
@@ -3043,6 +3610,13 @@
       "id": "d9cee12a7ea21510",
       "note": "Domain-local _fail helpers prefix user-visible refusals with their owning state surface. The shared two-line raise idiom across ledger, selection preview, register, and score authoring has no independent behavior to centralize; a generic helper would hide the owner of a verdict rather than remove real duplication.",
       "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d9e7ff242588fbfe",
+      "note": "the runtime_bootstrap import preamble in check_skill_cut_safety, check_skill_surface_preflight, init_lesson_ledger and apply_contract_transition. Successor of the accepted preamble family 5bb4a446d5610520; the migration swapped `import json` for the emit_yaml import in the same slot, which is the convergence it exists to produce.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -3131,6 +3705,13 @@
     },
     {
       "class": "intentional",
+      "id": "df0ff5f18fe87172",
+      "note": "same-file: two adjacent `partition_missing_skills({...}, all_skills=all_skills)` calls in suggest_public_skill_validation.build_report (tiers vs adapter_requirements). The logic IS already extracted into public_skill_validation_lib; what repeats is the call with a different policy field and category tuple, which is what makes the gaps separately reportable. build_report itself is unchanged by this migration.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "df723a69adac4b8f",
       "note": "2-line fnmatch matches_any helper family rotated after prompt-bulk helper cleanup; keep portable skill scripts directly executable instead of adding shared import coupling for a trivial predicate",
       "reviewed_at": "2026-06-27",
@@ -3201,6 +3782,13 @@
     },
     {
       "class": "intentional",
+      "id": "e42c069644e5e991",
+      "note": "two file-local one-line aliases over the shared emitter: `print_payload` in agent_browser_runtime_guard (4 call sites) and `_emit` in check_changed_line_mutation_coverage (5), each now just `emit_yaml(...)` after their `as_json` bodies were deleted. The shared home already exists and is what both bodies call; a wrapper around the wrapper would add a layer, not remove one.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "e44ea83ce8db9523",
       "note": "The stdlib idiom for reading string literals out of a parsed module -- `ast.walk` plus `isinstance(node, ast.Constant) and isinstance(node.value, str)` -- shared by inventory_boundary_bypass_lib._iter_string_constants and check_documented_subcommands._iter_runtime_strings. Not extractable, because the two ask different questions of the same walk. The boundary-bypass reader wants every string anywhere under a spawn call node, unlocated and undifferentiated, to match a command shape. The subcommand reader wants operator-facing runtime text WITH its line number, with module/class/function docstrings excluded (a docstring is prose about the code, and including them reports every design note that quotes a retired command) and with f-strings reassembled from their literal parts (the backtick span is routinely split by a `{...}`, so the parts read separately never close it). A shared helper would have to yield the union of those shapes and let each caller discard most of it, and it would make the portable boundary-bypass lib depend on a repo-level helper for four lines of stdlib.",
       "reviewed_at": "2026-08-11",
@@ -3253,6 +3841,13 @@
       "id": "e8742da4a5390480",
       "note": "two-line empty-input early return (`if not <collection>: return []`) shared by seven unrelated functions across scripts/ and three portable skills. Verified by reading all seven: they guard different collections, return different types of empty result, and share no caller -- the identity is the Python idiom, not copied logic. Extracting it would require every caller to import a helper to express `return []`. Nothing to remove; classified rather than absorbed.",
       "reviewed_at": "2026-07-29",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e88afcaf4e1411b2",
+      "note": "the eval fixture prologue shared by two unrelated scenarios: eval_setup's delegated-review-scope inspect and run_evals' handoff relative-link check. Prefix, fixture contents, invoked script, and every assertion differ; only the tmp-repo scaffold rhymes.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -3404,6 +3999,13 @@
     },
     {
       "class": "intentional",
+      "id": "f46a8cbe888c5c4e",
+      "note": "one 5-line rung -- `if report[<key>]: return {'verdict': <word>, 'verdict_detail': <sentence>}` -- from two independent verdict ladders the migration grew so the verdict word survives YAML-only output. The two-key dict is the payload contract every gate now emits; the ladder ORDER and the sentences are each gate's own verdict logic, and centralizing the rung would move nothing but the braces.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "f47a6c0ed140b9fb",
       "note": "the parallel argparse main() of the repo's two index builders (build_retro_lesson_selection_index.py, build_debug_seam_risk_index.py): both expose the same deliberate --write/--check/--json operator contract over different payloads, and that contract IS the shared surface a reader relies on. Extraction would need a generic index-CLI framework parameterized by builder, checker, renderer, and result keys -- more indirection than the ~25 duplicated lines it removes, for two callers. Re-fingerprinted when the retro builder's write branch was routed through the library writer that owns the helper-provenance refusal",
       "reviewed_at": "2026-07-26",
@@ -3411,9 +4013,23 @@
     },
     {
       "class": "intentional",
+      "id": "f4cde0ca27be6a49",
+      "note": "a 2-line `if <report>[<key>]: return '<status-word>'` rung from two unrelated status classifiers (issue_tool._preflight_status and check_regenerable_facts._status). Idiom-sized guard shared by two independently-owned diagnosis ladders; extracting couples them without centralizing any decision.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "f5fac9e4015758dd",
       "note": "three achieve goal-artifact floor modules (disposition_grammar, coordination_floors, phase_routing) sharing their module preamble. All three members are UNTOUCHED by the 2026-08-01 slice; the family surfaced as new because a sibling module in the same package was edited and the scan rotated. Pre-existing shape, no new duplication introduced here, and the preamble is the package's standard bootstrap.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f60c85df7d2afa7a",
+      "note": "the `REPO_ROOT = Path(__file__).resolve().parent.parent` + `sys.path.insert` + trailing `# noqa: E402` bootstrap in changed_line_run_trust and prepush_focused_changed_line_coverage. The block is unchanged in both, and the idiom cannot be imported from anywhere because it is what makes the import path work.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -3442,6 +4058,13 @@
       "id": "f8cc48617039b140",
       "note": "Two untouched goal-artifact grammar helpers share a short normalized-heading scan but return different evidence shapes. This branch-wide family did not arise from the lesson slice; a common iterator would add a proof-reader dependency while leaving each caller's distinct filtering and refusal contract in place.",
       "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f90401283ad200e1",
+      "note": "the argparse/importlib.util/Path imports plus the `try: from scripts.yaml_output import emit_yaml / except ModuleNotFoundError: from yaml_output import emit_yaml` dual-path import, in the two gates that also load their sibling `_lib` by importlib.util so they run both as `scripts.<name>` and standalone. The try/except IS the bootstrap that makes the shared emitter importable at all, so it cannot itself be imported from a shared module.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {

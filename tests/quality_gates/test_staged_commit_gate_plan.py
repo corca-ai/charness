@@ -6,6 +6,8 @@ import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
+import yaml
+
 from scripts.staged_commit_gate_plan import (
     FAST_SURFACE_VERIFY_COMMANDS,
     STRUCTURAL_SWEEP_LABELS,
@@ -478,26 +480,28 @@ def test_run_slice_closeout_predict_commit_uses_shared_plan() -> None:
         "--paths",
         "scripts/new_helper.py",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     planned_labels = [command["label"] for command in payload["planned_commands"]]
     assert planned_labels == [command.label for command in staged_commit_gate_plan(ROOT, ["scripts/new_helper.py"])]
 
 
-def test_staged_commit_gate_plan_cli_json_and_text() -> None:
-    json_result = run_script(
+def test_staged_commit_gate_plan_cli_emits_the_planned_labels() -> None:
+    # One YAML document is the CLI's whole output surface since the 2026-08-14
+    # `--json` removal, and it is a SUPERSET of the retired label-only text listing
+    # (each entry carries the `argv` that listing hid), so both halves of the old
+    # json-and-text test read the same payload now.
+    result = run_script(
         "scripts/staged_commit_gate_plan.py",
         "--repo-root",
         str(ROOT),
         "--paths",
         "README.md",
-        "--json",
     )
-    assert json_result.returncode == 0, json_result.stderr
-    assert [item["label"] for item in json.loads(json_result.stdout)] == [
+    assert result.returncode == 0, result.stderr
+    assert [item["label"] for item in yaml.safe_load(result.stdout)] == [
         "check-staged-reversion",
         "check-git-identity",
         "staged-worktree-consistency",
@@ -508,18 +512,7 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
         "check-markdown (staged)",
     ]
 
-    plugin_json_result = run_script(
-        "plugins/charness/scripts/staged_commit_gate_plan.py",
-        "--repo-root",
-        str(ROOT),
-        "--paths",
-        "README.md",
-        "--json",
-    )
-    assert plugin_json_result.returncode == 0, plugin_json_result.stderr
-    assert json.loads(plugin_json_result.stdout) == json.loads(json_result.stdout)
-
-    text_result = run_script(
+    no_ruff_result = run_script(
         "scripts/staged_commit_gate_plan.py",
         "--repo-root",
         str(ROOT),
@@ -527,13 +520,32 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
         "scripts/helper_provenance_lib.py",
         "--no-ruff",
     )
-    assert text_result.returncode == 0, text_result.stderr
-    assert "check-python-lengths (staged)" in text_result.stdout
-    assert "ruff (staged)" not in text_result.stdout
+    assert no_ruff_result.returncode == 0, no_ruff_result.stderr
+    no_ruff_labels = [item["label"] for item in yaml.safe_load(no_ruff_result.stdout)]
+    # Full equality against the ruff-less plan, not membership: `main()` resolves ruff
+    # through `shutil.which`, so on a host WITHOUT ruff installed a bare
+    # `"ruff (staged)" not in labels` holds whether or not `--no-ruff` is wired at all,
+    # and the flag under test would be unproven.
+    assert no_ruff_labels == [
+        command.label
+        for command in staged_commit_gate_plan(ROOT, ["scripts/helper_provenance_lib.py"], ruff_path="")
+    ]
+    assert "check-python-lengths (staged)" in no_ruff_labels
+    assert "ruff (staged)" not in no_ruff_labels
 
 
-def _payload_sink(payload: dict[str, object], *, as_json: bool) -> int:
-    assert as_json is True
+def test_staged_commit_gate_plan_plugin_mirror_matches_source() -> None:
+    # Split out of the json-and-text test so a stale export names ITSELF rather than
+    # taking the source-CLI assertions down with it.
+    args = ("--repo-root", str(ROOT), "--paths", "README.md")
+    source_result = run_script("scripts/staged_commit_gate_plan.py", *args)
+    plugin_result = run_script("plugins/charness/scripts/staged_commit_gate_plan.py", *args)
+    assert source_result.returncode == 0, source_result.stderr
+    assert plugin_result.returncode == 0, plugin_result.stderr
+    assert yaml.safe_load(plugin_result.stdout) == yaml.safe_load(source_result.stdout)
+
+
+def _payload_sink(payload: dict[str, object]) -> int:
     assert payload["status"] in {"planned", "failed", "completed"}
     return 0 if payload["status"] != "failed" else 1
 
@@ -545,79 +557,89 @@ def _runner(returncode: int, stdout: str = "", stderr: str = "") -> Callable[[Pa
     return run_command
 
 
-def test_run_predict_commit_non_json_plan_empty_fail_and_success(capsys) -> None:
-    assert run_predict_commit(ROOT, paths=[], as_json=False, plan_only=True, run_command=_runner(0), emit_payload=_payload_sink) == 0
+def _capturing_payload_sink(captured: list[dict[str, object]]):
+    def sink(payload: dict[str, object]) -> int:
+        captured.append(payload)
+        return _payload_sink(payload)
+
+    return sink
+
+
+def test_run_predict_commit_plan_empty_fail_and_success() -> None:
+    # The four arms this always covered: plan-only (empty and populated), a failing
+    # gate, and a clean run. Each used to be read off the retired `--json`-less text
+    # lines (`charness pre-commit: <label>`, the echoed child streams, the trailing
+    # `ok`); those facts are folded into the single emitted payload as
+    # `planned_commands`, `executed_commands`, and `status`, so they are read there.
+    captured: list[dict[str, object]] = []
+    sink = _capturing_payload_sink(captured)
+
+    assert run_predict_commit(ROOT, paths=[], plan_only=True, run_command=_runner(0), emit_payload=sink) == 0
+    assert captured[-1]["planned_commands"] == []
     assert run_predict_commit(
         ROOT,
         paths=["README.md"],
-        as_json=False,
         plan_only=True,
         run_command=_runner(0),
-        emit_payload=_payload_sink,
+        emit_payload=sink,
     ) == 0
-    assert "charness pre-commit: check-doc-links" in capsys.readouterr().out
-    assert run_predict_commit(ROOT, paths=[], as_json=False, plan_only=False, run_command=_runner(0), emit_payload=_payload_sink) == 0
+    assert captured[-1]["status"] == "planned"
+    assert "check-doc-links" in [command["label"] for command in captured[-1]["planned_commands"]]
+    # ...and plan-only really is plan-only: nothing ran.
+    assert captured[-1]["executed_commands"] == []
+    assert run_predict_commit(ROOT, paths=[], plan_only=False, run_command=_runner(0), emit_payload=sink) == 0
+    assert captured[-1]["executed_commands"] == []
 
     failure_rc = run_predict_commit(
         ROOT,
         paths=["README.md"],
-        as_json=False,
         plan_only=False,
         run_command=_runner(7, "bad stdout\n", "bad stderr\n"),
-        emit_payload=_payload_sink,
+        emit_payload=sink,
     )
-    captured = capsys.readouterr()
     assert failure_rc == 1
-    assert "bad stdout" in captured.out
-    assert "bad stderr" in captured.err
+    assert captured[-1]["status"] == "failed"
+    failing_step = captured[-1]["executed_commands"][-1]
+    assert failing_step["returncode"] == 7
+    assert failing_step["stdout"] == "bad stdout\n"
+    assert failing_step["stderr"] == "bad stderr\n"
 
     success_rc = run_predict_commit(
         ROOT,
         paths=["README.md"],
-        as_json=False,
         plan_only=False,
         run_command=_runner(0),
-        emit_payload=_payload_sink,
+        emit_payload=sink,
     )
     assert success_rc == 0
-    assert "charness pre-commit: ok" in capsys.readouterr().out
+    assert captured[-1]["status"] == "completed"
+    # `status: completed` alone would also hold for a loop that ran nothing. The
+    # retired text mode printed a line per gate BEFORE running it and `ok` only after
+    # the loop, so it carried that force; the payload carries it as the executed list.
+    executed_commands = [step["command"] for step in captured[-1]["executed_commands"]]
+    assert len(executed_commands) == len(captured[-1]["planned_commands"])
+    assert any("check_doc_links.py" in command for command in executed_commands)
 
 
-def test_run_predict_commit_surfaces_advisory_provider_lines(capsys) -> None:
+def test_run_predict_commit_surfaces_advisory_provider_lines() -> None:
     # #2a: advisory providers emit exit-0 informational lines that never change the
-    # return code; they appear in text output and carry into the json payload.
+    # return code. The text echo of them is gone with `--json`; the lines themselves
+    # ride the one emitted document under `advisories`, which is what the echo was a
+    # projection of.
     def provider(repo_root: Path, selected_paths: list[str]) -> list[str]:
         return ["ADVISORY: example nudge", "- charness-artifacts/debug/x.md"]
+
+    captured: list[dict[str, object]] = []
 
     rc = run_predict_commit(
         ROOT,
         paths=["README.md"],
-        as_json=False,
         plan_only=False,
         run_command=_runner(0),
-        emit_payload=_payload_sink,
+        emit_payload=_capturing_payload_sink(captured),
         advisory_provider=provider,
     )
-    out = capsys.readouterr().out
     assert rc == 0
-    assert "ADVISORY: example nudge" in out
-    assert "- charness-artifacts/debug/x.md" in out
-
-    captured: list[dict[str, object]] = []
-
-    def capture_sink(payload: dict[str, object], *, as_json: bool) -> int:
-        captured.append(payload)
-        return 0
-
-    run_predict_commit(
-        ROOT,
-        paths=["README.md"],
-        as_json=True,
-        plan_only=False,
-        run_command=_runner(0),
-        emit_payload=capture_sink,
-        advisory_provider=provider,
-    )
     assert captured[-1]["advisories"] == ["ADVISORY: example nudge", "- charness-artifacts/debug/x.md"]
 
 
@@ -627,9 +649,9 @@ def test_predict_commit_rejects_length_violating_staged_python(tmp_path: Path) -
     _git_init_and_stage(repo, "scripts/too_long.py", "print('valid')\n")
     env = _write_predict_commit_stubs(repo, length_fails=True)
 
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json", env=env)
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "failed"
     assert payload["executed_commands"][-1]["command"].startswith("python3 scripts/check_python_lengths.py")
@@ -641,9 +663,9 @@ def test_predict_commit_rejects_attention_violating_staged_python(tmp_path: Path
     _git_init_and_stage(repo, "scripts/bad_attention.py", "print('valid')\n")
     env = _write_predict_commit_stubs(repo, attention_fails=True)
 
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json", env=env)
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "failed"
     assert payload["executed_commands"][-1]["command"].startswith("python3 scripts/validate_attention_state_visibility.py")
@@ -655,9 +677,9 @@ def test_predict_commit_accepts_clean_staged_python(tmp_path: Path) -> None:
     _git_init_and_stage(repo, "scripts/clean.py", "print('valid')\n")
     env = _write_predict_commit_stubs(repo)
 
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json", env=env)
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "completed"
     assert [step["returncode"] for step in payload["executed_commands"]] == [0, 0, 0, 0, 0, 0]
@@ -696,9 +718,9 @@ def test_predict_commit_forces_review_on_staged_skill_deletion(tmp_path: Path) -
     env = _write_predict_commit_stubs(repo)
     _write_skill_surface_stubs(repo)
 
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json", env=env)
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0, result.stderr
     assert any(line.startswith("REVIEW:") for line in payload["advisories"])
     assert any("skills/public/demo/SKILL.md" in line for line in payload["advisories"])
@@ -713,9 +735,9 @@ def test_a_deletion_only_commit_still_schedules_its_surface_gates(tmp_path: Path
     env = _write_predict_commit_stubs(repo)
     _write_skill_surface_stubs(repo)
 
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", "--json", env=env)
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["changed_paths"] == ["skills/public/demo/SKILL.md"]
     labels = [command["label"] for command in payload["planned_commands"]]
     assert "staged-plugin-mirror-drift" in labels
@@ -888,7 +910,7 @@ def test_fast_surface_verify_gates_degrade_without_surfaces_manifest(tmp_path: P
 # --- #332: the cheap structural sweep must run first in the full closeout ------
 
 
-def _sweep_sink(payload: dict[str, object], *, as_json: bool, stderr_message: str | None = None) -> int:
+def _sweep_sink(payload: dict[str, object], *, stderr_message: str | None = None) -> int:
     return 0 if payload["status"] not in {"blocked", "failed"} else 1
 
 
@@ -921,7 +943,7 @@ def test_block_on_structural_sweep_blocks_then_passes() -> None:
     # closeout proceed.
     failing = {"status": "x", "changed_paths": ["scripts/x.py"]}
     rc = block_on_structural_sweep(
-        ROOT, failing, as_json=True, plan_only=False, run_command=_runner(1), emit_payload=_sweep_sink
+        ROOT, failing, plan_only=False, run_command=_runner(1), emit_payload=_sweep_sink
     )
     assert rc == 1
     assert failing["status"] == "blocked"
@@ -929,7 +951,7 @@ def test_block_on_structural_sweep_blocks_then_passes() -> None:
 
     clean = {"status": "x", "changed_paths": ["scripts/x.py"]}
     assert block_on_structural_sweep(
-        ROOT, clean, as_json=True, plan_only=False, run_command=_runner(0), emit_payload=_sweep_sink
+        ROOT, clean, plan_only=False, run_command=_runner(0), emit_payload=_sweep_sink
     ) is None
     assert clean["structural_sweep"]["status"] == "ok"
     assert clean["status"] == "x"  # untouched -> closeout continues
@@ -939,28 +961,39 @@ def test_block_on_structural_sweep_is_noop_in_plan_only() -> None:
     # plan_only surfaces the sweep through planned_commands, so the blocker no-ops.
     payload = {"status": "x", "changed_paths": ["scripts/x.py"]}
     assert block_on_structural_sweep(
-        ROOT, payload, as_json=True, plan_only=True, run_command=_runner(1), emit_payload=_sweep_sink
+        ROOT, payload, plan_only=True, run_command=_runner(1), emit_payload=_sweep_sink
     ) is None
     assert "structural_sweep" not in payload
 
 
-def test_block_on_structural_sweep_echoes_failing_streams_in_text_mode(capsys) -> None:
-    # #335: the as_json=False branch echoes the failing gate's captured stdout/stderr
-    # so a blocked closeout shows why it blocked; the block test above used as_json=True,
-    # leaving this print path (staged_commit_gate_plan.py:361-364) uncovered.
+def test_block_on_structural_sweep_carries_failing_streams_in_the_payload() -> None:
+    # #335: a blocked closeout must show WHY it blocked. That used to be an echo of
+    # the failing gate's captured streams beside the output; output is one document
+    # since the `--json` removal, so the same evidence is asserted where it now
+    # lives -- every sweep command's stdout/stderr under `structural_sweep.executed`,
+    # plus the named cause the emitter still routes to stderr.
     payload = {"status": "x", "changed_paths": ["scripts/x.py"]}
+    emitted: list[str | None] = []
+
+    def sink(sink_payload: dict[str, object], *, stderr_message: str | None = None) -> int:
+        emitted.append(stderr_message)
+        return _sweep_sink(sink_payload, stderr_message=stderr_message)
+
     rc = block_on_structural_sweep(
         ROOT,
         payload,
-        as_json=False,
         plan_only=False,
         run_command=_runner(1, "boundary bypass detail\n", "stderr detail"),
-        emit_payload=_sweep_sink,
+        emit_payload=sink,
     )
     assert rc == 1
-    captured = capsys.readouterr()
-    assert "boundary bypass detail" in captured.out
-    assert "stderr detail" in captured.err  # no trailing newline -> exercises the end="\n" arm
+    failing_step = payload["structural_sweep"]["executed"][-1]
+    assert failing_step["stdout"] == "boundary bypass detail\n"
+    # No trailing newline: the payload carries the stream verbatim, so the old
+    # end="\n" print arm has no counterpart to preserve.
+    assert failing_step["stderr"] == "stderr detail"
+    assert emitted[-1] is not None
+    assert "validate-attention-state-visibility" in emitted[-1]
 
 
 def _minimal_surfaces(repo: Path) -> Path:
@@ -1012,12 +1045,11 @@ def test_full_closeout_blocks_329_class_violation_at_structural_sweep(tmp_path: 
         str(manifest),
         "--skip-broad-pytest",
         "--allow-unmatched",
-        "--json",
         "--paths",
         "scripts/bad.py",
     )
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1, result.stderr
     assert payload["status"] == "blocked"
     assert payload["structural_sweep"]["failed_label"] == "validate-attention-state-visibility"

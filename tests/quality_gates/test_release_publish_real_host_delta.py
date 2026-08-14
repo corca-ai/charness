@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.quality_gates.release_publish_fixtures import (
     _install_fake_git,
@@ -113,7 +114,7 @@ def _write_base_ref_failing_git(bin_dir: Path) -> None:
 
 def _assert_real_host_required(repo: Path, result: subprocess.CompletedProcess[str]) -> dict:
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
         encoding="utf-8"
     )
@@ -691,7 +692,7 @@ def test_publish_release_dry_run_allows_no_trigger_repo_without_surfaces(tmp_pat
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["execute"] is False
     assert payload["target_version"] == "0.0.1"
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()

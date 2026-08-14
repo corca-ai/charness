@@ -8,6 +8,10 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import yaml
+
+from scripts.yaml_output import render_yaml
+
 from .issue_closeout_support import bug_closeout_body
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -294,7 +298,7 @@ def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subproce
     prepared = _run_publish(repo, env, "--part", "patch", *extras, "--execute")
     if prepared.returncode != 0:
         return prepared
-    payload = json.loads(prepared.stdout)
+    payload = yaml.safe_load(prepared.stdout)
     prepared_commit = payload["prepared_release_commit"]
     record = subprocess.run(
         ["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"],
@@ -309,10 +313,18 @@ def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subproce
         "--claims-review-artifact", review_path, "--execute",
     )
     if resumed.returncode == 0:
-        final_payload = json.loads(resumed.stdout)
+        final_payload = yaml.safe_load(resumed.stdout)
         final_payload["previous_version"] = payload["previous_version"]
         final_payload["target_version"] = payload["target_version"]
-        return subprocess.CompletedProcess(resumed.args, resumed.returncode, json.dumps(final_payload), resumed.stderr)
+        # Re-rendered through the command's OWN renderer, not `json.dumps`. This synthetic
+        # CompletedProcess stands in for real publish stdout, so it has to carry the same
+        # YAML shape the real command emits -- otherwise a consumer that reads the stream
+        # rather than the parsed payload would be testing against a stdout no command
+        # produces. (JSON parses as YAML, so the difference is invisible to `yaml.safe_load`
+        # consumers and only bites the ones that look at the text.)
+        return subprocess.CompletedProcess(
+            resumed.args, resumed.returncode, render_yaml(final_payload), resumed.stderr
+        )
     return resumed
 
 

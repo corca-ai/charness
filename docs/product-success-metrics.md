@@ -290,8 +290,8 @@ Preview a feedback event first, then repeat the same command with `--execute`
 only after confirming the target and compact evidence locator:
 
 ```bash
-python3 scripts/record_usage_feedback.py --repo-root . --product-id charness --target-episode-id <delivery-episode-id> --feedback-signal accepted --source-kind operator --evidence-kind review --evidence-ref review-20260710 --json
-python3 scripts/record_usage_feedback.py --repo-root . --product-id charness --target-episode-id <delivery-episode-id> --feedback-signal accepted --source-kind operator --evidence-kind review --evidence-ref review-20260710 --execute --json
+python3 scripts/record_usage_feedback.py --repo-root . --product-id charness --target-episode-id <delivery-episode-id> --feedback-signal accepted --source-kind operator --evidence-kind review --evidence-ref review-20260710
+python3 scripts/record_usage_feedback.py --repo-root . --product-id charness --target-episode-id <delivery-episode-id> --feedback-signal accepted --source-kind operator --evidence-kind review --evidence-ref review-20260710 --execute
 ```
 
 This is a product vocabulary baseline only. It does not prove product success.

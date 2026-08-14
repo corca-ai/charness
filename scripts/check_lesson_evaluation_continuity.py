@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _continuity = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
@@ -47,49 +48,30 @@ def build_report(repo_root: Path, *, as_of: date) -> dict[str, Any]:
     return report
 
 
-def render_human(report: dict[str, Any]) -> str:
-    statuses = report["status_counts"]
-    reasons = report["not_evaluated_reason_counts"]
-    aggregate_violations = report["aggregate_violation_counts"]
-    lines = [
-        "Lesson evaluation continuity: "
-        f"eligible durable retros={report['eligible_retro_count']}; "
-        f"dispositions={report['disposition_count']}; "
-        f"effect-recorded={statuses['effect-recorded']}; "
-        f"no-effect={statuses['no-effect']}; "
-        f"not-evaluated/missing-start={reasons['missing-start']}; "
-        f"not-evaluated/emission-unproven={reasons['emission-unproven']}; "
-        f"not-evaluated/presentation-unproven={reasons['presentation-unproven']}; "
-        f"score-count-mismatch={aggregate_violations['score-count-mismatch']}; "
-        f"duplicate-session-reference={aggregate_violations['duplicate-session-reference']}; "
-        f"unclaimed-emission={aggregate_violations['unclaimed-emission']}; "
-        f"score events (not a health measure)={report['score_event_count']}; "
-        f"violations={report['violation_count']}"
-    ]
-    lines.extend(
-        f"  - {item['id']}: {item['detail']}"
-        + (f" [{item['path']}]" if "path" in item else "")
-        + (f" (session {item['session_id']})" if "session_id" in item else "")
-        for item in report["violations"]
-    )
-    return "\n".join(lines) + "\n"
+# The only claim the deleted human renderer carried that the payload did not:
+# `score_event_count` was labelled "(not a health measure)" inline. Output is
+# unconditionally YAML now, so the non-claim rides in the payload or a reader
+# starts treating a rising score count as improving health.
+NON_CLAIMS = (
+    "score_event_count counts recorded score events; it is NOT a health measure",
+)
+
+
+def report_payload(report: dict[str, Any]) -> dict[str, Any]:
+    return {**report, "non_claims": list(NON_CLAIMS)}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     parser.add_argument("--as-of", type=date.fromisoformat, default=date.today())
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     try:
         report = build_report(args.repo_root.resolve(), as_of=args.as_of)
     except (FileNotFoundError, OSError, ValueError, json.JSONDecodeError, KeyError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(render_human(report), end="")
+    emit_yaml(report_payload(report))
     return 0 if report["ok"] else 1
 
 

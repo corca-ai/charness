@@ -9,9 +9,9 @@ whole-artifact gate on the metric value.
 from __future__ import annotations
 
 import argparse
-import json
-import sys
 from pathlib import Path
+
+from yaml_output import emit_yaml
 
 try:
     from scripts import rca_ledger_lib as lib
@@ -23,7 +23,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate every line of the RCA ledger.")
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--ledger", default=None, help="Override ledger path (defaults to canonical).")
-    parser.add_argument("--json", action="store_true")
     return parser.parse_args(argv)
 
 
@@ -39,14 +38,10 @@ def main(argv: list[str] | None = None) -> int:
         "error_count": len(errors),
         "errors": errors,
     }
-    if args.json:
-        print(json.dumps(result, indent=2))
-    elif errors:
-        print(f"invalid: {len(errors)} malformed line(s) in {result['ledger_path']}", file=sys.stderr)
-        for entry in errors:
-            print(f"  line {entry['line']}: {entry['error']}", file=sys.stderr)
-    else:
-        print(f"valid: {result['ledger_path']}")
+    # Unconditional YAML. The retired human lines carried only `status`,
+    # `error_count`, `ledger_path`, and each error's `line`/`error` -- all already
+    # in the payload below.
+    emit_yaml(result)
     return 0 if not errors else 1
 
 

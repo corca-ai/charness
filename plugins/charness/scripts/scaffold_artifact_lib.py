@@ -1,11 +1,38 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
-import sys
+import runpy
 from collections.abc import Callable, Sequence
 from pathlib import Path
+
+
+def _load_yaml_output():
+    """Reach the repo-level YAML emitter without importing repo machinery.
+
+    ``scaffold_ideation_artifact.py`` loads this module by file path with no
+    package context, so the seams its siblings use (``runtime_bootstrap`` /
+    ``skill_runtime_bootstrap``) are unavailable here and
+    ``test_the_owner_stays_importable_with_no_package_context`` forbids them.
+    ``runpy`` over an ancestor walk is the same stdlib-only spelling
+    ``chunked_routing_cli.py`` uses for the identical constraint, and it finds
+    ``scripts/yaml_output.py`` at the repo root here and at the plugin root once
+    exported.
+    """
+    helper = next(
+        (
+            ancestor / "scripts" / "yaml_output.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "yaml_output.py").is_file()
+        ),
+        None,
+    )
+    if helper is None:
+        raise ImportError("scripts/yaml_output.py not found")
+    return runpy.run_path(str(helper))
+
+
+emit_yaml = _load_yaml_output()["emit_yaml"]
 
 
 def validator_command(
@@ -229,5 +256,5 @@ def emit_payload_main(
     # single output shape removes the "forgot --json → the budget/write-path never
     # reached the run" footgun that a flag-gated structured mode invites.
     payload = payload_for(args.repo_root.resolve(), title=args.title)
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    emit_yaml(payload)
     return 0

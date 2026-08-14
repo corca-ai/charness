@@ -7,6 +7,8 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -70,7 +72,7 @@ def test_gather_public_url_negotiates_markdown_after_html_login_wall(tmp_path: P
         thread.join(timeout=2)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["acquisition_disposition"] == "success"
     assert payload["final_status"] == "success"
     assert payload["content_persistence"] == "extracted"
@@ -108,7 +110,7 @@ def test_gather_public_url_does_not_persist_raw_json_response(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["content_persistence"] == "unavailable"
     assert "selected_content" not in payload["acquisition"]
     record = Path(payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
@@ -154,7 +156,7 @@ def test_acquire_public_url_does_not_include_raw_json_selected_content(tmp_path:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert payload["selected_attempt"]["stage_id"] == "direct-public-fetch"
     assert "selected_content" not in payload
@@ -181,7 +183,7 @@ def test_acquire_public_url_does_not_include_raw_ndjson_selected_content(tmp_pat
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert "selected_content" not in payload
 
@@ -207,7 +209,7 @@ def test_acquire_public_url_does_not_include_bom_json_selected_content(tmp_path:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert "selected_content" not in payload
 
@@ -233,7 +235,7 @@ def test_acquire_public_url_does_not_include_xssi_json_selected_content(tmp_path
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert "selected_content" not in payload
 
@@ -259,7 +261,7 @@ def test_acquire_public_url_does_not_include_jsonp_selected_content(tmp_path: Pa
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert "selected_content" not in payload
 
@@ -285,7 +287,7 @@ def test_acquire_public_url_does_not_include_js_assignment_selected_content(tmp_
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert "selected_content" not in payload
 
@@ -306,7 +308,7 @@ def test_acquire_public_url_can_persist_plain_text_starting_with_bracket(tmp_pat
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert payload["selected_content"]["text"].startswith("[Update]")
 

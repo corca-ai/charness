@@ -182,21 +182,27 @@ def test_resolves_falls_back_to_the_filesystem_without_a_path_index(tmp_path) ->
 # --- check_doc_authoring_preflight: the rare row kind renders ------------------
 
 
-def test_preflight_renders_the_unresolved_command_target_row(tmp_path) -> None:
-    """The `unresolved-command-target` elif is a distinct human message.
+def test_preflight_emits_the_unresolved_command_target_row_with_its_own_remedy(tmp_path) -> None:
+    """The `unresolved-command-target` row is a distinct kind carrying its own remedy.
+
+    It used to be a distinct human message. With output unconditionally YAML the
+    row kind and the remedy text that named the `<repo-root>/...` placeholder are
+    payload keys instead, so the same two facts are asserted there.
 
     Built through the real `build_report` rather than a hand-constructed Report, so
     the test cannot drift from the dataclass shape and it exercises the collector
-    and the renderer on one path.
+    and the payload builder on one path.
     """
     root = tmp_path
     (root / "scripts").mkdir()
     doc = root / "doc.md"
     doc.write_text("# D\n\nrun `python3 scripts/absent.py`\n", encoding="utf-8")
     report = preflight.build_report(root, str(doc), None)
-    text = preflight.format_human(report)
-    assert "documented command names a missing script `scripts/absent.py`" in text
-    assert "placeholder" in text
+    payload = preflight.report_payload(report)
+    row = next(r for r in payload["doc_links"] if r["kind"] == "unresolved-command-target")
+    assert row["detail"] == "scripts/absent.py"
+    assert row["reason"] == "missing-script"
+    assert "placeholder" in payload["doc_link_remedies"]["unresolved-command-target"]
     assert report.blocked is True
 
 

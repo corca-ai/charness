@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import shlex
 import subprocess
 from pathlib import Path
+
+import yaml
 
 import scripts.export_plugin as export_plugin_module
 from tests.script_main import run_loaded_script_main
@@ -39,7 +40,7 @@ def test_retro_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
 
     result = run_script(SCAFFOLD, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"].startswith("charness-artifacts/retro/")
     assert payload["artifact_path"].endswith(".md")
     assert payload["artifact_role"] == "record"
@@ -91,7 +92,7 @@ def test_exported_retro_scaffold_validator_command_runs_from_consumer_repo(tmp_p
 
     result = run_script(str(scaffold), "--repo-root", str(consumer))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_role"] == "record"
     assert str(plugin_root / "scripts") in payload["validator_command"]
     assert "validate_retro_artifact.py" in payload["validator_command"]
@@ -127,10 +128,10 @@ def test_retro_scaffold_title_with_no_alnum_chars_falls_back_to_retro_slug(tmp_p
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    empty = json.loads(run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "!!!").stdout)
+    empty = yaml.safe_load(run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "!!!").stdout)
     assert empty["write_artifact_path"].endswith("-retro.md")
 
-    named = json.loads(run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "Ship the gate").stdout)
+    named = yaml.safe_load(run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "Ship the gate").stdout)
     assert named["write_artifact_path"].endswith("-ship-the-gate.md")
     assert named["write_artifact_path"] != empty["write_artifact_path"]
 

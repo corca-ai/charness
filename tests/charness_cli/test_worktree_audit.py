@@ -8,6 +8,8 @@ from pathlib import Path
 
 from scripts import worktree_audit_lib as lib
 
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "worktree_audit.py"
+
 
 def _git(*args: str, cwd: Path) -> None:
     subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True)
@@ -114,7 +116,7 @@ def test_audit_doctor_surfaces_active_unprepared_worktree(tmp_path: Path, monkey
     assert "worktree prepare --repo-root <path>" in payload["next_step"]
 
 
-def test_audit_text_shows_primary_readiness_failure(tmp_path: Path, monkeypatch) -> None:
+def test_audit_payload_surfaces_primary_readiness_failure(tmp_path: Path, monkeypatch) -> None:
     repo = _make_primary(tmp_path)
     hooks_dir = repo / ".git" / "hooks"
     hooks_dir.mkdir(parents=True, exist_ok=True)
@@ -127,13 +129,22 @@ def test_audit_text_shows_primary_readiness_failure(tmp_path: Path, monkeypatch)
     )
 
     payload = lib.run_audit(repo, include_doctor=True)
-    rendered = lib.render_audit_text(payload)
 
+    # The retired text renderer filtered PRIMARY entries out of its listing unless
+    # their readiness had failed; this test proved the failing primary was still
+    # surfaced. The payload now carries that entry unconditionally, so the fact to
+    # prove is that the primary is present AND carries its own failing verdict --
+    # not merely that the tally counted a failure somewhere.
     assert payload["doctor_summary"]["fail"] == 1
-    assert f"[{lib.CLASSIFICATION_PRIMARY}] {repo.resolve()}" in rendered
-    assert "readiness=fail" in rendered
-    assert f"NEXT: {payload['next_step']}" in rendered
-    assert "next: " not in rendered
+    primary = [
+        entry
+        for entry in payload["entries"]
+        if entry["classification"] == lib.CLASSIFICATION_PRIMARY
+    ]
+    assert [entry["path"] for entry in primary] == [str(repo.resolve())]
+    assert primary[0]["doctor"]["status"] == lib.FAIL
+    assert payload["next_step"]
+    assert "doctor.status=fail" in payload["next_step"]
 
 
 def test_audit_classifies_stale_detached_head(tmp_path: Path) -> None:
@@ -225,21 +236,34 @@ def test_prune_drops_metadata_for_missing_worktrees(tmp_path: Path) -> None:
     assert audit_after["status"] == lib.PASS
 
 
-def test_audit_emits_json_when_requested(tmp_path: Path) -> None:
-    import io
-    import json
+def test_audit_cli_emits_a_parseable_payload_unconditionally(tmp_path: Path) -> None:
+    """Emission is no longer opt-in: the CLI emits YAML with no flag to ask for it."""
+    import yaml
 
     repo = _make_primary(tmp_path)
-    payload = lib.run_audit(repo)
 
-    buf = io.StringIO()
-    sys_stdout = sys.stdout
-    try:
-        sys.stdout = buf
-        lib.emit_payload(payload, json_mode=True, renderer=lib.render_audit_text)
-    finally:
-        sys.stdout = sys_stdout
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
 
-    decoded = json.loads(buf.getvalue())
+    decoded = yaml.safe_load(completed.stdout)
     assert decoded["repo_root"] == str(repo.resolve())
     assert decoded["summary"]["primary"] == 1
+
+
+def test_audit_cli_rejects_the_removed_json_flag(tmp_path: Path) -> None:
+    """`--json` is gone repo-wide; asking for it is an argparse error, not a fallback."""
+    repo = _make_primary(tmp_path)
+
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 2
+    assert "unrecognized arguments: --json" in completed.stderr

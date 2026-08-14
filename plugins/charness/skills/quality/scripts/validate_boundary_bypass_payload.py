@@ -9,6 +9,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import emit_yaml  # noqa: E402
+
 SCHEMA_VERSION = "charness.quality.boundary_bypass_inventory.v2"
 CALL_SITE_FINGERPRINT_ALGO_VERSION = "1"
 SUMMARY_FIELDS = (
@@ -132,24 +135,13 @@ def _load_json(path: Path | None) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, help="Payload JSON path; omit to read stdin")
-    parser.add_argument("--json", action="store_true", help="Emit validation summary as JSON")
     args = parser.parse_args()
     try:
         summary = validate_payload(_load_json(args.input))
     except ValidationError as exc:
-        if args.json:
-            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True))
-        else:
-            print(f"FAIL: {exc}", file=sys.stderr)
+        emit_yaml({"ok": False, "error": str(exc)})
         return 1
-    report = {"ok": True, "summary": summary}
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-    else:
-        print(
-            "Validated boundary-bypass payload: "
-            f"{summary['candidate_count']} candidates, {summary['convertible_count']} clean-convertible"
-        )
+    emit_yaml({"ok": True, "summary": summary})
     return 0
 
 

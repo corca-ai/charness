@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
+
+import yaml
 
 from .support import ROOT, run_script
 
@@ -36,7 +37,7 @@ def test_create_skill_adapter_resolver_reports_visible_missing_adapter(tmp_path:
     result = run_script(RESOLVE, "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["found"] is False
     assert payload["valid"] is True
     assert payload["data"]["output_dir"] == "charness-artifacts/create-skill"

@@ -7,15 +7,13 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
 _lib = import_repo_module(__file__, "scripts.worktree_audit_lib")
 run_audit = _lib.run_audit
 run_prune = _lib.run_prune
-render_audit_text = _lib.render_audit_text
-render_prune_text = _lib.render_prune_text
-emit_payload = _lib.emit_payload
 PASS = _lib.PASS
 WARN = _lib.WARN
 
@@ -41,11 +39,10 @@ def main() -> int:
         action="store_true",
         help="Run readiness doctor for existing worktrees and include per-worktree readiness summaries.",
     )
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON instead of human text.")
     args = parser.parse_args()
 
     audit_payload = run_audit(args.repo_root, stale_days=args.stale_days, include_doctor=args.doctor)
-    emit_payload(audit_payload, json_mode=args.json, renderer=render_audit_text)
+    emit_yaml(audit_payload)
 
     if audit_payload.get("status") == PASS:
         exit_code = 0
@@ -56,7 +53,12 @@ def main() -> int:
 
     if args.prune and audit_payload.get("status") != "fail":
         prune_payload = run_prune(args.repo_root)
-        emit_payload(prune_payload, json_mode=args.json, renderer=render_prune_text)
+        # A prune run emits a SECOND payload on the same stdout. Two YAML mappings
+        # concatenated are not one document, so the explicit `---` start marker keeps
+        # the stream readable with `yaml.safe_load_all`; without it a --prune run
+        # would print output no YAML reader could parse.
+        print("---")
+        emit_yaml(prune_payload)
         if prune_payload["status"] != PASS:
             exit_code = max(exit_code, 2)
         else:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import os
 import stat
 import subprocess
@@ -11,6 +10,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 RENDER_SCRIPT = "skills/support/markdown-preview/scripts/render_markdown_preview.py"
@@ -222,7 +222,7 @@ def test_markdown_preview_renders_artifacts_with_glow(tmp_path: Path, monkeypatc
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "success"
     assert payload["backend_available"] is True
     assert payload["backend_status"] == "healthy"
@@ -254,7 +254,7 @@ def test_markdown_preview_uses_compatible_script_pty_path(
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "success"
     assert payload["previews"][0]["status"] == "rendered"
 
@@ -277,7 +277,7 @@ def test_markdown_preview_falls_back_when_script_flags_are_unsupported(
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "success"
     assert payload["previews"][0]["status"] == "rendered"
 
@@ -339,7 +339,7 @@ def test_markdown_preview_writes_degraded_artifact_without_glow(tmp_path: Path, 
     result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "degraded"
     assert payload["backend_status"] == "missing"
     artifact_path = repo / ".artifacts/markdown-preview/README.w90.txt"
@@ -361,7 +361,7 @@ def test_markdown_preview_marks_blank_glow_output_as_backend_error(tmp_path: Pat
     result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "backend-error"
     assert payload["backend_available"] is True
     assert payload["backend_status"] == "backend-error"
@@ -386,7 +386,7 @@ def test_markdown_preview_retries_glow_with_file_stdout(tmp_path: Path, monkeypa
     result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "success"
     assert payload["previews"][0]["status"] == "rendered"
     assert (repo / ".artifacts/markdown-preview/README.w90.txt").read_text(encoding="utf-8").strip() == "RENDER-FILE width=90 source=README.md"
@@ -406,7 +406,7 @@ def test_markdown_preview_marks_slow_glow_as_backend_error(tmp_path: Path, monke
     result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "backend-error"
     assert payload["backend_status"] == "backend-error"
     assert "timed out after 0.1s" in payload["previews"][0]["reason"]
@@ -425,18 +425,18 @@ def test_markdown_preview_glow_backend_check_exit_codes(tmp_path: Path, monkeypa
     monkeypatch.setenv("PATH", env["PATH"])
 
     assert mod.main() == 0
-    assert json.loads(capsys.readouterr().out)["status"] == "healthy"
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "healthy"
 
     _write_blank_fake_glow(fake_bin)
 
     assert mod.main() == 1
-    assert json.loads(capsys.readouterr().out)["status"] == "backend-error"
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "backend-error"
 
     _write_slow_fake_glow(fake_bin)
     monkeypatch.setenv("CHARNESS_MARKDOWN_PREVIEW_TIMEOUT_SECONDS", "0.1")
 
     assert mod.main() == 1
-    assert json.loads(capsys.readouterr().out)["status"] == "backend-error"
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "backend-error"
 
 
 # --- #260 score-path survivors in check_glow_backend -------------------------
@@ -465,11 +465,16 @@ def test_glow_check_load_render_module_raises_when_loader_missing(monkeypatch) -
 def test_glow_check_main_healthy_emits_raw_unicode_with_two_space_indent(
     monkeypatch, capsys
 ) -> None:
-    # Pins main()'s json.dumps(ensure_ascii=False, indent=2) and the
-    # `== "healthy"` exit decision for a HEALTHY payload. The status is a
-    # non-interned "healthy" so the `is` mutant returns 1 (wrong); the non-ASCII
-    # note keeps the raw char only under ensure_ascii=False; the 2-space indent
-    # pins the NumberReplacer mutants.
+    # Pins main()'s emit_yaml(payload) and the `== "healthy"` exit decision for a
+    # HEALTHY payload. The status is a non-interned "healthy" so the `is` mutant
+    # returns 1 (wrong); the non-ASCII note keeps the raw char only under the
+    # renderer's allow_unicode.
+    #
+    # The old third assertion pinned json.dumps' `indent=2` via '\n  "status"'.
+    # That premise died with the renderer: there is no indent argument to mutate.
+    # Its surviving purpose -- the whole payload reaches stdout as one parseable
+    # document, not a truncated or reformatted subset -- is pinned by the
+    # round-trip equality below, which also kills an "emit only status" mutant.
     mod = _load_check_glow_backend()
     payload = {"status": "healthy ".strip(), "note": "café"}
     monkeypatch.setattr(
@@ -483,7 +488,7 @@ def test_glow_check_main_healthy_emits_raw_unicode_with_two_space_indent(
 
     assert rc == 0
     assert "café" in out
-    assert '\n  "status"' in out
+    assert yaml.safe_load(out) == payload
 
 
 def test_glow_check_main_unhealthy_status_returns_one(monkeypatch, capsys) -> None:
@@ -536,7 +541,7 @@ def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path
     result = run_helper_in_process(monkeypatch, capsys, repo, env=env)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["config_path"] == ".agents/markdown-preview.yaml"
     assert payload["artifact_dir"] == ".artifacts/custom-preview"
     assert payload["target_count"] == 1
@@ -573,7 +578,7 @@ def test_markdown_preview_rejects_absolute_path_outside_repo_root(tmp_path: Path
     result = run_helper_in_process(monkeypatch, capsys, repo, "--file", str(outside))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "no-targets"
     assert payload["target_count"] == 0
     assert any("Skipping absolute path outside repo root" in warning for warning in payload["warnings"])
@@ -628,7 +633,7 @@ def test_markdown_preview_rejects_repo_relative_symlink_outside_repo_root(tmp_pa
     result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "outside-link.md")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "no-targets"
     assert payload["target_count"] == 0
     assert any("Skipping path outside repo root" in warning for warning in payload["warnings"])
@@ -649,7 +654,7 @@ def test_markdown_preview_keeps_safe_glob_matches_when_skipping_outside_symlink(
     result = run_helper_in_process(monkeypatch, capsys, repo, "--file", "*.md")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["target_count"] == 1
     assert payload["previews"][0]["source_path"] == "README.md"
     assert any("Skipping path outside repo root" in warning for warning in payload["warnings"])

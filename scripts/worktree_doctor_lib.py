@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 import time
 from pathlib import Path
@@ -297,6 +296,10 @@ def run_prepare(repo_root: Path, *, force: bool = False) -> dict[str, Any]:
             "doctor": pre_doctor,
             "status": PASS,
             "next_step": None,
+            # Exit-ZERO attention state: prepare ran NOTHING. YAML renders this key
+            # verbatim as `skipped: <reason>`, which is the visible marker that a
+            # passing prepare here did no work -- and the evidence term declared in
+            # skills/public/quality/references/attention-state-visibility.json.
             "skipped": "doctor already reports pass; pass --force to run prepare anyway.",
         }
 
@@ -329,53 +332,3 @@ def run_prepare(repo_root: Path, *, force: bool = False) -> dict[str, Any]:
         "status": status,
         "next_step": next_step,
     }
-
-
-def render_doctor_text(payload: dict[str, Any]) -> str:
-    lines: list[str] = []
-    manifest = payload.get("manifest") or {}
-    if manifest.get("found"):
-        lines.append(f"manifest: {manifest.get('path')} ({'valid' if manifest.get('valid') else 'invalid'})")
-    else:
-        lines.append("manifest: none (canonical checks only)")
-    for check in payload.get("checks") or []:
-        line = f"{check['id']}: {check['status']}"
-        if check.get("detail"):
-            line += f" — {check['detail']}"
-        lines.append(line)
-    lines.append(f"status: {payload.get('status')}")
-    next_step = payload.get("next_step")
-    if next_step:
-        lines.append(f"NEXT: {next_step}")
-    return "\n".join(lines)
-
-
-def render_prepare_text(payload: dict[str, Any]) -> str:
-    lines: list[str] = []
-    manifest = payload.get("manifest") or {}
-    if manifest.get("found"):
-        lines.append(f"manifest: {manifest.get('path')} ({'valid' if manifest.get('valid') else 'invalid'})")
-    else:
-        lines.append("manifest: none — nothing to run")
-    skipped = payload.get("skipped")
-    if skipped:
-        lines.append(f"skipped: {skipped}")
-    for command in payload.get("executed") or []:
-        line = f"{command['id']}: exit={command.get('exit_code')} duration={command.get('duration_ms')}ms"
-        if command.get("timed_out"):
-            line += " (timed out)"
-        lines.append(line)
-    doctor = payload.get("doctor") or {}
-    lines.append(f"post-doctor: {doctor.get('status')}")
-    lines.append(f"status: {payload.get('status')}")
-    next_step = payload.get("next_step")
-    if next_step:
-        lines.append(f"NEXT: {next_step}")
-    return "\n".join(lines)
-
-
-def emit_payload(payload: dict[str, Any], *, json_mode: bool, renderer) -> None:
-    if json_mode:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print(renderer(payload))

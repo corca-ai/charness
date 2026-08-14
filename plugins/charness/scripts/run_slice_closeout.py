@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -58,7 +58,6 @@ _slice_closeout_broad_gate = import_repo_module(__file__, "scripts.slice_closeou
 _rca_link_advisory = import_repo_module(__file__, "scripts.rca_link_advisory")
 _skill_cut_safety_advisory = import_repo_module(__file__, "scripts.skill_cut_safety_advisory")
 _mutation_coverage_producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
-_slice_closeout_reporting = import_repo_module(__file__, "scripts.slice_closeout_reporting")
 _slice_closeout_run_command = import_repo_module(__file__, "scripts.slice_closeout_run_command")
 _proof_receipt = import_repo_module(__file__, "scripts.proof_receipt")
 plan_broad_pytest_policy = _slice_closeout_broad_gate.plan_broad_pytest_policy
@@ -67,7 +66,6 @@ closeout_producer_or_error = _mutation_coverage_producer.closeout_producer_or_er
 closeout_producer_validation_error = _mutation_coverage_producer.closeout_producer_validation_error
 run_focused_closeout_coverage = _mutation_coverage_producer.run_focused_closeout_coverage
 run_produced_coverage_consumer = _mutation_coverage_producer.run_produced_coverage_consumer
-print_text = _slice_closeout_reporting.print_text
 run_command = _slice_closeout_run_command.run_command
 closeout_receipt = _proof_receipt.closeout_receipt
 ReceiptContractError = _proof_receipt.ReceiptContractError
@@ -88,7 +86,7 @@ def _agent_browser_hygiene_command(repo_root: Path) -> str | None:
     return f"{assert_cmd} || {{ rc=$?; {cleanup_cmd} >/dev/null 2>&1 || true; exit \"$rc\"; }}"
 
 
-def _emit_payload(payload: dict[str, object], *, as_json: bool, stderr_message: str | None = None) -> int:
+def _emit_payload(payload: dict[str, object], *, stderr_message: str | None = None) -> int:
     effective_exit_code = 0 if payload["status"] not in {"blocked", "failed"} else 1
     try:
         receipt = closeout_receipt(payload, effective_exit_code=effective_exit_code)
@@ -101,12 +99,14 @@ def _emit_payload(payload: dict[str, object], *, as_json: bool, stderr_message: 
         receipt = closeout_receipt(payload, effective_exit_code=effective_exit_code)
     payload["effective_exit_code"] = effective_exit_code
     payload["proof_receipt"] = receipt.as_dict()
-    if as_json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_text(payload)
-        if stderr_message is not None:
-            print(stderr_message, file=sys.stderr)
+    # Unconditional YAML. The retired `slice_closeout_reporting.print_text`
+    # rendering was a projection OF this payload, so the payload is a superset of
+    # what it showed and nothing it stated is lost. The stderr cause line is kept:
+    # it was the default (non-`--json`) behavior, and it is what makes a blocked
+    # closeout visible in a runner's error channel.
+    emit_yaml(payload)
+    if stderr_message is not None:
+        print(stderr_message, file=sys.stderr)
     return effective_exit_code
 
 
@@ -126,7 +126,7 @@ def _unsafe_blocker_command_plan(command_plan: list[tuple[str, str]], args) -> l
     return command_plan
 
 
-def _maybe_block_on_unmatched(payload: dict[str, object], *, allow_unmatched: bool, as_json: bool) -> int | None:
+def _maybe_block_on_unmatched(payload: dict[str, object], *, allow_unmatched: bool) -> int | None:
     if not payload["unmatched_paths"] or allow_unmatched:
         return None
     payload["status"] = "blocked"
@@ -134,11 +134,11 @@ def _maybe_block_on_unmatched(payload: dict[str, object], *, allow_unmatched: bo
         "changed paths are not covered by the surfaces manifest; "
         "add the missing coverage or rerun with --allow-unmatched"
     )
-    return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
+    return _emit_payload(payload, stderr_message=payload["error"])
 
 
 def _maybe_block_on_cautilus(
-    repo_root: Path, payload: dict[str, object], *, as_json: bool, ack_skill_review: bool
+    repo_root: Path, payload: dict[str, object], *, ack_skill_review: bool
 ) -> int | None:
     cautilus_plan = plan_cautilus_proof(repo_root, payload["changed_paths"])
     payload["cautilus_plan"] = cautilus_plan
@@ -153,12 +153,12 @@ def _maybe_block_on_cautilus(
             "follow-ups in `cautilus_plan` and rerun with --ack-cautilus-skill-review after recording "
             "the decision"
         )
-        return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
+        return _emit_payload(payload, stderr_message=payload["error"])
     return None
 
 
 def _maybe_block_on_risk_interrupt(
-    repo_root: Path, payload: dict[str, object], *, as_json: bool
+    repo_root: Path, payload: dict[str, object]
 ) -> int | None:
     risk_interrupt_plan = plan_risk_interrupt(repo_root, payload["changed_paths"])
     payload["risk_interrupt_plan"] = risk_interrupt_plan
@@ -168,7 +168,7 @@ def _maybe_block_on_risk_interrupt(
     payload["error"] = (
         f"risk interrupt is blocking ordinary closeout; next_action=`{risk_interrupt_plan['next_action']}`"
     )
-    return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
+    return _emit_payload(payload, stderr_message=payload["error"])
 
 
 def _resolve_broad_producer(args, repo_root: Path, run_command, *, base_sha: str | None = None):
@@ -341,7 +341,6 @@ def _run_preexecution_blocks(
     blocked = block_on_structural_sweep(
         repo_root,
         payload,
-        as_json=args.json,
         plan_only=args.plan_only,
         run_command=run_command,
         emit_payload=_emit_payload,
@@ -354,7 +353,7 @@ def _run_preexecution_blocks(
     if producer_error:
         payload["status"] = "blocked"
         payload["error"] = producer_error
-        return _emit_payload(payload, as_json=args.json, stderr_message=producer_error)
+        return _emit_payload(payload, stderr_message=producer_error)
 
     advise_prose_pin(repo_root, payload["changed_paths"])
     advise_skill_surface_preflight(repo_root, payload["changed_paths"])
@@ -372,17 +371,17 @@ def _run_preexecution_blocks(
     advise_close_keyword_leakage(repo_root)
     advise_decaying_habits(repo_root, payload["changed_paths"])
 
-    blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched, as_json=args.json)
+    blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched)
     if blocked is not None:
         return blocked
 
     blocked = _maybe_block_on_cautilus(
-        repo_root, payload, as_json=args.json, ack_skill_review=args.ack_cautilus_skill_review
+        repo_root, payload, ack_skill_review=args.ack_cautilus_skill_review
     )
     if blocked is not None:
         return blocked
 
-    return _maybe_block_on_risk_interrupt(repo_root, payload, as_json=args.json)
+    return _maybe_block_on_risk_interrupt(repo_root, payload)
 
 
 def _attach_closeout_telemetry(repo_root: Path, payload: dict[str, object]) -> None:
@@ -411,7 +410,6 @@ def main() -> int:
         return run_predict_commit(
             repo_root,
             paths=args.paths,
-            as_json=args.json,
             plan_only=args.plan_only,
             run_command=run_command,
             emit_payload=_emit_payload,
@@ -434,7 +432,7 @@ def main() -> int:
 
     if not payload["changed_paths"]:
         payload["status"] = "noop"
-        return _emit_payload(payload, as_json=args.json)
+        return _emit_payload(payload)
 
     structural_paths = collect_changed_paths(repo_root) if args.base is not None else None
     blocked = _run_preexecution_blocks(
@@ -463,7 +461,7 @@ def main() -> int:
     if should_block_broad_pytest_policy(broad_policy, plan_only=args.plan_only):
         payload["status"] = "blocked"
         payload["error"] = broad_policy["block_error"]
-        return _emit_payload(payload, as_json=args.json, stderr_message=payload["error"])
+        return _emit_payload(payload, stderr_message=payload["error"])
 
     if args.plan_only:
         payload["status"] = "planned"
@@ -474,13 +472,13 @@ def main() -> int:
             args,
             structural_paths=structural_paths,
         )
-        return _emit_payload(payload, as_json=args.json)
+        return _emit_payload(payload)
 
     unsafe_blockers = _unsafe_command_blockers(_unsafe_blocker_command_plan(command_plan, args))
     if unsafe_blockers:
         payload["status"] = "blocked"
         payload["blockers"] = list(payload.get("blockers", [])) + unsafe_blockers
-        return _emit_payload(payload, as_json=args.json)
+        return _emit_payload(payload)
 
     broad_pytest_producer = _resolve_broad_producer(
         args, repo_root, run_command, base_sha=campaign_base_sha
@@ -511,11 +509,11 @@ def main() -> int:
 
     if should_stop:
         _attach_closeout_telemetry(repo_root, payload)
-        return _emit_payload(payload, as_json=args.json, stderr_message=payload.get("error"))
+        return _emit_payload(payload, stderr_message=payload.get("error"))
 
     if _maybe_fail_on_broad_pytest_scope_drift(payload):
         _attach_closeout_telemetry(repo_root, payload)
-        return _emit_payload(payload, as_json=args.json, stderr_message=payload.get("error"))
+        return _emit_payload(payload, stderr_message=payload.get("error"))
 
     payload["status"] = "completed"
     usage_episode = emit_usage_episode_for_slice_closeout(repo_root, str(payload["status"]))
@@ -523,7 +521,7 @@ def main() -> int:
     if usage_episode["status"] in {"invalid_adapter", "invalid_records_path", "emit_failed"}:
         payload["status"] = "failed"
     _attach_closeout_telemetry(repo_root, payload)
-    return _emit_payload(payload, as_json=args.json)
+    return _emit_payload(payload)
 
 
 if __name__ == "__main__":

@@ -30,12 +30,14 @@ section of the quality `references/adapter-contract.md`.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import runpy
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from summary_output_lib import emit_yaml  # noqa: E402
 
 
 def _load_skill_runtime_bootstrap():
@@ -63,7 +65,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--base-sha", default=None, help="Base SHA; defaults to $MUTATION_BASE_SHA.")
     parser.add_argument("--head-sha", default=None, help="Head SHA; defaults to $MUTATION_HEAD_SHA, else HEAD.")
     parser.add_argument("--stamp-marker", action="store_true", help="Producer mode: stamp the freshness marker, then exit 0.")
-    parser.add_argument("--json", action="store_true", help="Emit the full gate report as JSON")
     return parser.parse_args(argv)
 
 
@@ -85,8 +86,8 @@ def _false_green_warning(repo_root: Path, head_sha: str, eligible_globs: list[st
 
     Nothing raises out of here any more either. `_git_lines` raises on a nonzero
     git exit, so an unresolvable `--head-sha` used to kill the process with a
-    traceback AFTER `run_gate` had already produced the `UNESTABLISHED:` report —
-    the operator got neither the line nor a parseable `--json` payload.
+    traceback AFTER `run_gate` had already produced the unestablished report —
+    the operator got no parseable payload at all.
     """
     scope = _gate_lib.resolve_head_scope(repo_root, head_sha)
     if scope.error or scope.mismatch:
@@ -127,10 +128,9 @@ def run(repo_root: Path, args) -> dict[str, object]:
     disclosure = report.get("analyzed_head_not_checked_out_head")
     if disclosure:
         # Exit stays 0 (the analyzed range really did change no eligible file), so
-        # this warning is the ONLY channel that says the empty scope belongs to the
-        # analyzed head and not to this tree. Without it the run prints a bare
-        # `OK:` -- the false green this whole arm exists to close, surviving in the
-        # human channel while `--json` alone carried the truth.
+        # this stderr warning is the loud channel that says the empty scope belongs
+        # to the analyzed head and not to this tree; the payload carries the same
+        # fact under `analyzed_head_not_checked_out_head` and `analyzed_head`.
         sys.stderr.write(
             f"WARNING (changed-line coverage gate): {disclosure}. This range changed no "
             "eligible file, so there was nothing to prove -- but the empty scope is the "
@@ -146,38 +146,57 @@ def run(repo_root: Path, args) -> dict[str, object]:
     return report
 
 
-def human_line(report: dict) -> str:
-    """The operator-facing one-liner for a gate report.
+def verdict(report: dict) -> dict[str, object]:
+    """The verdict WORD and its explanation, folded into the emitted payload.
 
-    Split out of `main` so the verdict WORD is testable on its own. It has to be:
-    `unestablished` reports carry an empty `blocking` list, so before this branch
-    existed they fell through to the `OK:` line while the process exited 1 — a
-    failing run narrating itself as a pass, which is the same conflation the
-    unestablished state was introduced to end.
+    Output is unconditionally YAML, so anything a reader needs has to live in the
+    payload. Two things did not, and both are load-bearing:
 
-    A non-default head is NAMED in the line. It can arrive from `$MUTATION_HEAD_SHA`
-    rather than from anything the operator typed, and only `--json` carried it
-    before, so a verdict over a range nobody asked for read as an unqualified one.
-    The RESOLVED commit is what gets rendered: echoing the raw input printed
-    `[analyzed head: refs/heads/m]` for a ref and `[analyzed head: main]` for a
-    branch — a truncated string in the position of a sha, naming no commit, which
-    is the opposite of the point.
+    - The verdict word itself. `unestablished` reports carry an EMPTY `blocking`
+      list, so a reader who derives the verdict from `blocking` alone reads a
+      could-not-judge run as a pass while the process exits nonzero — the same
+      conflation the unestablished state was introduced to end.
+    - Whether the judged head is this worktree's. A non-default head can arrive
+      from `$MUTATION_HEAD_SHA` rather than from anything the operator typed, so
+      a verdict over a range nobody asked for would otherwise read as an
+      unqualified one.
     """
     if report.get("adapter_errors"):
-        return f"quality adapter invalid: {'; '.join(str(e) for e in report['adapter_errors'])}"
+        return {
+            "verdict": "adapter-invalid",
+            "verdict_detail": "quality adapter invalid: "
+            + "; ".join(str(e) for e in report["adapter_errors"]),
+        }
     if report.get("inert"):
-        return "changed_line_mutation_gate.eligible_globs is empty; gate inert (opted out)."
+        return {
+            "verdict": "inert",
+            "verdict_detail": "changed_line_mutation_gate.eligible_globs is empty; gate inert (opted out).",
+        }
     requested = str(report.get("head_sha") or "HEAD")
     resolved = report.get("resolved_head_sha")
-    scope = "" if requested == "HEAD" or not resolved else f" [analyzed head: {str(resolved)[:12]}]"
+    scope: dict[str, object] = (
+        {} if requested == "HEAD" or not resolved else {"analyzed_head": str(resolved)}
+    )
     if report.get("unestablished"):
-        return f"UNESTABLISHED: {report.get('reason', 'this run established nothing')}{scope}"
+        return {
+            "verdict": "unestablished",
+            "verdict_detail": str(report.get("reason", "this run established nothing")),
+            **scope,
+        }
     if report["blocking"]:
-        return (
-            f"FAIL: {len(report['blocking'])} changed file(s) have uncovered changed lines: "
-            f"{', '.join(report['blocking'])}{scope}"
-        )
-    return f"OK: {report.get('reason', 'no uncovered changed lines')}{scope}"
+        return {
+            "verdict": "fail",
+            "verdict_detail": (
+                f"{len(report['blocking'])} changed file(s) have uncovered changed lines: "
+                f"{', '.join(report['blocking'])}"
+            ),
+            **scope,
+        }
+    return {
+        "verdict": "ok",
+        "verdict_detail": str(report.get("reason", "no uncovered changed lines")),
+        **scope,
+    }
 
 
 UNESTABLISHED_EXIT = 3
@@ -187,7 +206,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     repo_root = args.repo_root.resolve()
     report = run(repo_root, args)
-    print(json.dumps(report, indent=2, sort_keys=True) if args.json else human_line(report))
+    emit_yaml({**report, **verdict(report)})
     if report.get("adapter_errors"):
         return 1
     # Exit 3 for "this run could not judge the range", separately from exit 1 for

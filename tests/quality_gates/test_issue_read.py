@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.quality_gates.support import ROOT, run_script
 
@@ -63,7 +63,7 @@ def test_issue_read_fails_when_backend_omits_comments(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "comments list" in payload["error"]
 
@@ -119,5 +119,5 @@ def test_issue_read_command_stops_on_invalid_adapter(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False

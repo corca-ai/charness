@@ -244,6 +244,24 @@ def _run_preview(repo_root: Path, seed: str) -> tuple[int, str, str]:
     )
 
 
+def _parse_preview(stdout: str) -> Any:
+    """Read the one structured document `render_lesson_selection_preview.py` emits.
+
+    That command emits YAML through `yaml_output`, which falls back to JSON syntax
+    when PyYAML is not importable. The child runs under `sys.executable` -- THIS
+    interpreter -- so parent and child always agree on whether PyYAML is available,
+    and the JSON branch here is reachable exactly when the child took the JSON
+    branch there. That equivalence is what keeps this module stdlib-only by
+    contract (see the module docstring): it must never fail to produce a lesson
+    block because a package is missing.
+    """
+    try:
+        import yaml
+    except ImportError:
+        return json.loads(stdout)
+    return yaml.safe_load(stdout)
+
+
 def _first_line(text: str) -> str:
     """The most informative single line of the child's stderr.
 
@@ -338,7 +356,23 @@ def build_lesson_context(repo_root: Path | None, payload: dict[str, Any]) -> dic
         return _not_established(
             repo_root, ledger, f"`{PREVIEW_SCRIPT_NAME}` exited {code}: {_first_line(err)}"
         )
-    return _evaluated(repo_root, ledger, seed, out)
+    try:
+        preview = _parse_preview(out)
+    except Exception as exc:  # noqa: BLE001 -- an unreadable preview is `not-established`, never silence
+        return _not_established(
+            repo_root,
+            ledger,
+            f"`{PREVIEW_SCRIPT_NAME}` exited 0 but its output could not be parsed "
+            f"({type(exc).__name__}: {exc}).",
+        )
+    if not isinstance(preview, dict) or not isinstance(preview.get("preview_text"), str):
+        return _not_established(
+            repo_root,
+            ledger,
+            f"`{PREVIEW_SCRIPT_NAME}` exited 0 but emitted no `preview_text`, so there are no "
+            "lesson bytes to present.",
+        )
+    return _evaluated(repo_root, ledger, seed, preview)
 
 
 def _declare_command(repo_root: Path, session_id: str) -> str:
@@ -348,15 +382,18 @@ def _declare_command(repo_root: Path, session_id: str) -> str:
     )
 
 
-def _evaluated(repo_root: Path, ledger: Path, seed: str, preview_text: str) -> dict[str, Any]:
+def _evaluated(repo_root: Path, ledger: Path, seed: str, preview: dict[str, Any]) -> dict[str, Any]:
     """The preview ran. Either it selected lessons, or the ledger is still empty.
 
-    Item presence is read off the rendered text rather than from a second `--json`
-    run: `render_preview_bytes` emits one `- <lesson_id> — <lesson>` line per item,
-    and a second subprocess would double the measured 0.85 s to learn something the
-    first run already said.
+    ONE subprocess answers both questions. The preview command carries its rendered
+    bytes as `preview_text` inside the same document that carries `items`, so item
+    presence is read off the structured list while the injected bytes stay the
+    renderer's own -- no second run, and no second hand-written copy of the item
+    format here.
     """
-    has_items = any(line.startswith("- ") for line in preview_text.splitlines())
+    preview_text: str = preview["preview_text"]
+    items = preview.get("items")
+    has_items = isinstance(items, list) and bool(items)
     if not has_items:
         return {
             "state": STATE_EVALUATED,
@@ -403,16 +440,21 @@ def main(argv: list[str] | None = None) -> int:
         "--session-id",
         help="Host session id to derive the suggested session id and seed from (defaults to a digest).",
     )
-    parser.add_argument("--json", action="store_true", help="Emit the structured state payload.")
     args = parser.parse_args(argv)
     payload: dict[str, Any] = {"source": "cli"}
     if args.session_id:
         payload["session_id"] = args.session_id
     context = build_lesson_context(args.repo_root.resolve(), payload)
-    if args.json:
-        print(json.dumps(context, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(context["text"] or f"state: {context['state']} — {context.get('reason', '')}".rstrip(" —"))
+    # Imported HERE, not at module scope. The SessionStart hook imports this module
+    # and calls `build_lesson_context` in process; only the CLI reaches `main`. A
+    # top-level import would put a non-stdlib-shaped dependency on the hook's import
+    # path, which the module docstring forbids for exactly that reason.
+    from yaml_output import emit_yaml
+
+    # `text` is a payload key, so the block a hook would inject is still in the
+    # output verbatim; the `not-configured` states that carry `text: null` also carry
+    # the `reason` the prose fallback used to print in its place.
+    emit_yaml(context)
     # Same byte contract as `check_auto_trigger.py` and `check_boundary_escalation.py`:
     # ANY nonzero exit means "not a no". `not-configured` is a real recorded answer
     # (this repo opted out) and exits 0; `not-established` could not tell and exits 3.

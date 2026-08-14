@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 _LIB = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/goal_artifact_lib.py"
 _CHECKER = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/check_goal_artifact.py"
@@ -504,7 +504,7 @@ def test_goal_checker_section_placeholders_are_complete_only(tmp_path: Path) -> 
     _, complete_path = _complete_ready_goal_with_template_auto_retro(tmp_path, status="complete")
     complete = _run_goal_checker(tmp_path, complete_path)
     assert complete.returncode == 1
-    payload = json.loads(complete.stdout)
+    payload = yaml.safe_load(complete.stdout)
     placeholders = payload["closeout_evidence"]["section_placeholders"]
     assert placeholders[0]["section"] == "Auto-Retro"
     assert placeholders[0]["marker"] == "TODO"

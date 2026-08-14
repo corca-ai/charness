@@ -25,7 +25,14 @@ from usage_episode_records import read_valid_records as _read_valid_records
 from usage_episode_records import resolve_records_path as _resolve_records_path
 from usage_episode_records import schema_root as _schema_root
 
+from yaml_output import emit_yaml
+
 DEFAULT_ADAPTER = Path(".agents/usage-episodes-adapter.yaml")
+# The heading the deleted prose renderer printed above the list. It stays in the
+# payload because it is what marks the list as NON-claims rather than findings: a
+# summary that shows the sentences without it reads them as things the report is
+# asserting, which inverts them.
+NON_CLAIMS_LABEL = "Non-claims:"
 NON_CLAIMS = [
     "Usage episodes are an engineering usage signal, not product-success proof.",
     PRODUCT_EVIDENCE_NON_CLAIM,
@@ -40,6 +47,12 @@ def _warning(warning_id: str, message: str, next_action: str) -> dict[str, str]:
         "warning_id": warning_id,
         "message": message,
         "next_action": next_action,
+        # The rendered attention line, carried INSIDE the payload. The `WARNING:`
+        # prefix existed only in the deleted prose renderer, and a warning that
+        # reads as an ordinary field is an attention state gone quiet -- the exact
+        # failure `skills/public/quality/references/attention-state-visibility.json`
+        # declares this file against.
+        "attention": f"WARNING: {message} Next action: {next_action}",
     }
 
 
@@ -201,6 +214,7 @@ def _report_payload(
         ),
         "warnings": [],
         "errors": [],
+        "non_claims_label": NON_CLAIMS_LABEL,
         "non_claims": NON_CLAIMS,
     }
 
@@ -223,68 +237,12 @@ def _base_payload(
         "session_count": 0,
         "errors": errors or [],
         "warnings": warnings or [],
+        "non_claims_label": NON_CLAIMS_LABEL,
         "non_claims": NON_CLAIMS,
     }
     if records_path is not None:
         payload["records_path"] = _portable_path(repo_root, records_path)
     return payload
-
-
-def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
-    if as_json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-        return
-    print("ADVISORY: usage episode report is an engineering signal, not product-success proof.")
-    for warning in payload.get("warnings", []):
-        print(f"WARNING: {warning['message']} Next action: {warning['next_action']}")
-    status = payload["status"]
-    if status != "valid":
-        print(f"{status}: {payload.get('episode_count', 0)} usage episode record(s)")
-        for error in payload.get("errors", []):
-            print(f"- {error}")
-    else:
-        print(
-            f"Usage episodes: {payload['delivery_episode_count']} delivery record(s); "
-            f"feedback events: {payload['feedback_event_count']}; across "
-            f"{payload['session_count']} session group(s)."
-        )
-        sessions = payload["sessions"]
-        print(
-            "Session grouping: "
-            f"{sessions['session_id_present_count']}/{payload['delivery_episode_count']} delivery records "
-            f"carry session_id; inferred gap sessions: {sessions['inferred_gap_count']}."
-        )
-        print(f"T signals: {payload['t_signal_count']} ({payload['t_signal_rate']:.1%}).")
-        evidence = payload["product_evidence"]
-        print(
-            "Product evidence: "
-            f"first_value_floor={evidence['first_value_floor_count']}/{payload['episode_count']} "
-            f"({evidence['first_value_floor_rate']:.1%}), "
-            f"feedback_coverage={evidence['feedback_coverage_rate']:.1%}, "
-            f"satisfaction_signals={evidence['satisfaction_signal_count']}, "
-            f"objective_lifecycle_signals={evidence['objective_lifecycle_signal_count']}, "
-            f"friction_or_followup={evidence['friction_or_followup_signal_count']}."
-        )
-        gaps = payload["capture_gaps"]
-        print(
-            "Capture gaps: "
-            f"ungrouped={gaps['ungrouped_episode_count']}, "
-            f"missing_feedback={gaps['missing_feedback_signal_count']}, "
-            f"single_entry_point_only={gaps['single_entry_point_only']}, "
-            f"explicit_request_only={gaps['explicit_request_only']}."
-        )
-        reconciliation = payload["feedback_reconciliation"]
-        print(
-            "Feedback reconciliation: "
-            f"linked={reconciliation['linked_count']}, "
-            f"unlinked={reconciliation['unlinked_count']}, "
-            f"duplicate_ids={reconciliation['duplicate_feedback_id_count']}."
-        )
-        if evidence["veto_gaps"]:
-            print("Product-success veto gaps: " + ", ".join(evidence["veto_gaps"]) + ".")
-    print("Non-claims:")
-    for non_claim in payload.get("non_claims", []):
-        print(f"- {non_claim}")
 
 
 def _parse_args() -> argparse.Namespace:
@@ -294,7 +252,6 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--records-path", type=Path)
     parser.add_argument("--gap-minutes", type=int, default=90)
     parser.add_argument("--session-limit", type=int, default=10)
-    parser.add_argument("--json", action="store_true")
     return parser.parse_args()
 
 
@@ -363,7 +320,7 @@ def main() -> int:
     episode_schema = _load_json(schema_root / "episode.schema.json")
 
     if not adapter_path.is_file():
-        _print_result(_missing_adapter_payload(repo_root, adapter_path), as_json=args.json)
+        emit_yaml(_missing_adapter_payload(repo_root, adapter_path))
         return 0
 
     try:
@@ -371,11 +328,11 @@ def main() -> int:
         jsonschema.validate(adapter, manifest_schema)
     except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
         payload = _base_payload("invalid_adapter", repo_root, adapter_path, valid=False, errors=[str(exc)])
-        _print_result(payload, as_json=args.json)
+        emit_yaml(payload)
         return 1
 
     if not adapter.get("enabled", False):
-        _print_result(_disabled_payload(repo_root, adapter_path), as_json=args.json)
+        emit_yaml(_disabled_payload(repo_root, adapter_path))
         return 0
 
     records_path = _resolve_records_path(repo_root, adapter, args.records_path)
@@ -390,10 +347,10 @@ def main() -> int:
             valid=False,
             errors=["records_path must stay under repo_root"],
         )
-        _print_result(payload, as_json=args.json)
+        emit_yaml(payload)
         return 1
     if not records_path.is_file():
-        _print_result(_no_records_payload(repo_root, adapter_path, records_path), as_json=args.json)
+        emit_yaml(_no_records_payload(repo_root, adapter_path, records_path))
         return 0
 
     records, errors = _read_valid_records(records_path, episode_schema)
@@ -407,11 +364,11 @@ def main() -> int:
             errors=errors,
         )
         payload["valid_count"] = len(records)
-        _print_result(payload, as_json=args.json)
+        emit_yaml(payload)
         return 1
 
     payload = _report_payload(repo_root, adapter_path, records_path, records, gap_minutes=args.gap_minutes, session_limit=args.session_limit)
-    _print_result(payload, as_json=args.json)
+    emit_yaml(payload)
     return 0
 
 

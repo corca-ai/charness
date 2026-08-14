@@ -3,10 +3,8 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import json
 import runpy
 import shlex
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -26,6 +24,7 @@ _refresh_current_pointer = SKILL_RUNTIME.load_repo_module_from_skill_script(__fi
 _scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 dated_artifact_filename = _artifact_naming.dated_artifact_filename
 slugify = _artifact_naming.slugify
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 
 
 def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.date) -> dict[str, object]:
@@ -91,7 +90,7 @@ def main() -> int:
             intent=args.intent,
             artifact_date=artifact_date,
         )
-        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        _summary_output.emit_yaml(payload)
         return 0
     finally:
         cancel_timeout()

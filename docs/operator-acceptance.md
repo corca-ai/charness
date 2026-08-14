@@ -60,7 +60,7 @@ Read first:
 Useful local commands:
 
 ```bash
-python3 scripts/doctor.py --repo-root . --json
+python3 scripts/doctor.py --repo-root .
 python3 scripts/validate_integrations.py --repo-root .
 python3 scripts/run_evals.py --repo-root .
 ```

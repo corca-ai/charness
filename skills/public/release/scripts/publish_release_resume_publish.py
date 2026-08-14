@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
+
+from scripts.yaml_output import emit_yaml
 
 # Mirrors the claims-lane phase set owned by `publish_release_claims_review`; this
 # module is loaded by `runpy` from the resume helper and does not import it.
@@ -103,7 +104,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     _notes_preflight(repo_root, cli=cli, state=state, tag_name=tag_name, notes_file=notes_file)
     if not args.execute:
         payload["resume"] = "dry-run: would re-validate gates, create missing refs, then publish the existing release commit"
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        emit_yaml(payload)
         return
     cli.run(cli.backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     common.preflight_close_issue_carrier(repo_root, args=args, issue_repo=plan["issue_repo"], payload=payload, cli=cli,
@@ -177,4 +178,4 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
                   "fresh_checkout_payload": fresh, "host_payload": host, "tag_name": tag_name})
     common.run_release_closeout_tail(repo_root, args=args, adapter_data=adapter_data, state=state, issue_repo=plan["issue_repo"],
                                      payload=payload, cli=cli, carrier_source="release-resume")
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)

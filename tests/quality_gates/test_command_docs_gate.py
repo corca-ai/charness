@@ -6,6 +6,7 @@ import importlib.util
 import json
 import runpy
 import shlex
+import subprocess
 import sys
 from pathlib import Path
 
@@ -111,7 +112,13 @@ def seed_command_docs_repo(tmp_path: Path) -> Path:
 def test_check_command_docs_passes_current_repo_contract() -> None:
     result = run_script("scripts/check_command_docs.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "Validated command docs" in result.stdout
+    # "Validated command docs for N command surface(s)" was the renderer's line;
+    # `status` plus the command list is what carries the same claim AND its
+    # population, so a pass over zero surfaces is not readable as a pass over all.
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "pass"
+    assert payload["findings"] == []
+    assert payload["commands"]
 
 
 def test_check_command_docs_reports_missing_required_doc_phrase(tmp_path: Path) -> None:
@@ -131,7 +138,11 @@ def test_check_command_docs_skips_repos_without_contract(tmp_path: Path) -> None
     result = run_script("scripts/check_command_docs.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
-    assert "No command-docs contract found" in result.stdout
+    # A skip has to say it skipped and WHY: an empty findings list alone reads as
+    # a clean pass over a repo the gate never inspected.
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "skipped"
+    assert payload["reason"] == "missing-contract"
 
 
 def test_render_cli_reference_matches_checked_in_doc(tmp_path: Path) -> None:
@@ -240,17 +251,43 @@ def test_render_cli_reference_renders_contract_order_and_examples(monkeypatch) -
 
 
 def test_root_cli_has_no_json_compatibility_flag() -> None:
-    cli_test_dir = ROOT / "tests" / "charness_cli"
-    files_with_legacy_flag = {
-        path.name
-        for path in cli_test_dir.glob("test_*.py")
-        if any(
-            isinstance(node, ast.Constant) and node.value == "--json"
-            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
-        )
-    }
+    """The root CLI carries no `--json`, read off the CLI itself.
 
-    assert files_with_legacy_flag == set()
+    This used to be measured as "no file under `tests/charness_cli/` mentions the
+    string `--json`". That proxy inverted at the 2026-08-14 total removal: the
+    tests that PROVE `--json` is now an argparse error have to name the flag to
+    pass it, so the old spelling would fail precisely on the evidence that the
+    removal landed. The subject was never the tests -- it is the CLI's own parser
+    surface, so that is what is read here: no declaration anywhere the CLI
+    dispatches, and a real invocation refused rather than ignored.
+    """
+    declarations: list[str] = []
+    for path in [ROOT / "charness", *sorted((ROOT / "scripts").glob("*.py"))]:
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if not isinstance(node, ast.Call):
+                continue
+            function = node.func
+            if not (isinstance(function, ast.Attribute) and function.attr == "add_argument"):
+                continue
+            if any(isinstance(arg, ast.Constant) and arg.value == "--json" for arg in node.args):
+                declarations.append(f"{path.relative_to(ROOT)}:{node.lineno}")
+
+    assert declarations == [], f"the root CLI surface still declares --json: {declarations}"
+
+    # Behavioral half: a caller still passing the old flag is told it is gone,
+    # rather than handed a payload they will read as the format they requested.
+    # `worktree audit` is read-only, so the probe cannot mutate this tree -- and
+    # `--json` is rejected during parsing, before the command does any work.
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "charness"), "worktree", "audit", "--json"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 2, completed.stdout + completed.stderr
+    assert "unrecognized arguments: --json" in completed.stderr
 
 
 def test_root_cli_mutating_modes_have_side_effect_probe_contracts() -> None:

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import shlex
 import subprocess
 from pathlib import Path
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -143,7 +144,7 @@ def test_quality_scaffold_cli_custom_title_emits_validator_passing_artifact(tmp_
 
     result = run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "Auth Migration")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["title"] == "Auth Migration"
     assert payload["template"].startswith("# Quality Review\n")
     assert "Title: Auth Migration\n" in payload["template"]
@@ -194,7 +195,7 @@ def test_exported_quality_scaffold_validator_command_runs_from_consumer_repo(tmp
 
     result = run_script(str(scaffold), "--repo-root", str(consumer), "--title", "Auth Migration")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_role"] == "current_pointer"
     assert payload["title"] == "Auth Migration"
     assert payload["template"].startswith("# Quality Review\n")

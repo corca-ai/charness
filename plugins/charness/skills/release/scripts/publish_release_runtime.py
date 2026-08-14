@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import re
 import subprocess
@@ -53,6 +52,7 @@ def print_failure_payload(
         "issue_closeout_draft_validation",
         "resume_head_release_content_close_refs",
     )
+    renderer = render_yaml or _render_yaml
     failure_payload = {key: payload[key] for key in visible_keys if key in payload}
     durable_payload = dict(failure_payload)
     durable_payload["release_failure"] = {
@@ -61,7 +61,7 @@ def print_failure_payload(
         "error_sha256": hashlib.sha256(str(error).encode()).hexdigest(),
         "detail": "raw exception text omitted from durable local state",
     }
-    record = persist_failure_payload(repo_root, durable_payload, render_yaml=render_yaml or _render_yaml)
+    record = persist_failure_payload(repo_root, durable_payload, render_yaml=renderer)
     failure_payload["release_failure"] = {
         "status": "failed",
         "error": _compact_error(error),
@@ -70,7 +70,14 @@ def print_failure_payload(
         failure_payload["release_failure"]["error_detail"] = _bounded_error(error)
     failure_payload["release_failure_record"] = record
     print("BEGIN publish_release_failure_payload", file=stream)
-    print(json.dumps(failure_payload, ensure_ascii=False, indent=2), file=stream)
+    # `_render_yaml`, NOT the injectable `renderer`. The two renderers are deliberately
+    # independent: `renderer` reaches the DURABLE record, whose write failure is caught
+    # and reported back as `release_failure_record.status`. Routing the terminal print
+    # through it too means a renderer that raises takes down the one output whose entire
+    # job is surfacing a release failure -- the operator gets a traceback and no payload
+    # at all. Before the 2026-08-14 YAML migration this line was a hardcoded
+    # `json.dumps`, independent for exactly this reason; the migration coupled them.
+    print(_render_yaml(failure_payload), end="", file=stream)
     print("END publish_release_failure_payload", file=stream)
 
 

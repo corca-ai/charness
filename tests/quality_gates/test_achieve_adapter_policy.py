@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.adapter_lib import load_yaml
 
@@ -237,7 +237,7 @@ def test_resolve_adapter_cli_outputs_adapter_payload(tmp_path: Path) -> None:
         capture_output=True,
     )
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["found"] is False
     assert payload["data"]["closeout_publication"]["default_mode"] == "audit-only"
 

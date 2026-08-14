@@ -51,7 +51,7 @@ from acquisition_trace_lib import (  # noqa: E402
     has_success,
     skip_attempt,
 )
-from route_public_fetch import route_for_url  # noqa: E402
+from route_public_fetch import load_yaml_output, route_for_url  # noqa: E402
 from text_attempts import attempt_from_text  # noqa: E402
 
 _invalid_scheme_payload = acquire_public_url_payloads.invalid_scheme_payload
@@ -373,7 +373,7 @@ def main() -> int:
     signal.signal(signal.SIGTERM, _handle_teardown_signal)
     signal.signal(signal.SIGINT, _handle_teardown_signal)
     atexit.register(_teardown_live_session)
-    print(json.dumps(acquire(args), ensure_ascii=False, indent=2))
+    load_yaml_output().emit_yaml(acquire(args))
     return 0
 
 

@@ -15,10 +15,14 @@ verification in create-skill/portable-authoring.md.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from pathlib import Path
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:
+    from yaml_output import emit_yaml
 
 ART_RE = re.compile(r"charness-artifacts/([a-z][a-z0-9-]*)/")
 ADP_RE = re.compile(r"\.agents/([a-z][a-z0-9-]*)-adapter\.yaml")
@@ -114,35 +118,30 @@ def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
     }
 
 
+# Folded in from the deleted human renderer. The stale rows carried only the
+# entry text; the CAVEAT -- that this scan reads just the top-level .py/.md under
+# each skill, so a real mention can sit outside it -- lived in the advisory prose.
+# With output unconditionally YAML, dropping it would turn a hedged advisory into
+# a bare "looks stale" that reads as a delete instruction.
+STALE_ALLOWLIST_ADVISORY = (
+    f"{ALLOWLIST_PATH} entry looks stale (this scan no longer produces that overlap; "
+    "re-check the entry's reason before deleting, because the scan reads only top-level "
+    ".py/.md under each skill and a real mention can sit outside it)"
+)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--repo-root", type=Path, default=Path("."))
-    ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
     repo_root = args.repo_root.resolve()
     allowlist = parse_allowlist(repo_root / ALLOWLIST_PATH)
     result = scan(repo_root, allowlist)
-    if args.json:
-        print(json.dumps({**result, "allowlist_size": len(allowlist)}, indent=2))
-    else:
-        for entry in result["stale_allowlist"]:
-            print(
-                f"  advisory: {ALLOWLIST_PATH} entry `{entry['entry']}` looks stale "
-                "(this scan no longer produces that overlap; re-check the entry's reason "
-                "before deleting, because the scan reads only top-level .py/.md under "
-                "each skill and a real mention can sit outside it)"
-            )
-        if not result["findings"]:
-            print(
-                f"check_skill_ownership_overlap: ok "
-                f"({result['scanned_skills']} skills, allowlist={len(allowlist)}, "
-                f"stale={len(result['stale_allowlist'])})"
-            )
-            return 0
-        print("check_skill_ownership_overlap: violations")
-        for f in result["findings"]:
-            print(f"  [{f['skill']}] -> {f['kind']}/{f['owner']} in {f['file']}")
-            print(f"    allowlist suggestion: {f['allowlist_entry']}")
+    payload: dict = {**result, "allowlist_size": len(allowlist)}
+    payload["status"] = "violations" if result["findings"] else "ok"
+    if result["stale_allowlist"]:
+        payload["stale_allowlist_advisory"] = STALE_ALLOWLIST_ADVISORY
+    emit_yaml(payload)
     return 0 if not result["findings"] else 2
 
 

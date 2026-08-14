@@ -52,14 +52,13 @@ still carry #546's defect. That is a stated gap, not a claim of coverage.
 from __future__ import annotations
 
 import argparse
-import json
-import sys
 from pathlib import Path
 
 import adapter_lib
 import quality_label_universe
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -143,56 +142,66 @@ def evaluate(repo_root: Path) -> dict[str, object]:
     }
 
 
+# The did-NOT-judge line the module docstring's second paragraph insists on. It
+# used to be printed only on the passing human line; with output unconditionally
+# YAML it has to ride on every verdict, or a green here reads as "every budgeted
+# bar is live" -- the exact misreading this gate was built to prevent.
+NOT_JUDGED = (
+    "whether a named label ever RUNS -- a label queued only under a condition that "
+    "never holds is in the universe and passes here (see #546)",
+)
+
+
+def report_payload(report: dict[str, object]) -> dict[str, object]:
+    """Fold the verdict-explaining text into the payload the gate emits."""
+    payload = dict(report)
+    if not report["armed"]:
+        # NOT-ARMED carries no `did_not_judge`, for the same reason `check_docs_graph`
+        # withholds it on NOT-RUN: this run judged nothing, so listing exclusions
+        # dresses an unobserved run up as a scoped verdict. The excluded claim here is
+        # "a label in the universe PASSES here" -- false on a run where no universe was
+        # built and nothing passed, and a machine reader keying on `did_not_judge`
+        # would read that scope off an unarmed run.
+        #
+        # The WARN marker is load-bearing for `print_phase_output`, which surfaces a
+        # passing phase log only when it carries a WARN/ADVISORY marker; an unmarked
+        # degrade renders as a bare green PASS over an unchecked bar.
+        payload["advisory"] = f"WARN  runtime budget universe: not armed -- {report['reason']}"
+        return payload
+    payload["did_not_judge"] = list(NOT_JUDGED)
+    unknown = report["unknown_labels"]
+    if unknown:
+        payload["summary"] = (
+            f"{len(unknown)} budgeted runtime label(s) are not names "
+            f"`{quality_label_universe.RUN_QUALITY_PATH}` can queue, so their bars "
+            "can never be exercised and can never fail."
+        )
+        payload["remedy"] = (
+            "Rename the budget to the label the runner now uses, or delete it. "
+            "Inspect the universe with "
+            "`python3 scripts/quality_label_universe.py --repo-root .`."
+        )
+        return payload
+    payload["summary"] = (
+        f"runtime budget universe: {report['checked']} budgeted label(s) all named "
+        f"by the runner ({report['universe_size']} in the universe)."
+    )
+    return payload
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     code, report = quality_label_universe.read_or_refuse(
         "runtime budget universe", lambda: evaluate(args.repo_root.resolve())
     )
     if report is None:
         return code
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-
+    emit_yaml(report_payload(report))
     if not report["armed"]:
-        # WARN-prefixed on purpose: `print_phase_output` surfaces a phase log only
-        # when it carries a WARN/ADVISORY marker, so an unprefixed degrade line
-        # renders as a bare green PASS -- a silent green over an unchecked bar,
-        # which is the exact shape this gate exists to remove.
-        if not args.json:
-            print(f"WARN  runtime budget universe: not armed -- {report['reason']}")
         return 0
-
-    unknown = report["unknown_labels"]
-    if unknown:
-        print(
-            f"{len(unknown)} budgeted runtime label(s) are not names "
-            f"`{quality_label_universe.RUN_QUALITY_PATH}` can queue, so their bars "
-            "can never be exercised and can never fail:",
-            file=sys.stderr,
-        )
-        for entry in unknown:
-            print(
-                f"  - {entry['label']} (budgeted in: {', '.join(entry['blocks'])})",
-                file=sys.stderr,
-            )
-        print(
-            "Rename the budget to the label the runner now uses, or delete it. "
-            "Inspect the universe with "
-            "`python3 scripts/quality_label_universe.py --repo-root .`.",
-            file=sys.stderr,
-        )
-        return 1
-
-    if not args.json:
-        print(
-            f"runtime budget universe: {report['checked']} budgeted label(s) all named "
-            f"by the runner ({report['universe_size']} in the universe). "
-            "Does NOT check whether a named label ever RUNS -- see #546."
-        )
-    return 0
+    return 1 if report["unknown_labels"] else 0
 
 
 if __name__ == "__main__":

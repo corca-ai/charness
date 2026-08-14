@@ -76,6 +76,8 @@ from mutation_recovery import (
     termination_handlers,
 )
 
+from yaml_output import emit_yaml
+
 PASSED_RE = re.compile(r"(\d+) passed")
 FAILED_RE = re.compile(r"(\d+) failed")
 ERROR_RE = re.compile(r"(\d+) error")
@@ -408,14 +410,14 @@ def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
     for spec in plan["mutants"]:
         result = run_mutant(spec, command, repo_root, baseline)
         sweep.mutants.append(result)
-        # The removed callees go in the human line, not only in `--json`. Without them an
-        # operator reads `1 call-site` and cannot tell an intended caller test from an
-        # incidental `.join` -- which is exactly how the inferred version of this feature
-        # went wrong, invisibly, in its own self-sweep.
+        # The removed callees go in the streamed progress line, not only in the final
+        # payload. Without them an operator reads `1 call-site` and cannot tell an
+        # intended caller test from an incidental `.join` -- which is exactly how the
+        # inferred version of this feature went wrong, invisibly, in its own self-sweep.
         # The DECLARATION is the discriminating fact under the current design, so it is
-        # what the human line must show; removals alone rendered a declared caller test
-        # and an incidental `.join` identically, leaving the `N call-site` count
-        # unauditable outside `--json`.
+        # what the progress line must show; removals alone rendered a declared caller
+        # test and an incidental `.join` identically, leaving the `N call-site` count
+        # unauditable until the sweep finished.
         bits = ["call-site"] if result.declared_call_site else []
         if result.removed_calls:
             bits.append("removes " + ", ".join(result.removed_calls))
@@ -523,7 +525,6 @@ def main() -> int:
         action="store_true",
         help="restore the exact interrupted mutation when the target still matches its journal",
     )
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
     recovery = MutationRecovery(repo_root)
@@ -546,8 +547,15 @@ def main() -> int:
         return 0
     assert args.plan is not None
     plan = json.loads(args.plan.read_text(encoding="utf-8"))
-    lines: list[str] = []
-    emit = lines.append if args.json else print
+
+    # Progress goes to STDERR now that stdout carries one YAML document. The stream
+    # matters: a sweep is long, and the baseline count plus the per-mutant verdicts
+    # are what a reader of a truncated or still-running log has. Discarding them --
+    # which is what the retired `--json` mode did, appending them to a list nothing
+    # printed -- would make an interrupted sweep unreadable.
+    def emit(line: str) -> None:
+        print(line, file=sys.stderr)
+
     try:
         with termination_handlers():
             sweep = run_sweep(plan, repo_root, emit=emit)
@@ -573,22 +581,19 @@ def main() -> int:
         print(f"mutate-and-restore CRASHED: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 3
     payload = render(sweep)
-    if args.json:
-        print(json.dumps(payload, indent=2))
-    elif sweep.baseline.earned:
-        print(
-            f"mutate-and-restore: {payload['killed']} killed, {payload['survived']} survived, "
-            f"{payload['refused']} refused, {payload['call_site_mutants']} call-site, "
-            f"over a baseline of {sweep.baseline.passed} passing tests"
-        )
+    # Unconditional YAML. The retired summary line was a strict projection of
+    # `killed`, `survived`, `refused`, `call_site_mutants`, and `baseline.passed`.
+    emit_yaml(payload)
+    if sweep.baseline.earned and payload["call_site_non_claim"]:
         # Flushed before the stderr write, because the ordering claim this comment used to
         # make was false: under `cmd > f 2>&1` stdout is BLOCK-buffered while stderr is
         # not, so the non-claim landed in the log ABOVE the summary it qualifies. Stderr
         # is still the right stream -- a `2>&1` gate log keeps it and a bare `$(cmd)`
-        # capture must not silently swallow a warning into a variable.
+        # capture must not silently swallow a warning into a variable. It is ALSO in the
+        # payload as `call_site_non_claim`; a reader who parses gets it either way, and a
+        # reader who only watches the terminal still cannot miss it.
         sys.stdout.flush()
-        if payload["call_site_non_claim"]:
-            print(f"mutate-and-restore NON-CLAIM: {payload['call_site_non_claim']}", file=sys.stderr)
+        print(f"mutate-and-restore NON-CLAIM: {payload['call_site_non_claim']}", file=sys.stderr)
     return exit_code(sweep)
 
 

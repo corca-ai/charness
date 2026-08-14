@@ -8,9 +8,7 @@ one deterministic packet for retros to consume before writing lessons.
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -28,6 +26,7 @@ _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adap
 _packet_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.critique_packet_lib"
 )
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 load_adapter = _resolve_adapter.load_adapter
 build_packet = _packet_lib.build_packet
 write_packet = _packet_lib.write_packet
@@ -74,11 +73,6 @@ def main() -> int:
         default=None,
         help="Output filename slug; defaults to the current UTC timestamp.",
     )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Print the packet JSON to stdout instead of writing packet files.",
-    )
     try:
         args = parser.parse_args()
         changed_targets = [value for value in (args.changed_ref, args.commit, args.changed_range) if value]
@@ -89,14 +83,7 @@ def main() -> int:
         repo_root = args.repo_root.resolve()
         adapter = load_adapter(repo_root)
         if not adapter["valid"]:
-            json.dump(
-                {"ok": False, "error": "retro adapter invalid", "adapter": adapter},
-                sys.stdout,
-                indent=2,
-                ensure_ascii=False,
-                sort_keys=True,
-            )
-            sys.stdout.write("\n")
+            yaml_output.emit_yaml({"ok": False, "error": "retro adapter invalid", "adapter": adapter})
             return 1
 
         packet = build_packet(
@@ -109,15 +96,10 @@ def main() -> int:
             include_reviewed_input_identity=False,
             changed_ref_env_var="CHARNESS_RETRO_CHANGED_REF",
         )
-        if args.json:
-            json.dump(packet, sys.stdout, indent=2, ensure_ascii=False)
-            sys.stdout.write("\n")
-            return 0 if packet["ok"] else 1
-
         output_dir = repo_root / adapter["data"].get("output_dir", "charness-artifacts/retro")
         slug = args.slug or _default_slug()
         json_path, md_path = write_packet(packet, output_dir=output_dir, slug=slug)
-        json.dump(
+        yaml_output.emit_yaml(
             {
                 "ok": packet["ok"],
                 "section_count": packet["section_count"],
@@ -125,13 +107,8 @@ def main() -> int:
                 "md_path": str(md_path.relative_to(repo_root)),
                 "changed_ref": packet["changed_ref"],
                 "adapter_path": packet["adapter_path"],
-            },
-            sys.stdout,
-            indent=2,
-            ensure_ascii=False,
-            sort_keys=True,
+            }
         )
-        sys.stdout.write("\n")
         return 0 if packet["ok"] else 1
     finally:
         cancel_timeout()

@@ -29,7 +29,6 @@ blocking commit-gate plan; a non-blocking guard test keeps it that way.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import shutil
 import subprocess
@@ -39,6 +38,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -382,91 +382,63 @@ def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Repo
     )
 
 
-def _regenerable_lines(findings: list[dict[str, Any]]) -> list[str]:
-    if not findings:
-        return ["regenerable-facts: clean"]
-    lines = [f"regenerable-facts: BLOCK ({len(findings)} finding(s))"]
-    for row in findings:
-        lines.append(
-            f"  - line {row['line']}: transcribes {row['label']} (`{row['literal']}`); "
-            f"carry the command instead: {row['replacement']}"
-        )
-    return lines
+#: What this command is, on EVERY report it emits. It rode on the text rendering
+#: only, and it is the one line that keeps a `status: ok` from reading as a
+#: commit-gate verdict: this is a forecast, and the named gates do the enforcing.
+AFFORDANCE_NOTE = (
+    "affordance only -- the gates `check_doc_links.py`, `check-markdown.sh`, and the "
+    "artifact length validators stay the enforcement."
+)
+#: Per-finding-kind remedies the text rendering added from the owning validator's
+#: live constant. The rows themselves carry only `kind`/`detail`/`line`, so
+#: emitting the bare report would have dropped the only statement of what to DO.
+_DOC_LINK_REMEDIES = {
+    "unresolved-command-target": _doc_links.MISSING_COMMAND_TARGET_REMEDY,
+}
 
 
-def _inline_code_lines(findings: list[dict[str, Any]]) -> list[str]:
-    """Render the two inline-code classes under their own labels.
+def report_payload(report: Report) -> dict[str, Any]:
+    """The emitted document: the report, plus what only the renderer used to say."""
+    payload = report.to_dict()
+    payload["note"] = AFFORDANCE_NOTE
+    kinds = {row["kind"] for row in report.doc_links}
+    remedies = {kind: text for kind, text in _DOC_LINK_REMEDIES.items() if kind in kinds}
+    if remedies:
+        payload["doc_link_remedies"] = remedies
+    return payload
 
-    They have different remedies: a wrap is collapsed, while an unterminated span means an
-    odd single-backtick count made the file's pairing unreliable and the named line is the
-    last unmatched backtick, not a span to fix. Rendering both as `wrapped-inline-code`
-    sent the operator to a line where nothing wraps.
+
+def rules_payload(rules: dict[str, Any]) -> dict[str, Any]:
+    """The emitted rules document, plus the guidance only the renderer used to say.
+
+    This is the only rules surface now. `doc_authoring_rules.format_rules_human`
+    rendered the same guidance until the 2026-08-14 YAML migration stopped calling
+    it; it was deleted rather than left as a second, test-only copy of these
+    sentences, free to drift from the one an operator actually reads.
     """
-    wrapped = [row for row in findings if row.get("reason") != "unterminated"]
-    unterminated = [row for row in findings if row.get("reason") == "unterminated"]
-    lines: list[str] = []
-    if wrapped:
-        lines.append(f"wrapped-inline-code: {len(wrapped)} finding(s)")
-        lines.extend(f"  - line {row['line']}: ...{row['snippet']}..." for row in wrapped)
-    else:
-        lines.append("wrapped-inline-code: clean")
-    if unterminated:
-        lines.append(f"unterminated-inline-code: {len(unterminated)} finding(s)")
-        lines.extend(f"  - line {row['line']}: ...{row['snippet']}..." for row in unterminated)
-    return lines
-
-
-def format_human(report: Report) -> str:
-    lines = [f"doc-authoring-preflight: {report.target} [{report.to_dict()['status']}]"]
-    for warning in report.warnings:
-        lines.append(f"WARN: {warning}")
-
-    ml = report.markdownlint
-    if not ml["available"]:
-        lines.append("markdownlint: not forecast (binary unavailable)")
-    elif ml["findings"]:
-        lines.append(f"markdownlint: {len(ml['findings'])} finding(s)")
-        for row in ml["findings"]:
-            loc = f"{row['line']}" + (f":{row['col']}" if row["col"] else "")
-            lines.append(f"  - {report.target}:{loc} {row['rule']}/{row['name']} {row['desc']}".rstrip())
-    else:
-        lines.append("markdownlint: clean")
-
-    lines.extend(_inline_code_lines(report.wrapped_inline_code))
-
-    if report.doc_links:
-        lines.append(f"doc-links: {len(report.doc_links)} finding(s)")
-        for row in report.doc_links:
-            if row["kind"] == "backticked-ref":
-                lines.append(f"  - backticked file ref `{row['detail']}` (line {row['line']}, {row['reason']})")
-            elif row["kind"] == "bare-internal-ref":
-                lines.append(f"  - bare internal markdown ref `{row['detail']}`")
-            elif row["kind"] == "unresolved-command-target":
-                lines.append(
-                    f"  - documented command names a missing script `{row['detail']}` "
-                    f"(line {row['line']}); {_doc_links.MISSING_COMMAND_TARGET_REMEDY}"
-                )
-            else:
-                lines.append(f"  - {row['detail']}")
-    else:
-        lines.append("doc-links: clean")
-
-    lines.extend(_regenerable_lines(report.regenerable_facts))
-
-    length = report.length
-    if length["surface"] is None:
-        lines.append("length: no enforced cap on this surface")
-    elif length["over"]:
-        lines.append(f"length: BLOCK ({length['current']}/{length['cap']} lines on {length['surface']})")
-        lines.append(f"  - {length['detail']}")
-    else:
-        lines.append(f"length: {length['current']}/{length['cap']} lines on {length['surface']} (ok)")
-
-    lines.append(
-        "(affordance only -- the gates `check_doc_links.py`, `check-markdown.sh`, and the "
-        "artifact length validators stay the enforcement.)"
+    payload = dict(rules)
+    payload["note"] = "rules only -- pass --path <draft.md> to check a real target against them."
+    if rules["length"]["surface"] is None:
+        known = ", ".join(rules["length"]["known_surfaces"]) or "(none)"
+        payload["length_hint"] = f"no capped surface selected; pass --as-surface <{known}>"
+    if rules["probe_sample"] is None:
+        payload["probe_note"] = (
+            "link form / backticked file references were NOT probed -- this repo has no "
+            "tracked path-shaped file to classify, and an invented one would teach the wrong rule"
+        )
+    payload["markdownlint_hint"] = (
+        "run with --path <draft> to forecast the rule findings"
+        if rules["markdownlint"]["available"]
+        else "binary unavailable here; the markdown gate still runs it"
     )
-    return "\n".join(lines)
+    regenerable = rules["regenerable_facts"]
+    if regenerable["classes"] and not regenerable["verdict"]:
+        # A null verdict means the probe stopped tripping the rule (a class narrowed or
+        # dropped upstream), NOT that there is no rule. The retired renderer said so in
+        # words; a bare `verdict: null` above three correct rows reads as a missing
+        # value instead, so the meaning rides in the payload rather than dying with it.
+        payload["regenerable_facts_note"] = "the classes this surface refuses"
+    return payload
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -480,7 +452,6 @@ def main(argv: list[str] | None = None) -> int:
         "--as-surface",
         help="Forecast a specific capped surface's length floor on a draft/fixture path (e.g. handoff)",
     )
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
     repo_root = args.repo_root.resolve()
@@ -493,11 +464,7 @@ def main(argv: list[str] | None = None) -> int:
         except rules_module.PreflightError as exc:
             print(f"doc-authoring-preflight: {exc}", file=sys.stderr)
             return 2
-        print(
-            json.dumps(rules, indent=2, sort_keys=True)
-            if args.json
-            else rules_module.format_rules_human(rules)
-        )
+        emit_yaml(rules_payload(rules))
         return 0
     try:
         report = build_report(repo_root, args.path, args.as_surface)
@@ -505,10 +472,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"doc-authoring-preflight: {exc}", file=sys.stderr)
         return 2
 
-    if args.json:
-        print(json.dumps(report.to_dict(), indent=2, sort_keys=True))
-    else:
-        print(format_human(report))
+    emit_yaml(report_payload(report))
     return 1 if report.blocked else 0
 
 

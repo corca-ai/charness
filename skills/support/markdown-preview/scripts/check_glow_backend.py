@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+import importlib
 import importlib.util
-import json
 from pathlib import Path
 
 
@@ -19,8 +19,12 @@ def _load_render_module():
 
 def main() -> int:
     render = _load_render_module()
+    # Importable only after the render module loaded: it is `markdown_preview_lib`
+    # that resolves this package's tree root and puts it on `sys.path`, in either
+    # the authoring or the exported layout.
+    emit_yaml = importlib.import_module("scripts.yaml_output").emit_yaml
     payload = render.check_backend("glow")
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0 if payload["status"] == "healthy" else 1
 
 

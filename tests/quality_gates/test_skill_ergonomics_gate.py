@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
 from types import ModuleType
+
+import yaml
 
 from .support import ROOT, run_loaded_script_main
 
@@ -33,8 +34,25 @@ def _returncode(payload: dict[str, object]) -> int:
     return 1 if VALIDATE.has_failures(payload) else 0
 
 
-def _human(payload: dict[str, object]) -> str:
-    return VALIDATE._format_human(payload)
+def _verdict(payload: dict[str, object]) -> dict[str, object]:
+    """The verdict the retired human renderer used to state in prose.
+
+    `_format_human` was deleted with the `--json` flag; the state it named (adapter
+    invalid / not configured / discovery failed / pass / fail) is now payload keys.
+    """
+    return VALIDATE.verdict(payload)
+
+
+def _emitted(result) -> dict[str, object]:
+    """Parse a CLI run's stdout the way `main()` writes it: one YAML document.
+
+    `main()` emits `{**evaluate(...), **verdict(...)}`, so the verdict keys are only
+    present on the CLI payload, not on a direct `evaluate()` report.
+    """
+    assert result.stdout.strip(), f"expected a payload on stdout; stderr={result.stderr!r}"
+    payload = yaml.safe_load(result.stdout)
+    assert isinstance(payload, dict), f"expected a mapping payload, got {type(payload)!r}"
+    return payload
 
 
 def _seed_repo(tmp_path: Path, *, rules: list[str]) -> Path:
@@ -104,16 +122,21 @@ def _seed_repo(tmp_path: Path, *, rules: list[str]) -> Path:
 
 def test_skill_ergonomics_gate_no_rules_passes(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, rules=[])
-    result = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json")
+    result = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = _emitted(result)
     assert payload["rules"] == []
     assert payload["violations"] == []
     assert payload["discovery_errors"] == []
     assert payload["warnings"][0]["warning_id"] == "skill_ergonomics_gate_rules_empty"
     assert payload["warnings"][0]["skill_count"] == 2
 
-    assert "WARNING: skill_ergonomics_gate_rules is empty" in _human(payload)
+    # This run exits ZERO with no violations, so the payload has to say the gate was
+    # never configured rather than reading as enforcement that passed.
+    assert payload["verdict"] == "not-configured"
+    assert payload["verdict_detail"] == "No skill_ergonomics_gate_rules configured; nothing to check."
+    assert payload["warnings"][0]["attention"].startswith("WARNING: skill_ergonomics_gate_rules is empty")
+    assert payload["warnings"][0]["attention"].endswith("(2 skill(s) present)")
 
 
 def test_skill_ergonomics_gate_warns_when_empty_rules_have_broken_explicit_paths(tmp_path: Path) -> None:
@@ -139,7 +162,11 @@ def test_skill_ergonomics_gate_warns_when_empty_rules_have_broken_explicit_paths
     assert payload["warnings"][0]["warning_id"] == "skill_ergonomics_requested_paths_empty"
     assert payload["warnings"][0]["requested_paths"] == ["missing-skills"]
 
-    assert "WARNING: skill_ergonomics_skill_paths is configured but resolved no non-vendored skills" in _human(payload)
+    assert (
+        "WARNING: skill_ergonomics_skill_paths is configured but resolved no non-vendored skills"
+        in payload["warnings"][0]["attention"]
+    )
+    assert _verdict(payload)["verdict"] == "not-configured"
 
 
 def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) -> None:
@@ -149,9 +176,17 @@ def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) 
     assert payload["rules"] == ["mode_option_pressure_terms"]
     assert payload["violations"][0]["rule"] == "mode_option_pressure_terms"
     assert payload["violations"][0]["skill_id"] == "demo"
-    plain = _human(payload)
-    assert "mode_option_pressure_terms" in plain
-    assert "skills/public/demo/SKILL.md" in plain
+    # The retired renderer printed `<rule>: <skill_path> (<heuristics>)` per violation;
+    # each of those three facts is a violation key now.
+    assert payload["violations"][0]["skill_path"] == "skills/public/demo/SKILL.md"
+    assert payload["violations"][0]["heuristics"] == [
+        "mode_pressure_terms_present",
+        "option_pressure_terms_present",
+    ]
+    assert _verdict(payload) == {
+        "verdict": "fail",
+        "verdict_detail": "1 skill ergonomics violation(s).",
+    }
 
 
 def test_skill_ergonomics_gate_fails_on_issue_and_dated_incident_rules(tmp_path: Path) -> None:
@@ -335,12 +370,20 @@ def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Pat
     assert payload["checked_skills"] == []
     assert payload["violations"] == []
 
-    assert "quality adapter: skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in _human(payload)
+    # The renderer prefixed the adapter error with `quality adapter: `; the payload
+    # states the same thing as a verdict beside the verbatim `adapter_errors` entry,
+    # so an empty `violations` list here cannot be read as a clean run.
+    assert _verdict(payload) == {
+        "verdict": "adapter-invalid",
+        "verdict_detail": "quality adapter did not load; nothing was judged.",
+    }
+    assert "skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in payload["adapter_errors"][0]
 
-    wrapper = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json")
+    wrapper = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo))
     assert wrapper.returncode == 1
-    wrapper_payload = json.loads(wrapper.stdout)
+    wrapper_payload = _emitted(wrapper)
     assert "unknown rule `typo_rule`" in wrapper_payload["adapter_errors"][0]
+    assert wrapper_payload["verdict"] == "adapter-invalid"
 
 
 def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path: Path) -> None:
@@ -390,6 +433,19 @@ def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path:
     payload = _evaluate(repo)
     assert _returncode(payload) == 0
     assert payload["violations"] == []
+    # Rules ran and found nothing, which the payload must distinguish from the
+    # exit-zero `not-configured` state that also carries an empty `violations` list.
+    assert _verdict(payload) == {
+        "verdict": "pass",
+        "verdict_detail": "Skill ergonomics gate passed for rules: mode_option_pressure_terms",
+    }
+
+
+def test_skill_ergonomics_gate_rejects_removed_json_flag(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, rules=[])
+    result = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json")
+    assert result.returncode == 2
+    assert "--json" in result.stderr
 
 
 def test_skill_ergonomics_gate_fails_when_rules_check_no_skills(tmp_path: Path) -> None:
@@ -410,8 +466,13 @@ def test_skill_ergonomics_gate_fails_when_rules_check_no_skills(tmp_path: Path) 
     assert _returncode(payload) == 1
     assert "no skills were checked" in payload["discovery_errors"][0]["message"]
 
-    wrapper = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json")
+    wrapper = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo))
     assert wrapper.returncode == 1
+    wrapper_payload = _emitted(wrapper)
+    # The renderer printed `skill discovery: <message> <skill_path>`; the payload keeps
+    # each discovery error verbatim and names the state the whole run is in.
+    assert wrapper_payload["verdict"] == "discovery-failed"
+    assert "no skills were checked" in wrapper_payload["discovery_errors"][0]["message"]
 
 
 def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> None:

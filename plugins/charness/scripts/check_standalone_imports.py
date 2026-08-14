@@ -55,13 +55,13 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -303,7 +303,6 @@ def main() -> int:
     )
     parser.add_argument("--workers", type=int, default=16, help="Concurrent import probes (1-64)")
     parser.add_argument("--require-git-file-listing", action="store_true")
-    parser.add_argument("--json", action="store_true", help="Emit the full report as JSON")
     args = parser.parse_args()
 
     report = run(
@@ -312,14 +311,23 @@ def main() -> int:
         workers=min(64, max(1, args.workers)),
         require_git=args.require_git_file_listing,
     )
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(f"standalone-import: {'ok' if report['ok'] else 'BLOCKED'} ({report['scope_note']})")
-        for item in report["cycles"]:
-            print(f"CYCLE {item['path']}: {item['detail']}")
-        for item in report["other_failures"]:
-            print(f"BROKEN {item['path']} did not import in any shape: {item['detail']}")
+    # `verdict` and `failure_meaning` are folded in from the deleted human
+    # renderer: the report carries `ok`, `cycles` and `other_failures`, but the
+    # BLOCKED framing and the difference between the two failure classes (a cycle
+    # is the class this gate exists for; an import-error is a module that imports
+    # in NO shape, a different fix) lived only in its `CYCLE`/`BROKEN` prefixes.
+    payload = dict(report)
+    payload["verdict"] = "ok" if report["ok"] else "BLOCKED"
+    if report["cycles"]:
+        payload["cycle_meaning"] = (
+            "an import CYCLE: this module cannot be imported first in a fresh interpreter"
+        )
+    if report["other_failures"]:
+        payload["other_failure_meaning"] = (
+            "did not import in any shape (not a cycle -- e.g. a missing third-party "
+            "dependency; a different fix, and blocking all the same)"
+        )
+    emit_yaml(payload)
     return 0 if report["ok"] else 1
 
 

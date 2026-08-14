@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 import scripts.closeout_floor_matrix_lib as lib
 from scripts.check_closeout_floor_matrix import MATRIX_REL, _problems
@@ -427,17 +428,23 @@ def test_the_commit_msg_carrier_reports_a_non_json_verdict_as_an_engine_failure(
     """The hook exits 1 with empty stdout on any internal exception. That must surface
     as a RuntimeError naming the exit code, not as a silent refusal."""
     world.source_root = world.root / "no-such-tree"
-    with pytest.raises(RuntimeError, match="no JSON verdict"):
+    with pytest.raises(RuntimeError, match="no readable verdict"):
         _commit_msg(world, "bug", "Closes #77\n", None)
 
 
-def test_the_cli_reports_agreement_and_can_emit_the_observed_grid(tmp_path: Path) -> None:
+def test_the_cli_reports_agreement_and_can_emit_the_observed_grid(tmp_path: Path, capsys) -> None:
     """The `main()` path: exit 0, the operator summary, and `--emit-observed`."""
     out = tmp_path / "observed.json"
     exit_code = gate_main(["--repo-root", str(ROOT), "--emit-observed", str(out)])
     assert exit_code == 0
     grid = json.loads(out.read_text(encoding="utf-8"))
     assert len(grid["pairs"]) == len(grid["carriers"]) * len(grid["classifications"])
+    # The agreement line said how many pairs it covered; `observed_pairs` is what
+    # keeps that population visible, because an agreement over zero pairs is not the
+    # same verdict as one over all of them.
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert payload["observed_pairs"] == len(grid["pairs"])
 
 
 def test_the_cli_refuses_when_the_declaration_is_missing(tmp_path: Path, capsys) -> None:
@@ -457,10 +464,10 @@ def test_the_gate_refuses_when_a_floor_changes_under_an_unchanged_declaration(
     """
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     green = subprocess.run(
-        [sys.executable, GATE, "--repo-root", str(repo), "--json"],
+        [sys.executable, GATE, "--repo-root", str(repo)],
         cwd=repo, capture_output=True, text=True,
     )
-    assert json.loads(green.stdout)["ok"], green.stdout
+    assert yaml.safe_load(green.stdout)["ok"], green.stdout
 
     floor_source = repo / "skills/public/issue/scripts/issue_closeout_rung1_floors.py"
     floor_source.write_text(
@@ -471,10 +478,10 @@ def test_the_gate_refuses_when_a_floor_changes_under_an_unchanged_declaration(
         encoding="utf-8",
     )
     red = subprocess.run(
-        [sys.executable, GATE, "--repo-root", str(repo), "--json"],
+        [sys.executable, GATE, "--repo-root", str(repo)],
         cwd=repo, capture_output=True, text=True,
     )
-    payload = json.loads(red.stdout)
+    payload = yaml.safe_load(red.stdout)
     assert payload["ok"] is False
     assert any(
         "|question/behavioral_verdict" in problem and "observably 'fires'" in problem
@@ -510,22 +517,27 @@ def _repo_with_declaration(tmp_path: Path, mutate) -> Path:
     return tmp_path
 
 
-def test_the_cli_renders_disagreements_for_a_human_and_as_json(tmp_path: Path, capsys) -> None:
-    """Both reporting paths, on a declaration that disagrees with the real carriers."""
+def test_the_cli_reports_disagreements_with_their_finding_summary_and_remedy(
+    tmp_path: Path, capsys
+) -> None:
+    """One reporting path, on a declaration that disagrees with the real carriers.
+
+    The human branch carried three things the bare problem list does not: that the
+    declaration disagrees with the carriers, how many findings there are, and how to
+    re-measure the grid. They are payload fields now, so a reader who only parses
+    still gets them.
+    """
     def break_a_cell(declared: dict) -> None:
         declared["pairs"]["pr-body|question"]["floors"]["behavioral_verdict"] = {"state": "fires"}
 
     repo = _repo_with_declaration(tmp_path, break_a_cell)
     assert gate_main(["--repo-root", str(repo)]) == 1
-    human = capsys.readouterr().err
-    assert "the declaration disagrees with what the carriers actually do" in human
-    assert "pr-body|question/behavioral_verdict" in human
-    assert "Re-measure with:" in human
-
-    assert gate_main(["--repo-root", str(repo), "--json"]) == 1
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["ok"] is False
     assert any("pr-body|question/behavioral_verdict" in p for p in payload["problems"])
+    assert "the declaration disagrees with what the carriers actually do" in payload["finding_summary"]
+    assert f"{len(payload['problems'])} finding(s)" in payload["finding_summary"]
+    assert "Re-measure with:" in payload["remedy"]
 
 
 def test_the_script_entrypoint_exits_nonzero_without_a_declaration(tmp_path: Path) -> None:

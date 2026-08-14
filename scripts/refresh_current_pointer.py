@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import shutil
 from collections.abc import Callable
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -42,7 +42,7 @@ def _portable_path(repo_root: Path, path: Path) -> str:
 def _blocked(payload: dict[str, object], reason: str) -> int:
     payload["status"] = "blocked"
     payload["reason"] = reason
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(payload)
     return 1
 
 
@@ -99,7 +99,7 @@ def _finish_pointer_update(
         payload["status"] = "updated"
     else:
         payload["status"] = "planned"
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(payload)
     return 0
 
 
@@ -117,7 +117,7 @@ def _copy_pointer(
     if current_path.exists() and current_path.read_bytes() == record_path.read_bytes():
         payload["status"] = "noop"
         payload["reason"] = "current pointer content already matches the record artifact"
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        emit_yaml(payload)
         return 0
     return _finish_pointer_update(
         current_path=current_path,
@@ -147,7 +147,7 @@ def _symlink_pointer(
     if _same_symlink_target(current_path, record_path):
         payload["status"] = "noop"
         payload["reason"] = "current pointer symlink already targets the record artifact"
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        emit_yaml(payload)
         return 0
     relative_target = os.path.relpath(record_path, start=current_path.parent)
     payload["current_pointer_target_path"] = Path(relative_target).as_posix()
@@ -205,7 +205,7 @@ def main() -> int:
     # An EMPTY record is not a record. This helper's whole job is to replace the
     # pointer other sessions read as "the current asset", so pointing it at a 0-byte
     # (or whitespace-only) file destroys a real asset and reports
-    # `{"status": "updated"}` — the same wrong output as sweep row S19, one command
+    # `status: updated` — the same wrong output as sweep row S19, one command
     # over. `is_file()` alone was the only content check, and a 0-byte file passes it.
     try:
         record_text = record_path.read_text(encoding="utf-8", errors="replace")

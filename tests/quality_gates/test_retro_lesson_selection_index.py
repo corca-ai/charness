@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import yaml
+
 from tests.dsl import Repo, run_at
 
 RETRO = Repo().adapter(
@@ -71,10 +73,12 @@ def test_build_retro_lesson_selection_index_writes_source_linked_candidates(tmp_
                 ),
             )
         )
-        .run(tmp_path, BUILD_INDEX, "--write", "--json")
+        .run(tmp_path, BUILD_INDEX, "--write")
         .ok()
     )
-    payload = res.json
+    # Command stdout is YAML; the index it names on disk stays JSON.
+    payload = yaml.safe_load(res.proc.stdout)
+    assert payload["status"] == "written"
     assert payload["index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
 
     index = res.file_json(payload["index_path"])
@@ -217,7 +221,7 @@ def test_recurrence_boost_counts_observations_not_template_emissions(tmp_path: P
         *artifact("2026-04-03-session-b.md", retro_artifact("2026-04-03", waste="w", improvement="Hand-authored lesson."))
     )
 
-    index = repo.run(tmp_path, BUILD_INDEX, "--write", "--json").ok().file_json(
+    index = repo.run(tmp_path, BUILD_INDEX, "--write").ok().file_json(
         "charness-artifacts/retro/lesson-selection-index.json"
     )
     by_lesson = {item["lesson"]: item for item in index["candidates"]}
@@ -277,7 +281,7 @@ def test_generator_signature_ignores_a_quoted_header_in_a_human_retro(tmp_path: 
                 retro_artifact("2026-04-21", waste="w", improvement="Quoted-header lesson."),
             )
         )
-        .run(tmp_path, BUILD_INDEX, "--write", "--json")
+        .run(tmp_path, BUILD_INDEX, "--write")
         .ok()
         .file_json("charness-artifacts/retro/lesson-selection-index.json")
     )
@@ -308,7 +312,7 @@ def test_hand_authored_lesson_outranks_boilerplate_at_equal_weight(tmp_path: Pat
         *artifact("2026-04-20-human.md", retro_artifact("2026-04-20", waste="w", improvement="Human observation."))
     )
 
-    index = repo.run(tmp_path, BUILD_INDEX, "--write", "--json").ok().file_json(
+    index = repo.run(tmp_path, BUILD_INDEX, "--write").ok().file_json(
         "charness-artifacts/retro/lesson-selection-index.json"
     )
     improvements = [item for item in index["candidates"] if item["kind"] == "next_improvement"]

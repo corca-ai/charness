@@ -15,6 +15,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 from scripts.runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
@@ -133,7 +135,7 @@ def test_blocked_file_with_recorded_subprocess_pairs_gets_an_advisory(tmp_path: 
     )
 
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["blocking"] == ["scripts/bar.py", "scripts/foo.py"]
     advisory = payload["subprocess_coverage_advisory"]
     assert list(advisory) == ["scripts/foo.py"], (
@@ -174,7 +176,7 @@ def test_advisory_does_not_add_or_remove_a_blocking_condition(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["blocking"] == []
     assert payload["subprocess_coverage_advisory"] == {}
     assert "ADVISORY (not a blocker)" not in result.stderr

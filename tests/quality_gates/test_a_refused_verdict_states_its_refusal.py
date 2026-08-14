@@ -239,18 +239,31 @@ def test_the_unterminated_finding_prints_its_own_cli_message(tmp_path, monkeypat
     assert "inline code span issue(s) found" in err
 
 
-def test_the_preflight_renders_the_unterminated_class_under_its_own_label():
-    # `check_doc_authoring_preflight.py:404-405` — the render branch. Rendering it as
-    # `wrapped-inline-code` was round 2's blocker; this pins the split.
+def test_the_preflight_keeps_the_unterminated_class_distinguishable(tmp_path):
+    # Reporting an UNTERMINATED span as a wrapped one was round 2's blocker: the two
+    # have different remedies, and an operator sent to a line where nothing wraps
+    # cannot act. `_inline_code_lines` — the renderer that split them under separate
+    # labels — was deleted with `--json` on 2026-08-14, so the split now has to
+    # survive in the emitted payload's `reason` token instead. This pins it there,
+    # end to end through the collector rather than on a hand-built row, because the
+    # documented way the token gets LOST is a shim dropping it in transit.
     preflight = _load_script_module(
         "check_doc_authoring_preflight_under_test",
         ROOT / "scripts" / "check_doc_authoring_preflight.py",
     )
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "unterminated.md").write_text("Use `foo to run.\n", encoding="utf-8")
+    (tmp_path / "docs" / "wrapped.md").write_text("A wrapped `inline\ncode` span.\n", encoding="utf-8")
 
-    lines = preflight._inline_code_lines(
-        [{"line": 1, "snippet": "Use `foo", "reason": "unterminated"}]
-    )
+    unterminated = preflight.report_payload(
+        preflight.build_report(tmp_path, "docs/unterminated.md", None)
+    )["wrapped_inline_code"]
+    wrapped = preflight.report_payload(
+        preflight.build_report(tmp_path, "docs/wrapped.md", None)
+    )["wrapped_inline_code"]
 
-    assert "wrapped-inline-code: clean" in lines
-    assert any("unterminated-inline-code: 1 finding(s)" in line for line in lines)
-    assert any("line 1" in line for line in lines)
+    assert [row["reason"] for row in unterminated] == ["unterminated"]
+    assert unterminated[0]["line"] == 1
+    # The control: a genuinely wrapped span must NOT be labelled unterminated, or
+    # the two classes have collapsed again under a different name.
+    assert wrapped and all(row["reason"] != "unterminated" for row in wrapped)

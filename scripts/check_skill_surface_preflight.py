@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 from typing import Any
 
-from skill_gate_report_render import render_gate_report
-
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _issue_anchor_scan = import_repo_module(__file__, "scripts.skill_issue_anchor_scan")
@@ -36,6 +34,15 @@ EXEMPT_SECTION_REMEDIATION = (
     "`## Closeout Vocabulary` heading must stay token-shaped. Rewrite the flagged "
     "line as a single clause, or move the explanation into `references/` — see "
     "docs/conventions/authoring-preflight.md `## SKILL.md core headroom`."
+)
+# The anchor scan's own remediation, which reached the operator only through
+# `skill_issue_anchor_scan.format_human`. This gate no longer renders human text,
+# so the paragraph rides on the payload instead of being dropped on the way out.
+_ISSUE_ANCHOR_REMEDY = (
+    "Disallowed issue anchors (`#NNN`, `owner/repo#N`, `issues/N`) in a portable skill "
+    "package. Keep issue provenance in the commit message and the goal/critique "
+    "artifact, not the package, before the commit-time validate_skill_ergonomics "
+    "sweep blocks it."
 )
 MAX_SKILL_MD_LINES = 200
 # Non-blocking near-cap warning floor (#350): at or above this total, an added
@@ -217,27 +224,19 @@ def scan_changed_skill_md(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     }
 
 
-def format_changed_human(report: dict[str, Any]) -> str:
-    rows: list[str] = []
-    for row in report["checked"]:
-        was = "new" if row["base_remaining"] is None else str(row["base_remaining"])
-        rows.append(
-            f"- {row['path']}: {row['new_remaining']} left "
-            f"(buffer {row['buffer']}, was {was}) "
-            f"[{'BLOCK' if row['blocked'] else 'ok'}]"
-        )
-        rows.extend(f"  - exempt-section: {finding}" for finding in row.get("exempt_findings", []))
-    # Two different causes set `blocked`, and each needs its own remediation. The
-    # headroom paragraph told an author with 158 lines of headroom to split a
-    # concept out — a prescribed action that does not clear an exempt-section
-    # block, on a gate whose own row line said the opposite one line above.
-    return render_gate_report(
-        "skill-core-headroom",
-        report["status"],
-        rows,
-        blocked=report["status"] == "blocked",
-        blocked_message=_changed_blocked_message(report),
-    )
+def changed_payload(report: dict[str, Any]) -> dict[str, Any]:
+    """Fold the remediation prose into the payload the gate emits.
+
+    Two different causes set `blocked`, and each needs its own remediation. The
+    headroom paragraph told an author with 158 lines of headroom to split a
+    concept out -- a prescribed action that does not clear an exempt-section
+    block. Output is unconditionally YAML, so the remedy has to be a field.
+    """
+    payload = dict(report)
+    payload["label"] = "skill-core-headroom"
+    if report["status"] == "blocked":
+        payload["remedy"] = _changed_blocked_message(report)
+    return payload
 
 
 def _changed_blocked_message(report: dict[str, Any]) -> str:
@@ -428,38 +427,24 @@ def build_report(repo_root: Path, target_arg: str, preview_delta: int, run_check
     }
 
 
-def _format_headroom(label: str, row: dict[str, Any]) -> str:
-    suffix = " BLOCKER" if row["blocked"] else ""
-    return (
-        f"{label}: {row['current']}/{row['limit']} "
-        f"({row['remaining']} left; after preview {row['remaining_after_preview']} left){suffix}"
-    )
+def preflight_payload(report: dict[str, Any]) -> dict[str, Any]:
+    """Fold the verdict-explaining text into the payload the gate emits.
 
-
-def format_human(report: dict[str, Any]) -> str:
-    lines = [
-        f"skill-surface-preflight: {report['target']['path']} ({report['target']['kind']})",
-        f"skill: {report['skill']['kind']}/{report['skill']['id']}",
-        _format_headroom("SKILL.md total", report["headroom"]["skill_md_total"]),
-        _format_headroom("core nonempty", report["headroom"]["core_nonempty"]),
-    ]
-    for row in report.get("warnings", []):
-        lines.append(f"WARN {row['id']}: {row['message']}")
-    for finding in report.get("exempt_findings", []):
-        lines.append(f"BLOCK exempt-section: {finding}")
+    The rows already carry every measured number. What lived ONLY in the deleted
+    human renderer is the exempt-section remediation (an author sitting on 158
+    lines of headroom cannot act on a bare `exempt_findings` list) and the
+    PASS/FAIL reading of each targeted check's return code.
+    """
+    payload = dict(report)
+    payload["label"] = "skill-surface-preflight"
     if report.get("exempt_findings"):
-        lines.append(EXEMPT_SECTION_REMEDIATION)
-    if report["target"]["current_lines"] is not None:
-        lines.append(f"target current lines: {report['target']['current_lines']}")
-    lines.append("couplings:")
-    for row in report["couplings"]:
-        lines.append(f"- {row['id']}: {row['message']} [{row['command']}]")
+        payload["remedy"] = EXEMPT_SECTION_REMEDIATION
     if report["checks"]:
-        lines.append("targeted checks:")
-        for row in report["checks"]:
-            status = "PASS" if row["returncode"] == 0 else "FAIL"
-            lines.append(f"- {row['id']}: {status} ({row['command']})")
-    return "\n".join(lines)
+        payload["check_results"] = [
+            {**row, "status": "PASS" if row["returncode"] == 0 else "FAIL"}
+            for row in report["checks"]
+        ]
+    return payload
 
 
 def main() -> int:
@@ -478,17 +463,13 @@ def main() -> int:
     )
     parser.add_argument("--preview-delta", type=int, default=0, help="Planned added lines for this target")
     parser.add_argument("--run-checks", action="store_true", help="Run targeted read-only validators now")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
 
     if args.changed_skill_md is not None:
         report = scan_changed_skill_md(repo_root, args.changed_skill_md)
-        if args.json:
-            print(json.dumps(report, indent=2, sort_keys=True))
-        else:
-            print(format_changed_human(report))
+        emit_yaml(changed_payload(report))
         return 1 if report["status"] in {"blocked", "unscoped"} else 0
 
     if args.scan_issue_anchors is not None:
@@ -497,10 +478,10 @@ def main() -> int:
         except _issue_anchor_scan.IssueAnchorScanError as exc:
             print(f"skill-issue-anchor-scan: {exc}", file=sys.stderr)
             return 2
-        if args.json:
-            print(json.dumps(report, indent=2, sort_keys=True))
-        else:
-            print(_issue_anchor_scan.format_human(report))
+        payload = {**report, "label": "skill-issue-anchor-scan"}
+        if report["findings"]:
+            payload["remedy"] = _ISSUE_ANCHOR_REMEDY
+        emit_yaml(payload)
         return 1 if report["status"] == "blocked" else 0
 
     if not args.path:
@@ -513,10 +494,7 @@ def main() -> int:
         print(f"skill-surface-preflight: {exc}", file=sys.stderr)
         return 2
 
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-    else:
-        print(format_human(report))
+    emit_yaml(preflight_payload(report))
     return 1 if report["status"] == "blocked" else 0
 
 

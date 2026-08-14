@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 from scripts.skill_t_inventory_lib import (
     TIER_C_AWAITING,
     TIER_C_POPULATED,
@@ -261,7 +263,7 @@ def test_validator_passes_on_freshly_built_inventory(tmp_path: Path) -> None:
     write_inventory(repo)
     result = _run_validator(repo)
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["valid"] is True
     assert payload["skill_count"] == 2
 
@@ -275,7 +277,7 @@ def test_validator_fails_when_row_missing(tmp_path: Path) -> None:
     inventory_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     result = _run_validator(repo)
     assert result.returncode != 0
-    payload_out = json.loads(result.stdout)
+    payload_out = yaml.safe_load(result.stdout)
     assert payload_out["valid"] is False
     assert any("missing rows" in e for e in payload_out["errors"])
 
@@ -289,7 +291,7 @@ def test_validator_fails_when_tier_c_marker_inconsistent(tmp_path: Path) -> None
     inventory_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     result = _run_validator(repo)
     assert result.returncode != 0
-    out = json.loads(result.stdout)
+    out = yaml.safe_load(result.stdout)
     assert out["valid"] is False
     assert any("awaiting events" in e for e in out["errors"])
 
@@ -303,7 +305,7 @@ def test_validator_fails_when_top_kind_wrong(tmp_path: Path) -> None:
     inventory_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     result = _run_validator(repo)
     assert result.returncode != 0
-    out = json.loads(result.stdout)
+    out = yaml.safe_load(result.stdout)
     assert any("unexpected kind" in e for e in out["errors"])
 
 
@@ -311,6 +313,6 @@ def test_validator_fails_when_inventory_absent(tmp_path: Path) -> None:
     repo = _make_minimal_repo(tmp_path, ["alpha"])
     result = _run_validator(repo)
     assert result.returncode != 0
-    out = json.loads(result.stdout)
+    out = yaml.safe_load(result.stdout)
     assert out["valid"] is False
     assert any("inventory not found" in e for e in out["errors"])

@@ -8,10 +8,10 @@ apply to it at all, and whether a refusal tells an author what to write.
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import init_lesson_ledger
 from scripts import lesson_evaluation_continuity_lib as continuity
@@ -51,7 +51,9 @@ def _seed_retro(repo: Path, body: str = _ACTIVATED_RETRO) -> Path:
 # ratchet.py`). What these tests assert is the validator's own stdout/stderr and
 # exit code, which `run_loaded_script_main` reproduces from `main()` — none of it
 # needs a second interpreter. The scaffold below stays a subprocess: it is the
-# operator-facing emitter whose JSON contract this test consumes end-to-end.
+# operator-facing emitter whose payload contract this test consumes end-to-end.
+# Repo-owned commands emit YAML unconditionally since the `--json` removal, so
+# every payload here is read with `yaml.safe_load` (a JSON superset).
 def _validate(repo: Path):
     return run_loaded_script_main(
         "validate_retro_artifact.py", retro_validator, "--repo-root", str(repo), "--all"
@@ -96,9 +98,9 @@ def test_disposition_floor_is_inert_in_a_repo_that_declares_no_evaluator(tmp_pat
 def test_disposition_floor_applies_once_the_repo_opts_in(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_retro(repo)
-    init = _init_ledger(repo, "--json")
+    init = _init_ledger(repo)
     assert init.returncode == 0, init.stderr
-    receipt = json.loads(init.stdout)
+    receipt = yaml.safe_load(init.stdout)
     assert receipt["lesson_count"] == 0
     assert "recurrence-class:" in receipt["next_step"]
 
@@ -239,7 +241,7 @@ def test_scaffolded_retro_validates_unchanged_in_a_repo_that_opted_in(tmp_path: 
 
     scaffolded = run_script(_SCAFFOLD_REL, "--repo-root", str(repo), "--title", "Demo")
     assert scaffolded.returncode == 0, scaffolded.stderr
-    payload = json.loads(scaffolded.stdout)
+    payload = yaml.safe_load(scaffolded.stdout)
     written = repo / payload["write_artifact_path"]
     written.write_text(payload["template"], encoding="utf-8")
 

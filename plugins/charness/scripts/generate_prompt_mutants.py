@@ -31,6 +31,7 @@ from prompt_mutant_lib import (
 )
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 # Single source: the CLI cannot accept a granularity the splitter does not implement.
@@ -84,7 +85,7 @@ def _cmd_split(args: argparse.Namespace) -> int:
     except PromptMutantError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    print(json.dumps(manifest, ensure_ascii=False, indent=2))
+    emit_yaml(manifest)
     return 0
 
 
@@ -105,24 +106,21 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         return 1
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(
-        json.dumps(
-            {
-                "skill": result["skill"],
-                "baseline_provenance_sha": result["baseline_sha"],
-                "baseline_snapshot_sha": result["baseline_snapshot_sha"],
-                "unit_count": len(result["units"]),
-                "out": str(args.out),
-            },
-            ensure_ascii=False,
-        )
+    emit_yaml(
+        {
+            "skill": result["skill"],
+            "baseline_provenance_sha": result["baseline_sha"],
+            "baseline_snapshot_sha": result["baseline_snapshot_sha"],
+            "unit_count": len(result["units"]),
+            "out": str(args.out),
+        }
     )
     return 0
 
 
 def _cmd_cleanup(args: argparse.Namespace) -> int:
     deleted = cleanup_mutant_refs(args.repo_root, args.skill)
-    print(json.dumps({"skill": args.skill, "deleted": deleted}, ensure_ascii=False))
+    emit_yaml({"skill": args.skill, "deleted": deleted})
     return 0
 
 

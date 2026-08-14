@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import shutil
 import subprocess
@@ -9,6 +8,7 @@ from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
 import pytest
+import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -42,11 +42,20 @@ def _run(monkeypatch, footprint: dict[str, object], *args: str) -> SimpleNamespa
     )
 
 
+def _payload(result: SimpleNamespace) -> dict:
+    """The gate's one output shape: a YAML document on stdout, on every path."""
+    return yaml.safe_load(result.stdout)
+
+
 def test_scan_failure_blocks_instead_of_passing_silently(monkeypatch) -> None:
     """The fail-open bug: a scan that measured nothing must not report success.
 
     A permanently broken `du` returns `unavailable` on every run. While that
     classified as advisory the gate passed forever without ever checking a byte.
+
+    This half pins the BLOCK and the explanation an operator can act on. The
+    `scope_classification` token alone says a state without saying what it means or
+    what to do about it, so the folded-in prose is part of the verdict, not decoration.
     """
     result = _run(
         monkeypatch,
@@ -59,12 +68,21 @@ def test_scan_failure_blocks_instead_of_passing_silently(monkeypatch) -> None:
         },
     )
     assert result.returncode == 1
-    assert "blocking_pytest_temp_scan_failed" in result.stderr
-    assert "du_exit_nonzero" in result.stderr
-    assert "remediation" in result.stderr
+    payload = _payload(result)
+    assert payload["scope_classification"] == "blocking_pytest_temp_scan_failed"
+    assert "du_exit_nonzero" in payload["detail"]
+    assert "proves nothing" in payload["detail"]
+    assert "--advisory-on-scan-failure" in payload["remediation"]
 
 
-def test_scan_failure_blocks_in_json_mode_too(monkeypatch) -> None:
+def test_scan_failure_payload_names_what_the_scan_did_and_did_not_measure(monkeypatch) -> None:
+    """The machine-readable half, on a different failure reason.
+
+    Distinct from the block above: this pins the fields a consumer reads rather than
+    the prose an operator reads, and `total_disk_bytes is None` is the load-bearing
+    one -- a failed scan that reported `0` would be indistinguishable from an empty
+    tree comfortably inside budget.
+    """
     result = _run(
         monkeypatch,
         {
@@ -74,10 +92,9 @@ def test_scan_failure_blocks_in_json_mode_too(monkeypatch) -> None:
             "attempts": 3,
             "capability_gap": False,
         },
-        "--json",
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = _payload(result)
     assert payload["scope_classification"] == "blocking_pytest_temp_scan_failed"
     assert payload["pytest_temp_scan_reason"] == "du_timeout"
     assert payload["pytest_temp_scan_attempts"] == 3
@@ -101,8 +118,11 @@ def test_scan_failure_on_an_unowned_temp_root_stays_advisory(monkeypatch, reason
         },
     )
     assert result.returncode == 0
-    assert "advisory_only_unowned_temp_root" in result.stdout
-    assert "PYTEST_DEBUG_TEMPROOT" in result.stdout
+    payload = _payload(result)
+    assert payload["scope_classification"] == "advisory_only_unowned_temp_root"
+    # The way back to a blocking measurement. Without it the carve-out reads as a
+    # permanent exemption rather than as a consequence of an unowned root.
+    assert "PYTEST_DEBUG_TEMPROOT" in payload["remediation"]
 
 
 def test_scan_failure_on_a_repo_scoped_root_still_blocks(monkeypatch) -> None:
@@ -120,7 +140,7 @@ def test_scan_failure_on_a_repo_scoped_root_still_blocks(monkeypatch) -> None:
         },
     )
     assert result.returncode == 1
-    assert "blocking_pytest_temp_scan_failed" in result.stderr
+    assert _payload(result)["scope_classification"] == "blocking_pytest_temp_scan_failed"
 
 
 def test_scan_failure_can_be_waived_without_disabling_every_gate(monkeypatch) -> None:
@@ -135,8 +155,11 @@ def test_scan_failure_can_be_waived_without_disabling_every_gate(monkeypatch) ->
     }
     result = _run(monkeypatch, footprint, "--advisory-on-scan-failure")
     assert result.returncode == 0
-    assert "advisory_only_scan_failure_waived" in result.stdout
-    assert "proves nothing" in result.stdout
+    payload = _payload(result)
+    assert payload["scope_classification"] == "advisory_only_scan_failure_waived"
+    # A waiver that read as a PASS would be worse than the block it replaces, so the
+    # payload has to keep saying the run measured nothing.
+    assert "proves nothing" in payload["detail"]
 
 
 @pytest.mark.parametrize(
@@ -158,14 +181,16 @@ def test_capability_gaps_stay_advisory(monkeypatch, reason: str) -> None:
         },
     )
     assert result.returncode == 0
-    assert "advisory_only_du_unavailable" in result.stdout
-    assert reason in result.stdout
+    payload = _payload(result)
+    assert payload["scope_classification"] == "advisory_only_du_unavailable"
+    assert payload["pytest_temp_scan_reason"] == reason
+    assert reason in payload["detail"]
 
 
 def test_missing_temp_root_stays_advisory(monkeypatch) -> None:
     result = _run(monkeypatch, {"status": "missing", "root": "/tmp/pytest-of-someone"})
     assert result.returncode == 0
-    assert "advisory_only_no_pytest_temp_yet" in result.stdout
+    assert _payload(result)["scope_classification"] == "advisory_only_no_pytest_temp_yet"
 
 
 def test_within_budget_passes(monkeypatch) -> None:
@@ -179,7 +204,10 @@ def test_within_budget_passes(monkeypatch) -> None:
         },
     )
     assert result.returncode == 0
-    assert "Seed fixture budget within limits" in result.stdout
+    payload = _payload(result)
+    assert payload["scope_classification"] == "scanned"
+    assert payload["breaches"] == []
+    assert "Seed fixture budget within limits" in payload["detail"]
 
 
 def test_exactly_at_budget_is_within_budget(monkeypatch) -> None:
@@ -199,7 +227,9 @@ def test_exactly_at_budget_is_within_budget(monkeypatch) -> None:
         "512",
     )
     assert result.returncode == 0
-    assert "within limits" in result.stdout
+    payload = _payload(result)
+    assert payload["breaches"] == []
+    assert "within limits" in payload["detail"]
 
 
 def test_total_and_per_seed_breaches_are_reported(monkeypatch) -> None:
@@ -217,12 +247,26 @@ def test_total_and_per_seed_breaches_are_reported(monkeypatch) -> None:
         "512",
     )
     assert result.returncode == 1
-    assert "total: 4.00 KiB > 1.00 KiB" in result.stderr
-    assert "per-seed `charness-repo-seed`" in result.stderr
-    assert "session_count=3" in result.stderr
+    payload = _payload(result)
+    breaches = {breach["type"]: breach for breach in payload["breaches"]}
+    assert sorted(breaches) == ["per_seed_budget_exceeded", "total_budget_exceeded"]
+    assert breaches["total_budget_exceeded"]["observed_bytes"] == 4096
+    assert breaches["total_budget_exceeded"]["budget_bytes"] == 1024
+    # The per-seed breach has to name WHICH prefix and how many sessions built it;
+    # a bare byte count leaves the operator nothing to delete.
+    assert breaches["per_seed_budget_exceeded"]["seed_prefix"] == "charness-repo-seed"
+    assert breaches["per_seed_budget_exceeded"]["session_count"] == 3
+    assert "charness-repo-seed" in breaches["per_seed_budget_exceeded"]["remediation"]
+    assert "2 breach(es)" in payload["detail"]
 
 
-def test_breaches_exit_nonzero_in_json_mode(monkeypatch) -> None:
+def test_breaches_exit_nonzero(monkeypatch) -> None:
+    """The exit-code half, on a total-only breach.
+
+    Kept distinct from the report above: that one proves the breach payload is
+    complete, this one proves a breach still ends the run nonzero. A gate that
+    described a breach and exited 0 would let every over-budget push through.
+    """
     result = _run(
         monkeypatch,
         {
@@ -231,13 +275,11 @@ def test_breaches_exit_nonzero_in_json_mode(monkeypatch) -> None:
             "total_disk_bytes": 4096,
             "seed_totals": {},
         },
-        "--json",
         "--total-budget-bytes",
         "1024",
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
-    assert payload["breaches"][0]["type"] == "total_budget_exceeded"
+    assert _payload(result)["breaches"][0]["type"] == "total_budget_exceeded"
 
 
 def _write_lib_stub(root: Path, relative: str) -> Path:

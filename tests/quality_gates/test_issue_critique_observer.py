@@ -12,9 +12,10 @@ the refusal message the close carrier prints.
 from __future__ import annotations
 
 import importlib.util
-import json
 import os
 from pathlib import Path
+
+import yaml
 
 from tests.quality_gates.issue_closeout_support import bug_closeout_body, seed_commit
 from tests.quality_gates.support import ROOT, run_script, write_argv_logging_fake
@@ -84,7 +85,7 @@ def test_a_delegated_critique_passes_and_the_distinction_is_recorded(tmp_path: P
     result = _verify(tmp_path)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     observer = payload["resolution_critique_check"]["fresh_eye_observer"]
     assert observer["disposition"] == "delegated"
@@ -104,7 +105,7 @@ def test_a_self_authored_critique_is_refused_at_the_close_boundary(tmp_path: Pat
 
     result = _verify(tmp_path)
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False, "a self-authored critique must not satisfy the floor"
     check = payload["resolution_critique_check"]
     assert check["fresh_eye_observer"]["disposition"] == "undelegated"
@@ -125,7 +126,7 @@ def test_a_blocked_critique_still_closes_but_says_so(tmp_path: Path) -> None:
     result = _verify(tmp_path)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True, "a blocked host must still be able to close"
     check = payload["resolution_critique_check"]
     assert check["fresh_eye_observer"]["disposition"] == "blocked"
@@ -149,7 +150,7 @@ def test_a_repo_without_the_delegation_contract_is_not_refused(tmp_path: Path) -
     result = _verify(tmp_path)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     check = payload["resolution_critique_check"]
     # Recorded either way. The disposition is a fact about the artifact; only the
@@ -177,8 +178,8 @@ def test_an_absent_field_is_refused_under_the_contract_and_silent_without_it(tmp
     _seed(contract_repo, satisfaction=None, contract=True)
     _seed(plain_repo, satisfaction=None, contract=False)
 
-    under_contract = json.loads(_verify(contract_repo).stdout)
-    without = json.loads(_verify(plain_repo).stdout)
+    under_contract = yaml.safe_load(_verify(contract_repo).stdout)
+    without = yaml.safe_load(_verify(plain_repo).stdout)
 
     assert under_contract["ok"] is False, "omitting the line must not be a free pass"
     check = under_contract["resolution_critique_check"]
@@ -334,7 +335,7 @@ def test_an_unreadable_cited_artifact_is_typed_rather_than_treated_as_absent(tmp
 
     result = _verify(tmp_path)
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True, "a decodable-with-replacement artifact must not crash the close"
     assert payload["resolution_critique_check"]["fresh_eye_observer"]["disposition"] == "delegated"
 
@@ -398,7 +399,7 @@ def test_a_pre_contract_artifact_is_reported_but_not_refused(tmp_path: Path) -> 
         encoding="utf-8",
     )
 
-    payload = json.loads(_verify(tmp_path).stdout)
+    payload = yaml.safe_load(_verify(tmp_path).stdout)
 
     check = payload["resolution_critique_check"]
     assert check["fresh_eye_observer"]["predates_typed_contract"] is True
@@ -455,7 +456,7 @@ def test_the_close_carrier_names_the_real_defect_not_the_generic_one(tmp_path: P
     )
 
     assert result.returncode != 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "is not a distinct observer" in payload["error"]
     assert "missing/invalid resolution-critique evidence" not in payload["error"]
     assert not log.exists(), "the refusal must land before any GitHub mutation"

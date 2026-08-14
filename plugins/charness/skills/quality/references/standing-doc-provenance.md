@@ -42,7 +42,7 @@ types, semantics, and defaults for `standing_docs`, `tracking_allowlist`, and
 ## Running It
 
 ```bash
-python3 "$SKILL_DIR/scripts/check_standing_doc_provenance.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/check_standing_doc_provenance.py" --repo-root .
 ```
 
 Exit 0 when clean or inert (opted out); exit 1 on a flagged line or an invalid

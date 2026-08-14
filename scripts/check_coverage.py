@@ -18,6 +18,7 @@ from pathlib import Path
 from unittest import mock
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -294,20 +295,20 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         )
         entries = (
             (repo_root / "charness", ["tool", "doctor", "--repo-root", str(repo_copy), "agent-browser"]),
-            (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--json", "--write-locks", "--tool-id", "agent-browser"]),
-            (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--json", "--write-locks", "--tool-id", "cautilus"]),
+            (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--write-locks", "--tool-id", "agent-browser"]),
+            (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--write-locks", "--tool-id", "cautilus"]),
             (
                 repo_root / "scripts" / "sync_support.py",
-                ["--repo-root", str(repo_copy), "--plugin-root", str(plugin_root), "--execute", "--json", "--tool-id", "agent-browser"],
+                ["--repo-root", str(repo_copy), "--plugin-root", str(plugin_root), "--execute", "--tool-id", "agent-browser"],
             ),
             (
                 repo_root / "scripts" / "sync_support.py",
-                ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"],
+                ["--repo-root", str(repo_copy), "--execute", "--tool-id", "agent-browser"],
             ),
-            (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"]),
-            (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--json", "--tool-id", "cautilus"]),
-            (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"]),
-            (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "cautilus"]),
+            (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--execute", "--tool-id", "agent-browser"]),
+            (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--tool-id", "cautilus"]),
+            (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--tool-id", "agent-browser"]),
+            (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--tool-id", "cautilus"]),
         )
         scenario_functions = (
             exercise_control_plane_scenarios,
@@ -386,43 +387,32 @@ def summarize(
     return summary
 
 
-def format_per_file_floor_line(floor_report: dict, *, min_file_coverage: float) -> str:
-    """The operator-facing per-file-floor line.
+def coverage_report(summary: dict[str, object]) -> dict[str, object]:
+    """The emitted document: the summary, plus the caveat only the text arm carried.
 
-    Extracted so the UNESTABLISHED arm is reachable from a test: `run-quality.sh`
-    runs this gate WITHOUT --json, so this string is the operator surface, and an
-    unrendered branch on a gate in the changed-line pool is the shape #465 punished.
+    Output is unconditionally YAML, so the UNESTABLISHED reading has to live in the
+    payload. `per_file_floor` already reports `status`/`files_evaluated`; what the
+    dropped renderer added was the instruction not to read an empty floor
+    comparison as a passing one — the whole reason that arm exists (#465).
 
-    Keyed on the evaluated COUNT rather than on `measurement_scope` so a payload
-    missing the key fails CLOSED onto the caveat instead of taking the green
-    numeric arm.
+    Keyed on the evaluated COUNT rather than on `measurement_scope`, so a partial
+    payload fails CLOSED onto the caveat instead of taking the green numeric arm.
 
-    Deliberately NOT an exit-code change. `main` already refuses when nothing was
-    measured at all (`summary["coverage"] is None` -> CoverageError), and the one
-    remaining green-over-unestablished shape — a population entirely below the
-    statement threshold — needs every entry of the fixed `TARGET_FILES` list to be
-    a sub-30-statement file, which no current entry is. Recorded rather than wired
-    because turning `status == "unestablished"` into a refusal is a gate-contract
-    change that belongs to whoever narrows `TARGET_FILES`, not to this repair.
+    Deliberately NOT an exit-code change: `main` already refuses when nothing was
+    measured at all (`summary["coverage"] is None` -> CoverageError), and turning
+    `status == "unestablished"` into a refusal is a gate-contract change that
+    belongs to whoever narrows `TARGET_FILES`, not to this repair.
     """
-    if not floor_report.get("files_evaluated"):
-        # Otherwise this prints "0 below the floor, 0 in the warn band" —
-        # byte-identical to a clean repo — over a population of zero.
-        return (
-            "Per-file floor: UNESTABLISHED — zero files reached the floor comparison "
+    payload = dict(summary)
+    floor_report = summary.get("per_file_floor")
+    if isinstance(floor_report, dict) and not floor_report.get("files_evaluated"):
+        payload["per_file_floor_caveat"] = (
+            "UNESTABLISHED — zero files reached the floor comparison "
             f"(received {floor_report.get('files_received', 'an unrecorded number of')}; "
-            "the rest were unmeasured "
-            "or below the statement threshold), so the floor was not enforced over "
-            "anything. Read this as a missing measurement, not a passing one."
+            "the rest were unmeasured or below the statement threshold), so the floor was "
+            "not enforced over anything. Read this as a missing measurement, not a passing one."
         )
-    violations = floor_report["violations"]
-    warn_band = floor_report["warn_band"]
-    return (
-        "Per-file floor: "
-        f"{len(violations)} below {min_file_coverage * 100:.1f}%, "
-        f"{len(warn_band)} in {min_file_coverage * 100:.1f}-"
-        f"{PER_FILE_WARN_BELOW * 100:.1f}% warn band"
-    )
+    return payload
 
 
 def main() -> int:
@@ -430,13 +420,13 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--min-coverage", type=float, default=MIN_COVERAGE)
     parser.add_argument("--min-file-coverage", type=float, default=MIN_FILE_COVERAGE)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     summary = summarize(repo_root, collect_counts(repo_root), min_file_coverage=args.min_file_coverage)
-    if args.json:
-        print(json.dumps(summary, ensure_ascii=False, indent=2))
+    # Emitted BEFORE the refusals below, exactly where the payload was emitted
+    # before: a run that refuses still shows the measurement it refused on.
+    emit_yaml(coverage_report(summary))
     if summary["coverage"] is None:
         # Nothing was measured. Refuse LEGIBLY: reaching the comparison below
         # with `None` raised a bare TypeError traceback instead of this gate's
@@ -448,43 +438,10 @@ def main() -> int:
             f"({', '.join(summary['unmeasured_files']) or 'no target files configured'}). "
             "A coverage number cannot be reported over an empty scope."
         )
-    if not args.json:
-        percent = summary["coverage"] * 100
-        print(
-            f"Control-plane coverage: {percent:.1f}% "
-            f"({summary['covered']}/{summary['total']} executable lines)"
-        )
-        for item in summary["files"]:
-            measured = "" if item["measured"] else "  [UNMEASURED: 0 executable lines]"
-            print(
-                f"- {item['path']}: {item['coverage'] * 100:.1f}% "
-                f"({item['covered']}/{item['total']}){measured}"
-            )
-        floor_report = summary["per_file_floor"]
-        assert isinstance(floor_report, dict)
-        # No unconditional `floor_report["violations"]` read here: round 2 caught the
-        # extraction leaving the old locals behind, where a partial payload raised
-        # KeyError BEFORE the helper's fail-closed caveat could print — which made
-        # the fail-closed repair dead at its only production call site.
-        print(format_per_file_floor_line(floor_report, min_file_coverage=args.min_file_coverage))
-        # The exemption is deliberate policy; being silent about it was not.
-        # `run-quality.sh` invokes this gate WITHOUT --json, so the operator who
-        # reads it would otherwise never see the excused population.
-        hidden = floor_report["exempt_below_floor"]
-        assert isinstance(hidden, list)
-        if hidden:
-            print(
-                f"Per-file floor: {len(hidden)} file(s) below the floor but EXEMPT for having "
-                f"fewer than {floor_report['min_statements_threshold']} statements: "
-                + ", ".join(str(item["path"]) for item in hidden)
-            )
-        if summary["unmeasured_files"]:
-            print(
-                f"Unmeasured: {len(summary['unmeasured_files'])} target file(s) have zero "
-                "executable lines and contribute no observation: "
-                + ", ".join(str(path) for path in summary["unmeasured_files"])
-            )
-
+    # The per-file lines, the exempt-population line and the unmeasured line that
+    # used to print here are every one of them a projection of `files`,
+    # `per_file_floor.exempt_below_floor` and `unmeasured_files` in the payload
+    # above, which now rides on EVERY run rather than on an opt-in flag.
     if summary["coverage"] < args.min_coverage:
         raise CoverageError(
             f"control-plane coverage {summary['coverage']:.3f} is below required floor {args.min_coverage:.3f}"

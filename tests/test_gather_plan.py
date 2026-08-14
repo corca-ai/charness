@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from tests.quality_gates.support import run_script
 from tests.script_loader import load_script_module
@@ -59,7 +60,7 @@ def test_gather_plan_exposes_twitter_exact_source_contract(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["schema_version"] == "gather.run_plan.v1"
     assert payload["route"]["route_id"] == "twitter-syndication"
     assert payload["exact_source"]["required"] is True
@@ -109,7 +110,7 @@ def test_gather_plan_prefers_reddit_feed_route(tmp_path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["route"]["route_id"] == "reddit-feed"
     assert payload["exact_source"]["owner"] == "support/web-fetch/reddit_source"
     assert payload["exact_source"]["route_order"] == [
@@ -133,7 +134,7 @@ def test_gather_plan_redirects_provider_hosts_to_advisers(tmp_path) -> None:
         PLAN, "--repo-root", str(tmp_path), "--url", "https://acme.slack.com/archives/C0/p1700000000000000"
     )
     assert slack.returncode == 0, slack.stderr
-    slack_payload = json.loads(slack.stdout)
+    slack_payload = yaml.safe_load(slack.stdout)
     assert slack_payload["source_owner"]["source"] == "slack"
     assert slack_payload["source_owner"]["adviser"] is None
     assert slack_payload["next_action"]["kind"] == "credentialed_source_out_of_scope"
@@ -144,14 +145,14 @@ def test_gather_plan_redirects_provider_hosts_to_advisers(tmp_path) -> None:
         PLAN, "--repo-root", str(tmp_path), "--url", "https://docs.google.com/document/d/abc/edit"
     )
     assert gdoc.returncode == 0, gdoc.stderr
-    gdoc_payload = json.loads(gdoc.stdout)
+    gdoc_payload = yaml.safe_load(gdoc.stdout)
     assert gdoc_payload["source_owner"]["source"] == "google_workspace"
     assert gdoc_payload["next_action"]["command"][1] == "$SKILL_DIR/scripts/advise_google_workspace_path.py"
 
     public = run_script(
         PLAN, "--repo-root", str(tmp_path), "--url", "https://docs.python.org/3/library/json.html"
     )
-    public_payload = json.loads(public.stdout)
+    public_payload = yaml.safe_load(public.stdout)
     assert public_payload["source_owner"] is None
     assert public_payload["next_action"]["command"][1] == "$SKILL_DIR/scripts/gather_public_url.py"
 
@@ -175,7 +176,7 @@ def test_gather_plan_resolves_support_route_in_exported_plugin_layout(tmp_path: 
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["route"]["route_id"] == "reddit-feed"
     assert payload["exact_source"]["owner"] == "support/web-fetch/reddit_source"
 
@@ -203,5 +204,5 @@ def test_exported_gather_plan_honors_github_adapter_mode(tmp_path: Path) -> None
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["route"]["route_id"] == "github-host-mediated"

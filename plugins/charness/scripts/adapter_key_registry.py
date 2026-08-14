@@ -531,12 +531,16 @@ def survey(repo_root: Path) -> dict[str, Any]:
 
 def main() -> int:
     import argparse
-    import json
+
+    try:
+        from scripts.yaml_output import emit_yaml
+    except ModuleNotFoundError:
+        from yaml_output import emit_yaml
 
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     args = parser.parse_args()
-    print(json.dumps(survey(args.repo_root.resolve()), indent=2, sort_keys=True))
+    emit_yaml(survey(args.repo_root.resolve()))
     return 0
 
 

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from .support import ROOT
 
@@ -100,7 +101,7 @@ def _run_advise(tmp_path: Path) -> dict[str, object]:
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_advise_google_workspace_path_stops_under_none(tmp_path: Path) -> None:

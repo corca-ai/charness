@@ -1,9 +1,14 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 
+import yaml
+
 from scripts import worktree_cleanup_lib as lib
+
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "worktree_cleanup.py"
 
 
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -113,15 +118,37 @@ def test_cleanup_refuses_primary_worktree(tmp_path: Path) -> None:
     assert "primary worktree" in payload["error"]
 
 
-def test_cleanup_text_renders_next_step_affordance() -> None:
-    rendered = lib.render_cleanup_text(
-        {
-            "target_path": "/tmp/wt",
-            "status": "warn",
-            "dry_run": True,
-            "actions": [],
-            "next_step": "Re-run with `--yes` to execute the planned cleanup actions.",
-        }
+def test_cleanup_stdout_carries_next_step_affordance(tmp_path: Path) -> None:
+    """The dry-run affordance still reaches the operator after the text renderer died.
+
+    `render_cleanup_text` was the only place `next_step` was ever surfaced, and it
+    printed it as a prominent `NEXT:` line. Stdout is unconditionally YAML now and
+    that renderer is gone, so the affordance has to survive as a field on the
+    emitted document -- checked here through the real command, not just the
+    library payload, so a regression in the emit path is caught too.
+    """
+    repo = _make_primary(tmp_path)
+    feature_path = _add_feature_worktree(repo, tmp_path)
+    _git("merge", "--no-ff", "feature", "-m", "merge feature", cwd=repo)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--repo-root",
+            str(repo),
+            "--path",
+            str(feature_path),
+            "--delete-merged-branch",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
     )
-    assert "NEXT: Re-run with `--yes` to execute the planned cleanup actions." in rendered
-    assert "next: " not in rendered
+
+    assert completed.returncode == 0, completed.stderr
+    payload = yaml.safe_load(completed.stdout)
+    assert payload["status"] == lib.PASS
+    assert payload["dry_run"] is True
+    assert "Re-run with `--yes` to execute the planned cleanup actions." in payload["next_step"]
+    assert feature_path.exists()

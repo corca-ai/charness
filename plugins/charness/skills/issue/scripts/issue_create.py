@@ -13,7 +13,6 @@ confirmed write from an unverified one.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import runpy
 from pathlib import Path
@@ -21,6 +20,9 @@ from typing import Any
 from urllib.parse import urlparse
 
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
+
+
+_emit_yaml = _load_local("issue_yaml_output", "issue_create_yaml_output").emit_yaml
 _BACKEND = _load_local("issue_backend", "issue_create_backend")
 _ADAPTER = _load_local("resolve_adapter", "issue_create_adapter")
 _VERIFY = _load_local("issue_create_verify", "issue_create_verify")
@@ -249,7 +251,7 @@ def create_issue(
 
 
 def _emit(payload: dict[str, Any]) -> None:
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    _emit_yaml(payload)
 
 
 def _resolve_backend(repo_root: Path) -> dict[str, Any]:

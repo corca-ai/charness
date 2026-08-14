@@ -520,13 +520,14 @@ def build_repo_onboarding_payload(
         )
         return payload
 
-    inspect_payload = json.loads(
+    inspect_payload = parse_repo_script_payload(
         invoke_repo_script(
             source_repo_root,
             "skills/public/setup/scripts/inspect_repo.py",
             "--repo-root",
             str(resolved_target),
-        )
+        ),
+        "skills/public/setup/scripts/inspect_repo.py",
     )
     skill_routing_payload = parse_repo_script_payload(
         invoke_repo_script(
@@ -2271,7 +2272,7 @@ def install_surface(
         "--codex-marketplace-path",
         str(codex_marketplace_path),
     )
-    payload = json.loads(install_output)
+    payload = parse_repo_script_payload(install_output, "scripts/install_machine_local.py")
     completed_actions = ["codex_source_prepared", "codex_marketplace_registered"]
     support_sync_results = invoke_repo_json_script(
         repo_root,
@@ -2281,7 +2282,6 @@ def install_surface(
         "--plugin-root",
         str(plugin_root),
         "--execute",
-        "--json",
     )
     payload["support_sync"] = support_sync_results
     if isinstance(support_sync_results, list) and any(
@@ -2402,9 +2402,8 @@ def build_doctor_payload(
             str(repo_root),
             "--consumer-root",
             str(home_root),
-            "--json",
         )
-        payload["plugin_preamble"] = json.loads(preamble_output)
+        payload["plugin_preamble"] = parse_repo_script_payload(preamble_output, "scripts/plugin_preamble.py")
     else:
         payload["plugin_preamble"] = None
     payload["codex_enabled_plugin_ids"] = codex_enabled_plugin_ids(payload["codex_config_entries"])
@@ -3060,15 +3059,13 @@ def invoke_repo_json_script(
     if not stdout:
         if result.returncode != 0:
             raise CharnessError(
-                f"`{relative_script}` in `{repo_root}` exited with code {result.returncode} and produced no JSON output\nSTDERR:\n{result.stderr}"
+                f"`{relative_script}` in `{repo_root}` exited with code {result.returncode} and produced no payload output\nSTDERR:\n{result.stderr}"
             )
         return None
     try:
-        return json.loads(stdout)
-    except json.JSONDecodeError as exc:
-        raise CharnessError(
-            f"`{relative_script}` in `{repo_root}` did not return valid JSON\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
-        ) from exc
+        return parse_repo_script_payload(stdout, relative_script)
+    except CharnessError as exc:
+        raise CharnessError(f"{exc}\nREPO ROOT: {repo_root}\nSTDERR:\n{result.stderr}") from exc
 
 
 def tool_ids_from_args(args: argparse.Namespace) -> list[str]:
@@ -3149,7 +3146,7 @@ def run_tool_update_flow(
     precomputed_support_results: object | None = None,
 ) -> tuple[dict[str, object], bool]:
     emit_progress("STEP: updating tracked external tools")
-    update_args = ["--repo-root", str(repo_root), "--json"]
+    update_args = ["--repo-root", str(repo_root)]
     for tool_id in tool_ids:
         update_args.extend(["--tool-id", tool_id])
     if not dry_run:
@@ -3167,7 +3164,7 @@ def run_tool_update_flow(
         if can_reuse_support:
             support_results = precomputed_support_results
         else:
-            support_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
+            support_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root)]
             for tool_id in tool_ids:
                 support_args.extend(["--tool-id", tool_id])
             for upstream_checkout in upstream_checkouts:
@@ -3176,7 +3173,7 @@ def run_tool_update_flow(
                 support_args.append("--execute")
             support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
     emit_progress("STEP: refreshing tool doctor state")
-    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
+    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root)]
     for tool_id in tool_ids:
         doctor_args.extend(["--tool-id", tool_id])
     if not dry_run:
@@ -3891,7 +3888,6 @@ def reconcile_usage_episodes_host_hooks(
             str(home_root),
             "--mode",
             "reconcile",
-            "--json",
             allow_failure=True,
         )
     except CharnessError as exc:
@@ -4317,7 +4313,6 @@ def capability_doctor_payload(
         "scripts/doctor.py",
         "--repo-root",
         str(charness_repo_root),
-        "--json",
         "--tool-id",
         str(provider_id),
         allow_failure=True,
@@ -4506,7 +4501,7 @@ def cmd_capability_explain(args: argparse.Namespace) -> int:
 def cmd_tool_doctor(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
     plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(args.home_root.resolve())
-    script_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
+    script_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root)]
     for tool_id in tool_ids_from_args(args):
         script_args.extend(["--tool-id", tool_id])
     if not args.no_write_locks:
@@ -4546,12 +4541,9 @@ def _run_repo_json_command(repo_root: Path, command: list[str]) -> tuple[object 
     payload: object | None = None
     if stdout:
         try:
-            payload = json.loads(stdout)
-        except json.JSONDecodeError as exc:
-            raise CharnessError(
-                f"`{' '.join(command)}` in `{repo_root}` did not return valid JSON\n"
-                f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
-            ) from exc
+            payload = parse_repo_script_payload(stdout, " ".join(command))
+        except CharnessError as exc:
+            raise CharnessError(f"{exc}\nREPO ROOT: {repo_root}\nSTDERR:\n{result.stderr}") from exc
     return payload, result.returncode, result.stderr
 
 
@@ -4563,7 +4555,6 @@ def _repair_agent_browser(repo_root: Path, plugin_root: Path, *, execute: bool) 
         "--repo-root",
         str(repo_root),
         "--cleanup-orphans",
-        "--json",
     ]
     if execute:
         repair_command.append("--execute")
@@ -4573,7 +4564,6 @@ def _repair_agent_browser(repo_root: Path, plugin_root: Path, *, execute: bool) 
         str(repo_root),
         "--plugin-root",
         str(plugin_root),
-        "--json",
         "--tool-id",
         "agent-browser",
     ]
@@ -4655,7 +4645,7 @@ def cmd_tool_repair(args: argparse.Namespace) -> int:
 def cmd_tool_sync_support(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
     plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(args.home_root.resolve())
-    script_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
+    script_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root)]
     for tool_id in tool_ids_from_args(args):
         script_args.extend(["--tool-id", tool_id])
     for upstream_checkout in args.upstream_checkout:
@@ -4663,7 +4653,7 @@ def cmd_tool_sync_support(args: argparse.Namespace) -> int:
     if not args.dry_run:
         script_args.append("--execute")
     support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *script_args, allow_failure=True)
-    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
+    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root)]
     for tool_id in tool_ids_from_args(args):
         doctor_args.extend(["--tool-id", tool_id])
     if not args.dry_run:
@@ -4704,7 +4694,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
     plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(args.home_root.resolve())
     selected_tool_ids = selected_tool_ids_from_args(args, repo_root)
-    install_args = ["--repo-root", str(repo_root), "--json"]
+    install_args = ["--repo-root", str(repo_root)]
     for tool_id in selected_tool_ids:
         install_args.extend(["--tool-id", tool_id])
     if not args.dry_run:
@@ -4712,7 +4702,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
     install_results = invoke_repo_json_script(repo_root, "scripts/install_tools.py", *install_args, allow_failure=True)
     support_results: object = []
     if not args.skip_sync_support:
-        support_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
+        support_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root)]
         for tool_id in selected_tool_ids:
             support_args.extend(["--tool-id", tool_id])
         for upstream_checkout in args.upstream_checkout:
@@ -4720,7 +4710,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
         if not args.dry_run:
             support_args.append("--execute")
         support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
-    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
+    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root)]
     for tool_id in selected_tool_ids:
         doctor_args.extend(["--tool-id", tool_id])
     if not args.dry_run:
@@ -4863,7 +4853,6 @@ def _session_capture_invoke(
         str(home_root),
         "--mode",
         mode,
-        "--json",
     ]
     if extra:
         script_args.extend(extra)
@@ -5066,8 +5055,12 @@ def cmd_goal_check(args: argparse.Namespace) -> int:
     payload: object | None = None
     if stdout:
         try:
-            payload = json.loads(stdout)
-        except json.JSONDecodeError:
+            payload = parse_repo_script_payload(stdout, "skills/public/achieve/scripts/check_goal_artifact.py")
+        except CharnessError:
+            payload = None
+        if not isinstance(payload, (dict, list)):
+            # `yaml.safe_load` returns a scalar for helper prose where `json.loads`
+            # raised, so this keeps the raw-stdout diagnostic branch below reachable.
             payload = None
     if payload is not None:
         emit_yaml(payload)

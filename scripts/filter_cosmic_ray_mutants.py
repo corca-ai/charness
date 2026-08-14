@@ -35,6 +35,7 @@ from scripts.mutation_line_coverage_lib import (  # noqa: E402
     covered_statement_spans,
     mutation_line_is_covered,
 )
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 
 def resolve(repo_root: Path, path: Path) -> Path:
@@ -240,7 +241,6 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--session", type=Path, required=True)
     parser.add_argument("--coverage-json", type=Path, default=Path("reports/mutation/test-coverage.json"))
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -251,15 +251,19 @@ def main() -> int:
 
     coverage_json = resolve(repo_root, args.coverage_json)
     payload = filter_session(repo_root, session, coverage_json if coverage_json.is_file() else None)
-    if args.json:
-        print(json.dumps(payload, indent=2))
-    else:
-        print(
-            f"filtered {payload['skipped']} mutants from {payload['inspected']} pending mutants "
-            f"({payload['skipped_annotation']} annotation unions, "
-            f"{payload['skipped_uncovered']} uncovered lines, "
-            f"{payload['skipped_entry_guard']} trivial entry guards)"
-        )
+    # Unconditional YAML. The retired summary line's COUNTS were a strict projection of
+    # `skipped`, `inspected`, and the three per-reason counts the payload carries -- but
+    # the word `filtered`, which names this as work deliberately removed from the run,
+    # was not. `attention-state-visibility.json` declares `filtered` as this file's
+    # evidence term precisely so a skipped-mutant total cannot read as a clean sweep, so
+    # the label rides in the payload rather than dying with the renderer.
+    payload["filtered"] = (
+        f"filtered {payload['skipped']} mutants from {payload['inspected']} pending mutants "
+        f"({payload['skipped_annotation']} annotation unions, "
+        f"{payload['skipped_uncovered']} uncovered lines, "
+        f"{payload['skipped_entry_guard']} trivial entry guards)"
+    )
+    emit_yaml(payload)
     return 0
 
 

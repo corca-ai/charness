@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ROOT, run_script
 
@@ -30,11 +30,10 @@ def test_run_slice_closeout_requires_lock_before_broad_pytest() -> None:
         "--paths",
         "charness",
         "--skip-sync",
-        "--json",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["proof_receipt"]["status"] == "blocked"
     assert payload["proof_receipt"]["effective_exit_code"] == result.returncode
@@ -58,11 +57,10 @@ def test_run_slice_closeout_requires_exclusive_broad_pytest_phase_flags() -> Non
         "--skip-broad-pytest",
         "--verification-lock",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert payload["proof_receipt"]["cause"] == payload["error"]
     assert payload["phase_conflict"] is True
@@ -82,11 +80,10 @@ def test_run_slice_closeout_skip_broad_pytest_rehearsal_filters_pytest() -> None
         "--skip-sync",
         "--skip-broad-pytest",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "planned"
     assert payload["proof_receipt"]["status"] == "planned"
     assert payload["proof_receipt"]["effective_exit_code"] == result.returncode
@@ -98,7 +95,17 @@ def test_run_slice_closeout_skip_broad_pytest_rehearsal_filters_pytest() -> None
     assert not any(is_broad_pytest_command(command) for command in planned)
 
 
-def test_run_slice_closeout_skip_broad_pytest_text_names_skipped_command() -> None:
+def test_run_slice_closeout_skip_broad_pytest_names_the_skipped_command() -> None:
+    """Was `..._text_names_skipped_command`, before `--json` was deleted.
+
+    `print_text` used to be the DEFAULT rendering and `--json` the opt-in, so this
+    test read the default channel and its sibling above read the opt-in. Output is
+    unconditionally YAML now, so the channel distinction is gone — but the claim
+    this test owned is not, and it is the one the sibling never made: the skipped
+    broad command must be NAMED, not merely counted. `skipped_broad_pytest_commands`
+    being truthy (all the sibling asserts) would still hold for a policy that
+    dropped the wrong command.
+    """
     result = run_script(
         "scripts/run_slice_closeout.py",
         "--repo-root",
@@ -111,14 +118,22 @@ def test_run_slice_closeout_skip_broad_pytest_text_names_skipped_command() -> No
     )
 
     assert result.returncode == 0, result.stderr
-    assert "Broad pytest policy:" in result.stdout
-    assert "mode: pre-lock-rehearsal" in result.stdout
-    assert "focused current-diff proof" in result.stdout
-    assert "Skipped broad pytest commands:" in result.stdout
-    assert STANDING_PYTEST in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["broad_pytest_policy_mode"] == "pre-lock-rehearsal"
+    assert "focused current-diff proof" in payload["broad_pytest_recommendation"]
+    skipped = [item["command"] for item in payload["skipped_broad_pytest_commands"]]
+    assert STANDING_PYTEST in skipped, skipped
 
 
-def test_run_slice_closeout_lock_required_text_names_policy() -> None:
+def test_run_slice_closeout_lock_required_payload_names_policy() -> None:
+    """Was `..._text_names_policy`, before `--json` was deleted; same reason as above.
+
+    Its surviving claim is the operator-facing WORDING of the lock-required policy.
+    The sibling asserts a substring (`"ambiguous"`), which a rewritten warning could
+    keep while losing the sentence's meaning; this asserts the phrase an operator
+    reads, and that the lock requirement itself is stated rather than implied by the
+    mode string alone.
+    """
     result = run_script(
         "scripts/run_slice_closeout.py",
         "--repo-root",
@@ -129,10 +144,10 @@ def test_run_slice_closeout_lock_required_text_names_policy() -> None:
     )
 
     assert result.returncode == 1
-    assert "Broad pytest policy:" in result.stdout
-    assert "mode: lock-required" in result.stdout
-    assert "cost/evidence boundary ambiguous" in result.stdout
-    assert "Verification lock required before broad pytest." in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["broad_pytest_policy_mode"] == "lock-required"
+    assert "cost/evidence boundary ambiguous" in payload["broad_pytest_cost_warning"]
+    assert payload["verification_lock_required"] is True
 
 
 def test_run_slice_closeout_verification_lock_keeps_broad_pytest_in_plan() -> None:
@@ -145,11 +160,10 @@ def test_run_slice_closeout_verification_lock_keeps_broad_pytest_in_plan() -> No
         "--skip-sync",
         "--verification-lock",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "planned"
     assert payload["broad_pytest_policy_mode"] == "verification-lock"
     assert "final verification lock" in payload["broad_pytest_recommendation"]

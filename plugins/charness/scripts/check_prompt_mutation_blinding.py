@@ -15,6 +15,8 @@ from pathlib import Path
 
 from prompt_mutation_bundle_lib import iter_jsonl_dicts, tool_input_strings
 
+from yaml_output import emit_yaml
+
 GIT_PREFIX = r"\bgit\b(?:\s+(?:-[Cc]\s+\S+|--no-pager|-c\s+\S+))*\s+"
 
 IDENTITY_PROBE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -165,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
         report = scan_bundle(args.bundle_dir.resolve())
     else:
         report = scan_ab_dir(args.ab_dir.resolve())
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    emit_yaml(report)
     return 0
 
 

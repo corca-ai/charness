@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -12,6 +14,9 @@ _render_report = import_repo_module(
     ROOT / "skills" / "public" / "hitl" / "scripts" / "render_report.py",
     "skills.public.hitl.scripts.render_report",
 )
+_render_yaml = import_repo_module(
+    ROOT / "scripts" / "yaml_output.py", "scripts.yaml_output"
+).render_yaml
 
 
 def run_render_report(monkeypatch, capsys, *args: str) -> SimpleNamespace:
@@ -66,7 +71,7 @@ def test_hitl_report_mode_does_not_turn_suggestions_into_default_approval(
     result = run_render_report(monkeypatch, capsys, "--repo-root", str(repo), "--input", str(packet))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     decisions = json.loads((repo / payload["decisions_path"]).read_text(encoding="utf-8"))
     html = (repo / payload["html_path"]).read_text(encoding="utf-8")
     assert payload["reviewed_item_count"] == 0
@@ -132,7 +137,7 @@ def test_hitl_report_mode_saves_only_touched_decisions_and_explains_tables(
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     decisions = json.loads((repo / payload["decisions_path"]).read_text(encoding="utf-8"))
     html = (repo / payload["html_path"]).read_text(encoding="utf-8")
     assert [item["id"] for item in decisions["items"]] == ["matrix-1"]
@@ -191,7 +196,7 @@ def test_hitl_report_mode_orders_adaptive_queue_by_decision_leverage(
     result = run_render_report(monkeypatch, capsys, "--repo-root", str(repo), "--input", str(packet))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     decisions = json.loads((repo / payload["decisions_path"]).read_text(encoding="utf-8"))
     html = (repo / payload["html_path"]).read_text(encoding="utf-8")
     assert payload["current_queue_order"] == ["b", "c", "a"]
@@ -267,7 +272,7 @@ def test_hitl_report_mode_reprioritizes_remaining_items_from_review_effects(
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     decisions = json.loads((repo / payload["decisions_path"]).read_text(encoding="utf-8"))
     html = (repo / payload["html_path"]).read_text(encoding="utf-8")
     assert payload["current_queue_order"] == ["c", "a"]
@@ -340,7 +345,7 @@ def test_hitl_report_mode_restart_recommendation_stays_display_only(
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     decisions = json.loads((repo / payload["decisions_path"]).read_text(encoding="utf-8"))
     html = (repo / payload["html_path"]).read_text(encoding="utf-8")
     assert payload["queue_status"] == "invalidation_recommended"
@@ -515,7 +520,7 @@ def test_hitl_report_mode_rejects_duplicate_ids_and_sanitizes_report_html(
     assert duplicate.returncode == 1
     assert "duplicate item id" in duplicate.stderr
     assert unsafe.returncode == 0, unsafe.stderr
-    payload = json.loads(unsafe.stdout)
+    payload = yaml.safe_load(unsafe.stdout)
     html = (repo / payload["html_path"]).read_text(encoding="utf-8")
     assert 'href="javascript:' not in html
     assert "querySelectorAll(\".card\")" in html
@@ -525,10 +530,14 @@ def test_hitl_report_mode_rejects_duplicate_ids_and_sanitizes_report_html(
 # --- #361: kill the surviving render_report.py main() mutants ------------------
 
 
-def test_render_report_output_uses_two_space_indent(tmp_path: Path, monkeypatch, capsys) -> None:
-    # #361: the rendered queue JSON is printed with 2-space indent. Kills
-    # render_report.py:49 NumberReplacer on `indent=2` (every other assertion does
-    # json.loads on stdout, which is indent-agnostic).
+def test_render_report_output_is_exactly_the_repo_yaml_document(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    # #361: this test exists so at least one assertion pins the SERIALIZATION and
+    # not just the parsed value — every other assertion here round-trips stdout,
+    # which is formatting-agnostic. The `indent=2` it originally killed went away
+    # with `--json` on 2026-08-14; the emit is `yaml_output.render_yaml` now, so
+    # the byte-for-byte pin moves onto that renderer.
     repo = tmp_path / "repo"
     repo.mkdir()
     packet = repo / "packet.json"
@@ -553,9 +562,12 @@ def test_render_report_output_uses_two_space_indent(tmp_path: Path, monkeypatch,
     )
     result = run_render_report(monkeypatch, capsys, "--repo-root", str(repo), "--input", str(packet))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert result.stdout.rstrip("\n") == json.dumps(payload, ensure_ascii=False, indent=2)
-    assert '\n  "' in result.stdout  # a top-level key indented by exactly two spaces
+    payload = yaml.safe_load(result.stdout)
+    assert result.stdout == _render_yaml(payload)
+    # A YAML document, not the JSON one this used to emit: top-level keys sit
+    # unquoted at column 0 rather than inside a `{`.
+    assert not result.stdout.lstrip().startswith("{")
+    assert result.stdout.splitlines()[0].split(":")[0].isidentifier()
 
 
 def test_render_report_requires_repo_root_and_input(tmp_path: Path, monkeypatch, capsys) -> None:

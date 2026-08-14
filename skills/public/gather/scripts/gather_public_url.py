@@ -4,15 +4,34 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import json
+import runpy
 import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
+import yaml
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 SUPPORT_ACQUIRE = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "acquire_public_url.py"
+SUPPORT_ROUTE = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "route_public_fetch.py"
 WRITE_RECORD = SCRIPT_DIR / "write_record.py"
+
+
+def emit_yaml(payload: object) -> None:
+    """Render this command's stdout through the repo's one YAML emitter.
+
+    Reached via the support router's own `load_yaml_output` rather than
+    `skill_runtime_bootstrap`: a minimal exported layout is only required to ship
+    `scripts/yaml_output.py` beside the bundled guard (see
+    `test_gather_reaches_acquire_and_bundled_guard_in_exported_layout`), and a seam
+    that needs a root file that layout does not carry turns this command's stdout
+    into an ImportError. `load_yaml_output`'s BOUNDED ancestor walk already resolves
+    the helper at the repo root here and at the plugin root once exported, so this
+    reuses it instead of adding a fourth private copy of the same walk.
+    """
+    runpy.run_path(str(SUPPORT_ROUTE))["load_yaml_output"]().emit_yaml(payload)
+
 
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -35,9 +54,14 @@ def _run_json(command: list[str], *, input_text: str | None = None) -> dict[str,
     if completed.returncode != 0:
         raise SystemExit(completed.stderr.strip() or completed.stdout.strip() or f"command failed: {command!r}")
     try:
-        return json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise SystemExit(f"command did not emit JSON: {command!r}") from exc
+        payload = yaml.safe_load(completed.stdout)
+    except yaml.YAMLError as exc:
+        raise SystemExit(f"command did not emit a readable payload: {command!r}") from exc
+    if not isinstance(payload, dict):
+        # `yaml.safe_load` returns a scalar where `json.loads` raised, so the mapping
+        # check keeps unreadable stdout a refusal rather than an AttributeError later.
+        raise SystemExit(f"command did not emit a readable payload: {command!r}")
+    return payload
 
 
 def _slug_from_url(url: str) -> str:
@@ -178,7 +202,7 @@ def main() -> int:
             "acquisition": acquisition,
             "write_record": None,
         }
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        emit_yaml(payload)
         return 1
     record = _render_record(args.url, acquisition, persist_requested=args.persist_extracted_content)
     slug = args.slug or _slug_from_url(args.url)
@@ -209,7 +233,7 @@ def main() -> int:
         "acquisition": _trace_payload(acquisition),
         "write_record": write_payload,
     }
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return 0
 
 

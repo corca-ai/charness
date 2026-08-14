@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+import yaml
 
 import scripts.quality_bootstrap_lib as bootstrap_lib
 import scripts.quality_bootstrap_lifecycle as lifecycle
@@ -35,7 +36,9 @@ def _adapter(repo: Path) -> Path:
 def _bootstrap(repo: Path, *extra: str) -> dict:
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), *extra)
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)
+    # `bootstrap_adapter.py` reports in YAML since the `--json` removal. YAML is a JSON
+    # superset, so this also reads the compact-JSON fallback used without PyYAML.
+    return yaml.safe_load(result.stdout)
 
 
 def test_lifecycle_helpers_cover_empty_and_uninterpreted_boundaries(monkeypatch) -> None:
@@ -83,7 +86,7 @@ def test_rewrite_announces_the_comments_it_cannot_keep(tmp_path: Path) -> None:
 
     before = _adapter(repo).read_text(encoding="utf-8")
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["adapter_status"] == "conflict"
     assert _adapter(repo).read_text(encoding="utf-8") == before
@@ -104,7 +107,7 @@ def test_explicit_migration_reports_rewrites_and_retains_comments(tmp_path: Path
     _adapter(repo).write_text(original, encoding="utf-8")
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     migrated = _adapter(repo).read_text(encoding="utf-8")
 
     assert result.returncode == 0, result.stderr
@@ -127,7 +130,7 @@ def test_matching_normalized_intent_with_comments_is_a_silent_noop(tmp_path: Pat
     adapter_path.write_text(annotated, encoding="utf-8")
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["adapter_status"] == "unchanged"
     assert adapter_path.read_text(encoding="utf-8") == annotated
@@ -215,7 +218,7 @@ def test_unrecognized_absence_declaration_is_warned_not_silently_honored(tmp_pat
     )
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert result.returncode == 0, result.stderr
     assert any("coverage_flor_policy" in warning for warning in payload["absence_warnings"])

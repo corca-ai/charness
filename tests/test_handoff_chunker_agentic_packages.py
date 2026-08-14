@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO_ROOT / "skills" / "public" / "handoff" / "scripts"
@@ -323,7 +324,7 @@ def test_prepare_chunk_packet_cli_emits_agentic_packet(entries):
     )
 
     assert result.returncode == 0, result.stderr
-    packet = json.loads(result.stdout)
+    packet = yaml.safe_load(result.stdout)
     assert packet["version"] == 2
     assert [source["source_id"] for source in packet["sources"]] == [1, 2, 3, 4]
     assert "chunk_proposer_prompt" in packet
@@ -340,6 +341,6 @@ def test_prepare_ranker_packet_preserves_judgment_summary(lib, entries):
     )
 
     assert result.returncode == 0, result.stderr
-    packet = json.loads(result.stdout)
+    packet = yaml.safe_load(result.stdout)
     candidates = packet["merge_proposal"]["merged"]
     assert candidates[0]["judgment_summary"] == _good_response()["chunks"][0]["judgment_summary"]

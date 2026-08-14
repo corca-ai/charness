@@ -3,12 +3,12 @@
 
 CLI surface:
 
-    python3 propose_merges.py --input <path-to-parser-json>
+    python3 propose_merges.py --input <path-to-parser-payload>
     python3 propose_merges.py --input -                # read stdin
 
-Reads the JSON payload emitted by ``parse_handoff_entries.py`` (the
+Reads the payload emitted by ``parse_handoff_entries.py`` (the
 ``entries`` array), rebuilds the HandoffEntry list, and emits a
-MergeProposal JSON on stdout (standalone candidates + merged candidates
+MergeProposal as YAML on stdout (standalone candidates + merged candidates
 + shared_boundary_reason map).
 
 See ``references/chunked-routing.md`` for the contract (in the charness source
@@ -16,7 +16,6 @@ repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
 which is not vendored with the skill).
 """
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -68,7 +67,7 @@ def main() -> int:
         proposal = chunked_routing_lib.propose_merges(entries)
         output = proposal.to_dict()
         chunked_routing_cli.forward_carried_keys(payload, output, CARRIED_KEYS)
-        sys.stdout.write(json.dumps(output, ensure_ascii=False, indent=2) + "\n")
+        sys.stdout.write(chunked_routing_cli.render_yaml(output))
         return 0
     finally:
         cancel_timeout()

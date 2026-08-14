@@ -518,7 +518,7 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
         text=True,
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["in_sync"] is False
     assert payload["session_routing"]["hosts"]["claude"]["in_sync"] is False
 
@@ -534,7 +534,7 @@ def test_reconcile_runner_status_mode_exit_codes(fake_repo: Path, fake_home: Pat
         text=True,
     )
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["in_sync"] is True
     assert payload["hook_liveness"]["dangling"] == []
 

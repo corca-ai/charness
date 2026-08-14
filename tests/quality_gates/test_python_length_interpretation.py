@@ -3,12 +3,12 @@ from __future__ import annotations
 import contextlib
 import importlib
 import io
-import json
 import sys
 from pathlib import Path
 from typing import NamedTuple
 
 import pytest
+import yaml
 
 from .support import ROOT
 
@@ -93,15 +93,15 @@ def test_hard_over_limit_failure_never_attaches_interpretation(tmp_path: Path) -
     assert "INTERPRETATION" not in out.getvalue()
 
 
-def test_headroom_json_carries_interpretation_only_when_near_limit(tmp_path: Path) -> None:
+def test_headroom_payload_carries_interpretation_only_when_near_limit(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _write(repo, "skills/public/demo/scripts/band.py", 340)  # near-limit
     near = _run(
         "--repo-root", str(repo), "--headroom",
-        "--paths", "skills/public/demo/scripts/band.py", "--json",
+        "--paths", "skills/public/demo/scripts/band.py",
     )
     assert near.returncode == 0
-    interpretation = json.loads(near.stdout)["interpretation"]
+    interpretation = yaml.safe_load(near.stdout)["interpretation"]
     assert set(interpretation) == {"measures", "proxy_for", "blind_spots", "interpretation_question"}
     assert all(interpretation[field].strip() for field in interpretation)
 
@@ -109,10 +109,10 @@ def test_headroom_json_carries_interpretation_only_when_near_limit(tmp_path: Pat
     _write(repo, "skills/public/demo/scripts/roomy.py", 10)
     roomy = _run(
         "--repo-root", str(repo), "--headroom",
-        "--paths", "skills/public/demo/scripts/roomy.py", "--json",
+        "--paths", "skills/public/demo/scripts/roomy.py",
     )
     assert roomy.returncode == 0
-    assert "interpretation" not in json.loads(roomy.stdout)
+    assert "interpretation" not in yaml.safe_load(roomy.stdout)
 
 
 def test_length_interpretation_has_paired_consumer_requirement() -> None:

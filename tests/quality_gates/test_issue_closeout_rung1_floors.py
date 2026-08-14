@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+import yaml
 
 from tests.quality_gates.issue_closeout_support import (
     SCRIPT,
@@ -24,7 +25,7 @@ def test_issue_verify_closeout_rejects_silent_behavioral_verdict(tmp_path: Path)
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["behavioral_verdict"]["ok"] is False
     assert payload["behavioral_verdict"]["missing"] == [42]
@@ -48,7 +49,7 @@ def test_issue_verify_closeout_accepts_typed_nonverified_disposition(tmp_path: P
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["behavioral_verdict"]["ok"] is True
     assert payload["status"] == "carrier_verified"
 
@@ -71,7 +72,7 @@ def test_issue_verify_closeout_rejects_undispositioned_hotl_entry(tmp_path: Path
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["hotl_dispositions"]["ok"] is False
     assert payload["hotl_dispositions"]["undispositioned"][0]["target"] == "#42"
@@ -97,7 +98,7 @@ def test_issue_verify_closeout_accepts_typed_hotl_disposition(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["hotl_dispositions"]["applies"] is True
     assert payload["hotl_dispositions"]["ok"] is True
 
@@ -114,7 +115,7 @@ def test_issue_verify_closeout_inert_without_hotl_entry(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["hotl_dispositions"]["applies"] is False
     assert payload["hotl_dispositions"]["ok"] is True
 
@@ -181,7 +182,7 @@ def test_issue_verify_closeout_bundle_binds_hotl_entries_to_its_numbers(tmp_path
         "--classification", "question", "--carrier", "direct-commit", "--commit-ref", "HEAD",
     )
     assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["hotl_dispositions"]["applies"] is False
 
 
@@ -231,7 +232,7 @@ def test_issue_verify_closeout_rejects_missing_ai_provenance_marker(tmp_path: Pa
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["ai_provenance"]["ok"] is False
 
@@ -265,7 +266,7 @@ def test_issue_verify_closeout_question_class_exempts_behavior_but_not_provenanc
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["behavioral_verdict"]["applies"] is False
     assert payload["ai_provenance"]["applies"] is True
     assert payload["ai_provenance"]["ok"] is True
@@ -292,7 +293,7 @@ def test_issue_verify_closeout_refuses_a_question_close_with_no_provenance_marke
         "--classification", "question", "--carrier", "direct-commit", "--commit-ref", "HEAD",
     )
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["ai_provenance"]["applies"] is True
     assert payload["ai_provenance"]["ok"] is False
@@ -317,7 +318,7 @@ def test_issue_verify_closeout_requires_per_issue_behavioral_verdict_in_bundle(t
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["behavioral_verdict"]["missing"] == [2]
 
 
@@ -334,7 +335,7 @@ def test_validate_closeout_draft_blocks_silent_carrier_before_mutation(tmp_path:
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["behavioral_verdict"]["ok"] is False
 
 

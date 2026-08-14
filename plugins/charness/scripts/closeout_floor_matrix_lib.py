@@ -47,6 +47,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Callable
 
+import yaml
+
 from scripts.closeout_floor_matrix_world import (
     DESTINATION,
     NUMBER,
@@ -256,17 +258,24 @@ def _commit_msg(
             "--repo-root", str(world.root),
             "--commit-msg-file", str(path),
             "--repo", REPO,
-            "--json",
         ],
         cwd=world.root, env=env, capture_output=True, text=True,
     )
     try:
-        return json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
+        verdict = yaml.safe_load(result.stdout)
+    except yaml.YAMLError as exc:
         raise RuntimeError(
-            f"commit-msg carrier produced no JSON verdict (exit={result.returncode}): "
+            f"commit-msg carrier produced no readable verdict (exit={result.returncode}): "
             f"{result.stdout[-400:]!r} {result.stderr[-400:]!r}"
         ) from exc
+    if not isinstance(verdict, dict):
+        # `yaml.safe_load` returns a scalar where `json.loads` raised, so the mapping
+        # check keeps a non-payload stdout a refusal rather than a silent bad verdict.
+        raise RuntimeError(
+            f"commit-msg carrier produced no readable verdict (exit={result.returncode}): "
+            f"{result.stdout[-400:]!r} {result.stderr[-400:]!r}"
+        )
+    return verdict
 
 
 INGRESSES: dict[str, Callable[[ProbeWorld, str, str, "str | None"], dict[str, Any]]] = {

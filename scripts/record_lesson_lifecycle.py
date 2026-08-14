@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script, require_repo_local_helper
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
@@ -105,7 +106,8 @@ def main(argv: list[str] | None = None) -> int:
         decision_ref=args.decision_ref,
         rationale=args.rationale,
     )
-    print(json.dumps(event, ensure_ascii=False, sort_keys=True))
+    # Receipt only; the event itself is already persisted in the JSON ledger.
+    emit_yaml(event)
     return 0
 
 

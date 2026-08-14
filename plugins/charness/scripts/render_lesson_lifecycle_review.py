@@ -52,6 +52,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script, require_repo_local_helper
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 # Reused, never reimplemented: `_value` is the same shrinkage statistic the
@@ -209,47 +210,15 @@ def build_lifecycle_review(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _render_human(review: dict[str, Any]) -> str:
-    lines = [
-        f"Lesson lifecycle review: {review['lesson_count']} lessons "
-        f"({review['active_count']} active, {review['archived_count']} archived); "
-        f"{review['anchored_lesson_count']} with anchored evidence.",
-        "",
-    ]
-    for item in review["lessons"]:
-        lines.append(
-            f"- {item['lesson_id']} [{item['state']}] evidence={item['evidence']} "
-            f"score={item['score_total']}/{item['score_count']} value={item['value']} "
-            f"independent_sources={item['recurrence_context'].get('independent_source_count')}"
-        )
-        for event in item["score_events"]:
-            if "anchor" in event:
-                lines.append(f"    {event['score']:+d} anchor: {event['anchor']}")
-    lines.extend(
-        [
-            "",
-            f"No anchored evidence ({len(review['lessons_without_anchored_evidence'])}): "
-            + (", ".join(review["lessons_without_anchored_evidence"]) or "none"),
-            "",
-            "Dispositions to judge (recurrence cannot tell these apart):",
-        ]
-    )
-    lines.extend(f"- {name}: {why}" for name, why in review["dispositions"].items())
-    lines.append("")
-    lines.extend(f"Not claimed: {claim}" for claim in review["non_claims"])
-    return "\n".join(lines)
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=ROOT)
-    parser.add_argument("--json", action="store_true", help="Emit the structured review instead of prose.")
     args = parser.parse_args()
     review = build_lifecycle_review(args.repo_root.resolve())
-    if args.json:
-        print(json.dumps(review, ensure_ascii=False, sort_keys=True))
-    else:
-        print(_render_human(review))
+    # The prose renderer carried nothing the review does not: `dispositions` and
+    # `non_claims` are payload keys, and its only editorial line ("recurrence cannot
+    # tell these apart") restated the `dispositions` mapping it printed.
+    emit_yaml(review)
     # Zero over any ledger this could validate, INCLUDING one with nothing to
     # propose: a nonzero exit there would make an unproposed graduation look like a
     # failure and turn a briefing surface into a gate the contract did not

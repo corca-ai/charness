@@ -11,6 +11,7 @@ import importlib.util
 from pathlib import Path
 
 import pytest
+import yaml
 
 _SCRIPTS = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"
 
@@ -846,10 +847,13 @@ def test_check_goal_artifact_cli_refuses_complete_goal_with_unsatisfied_gather(
         ["check_goal_artifact.py", "--repo-root", str(tmp_path), "--goal-path", str(goal_path)],
     )
     rc = cga.main()
-    out = capsys.readouterr().out
+    # Command stdout is unconditionally YAML now, and `emit_yaml` line-wraps long
+    # scalars, so the reason is asserted on the PARSED issue entry rather than as a
+    # substring of the raw stream (a wrap would split the phrase mid-line).
+    payload = yaml.safe_load(capsys.readouterr().out)
 
     assert rc == 1
-    assert "coordination floors: gather step missing" in out
+    assert any("coordination floors: gather step missing" in issue for issue in payload["issues"])
 
 
 def test_coordination_floors_missing_created_fails_closed_and_runs() -> None:

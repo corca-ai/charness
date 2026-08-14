@@ -20,6 +20,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -737,7 +738,7 @@ def test_main_renders_a_report_end_to_end(tmp_path, premise_cli, capsys, monkeyp
     code = premise_cli.main(
         ["--repo-root", str(tmp_path), "--premise-file", str(premise_file), "--with-bodies"]
     )
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert code == 0 and payload["ok"] is True
     states = {item["number"]: item["state"] for item in payload["issues"]}
     assert states == {554: "premise-refuted-with-live-residue", 576: "premise-holds"}
@@ -755,7 +756,7 @@ def test_main_state_filter_narrows_issues_but_not_counts(tmp_path, premise_cli, 
     code = premise_cli.main(
         ["--repo-root", str(tmp_path), "--state", "premise-holds"]
     )
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert code == 0
     assert payload["counted"] == 2 and payload["issues"] == []
     assert payload["scan_scope"]["state_filter"] == "premise-holds"
@@ -866,7 +867,7 @@ def test_the_script_runs_as_a_command_and_exits_nonzero_on_a_bad_premise_file(tm
         timeout=60,
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "JSON object" in payload["error"]
 

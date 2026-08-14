@@ -26,10 +26,10 @@ from usage_episode_product_review import (
     build_review_payload,
     execute_comments,
     parse_optional_time,
-    print_review_result,
 )
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -74,7 +74,6 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Include repo/user refs in mutating GitHub comments; default redacts them.",
     )
-    parser.add_argument("--json", action="store_true")
     return parser.parse_args()
 
 
@@ -124,17 +123,17 @@ def main() -> int:
     episode_schema = _load_json(schema_root / "episode.schema.json")
 
     if not adapter_path.is_file():
-        print_review_result(_missing_adapter_payload(repo_root, adapter_path), as_json=args.json)
+        emit_yaml(_missing_adapter_payload(repo_root, adapter_path))
         return 0
     try:
         adapter = _load_adapter(adapter_path)
         jsonschema.validate(adapter, manifest_schema)
     except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
         payload = _invalid_payload("invalid_adapter", repo_root, adapter_path, [str(exc)])
-        print_review_result(payload, as_json=args.json)
+        emit_yaml(payload)
         return 1
     if not adapter.get("enabled", False):
-        print_review_result(_disabled_payload(repo_root, adapter_path), as_json=args.json)
+        emit_yaml(_disabled_payload(repo_root, adapter_path))
         return 0
 
     records_path = _resolve_records_path(repo_root, adapter, args.records_path)
@@ -148,10 +147,10 @@ def main() -> int:
             ["records_path must stay under repo_root"],
             records_path=records_path,
         )
-        print_review_result(payload, as_json=args.json)
+        emit_yaml(payload)
         return 1
     if not records_path.is_file():
-        print_review_result(_no_records_payload(repo_root, adapter_path, records_path), as_json=args.json)
+        emit_yaml(_no_records_payload(repo_root, adapter_path, records_path))
         return 0
 
     records, errors = _read_valid_records(records_path, episode_schema)
@@ -164,14 +163,14 @@ def main() -> int:
             records_path=records_path,
         )
         payload["valid_count"] = len(records)
-        print_review_result(payload, as_json=args.json)
+        emit_yaml(payload)
         return 1
     try:
         window_start = parse_optional_time(args.window_start)
         window_end = parse_optional_time(args.window_end)
     except ValueError as exc:
         payload = _invalid_payload("invalid_window", repo_root, adapter_path, [str(exc)], records_path=records_path)
-        print_review_result(payload, as_json=args.json)
+        emit_yaml(payload)
         return 2
     if window_start is not None and window_end is not None and window_start > window_end:
         payload = _invalid_payload(
@@ -181,7 +180,7 @@ def main() -> int:
             ["--window-start must be before or equal to --window-end"],
             records_path=records_path,
         )
-        print_review_result(payload, as_json=args.json)
+        emit_yaml(payload)
         return 2
 
     payload = build_review_payload(
@@ -206,7 +205,7 @@ def main() -> int:
             issue_number=args.issue_number,
             include_target_refs=args.include_target_refs_in_comments,
         )
-    print_review_result(payload, as_json=args.json)
+    emit_yaml(payload)
     return return_code
 
 

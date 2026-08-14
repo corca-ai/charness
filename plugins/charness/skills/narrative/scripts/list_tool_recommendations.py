@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -22,6 +20,7 @@ _RECOMMENDATION_LIB = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.tool_recommendation_lib"
 )
 role_recommendation_payload = _RECOMMENDATION_LIB.role_recommendation_payload
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 def main() -> None:
@@ -38,7 +37,7 @@ def main() -> None:
         next_skill_id=args.next_skill_id,
         include_ready=args.include_ready,
     )
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    yaml_output.emit_yaml(payload)
 
 
 if __name__ == "__main__":

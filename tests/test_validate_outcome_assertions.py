@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -65,44 +66,63 @@ def test_find_and_validate_all_globs_every_set(tmp_path: Path) -> None:
     assert results["evals/cautilus/beta-claim-fidelity/outcome-assertions.json"]  # non-empty problems
 
 
-def test_main_returns_zero_when_all_valid(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+DEMO_REL = "evals/cautilus/demo-claim-fidelity/outcome-assertions.json"
+
+
+def test_main_returns_zero_and_states_the_validated_count(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
     _make_set(tmp_path, "demo", _good_set())
     assert v.main(["--repo-root", str(tmp_path)]) == 0
-    assert "Validated 1 outcome assertion set(s)." in capsys.readouterr().out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    # The count the retired `Validated N outcome assertion set(s).` line carried
+    # is now a payload key, as is the per-file OK verdict.
+    assert payload["status"] == "valid"
+    assert payload["checked_count"] == 1
+    assert payload["verdicts"] == {DEMO_REL: "ok"}
+    assert payload["problems"] == {}
 
 
 def test_main_returns_one_and_reports_on_problem(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
     _make_set(tmp_path, "demo", {"evalId": "x", "assertions": []})
     assert v.main(["--repo-root", str(tmp_path)]) == 1
-    err = capsys.readouterr().err
-    assert "FAIL" in err
-    # The per-problem detail loop must actually run (not be skipped): each
-    # reported problem gets its own `  - <err>` line under the FAIL header.
-    # The `  - ` prefix is owned here; the message text is owned by
-    # grade_skill_outcome.validate_assertion_set, so pin the prefix plus a
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "invalid"
+    assert payload["verdicts"][DEMO_REL] == "fail"
+    # The per-problem detail must survive into the payload rather than collapse
+    # into the bare per-file verdict: every reported problem gets its own entry
+    # under its file key (this is what the `  - <err>` loop used to carry). The
+    # structure is owned here; the message text is owned by
+    # grade_skill_outcome.validate_assertion_set, so pin the structure plus a
     # stable semantic fragment instead of the full foreign-owned sentence.
-    assert "  - " in err and "non-empty list" in err
+    problems = payload["problems"][DEMO_REL]
+    assert isinstance(problems, list) and problems
+    assert any("non-empty list" in problem for problem in problems)
 
 
-def test_main_no_sets_is_clean(tmp_path: Path) -> None:
+def test_main_no_sets_is_clean(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
     # An empty repo (no sets yet) is not an error.
     assert v.main(["--repo-root", str(tmp_path)]) == 0
+    payload = yaml.safe_load(capsys.readouterr().out)
+    # ...but a pass over zero sets must not read as a validated corpus.
+    assert payload["checked_count"] == 0
+    assert "none ship yet" in payload["note"]
 
 
-def test_main_json_mode_reports_problems(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+def test_main_emits_the_problem_payload(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
     _make_set(tmp_path, "demo", {"evalId": "x", "assertions": []})
-    rc = v.main(["--repo-root", str(tmp_path), "--json"])
-    payload = json.loads(capsys.readouterr().out)
+    rc = v.main(["--repo-root", str(tmp_path)])
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert rc == 1 and payload["problems"]
 
 
-def test_main_json_mode_clean_path_returns_exact_zero(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
-    # Pins BOTH ternary branches of `return 1 if problems else 0` in --json
-    # mode: the problems branch is exercised above (rc == 1); this covers the
-    # clean branch, which had no dedicated exact-value assertion before.
+def test_main_clean_path_returns_exact_zero(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    # Pins BOTH ternary branches of `return 1 if problems else 0`: the problems
+    # branch is exercised above (rc == 1); this covers the clean branch, which
+    # had no dedicated exact-value assertion before.
     _make_set(tmp_path, "demo", _good_set())
-    rc = v.main(["--repo-root", str(tmp_path), "--json"])
-    payload = json.loads(capsys.readouterr().out)
+    rc = v.main(["--repo-root", str(tmp_path)])
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert rc == 0
     assert payload["problems"] == {}
 

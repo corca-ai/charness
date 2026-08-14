@@ -10,13 +10,14 @@ avoidance rather than the habit.
 from __future__ import annotations
 
 import importlib.util
-import json
+import re
 import runpy
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILL_SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
@@ -41,6 +42,17 @@ def _hits(text: str) -> list[str]:
     return [literal for _line, literal, _label, _remedy in lib.scan_text(text)]
 
 
+def _diagnostics_text(payload: dict) -> str:
+    """The diagnostics prose as one whitespace-collapsed string.
+
+    Output is YAML now, so a long diagnostic is line-wrapped by the emitter.
+    Asserting a sentence against the raw stdout would pass or fail on where the
+    wrap landed; the payload list is the stable surface, joined here so a
+    sentence can still be asserted whole.
+    """
+    return re.sub(r"\s+", " ", " ".join(payload["diagnostics"]))
+
+
 def test_missing_runtime_bootstrap_is_an_explicit_import_error(monkeypatch) -> None:
     real_is_file = Path.is_file
 
@@ -55,8 +67,11 @@ def test_missing_runtime_bootstrap_is_an_explicit_import_error(monkeypatch) -> N
         gate._load_skill_runtime_bootstrap()
 
 
-def test_unreasoned_exemptions_render_the_refusal_directly() -> None:
-    lines = gate.render(
+def test_unreasoned_exemptions_carry_the_refusal_in_the_payload() -> None:
+    # The refusal used to be a rendered line. It is now `status` plus the same
+    # sentence in `diagnostics`, and BOTH have to name the offending files --
+    # a bare status word would drop which exemption the author must repair.
+    explained = gate.explain(
         {
             "adapter_refusal": None,
             "checked": 1,
@@ -66,14 +81,15 @@ def test_unreasoned_exemptions_render_the_refusal_directly() -> None:
         }
     )
 
-    assert lines == [
+    assert explained["status"] == "unreasoned-exemptions"
+    assert explained["diagnostics"] == [
         "regenerable-facts: exemption(s) with no recorded reason: docs/a.md, docs/b.md"
         " -- an unexplained exemption is the claim this rule exists to remove"
     ]
 
 
-def test_findings_render_the_unclassified_docs_nonclaim() -> None:
-    lines = gate.render(
+def test_findings_carry_the_unclassified_docs_nonclaim() -> None:
+    explained = gate.explain(
         {
             "adapter_refusal": None,
             "checked": 1,
@@ -92,7 +108,8 @@ def test_findings_render_the_unclassified_docs_nonclaim() -> None:
         }
     )
 
-    assert lines[-1] == (
+    assert explained["status"] == "findings"
+    assert explained["diagnostics"][-1] == (
         "NON-CLAIM: 1 docs file(s) were not classified by the conservative defaults; "
         "this failure verdict covers only the named default surfaces."
     )
@@ -102,22 +119,26 @@ def test_findings_render_the_unclassified_docs_nonclaim() -> None:
     ("error", "detail"),
     [(StopIteration(), "StopIteration"), (RuntimeError("broken adapter"), "RuntimeError: broken adapter")],
 )
-def test_adapter_load_errors_are_json_refusals_in_process(
+def test_adapter_load_errors_are_structured_refusals_in_process(
     monkeypatch, capsys, error: Exception, detail: str
 ) -> None:
+    # The point is unchanged by the YAML migration: an adapter that cannot load
+    # surfaces as a NAMED refusal in the payload, not as a traceback and not as a
+    # scan over a scope nobody declared.
     def fail_adapter(_repo_root: Path):
         raise error
 
     monkeypatch.setattr(gate, "load_adapter", fail_adapter)
-    monkeypatch.setattr(sys, "argv", ["check_regenerable_facts.py", "--repo-root", str(ROOT), "--json"])
+    monkeypatch.setattr(sys, "argv", ["check_regenerable_facts.py", "--repo-root", str(ROOT)])
 
     assert gate.main() == 1
 
-    report = json.loads(capsys.readouterr().out)
+    report = yaml.safe_load(capsys.readouterr().out)
     assert report["adapter_refusal"] == (
         f"quality adapter could not be loaded ({detail}); declared surfaces are unknown"
     )
     assert report["checked"] == 0
+    assert report["status"] == "adapter-refusal"
 
 
 def test_git_listing_failure_falls_back_to_the_declared_glob(tmp_path: Path, monkeypatch) -> None:
@@ -218,12 +239,14 @@ def test_a_historical_docs_record_does_not_hard_fail_an_unconfigured_consumer(tm
     record = repo / "docs" / "requests" / "2026-07-27-readiness.md"
     record.write_text("The decision was taken after 172 tests.\n", encoding="utf-8")
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert code == 0, out
-    assert "NOT CONFIGURED FOR DOCS" in out
-    assert "1 docs file(s) remain unclassified" in out
-    assert "172 tests" not in out
+    assert code == 0, payload
+    assert payload["status"] == "not-configured-for-docs"
+    assert len(payload["unclassified_docs"]) == 1
+    assert "1 docs file(s) remain unclassified" in _diagnostics_text(payload)
+    # The dated record's transcribed count is NOT reported as a finding.
+    assert payload["findings"] == []
     explicit = lib.scan_repo(
         repo,
         {"data": {"regenerable_facts": {"surfaces": ["docs/**/*.md"], "exemptions": {}}}},
@@ -241,11 +264,13 @@ def test_a_current_docs_claim_cannot_hide_behind_a_clean_default_file(tmp_path: 
         "# Operative state\n\nThe current suite has 145 tests.\n", encoding="utf-8"
     )
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert code == 0, out
-    assert "no regenerable facts" not in out
-    assert "NOT CONFIGURED FOR DOCS" in out
+    assert code == 0, payload
+    # `not-configured-for-docs`, not `clean`: a clean default file must not buy a
+    # clean verdict over a docs tree the gate never classified.
+    assert payload["status"] == "not-configured-for-docs"
+    assert "no regenerable facts" not in _diagnostics_text(payload)
 
 
 def test_an_explicit_empty_surface_list_refuses_instead_of_falling_back(tmp_path: Path) -> None:
@@ -256,10 +281,11 @@ def test_an_explicit_empty_surface_list_refuses_instead_of_falling_back(tmp_path
         "version: 1\nregenerable_facts:\n  surfaces: []\n", encoding="utf-8"
     )
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert code == 1, out
-    assert "declared `regenerable_facts.surfaces` matched 0 files" in out
+    assert code == 1, payload
+    assert payload["status"] == "declared-surfaces-matched-nothing"
+    assert "declared `regenerable_facts.surfaces` matched 0 files" in _diagnostics_text(payload)
 
 
 def test_this_repo_is_currently_clean_under_its_own_adapter() -> None:
@@ -275,7 +301,15 @@ def test_this_repo_is_currently_clean_under_its_own_adapter() -> None:
     assert report["checked"] > 0, "the surfaces glob matched nothing; the gate would be vacuously green"
 
 
-def _run(repo: Path, *extra: str) -> tuple[int, str]:
+def _run(repo: Path, *extra: str) -> tuple[int, dict]:
+    """Run the gate and return its exit code with the parsed YAML payload.
+
+    Output is unconditionally YAML since the `--json` removal, and the verdict the
+    old rendered lines carried now lives in `status`/`diagnostics` inside that same
+    payload. These tests read the payload rather than the raw stdout because the
+    emitter line-wraps long diagnostics: a substring assertion would then pass or
+    fail on where the wrap landed rather than on what the gate decided.
+    """
     import subprocess
     import sys
 
@@ -284,7 +318,9 @@ def _run(repo: Path, *extra: str) -> tuple[int, str]:
         capture_output=True,
         text=True,
     )
-    return completed.returncode, completed.stdout + completed.stderr
+    payload = yaml.safe_load(completed.stdout)
+    assert isinstance(payload, dict), f"stdout was not a YAML mapping: {completed.stdout!r} {completed.stderr!r}"
+    return completed.returncode, payload
 
 
 def test_an_unconfigured_repo_reports_NO_GATE_rather_than_clean_or_red(tmp_path: Path) -> None:
@@ -296,11 +332,13 @@ def test_an_unconfigured_repo_reports_NO_GATE_rather_than_clean_or_red(tmp_path:
     repo.mkdir()
     (repo / "NOTES.md").write_text("# nothing in scope\n", encoding="utf-8")
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert code == 0, out
-    assert "NOT CONFIGURED" in out
-    assert "no regenerable facts" not in out, "an unscanned repo must not read as clean"
+    assert code == 0, payload
+    assert payload["status"] == "not-configured"
+    assert "NOT CONFIGURED" in _diagnostics_text(payload)
+    assert payload["status"] != "clean", "an unscanned repo must not read as clean"
+    assert "no regenerable facts" not in _diagnostics_text(payload)
 
 
 def test_a_DECLARED_scope_that_matches_nothing_is_REFUSED(tmp_path: Path) -> None:
@@ -314,10 +352,11 @@ def test_a_DECLARED_scope_that_matches_nothing_is_REFUSED(tmp_path: Path) -> Non
         encoding="utf-8",
     )
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert code == 1, out
-    assert "matched 0 files" in out
+    assert code == 1, payload
+    assert payload["status"] == "declared-surfaces-matched-nothing"
+    assert "matched 0 files" in _diagnostics_text(payload)
 
 
 def test_an_invalid_adapter_is_REFUSED_rather_than_silently_replaced_by_defaults(tmp_path: Path) -> None:
@@ -330,10 +369,12 @@ def test_an_invalid_adapter_is_REFUSED_rather_than_silently_replaced_by_defaults
         "version: 1\nrepo: demo\nartifact_class: not-a-real-class\n", encoding="utf-8"
     )
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert code == 1, out
-    assert "adapter is invalid" in out
+    assert code == 1, payload
+    assert payload["status"] == "adapter-refusal"
+    assert "adapter is invalid" in payload["adapter_refusal"]
+    assert payload["surfaces"] == [], "a refused adapter must not report a scope nobody chose"
 
 
 def test_findings_map_to_exit_one(tmp_path: Path) -> None:
@@ -341,10 +382,11 @@ def test_findings_map_to_exit_one(tmp_path: Path) -> None:
     repo.mkdir()
     (repo / "AGENTS.md").write_text("The tree holds 12 skills.\n", encoding="utf-8")
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert code == 1, out
-    assert "12 skills" in out
+    assert code == 1, payload
+    assert payload["status"] == "findings"
+    assert [finding["literal"] for finding in payload["findings"]] == ["12 skills"]
 
 
 def test_a_clean_repo_in_scope_exits_zero(tmp_path: Path) -> None:
@@ -352,10 +394,12 @@ def test_a_clean_repo_in_scope_exits_zero(tmp_path: Path) -> None:
     repo.mkdir()
     (repo / "AGENTS.md").write_text("Recount with `git log --oneline`.\n", encoding="utf-8")
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert code == 0, out
-    assert "no regenerable facts in 1" in out
+    assert code == 0, payload
+    assert payload["status"] == "clean"
+    assert payload["checked"] == 1
+    assert "no regenerable facts in 1 forward-looking file(s)" in _diagnostics_text(payload)
 
 
 def test_a_whitespace_only_exemption_reason_is_not_honoured(tmp_path: Path) -> None:
@@ -506,12 +550,16 @@ def test_an_all_exempted_repo_is_not_reported_as_matching_nothing(tmp_path: Path
         encoding="utf-8",
     )
 
-    code, out = _run(repo)
+    code, payload = _run(repo)
 
-    assert "every matched file is exempted" in out
-    assert "1 of them" in out
-    assert "no file matched the default surfaces" not in out, "matched-then-exempted is not unmatched"
-    assert "NOT CONFIGURED" not in out
+    diagnostics = _diagnostics_text(payload)
+    assert payload["status"] == "all-matched-files-exempted"
+    assert "every matched file is exempted" in diagnostics
+    assert "1 of them" in diagnostics
+    assert len(payload["exempted"]) == 1
+    assert "no file matched the default surfaces" not in diagnostics, "matched-then-exempted is not unmatched"
+    assert payload["status"] != "not-configured"
+    assert "NOT CONFIGURED" not in diagnostics
     # Exit code deliberately unchanged: every exemption already carries a
     # required reason, so this is a documented opt-out, not a silent green.
-    assert code == 0, out
+    assert code == 0, payload

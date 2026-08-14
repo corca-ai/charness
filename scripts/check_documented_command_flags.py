@@ -75,8 +75,9 @@ looks_like_repo_reference = _check_doc_links.looks_like_repo_reference
 build_unique_basename_index = _check_doc_links.build_unique_basename_index
 portable_skill_package_root = _check_doc_links.portable_skill_package_root
 _gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
+# Findings still go to stderr so a green run's stdout stays quotable; only the
+# FORMAT changed here, never the stream this gate writes a verdict on.
 emit_findings_report = _gate_report_emit.emit_findings_report
-render_findings_with_skipped = _gate_report_emit.render_findings_with_skipped
 # The carrier side of this check -- which files store an invocation, and which
 # spans of one could be a command string. `CLI_NAME` is bound from there rather
 # than redeclared: the carrier scan is what has to recognize the bare name as a
@@ -400,14 +401,12 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
     }
 
 
-def render_report(report: dict[str, object]) -> str:
-    return render_findings_with_skipped(
+def report_payload(report: dict[str, object]) -> dict[str, object]:
+    return _gate_report_emit.findings_payload(
         report,
-        headline="Documented command flag drift detected:",
-        fix_hint="Fix the doc or restore the flag; use a `<placeholder>` path when the command only resolves in a consuming repo.",
-        validated=(
-            f"Validated {report['invocations']} documented command invocation(s) "
-            f"against {report['probes']} argparse surface(s)."
+        fix_hint=(
+            "Fix the doc or restore the flag; use a `<placeholder>` path when the command "
+            "only resolves in a consuming repo."
         ),
         skipped_noun="flag-bearing invocation(s)",
     )
@@ -417,11 +416,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--require-git-file-listing", action="store_true")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     report = build_report(args.repo_root.resolve(), require_git=args.require_git_file_listing)
-    emit_findings_report(report, as_json=args.json, render=render_report)
+    emit_findings_report(report_payload(report))
     return 1 if report["findings"] else 0
 
 

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script, require_repo_local_helper
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _register = import_repo_module(__file__, "scripts.contract_register_lib")
@@ -57,7 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
-    print(json.dumps(build_retention_review(args.repo_root.resolve()), ensure_ascii=False, indent=2))
+    emit_yaml(build_retention_review(args.repo_root.resolve()))
     return 0
 
 

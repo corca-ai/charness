@@ -32,6 +32,7 @@ from prompt_mutant_lib import (
 )
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -152,9 +153,11 @@ def main(argv: list[str] | None = None) -> int:
             raise BlindWorkspaceError("--metadata-out must live outside --out-dir so the captured run cannot read it")
         report = prepare_workspace(args.repo_root, args.snapshot_ref, args.out_dir, force=args.force)
         if args.metadata_out:
+            # `--metadata-out` is a persisted JSON artifact, not command output:
+            # it keeps its storage format.
             args.metadata_out.parent.mkdir(parents=True, exist_ok=True)
             args.metadata_out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        print(json.dumps(report, indent=2))
+        emit_yaml(report)
         return 0
     except BlindWorkspaceError as exc:
         print(str(exc), file=sys.stderr)

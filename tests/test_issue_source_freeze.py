@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
 from scripts.issue_source_freeze_lib import _RECEIPT_IDENTITY_EXCLUDED, FreezeError
@@ -928,7 +929,7 @@ def test_the_cli_validate_command_exits_zero_and_prints_the_bound_identities(tmp
 
     code = _cli(monkeypatch, *_cli_args(tmp_path, "validate", "--require-issues", "514", "515", "518"))
 
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert code == 0
     assert payload["ok"] is True
     assert payload["issues"] == [514, 515, 518]
@@ -944,7 +945,7 @@ def test_the_cli_renders_a_refusal_as_a_nonzero_exit_with_a_machine_readable_cod
     code = _cli(monkeypatch, *_cli_args(tmp_path, "validate", "--require-issues", "514", "515", "518"))
 
     captured = capsys.readouterr()
-    payload = json.loads(captured.out)
+    payload = yaml.safe_load(captured.out)
     assert code == 1
     assert payload["ok"] is False
     assert payload["error"] == "missing_file"
@@ -964,7 +965,7 @@ def test_the_cli_defaults_cover_the_three_protected_issues_without_being_asked(t
     code = _cli(monkeypatch, *_cli_args(tmp_path, "validate"))
 
     assert code == 1
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["error"] == "missing_protected_issue"
     assert "518" in payload["detail"]
 
@@ -983,19 +984,19 @@ def test_each_cli_subcommand_dispatches_to_its_own_action(tmp_path: Path, monkey
     (tmp_path / FREEZE_REL).unlink()
 
     assert _cli(monkeypatch, *_cli_args(tmp_path, "stamp-inspection")) == 0
-    stamped = json.loads(capsys.readouterr().out)
+    stamped = yaml.safe_load(capsys.readouterr().out)
     assert stamped["stamped"] == INSPECTION_REL
     assert not (tmp_path / FREEZE_REL).exists(), "stamp-inspection must not write the freeze receipt"
 
     assert _cli(monkeypatch, *_cli_args(tmp_path, "freeze", "--require-issues", "514", "515", "518")) == 0
-    frozen = json.loads(capsys.readouterr().out)
+    frozen = yaml.safe_load(capsys.readouterr().out)
     assert frozen["written"] == FREEZE_REL
     assert (tmp_path / FREEZE_REL).is_file()
     assert "source_identity" not in json.loads((tmp_path / crosswalk_rel).read_text(encoding="utf-8"))
 
     args = _cli_args(tmp_path, "refreeze", "--require-issues", "514", "515", "518")
     assert _cli(monkeypatch, *args, "--crosswalk", crosswalk_rel) == 0
-    refrozen = json.loads(capsys.readouterr().out)
+    refrozen = yaml.safe_load(capsys.readouterr().out)
     assert refrozen["crosswalk_rebound"]["rebound"] is True
     bound = json.loads((tmp_path / crosswalk_rel).read_text(encoding="utf-8"))["source_identity"]
     assert bound["freeze_identity"] == refrozen["freeze_identity"]

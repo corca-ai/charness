@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -72,7 +73,7 @@ def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path, monke
 
     result = run_refresh(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["source_path"] == "charness-artifacts/retro/weekly-2026-04-14.md"
     assert payload["lesson_selection_index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
@@ -133,7 +134,7 @@ def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path, monkeypa
         "charness-artifacts/retro/session-2026-04-15.md",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["source_path"] == "charness-artifacts/retro/session-2026-04-15.md"
     assert payload["lesson_selection_index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")

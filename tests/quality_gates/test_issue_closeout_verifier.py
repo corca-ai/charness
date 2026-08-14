@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 
+import yaml
+
 from tests.quality_gates.issue_closeout_support import (
     SCRIPT,
     bug_closeout_body,
@@ -38,7 +40,7 @@ def test_issue_verify_closeout_rejects_missing_direct_commit_close_keyword(tmp_p
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["missing_close_keywords"] == [42]
     assert payload["missing_fields"] == []
@@ -66,7 +68,7 @@ def test_issue_verify_closeout_accepts_direct_commit_carrier_without_final_state
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["status"] == "carrier_verified"
     assert payload["verified_state"] == []
@@ -99,7 +101,7 @@ def test_issue_verify_closeout_uses_github_keyword_boundaries(tmp_path: Path) ->
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["missing_close_keywords"] == [42]
 
 
@@ -124,7 +126,7 @@ def test_issue_verify_closeout_rejects_wrong_repo_qualified_keyword(tmp_path: Pa
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["missing_close_keywords"] == [42]
 
 
@@ -149,7 +151,7 @@ def test_issue_verify_closeout_accepts_matching_repo_qualified_keyword(tmp_path:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "carrier_verified"
 
 
@@ -175,7 +177,7 @@ def test_issue_verify_closeout_accepts_pr_body_carrier(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "carrier_verified"
 
 
@@ -214,7 +216,7 @@ def test_issue_verify_closeout_rejects_empty_bug_sibling_proof(tmp_path: Path) -
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "siblings_decision_and_proof" in payload["missing_fields"]
 
 
@@ -240,7 +242,7 @@ def test_issue_verify_closeout_requires_manual_fallback_reason(tmp_path: Path) -
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "manual-fallback carrier requires --manual-fallback-reason" in payload["error"]
 
 
@@ -356,7 +358,7 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "verified"
     assert payload["confirmation"] == {
         "observer": "issue_verify_closeout@acme-github",
@@ -413,7 +415,7 @@ def test_issue_verify_closeout_rejects_adapter_view_without_target_placeholders(
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "missing required placeholders" in payload["error"]
     assert "repo" in payload["error"]
     assert "number" in payload["error"]
@@ -511,7 +513,7 @@ def test_issue_verify_closeout_rejects_wrong_issue_number_from_backend(tmp_path:
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state_mismatches"][0]["field"] == "number"
 
 
@@ -555,7 +557,7 @@ def test_issue_verify_closeout_rejects_open_final_state(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state_mismatches"][0]["actual"] == "OPEN"
 
 
@@ -606,7 +608,7 @@ def test_issue_verify_closeout_rejects_unposted_manual_fallback_comment(tmp_path
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["manual_comment_missing"] == [42]
 
 
@@ -633,7 +635,7 @@ def test_issue_verify_closeout_accepts_colon_close_keyword_form(tmp_path: Path) 
     )
 
     assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["missing_close_keywords"] == []
 
 
@@ -675,7 +677,7 @@ def test_issue_verify_closeout_accepts_single_keyword_comma_list(tmp_path: Path)
     )
 
     assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["missing_close_keywords"] == []
 
 
@@ -730,7 +732,7 @@ def test_issue_verify_closeout_rejects_a_right_number_from_the_wrong_repository(
     )
 
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     mismatch = next(m for m in payload["state_mismatches"] if m.get("field") == "repository")
     assert mismatch["expected"] == "corca-ai/charness"
     assert mismatch["actual"] == "someone-else/charness"
@@ -784,6 +786,6 @@ def test_issue_verify_closeout_accepts_a_payload_that_names_no_repository(tmp_pa
     )
 
     assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["state_mismatches"] == []
     assert payload["status"] == "verified"

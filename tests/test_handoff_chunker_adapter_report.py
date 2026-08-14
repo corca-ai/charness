@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO_ROOT / "skills" / "public" / "handoff" / "scripts"
@@ -52,7 +53,7 @@ def _parse_payload_with_adapter_report(tmp_path, monkeypatch, capsys, report):
          "--repo-root", str(tmp_path), "--with-issues"],
     )
     assert peh.main() == 0
-    return json.loads(capsys.readouterr().out)
+    return yaml.safe_load(capsys.readouterr().out)
 
 
 def test_cli_emits_issue_adapter_report_when_the_adapter_had_something_to_say(
@@ -83,13 +84,13 @@ def test_adapter_report_survives_propose_merges_and_prepare_chunk_packet(tmp_pat
         }],
         "issue_adapter_report": report,
     }
-    merged = json.loads(subprocess.run(
+    merged = yaml.safe_load(subprocess.run(
         [sys.executable, str(SCRIPTS / "propose_merges.py")],
         input=json.dumps(payload), capture_output=True, text=True, check=True,
     ).stdout)
     assert merged["issue_adapter_report"] == report
 
-    packet = json.loads(subprocess.run(
+    packet = yaml.safe_load(subprocess.run(
         [sys.executable, str(SCRIPTS / "prepare_chunk_packet.py"), "--repo-root", str(tmp_path)],
         input=json.dumps(payload), capture_output=True, text=True, check=True,
     ).stdout)
@@ -106,13 +107,13 @@ def test_handoff_adapter_report_survives_both_pipeline_stages(tmp_path):
         "handoff_adapter_report": report,
     }
 
-    merged = json.loads(subprocess.run(
+    merged = yaml.safe_load(subprocess.run(
         [sys.executable, str(SCRIPTS / "propose_merges.py")],
         input=json.dumps(payload), capture_output=True, text=True, check=True,
     ).stdout)
     assert merged["handoff_adapter_report"] == report
 
-    packet = json.loads(subprocess.run(
+    packet = yaml.safe_load(subprocess.run(
         [sys.executable, str(SCRIPTS / "prepare_chunk_packet.py"), "--repo-root", str(tmp_path)],
         input=json.dumps(payload), capture_output=True, text=True, check=True,
     ).stdout)
@@ -147,7 +148,7 @@ def test_parser_reports_invalid_handoff_adapter_without_provider_access(tmp_path
         check=True,
     )
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["issue_entry_count"] == 0
     assert payload["handoff_adapter_report"]["valid"] is False
     assert payload["handoff_adapter_report"]["errors"] == ["version must be 1"]

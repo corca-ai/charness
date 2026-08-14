@@ -8,12 +8,12 @@ rejected outright.
 from __future__ import annotations
 
 import hashlib
-import json
 import subprocess
 from datetime import date
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.critique_adapter_lib import load_adapter
 from scripts.critique_packet_lib import (
@@ -320,7 +320,7 @@ packet_sections:
         capture_output=True, text=True, check=False,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["section_count"] == 1
     assert payload["changed_ref"] is None

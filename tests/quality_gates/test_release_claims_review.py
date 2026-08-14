@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .release_publish_fixtures import (
     _release_env,
@@ -57,7 +58,7 @@ def _source_bound_evidence(tmp_path: Path):
     prepared = _run_publish(repo, env, "--part", "patch", "--execute",
                             "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
     assert prepared.returncode == 0, prepared.stderr
-    payload = json.loads(prepared.stdout)
+    payload = yaml.safe_load(prepared.stdout)
     commit = payload["prepared_release_commit"]
     record = _run(["git", "show", f"{commit}:charness-artifacts/release/latest.md"], cwd=repo).stdout
     path = commit_claims_review(
@@ -73,7 +74,7 @@ def test_claims_review_rejects_non_direct_and_merge_evidence(tmp_path: Path) -> 
     prepared_run = _run_publish(repo, _release_env(tmp_path, bin_dir), "--part", "patch", "--execute",
                                 "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
     assert prepared_run.returncode == 0, prepared_run.stderr
-    payload = json.loads(prepared_run.stdout)
+    payload = yaml.safe_load(prepared_run.stdout)
     prepared_commit = payload["prepared_release_commit"]
     prepared_record = _run(["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"], cwd=repo).stdout
     review_path = "charness-artifacts/release-review/non-direct.json"
@@ -126,7 +127,7 @@ def test_resume_refuses_inherited_prepared_marker_before_auth_or_publish(tmp_pat
     prepared = _run_publish(repo, env, "--part", "patch", "--execute",
                             "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
     assert prepared.returncode == 0, prepared.stderr
-    payload = json.loads(prepared.stdout)
+    payload = yaml.safe_load(prepared.stdout)
     prepared_commit = payload["prepared_release_commit"]
     prepared_record = _run(["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"], cwd=repo).stdout
     review_path = "charness-artifacts/release-review/inherited-marker.json"
@@ -168,7 +169,7 @@ def test_prepared_record_refuses_merge_that_inherits_marker_from_second_parent(t
     prepared = _run_publish(repo, _release_env(tmp_path, bin_dir), "--part", "patch", "--execute",
                             "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
     assert prepared.returncode == 0, prepared.stderr
-    prepared_commit = json.loads(prepared.stdout)["prepared_release_commit"]
+    prepared_commit = yaml.safe_load(prepared.stdout)["prepared_release_commit"]
     _run(["git", "checkout", "-B", "merge-first-parent", base], cwd=repo)
     readme = repo / "README.md"
     readme.write_text(readme.read_text(encoding="utf-8") + "first-parent source change\n", encoding="utf-8")
@@ -439,7 +440,7 @@ def test_a_second_prepare_over_an_outstanding_marker_cannot_publish_unreviewed(t
     readme = repo / "README.md"
     readme.write_text(readme.read_text(encoding="utf-8") + "second marked release commit\n", encoding="utf-8")
     _run(["git", "add", "README.md"], cwd=repo)
-    _run(["git", "commit", "-m", json.loads(first.stdout)["commit_message"]], cwd=repo)
+    _run(["git", "commit", "-m", yaml.safe_load(first.stdout)["commit_message"]], cwd=repo)
     gh_log, git_log = tmp_path / "gh-log.json", tmp_path / "git-log.json"
     prior_gh = json.loads(gh_log.read_text(encoding="utf-8"))
     prior_git = json.loads(git_log.read_text(encoding="utf-8"))
@@ -504,7 +505,7 @@ def test_an_unproven_verdict_publishes_but_says_so_on_stderr(tmp_path: Path) -> 
     prepared = _run_publish(repo, env, "--part", "patch", "--execute",
                             "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
     assert prepared.returncode == 0, prepared.stderr
-    payload = json.loads(prepared.stdout)
+    payload = yaml.safe_load(prepared.stdout)
     commit = payload["prepared_release_commit"]
     record = _run(["git", "show", f"{commit}:charness-artifacts/release/latest.md"], cwd=repo).stdout
     review_path = commit_claims_review(
@@ -520,7 +521,7 @@ def test_an_unproven_verdict_publishes_but_says_so_on_stderr(tmp_path: Path) -> 
     assert resumed.returncode == 0, resumed.stderr
     assert "verdict is `unproven`" in resumed.stderr
     assert "was NOT established" in resumed.stderr
-    final = json.loads(resumed.stdout)
+    final = yaml.safe_load(resumed.stdout)
     assert final["claims_review"]["verdict"] == "unproven"
     assert final["claims_review"]["observer_distinctness"]["review_artifact"] is None
     # The record a reader outside the session gets. The bare token would reproduce the
@@ -554,7 +555,7 @@ def test_a_non_default_output_dir_publishes_through_the_claims_floor(tmp_path: P
     prepared = _run_publish(repo, env, "--part", "patch", "--execute",
                             "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
     assert prepared.returncode == 0, prepared.stderr
-    payload = json.loads(prepared.stdout)
+    payload = yaml.safe_load(prepared.stdout)
     commit = payload["prepared_release_commit"]
     # The prepared stop is detected at the ADAPTER's path, which is where the writer put it.
     record = _run(["git", "show", f"{commit}:artifacts/release/latest.md"], cwd=repo).stdout
@@ -570,7 +571,7 @@ def test_a_non_default_output_dir_publishes_through_the_claims_floor(tmp_path: P
                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
 
     assert resumed.returncode == 0, resumed.stderr
-    final = json.loads(resumed.stdout)
+    final = yaml.safe_load(resumed.stdout)
     assert final["claims_review"]["verdict"] == "pass"
     assert final["artifact_path"] == "artifacts/release/latest.md"
     published = (repo / "artifacts" / "release" / "latest.md")
@@ -834,7 +835,7 @@ def test_execute_refuses_a_second_prepare_over_an_outstanding_stop(tmp_path: Pat
     prepared = _run_publish(repo, env, "--part", "patch", "--execute",
                             "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
     assert prepared.returncode == 0, prepared.stderr
-    prepared_commit = json.loads(prepared.stdout)["prepared_release_commit"]
+    prepared_commit = yaml.safe_load(prepared.stdout)["prepared_release_commit"]
     manifest = repo / "packaging" / "demo.json"
     manifest_before = manifest.read_text(encoding="utf-8")
 
@@ -866,7 +867,7 @@ def test_the_claims_evidence_commit_is_still_refused_a_second_prepare(tmp_path: 
     prepared = _run_publish(repo, env, "--part", "patch", "--execute",
                             "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
     assert prepared.returncode == 0, prepared.stderr
-    payload = json.loads(prepared.stdout)
+    payload = yaml.safe_load(prepared.stdout)
     commit = payload["prepared_release_commit"]
     record = _run(["git", "show", f"{commit}:charness-artifacts/release/latest.md"], cwd=repo).stdout
     review_path = commit_claims_review(
@@ -911,7 +912,7 @@ def test_a_finished_release_does_not_latch_the_second_prepare_refusal(tmp_path: 
                          "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
 
     assert again.returncode == 0, again.stderr
-    assert json.loads(again.stdout)["target_version"] == "0.0.2"
+    assert yaml.safe_load(again.stdout)["target_version"] == "0.0.2"
 
 
 def test_the_prepared_stop_gate_is_wired_into_the_cli_before_the_plan(tmp_path: Path, monkeypatch) -> None:

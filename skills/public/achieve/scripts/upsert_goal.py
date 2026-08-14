@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from datetime import date as date_cls
 from pathlib import Path
@@ -19,6 +18,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 goal_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_lib")
 goal_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_cli_args")
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 _PROSE_FIELDS = ("title", "goal-body")
 
@@ -195,7 +195,7 @@ def main() -> int:
     except ValueError as exc:
         print(str(exc))
         return 2
-    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    yaml_output.emit_yaml(result)
     return 1 if result.get("action") == "refused" else 0
 
 

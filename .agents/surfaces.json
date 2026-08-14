@@ -14,6 +14,7 @@
         "presets/**",
         "integrations/**",
         "scripts/**",
+        "yaml_output.py",
         "runtime_bootstrap.py",
         "skill_runtime_bootstrap.py"
       ],
@@ -63,7 +64,7 @@
       "sync_commands": [],
       "verify_commands": [
         "python3 scripts/validate_rca_ledger.py --repo-root .",
-        "python3 scripts/aggregate_rca_ledger.py --repo-root . --json"
+        "python3 scripts/aggregate_rca_ledger.py --repo-root ."
       ],
       "notes": [
         "Commit live non-seed closeout events with the work that produced them; do not rewrite historical duplicates."
@@ -903,8 +904,8 @@
       "sync_commands": [],
       "verify_commands": [
         "python3 scripts/validate_integrations.py --repo-root .",
-        "python3 scripts/sync_support.py --repo-root . --json",
-        "python3 scripts/update_tools.py --repo-root . --json"
+        "python3 scripts/sync_support.py --repo-root .",
+        "python3 scripts/update_tools.py --repo-root ."
       ],
       "notes": [
         "Keep release real-host proof scoped to host-sensitive tool control-plane files; unrelated checked-in plugin scripts are not host-proof triggers."
@@ -932,8 +933,8 @@
       "sync_commands": [],
       "verify_commands": [
         "python3 scripts/validate_integrations.py --repo-root .",
-        "python3 scripts/sync_support.py --repo-root . --json",
-        "python3 scripts/update_tools.py --repo-root . --json"
+        "python3 scripts/sync_support.py --repo-root .",
+        "python3 scripts/update_tools.py --repo-root ."
       ],
       "notes": [
         "Prefer dry-run capable control-plane checks before claiming the integration surface is healthy."
@@ -967,6 +968,7 @@
         "tests/*.py",
         "tests/*.sh",
         "tests/fixtures/*",
+        "yaml_output.py",
         "runtime_bootstrap.py",
         "skill_runtime_bootstrap.py"
       ],

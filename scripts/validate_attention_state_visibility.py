@@ -20,6 +20,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from yaml_output import emit_yaml
+
 DEFAULT_DECLARATION_PATH = "skills/public/quality/references/attention-state-visibility.json"
 DEFAULT_SCAN_ROOTS = ("scripts", "skills/public", "skills/shared", "skills/support")
 PLUGIN_DECLARATION_PATH = "skills/quality/references/attention-state-visibility.json"
@@ -68,7 +70,6 @@ def parse_args() -> argparse.Namespace:
         metavar="SOURCE=DISPLAY_PREFIX",
         help="Scan SOURCE while rendering detected files under DISPLAY_PREFIX in declarations.",
     )
-    parser.add_argument("--json", action="store_true")
     return parser.parse_args()
 
 
@@ -362,13 +363,12 @@ def main() -> int:
         "source_paths": source_paths,
         "failures": failures,
     }
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    elif failures:
-        for failure in failures:
-            print(failure, file=sys.stderr)
-    else:
-        print(f"Validated attention-state visibility declarations for {len(detected)} file(s).")
+    # Unconditional YAML. The retired human output was the `failures` list on a
+    # failing run and a count of `detected` on a passing one; both already live in
+    # the payload, so `status` is the only addition needed to keep the verdict
+    # readable without re-deriving it from an empty list.
+    payload["status"] = "invalid" if failures else "valid"
+    emit_yaml(payload)
     return 1 if failures else 0
 
 

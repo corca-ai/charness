@@ -290,10 +290,12 @@ def test_is_skill_surface_path_rejects_non_public_support_shared_root(tmp_path: 
     assert csafety._is_skill_surface_path("skills/vendor/references/detail.md") is False
 
 
-def test_format_human_reports_deleted_surface_review_lines(tmp_path: Path, monkeypatch) -> None:
-    # A whole-SKILL.md deletion produces a "review" status with a
-    # deleted-surface finding; format_human must render both the per-skill
-    # "REVIEW deleted-surface" line and the any_deleted explanatory paragraph.
+def test_report_payload_reports_deleted_surface_reviews(tmp_path: Path, monkeypatch) -> None:
+    # A whole-SKILL.md deletion produces a "review" status with a deleted-surface
+    # finding. `format_human` was deleted with `--json` on 2026-08-14, so both
+    # things it rendered have to reach the emitted payload: the per-skill review
+    # row naming the surface, and the explanation of what a deleted-surface REVIEW
+    # OBLIGES (which the raw finding row never carried).
     repo = tmp_path / "repo"
     skill_dir = _seed_repo(repo)
     _patch_pins(monkeypatch, core=[CORE_PIN])
@@ -301,12 +303,13 @@ def test_format_human_reports_deleted_surface_review_lines(tmp_path: Path, monke
 
     report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
     assert report["status"] == "review"
-    human = csafety.format_human(report)
-    assert (
-        f'  REVIEW deleted-surface (confirm justified deletion or re-home the contract): "{SKILL_REL}"'
-        in human
+    payload = csafety.report_payload(report)
+    reviews = [review for skill in payload["skills"] for review in skill["reviews"]]
+    assert any(
+        review["kind"] == "deleted-surface" and review["phrase"] == SKILL_REL for review in reviews
     )
-    assert "A deleted-surface REVIEW means a whole SKILL.md" in human
+    assert "a whole SKILL.md" in payload["kind_meaning"]["deleted-surface"]
+    assert "not reversible" in payload["kind_meaning"]["deleted-surface"]
 
 
 def test_cli_strict_fails_on_review(tmp_path: Path, monkeypatch, capsys) -> None:

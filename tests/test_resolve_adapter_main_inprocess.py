@@ -10,6 +10,11 @@ SURVIVED ``main`` mutants on lines 45/48:
   * ``indent=2`` -> ``N``               (the two NumberReplacer variants), and
   * ``ensure_ascii=False`` -> ``True``  (verbatim non-ASCII serialization).
 
+Line 48 has since moved from ``json.dumps`` to ``yaml_output.render_yaml`` (the
+repo-wide YAML output migration). The serialization test below is re-bound to the
+``yaml.safe_dump`` flags that replaced those JSON arguments; see its docstring for
+the flag-by-flag mapping. The ``required=True`` guard is unchanged.
+
 A subprocess test would not let coverage attribute lines 45/48 to *this* test's
 dynamic context, so the gate's ``select_test_nodeids`` would not pick it into the
 mutation test command. Importing the module IN-PROCESS and driving ``main()``
@@ -23,11 +28,11 @@ from __future__ import annotations
 
 import importlib.util
 import io
-import json
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,13 +63,25 @@ def test_handoff_resolve_adapter_main_requires_repo_root(monkeypatch) -> None:
     assert excinfo.value.code == 2
 
 
-def test_handoff_resolve_adapter_main_emits_sorted_indented_unicode_json(tmp_path, monkeypatch) -> None:
-    """Kills the three line-48 serialization mutants in one driven ``main()`` run.
+def test_handoff_resolve_adapter_main_emits_insertion_ordered_indented_unicode_yaml(tmp_path, monkeypatch) -> None:
+    """Kills the line-48 serialization mutants in one driven ``main()`` run.
 
-    A non-ASCII ``repo`` adapter value forces non-ASCII into the payload so the
-    ``ensure_ascii`` flag is observable; the fallback insertion order differs from
-    sorted order so ``sort_keys`` is observable; and the first key line's leading
-    whitespace pins ``indent``.
+    RESTATED for the YAML migration. ``run_adapter_cli`` no longer calls
+    ``json.dumps(..., ensure_ascii=False, indent=2, sort_keys=True)``; it writes
+    ``yaml_output.render_yaml``, i.e. ``yaml.safe_dump(allow_unicode=True,
+    sort_keys=False)`` over a ``json.dumps(ensure_ascii=False)`` round-trip. Two
+    of the original flags therefore changed meaning rather than disappearing, and
+    each assertion below is re-bound to the flag that now governs it:
+
+      * ``ensure_ascii=False`` -> ``allow_unicode=True``: unchanged intent, the
+        non-ASCII ``repo`` value is still emitted verbatim rather than escaped.
+      * ``sort_keys=True`` -> ``sort_keys=False``: the guarantee INVERTED. Key
+        order is now the payload builder's insertion order, so this pins that
+        order and a ``sort_keys=True`` mutant breaks it. Same discriminating
+        power, opposite polarity.
+      * ``indent=2``: no longer a JSON argument, but ``safe_dump``'s block indent
+        is still observable on the nested ``data`` mapping, so the leading-space
+        count stays pinned.
     """
     module = _load_handoff_resolve_adapter()
     repo = tmp_path / "consumer"
@@ -79,21 +96,28 @@ def test_handoff_resolve_adapter_main_emits_sorted_indented_unicode_json(tmp_pat
     module.main()
     text = out.getvalue()
 
-    # ensure_ascii=False: the non-ASCII repo value is emitted verbatim, never as a
-    # ``\uXXXX`` escape. The ensure_ascii=True mutant would escape it (pure ASCII
+    # allow_unicode=True: the non-ASCII repo value is emitted verbatim, never as a
+    # ``\uXXXX`` escape. The allow_unicode=False mutant would escape it (pure ASCII
     # backslash-u), so this distinguishes them independent of the host locale.
     assert "저장소" in text
     assert "\\u" not in text
 
-    # sort_keys=True: top-level keys come out in sorted order. The fallback payload
-    # is built starting with "found", whereas sorted order starts with
-    # "artifact_class", so the sort_keys=False mutant breaks this.
-    keys = list(json.loads(text).keys())
-    assert keys == sorted(keys)
+    # sort_keys=False: top-level keys come out in the builder's insertion order,
+    # which starts with "found" and is NOT sorted order (which would start with
+    # "artifact_class"). A sort_keys=True mutant breaks both assertions.
+    payload = yaml.safe_load(text)
+    keys = list(payload.keys())
+    assert keys[0] == "found"
+    assert keys != sorted(keys)
 
-    # indent=2: the first emitted key line is indented by exactly two spaces. Any
-    # other indent (the NumberReplacer mutants) changes the leading-space count.
+    # The emitted document is real YAML carrying the resolved adapter, not a
+    # stringified blob: the non-ASCII value survives the round-trip as data.
+    assert payload["data"]["repo"] == "저장소"
+
+    # safe_dump block indent: the nested ``data`` mapping's first child line is
+    # indented by exactly two spaces. Any other indent changes the leading-space
+    # count, so the NumberReplacer-style mutants stay killed.
     lines = text.splitlines()
-    assert lines[0] == "{"
-    assert lines[1].startswith('  "')
-    assert not lines[1].startswith("   ")
+    data_at = lines.index("data:")
+    child = lines[data_at + 1]
+    assert child.startswith("  ") and not child.startswith("   ")

@@ -19,9 +19,12 @@ from pathlib import Path
 
 import pytest
 import session_start_lesson_context as lesson_context
+import yaml
 
 from scripts import lesson_evaluation_continuity_lib as continuity
 from scripts import lesson_ledger_lib as ledger_lib
+from scripts import render_lesson_selection_preview as _preview
+from tests.script_main import run_loaded_script_main
 from tests.test_lesson_ledger import _ledger, _retro
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -150,26 +153,28 @@ def test_opted_in_repo_injects_verbatim_preview_bytes_and_the_declare_command(
     attest bytes nobody saw.
     """
     repo = _seeded_repo(tmp_path)
-    rendered = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/render_lesson_selection_preview.py"),
-            "--repo-root",
-            str(repo),
-            "--seed",
-            "2026-01-01-host-1",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    # In-process rather than a spawned interpreter: the boundary-bypass ratchet counts
+    # this file as convertible because the target imports cleanly, and the migration is
+    # what pushed it to a subprocess (the renderer's bytes moved into a payload key, so
+    # the test started running the CLI to read stdout). Same main(), same stdout.
+    rendered = run_loaded_script_main(
+        "render_lesson_selection_preview.py",
+        _preview,
+        "--repo-root",
+        str(repo),
+        "--seed",
+        "2026-01-01-host-1",
     )
     assert rendered.returncode == 0, rendered.stderr
+    # The renderer's bytes now travel INSIDE its payload as `preview_text`; that is
+    # the `charness.lesson-session-preview.text.v1` string, not the YAML wrapper.
+    preview_text = yaml.safe_load(rendered.stdout)["preview_text"]
 
     context = lesson_context.build_lesson_context(repo, {"session_id": "host-1"})
 
     assert context["state"] == lesson_context.STATE_EVALUATED
     assert context["eligible_lessons_present"] is True
-    assert rendered.stdout.rstrip() in context["text"]
+    assert preview_text.rstrip() in context["text"]
     assert context["declare_command"] in context["text"]
     assert "open_lesson_session.py" in context["declare_command"]
     assert f"--session-id {context['session_id']} --seed {context['session_id']}" in (
@@ -193,28 +198,27 @@ def test_every_selected_lesson_is_injected_verbatim_and_in_order(tmp_path: Path)
     # The seed the module itself would derive. A hardcoded seed would silently
     # compare two DIFFERENT shuffles and only pass while the fixture holds one item.
     seed = lesson_context.derive_session_id({"session_id": "host-1"}, repo_root=repo)
-    rendered = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/render_lesson_selection_preview.py"),
-            "--repo-root",
-            str(repo),
-            "--seed",
-            seed,
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    # In-process, same reason as the sibling call above: the target imports cleanly, so
+    # spawning an interpreter to read its stdout is the boundary bypass the ratchet
+    # flags. Same main(), same stdout.
+    rendered = run_loaded_script_main(
+        "render_lesson_selection_preview.py",
+        _preview,
+        "--repo-root",
+        str(repo),
+        "--seed",
+        seed,
     )
     assert rendered.returncode == 0, rendered.stderr
-    item_lines = [line for line in rendered.stdout.splitlines() if line.startswith("- ")]
+    preview_text = yaml.safe_load(rendered.stdout)["preview_text"]
+    item_lines = [line for line in preview_text.splitlines() if line.startswith("- ")]
     assert len(item_lines) == len(slugs), rendered.stdout
 
     context = lesson_context.build_lesson_context(repo, {"session_id": "host-1"})
 
     # Contiguous and in the renderer's own order, not merely "each id appears".
-    assert rendered.stdout.rstrip() in context["text"]
-    assert context["preview_byte_count"] == len(rendered.stdout.encode("utf-8"))
+    assert preview_text.rstrip() in context["text"]
+    assert context["preview_byte_count"] == len(preview_text.encode("utf-8"))
     injected = [line for line in context["text"].splitlines() if line.startswith("- ")]
     assert injected == item_lines
 
@@ -433,10 +437,10 @@ def test_cli_exits_three_only_when_undetermined(
     """
     repo = factory(tmp_path)
 
-    code = lesson_context.main(["--repo-root", str(repo), "--session-id", "host-1", "--json"])
+    code = lesson_context.main(["--repo-root", str(repo), "--session-id", "host-1"])
 
     assert code == expected_exit
-    assert json.loads(capsys.readouterr().out)["state"] == expected_state
+    assert yaml.safe_load(capsys.readouterr().out)["state"] == expected_state
 
 
 def test_the_seed_command_targets_the_repo_it_was_given_not_the_readers_cwd(

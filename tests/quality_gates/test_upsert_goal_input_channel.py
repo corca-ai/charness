@@ -18,6 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[2]
 HELPER = ROOT / "skills" / "public" / "achieve" / "scripts" / "upsert_goal.py"
 PROSE = "the type check dropped it, the default won, and the report still said `preserved`"
@@ -46,7 +48,7 @@ def test_a_goal_body_through_a_shell_argument_is_silently_truncated(tmp_path: Pa
     result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=tmp_path)
 
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["action"] == "created"  # exit 0, reports success
+    assert yaml.safe_load(result.stdout)["action"] == "created"  # exit 0, reports success
     written = _created_goal(tmp_path).read_text(encoding="utf-8")
     assert "preserved" not in written, "the shell ate it before the process started"
     assert "the default won, and the report still said" in written  # a hole, not a failure
@@ -235,7 +237,7 @@ def test_re_running_with_unchanged_prose_still_flips_the_status(tmp_path: Path) 
     again = _run(tmp_path, *target, "--fields-file", str(fields), "--status", "active")
 
     assert again.returncode == 0, again.stderr
-    assert json.loads(again.stdout)["action"] == "updated"
+    assert yaml.safe_load(again.stdout)["action"] == "updated"
     assert "Status: active" in _created_goal(tmp_path).read_text(encoding="utf-8")
 
 

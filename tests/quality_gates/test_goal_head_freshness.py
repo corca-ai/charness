@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 _SCRIPTS = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"
 
@@ -204,7 +205,7 @@ def test_check_goal_artifact_cli_reports_head_freshness_failure(tmp_path: Path, 
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["head_freshness"]["ok"] is False
     assert "mutable HEAD freshness" in payload["issues"][-1]
 
@@ -246,7 +247,7 @@ def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path, monke
         "--pursue-ready",
     )
     assert result.returncode == 0
-    assert json.loads(result.stdout)["pursue_ready"] is True
+    assert yaml.safe_load(result.stdout)["pursue_ready"] is True
 
     unshaped_path = tmp_path / "unshaped.md"
     unshaped_path.write_text(
@@ -263,7 +264,7 @@ def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path, monke
         "--pursue-ready",
     )
     assert result.returncode == 1
-    assert json.loads(result.stdout)["pursue_ready"] is False
+    assert yaml.safe_load(result.stdout)["pursue_ready"] is False
 
 
 def test_check_goal_artifact_cli_missing_goal_path_returns_usage_error(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -278,7 +279,7 @@ def test_check_goal_artifact_cli_missing_goal_path_returns_usage_error(tmp_path:
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["issues"] == [f"goal artifact not found: {missing.resolve()}"]
 
@@ -310,7 +311,7 @@ def test_check_goal_artifact_cli_reports_missing_evidence_files(tmp_path: Path, 
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "missing files: retro_artifact, host_log_probe" in payload["issues"][-1]
 
 
@@ -341,7 +342,7 @@ def test_check_goal_artifact_cli_reports_invalid_skips(tmp_path: Path, monkeypat
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     issue = payload["issues"][-1]
     assert "invalid skips: retro_artifact" in issue
     assert "host_log_probe" in issue
@@ -384,5 +385,5 @@ def test_check_goal_artifact_cli_reports_unbound_evidence(tmp_path: Path, monkey
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "evidence not bound to this goal: retro_artifact, host_log_probe" in payload["issues"][-1]

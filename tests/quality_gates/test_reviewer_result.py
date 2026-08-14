@@ -15,6 +15,8 @@ import json
 import os
 from pathlib import Path
 
+import yaml
+
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
@@ -28,7 +30,7 @@ def _run(*args: str, env: dict[str, str] | None = None):
 
 
 def _payload(result) -> dict:
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def _assistant_text(text: str) -> str:

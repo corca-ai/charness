@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import re
 import subprocess
 import sys
@@ -498,7 +497,7 @@ def _prepare_release_stop(tmp_path: Path):
         cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
     )
     assert prepared.returncode == 0, prepared.stderr
-    return repo, env, json.loads(prepared.stdout)
+    return repo, env, yaml.safe_load(prepared.stdout)
 
 
 @pytest.mark.release_only

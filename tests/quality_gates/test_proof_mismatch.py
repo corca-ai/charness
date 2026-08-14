@@ -10,11 +10,11 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
-import json
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import proof_mismatch as pm
 
@@ -208,7 +208,7 @@ def _run_cli(repo: Path, goal_path: Path) -> dict:
             _CLI.main()
     finally:
         sys.argv = old_argv
-    return json.loads(buf.getvalue())
+    return yaml.safe_load(buf.getvalue())
 
 
 def test_cli_blocks_undispositioned_proof_gap(tmp_path: Path) -> None:

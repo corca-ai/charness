@@ -75,12 +75,12 @@ def test_doctor_regenerates_over_stale_lock(tmp_path: Path) -> None:
         "scripts/doctor.py",
         "--repo-root",
         str(repo),
-        "--json",
         "--write-locks",
     )
     assert result.returncode == 0, result.stderr
     assert "stale lock" in result.stderr
 
+    # The lock artifact on disk is still JSON; only command stdout moved to YAML.
     fresh = json.loads(lock_path.read_text(encoding="utf-8"))
     validate_lock_data(fresh, load_lock_schema())
     assert "sync_strategy" not in fresh.get("support", {})

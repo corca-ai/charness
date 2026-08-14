@@ -17,12 +17,12 @@ supplies one or two), and reports the minimum.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+from yaml_output import emit_yaml
 
 _lib = import_repo_module(__file__, "scripts.check_prescribed_skill_executed_lib")
 
@@ -79,7 +79,7 @@ def main() -> int:
         bool(minimums) and _lib.MIN_BOUND_RESIDUAL_CHARS < min(minimums)
     )
     payload["corpus_established"] = bool(minimums)
-    print(json.dumps(payload, indent=2, sort_keys=True))
+    emit_yaml(payload)
     return 0 if payload["floor_below_every_measured_minimum"] else 1
 
 

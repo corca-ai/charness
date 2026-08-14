@@ -14,6 +14,7 @@ from pathlib import Path
 
 import host_hook_install_lib as lib
 import host_hook_registry as registry
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -345,7 +346,7 @@ def test_status_mode_reports_settings_leftover_without_state(tmp_path: Path) -> 
         text=True,
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["in_sync"] is False
     assert payload["settings_scan"]["dangling"]
     assert payload["hook_liveness"]["dangling"] == []  # state knows nothing
@@ -376,7 +377,7 @@ def test_status_mode_reports_dangling_hook_and_exits_one(tmp_path: Path) -> None
         text=True,
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["in_sync"] is False
     assert payload["hook_liveness"]["dangling"]
     assert any(str(deleted_checkout_script) in line for line in payload["drift"])
@@ -428,7 +429,7 @@ def test_reconcile_mode_exits_nonzero_when_a_host_hook_errors(tmp_path: Path) ->
     )
 
     assert result.returncode == 1, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["failed_hosts"] == ["skill_anchor_edit_guard.claude"]
     # ...and the operator's file is untouched by the refusal.
     entry = json.loads(settings.read_text(encoding="utf-8"))["hooks"]["PostToolUse"][0]
@@ -452,7 +453,7 @@ def test_reconcile_mode_still_exits_zero_when_every_host_succeeds(tmp_path: Path
     )
 
     assert result.returncode == 0, result.stdout
-    assert json.loads(result.stdout)["failed_hosts"] == []
+    assert yaml.safe_load(result.stdout)["failed_hosts"] == []
 
 
 def test_error_scan_ignores_non_dict_action_values() -> None:

@@ -15,6 +15,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -211,9 +212,10 @@ def test_every_run_names_what_it_did_not_judge(monkeypatch: pytest.MonkeyPatch) 
     # Including the PASSING run: a green here must never be read as a clean docs
     # verdict, because this gate cannot see a broken link or an inaccurate page.
     _patch_awiki(monkeypatch, _CLEAN_OUTPUT)
-    rendered = _gate.format_human(_gate.evaluate(ROOT))
+    payload = _gate.report(_gate.evaluate(ROOT))
+    rendered = "\n".join(payload["did_not_judge"])
 
-    assert "did NOT judge" in rendered
+    assert payload["did_not_judge"]
     assert "RESOLVES" in rendered
     assert "not accuracy" in rendered
 
@@ -248,7 +250,10 @@ def test_the_live_repo_lane_runs_and_reports_a_real_verdict() -> None:
         cwd=ROOT, check=False, capture_output=True, text=True,
     )
     assert proc.returncode in {0, 1}, proc.stdout + proc.stderr
-    assert proc.stdout.startswith("docs-graph: ")
+    payload = yaml.safe_load(proc.stdout)
+    assert payload["status"] in {"pass", "fail"}
+    assert payload["scan_root"] == "docs"
+    assert payload["did_not_judge"]
 
 
 def test_an_ok_verdict_contradicted_by_its_own_ratios_is_not_run(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -288,15 +293,17 @@ def test_an_islands_only_failure_names_the_pages_too(monkeypatch: pytest.MonkeyP
     # hand-written guess would prove the code against the author's belief.
     _patch_awiki(monkeypatch, _ISLAND_OUTPUT)
     result = _gate.evaluate(ROOT)
-    rendered = _gate.format_human(result)
+    payload = _gate.report(result)
 
     assert result["failures"] == {"islands": 1}
     assert result["named"]["islands"], "the island block named no page"
-    assert "islands=1" in rendered
-    assert "cut off with: main" in rendered
+    assert payload["failures"]["islands"] == 1
+    assert payload["unreachable_label"]["islands"] == "cut off with"
+    assert "main" in payload["named"]["islands"]
     # And the advice must fit an island: a cluster is bridged, not retired.
-    assert "bridge" in rendered
-    assert "nobody decided to retire" not in rendered
+    remedy = payload["remedies"]["islands"]
+    assert "bridge" in remedy
+    assert "nobody decided to retire" not in remedy
 
 
 def test_the_gate_does_not_hardcode_a_link_only_count() -> None:
@@ -313,12 +320,12 @@ def test_the_not_run_verdict_is_rendered_and_exits_unestablished(monkeypatch: py
     # operator-facing half: the runner prints this line and reads that byte, and a
     # not-run that rendered as nothing would be indistinguishable from a pass.
     _patch_awiki(monkeypatch, "", present=False)
-    rendered = _gate.format_human(_gate.evaluate(ROOT))
+    payload = _gate.report(_gate.evaluate(ROOT))
 
-    assert rendered.startswith("docs-graph: NOT RUN -- ")
-    assert "not on PATH" in rendered
+    assert payload["status"] == "not-run"
+    assert "not on PATH" in payload["reason"]
     # A not-run says nothing about what it did not judge, because it judged nothing.
-    assert "did NOT judge" not in rendered
+    assert "did_not_judge" not in payload
 
     monkeypatch.setattr(_gate.sys, "argv", ["check_docs_graph.py"])
     assert _gate.main(["--repo-root", str(ROOT)]) == _gate.UNESTABLISHED_EXIT

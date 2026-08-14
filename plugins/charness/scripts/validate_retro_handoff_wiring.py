@@ -9,12 +9,12 @@ or whether a human disposition is substantively correct.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import load_path_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -299,7 +299,7 @@ def main(argv: list[str] | None = None) -> int:
         retro_path=args.retro_path,
         handoff_path=args.handoff_path,
     )
-    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(report)
     return 0 if report["status"] == "passed" else 1
 
 

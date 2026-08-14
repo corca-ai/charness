@@ -3,12 +3,35 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+
+
+def _load_summary_output():
+    """Load the sibling emitter without adding to `sys.path`.
+
+    The first cut of the 2026-08-14 YAML migration reached it with a module-scope
+    `sys.path.insert(0, <this dir>)` that was never restored, putting a SECOND copy of
+    this directory at `sys.path[0]`. Measured against HEAD: importing this module adds
+    one entry for this directory either way, so the insert added a duplicate rather
+    than the entry itself -- the single pre-existing entry comes from the local
+    skill-module loader and is unchanged here.
+
+    The duplicate still mattered: this directory holds `validate_skill_ergonomics.py`
+    and `suggest_public_skill_dogfood.py`, both of which also exist under repo
+    `scripts/`, and the insert put the skills copies FIRST for the life of the process.
+    `tests/script_main.load_script_module` saves and restores `sys.path` to guard that
+    class; an unrestored insert defeats the guard for any loader that does not.
+
+    `runpy` is the pattern this file already uses for its bootstrap, one line below.
+    """
+    return runpy.run_path(str(Path(__file__).resolve().parent / "summary_output_lib.py"))["emit_yaml"]
+
+
+emit_yaml = _load_summary_output()
 
 
 def _load_skill_runtime_bootstrap():
@@ -121,6 +144,21 @@ def _iter_checked_skill_paths(repo_root: Path, requested_paths: list[str], vendo
         if skill_path.is_file()
         and not _vendored_path_lib.is_vendored(repo_root, skill_path, vendored_prefixes_list)
     ]
+
+
+def _with_attention(warnings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Carry the `WARNING:` marker into the payload, not just the warning's prose.
+
+    These warnings are exit-ZERO: an unconfigured gate reports success. The retired
+    human renderer was the only place the word `WARNING:` appeared, and
+    `attention-state-visibility.json` declares it as this file's evidence term for
+    exactly that reason -- without the marker a green run reads as enforcement that
+    ran, rather than enforcement that was never configured.
+    """
+    for warning in warnings:
+        suffix = f" ({warning['skill_count']} skill(s) present)" if "skill_count" in warning else ""
+        warning["attention"] = f"WARNING: {warning['message']}{suffix}"
+    return warnings
 
 
 def _empty_rules_warnings(skill_count: int, requested_paths: list[str]) -> list[dict[str, Any]]:
@@ -242,7 +280,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
             "discovery_skipped_reason": None,
             "discovery_errors": [],
             "violations": [],
-            "warnings": _empty_rules_warnings(len(discovered_skills), requested_paths),
+            "warnings": _with_attention(_empty_rules_warnings(len(discovered_skills), requested_paths)),
         }
 
     checked_skills: list[dict[str, Any]] = []
@@ -282,34 +320,40 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _format_human(report: dict[str, Any]) -> str:
+def verdict(report: dict[str, Any]) -> dict[str, Any]:
+    """The verdict word and its explanation, folded into the emitted payload.
+
+    Output is unconditionally YAML. An empty `violations` list means three
+    different things here — the adapter never loaded, no rules are configured so
+    nothing was judged, or the rules ran and passed — and only the first and third
+    are a verdict. Naming the state keeps a NOT-CONFIGURED run from reading as a
+    clean one; the warnings and discovery errors already ride in the payload with
+    their own `message` / `next_action` strings.
+    """
     if report.get("adapter_errors"):
-        return "\n".join(f"quality adapter: {message}" for message in report["adapter_errors"])
+        return {"verdict": "adapter-invalid", "verdict_detail": "quality adapter did not load; nothing was judged."}
     if not report["rules"]:
-        warnings = report.get("warnings", [])
-        if not warnings:
-            return "No skill_ergonomics_gate_rules configured; nothing to check."
-        lines = ["No skill_ergonomics_gate_rules configured; nothing to check."]
-        for warning in warnings:
-            suffix = f" ({warning['skill_count']} skill(s) present)" if "skill_count" in warning else ""
-            lines.append(f"WARNING: {warning['message']}{suffix}")
-            if warning.get("next_action"):
-                lines.append(f"next action: {warning['next_action']}")
-        return "\n".join(lines)
+        return {
+            "verdict": "not-configured",
+            "verdict_detail": "No skill_ergonomics_gate_rules configured; nothing to check.",
+        }
     if report["discovery_errors"]:
-        return "\n".join(f"skill discovery: {item['message']} {item['skill_path']}".rstrip() for item in report["discovery_errors"])
+        return {
+            "verdict": "discovery-failed",
+            "verdict_detail": (
+                f"{len(report['discovery_errors'])} configured skill path(s) could not be inventoried, "
+                "so the declared rules judged an incomplete skill set."
+            ),
+        }
     if not report["violations"]:
-        return (
-            "Skill ergonomics gate passed for rules: "
-            + ", ".join(report["rules"])
-        )
-    lines = []
-    for violation in report["violations"]:
-        lines.append(
-            f"{violation['rule']}: {violation['skill_path']} "
-            f"({', '.join(violation['heuristics'])})"
-        )
-    return "\n".join(lines)
+        return {
+            "verdict": "pass",
+            "verdict_detail": "Skill ergonomics gate passed for rules: " + ", ".join(report["rules"]),
+        }
+    return {
+        "verdict": "fail",
+        "verdict_detail": f"{len(report['violations'])} skill ergonomics violation(s).",
+    }
 
 
 def has_failures(report: dict[str, Any]) -> bool:
@@ -319,14 +363,10 @@ def has_failures(report: dict[str, Any]) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose skill ergonomics gate rules should be evaluated")
-    parser.add_argument("--json", action="store_true", help="Emit the full validation payload as JSON")
     args = parser.parse_args()
 
     report = evaluate(args.repo_root.resolve())
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    else:
-        print(_format_human(report))
+    emit_yaml({**report, **verdict(report)})
     return 1 if has_failures(report) else 0
 
 

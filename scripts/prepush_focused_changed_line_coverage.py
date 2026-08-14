@@ -56,10 +56,11 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -67,6 +68,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts import mutation_coverage_producer as _producer  # noqa: E402
 from scripts import suggest_mutation_coverage_command as _suggest  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 NO_VERDICT_EXIT = 2
 # The consumer's exit-0 reason for a range that contained no eligible pool file.
@@ -140,11 +142,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "gap."
         ),
     )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit the run payload as JSON on stdout instead of human lines.",
-    )
     return parser.parse_args(argv)
 
 
@@ -152,13 +149,6 @@ def _warn(message: str) -> None:
     # The `WARNING` head is load-bearing: run-quality.sh's print_phase_output only
     # surfaces a PASSING gate's output when a line matches ^(WARNING|WARN|WEAK|ADVISORY).
     sys.stderr.write(f"WARNING (incremental changed-line coverage): {message}\n")
-
-
-def _emit(payload: dict, *, as_json: bool) -> None:
-    if as_json:
-        print(json.dumps(payload, indent=2, sort_keys=True))
-        return
-    print(f"incremental changed-line coverage: {payload['status']} -- {payload['reason']}")
 
 
 def _focused_pytest_command(recommendation: dict) -> str | None:
@@ -229,7 +219,7 @@ def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
         payload["status"] = "no-verdict"
         payload["reason"] = f"the consumer refused or errored (exit {result.returncode})"
         _warn(f"the changed-line consumer exited {result.returncode}; this is NOT a pass.")
-        _emit(payload, as_json=args.json)
+        emit_yaml(payload)
         return NO_VERDICT_EXIT
     if payload["status"] == PARTIAL_STATUS:
         # Loud for the same reason the unestablished warning is: in a summary that
@@ -238,8 +228,8 @@ def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
             "this run analyzed only PART of the changed mutation-pool set; a clean "
             f"verdict says nothing about the rest: {payload['reason']}"
         )
-        _emit_consumer_stdout(payload, result, args)
-        _emit(payload, as_json=args.json)
+        _emit_consumer_stdout(payload, result)
+        emit_yaml(payload)
         # NOT gated on `--refuse-unestablished`: policy (a) is preserved on purpose.
         return PARTIAL_EXIT
     if payload["status"] in (UNESTABLISHED_STATUS, "no-verdict"):
@@ -247,7 +237,7 @@ def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
         # prints only the label and its status.
         _warn(f"this run established no changed-line verdict: {payload['reason']}")
     if payload["status"] == "no-verdict":
-        _emit(payload, as_json=args.json)
+        emit_yaml(payload)
         return NO_VERDICT_EXIT
     if payload["status"] == UNESTABLISHED_STATUS:
         if args.refuse_unestablished:
@@ -258,20 +248,25 @@ def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
             # The consumer payload names WHICH files went unestablished. Withholding
             # it on the one path that stops a push -- while emitting it on the path
             # that does not -- is a gate whose refusal cannot be diagnosed.
-            _emit_consumer_stdout(payload, result, args)
-            _emit(payload, as_json=args.json)
+            _emit_consumer_stdout(payload, result)
+            emit_yaml(payload)
             return 1
-        _emit_consumer_stdout(payload, result, args)
-        _emit(payload, as_json=args.json)
+        _emit_consumer_stdout(payload, result)
+        emit_yaml(payload)
         return UNESTABLISHED_EXIT
     return None
 
 
-def _emit_consumer_stdout(payload: dict, result, args) -> None:
-    if args.json:
-        payload["consumer_stdout"] = result.stdout
-    else:
-        sys.stdout.write(result.stdout)
+def _emit_consumer_stdout(payload: dict, result) -> None:
+    """Carry the consumer's own payload INSIDE this lane's document.
+
+    It used to be written raw to stdout whenever the caller had not asked for
+    JSON. Output here is now one YAML document, and interleaving the child's bytes
+    with it would produce a stream no reader can parse -- while dropping them would
+    delete the only text naming WHICH files went unestablished, on the paths that
+    refuse a push.
+    """
+    payload["consumer_stdout"] = result.stdout
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -283,9 +278,8 @@ def main(argv: list[str] | None = None) -> int:
             "no base SHA (no origin/main merge-base): there is no range to analyze, so "
             "this run rendered no changed-line verdict. It is NOT a pass."
         )
-        _emit(
-            {"status": "no-verdict", "reason": "base discovery failed", "base_sha": None},
-            as_json=args.json,
+        emit_yaml(
+            {"status": "no-verdict", "reason": "base discovery failed", "base_sha": None}
         )
         return NO_VERDICT_EXIT
 
@@ -295,9 +289,8 @@ def main(argv: list[str] | None = None) -> int:
     unmapped = sorted(recommendation.get("unmapped_changed_pool_files") or [])
 
     if status == "noop":
-        _emit(
-            {"status": "noop", "reason": "no eligible mutation-pool files changed", "base_sha": base_sha},
-            as_json=args.json,
+        emit_yaml(
+            {"status": "noop", "reason": "no eligible mutation-pool files changed", "base_sha": base_sha}
         )
         return 0
 
@@ -306,7 +299,7 @@ def main(argv: list[str] | None = None) -> int:
             "the suggester could not resolve a base; no changed-line verdict was "
             "rendered. This is NOT a pass."
         )
-        _emit({"status": "no-verdict", "reason": "suggester blocked", "base_sha": base_sha}, as_json=args.json)
+        emit_yaml({"status": "no-verdict", "reason": "suggester blocked", "base_sha": base_sha})
         return NO_VERDICT_EXIT
 
     if status == "missing" or not mapped:
@@ -318,14 +311,13 @@ def main(argv: list[str] | None = None) -> int:
             "--mutation-coverage-extra-pytest-target at closeout, or run the broad "
             f"producer. Unproven: {', '.join(unmapped)}"
         )
-        _emit(
+        emit_yaml(
             {
                 "status": "unproven",
                 "reason": "no changed pool file maps to a standing test",
                 "base_sha": base_sha,
                 "unmapped_changed_pool_files": unmapped,
-            },
-            as_json=args.json,
+            }
         )
         # Option (a) keeps this NON-BLOCKING -- and non-blocking is not the same
         # byte as proven-clean. Returning 0 here made `run-quality.sh` print PASS
@@ -357,9 +349,8 @@ def main(argv: list[str] | None = None) -> int:
             f"the focused coverage producer failed (exit {exc.returncode}); no "
             "changed-line verdict was rendered. This is NOT a pass."
         )
-        _emit(
-            {"status": "no-verdict", "reason": "focused producer failed", "base_sha": base_sha},
-            as_json=args.json,
+        emit_yaml(
+            {"status": "no-verdict", "reason": "focused producer failed", "base_sha": base_sha}
         )
         return NO_VERDICT_EXIT
 
@@ -371,9 +362,8 @@ def main(argv: list[str] | None = None) -> int:
             f"the focused producer reported success but wrote no coverage at {coverage_json}; "
             "no changed-line verdict was rendered. This is NOT a pass."
         )
-        _emit(
-            {"status": "no-verdict", "reason": "focused coverage missing after produce", "base_sha": base_sha},
-            as_json=args.json,
+        emit_yaml(
+            {"status": "no-verdict", "reason": "focused coverage missing after produce", "base_sha": base_sha}
         )
         return NO_VERDICT_EXIT
 
@@ -414,8 +404,8 @@ def main(argv: list[str] | None = None) -> int:
     verdict_code = _dispose_consumer_verdict(payload, result, args)
     if verdict_code is not None:
         return verdict_code
-    _emit_consumer_stdout(payload, result, args)
-    _emit(payload, as_json=args.json)
+    _emit_consumer_stdout(payload, result)
+    emit_yaml(payload)
     return result.returncode
 
 
@@ -444,8 +434,15 @@ def _verdict_from_consumer(result: subprocess.CompletedProcess) -> tuple[str, st
     if result.returncode == 1:
         return "blocked", "a mapped changed pool file has uncovered changed lines"
     try:
-        report = json.loads(result.stdout)
-    except (TypeError, ValueError):
+        report = yaml.safe_load(result.stdout)
+    except (TypeError, ValueError, yaml.YAMLError):
+        report = None
+    if not isinstance(report, dict):
+        # `safe_load` returns None for empty input and a bare str for arbitrary
+        # prose instead of raising, so the TYPE check -- not the exception alone --
+        # is what keeps an unreadable consumer out of a verdict. Without it, this
+        # lane would call `.get` on a string and crash on exactly the input the
+        # `no-verdict` branch exists to describe.
         return (
             "no-verdict",
             "the consumer emitted no readable payload, so its exit code stands for nothing",

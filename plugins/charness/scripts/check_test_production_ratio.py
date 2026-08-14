@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 try:
     from scripts.repo_file_listing import iter_matching_repo_files
@@ -141,7 +142,6 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
     parser.add_argument("--max-ratio", type=float, default=DEFAULT_MAX_RATIO)
     parser.add_argument("--engine", choices=SUPPORTED_ENGINES, default="splitlines")
-    parser.add_argument("--json", action="store_true")
     parser.add_argument("--require-git-file-listing", action="store_true")
     parser.add_argument(
         "--advisory",
@@ -165,18 +165,21 @@ def main() -> int:
     except TokeiUnavailableError as exc:
         print(str(exc))
         return 2
-    if args.json:
-        print(json.dumps(summary, ensure_ascii=False, indent=2))
+    # `max_ratio` lived ONLY in the deleted human line -- the summary payload never
+    # carried the bar the ratio is judged against, so a bare `ratio: 0.87` said
+    # nothing about whether it passed. Output is unconditionally YAML now, so the
+    # bar, the verdict and the advisory posture all ride on the payload.
+    payload = {**summary, "max_ratio": args.max_ratio}
+    over = float(summary["ratio"]) > args.max_ratio
+    message = f"test-production ratio {summary['ratio']:.2f} exceeds max {args.max_ratio:.2f}"
+    if over and args.advisory:
+        payload["status"] = "advisory-warn"
+        payload["advisory"] = f"WARN: {message} (advisory posture; not blocking)"
     else:
-        print(
-            "Test-production ratio: "
-            f"{summary['ratio']:.2f} ({summary['test_lines']}/{summary['source_lines']} Python lines, "
-            f"engine={summary['engine']}, max {args.max_ratio:.2f})"
-        )
-    if float(summary["ratio"]) > args.max_ratio:
-        message = f"test-production ratio {summary['ratio']:.2f} exceeds max {args.max_ratio:.2f}"
+        payload["status"] = "over-max" if over else "within-max"
+    emit_yaml(payload)
+    if over:
         if args.advisory:
-            print(f"WARN: {message} (advisory posture; not blocking)")
             return 0
         raise RatioError(message)
     return 0

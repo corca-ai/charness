@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import shlex
 import subprocess
 from pathlib import Path
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 from tests.script_loader import load_script_module
@@ -50,7 +51,7 @@ def test_handoff_scaffold_reports_validator_and_template(tmp_path: Path) -> None
 
     result = run_script(SCAFFOLD, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"] == "docs/handoff.md"
     assert payload["artifact_role"] == "rolling"
     assert payload["write_artifact_path"] == "docs/handoff.md"
@@ -100,7 +101,7 @@ def test_handoff_scaffold_carries_the_budget_before_the_author_writes(
     repo = tmp_path / "repo"
     _write_adapter(repo, "demo")
 
-    payload = json.loads(run_script(SCAFFOLD, "--repo-root", str(repo)).stdout)
+    payload = yaml.safe_load(run_script(SCAFFOLD, "--repo-root", str(repo)).stdout)
 
     budget = payload["size_budget"]
     guidance = budget["guidance"]
@@ -120,7 +121,7 @@ def test_scaffold_budget_is_read_from_the_gate_not_transcribed(tmp_path: Path) -
         ROOT / "skills/public/handoff/scripts/handoff_content_budget.py",
     )
 
-    payload = json.loads(run_script(SCAFFOLD, "--repo-root", str(repo)).stdout)
+    payload = yaml.safe_load(run_script(SCAFFOLD, "--repo-root", str(repo)).stdout)
 
     assert payload["size_budget"]["max_lines"] == budget_module.DEFAULT_MAX_CONTENT_LINES
 
@@ -130,7 +131,7 @@ def test_handoff_scaffold_guards_custom_title(tmp_path: Path) -> None:
     _write_adapter(repo, "demo")
     result = run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "Auth Migration")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # A custom title without "handoff" still yields a validator-passing `# ... Handoff` line.
     assert payload["template"].startswith("# Auth Migration Handoff\n")
 
@@ -152,7 +153,7 @@ def test_exported_handoff_scaffold_validator_command_runs_from_consumer_repo(tmp
 
     result = run_script(str(scaffold), "--repo-root", str(consumer))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_role"] == "rolling"
     assert str(plugin_root / "scripts") in payload["validator_command"]
     assert "validate_handoff_artifact.py" in payload["validator_command"]

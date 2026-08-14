@@ -7,11 +7,12 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from scripts import suggest_public_skill_validation as _suggest_public_skill_validation
 from scripts import validate_public_skill_validation as _validate_public_skill_validation
 from scripts.public_skill_validation_lib import ValidationError, load_policy, validate_policy
-from scripts.suggest_public_skill_validation import _format_human, build_report
+from scripts.suggest_public_skill_validation import build_report
 from scripts.validate_public_skill_validation import validate_adapter_requirement
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -311,11 +312,14 @@ def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path
         }
     ]
 
-    human = _format_human(payload)
-    assert "`demo-b`" in human
-    assert "`tiers.hitl-recommended`" in human
-    assert "`adapter_requirements.adapter-free`" in human
-    assert "`fallback_policy.visible`" in human
+    # The deleted `_format_human` renderer carried the operator's choose-one-of
+    # guidance; that guidance now lives in the payload the command emits, so the
+    # same facts are asserted against the payload channel.
+    suggestion = payload["suggestions"][0]
+    assert suggestion["skill_id"] == "demo-b"
+    assert "tiers.hitl-recommended" in suggestion["choose_one_of"]["tiers"]
+    assert "adapter_requirements.adapter-free" in suggestion["choose_one_of"]["adapter_requirements"]
+    assert "fallback_policy.visible" in suggestion["choose_one_of"]["fallback_policy"]
 
 
 def test_validate_public_skill_validation_cli_reports_guidance(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -348,7 +352,7 @@ def test_validate_public_skill_validation_cli_reports_guidance(tmp_path: Path, m
     assert "suggest_public_skill_validation.py" in result.stderr
 
 
-def test_suggest_public_skill_validation_cli_emits_json(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_suggest_public_skill_validation_cli_emits_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(
         tmp_path,
         policy={
@@ -372,6 +376,6 @@ def test_suggest_public_skill_validation_cli_emits_json(tmp_path: Path, monkeypa
     seed_skill(repo, "demo-a", adapter=True)
     seed_skill(repo, "demo-b", adapter=False)
 
-    result = run_module_main(_suggest_public_skill_validation, monkeypatch, capsys, "--repo-root", str(repo), "--json")
+    result = run_module_main(_suggest_public_skill_validation, monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 1
-    assert json.loads(result.stdout)["suggestions"][0]["skill_id"] == "demo-b"
+    assert yaml.safe_load(result.stdout)["suggestions"][0]["skill_id"] == "demo-b"

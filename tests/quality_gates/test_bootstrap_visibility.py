@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from runtime_bootstrap import load_path_module
 
@@ -47,7 +48,7 @@ def test_narrative_resolve_adapter_fallback_prefers_richer_truth_docs(tmp_path: 
         str(repo),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["data"]["source_documents"][:5] == [
         "README.md",
         "docs/master-plan.md",
@@ -72,7 +73,7 @@ def test_announcement_resolve_adapter_explains_draft_only_defaults(tmp_path: Pat
         str(repo),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/announcement/latest.md"
     assert payload["record_path"] == ".charness/announcement/announcements.jsonl"
     assert "visible draft artifact" in payload["warnings"][1]

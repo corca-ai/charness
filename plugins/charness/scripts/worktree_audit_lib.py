@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 from datetime import datetime, timezone
@@ -293,59 +292,3 @@ def run_prune(repo_root: Path) -> dict[str, Any]:
         "remaining_after_prune": after["summary"],
         "stderr": proc.stderr.strip() if proc.returncode != 0 else "",
     }
-
-
-def render_audit_text(payload: dict[str, Any]) -> str:
-    if payload.get("error"):
-        return f"audit failed: {payload['error']}"
-    summary = payload["summary"]
-    lines = [
-        f"repo: {payload['repo_root']}",
-        f"primary: {payload['primary_worktree']}",
-        (
-            f"summary: {summary['total']} total "
-            f"(primary={summary['primary']}, active={summary['active']}, "
-            f"prunable={summary['prunable']}, stale={summary['stale']})"
-        ),
-    ]
-    if payload.get("doctor_enabled"):
-        doctor = payload.get("doctor_summary") or {}
-        lines.append(
-            "readiness: "
-            f"pass={doctor.get('pass', 0)}, fail={doctor.get('fail', 0)}, skipped={doctor.get('skipped', 0)}"
-        )
-    for entry in payload["entries"]:
-        cls = entry["classification"]
-        doctor = entry.get("doctor") or {}
-        if cls == CLASSIFICATION_PRIMARY and doctor.get("status") != FAIL:
-            continue
-        age_part = f" age={entry['age_days']:.1f}d" if entry.get("age_days") is not None else ""
-        reasons = "; ".join(entry["reasons"]) if entry["reasons"] else ""
-        if doctor:
-            doctor_status = doctor.get("status")
-            doctor_part = f" readiness={doctor_status}"
-            if doctor_status == FAIL and doctor.get("next_step"):
-                doctor_part += f" next_step={doctor['next_step']}"
-            reasons = "; ".join(part for part in (reasons, doctor_part.strip()) if part)
-        suffix = f" — {reasons}" if reasons else ""
-        lines.append(f"  [{cls}] {entry['path']}{age_part}{suffix}")
-    if payload.get("next_step"):
-        lines.append(f"NEXT: {payload['next_step']}")
-    return "\n".join(lines)
-
-
-def render_prune_text(payload: dict[str, Any]) -> str:
-    if payload["status"] != PASS:
-        return f"prune failed: {payload.get('stderr', 'unknown error')}"
-    if payload["pruned_count"] == 0:
-        return "no prunable worktrees"
-    lines = [f"pruned {payload['pruned_count']} worktree metadata entries:"]
-    lines.extend(f"  - {name}" for name in payload["pruned"])
-    return "\n".join(lines)
-
-
-def emit_payload(payload: dict[str, Any], *, json_mode: bool, renderer) -> None:
-    if json_mode:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print(renderer(payload))

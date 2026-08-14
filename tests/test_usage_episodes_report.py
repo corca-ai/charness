@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 from scripts.report_usage_episodes import NON_CLAIMS
 from scripts.usage_episode_feedback import feedback_id_for
 from tests.test_usage_episodes_schema import acme_episode, crill_episode
@@ -72,10 +74,10 @@ def write_records(repo: Path, records: list[dict]) -> Path:
 
 
 def test_report_usage_episodes_reports_no_adapter(tmp_path: Path) -> None:
-    result = run_report("--repo-root", str(tmp_path), "--json")
+    result = run_report("--repo-root", str(tmp_path))
 
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "no_adapter"
     assert payload["valid"] is True
     assert payload["episode_count"] == 0
@@ -88,10 +90,10 @@ def test_report_usage_episodes_reports_no_adapter(tmp_path: Path) -> None:
 def test_report_usage_episodes_reports_disabled(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: false\n")
 
-    result = run_report("--repo-root", str(tmp_path), "--json")
+    result = run_report("--repo-root", str(tmp_path))
 
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "disabled"
     assert payload["valid"] is True
     assert payload["episode_count"] == 0
@@ -103,10 +105,10 @@ def test_report_usage_episodes_reports_disabled(tmp_path: Path) -> None:
 def test_report_usage_episodes_reports_no_records(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
 
-    result = run_report("--repo-root", str(tmp_path), "--json")
+    result = run_report("--repo-root", str(tmp_path))
 
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "no_records"
     assert payload["valid"] is True
     assert payload["records_path"] == ".charness/usage-episodes/usage_episode.jsonl"
@@ -132,10 +134,10 @@ def test_report_usage_episodes_aggregates_counts_sessions_and_gaps(tmp_path: Pat
     fourth["timestamp"] = "2026-05-17T11:00:00Z"
     write_records(tmp_path, [first, second, third, fourth])
 
-    result = run_report("--repo-root", str(tmp_path), "--gap-minutes", "90", "--json")
+    result = run_report("--repo-root", str(tmp_path), "--gap-minutes", "90")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "valid"
     assert payload["episode_count"] == 4
     assert payload["session_count"] == 3
@@ -171,15 +173,19 @@ def test_report_usage_episodes_aggregates_counts_sessions_and_gaps(tmp_path: Pat
         "single_trigger_type",
     ]
 
-    plain = run_report("--repo-root", str(tmp_path))
-    assert plain.returncode == 0
-    assert "ADVISORY: usage episode report is an engineering signal" in plain.stdout
-    assert "Usage episodes: 4 delivery record(s); feedback events: 0; across 3 session group(s)." in plain.stdout
-    assert "Product evidence: first_value_floor=4/4 (100.0%)" in plain.stdout
-    assert "feedback_coverage=75.0%" in plain.stdout
-    assert "objective_lifecycle_signals=0" in plain.stdout
-    assert "Product-success veto gaps: missing_feedback, single_trigger_type." in plain.stdout
-    assert "Non-claims:" in plain.stdout
+    # The prose renderer that used to print an ADVISORY banner, a "Usage
+    # episodes: N delivery record(s)" line and a "Non-claims:" heading is gone.
+    # Each fact it carried is a payload field now, so the single YAML output has
+    # to state them -- otherwise the advisory framing disappeared with the
+    # renderer instead of moving into the payload.
+    assert payload["delivery_episode_count"] == 4
+    assert payload["feedback_event_count"] == 0
+    assert payload["non_claims_label"] == "Non-claims:"
+    assert payload["non_claims"] == NON_CLAIMS
+    assert "not product-success proof" in payload["non_claims"][0]
+    # One output mode: the report has no second, human-only rendering to select.
+    rejected = run_report("--repo-root", str(tmp_path), "--json")
+    assert rejected.returncode == 2, rejected.stdout
 
 
 def test_report_usage_episodes_rejects_malformed_jsonl(tmp_path: Path) -> None:
@@ -188,10 +194,10 @@ def test_report_usage_episodes_rejects_malformed_jsonl(tmp_path: Path) -> None:
     records_dir.mkdir(parents=True)
     (records_dir / "usage_episode.jsonl").write_text('{"event_type": "usage_episode"}\n', encoding="utf-8")
 
-    result = run_report("--repo-root", str(tmp_path), "--json")
+    result = run_report("--repo-root", str(tmp_path))
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "invalid_records"
     assert payload["valid"] is False
     assert payload["errors"]
@@ -201,10 +207,10 @@ def test_plugin_usage_episode_report_smoke(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
     write_records(tmp_path, [acme_episode()])
 
-    result = run_plugin_report("--repo-root", str(tmp_path), "--json")
+    result = run_plugin_report("--repo-root", str(tmp_path))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "valid"
     assert payload["episode_count"] == 1
     assert payload["t_signal_count"] == 1
@@ -222,10 +228,10 @@ def test_report_usage_episodes_vetoes_single_emitter_and_no_satisfaction(tmp_pat
     second["feedback_signal"] = "retried"
     write_records(tmp_path, [first, second])
 
-    result = run_report("--repo-root", str(tmp_path), "--json")
+    result = run_report("--repo-root", str(tmp_path))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["product_evidence"]["first_value_floor_count"] == 2
     assert payload["product_evidence"]["feedback_coverage_rate"] == 1.0
     assert payload["product_evidence"]["satisfaction_signal_count"] == 0
@@ -242,10 +248,10 @@ def test_report_usage_episodes_flags_unclassified_feedback(tmp_path: Path) -> No
     record["feedback_signal"] = "edited"
     write_records(tmp_path, [record])
 
-    result = run_report("--repo-root", str(tmp_path), "--json")
+    result = run_report("--repo-root", str(tmp_path))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["product_evidence"]["feedback_coverage_rate"] == 1.0
     assert payload["product_evidence"]["neutral_feedback_signal_count"] == 1
     assert payload["product_evidence"]["unclassified_feedback_signal_count"] == 0
@@ -273,11 +279,10 @@ def test_product_review_report_exposes_last_seen_without_actioning_inactivity(tm
         "corca-ai/charness",
         "--user-ref",
         "spilist",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     summary = payload["review_summary"]
     assert summary["first_seen_at"] == "2026-06-01T10:00:00Z"
     assert summary["last_seen_at"] == "2026-06-02T12:30:00Z"
@@ -313,11 +318,10 @@ def test_product_review_report_builds_thresholded_reporter_packets(tmp_path: Pat
         "2",
         "--missed-detection-threshold",
         "1",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["actionable_packet_count"] == 2
     packets = {packet["signal_type"]: packet for packet in payload["reporter_packets"]}
     assert packets["friction_threshold"]["threshold"] == {
@@ -359,10 +363,10 @@ def test_product_review_keeps_delivery_denominator_when_feedback_is_explicit(tmp
     )
     write_records(tmp_path, [delivery, feedback])
 
-    result = run_product_review("--repo-root", str(tmp_path), "--friction-threshold", "1", "--json")
+    result = run_product_review("--repo-root", str(tmp_path), "--friction-threshold", "1")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     summary = payload["review_summary"]
     assert summary["usage_count"] == 1
     assert summary["product_counts"] == {delivery["product_id"]: 1}
@@ -417,11 +421,10 @@ def test_product_review_window_filters_explicit_feedback_by_its_own_timestamp(tm
         "--window-start", "2026-06-01T00:00:00Z",
         "--window-end", "2026-06-03T00:00:00Z",
         "--friction-threshold", "1",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["review_summary"]["usage_count"] == 1
     assert payload["review_summary"]["feedback_signal_counts"] == {}
     assert payload["review_summary"]["friction_or_followup_count"] == 0
@@ -440,11 +443,10 @@ def test_product_review_counts_outcome_only_friction_and_missed_detection_once(t
         "--repo-root", str(tmp_path),
         "--friction-threshold", "1",
         "--missed-detection-threshold", "1",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["review_summary"]["friction_or_followup_count"] == 1
     assert payload["review_summary"]["missed_detection_candidate_count"] == 1
     packets = {packet["signal_type"]: packet for packet in payload["reporter_packets"]}
@@ -475,10 +477,10 @@ def test_product_review_counts_inline_and_explicit_friction_once_per_delivery(tm
     )
     write_records(tmp_path, [delivery, feedback])
 
-    result = run_product_review("--repo-root", str(tmp_path), "--friction-threshold", "1", "--json")
+    result = run_product_review("--repo-root", str(tmp_path), "--friction-threshold", "1")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["review_summary"]["feedback_signal_counts"] == {"corrected": 1, "retried": 1}
     assert payload["review_summary"]["friction_or_followup_count"] == 1
     friction_packet = next(
@@ -508,11 +510,10 @@ def test_product_review_window_filtering_and_empty_window_are_neutral(tmp_path: 
         "2026-06-03T00:00:00Z",
         "--friction-threshold",
         "1",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["review_summary"]["usage_count"] == 1
     assert payload["review_summary"]["first_seen_at"] == "2026-06-02T12:00:00Z"
     assert payload["review_summary"]["last_seen_at"] == "2026-06-02T12:00:00Z"
@@ -525,10 +526,9 @@ def test_product_review_window_filtering_and_empty_window_are_neutral(tmp_path: 
         "2026-06-04T00:00:00Z",
         "--window-end",
         "2026-06-05T00:00:00Z",
-        "--json",
     )
     assert empty.returncode == 0, empty.stderr
-    empty_payload = json.loads(empty.stdout)
+    empty_payload = yaml.safe_load(empty.stdout)
     assert empty_payload["review_summary"]["usage_count"] == 0
     assert empty_payload["reporter_packets"][0]["signal_type"] == "no_usage_observed"
     assert "no_usage_records_in_window" in empty_payload["reporter_packets"][0]["confidence_gaps"]
@@ -545,11 +545,10 @@ def test_product_review_classification_skipped_alone_is_not_actionable(tmp_path:
         str(tmp_path),
         "--missed-detection-threshold",
         "1",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["review_summary"]["missed_detection_candidate_count"] == 0
     assert payload["actionable_packet_count"] == 0
 
@@ -558,10 +557,10 @@ def test_product_review_rejects_bad_window_as_structured_payload(tmp_path: Path)
     write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
     write_records(tmp_path, [crill_episode()])
 
-    result = run_product_review("--repo-root", str(tmp_path), "--window-start", "not-a-date", "--json")
+    result = run_product_review("--repo-root", str(tmp_path), "--window-start", "not-a-date")
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "invalid_window"
     assert payload["valid"] is False
 
@@ -572,10 +571,9 @@ def test_product_review_rejects_bad_window_as_structured_payload(tmp_path: Path)
         "2026-06-03T00:00:00Z",
         "--window-end",
         "2026-06-01T00:00:00Z",
-        "--json",
     )
     assert reversed_window.returncode == 2
-    assert json.loads(reversed_window.stdout)["status"] == "invalid_window"
+    assert yaml.safe_load(reversed_window.stdout)["status"] == "invalid_window"
 
 
 def test_product_review_execute_refuses_without_threshold_packet(tmp_path: Path) -> None:
@@ -590,11 +588,10 @@ def test_product_review_execute_refuses_without_threshold_packet(tmp_path: Path)
         "corca-ai/charness",
         "--issue-number",
         "280",
-        "--json",
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "no_actionable_packets"
     assert payload["executed"] is False
 
@@ -636,11 +633,10 @@ def test_product_review_execute_comments_threshold_packets_with_fake_gh(tmp_path
         "280",
         "--gh-bin",
         str(fake_gh),
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["executed"] is True
     assert payload["github_target"] == {
         "repo": "corca-ai/charness",
@@ -692,11 +688,10 @@ def test_product_review_execute_combines_multiple_threshold_packets(tmp_path: Pa
         "280",
         "--gh-bin",
         str(fake_gh),
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["github_target"]["comment_count"] == 1
     assert payload["github_target"]["packet_count"] == 2
     call = json.loads(capture_path.read_text(encoding="utf-8"))
@@ -705,7 +700,7 @@ def test_product_review_execute_combines_multiple_threshold_packets(tmp_path: Pa
     assert "signal_type: `missed_detection_candidate`" in call[-1]
 
 
-def test_product_review_execute_reports_missing_gh_as_json(tmp_path: Path) -> None:
+def test_product_review_execute_reports_missing_gh_as_yaml(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
     record = crill_episode()
     record["feedback_signal"] = "retried"
@@ -723,17 +718,16 @@ def test_product_review_execute_reports_missing_gh_as_json(tmp_path: Path) -> No
         "280",
         "--gh-bin",
         str(tmp_path / "missing-gh"),
-        "--json",
     )
 
     assert result.returncode == 127
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "gh_unavailable"
     assert payload["executed"] is False
 
 
 def test_product_review_requires_corca_internal_for_target_refs(tmp_path: Path) -> None:
-    result = run_product_review("--repo-root", str(tmp_path), "--repo-ref", "corca-ai/charness", "--json")
+    result = run_product_review("--repo-root", str(tmp_path), "--repo-ref", "corca-ai/charness")
 
     assert result.returncode != 0
     assert "--repo-ref requires --corca-internal" in result.stderr
@@ -743,9 +737,9 @@ def test_plugin_usage_product_review_smoke(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\nstorage_path: .charness/usage-episodes\n")
     write_records(tmp_path, [crill_episode()])
 
-    result = run_plugin_product_review("--repo-root", str(tmp_path), "--json")
+    result = run_plugin_product_review("--repo-root", str(tmp_path))
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "valid"
     assert payload["review_summary"]["last_seen_at"] == "2026-05-17T04:05:00Z"

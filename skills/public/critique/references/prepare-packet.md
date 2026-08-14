@@ -264,9 +264,12 @@ A `script` section's producer command must:
   dependency, parse error). Non-zero exit makes the runner record the
   section with `ok: false` and the captured stderr.
 - write the rendered section body to stdout
-- support `--json` if the producer also wants to emit a structured
-  payload, but the runner reads only stdout text and stores it as
-  `content`. JSON-shape contract is producer-side, not envelope-side.
+- a producer that also wants to emit a structured payload emits YAML on
+  stdout, with no output-format flag (`--json` was retired repo-wide on
+  2026-08-14; see
+  `<authoring-repo>/charness-artifacts/spec/cli-command-flag-conventions.md`).
+  The runner reads only stdout text and stores it as `content`, so the
+  payload-shape contract stays producer-side, not envelope-side.
 
 The runner is intentionally thin: read adapter, run command, capture
 stdout/stderr, fold into envelope. No retry, no caching, no merging

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import runpy
 from pathlib import Path
@@ -20,6 +19,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _path_portability = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.path_portability_lib")
 
 
@@ -375,7 +375,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target-tag", required=True, help="Release tag the audit narrative must reference")
     parser.add_argument("--artifact-path", type=Path, help="Path to the release audit artifact (defaults to adapter output_dir/latest.md)")
     parser.add_argument("--notes-file", type=Path, help="Path to the public release notes file to audit")
-    parser.add_argument("--json", action="store_true", help="Emit the full narrative-audit payload as JSON")
     return parser.parse_args()
 
 
@@ -388,12 +387,9 @@ def main() -> int:
         artifact_path=args.artifact_path.resolve() if args.artifact_path else None,
         notes_file=args.notes_file.resolve() if args.notes_file else None,
     )
-    if args.json or payload["status"] == "passed":
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print("public release narrative audit blocked:")
-        for blocker in payload["blockers"]:
-            print(f"- {blocker}")
+    # Unconditional YAML. The former blocked-path text was a `status: blocked`
+    # header over the `blockers` list, both of which the payload already carries.
+    yaml_output.emit_yaml(payload)
     return 0 if payload["status"] == "passed" else 1
 
 

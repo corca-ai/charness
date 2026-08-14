@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script, require_repo_local_helper
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _register = import_repo_module(__file__, "scripts.contract_register_lib")
@@ -101,7 +102,9 @@ def main(argv: list[str] | None = None) -> int:
         rationale=args.rationale,
         displacement_unit_ids=args.displacement_unit_id,
     )
-    print(json.dumps(proposal, ensure_ascii=False, sort_keys=True))
+    # Receipt only; `append_proposal` already persisted the proposal into the
+    # JSON contract register.
+    emit_yaml(proposal)
     return 0
 
 

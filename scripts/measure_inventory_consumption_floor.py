@@ -52,6 +52,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import inventory_measurement_lib as corpus_lib  # noqa: E402
 import validate_inventory_consumption as gate  # noqa: E402
 
+from yaml_output import emit_yaml  # noqa: E402
+
 DEFAULT_CORPUS = corpus_lib.DEFAULT_CORPUS
 
 
@@ -174,24 +176,7 @@ def main() -> int:
         return 2
 
     report = scan(repo_root, corpus, fields_path, args.floor)
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(
-            f"{report['artifacts']} artifact(s) under {report['corpus']}; "
-            f"engagement floor {report['floor']} chars."
-        )
-        print(f"  exemption states: {report['exemption_counts']}")
-        print(f"  label-value residuals: {report['label_value_residuals']}")
-        print(f"  field-mention residuals: {report['field_mention_residuals']}")
-        lowered = report["citations_lowered_below_requirement"]
-        print(f"  citations the floor drops below their requirement: {len(lowered)}")
-        for entry in lowered:
-            print(
-                f"    {entry['path']} :: {entry['inventory']} "
-                f"{entry['engaged_presence_only']}->{entry['engaged_with_a_value']} "
-                f"(needs {entry['required']}); lost {entry['lost_to_the_floor']}"
-            )
+    emit_yaml(report)
     return 1 if (
         report["citations_lowered_below_requirement"]
         or report["exemption_counts"]["REFUSED-uncorroborated"]

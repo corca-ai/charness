@@ -11,7 +11,6 @@ broken by ``rule_id`` alphabetical order for determinism.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import subprocess
 import sys
@@ -19,6 +18,7 @@ from pathlib import Path
 from typing import Iterable
 
 from runtime_bootstrap import repo_root_from_script
+from yaml_output import emit_yaml
 
 CONFIDENCE_RANK = {"low": 1, "medium": 2, "high": 3}
 
@@ -318,7 +318,7 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     result = classify_t_signal(repo_root, head_sha=args.head_sha)
-    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(result)
     return 0
 
 

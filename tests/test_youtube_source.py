@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "skills" / "support" / "web-fetch" / "scripts"))
 import acquire_public_url  # noqa: E402
@@ -173,7 +175,7 @@ def test_acquire_youtube_transcript_from_ytdlp_subtitles(tmp_path: Path) -> None
         env=_fake_ytdlp(tmp_path, json.dumps(info)),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert payload["source_identity"] == "youtube-transcript"
     assert payload["selected_attempt"]["details"]["transcript_language"] == "en"
@@ -308,7 +310,7 @@ def test_gather_youtube_metadata_only_writes_partial_record(tmp_path: Path) -> N
         env=_fake_ytdlp(tmp_path, json.dumps(info)),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["acquisition_disposition"] == "success"
     assert payload["final_status"] == "metadata-only"
     assert payload["source_identity"] == "youtube-metadata-only"
@@ -333,7 +335,7 @@ def test_acquire_youtube_browser_ui_transcript_after_ytdlp_metadata_only(tmp_pat
         env=_fake_ytdlp_and_browser(tmp_path, json.dumps({"id": "abc123", "title": "Metadata Only"})),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert payload["source_identity"] == "youtube-transcript-browser-ui"
     assert payload["selected_attempt"]["stage_id"] == "youtube-browser-transcript-ui"
@@ -354,7 +356,7 @@ def test_acquire_youtube_browser_ui_transcript_after_weak_direct_success(tmp_pat
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["attempts"][0]["status"] == "success"
     assert payload["attempts"][0]["confidence"] == "weak"
     assert payload["source_identity"] == "youtube-transcript-browser-ui"
@@ -372,7 +374,7 @@ def test_acquire_youtube_captcha_not_masked_by_browser_metadata_only(tmp_path: P
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "blocked"
     assert payload["source_identity"] == "youtube-blocked"
     ui_attempt = next(a for a in payload["attempts"] if a["stage_id"] == "youtube-browser-transcript-ui")
@@ -568,7 +570,7 @@ def test_youtube_browser_ui_stage_runs_cleanup_then_assert(tmp_path: Path) -> No
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["selected_attempt"]["stage_id"] == "youtube-browser-transcript-ui"
     assert payload["disposition"] == "success"
     guard_calls = guard_log.read_text(encoding="utf-8").splitlines()
@@ -593,7 +595,7 @@ def test_youtube_browser_ui_stage_degrades_when_cleanup_fails(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "degraded"
     ui_attempt = next(a for a in payload["attempts"] if a["stage_id"] == "youtube-browser-transcript-ui")
     assert ui_attempt["status"] == "error"
@@ -616,7 +618,7 @@ def test_acquire_youtube_identity_follows_selected_attempt(tmp_path: Path) -> No
         env=_fake_ytdlp(tmp_path, json.dumps(info)),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["selected_attempt"]["stage_id"] == "direct-public-fetch"
     assert payload["selected_attempt"]["confidence"] == "strong"
     assert payload["source_identity"] == "youtube-unavailable"
@@ -639,7 +641,7 @@ def test_gather_youtube_blocked_writes_honest_record(tmp_path: Path) -> None:
         env=_fake_ytdlp(tmp_path, "ERROR: Sign in to confirm you are not a bot", exit_code=1),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["acquisition_disposition"] == "blocked"
     assert payload["final_status"] == "captcha"
     assert payload["source_identity"] == "youtube-blocked"
@@ -667,7 +669,7 @@ def test_gather_youtube_missing_ytdlp_writes_unavailable_record(tmp_path: Path) 
         env={**os.environ, "PATH": str(tmp_path / "empty-bin")},
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["acquisition_disposition"] == "degraded"
     assert payload["final_status"] == "error"
     assert payload["source_identity"] == "youtube-unavailable"

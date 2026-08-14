@@ -83,13 +83,24 @@ def validate_resolver(path: Path, root: Path) -> None:
     )
     if completed.returncode != 0:
         raise ValidationError(f"{path}: exited with code {completed.returncode}: {completed.stderr.strip()}")
+    # PyYAML stays OPTIONAL here, mirroring the producer. `yaml_output.render_yaml`
+    # falls back to compact JSON when PyYAML is absent, so on such an interpreter the
+    # resolver emits JSON and `json.loads` reads it. The migration's first cut hoisted
+    # `import yaml` to module scope, which turned this gate from degrades-to-no-gate
+    # into dies-at-import on exactly those interpreters.
     try:
-        data = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise ValidationError(f"{path}: did not emit valid JSON") from exc
+        import yaml
+    except ImportError:
+        parse, parse_error = json.loads, json.JSONDecodeError
+    else:
+        parse, parse_error = yaml.safe_load, yaml.YAMLError
+    try:
+        data = parse(completed.stdout)
+    except parse_error as exc:
+        raise ValidationError(f"{path}: did not emit a readable payload") from exc
 
     if not isinstance(data, dict):
-        raise ValidationError(f"{path}: JSON output must be an object")
+        raise ValidationError(f"{path}: payload output must be a mapping")
     if data.get("valid") is not True:
         raise ValidationError(f"{path}: expected `valid=true`, got {data.get('valid')!r}")
 
@@ -243,6 +254,8 @@ def validate_adapter_integration_schema(path: Path) -> None:
         import jsonschema
         import yaml
     except ImportError:
+        # Same degrade-to-no-gate contract both dependencies always had: an
+        # interpreter without them renders no verdict rather than crashing.
         return
     try:
         schema = json.loads(schema_path.read_text(encoding="utf-8"))

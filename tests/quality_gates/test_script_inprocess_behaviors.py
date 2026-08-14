@@ -4,6 +4,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 from scripts import capability_catalog as CAPABILITY_CATALOG
 from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES, synthesize_operator_acceptance
 from scripts.validate_quality_closeout_contract import validate_quality_closeout_contract
@@ -45,7 +47,7 @@ def test_release_current_release_reports_packaging_version(monkeypatch, capsys) 
 
     monkeypatch.setattr(sys, "argv", ["current_release.py", "--repo-root", str(ROOT)])
     CURRENT_RELEASE.main()
-    cli_payload = json.loads(capsys.readouterr().out)
+    cli_payload = yaml.safe_load(capsys.readouterr().out)
     assert cli_payload["package_id"] == "charness"
     assert cli_payload["surface_versions"]["packaging_manifest"] == expected
 
@@ -146,11 +148,10 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
             "synthesize_operator_acceptance.py",
             "--repo-root",
             str(repo),
-            "--json",
         ],
     )
     SYNTHESIZE_OPERATOR_ACCEPTANCE.main()
-    cli_payload = json.loads(capsys.readouterr().out)
+    cli_payload = yaml.safe_load(capsys.readouterr().out)
     assert cli_payload["acceptance_buckets"]["cheap_first"][0]["commands"] == "./scripts/run-quality.sh"
     assert "## Environment Prerequisites" in cli_payload["markdown"]
 
@@ -224,7 +225,9 @@ def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path, monk
 
     monkeypatch.setattr(sys, "argv", ["survey_verification.py", "--repo-root", str(repo)])
     SURVEY_VERIFICATION.main()
-    payload = json.loads(capsys.readouterr().out)
+    # `survey_verification.py` emits YAML since the `--json` removal. YAML is a JSON
+    # superset, so this also reads the compact-JSON fallback used without PyYAML.
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["missing_tools"] == ["skill:agent-browser"]
     assert payload["missing_ui_tools"] == ["skill:agent-browser"]
     assert payload["tool_checks"][1]["warning"].startswith("Broken skill symlink:")

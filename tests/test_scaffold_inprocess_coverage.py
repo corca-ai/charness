@@ -25,12 +25,12 @@ from __future__ import annotations
 import importlib.util
 import inspect
 import io
-import json
 import os
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -81,19 +81,19 @@ def _call_validator(module, repo_root: Path) -> str:
 
 
 @pytest.mark.parametrize("slug", SCAFFOLDS)
-def test_scaffold_main_emits_json_payload_in_process(slug: str, tmp_path: Path, monkeypatch) -> None:
+def test_scaffold_main_emits_yaml_payload_in_process(slug: str, tmp_path: Path, monkeypatch) -> None:
     module = _load_scaffold(slug)
     repo = tmp_path / "consumer"
     repo.mkdir()
 
     # main() has a single output path: it always emits the full structured
-    # payload as JSON (the run reads `template` plus the sibling contract fields).
+    # payload as YAML (the run reads `template` plus the sibling contract fields).
     # There is no flag and no bare rendered-template branch to cover.
     monkeypatch.setattr(sys, "argv", ["scaffold", "--repo-root", str(repo)])
     out = io.StringIO()
     monkeypatch.setattr(sys, "stdout", out)
     assert module.main() == 0
-    payload = json.loads(out.getvalue())
+    payload = yaml.safe_load(out.getvalue())
     assert payload["template"].startswith("# "), payload["template"][:40]
     assert "validator_command" in payload
 

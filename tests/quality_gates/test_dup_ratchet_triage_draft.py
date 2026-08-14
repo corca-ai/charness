@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -25,18 +26,19 @@ def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
         assert fragment in option_block, f"missing help for {option}: {fragment}"
 
 
-def test_triage_help_describes_repo_root_and_json(capsys) -> None:
+def test_triage_help_describes_repo_root_and_offers_no_json(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
         triage.parse_args(["--help"])
 
     assert excinfo.value.code == 0
+    output = capsys.readouterr().out
     _assert_help_pairs(
-        capsys.readouterr().out,
-        {
-            "--repo-root": "Repository root used to locate ratchet and inventory inputs.",
-            "--json": "Emit the triage packet as JSON.",
-        },
+        output,
+        {"--repo-root": "Repository root used to locate ratchet and inventory inputs."},
     )
+    # Output is unconditionally YAML now; offering `--json` in the help would send
+    # the operator to a flag the parser rejects with exit 2.
+    assert "--json" not in output
 
 
 def test_build_report_suggests_extract_for_same_file_family() -> None:
@@ -236,10 +238,10 @@ def test_adapter_copy_branch_refuses_an_undeclared_member_count() -> None:
     assert "does not say how many members" in reason
 
 
-def test_main_human_output_carries_the_refusal_to_the_reader(monkeypatch, capsys) -> None:
-    # `--json` is the machine channel; the DEFAULT channel is this human rendering, and a
-    # refusal that only reaches the JSON reader leaves the operator's terminal showing
-    # "0 family(ies)" — an unestablished scope rendered as an evaluated empty one.
+def test_main_output_carries_the_refusal_to_the_reader(monkeypatch, capsys) -> None:
+    # There is one output channel now, so the refusal has to ride on the emitted
+    # payload itself: a packet showing `family_count: 0` with no refusal field renders
+    # an unestablished scope as an evaluated empty one.
     monkeypatch.setattr(
         triage,
         "run",
@@ -253,9 +255,10 @@ def test_main_human_output_carries_the_refusal_to_the_reader(monkeypatch, capsys
 
     assert triage.main(["--repo-root", "."]) == 1
 
-    out = capsys.readouterr().out
-    assert "dup-ratchet triage: 0 family(ies)" in out
-    assert "REFUSED: ratchet report is DEGRADED: baseline unreadable" in out
+    emitted = yaml.safe_load(capsys.readouterr().out)
+    assert emitted["ok"] is False
+    assert emitted["family_count"] == 0
+    assert emitted["unestablished_reason"] == "ratchet report is DEGRADED: baseline unreadable"
 
 
 def test_build_report_reports_inventory_misses() -> None:

@@ -9,14 +9,16 @@ broad suite.
 """
 from __future__ import annotations
 
-import json
 import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
+from yaml_output import render_yaml
 
 DEFAULT_GATE_RUNTIME_BUDGET_SECONDS = 120.0
 DEFAULT_OVERSLICE_ARTIFACT_RUN = 3
@@ -38,7 +40,13 @@ def advise_prose_pin(repo_root: Path, changed_paths: list[str]) -> None:
     lib = import_repo_module(__file__, "scripts.check_prose_pin")
     report = lib.build_report(repo_root, paths=None, test_roots=[repo_root / "tests"])
     if report["status"] == "findings":
-        print(lib.format_human(report), file=sys.stderr)
+        # `report_payload`, NOT the retired `format_human`. The 2026-08-14 --json
+        # removal deleted that renderer, and this call site kept naming it -- so the
+        # advisory raised AttributeError on exactly the runs where it had a finding
+        # to report, and was silent (correctly returning early) on the runs where it
+        # had nothing to say. A crash reachable only when the check fires is a check
+        # that never fires.
+        print(render_yaml(lib.report_payload(report)), end="", file=sys.stderr)
 
 
 def _added_vs_base(repo_root: Path, paths: list[str], base: str = "origin/main") -> list[str]:
@@ -525,7 +533,7 @@ def advise_repair_parity(repo_root: Path, changed_paths: list[str]) -> None:
     if not harness.is_file():
         return
     proc = subprocess.run(
-        [sys.executable, str(harness), "--repo-root", str(repo_root), "--against", "review-snapshot", "--json"],
+        [sys.executable, str(harness), "--repo-root", str(repo_root), "--against", "review-snapshot"],
         check=False,
         capture_output=True,
         text=True,
@@ -533,8 +541,12 @@ def advise_repair_parity(repo_root: Path, changed_paths: list[str]) -> None:
     if proc.returncode != 0:
         return
     try:
-        report = json.loads(proc.stdout)
-    except json.JSONDecodeError:
+        report = yaml.safe_load(proc.stdout)
+    except yaml.YAMLError:
+        return
+    if not isinstance(report, dict):
+        # `yaml.safe_load` returns a scalar where `json.loads` raised, so the
+        # mapping check keeps unreadable stdout silent rather than an AttributeError.
         return
     repaired = report.get("files") or {}
     uncomparable = report.get("uncomparable") or {}
@@ -560,9 +572,9 @@ def advise_repair_parity(repo_root: Path, changed_paths: list[str]) -> None:
         if uncomparable
         else ""
     )
-    # stderr, like every sibling advisory: `run_slice_closeout.py --json` writes its
-    # payload to stdout, so an advisory printed there makes the documented
-    # `json.loads(result.stdout)` raise.
+    # stderr, like every sibling advisory: `run_slice_closeout.py` writes its
+    # payload to stdout, so an advisory printed there corrupts the documented
+    # `yaml.safe_load(result.stdout)` read.
     print(
         f"ADVISORY: {report.get('repair_count', 0)} function(s) were REPAIRED after a bounded reviewer "
         f"read them (same signature, changed body) — {rendered}.{unexamined} State the INTENDED delta "

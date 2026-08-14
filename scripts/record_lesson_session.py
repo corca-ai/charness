@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script, require_repo_local_helper
+from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
@@ -96,17 +97,14 @@ def main() -> int:
     parser.add_argument("--seed", required=True)
     args = parser.parse_args()
     root = args.repo_root.resolve()
-    print(
-        json.dumps(
-            append_session(
-                repo_root=root,
-                output_dir=root / "charness-artifacts/retro",
-                summary_path=root / "charness-artifacts/retro/recent-lessons.md",
-                session_id=args.session_id,
-                seed=args.seed,
-            ),
-            ensure_ascii=False,
-            sort_keys=True,
+    # Receipt only; `append_session` already persisted the event in the JSON ledger.
+    emit_yaml(
+        append_session(
+            repo_root=root,
+            output_dir=root / "charness-artifacts/retro",
+            summary_path=root / "charness-artifacts/retro/recent-lessons.md",
+            session_id=args.session_id,
+            seed=args.seed,
         )
     )
     return 0

@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -26,6 +24,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
 role_recommendation_payload = _scripts_tool_recommendation_lib_module.role_recommendation_payload
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 
 
 def main() -> None:
@@ -42,7 +41,7 @@ def main() -> None:
         next_skill_id=args.next_skill_id,
         include_ready=args.include_ready,
     )
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    _summary_output.emit_yaml(payload)
 
 
 if __name__ == "__main__":

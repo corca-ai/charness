@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "handoff-snapshot-2026-05-28.md"
@@ -252,7 +253,7 @@ def test_cli_emits_valid_packet_from_merge_proposal_stdin(tmp_path, lib, merge_p
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    packet = json.loads(result.stdout)
+    packet = yaml.safe_load(result.stdout)
     assert packet["version"] == lib.RANKER_PACKET_VERSION
     assert packet["ranker_prompt"] == lib.RANKER_PROMPT
     assert "ranked_chunks" in packet["response_schema"]["properties"]

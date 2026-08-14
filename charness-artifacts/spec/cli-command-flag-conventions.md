@@ -24,7 +24,8 @@ Canonical rules:
 - `-v` is reserved for `verbose`, never for `version`
 - `-h` / `--help` are no-side-effect probes on the top level and stable public
   subcommands
-- `--json` means machine-readable output, not "more detailed human prose"
+- structured output is unconditional YAML; there is no output-format flag.
+  `--summary` / `--detail` select payload DEPTH, never format
 - destructive confirmations prefer explicit long flags over short aliases
 
 Canonical lifecycle verbs:
@@ -39,6 +40,31 @@ Canonical lifecycle verbs:
 These are defaults, not mandatory vocabulary for every CLI. A repo can diverge
 when the product surface genuinely differs, but that divergence should be
 explicit and documented.
+
+## Amendment 2026-08-14 — `--json` is retired
+
+The rule above read "`--json` means machine-readable output, not 'more detailed
+human prose'" until this date. That line outlived the migration it described:
+the July 2026 YAML migration moved the root CLI and the public skill helpers to
+YAML, deliberately leaving `--json` declared as a hidden compatibility parser
+(see `charness-artifacts/debug/2026-07-18-residual-json-flags-after-yaml-migration.md`).
+A blessing sentence for a flag that was already scheduled to die is what later
+made ~95 surviving declarations read as intentional rather than as residue.
+
+Owner decision: total removal, including backward compatibility. Repo-owned
+command output is now unconditionally YAML through `scripts/yaml_output.py`.
+
+- No `--json` flag, no hidden alias, no compatibility parser.
+- `--summary` / `--detail` remain, and select payload DEPTH, never format.
+- Third-party native JSON (`gh`, `git`, `npm`, `pnpm`, `cautilus`, `cosmic-ray`)
+  is NOT this contract's surface and keeps its own flags and parsers.
+- Persisted `.json` artifacts are a storage format, not an output format, and
+  are untouched.
+
+Migration cost a consumer inherits: any `json.loads` of a repo command's stdout
+breaks and must become `yaml.safe_load`. A YAML reader needs no change, because
+`render_yaml` already fell back to JSON syntax — which is valid YAML — whenever
+PyYAML was absent.
 
 ## Current Slice
 

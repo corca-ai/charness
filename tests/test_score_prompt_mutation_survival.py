@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -815,7 +816,7 @@ def test_cli_json_and_markdown_end_to_end(tmp_path: Path, capsys: pytest.Capture
     ]
     rc = cli.main(argv)
     assert rc == 0
-    out = json.loads(capsys.readouterr().out)
+    out = yaml.safe_load(capsys.readouterr().out)
     assert out["experiment_valid"] is True
 
     rc = cli.main([*argv, "--markdown"])

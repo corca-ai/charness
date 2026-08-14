@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import apply_contract_transition as transition_writer
 from scripts import contract_register_lib as register
@@ -208,9 +209,9 @@ def test_citation_and_retention_main_success_paths(tmp_path: Path, capsys: pytes
         "--repo-root", str(tmp_path), "--event-id", "cite-main", "--source-retro",
         "charness-artifacts/retro/source.md", "--unit-id", unit_id, "--anchor", "Waste",
     ]) == 0
-    assert json.loads(capsys.readouterr().out)["event_id"] == "cite-main"
+    assert yaml.safe_load(capsys.readouterr().out)["event_id"] == "cite-main"
     assert retention_review.main(["--repo-root", str(tmp_path)]) == 0
-    assert json.loads(capsys.readouterr().out)["verdict"] == "non-authorizing-evidence-only"
+    assert yaml.safe_load(capsys.readouterr().out)["verdict"] == "non-authorizing-evidence-only"
 
 
 @pytest.mark.parametrize(

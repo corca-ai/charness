@@ -9,6 +9,7 @@ from pathlib import Path
 
 import jsonschema
 import pytest
+import yaml
 
 from scripts import record_usage_feedback
 from scripts.usage_episode_feedback import (
@@ -120,25 +121,39 @@ def test_feedback_writer_dry_run_execute_replay_and_privacy(tmp_path: Path) -> N
     write_records(tmp_path, [acme_episode()])
     args = (
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
-        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001",
     )
     preview = run(WRITER, *args)
     assert preview.returncode == 0, preview.stderr
-    assert json.loads(preview.stdout)["status"] == "dry_run"
+    assert yaml.safe_load(preview.stdout)["status"] == "dry_run"
     records_path = tmp_path / ".charness" / "usage-episodes" / "usage_episode.jsonl"
     assert len(records_path.read_text(encoding="utf-8").splitlines()) == 1
 
-    appended = run(WRITER, *args[:-1], "--execute", "--json")
+    appended = run(WRITER, *args, "--execute")
     assert appended.returncode == 0, appended.stderr
-    assert json.loads(appended.stdout)["status"] == "appended"
-    replay = run(WRITER, *args[:-1], "--execute", "--json")
+    assert yaml.safe_load(appended.stdout)["status"] == "appended"
+    replay = run(WRITER, *args, "--execute")
     assert replay.returncode == 0, replay.stderr
-    assert json.loads(replay.stdout)["status"] == "replay_noop"
+    assert yaml.safe_load(replay.stdout)["status"] == "replay_noop"
     assert len(records_path.read_text(encoding="utf-8").splitlines()) == 2
 
-    unsafe = run(WRITER, *args[:-1], "--evidence-ref", "operator said accepted", "--json")
+    unsafe = run(WRITER, *args, "--evidence-ref", "operator said accepted")
     assert unsafe.returncode == 2
-    assert json.loads(unsafe.stdout)["status"] == "invalid_feedback"
+    assert yaml.safe_load(unsafe.stdout)["status"] == "invalid_feedback"
+
+
+def test_usage_episode_commands_reject_the_retired_json_flag(tmp_path: Path) -> None:
+    """Output is unconditionally YAML now; `--json` is no longer a flag at all."""
+
+    writer_required = (
+        "--product-id", "acme", "--target-episode-id", "acme-episode-001",
+        "--feedback-signal", "accepted", "--source-kind", "operator",
+        "--evidence-kind", "review", "--evidence-ref", "review-001",
+    )
+    for script, extra in ((WRITER, writer_required), (REPORTER, ()), (VALIDATOR, ())):
+        result = run(script, "--repo-root", str(tmp_path), *extra, "--json")
+        assert result.returncode == 2, script
+        assert "unrecognized arguments: --json" in result.stderr, script
 
 
 def test_feedback_writer_serializes_concurrent_execute_replay_and_validates_stream(tmp_path: Path) -> None:
@@ -150,7 +165,7 @@ def test_feedback_writer_serializes_concurrent_execute_replay_and_validates_stre
     args = [
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
         "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review",
-        "--evidence-ref", "concurrent-review-001", "--execute", "--json",
+        "--evidence-ref", "concurrent-review-001", "--execute",
     ]
     child_env = os.environ.copy()
     child_env.pop("CHARNESS_QUALITY_MODE", None)
@@ -175,10 +190,10 @@ def test_feedback_writer_serializes_concurrent_execute_replay_and_validates_stre
         assert all(child.poll() is None for child in children)
 
     results = [child.communicate(timeout=10) for child in children]
-    statuses = [json.loads(stdout)["status"] for stdout, _stderr in results]
+    statuses = [yaml.safe_load(stdout)["status"] for stdout, _stderr in results]
     assert sorted(statuses) == ["appended", "replay_noop"]
     assert len(records_path.read_text(encoding="utf-8").splitlines()) == 2
-    validated = run(VALIDATOR, "--repo-root", str(tmp_path), "--json")
+    validated = run(VALIDATOR, "--repo-root", str(tmp_path))
     assert validated.returncode == 0, validated.stderr
 
 
@@ -368,11 +383,10 @@ def test_run_feedback_transaction_reports_lock_error_payload(
         record=feedback_record(),
         feedback_id="feedback-001",
         execute=True,
-        as_json=True,
     )
 
     assert result == 2
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload == {
         "errors": ["lock went away"],
         "executed": False,
@@ -387,13 +401,13 @@ def test_plugin_feedback_writer_smoke(tmp_path: Path) -> None:
     result = run(
         PLUGIN_WRITER,
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
-        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--execute", "--json",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--execute",
     )
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["status"] == "appended"
-    report = run(PLUGIN_REPORTER, "--repo-root", str(tmp_path), "--json")
+    assert yaml.safe_load(result.stdout)["status"] == "appended"
+    report = run(PLUGIN_REPORTER, "--repo-root", str(tmp_path))
     assert report.returncode == 0, report.stderr
-    payload = json.loads(report.stdout)
+    payload = yaml.safe_load(report.stdout)
     assert payload["delivery_episode_count"] == 1
     assert payload["feedback_event_count"] == 1
     assert payload["product_evidence"]["feedback_coverage_rate"] == 1.0
@@ -404,82 +418,84 @@ def test_feedback_writer_rejects_missing_target_disabled_event_and_quality_mode(
     write_adapter(tmp_path)
     base = (
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "missing",
-        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001",
     )
     missing = run(WRITER, *base)
     assert missing.returncode == 2
-    assert "unlinked target_episode_id" in json.loads(missing.stdout)["errors"][0]
+    assert "unlinked target_episode_id" in yaml.safe_load(missing.stdout)["errors"][0]
 
     write_adapter(tmp_path, events="  - usage_episode\n")
     disabled = run(WRITER, *base)
     assert disabled.returncode == 2
-    assert json.loads(disabled.stdout)["status"] == "disabled"
+    assert yaml.safe_load(disabled.stdout)["status"] == "disabled"
 
     write_adapter(tmp_path)
     write_records(tmp_path, [acme_episode()])
     quality_args = (
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
-        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001",
     )
     quality_env = {"CHARNESS_QUALITY_MODE": "read-only"}
     preview = run(WRITER, *quality_args, env=quality_env)
     assert preview.returncode == 0
-    assert json.loads(preview.stdout)["status"] == "dry_run"
-    quality = run(WRITER, *quality_args[:-1], "--execute", "--json", env=quality_env)
+    assert yaml.safe_load(preview.stdout)["status"] == "dry_run"
+    quality = run(WRITER, *quality_args, "--execute", env=quality_env)
     assert quality.returncode == 2
-    assert json.loads(quality.stdout)["status"] == "readonly_quality_run"
+    assert yaml.safe_load(quality.stdout)["status"] == "readonly_quality_run"
     assert len((tmp_path / ".charness" / "usage-episodes" / "usage_episode.jsonl").read_text(encoding="utf-8").splitlines()) == 1
 
-    incompatible = run(WRITER, *base[:-1], "--source-kind", "issue_lifecycle", "--json")
+    incompatible = run(WRITER, *base, "--source-kind", "issue_lifecycle")
     assert incompatible.returncode == 2
-    assert json.loads(incompatible.stdout)["status"] == "invalid_feedback"
+    assert yaml.safe_load(incompatible.stdout)["status"] == "invalid_feedback"
 
 
-def test_feedback_writer_renders_plain_errors_and_portable_fallback(
+def test_feedback_writer_emits_errors_and_portable_fallback(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     outside = tmp_path.parent / "outside-feedback.jsonl"
     assert record_usage_feedback._portable_path(tmp_path, outside) == str(outside)
 
-    record_usage_feedback._print(
+    # The retired prose renderer printed "<status>: feedback_id=<none>" plus a
+    # "- <error>" line per error.  Both were projections of payload keys, so the
+    # same information is now asserted on the emitted YAML document.
+    record_usage_feedback.emit_yaml(
         {"status": "no_adapter", "executed": False, "errors": ["adapter required"]},
-        False,
     )
-    output = capsys.readouterr().out
-    assert "no_adapter: feedback_id=<none>" in output
-    assert "- adapter required" in output
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "no_adapter"
+    assert payload["executed"] is False
+    assert "feedback_id" not in payload
+    assert payload["errors"] == ["adapter required"]
 
 
 def test_feedback_writer_adapter_error_and_relative_path_branches(tmp_path: Path) -> None:
     args = (
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
-        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001",
     )
     missing = run(WRITER, *args)
     assert missing.returncode == 2
-    assert json.loads(missing.stdout)["status"] == "no_adapter"
-
-    plain_missing = run(WRITER, *args[:-1])
-    assert plain_missing.returncode == 2
-    assert "no_adapter: feedback_id=<none>" in plain_missing.stdout
-    assert "usage-episodes adapter is required" in plain_missing.stdout
+    missing_payload = yaml.safe_load(missing.stdout)
+    assert missing_payload["status"] == "no_adapter"
+    assert "feedback_id" not in missing_payload
+    assert "usage-episodes adapter is required" in missing_payload["errors"]
 
     adapter_path = write_adapter(tmp_path)
     write_records(tmp_path, [acme_episode()])
-    relative = run(WRITER, *args[:-1], "--adapter-path", ".agents/usage-episodes-adapter.yaml", "--json")
+    relative = run(WRITER, *args, "--adapter-path", ".agents/usage-episodes-adapter.yaml")
     assert relative.returncode == 0, relative.stderr
-    assert json.loads(relative.stdout)["status"] == "dry_run"
+    assert yaml.safe_load(relative.stdout)["status"] == "dry_run"
 
     adapter_path.write_text("- not-a-mapping\n", encoding="utf-8")
     wrong_shape = run(WRITER, *args)
     assert wrong_shape.returncode == 2
-    assert "must be a mapping" in json.loads(wrong_shape.stdout)["errors"][0]
+    assert "must be a mapping" in yaml.safe_load(wrong_shape.stdout)["errors"][0]
 
     adapter_path.write_text("version: [\n", encoding="utf-8")
     malformed = run(WRITER, *args)
     assert malformed.returncode == 2
-    assert json.loads(malformed.stdout)["status"] == "invalid_adapter"
+    assert yaml.safe_load(malformed.stdout)["status"] == "invalid_adapter"
 
 
 def test_feedback_writer_rejects_symlinked_storage_escape(tmp_path: Path) -> None:
@@ -494,10 +510,10 @@ def test_feedback_writer_rejects_symlinked_storage_escape(tmp_path: Path) -> Non
     result = run(
         WRITER,
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
-        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001",
     )
     assert result.returncode == 2
-    assert json.loads(result.stdout)["status"] == "invalid_records_path"
+    assert yaml.safe_load(result.stdout)["status"] == "invalid_records_path"
 
 
 def test_feedback_writer_rejects_conflicting_existing_feedback_id(tmp_path: Path) -> None:
@@ -508,10 +524,10 @@ def test_feedback_writer_rejects_conflicting_existing_feedback_id(tmp_path: Path
     result = run(
         WRITER,
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
-        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--json",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001",
     )
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "conflicting_feedback_id"
     assert any("non-deterministic feedback_id" in error for error in payload["errors"])
 
@@ -525,11 +541,11 @@ def test_feedback_writer_rejects_schema_invalid_existing_stream_without_mutating
     result = run(
         WRITER,
         "--repo-root", str(tmp_path), "--product-id", "acme", "--target-episode-id", "acme-episode-001",
-        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--execute", "--json",
+        "--feedback-signal", "accepted", "--source-kind", "operator", "--evidence-kind", "review", "--evidence-ref", "review-001", "--execute",
     )
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "invalid_feedback"
     assert any("schema error" in error for error in payload["errors"])
     assert records_path.read_bytes() == original
@@ -540,21 +556,21 @@ def test_validator_rejects_unlinked_and_duplicate_feedback_ids(tmp_path: Path) -
     base = acme_episode()
     unlinked = feedback_record(target_episode_id="missing")
     write_records(tmp_path, [base, unlinked])
-    result = run(VALIDATOR, "--repo-root", str(tmp_path), "--json")
+    result = run(VALIDATOR, "--repo-root", str(tmp_path))
     assert result.returncode == 1
-    assert "unlinked target_episode_id" in json.loads(result.stdout)["errors"][0]
+    assert "unlinked target_episode_id" in yaml.safe_load(result.stdout)["errors"][0]
 
     linked = feedback_record()
     write_records(tmp_path, [base, linked, dict(linked)])
-    duplicate = run(VALIDATOR, "--repo-root", str(tmp_path), "--json")
+    duplicate = run(VALIDATOR, "--repo-root", str(tmp_path))
     assert duplicate.returncode == 1
-    assert "duplicate feedback_id" in json.loads(duplicate.stdout)["errors"][0]
+    assert "duplicate feedback_id" in yaml.safe_load(duplicate.stdout)["errors"][0]
 
     mismatched = feedback_record(feedback_id="feedback-" + "0" * 64)
     write_records(tmp_path, [base, mismatched])
-    deterministic = run(VALIDATOR, "--repo-root", str(tmp_path), "--json")
+    deterministic = run(VALIDATOR, "--repo-root", str(tmp_path))
     assert deterministic.returncode == 1
-    assert "non-deterministic feedback_id" in json.loads(deterministic.stdout)["errors"][0]
+    assert "non-deterministic feedback_id" in yaml.safe_load(deterministic.stdout)["errors"][0]
 
 
 def test_shared_record_reader_returns_records_and_semantic_errors(tmp_path: Path) -> None:
@@ -622,9 +638,9 @@ def test_report_reconciles_one_delivery_and_one_feedback_event(tmp_path: Path) -
     delivery = acme_episode()
     delivery.pop("feedback_signal")
     write_records(tmp_path, [delivery, feedback_record()])
-    result = run(REPORTER, "--repo-root", str(tmp_path), "--json")
+    result = run(REPORTER, "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["delivery_episode_count"] == 1
     assert payload["feedback_event_count"] == 1
     assert payload["product_evidence"]["feedback_coverage_rate"] == 1.0
@@ -666,9 +682,9 @@ def test_report_rejects_semantically_invalid_feedback(
 ) -> None:
     write_adapter(tmp_path)
     write_records(tmp_path, [acme_episode(), *feedback_rows])
-    result = run(REPORTER, "--repo-root", str(tmp_path), "--json")
+    result = run(REPORTER, "--repo-root", str(tmp_path))
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "invalid_records"
     assert any(error_text in error for error in payload["errors"])
     assert "product_evidence" not in payload
@@ -700,9 +716,9 @@ def test_objective_lifecycle_signal_is_not_satisfaction_but_keeps_coverage(tmp_p
     )
     write_records(tmp_path, [delivery, lifecycle])
 
-    result = run(REPORTER, "--repo-root", str(tmp_path), "--json")
+    result = run(REPORTER, "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stderr
-    evidence = json.loads(result.stdout)["product_evidence"]
+    evidence = yaml.safe_load(result.stdout)["product_evidence"]
     assert evidence["feedback_coverage_count"] == 1
     assert evidence["feedback_coverage_rate"] == 1.0
     assert evidence["satisfaction_signal_count"] == 0

@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from scripts import validate_surfaces
 from scripts.surfaces_lib import SurfaceError, load_surfaces
 
@@ -37,10 +39,9 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
         str(ROOT),
         "--paths",
         "README.md",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
     assert "checked-in-plugin-export" in surface_ids
     assert "repo-markdown" in surface_ids
@@ -58,10 +59,9 @@ def _verify_commands_for(*paths: str) -> list[str]:
         str(ROOT),
         "--paths",
         *paths,
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)["verify_commands"]
+    return yaml.safe_load(result.stdout)["verify_commands"]
 
 
 _GITIGNORE_SCAN = (
@@ -114,10 +114,9 @@ def test_sloc_inventory_refresh_is_sync_obligation_not_verify() -> None:
         str(ROOT),
         "--paths",
         "charness-artifacts/quality/sloc-inventory/latest.json",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "quality-inventory-artifacts" in {
         surface["surface_id"] for surface in payload["matched_surfaces"]
     }
@@ -160,10 +159,9 @@ def test_repo_python_surface_matches_top_level_scripts() -> None:
         str(ROOT),
         "--paths",
         "scripts/run_slice_closeout.py",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "repo-python" in {surface["surface_id"] for surface in payload["matched_surfaces"]}
     verify = payload["verify_commands"]
     assert _BOUNDARY_RATCHET in verify
@@ -196,10 +194,9 @@ def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> 
         str(ROOT),
         "--paths",
         "charness-artifacts/setup/latest.md",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
     assert "repo-markdown" in surface_ids
     assert payload["unmatched_paths"] == []
@@ -213,10 +210,9 @@ def test_retro_prepare_packet_pair_matches_retro_surface() -> None:
         "--paths",
         "charness-artifacts/retro/demo-packet.json",
         "charness-artifacts/retro/demo-packet.md",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
     assert "retro-lesson-selection-index" in surface_ids
     assert "repo-markdown" in surface_ids
@@ -231,10 +227,9 @@ def test_check_changed_surfaces_verifies_mutation_workflow_actions() -> None:
         str(ROOT),
         "--paths",
         ".github/workflows/mutation-tests.yml",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
     assert "mutation-testing-workflow" in surface_ids
     assert "python3 scripts/check_github_actions.py --repo-root ." in payload["verify_commands"]
@@ -248,10 +243,9 @@ def test_check_changed_surfaces_routes_agent_runtime_js_to_native_tests() -> Non
         "--paths",
         "scripts/agent-runtime/run-local-eval-test.mjs",
         "tests/agent-runtime/native.test.mjs",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
     assert "agent-runtime-js" in surface_ids
     assert "npm run test:agent-runtime" in payload["verify_commands"]
@@ -265,10 +259,9 @@ def test_check_changed_surfaces_reports_unmatched_paths() -> None:
         str(ROOT),
         "--paths",
         "notes/private-plan.txt",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["matched_surfaces"] == []
     assert payload["unmatched_paths"] == ["notes/private-plan.txt"]
 
@@ -280,10 +273,9 @@ def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> Non
         str(ROOT),
         "--paths",
         "README.md",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["bundle_status"] == "repo-owned-bundle"
     recommendations = payload["recommended_commands"]
     assert recommendations[0] == {
@@ -305,10 +297,9 @@ def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes(
         str(ROOT),
         "--paths",
         "skills/public/critique/SKILL.md",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
     assert "python3 scripts/validate_skills.py --repo-root ." in verify_commands
     assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
@@ -323,10 +314,9 @@ def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes()
         str(ROOT),
         "--paths",
         "docs/public-skill-validation.json",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
     assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
 
@@ -338,10 +328,9 @@ def test_select_verifiers_includes_adapter_and_prompt_proof_for_named_cautilus_a
         str(ROOT),
         "--paths",
         ".agents/cautilus-adapters/chatbot-proposals.yaml",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
     assert "python3 scripts/validate_adapters.py --repo-root ." in verify_commands
     assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
@@ -354,13 +343,19 @@ def test_select_verifiers_includes_chatbot_proposal_runner_for_packet_changes() 
         str(ROOT),
         "--paths",
         "evals/cautilus/chatbot-scenario-proposal-inputs.json",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
     assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
-    assert "python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json" not in verify_commands
+    # Cautilus is eval-only and ask-before-run: the proposal RUNNER must never be
+    # selected as an automatic verify obligation. Matched on the script name rather
+    # than one exact argv (the sibling compare-runner test below does the same), so
+    # the guard survives a flag change — it was previously pinned to the retired
+    # `--json` argv and would have gone silently vacuous when that flag was removed.
+    assert not any(
+        "eval_cautilus_chatbot_proposals.py" in command for command in verify_commands
+    )
 
 
 def test_select_verifiers_includes_chatbot_benchmark_smoke_for_compare_runner_changes() -> None:
@@ -370,10 +365,9 @@ def test_select_verifiers_includes_chatbot_benchmark_smoke_for_compare_runner_ch
         str(ROOT),
         "--paths",
         "scripts/eval_cautilus_chatbot_compare.py",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
     assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
     assert not any("eval_cautilus_chatbot_compare.py" in command for command in verify_commands)
@@ -386,10 +380,9 @@ def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -
         str(ROOT),
         "--paths",
         "docs/public-skill-dogfood.json",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
     assert "python3 scripts/validate_public_skill_dogfood.py --repo-root ." in verify_commands
 
@@ -401,10 +394,9 @@ def test_select_verifiers_reports_missing_bundle_for_unmatched_paths() -> None:
         str(ROOT),
         "--paths",
         "notes/private-plan.txt",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["bundle_status"] == "missing-bundle"
     assert payload["recommended_commands"] == []
     assert any("not covered by `.agents/surfaces.json`" in note for note in payload["notes"])

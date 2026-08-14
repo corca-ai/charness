@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
@@ -43,11 +45,10 @@ def test_seed_dependencies_creates_file_with_explicit_tool_ids(tmp_path: Path) -
         "tokei",
         "--tool-id",
         "ruff",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "seeded"
     assert payload["tool_dependencies"] == ["ruff", "tokei"]
     assert _read_deps(repo) == {"schema_version": 1, "tool_dependencies": ["ruff", "tokei"]}
@@ -60,10 +61,10 @@ def test_seed_dependencies_from_recommendations_includes_charness_tools(tmp_path
     repo.mkdir()
     monkeypatch.delenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", raising=False)
 
-    result = run_seed_dependencies(monkeypatch, capsys, "--repo-root", str(repo), "--from-recommendations", "--json")
+    result = run_seed_dependencies(monkeypatch, capsys, "--repo-root", str(repo), "--from-recommendations")
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "seeded"
     deps = payload["tool_dependencies"]
     for expected in ("tokei", "ruff", "vulture"):
@@ -76,10 +77,10 @@ def test_seed_dependencies_refuses_to_overwrite_without_force(tmp_path: Path) ->
     first = run_script(SCRIPT, "--repo-root", str(repo), "--tool-id", "tokei")
     assert first.returncode == 0, first.stderr
 
-    second = run_script(SCRIPT, "--repo-root", str(repo), "--tool-id", "ruff", "--json")
+    second = run_script(SCRIPT, "--repo-root", str(repo), "--tool-id", "ruff")
 
     assert second.returncode == 1
-    payload = json.loads(second.stdout)
+    payload = yaml.safe_load(second.stdout)
     assert payload["status"] == "skipped"
     assert "force" in payload["reason"]
     assert _read_deps(repo)["tool_dependencies"] == ["tokei"]
@@ -91,11 +92,11 @@ def test_seed_dependencies_force_overwrite_replaces_list(tmp_path: Path, monkeyp
     run_script(SCRIPT, "--repo-root", str(repo), "--tool-id", "tokei")
 
     overwrite = run_seed_dependencies(
-        monkeypatch, capsys, "--repo-root", str(repo), "--tool-id", "ruff", "--force", "--json"
+        monkeypatch, capsys, "--repo-root", str(repo), "--tool-id", "ruff", "--force"
     )
 
     assert overwrite.returncode == 0, overwrite.stderr
-    payload = json.loads(overwrite.stdout)
+    payload = yaml.safe_load(overwrite.stdout)
     assert payload["tool_dependencies"] == ["ruff"]
     assert _read_deps(repo)["tool_dependencies"] == ["ruff"]
 

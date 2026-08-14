@@ -9,10 +9,22 @@ affordance for the "fail, patch, fail again" closeout churn class.
 from __future__ import annotations
 
 import argparse
-import json
 import re
+import runpy
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 STATUS_RE = re.compile(r"^Status:\s*(?P<status>\w+)\s*$", re.MULTILINE)
 BACKTICK_EVIDENCE_RE = re.compile(
@@ -161,7 +173,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--write", action="store_true", help="Write changes in place. Default is dry-run.")
     parser.add_argument("--complete", action="store_true", help="Also set `Status: complete`.")
-    parser.add_argument("--json", action="store_true", help="Emit normalization results as JSON.")
     return parser.parse_args(argv)
 
 
@@ -176,14 +187,19 @@ def main(argv: list[str] | None = None) -> int:
     changed = updated != original
     if changed and args.write:
         args.goal_path.write_text(updated, encoding="utf-8")
-    payload = {"changed": changed, "written": bool(changed and args.write), "fixes": fixes}
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        status = "wrote" if payload["written"] else "would change" if changed else "unchanged"
-        print(f"normalize-goal-closeout: {status}")
-        for fix in fixes:
-            print(f"- {fix}")
+    written = bool(changed and args.write)
+    # Output is unconditionally YAML, so the verdict WORD the former text line
+    # carried (`wrote` / `would change` / `unchanged`) has to live in the payload.
+    # It is the one thing the two booleans do not state directly: `changed: true,
+    # written: false` is a dry run, and a reader who mistakes it for a completed
+    # write leaves the artifact unfixed.
+    payload = {
+        "status": "wrote" if written else "would change" if changed else "unchanged",
+        "changed": changed,
+        "written": written,
+        "fixes": fixes,
+    }
+    yaml_output.emit_yaml(payload)
     return 0
 
 

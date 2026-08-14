@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -166,10 +167,9 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
         str(ROOT),
         "--output-dir",
         str(output_dir),
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["candidate_count"] == 11
     assert payload["proposal_count"] == 11
     assert len(payload["candidate_keys"]) == 11
@@ -194,6 +194,12 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
     assert payload["proposal_telemetry"]["returnedProposalCount"] == 11
     assert sorted(payload["proposal_keys"]) == sorted(payload["candidate_keys"])
     assert payload["omitted_candidate_keys"] == []
+    # `cautilus` is the THIRD-PARTY binary this eval drives; its `--json` is its own
+    # native API and is untouched by the repo-owned YAML migration.
+    assert payload["command"]["argv"][0] == "cautilus"
     assert payload["command"]["argv"][-1] == "--json"
+    # The retired "Wrote ... to <dir>" line was the only place a reader learned
+    # where the proposals landed; the artifact's schema does not carry it.
+    assert payload["output_dir"]
     assert (output_dir / "latest.json").is_file()
     assert (output_dir / "latest.md").is_file()

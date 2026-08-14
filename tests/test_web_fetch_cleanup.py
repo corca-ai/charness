@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import shutil
 import signal
@@ -9,6 +8,8 @@ import sys
 import time
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from tests.repo_copy import REPO_COPY_IGNORE
 from tests.script_main import load_script_module, run_loaded_script_main
@@ -46,6 +47,20 @@ def _make_logging_agent_browser(bin_dir: Path, log_path: Path, *, render_fails: 
     (bin_dir / "agent-browser").chmod(0o755)
 
 
+def _bundle_yaml_output(root: Path) -> None:
+    """Place the real `scripts/yaml_output.py` at a synthetic layout's root.
+
+    Every repo-owned command renders its stdout payload through this helper, and the
+    exported plugin ships it at `<plugin-root>/scripts/yaml_output.py`. A hand-built
+    layout that omits it is not a smaller export, it is one where the command has no
+    output channel and exits on ImportError — so the copy keeps these fixtures
+    faithful to the layout they claim to model.
+    """
+    scripts_dir = root / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "scripts" / "yaml_output.py", scripts_dir / "yaml_output.py")
+
+
 def _close_was_attempted(log_path: Path) -> bool:
     if not log_path.is_file():
         return False
@@ -71,7 +86,7 @@ def test_acquire_attempts_close_on_render_success(tmp_path: Path) -> None:
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"
     assert _close_was_attempted(log), log.read_text(encoding="utf-8") if log.is_file() else "no log"
 
@@ -95,7 +110,7 @@ def test_acquire_attempts_close_on_render_failure(tmp_path: Path) -> None:
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     # Render failed, but the session must still be closed via the finally block.
     assert _close_was_attempted(log), log.read_text(encoding="utf-8") if log.is_file() else "no log"
     render = next(a for a in payload["attempts"] if a["stage_id"] == "agent-browser-render-recon")
@@ -108,6 +123,11 @@ def test_acquire_guard_unavailable_is_fail_visible(tmp_path: Path) -> None:
     # surfaced as `guard_unavailable` degraded, never as a clean success (#302).
     iso = tmp_path / "iso" / "webfetch"
     shutil.copytree(WEB_FETCH_SCRIPTS, iso, ignore=REPO_COPY_IGNORE)
+    # The layout must be missing the GUARD specifically, not missing everything: the
+    # shared YAML renderer is acquire's only output channel, so a tree that cannot
+    # reach `scripts/yaml_output.py` produces no payload to judge at all. Ship it
+    # (and only it) so `guard_unavailable` is what the fixture actually isolates.
+    _bundle_yaml_output(iso.parent)
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "calls.log"
@@ -135,7 +155,7 @@ def test_acquire_guard_unavailable_is_fail_visible(tmp_path: Path) -> None:
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "degraded"
     assert _close_was_attempted(log)
     render = next(a for a in payload["attempts"] if a["stage_id"] == "agent-browser-render-recon")
@@ -152,6 +172,10 @@ def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: P
     (plugin / "scripts").mkdir(parents=True)
     shutil.copytree(GATHER_SCRIPTS, plugin / "skills" / "gather" / "scripts", ignore=REPO_COPY_IGNORE)
     shutil.copytree(WEB_FETCH_SCRIPTS, plugin / "support" / "web-fetch" / "scripts", ignore=REPO_COPY_IGNORE)
+    # The exported plugin root carries the shared YAML renderer next to the bundled
+    # guard; without it acquire has no stdout channel and the layout would prove
+    # nothing about reachability.
+    _bundle_yaml_output(plugin)
     # A bundled guard that FAILS proves it was actually run (reached), not skipped.
     (plugin / "scripts" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('reparented chromium residue remains', file=sys.stderr)\nsys.exit(1)\n",
@@ -184,7 +208,7 @@ def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: P
         env=env,
     )
     assert result.returncode == 1, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "degraded"
     assert payload["acquisition_disposition"] == "degraded"
     render = next(a for a in payload["acquisition"]["attempts"] if a["stage_id"] == "agent-browser-render-recon")
@@ -216,7 +240,7 @@ def test_acquire_public_url_degrades_when_agent_browser_close_fails(tmp_path: Pa
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "degraded"
     attempt = next(attempt for attempt in payload["attempts"] if attempt["stage_id"] == "agent-browser-render-recon")
     assert attempt["status"] == "error"
@@ -251,7 +275,7 @@ def test_acquire_preserves_render_error_when_cleanup_also_fails(tmp_path: Path) 
         env=env,
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "degraded"
     render = next(a for a in payload["attempts"] if a["stage_id"] == "agent-browser-render-recon")
     # Original acquisition failure is preserved (the fake render exited 1 / "boom").
@@ -293,7 +317,7 @@ def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: P
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "degraded"
     attempt = next(attempt for attempt in payload["attempts"] if attempt["stage_id"] == "agent-browser-render-recon")
     assert attempt["status"] == "error"

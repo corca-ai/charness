@@ -8,6 +8,8 @@ from string import Template
 from types import SimpleNamespace
 from typing import Any
 
+import yaml
+
 from tests.script_loader import load_script_module
 
 from .support import run_script
@@ -85,7 +87,7 @@ def test_markdown_preview_manifest_omits_absolute_repo_root(tmp_path: Path, monk
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["repo"] == "repo"
     assert "repo_root" not in payload
     manifest = json.loads((repo / ".artifacts" / "preview" / "manifest.json").read_text(encoding="utf-8"))
@@ -137,7 +139,7 @@ def test_hitl_bootstrap_normalizes_target_and_output_paths(tmp_path: Path) -> No
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["session_dir"] == ".charness/hitl/runtime/hitl-test"
     assert payload["require_explicit_apply"] is True
     assert payload["apply_mode"] == "explicit-after-all-chunks"
@@ -245,7 +247,7 @@ def test_hitl_bootstrap_surfaces_adapter_apply_mode(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["require_explicit_apply"] is False
     assert payload["apply_mode"] == "accepted-chunk-or-final-apply-boundary"
     state = (repo / payload["state_file"]).read_text(encoding="utf-8")
@@ -270,7 +272,7 @@ def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_pat
     )
 
     assert bootstrap.returncode == 0, bootstrap.stderr
-    payload = json.loads(bootstrap.stdout)
+    payload = yaml.safe_load(bootstrap.stdout)
     state_path = repo / payload["state_file"]
     state = state_path.read_text(encoding="utf-8")
     state_path.write_text(
@@ -293,7 +295,7 @@ def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_pat
     )
 
     assert sync.returncode == 0, sync.stderr
-    sync_payload = json.loads(sync.stdout)
+    sync_payload = yaml.safe_load(sync.stdout)
     assert sync_payload["status"] == "synced"
     assert sync_payload["artifact_path"] == "charness-artifacts/hitl/latest.md"
     artifact = (repo / "charness-artifacts" / "hitl" / "latest.md").read_text(encoding="utf-8")
@@ -322,7 +324,7 @@ def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_pat
     )
 
     assert check.returncode == 0, check.stderr
-    assert json.loads(check.stdout)["status"] == "current"
+    assert yaml.safe_load(check.stdout)["status"] == "current"
     state_path.write_text(state_path.read_text(encoding="utf-8").replace("target: docs/decision.md", "target: docs/other.md"), encoding="utf-8")
     stale = run_loaded_script(
         monkeypatch,
@@ -337,7 +339,7 @@ def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_pat
     )
 
     assert stale.returncode == 1
-    assert json.loads(stale.stdout)["status"] == "stale"
+    assert yaml.safe_load(stale.stdout)["status"] == "stale"
     assert "target mismatch" in stale.stdout
     _assert_no_repo_absolute_path(sync_payload, repo)
 
@@ -353,7 +355,7 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path, monke
     )
 
     assert bootstrap.returncode == 0, bootstrap.stderr
-    payload = json.loads(bootstrap.stdout)
+    payload = yaml.safe_load(bootstrap.stdout)
     state_path = repo / payload["state_file"]
     blocked = run_loaded_script(
         monkeypatch,
@@ -369,7 +371,7 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path, monke
     )
 
     assert blocked.returncode == 1
-    blocked_payload = json.loads(blocked.stdout)
+    blocked_payload = yaml.safe_load(blocked.stdout)
     assert blocked_payload["status"] == "blocked"
     assert "target_cursor_checked must be true before editing or advancing" in blocked.stdout
 
@@ -443,7 +445,7 @@ def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path, monke
     )
 
     assert passed.returncode == 0, passed.stderr
-    assert json.loads(passed.stdout)["status"] == "pass"
+    assert yaml.safe_load(passed.stdout)["status"] == "pass"
 
 
 def test_cautilus_summaries_sanitize_diagnostics_and_external_worktree_paths(tmp_path: Path) -> None:

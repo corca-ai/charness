@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -75,33 +75,34 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--audit-level", choices=("low", "moderate", "high", "critical"), default="high")
     parser.add_argument("--triage-owner", default=DEFAULT_TRIAGE_OWNER)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     surfaces = detect_online_audit_surfaces(repo_root)
     if not surfaces:
-        message = (
-            "No supported online supply-chain audit surfaces detected. "
-            "This wrapper currently supports npm, pnpm, and uv dependency surfaces."
+        emit_yaml(
+            {
+                "surfaces": [],
+                "message": (
+                    "No supported online supply-chain audit surfaces detected. "
+                    "This wrapper currently supports npm, pnpm, and uv dependency surfaces."
+                ),
+            }
         )
-        if args.json:
-            print(json.dumps({"surfaces": [], "message": message}, ensure_ascii=False, indent=2))
-        else:
-            print(message)
         return 0
 
     results = [run_surface(repo_root, surface, audit_level=args.audit_level, triage_owner=args.triage_owner) for surface in surfaces]
-    if args.json:
-        print(json.dumps({"surfaces": results}, ensure_ascii=False, indent=2))
-    else:
-        for result in results:
-            status = "PASS" if result["exit_code"] == 0 else "FAIL"
-            rendered = " ".join(result["command"])
-            print(
-                f"{status} {result['tool']} online audit via `{rendered}` "
-                f"(networked, triage owner `{result['triage_owner']}`)"
-            )
+    # `status` is folded in from the deleted human renderer: each row already
+    # carries `exit_code`, but the PASS/FAIL reading of it was only in the prose.
+    # (`command`, `network_dependency` and `triage_owner` were already on the row.)
+    emit_yaml(
+        {
+            "surfaces": [
+                {**result, "status": "PASS" if result["exit_code"] == 0 else "FAIL"}
+                for result in results
+            ]
+        }
+    )
     if any(result["exit_code"] != 0 for result in results):
         return 1
     return 0

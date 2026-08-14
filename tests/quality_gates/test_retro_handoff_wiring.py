@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import validate_retro_handoff_wiring as wiring
 
@@ -302,12 +303,12 @@ def test_validate_wiring_main_and_source_entrypoint(tmp_path: Path, capsys: pyte
         "--retro-path", RETRO, "--handoff-path", HANDOFF,
     ]
     assert wiring.main(argv) == 0
-    assert '"status": "passed"' in capsys.readouterr().out
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "passed"
     assert wiring.main([
         "--repo-root", str(tmp_path), "--goal-path", "missing",
         "--retro-path", RETRO, "--handoff-path", HANDOFF,
     ]) == 1
-    assert '"status": "failed"' in capsys.readouterr().out
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "failed"
     source = Path(__file__).resolve().parents[2] / "scripts/validate_retro_handoff_wiring.py"
     monkeypatch.setattr(sys, "argv", [str(source), *argv])
     with pytest.raises(SystemExit) as exc_info:

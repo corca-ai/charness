@@ -5,7 +5,7 @@ Pre-push hook usage:
 
 ```
 DIFF=$(python3 scripts/classify_push_diff.py)
-classification=$(printf '%s' "$DIFF" | python3 -c "import sys,json; print(json.load(sys.stdin)['classification'])")
+classification=$(printf '%s' "$DIFF" | python3 -c "import sys,yaml; print(yaml.safe_load(sys.stdin)['classification'])")
 ```
 
 Exit code: 0 in both classifications. A 2 exit signals an error resolving
@@ -16,9 +16,13 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import subprocess
 from pathlib import Path
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:
+    from yaml_output import emit_yaml
 
 
 def _load_lib():
@@ -56,44 +60,34 @@ def main() -> int:
         import sys
         paths = [line.strip() for line in sys.stdin.read().splitlines() if line.strip()]
         result = LIB.classify(paths)
-        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        emit_yaml(result)
         return 0
     diff_range = args.diff_range
     if diff_range is None:
         diff_range = LIB.resolve_diff_range(repo_root, remote=args.remote)
     if diff_range is None:
-        print(
-            json.dumps(
-                {
-                    "classification": "full-gate-required",
-                    "files": [],
-                    "reason": "no upstream tracking branch found; full gate forced",
-                },
-                ensure_ascii=False,
-                indent=2,
-                sort_keys=True,
-            )
+        emit_yaml(
+            {
+                "classification": "full-gate-required",
+                "files": [],
+                "reason": "no upstream tracking branch found; full gate forced",
+            }
         )
         return 0
     try:
         paths = LIB.changed_paths_from_git(repo_root, diff_range)
     except subprocess.CalledProcessError as exc:
-        print(
-            json.dumps(
-                {
-                    "classification": "full-gate-required",
-                    "files": [],
-                    "reason": f"git diff failed; full gate forced: {exc}",
-                },
-                ensure_ascii=False,
-                indent=2,
-                sort_keys=True,
-            )
+        emit_yaml(
+            {
+                "classification": "full-gate-required",
+                "files": [],
+                "reason": f"git diff failed; full gate forced: {exc}",
+            }
         )
         return 2
     result = LIB.classify(paths)
     result["diff_range"] = diff_range
-    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(result)
     return 0
 
 

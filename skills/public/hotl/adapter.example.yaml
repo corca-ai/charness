@@ -13,18 +13,18 @@ surfaces:
 # packets; `live` commands default to requiring a boundary reason.
 proof_commands:
   - id: readiness-plan
-    command: "<repo-owned readiness command> --json"
+    command: "<repo-owned readiness command>"
     kind: readiness
     boundary_reason_required: false
   - id: provider-readback
-    command: "<repo-owned readback command> --json"
+    command: "<repo-owned readback command>"
     kind: readback
     boundary_reason_required: false
   - id: live-roundtrip
-    command: "<repo-owned live probe command> --json"
+    command: "<repo-owned live probe command>"
     kind: live
     boundary_reason_required: true
 # Ledger facts, when the repo maintains machine-readable ledger tooling.
 ledger_path: charness-artifacts/hotl/proof-ledger.json
 ledger_schema: config/hotl-proof-ledger.schema.json
-completion_audit_command: "<repo-owned completion audit command> --json"
+completion_audit_command: "<repo-owned completion audit command>"

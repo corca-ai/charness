@@ -8,8 +8,12 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 from pathlib import Path
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:
+    from yaml_output import emit_yaml
 
 
 def _load_lib():
@@ -45,13 +49,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     if not args.require:
-        print(json.dumps({"ok": False, "error": "no --require names supplied"}, ensure_ascii=False, sort_keys=True))
+        emit_yaml({"ok": False, "error": "no --require names supplied"})
         return 2
     try:
         evidence = dict(LIB.parse_evidence_arg(raw) for raw in args.evidence)
         skips = dict(LIB.parse_skip_arg(raw) for raw in args.skip)
     except ValueError as exc:
-        print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False, sort_keys=True))
+        emit_yaml({"ok": False, "error": str(exc)})
         return 2
     result = LIB.check(
         repo_root=args.repo_root.expanduser().resolve(),
@@ -61,7 +65,7 @@ def main() -> int:
         kind=args.kind,
         tokens=args.context_token,
     )
-    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(result)
     return 0 if result["ok"] else 1
 
 

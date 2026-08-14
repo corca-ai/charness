@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from .support import ROOT, run_script
 
@@ -87,7 +88,7 @@ def test_check_chunk_contract_script_blocks_missing_recommendation(tmp_path: Pat
     result = run_script(CHECK_SCRIPT, "--chunk-file", str(chunk_path))
 
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert any("Agent Assessment" in err for err in payload["errors"])
     assert any("Recommended Disposition" in err for err in payload["errors"])
@@ -146,7 +147,7 @@ def test_check_chunk_contract_script_passes_complete_chunk(tmp_path: Path) -> No
     result = run_script(CHECK_SCRIPT, "--chunk-file", str(chunk_path))
 
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "pass"
     assert payload["errors"] == []
 
@@ -190,7 +191,7 @@ def test_check_chunk_contract_script_blocks_whitespace_only_chunk_file(tmp_path:
     result = run_script(CHECK_SCRIPT, "--chunk-file", str(chunk_path))
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
 
 
@@ -225,7 +226,7 @@ def test_check_chunk_contract_script_blocks_empty_stdin() -> None:
     )
 
     assert result.returncode == 1
-    assert json.loads(result.stdout)["status"] == "blocked"
+    assert yaml.safe_load(result.stdout)["status"] == "blocked"
 
 
 def lib_errors(text: str):
@@ -248,7 +249,7 @@ def test_check_chunk_contract_script_reports_an_unreadable_chunk_file_as_an_erro
     result = run_script(CHECK_SCRIPT, "--chunk-file", "/tmp/charness-does-not-exist.md")
 
     assert result.returncode == 2
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "error"
     assert "could not be read" in payload["errors"][0]
 
@@ -257,30 +258,35 @@ def test_error_payload_keeps_a_non_ascii_chunk_path_readable(tmp_path: Path) -> 
     """The error arm serializes an operator-facing message, so it must not escape.
 
     `str(exc)` on the unreadable-file arm embeds the path the operator typed. A
-    Korean or otherwise non-ASCII path is an ordinary case in this repo, and
-    `ensure_ascii=True` would render it as `\\uXXXX` — the caller then cannot
-    read back the path they got wrong, which is the whole point of this arm.
+    Korean or otherwise non-ASCII path is an ordinary case in this repo, and an
+    escaping serializer (`allow_unicode=False` on the YAML dump, or the
+    `ensure_ascii=True` JSON fallback) would render it as `\\uXXXX` — the caller
+    then cannot read back the path they got wrong, which is the whole point of
+    this arm.
     """
     missing = tmp_path / "없는-리뷰-청크.md"
 
     result = run_script(CHECK_SCRIPT, "--chunk-file", str(missing))
 
     assert result.returncode == 2
-    # The raw bytes, not just the parsed payload: `json.loads` decodes `\uXXXX`
-    # back to the same string, so asserting on the parsed value alone would pass
-    # under either setting and prove nothing about what the operator sees.
+    # The raw bytes, not just the parsed payload: `yaml.safe_load` decodes
+    # `\uXXXX` back to the same string, so asserting on the parsed value alone
+    # would pass under either setting and prove nothing about what the operator
+    # sees.
     assert "없는-리뷰-청크.md" in result.stdout
     assert "\\u" not in result.stdout
-    assert json.loads(result.stdout)["status"] == "error"
+    assert yaml.safe_load(result.stdout)["status"] == "error"
 
 
 def test_contract_error_messages_stay_ascii_only() -> None:
-    """Pins the premise that the verdict arm's `ensure_ascii` setting rests on.
+    """Pins the premise that the verdict arm's non-ASCII escaping rests on.
 
     `check_chunk_contract` returns a closed set of fixed messages and `main`
     pairs them with a `pass`/`blocked` status, so the verdict payload cannot
     carry a non-ASCII character for any input — which is why no test can
-    distinguish `ensure_ascii=False` from `True` on that line. That equivalence
+    distinguish an escaping serializer from a non-escaping one on that arm
+    (`allow_unicode` on the YAML dump, `ensure_ascii` on the JSON fallback
+    `render_yaml` uses when PyYAML is absent). That equivalence
     is contingent, not permanent: the day a message quotes the chunk back, it
     stops holding silently. This test makes that day visible.
 

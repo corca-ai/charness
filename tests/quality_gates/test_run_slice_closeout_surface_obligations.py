@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from scripts import check_python_runtime_inheritance
 
@@ -87,10 +88,9 @@ def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
         str(repo),
         "--paths",
         "README.md",
-        "--json",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "completed"
     assert payload["effective_exit_code"] == result.returncode == 0
     assert payload["proof_receipt"]["surface"] == "closeout"
@@ -109,9 +109,9 @@ def test_run_slice_closeout_attaches_telemetry_on_stop_path(tmp_path: Path) -> N
     write_surface_manifest(repo, demo_surface(verify_commands=["python3 scripts/verify.py"]))
     (repo / "scripts" / "verify.py").write_text("import sys\nsys.exit(1)\n", encoding="utf-8")
 
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md", "--json")
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md")
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "failed"
     assert payload["effective_exit_code"] == result.returncode == 1
     assert payload["proof_receipt"]["adverse_subjects"]
@@ -123,8 +123,8 @@ def test_emit_payload_repairs_blank_adverse_cause(capsys) -> None:
 
     payload = {"status": "blocked", "changed_paths": [], "executed_commands": [], "error": ""}
 
-    assert closeout._emit_payload(payload, as_json=True) == 1
-    emitted = json.loads(capsys.readouterr().out)
+    assert closeout._emit_payload(payload) == 1
+    emitted = yaml.safe_load(capsys.readouterr().out)
     assert emitted["error"].startswith("closeout receipt could not identify a cause:")
     assert emitted["proof_receipt"]["cause"] == emitted["error"]
 
@@ -139,9 +139,9 @@ def test_run_slice_closeout_appends_agent_browser_hygiene_when_guard_exists(tmp_
         "from pathlib import Path\nPath('hygiene.log').write_text('hygiene\\n')\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md", "--json")
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert [step["phase"] for step in payload["executed_commands"]] == ["verify", "verify"]
     assert (repo / "hygiene.log").read_text(encoding="utf-8").strip() == "hygiene"
 
@@ -155,8 +155,8 @@ def test_run_slice_closeout_blocks_unsafe_agent_browser_surface_commands(tmp_pat
         demo_surface(verify_commands=["bash -lc 'agent-browser open https://example.com'"]),
     )
 
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md", "--json")
-    payload = json.loads(result.stdout)
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md")
+    payload = yaml.safe_load(result.stdout)
 
     assert result.returncode == 1
     assert payload["status"] == "blocked"
@@ -178,11 +178,10 @@ def test_run_slice_closeout_plan_only_blocks_invalid_focused_coverage_command() 
         "--mutation-coverage-command",
         "python3 scripts/not_pytest.py",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert "must start with" in payload["error"]
 
@@ -200,11 +199,10 @@ def test_run_slice_closeout_plan_only_lists_focused_coverage_command() -> None:
         "--mutation-coverage-command",
         "python3 -m pytest -q tests/quality_gates/test_mutation_coverage_producer.py",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     planned = payload["planned_commands"]
     assert planned[-1] == {
         "phase": "verify",
@@ -226,11 +224,10 @@ def test_run_slice_closeout_plan_only_lists_extra_coverage_targets() -> None:
         "--mutation-coverage-extra-pytest-target",
         "tests/quality_gates/test_mutation_coverage_producer.py::test_instrument_broad_command_rewrites_and_preserves_glob",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["planned_commands"][-1] == {
         "phase": "verify",
         "coverage_producer": True,
@@ -252,11 +249,10 @@ def test_run_slice_closeout_blocks_extra_targets_without_producer() -> None:
         "--mutation-coverage-extra-pytest-target",
         "tests/quality_gates/test_mutation_coverage_producer.py",
         "--plan-only",
-        "--json",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert "--mutation-coverage-extra-pytest-target requires" in payload["error"]
 
 
@@ -322,7 +318,6 @@ def test_run_slice_closeout_preexecution_blocks_invalid_focused_command(
         tmp_path,
         payload,
         SimpleNamespace(
-            json=True,
             plan_only=False,
             allow_unmatched=False,
             ack_cautilus_skill_review=False,
@@ -353,7 +348,7 @@ def test_base_range_preexecution_sweeps_only_live_worktree_paths(
     rc = closeout._run_preexecution_blocks(
         tmp_path,
         payload,
-        SimpleNamespace(json=True, plan_only=False),
+        SimpleNamespace(plan_only=False),
         structural_paths=["live.py"],
     )
 
@@ -566,11 +561,10 @@ def test_run_slice_closeout_blocks_unsafe_focused_coverage_command(tmp_path: Pat
         "--produce-mutation-coverage",
         "--mutation-coverage-command",
         "pytest -q tests/test_demo.py; agent-browser open https://example.com",
-        "--json",
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "blocked"
     assert "unsafe agent-browser probe" in "\n".join(payload["blockers"])
 

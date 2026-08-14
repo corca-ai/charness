@@ -30,12 +30,13 @@ parser matches an earlier one; that comparison is a separate run against a check
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import adapter_lib  # noqa: E402
+
+from yaml_output import emit_yaml  # noqa: E402
 
 # Where this repo keeps adapters, presets, and profiles. `plugins/` is absent on purpose:
 # it is a generated mirror, so counting it would double every finding. `.` scans the repo
@@ -101,7 +102,6 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--roots", nargs="*", default=list(DEFAULT_ROOTS))
-    parser.add_argument("--json", action="store_true", help="Emit the full report as JSON.")
     args = parser.parse_args()
 
     report = scan(args.repo_root.resolve(), tuple(args.roots))
@@ -116,18 +116,10 @@ def main() -> int:
             file=sys.stderr,
         )
         return 2
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(
-            f"scanned {report['scanned_files']} adapter YAML file(s); "
-            f"{report['uninterpreted_line_count']} uninterpreted line(s) "
-            f"across {report['files_with_uninterpreted_lines']} file(s)."
-        )
-        for entry in report["findings"]:
-            print(f"  {entry['path']}:{entry['line']} {entry['reason']}: {entry['text']!r}")
-        for entry in report["unreadable"]:
-            print(f"  UNREADABLE {entry['path']}: {entry['error']}")
+    # Unconditional YAML. The retired summary and per-entry lines were a strict
+    # projection of `scanned_files`, `uninterpreted_line_count`,
+    # `files_with_uninterpreted_lines`, and each `findings`/`unreadable` entry.
+    emit_yaml(report)
     # A file this script could not read, or that the parser refused outright, is exactly
     # the state it exists to make visible — reporting it and then exiting 0 would be this
     # measurement committing the class it measures.

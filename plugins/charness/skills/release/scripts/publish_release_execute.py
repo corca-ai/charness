@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 from pathlib import Path
 from typing import Any
+
+# Same reach as the sibling `publish_release_runtime.py`: this module is always
+# loaded through the publish CLI, which has already put the tree root on sys.path.
+from scripts.yaml_output import emit_yaml
 
 _common = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_common.py")))
 _rollback = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_rollback.py")))
@@ -317,4 +320,4 @@ def execute_publish_plan(
     # Do not make an execute-stage payload look like the adapter had no host gate.
     cli.record_real_host_verdict(payload, host_payload)
     payload["next_action"] = "commit a bound claims-review artifact, then resume publication"
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)

@@ -4,6 +4,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "validate_attention_state_visibility.py"
 
@@ -42,8 +44,14 @@ def test_fails_when_attention_state_file_is_undeclared(tmp_path: Path) -> None:
     result = _run(repo, declaration, scan_root)
 
     assert result.returncode == 1
-    assert "scripts/helper.py" in result.stderr
-    assert "not declared" in result.stderr
+    # The failure list moved from stderr prose into the YAML payload's
+    # `failures` key; the intent (name the undeclared file and say why) stands.
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "invalid"
+    assert any(
+        "scripts/helper.py" in failure and "not declared" in failure
+        for failure in payload["failures"]
+    ), payload["failures"]
 
 
 def test_fails_when_declared_states_drift(tmp_path: Path) -> None:
@@ -67,7 +75,11 @@ def test_fails_when_declared_states_drift(tmp_path: Path) -> None:
     result = _run(repo, declaration, scan_root)
 
     assert result.returncode == 1
-    assert "do not match detected states" in result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "invalid"
+    assert any(
+        "do not match detected states" in failure for failure in payload["failures"]
+    ), payload["failures"]
 
 
 def test_fails_when_evidence_terms_are_missing(tmp_path: Path) -> None:
@@ -91,7 +103,11 @@ def test_fails_when_evidence_terms_are_missing(tmp_path: Path) -> None:
     result = _run(repo, declaration, scan_root)
 
     assert result.returncode == 1
-    assert "evidence_terms missing" in result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "invalid"
+    assert any(
+        "evidence_terms missing" in failure for failure in payload["failures"]
+    ), payload["failures"]
 
 
 def test_passes_with_declared_visibility(tmp_path: Path) -> None:
@@ -115,7 +131,11 @@ def test_passes_with_declared_visibility(tmp_path: Path) -> None:
     result = _run(repo, declaration, scan_root)
 
     assert result.returncode == 0, result.stderr
-    assert "Validated attention-state visibility declarations" in result.stdout
+    # The "Validated ..." sentence is gone; `status: valid` with an empty
+    # `failures` list is the same verdict in the payload.
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "valid"
+    assert payload["failures"] == []
 
 
 def test_default_paths_support_exported_plugin_layout(tmp_path: Path) -> None:
@@ -167,7 +187,13 @@ def test_default_paths_support_exported_plugin_layout(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert "Validated attention-state visibility declarations for 3 file(s)." in result.stdout
+    # The retired sentence carried the detected-file count; `detected_file_count`
+    # carries it now, so the exported-layout path resolution is still pinned to
+    # all three files being found.
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "valid"
+    assert payload["failures"] == []
+    assert payload["detected_file_count"] == 3
 
 
 # --- a status VALUE is not an English word in a sentence ---------------------

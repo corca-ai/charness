@@ -21,11 +21,11 @@ Always exits 0; findings print as `ADVISORY:` lines for run-quality attention.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 from pathlib import Path
 
 from runtime_bootstrap import load_path_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 try:
     from scripts.repo_file_listing import iter_matching_repo_files
@@ -107,25 +107,34 @@ def find_coupling(repo_root: Path, *, require_git: bool = False) -> list[dict[st
     return findings
 
 
+# Folded in from the deleted human renderer, which was the only carrier of the
+# ADVISORY framing and the remedy. Output is unconditionally YAML now, so a
+# finding list with no remedy would tell a reader what is wrong and nothing about
+# where the provenance is supposed to go.
+_REMEDY = "Move provenance to the record layer per docs/conventions/provenance-placement.md."
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--require-git-file-listing", action="store_true")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     findings = find_coupling(repo_root, require_git=args.require_git_file_listing)
-    if args.json:
-        print(json.dumps({"status": "clean" if not findings else "coupled", "findings": findings}, indent=2))
-        return 0
-    if not findings:
-        print("public-doc coupling: exported reusable guidance is clean")
-        return 0
-    print(f"ADVISORY: public-doc-coupling found {len(findings)} hard-coupling reference(s) in exported reusable guidance:")
-    for finding in findings:
-        print(f"- {finding['path']}:{finding['line']} [{finding['kind']}] {finding['excerpt']}")
-    print("Move provenance to the record layer per docs/conventions/provenance-placement.md.")
+    payload: dict[str, object] = {
+        "status": "clean" if not findings else "coupled",
+        "findings": findings,
+    }
+    if findings:
+        payload["advisory"] = (
+            f"ADVISORY: public-doc-coupling found {len(findings)} hard-coupling "
+            "reference(s) in exported reusable guidance."
+        )
+        payload["remedy"] = _REMEDY
+    else:
+        payload["advisory"] = "public-doc coupling: exported reusable guidance is clean"
+    emit_yaml(payload)
     return 0
 
 

@@ -18,6 +18,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.closeout_authorization_world import build_protected_world
 
@@ -56,6 +57,8 @@ class BackendSpy:
             "state": "CLOSED",
             "url": f"https://github.com/{repo}/issues/{asked}",
         }
+        # JSON, not YAML: this stands in for the BACKEND's reply (`gh ... --json`), a
+        # third-party native API the repo's own YAML-only output rule does not touch.
         return subprocess.CompletedProcess(argv, 0, json.dumps(payload), "")
 
 
@@ -190,11 +193,17 @@ def _stage(repo: Path, rel: str, body: str) -> None:
 
 
 def _run_commit_hook(repo: Path, message: str):
+    """Run the commit-msg gate and hand back its raw result.
+
+    No output flag: the hook's stdout is unconditionally YAML since `--json` was
+    removed, and passing the flag now aborts the run with argparse's exit 2 — which
+    would make every refusal assertion below pass for the wrong reason.
+    """
     message_file = repo / "COMMIT_EDITMSG"
     message_file.write_text(message, encoding="utf-8")
     result = subprocess.run(
         ["python3", str(REPO_ROOT / "scripts" / "check_issue_closeout_commit_msg.py"),
-         "--repo-root", str(repo), "--commit-msg-file", str(message_file), "--json"],
+         "--repo-root", str(repo), "--commit-msg-file", str(message_file)],
         cwd=REPO_ROOT, capture_output=True, text=True,
     )
     return result, message_file
@@ -213,7 +222,7 @@ def test_the_commit_hook_refuses_a_protected_close_without_writing_its_temp_carr
     result, message_file = _run_commit_hook(tmp_path, "Repair the boundary\n\nCloses #514\n")
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "refused"
     assert payload["closeout_authorization"]["refusal"] == "matrix_incomplete"
     sanitized = message_file.with_suffix(message_file.suffix + ".charness-closeout-body")
@@ -233,7 +242,7 @@ def test_the_commit_hook_refuses_a_carrier_that_mixes_a_protected_and_another_is
     result, _ = _run_commit_hook(tmp_path, "Mixed carrier\n\nCloses #518\n")
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["closeout_authorization"]["refusal"] == "not_singleton"
 
 
@@ -248,7 +257,7 @@ def test_the_commit_hook_leaves_an_unrelated_multi_issue_carrier_alone(tmp_path:
 
     result, _ = _run_commit_hook(tmp_path, "Two unrelated issues\n\nCloses #9001\nCloses #9002\n")
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload.get("status") != "refused"
 
 
@@ -259,7 +268,7 @@ def test_a_commit_touching_no_issue_is_still_not_applicable(tmp_path: Path) -> N
     result, _ = _run_commit_hook(tmp_path, "Ordinary commit\n")
 
     assert result.returncode == 0
-    assert json.loads(result.stdout)["status"] == "not_applicable"
+    assert yaml.safe_load(result.stdout)["status"] == "not_applicable"
 
 
 # --- draft validation and post-publication readback -----------------------

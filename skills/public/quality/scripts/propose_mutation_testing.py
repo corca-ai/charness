@@ -10,9 +10,7 @@ Contract: see ../references/mutation-testing.md.
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -30,6 +28,7 @@ _scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_
     __file__, "scripts.quality_adapter_lib"
 )
 load_quality_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 
 # Resolved against this script's own directory, NOT against a repo-root-relative
 # source path. `templates/` sits beside the script in both layouts, but the source
@@ -203,7 +202,7 @@ def main() -> None:
         "errors": payload.get("errors") or [],
         "warnings": payload.get("warnings") or [],
     }
-    sys.stdout.write(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    _summary_output.emit_yaml(result)
 
 
 if __name__ == "__main__":

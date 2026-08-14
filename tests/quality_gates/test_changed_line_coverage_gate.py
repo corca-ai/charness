@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -58,6 +59,7 @@ def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
 
 
 def _write_coverage(repo: Path, *, missing: list[int], executed: list[int]) -> None:
+    # coverage.py's own report format, not this gate's output surface: still JSON.
     (repo / "cov.json").write_text(
         json.dumps({"files": {"pkg/foo.py": {"executed_lines": executed, "missing_lines": missing}}}),
         encoding="utf-8",
@@ -65,9 +67,9 @@ def _write_coverage(repo: Path, *, missing: list[int], executed: list[int]) -> N
 
 
 def _stamp(repo: Path, base: str) -> None:
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--stamp-marker", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--stamp-marker")
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["fingerprint"]
+    assert yaml.safe_load(result.stdout)["fingerprint"]
 
 
 def test_flags_uncovered_changed_line(tmp_path: Path) -> None:
@@ -75,9 +77,9 @@ def test_flags_uncovered_changed_line(tmp_path: Path) -> None:
     _write_adapter(repo, ["pkg/**/*.py"])
     _write_coverage(repo, missing=[4], executed=[1, 2, 3])
     _stamp(repo, base)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD")
     assert result.returncode == 1, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["blocking"] == ["pkg/foo.py"]
 
 
@@ -86,9 +88,9 @@ def test_passes_when_changed_line_covered(tmp_path: Path) -> None:
     _write_adapter(repo, ["pkg/**/*.py"])
     _write_coverage(repo, missing=[], executed=[1, 2, 3, 4])
     _stamp(repo, base)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["blocking"] == []
     assert payload["changed_pool_files"] == ["pkg/foo.py"]
@@ -97,9 +99,9 @@ def test_passes_when_changed_line_covered(tmp_path: Path) -> None:
 def test_inert_when_no_eligible_globs(tmp_path: Path) -> None:
     repo, base = _seed_repo(tmp_path)
     _write_adapter(repo, [])
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["inert"] is True
 
 
@@ -108,9 +110,9 @@ def test_stale_coverage_skips_non_blocking(tmp_path: Path) -> None:
     _write_adapter(repo, ["pkg/**/*.py"])
     _write_coverage(repo, missing=[4], executed=[1, 2, 3])
     # No marker stamped => coverage is treated as stale => non-blocking skip.
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert "stale" in payload["reason"]
 
@@ -118,9 +120,9 @@ def test_stale_coverage_skips_non_blocking(tmp_path: Path) -> None:
 def test_no_base_sha_is_non_blocking(tmp_path: Path) -> None:
     repo, _ = _seed_repo(tmp_path)
     _write_adapter(repo, ["pkg/**/*.py"])
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", "", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", "")
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["ok"] is True
+    assert yaml.safe_load(result.stdout)["ok"] is True
 
 
 def test_invalid_adapter_fails_closed(tmp_path: Path) -> None:
@@ -129,10 +131,11 @@ def test_invalid_adapter_fails_closed(tmp_path: Path) -> None:
     (repo / ".agents" / "quality-adapter.yaml").write_text(
         "version: 1\nchanged_line_mutation_gate: not-a-mapping\n", encoding="utf-8"
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base)
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert any("changed_line_mutation_gate must be a mapping" in e for e in payload["adapter_errors"])
+    assert payload["verdict"] == "adapter-invalid"
 
 
 def test_a_head_that_is_not_the_checked_out_head_is_unestablished_not_a_pass(tmp_path: Path) -> None:
@@ -141,8 +144,9 @@ def test_a_head_that_is_not_the_checked_out_head_is_unestablished_not_a_pass(tmp
     Coverage is read from the LIVE worktree while the change set is diffed against
     `--head-sha`, so a head that is not the checked-out HEAD makes the mapping and
     the measurement describe different trees. `base..base` is empty, so the gate
-    reported `OK: no eligible changed files in this range` and exit 0 over a tree
-    it had just been failing -- and the human line never named the head it used.
+    reported `verdict: ok` ("no eligible changed files in this range") and exit 0
+    over a tree it had just been failing -- and the payload never named the head
+    it used.
 
     The repo-local sibling (`scripts/changed_line_run_trust.py:probe_run_trust`)
     has refused this since it was written; the portable gate had no counterpart
@@ -154,9 +158,9 @@ def test_a_head_that_is_not_the_checked_out_head_is_unestablished_not_a_pass(tmp
     _stamp(repo, base)
 
     # Same repo, same base: an honest run blocks on the uncovered changed line.
-    honest = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--json")
+    honest = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base)
     assert honest.returncode == 1, honest.stdout + honest.stderr
-    assert json.loads(honest.stdout)["blocking"] == ["pkg/foo.py"]
+    assert yaml.safe_load(honest.stdout)["blocking"] == ["pkg/foo.py"]
 
     # A third commit, so there is a head that is BOTH stale and the end of a
     # non-empty range. `base..stale_head` still touches pkg/foo.py, which is the
@@ -166,9 +170,9 @@ def test_a_head_that_is_not_the_checked_out_head_is_unestablished_not_a_pass(tmp
     _git(repo, "add", "-A")
     _git(repo, "commit", "-m", "add line 5")
 
-    stale = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", stale_head, "--json")
+    stale = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", stale_head)
     assert stale.returncode == 3, stale.stdout + stale.stderr
-    payload = json.loads(stale.stdout)
+    payload = yaml.safe_load(stale.stdout)
     # `ok: True` on purpose: a could-not-judge is not a coverage failure, and exit
     # 3 is the bucket that says so. Collapsing it onto exit 1 is what made this
     # arrive at a consumer's CI as "your changed lines are uncovered".
@@ -176,9 +180,11 @@ def test_a_head_that_is_not_the_checked_out_head_is_unestablished_not_a_pass(tmp
     assert payload["unestablished"] is True
     assert "is not the checked-out HEAD" in payload["reason"]
 
-    human = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", stale_head)
-    assert human.stdout.startswith("UNESTABLISHED:"), human.stdout
-    assert "OK:" not in human.stdout
+    # There is one output channel now, so the verdict WORD has to carry what the
+    # `UNESTABLISHED:`/`OK:` prefixes used to: a could-not-judge run must not
+    # narrate itself as a pass even though `blocking` is empty and `ok` is True.
+    assert payload["verdict"] == "unestablished"
+    assert payload["analyzed_head"] == stale_head
 
 
 def test_a_stale_head_over_an_empty_range_discloses_instead_of_blocking(tmp_path: Path) -> None:
@@ -190,7 +196,7 @@ def test_a_stale_head_over_an_empty_range_discloses_instead_of_blocking(tmp_path
     eligible files changed" -- on the gate whose credibility is the whole point.
 
     But the disclosure must not vanish with the refusal. The empty scope belongs to
-    the ANALYZED head, not to this tree, and a bare `OK:` on stdout is exactly the
+    the ANALYZED head, not to this tree, and a bare `verdict: ok` is exactly the
     false green this arm exists to close -- so the reason is carried on the report
     and shouted on stderr, even though the exit code is 0.
     """
@@ -199,29 +205,34 @@ def test_a_stale_head_over_an_empty_range_discloses_instead_of_blocking(tmp_path
     _write_coverage(repo, missing=[4], executed=[1, 2, 3])
     _stamp(repo, base)
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", base, "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", base)
     assert result.returncode == 0, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload.get("unestablished") is None
     # Untouched on purpose: consumers prefix-match this to recognise an empty scope.
     assert payload["reason"] == "no eligible changed files in this range"
     assert "is not the checked-out HEAD" in payload["analyzed_head_not_checked_out_head"]
     assert "ANALYZED head's, not this tree's" in result.stderr, result.stderr
+    # The verdict word is `ok` here by design, so the head it judged has to travel
+    # with it: an `ok` that does not name a non-default head IS the false green.
+    assert payload["verdict"] == "ok"
+    assert payload["analyzed_head"] == base
 
 
 def test_an_unresolvable_head_refuses_instead_of_crashing(tmp_path: Path) -> None:
     """`_false_green_warning` used to re-raise `GitUnavailable` after `run_gate`
     had already built the UNESTABLISHED report, so the process died with a
-    traceback: the operator got neither the verdict line nor a parseable `--json`
-    payload. Exit 1, not 3 -- leniency granted because the head is a different
-    tree must not be inherited by a head the gate could not resolve at all."""
+    traceback: the operator got no parseable payload at all. Exit 1, not 3 --
+    leniency granted because the head is a different tree must not be inherited
+    by a head the gate could not resolve at all."""
     repo, base = _seed_repo(tmp_path)
     _write_adapter(repo, ["pkg/**/*.py"])
 
     result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "nosuchref")
     assert result.returncode == 1, result.stdout + result.stderr
-    assert result.stdout.startswith("UNESTABLISHED:"), result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["verdict"] == "unestablished"
     assert "Traceback" not in result.stderr, result.stderr
 
 
@@ -237,16 +248,16 @@ def test_an_annotated_tag_on_head_is_not_treated_as_a_different_tree(tmp_path: P
     _stamp(repo, base)
     _git(repo, "tag", "-a", "v1", "-m", "release")
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "v1", "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "v1")
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload.get("unestablished") is None
     assert payload["blocking"] == ["pkg/foo.py"]
-    # The RESOLVED commit, not the tag name, is what gets recorded and rendered.
+    # The RESOLVED commit, not the tag name, is what gets recorded and reported --
+    # both on the raw report and on the verdict block the old human line carried.
     assert payload["resolved_head_sha"] == _rev(repo)
-
-    human = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "v1")
-    assert f"[analyzed head: {_rev(repo)[:12]}]" in human.stdout, human.stdout
+    assert payload["verdict"] == "fail"
+    assert payload["analyzed_head"] == _rev(repo)
 
 
 def test_an_env_supplied_head_is_refused_and_named_the_same_way(tmp_path: Path) -> None:
@@ -255,8 +266,8 @@ def test_an_env_supplied_head_is_refused_and_named_the_same_way(tmp_path: Path) 
     That is the shape the scheduled mutation workflow produces (it exports the
     range for the whole sampler step), so an operator who never typed `--head-sha`
     could still get a verdict over a range nobody asked for. The refusal must be
-    identical, and the analyzed head must appear in the human line -- before this
-    it was carried only by `--json`.
+    identical, and the analyzed head must be named next to the verdict word --
+    not only buried in the raw report fields.
     """
     repo, base = _seed_repo(tmp_path)
     _write_adapter(repo, ["pkg/**/*.py"])
@@ -271,8 +282,9 @@ def test_an_env_supplied_head_is_refused_and_named_the_same_way(tmp_path: Path) 
     env = {**os.environ, "MUTATION_HEAD_SHA": stale_head}
     result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, env=env)
     assert result.returncode == 3, result.stdout + result.stderr
-    assert result.stdout.startswith("UNESTABLISHED:"), result.stdout
-    assert f"[analyzed head: {stale_head[:12]}]" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["verdict"] == "unestablished"
+    assert payload["analyzed_head"] == stale_head
 
     # The workflow's own shape -- head EQUALS the checked-out HEAD -- still renders
     # a real verdict, so the refusal is scoped to the mismatch and not to the env.
@@ -281,16 +293,25 @@ def test_an_env_supplied_head_is_refused_and_named_the_same_way(tmp_path: Path) 
     matching = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base,
                           env={**os.environ, "MUTATION_HEAD_SHA": head})
     assert matching.returncode == 1, matching.stdout + matching.stderr
-    assert matching.stdout.startswith("FAIL:"), matching.stdout
-    assert f"[analyzed head: {head[:12]}]" in matching.stdout
+    matching_payload = yaml.safe_load(matching.stdout)
+    assert matching_payload["verdict"] == "fail"
+    assert matching_payload["analyzed_head"] == head
 
 
-def test_help_explains_repo_root_and_json_options() -> None:
+def test_help_explains_repo_root_and_offers_no_json_option() -> None:
+    """`--repo-root` is still documented; `--json` is gone, not merely undocumented.
+
+    Output is unconditionally YAML now, so a help text that still advertised a
+    `--json` toggle would document a flag the parser rejects. Both halves are
+    asserted: the surviving option keeps its explanation, and the removed one is
+    absent from help AND refused by the parser (argparse exit 2), so an operator
+    or script carrying the old invocation fails loudly instead of silently
+    getting a different output shape.
+    """
     result = run_script(SCRIPT, "--help")
     assert result.returncode == 0, result.stderr
     expected = {
         "--repo-root": "Repository root containing the quality adapter and changed files",
-        "--json": "Emit the full gate report as JSON",
     }
     for option, fragment in expected.items():
         match = re.search(rf"^  {re.escape(option)}\b.*$", result.stdout, re.MULTILINE)
@@ -299,6 +320,12 @@ def test_help_explains_repo_root_and_json_options() -> None:
         end = match.end() + next_option.start() if next_option else len(result.stdout)
         option_block = re.sub(r"\s+", " ", result.stdout[match.start() : end])
         assert fragment in option_block, f"missing help for {option}: {fragment}"
+
+    assert not re.search(r"^\s*--json\b", result.stdout, re.MULTILINE), result.stdout
+
+    rejected = run_script(SCRIPT, "--json")
+    assert rejected.returncode == 2, rejected.stdout + rejected.stderr
+    assert "unrecognized arguments: --json" in rejected.stderr, rejected.stderr
 
 
 def test_a_git_failure_is_unestablished_not_an_empty_change_set(tmp_path: Path) -> None:
@@ -313,45 +340,54 @@ def test_a_git_failure_is_unestablished_not_an_empty_change_set(tmp_path: Path) 
     repo, base = _seed_repo(tmp_path)
     _write_adapter(repo, ["pkg/**/*.py"])
 
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", "deadbeef" * 5, "--json")
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", "deadbeef" * 5)
 
     assert result.returncode == 1, result.stdout + result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["unestablished"] is True
     assert "could not establish the changed set" in payload["reason"]
 
-    # And the same run must not narrate itself as a pass in human output. With
-    # `blocking` empty, the report fell through to the `OK:` line while exiting 1.
-    human = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", "deadbeef" * 5)
-    assert human.returncode == 1
-    assert human.stdout.startswith("UNESTABLISHED:"), human.stdout
-    assert "OK:" not in human.stdout
+    # And the same run must not narrate itself as a pass. With `blocking` empty,
+    # the report fell through to the `ok` verdict while exiting 1.
+    assert payload["verdict"] == "unestablished"
 
     # A resolvable base over the same tree still passes, so the new arm is not
     # simply refusing everything.
-    clean = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--json")
+    clean = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base)
     assert clean.returncode == 0, clean.stdout + clean.stderr
-    assert json.loads(clean.stdout)["ok"] is True
+    clean_payload = yaml.safe_load(clean.stdout)
+    assert clean_payload["ok"] is True
+    assert clean_payload["verdict"] == "ok"
 
 
-def test_human_line_renders_one_word_per_report_shape() -> None:
-    """The verdict WORD, tested directly.
+def test_verdict_renders_one_word_per_report_shape() -> None:
+    """The verdict WORD, tested directly -- now a payload field, not a text line.
 
     `unestablished` reports carry an empty `blocking` list, so before this
-    renderer existed they fell through to the `OK:` line while the process
-    exited 1. Each arm is asserted here because the shape that produced the
-    wrong word was a fall-through, not a wrong branch.
+    existed they fell through to the `ok` arm while the process exited 1. Each
+    arm is asserted here because the shape that produced the wrong word was a
+    fall-through, not a wrong branch.
     """
     module = import_repo_module(__file__, "skills.public.quality.scripts.check_changed_line_coverage")
-    line = module.human_line
-    assert line({"adapter_errors": ["bad glob"], "blocking": []}).startswith("quality adapter invalid:")
-    assert "inert" in line({"adapter_errors": [], "inert": True, "blocking": []})
-    assert line({"adapter_errors": [], "unestablished": True, "blocking": [], "reason": "git said no"}) == (
-        "UNESTABLISHED: git said no"
-    )
-    assert line({"adapter_errors": [], "blocking": ["a.py", "b.py"]}).startswith("FAIL: 2 changed file(s)")
-    assert line({"adapter_errors": [], "blocking": [], "reason": "nothing in range"}) == "OK: nothing in range"
+    verdict = module.verdict
+    adapter_invalid = verdict({"adapter_errors": ["bad glob"], "blocking": []})
+    assert adapter_invalid["verdict"] == "adapter-invalid"
+    assert adapter_invalid["verdict_detail"].startswith("quality adapter invalid:")
+    inert = verdict({"adapter_errors": [], "inert": True, "blocking": []})
+    assert inert["verdict"] == "inert"
+    assert "inert" in inert["verdict_detail"]
+    assert verdict({"adapter_errors": [], "unestablished": True, "blocking": [], "reason": "git said no"}) == {
+        "verdict": "unestablished",
+        "verdict_detail": "git said no",
+    }
+    failing = verdict({"adapter_errors": [], "blocking": ["a.py", "b.py"]})
+    assert failing["verdict"] == "fail"
+    assert failing["verdict_detail"].startswith("2 changed file(s)")
+    assert verdict({"adapter_errors": [], "blocking": [], "reason": "nothing in range"}) == {
+        "verdict": "ok",
+        "verdict_detail": "nothing in range",
+    }
 
 
 def test_a_git_failure_while_fingerprinting_is_also_unestablished(tmp_path: Path) -> None:
@@ -455,7 +491,7 @@ def test_the_false_green_probe_swallows_a_git_failure_instead_of_killing_the_run
 
     `_git_lines` raises on a nonzero git exit, and this probe runs AFTER the
     report exists, so an unhandled raise here destroyed a verdict the gate had
-    already reached -- no `OK:`/`FAIL:` line, no parseable `--json`. Losing the
+    already reached -- no verdict word, no parseable payload at all. Losing the
     advisory is the correct trade; losing the verdict is not.
     """
     entry = import_repo_module(__file__, "skills.public.quality.scripts.check_changed_line_coverage")

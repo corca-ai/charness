@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 import session_start_lesson_context as lesson_context
 import session_start_routing as hook
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -534,24 +535,26 @@ def test_importing_the_hook_over_a_broken_sibling_degrades_instead_of_raising(
 # `not-established` block, and both are stdlib-only by contract.
 
 
-def test_the_lesson_context_cli_prints_prose_and_falls_back_to_its_state_line(
+def test_the_lesson_context_cli_carries_both_the_state_and_the_injectable_text(
     tmp_path: Path, capsys
 ) -> None:
-    """Two prose shapes, because `text or <state line>` has two sides.
+    """Two payload shapes, because `text` has two sides.
 
-    `text` is `None` only under `not-configured`, and printing an empty line there
-    would tell an operator who just ran the command nothing at all. Every other
-    state carries injectable text, and printing the terse `state:` summary instead
-    of it would drop the cause and the remediation the state exists to carry.
+    `text` is `None` only under `not-configured`; the prose fallback that used to
+    print a `state: ... — <reason>` line in its place is gone, so `reason` has to
+    carry that sentence or an operator who just ran the command learns nothing.
+    Every other state carries injectable text, and that text -- not a terse state
+    summary -- is what names the cause and the remediation.
     """
     opted_out = tmp_path / "opted-out"
     opted_out.mkdir()
 
     assert lesson_context.main(["--repo-root", str(opted_out)]) == 0
 
-    out = capsys.readouterr().out
-    assert out.startswith("state: not-configured — ")
-    assert "declares no lesson evaluator" in out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["state"] == "not-configured"
+    assert payload["text"] is None
+    assert "declares no lesson evaluator" in payload["reason"]
 
     opted_in = tmp_path / "opted-in"
     (opted_in / "charness-artifacts" / "retro").mkdir(parents=True)
@@ -561,12 +564,12 @@ def test_the_lesson_context_cli_prints_prose_and_falls_back_to_its_state_line(
 
     assert lesson_context.main(["--repo-root", str(opted_in)]) == 3
 
-    out = capsys.readouterr().out
-    # The injected text itself, not the `state:` fallback: it names the state, the
+    payload = yaml.safe_load(capsys.readouterr().out)
+    # The injectable text itself, not just the state: it names the state, the
     # cause, and what to run next.
-    assert not out.startswith("state: ")
-    assert "not-established" in out
-    assert "lesson-ledger.json" in out
+    assert payload["state"] == "not-established"
+    assert "not-established" in payload["text"]
+    assert "lesson-ledger.json" in payload["text"]
 
 
 def test_the_lesson_context_entrypoint_exits_with_the_undetermined_byte(
@@ -585,14 +588,14 @@ def test_the_lesson_context_entrypoint_exits_with_the_undetermined_byte(
         "{ not a ledger", encoding="utf-8"
     )
     monkeypatch.setattr(
-        sys, "argv", ["session_start_lesson_context.py", "--repo-root", str(repo), "--json"]
+        sys, "argv", ["session_start_lesson_context.py", "--repo-root", str(repo)]
     )
 
     with pytest.raises(SystemExit) as caught:
         runpy.run_path(str(LESSON_CONTEXT_SCRIPT), run_name="__main__")
 
     assert caught.value.code == lesson_context.UNDETERMINED_EXIT == 3
-    assert json.loads(capsys.readouterr().out)["state"] == "not-established"
+    assert yaml.safe_load(capsys.readouterr().out)["state"] == "not-established"
 
 
 def test_main_threads_the_host_payload_into_the_lesson_block(

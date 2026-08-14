@@ -10,9 +10,10 @@ half is boundary-agnostic and supports exactly this in-process style.
 from __future__ import annotations
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
+
+import yaml
 
 from tests.dsl import Repo
 
@@ -383,7 +384,7 @@ def test_inventory_boundary_bypass_cli_summary_omits_full_candidates(tmp_path: P
     )
 
     assert module.main() == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
 
     assert "candidates" not in payload
     assert payload["summary"]["candidate_count"] == 1
@@ -393,4 +394,4 @@ def test_inventory_boundary_bypass_cli_summary_omits_full_candidates(tmp_path: P
             "clean_inprocess_targets": ["scripts/foo.py"],
         }
     ]
-    assert payload["summary_note"] == "summary is triage output; use --json for full candidate attribution"
+    assert payload["summary_note"] == "summary is triage output; drop --summary for full candidate attribution"

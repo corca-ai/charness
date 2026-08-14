@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -25,6 +24,7 @@ _scripts_quality_bootstrap_lib_module = SKILL_RUNTIME.load_repo_module_from_skil
 _scripts_quality_bootstrap_lifecycle_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_bootstrap_lifecycle")
 BootstrapValidationError = _scripts_quality_bootstrap_lib_module.BootstrapValidationError
 bootstrap_quality_adapter = _scripts_quality_bootstrap_lifecycle_module.bootstrap_quality_adapter
+_summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 
 
 def main() -> None:
@@ -47,10 +47,10 @@ def main() -> None:
         dry_run=args.dry_run,
         migrate=args.migrate,
     )
-    sys.stdout.write(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    _summary_output.emit_yaml(report)
     # Reverting an operator's customization silently is the failure this guards. The
-    # JSON carries the same fact, but a run log shows stderr, so the warning goes
-    # where it will actually be read.
+    # stdout payload carries the same fact, but a run log shows stderr, so the warning
+    # goes where it will actually be read.
     for warning in [*report.get("absence_warnings", []), *([report["customization_warning"]] if report.get("customization_warning") else [])]:
         print(f"WARN: {warning}", file=sys.stderr)
 

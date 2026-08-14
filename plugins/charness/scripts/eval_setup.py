@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import tempfile
 from pathlib import Path
 from typing import Callable
@@ -21,7 +20,7 @@ def run_setup_inspect_states(
         tmp = Path(tmpdir)
         greenfield_result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
         expect_success(greenfield_result, "setup greenfield inspect")
-        greenfield = json.loads(greenfield_result.stdout)
+        greenfield = yaml.safe_load(greenfield_result.stdout)
         if greenfield.get("repo_mode") != "GREENFIELD":
             raise error_type(f"setup greenfield inspect: unexpected repo_mode {greenfield.get('repo_mode')!r}")
         if greenfield.get("agent_docs", {}).get("recommended_action") != "create_agents_and_symlink":
@@ -37,7 +36,7 @@ def run_setup_inspect_states(
         (tmp / "CLAUDE.md").write_text("project-specific instructions\n", encoding="utf-8")
         partial_result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
         expect_success(partial_result, "setup partial inspect")
-        partial = json.loads(partial_result.stdout)
+        partial = yaml.safe_load(partial_result.stdout)
         if partial.get("repo_mode") != "PARTIAL":
             raise error_type(f"setup partial inspect: unexpected repo_mode {partial.get('repo_mode')!r}")
         if partial.get("agent_docs", {}).get("recommended_action") != "ask_to_promote_claude_into_agents":
@@ -56,7 +55,7 @@ def run_setup_inspect_states(
         (tmp / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
         targeted_result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
         expect_success(targeted_result, "setup targeted partial inspect")
-        targeted = json.loads(targeted_result.stdout)
+        targeted = yaml.safe_load(targeted_result.stdout)
         if targeted.get("repo_mode") != "PARTIAL":
             raise error_type(f"setup targeted partial inspect: unexpected repo_mode {targeted.get('repo_mode')!r}")
         if targeted.get("partial_kind") != "targeted_missing_surface":
@@ -109,7 +108,7 @@ def run_setup_review_scope_inspect(
         (tmp / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
         result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
         expect_success(result, "setup delegated-review scope inspect")
-        review_scope = json.loads(result.stdout)
+        review_scope = yaml.safe_load(result.stdout)
         normalization = review_scope.get("agent_docs", {}).get("normalization", {})
         missing_scopes = normalization.get("fresh_eye_review", {}).get("missing_task_review_scopes")
         if missing_scopes != ["setup", "quality", "critique", "release", "issue"]:
@@ -178,12 +177,11 @@ def run_setup_operator_acceptance_synthesis(
                 "skills/public/setup/scripts/synthesize_operator_acceptance.py",
                 "--repo-root",
                 str(tmp),
-                "--json",
             ],
             cwd=root,
         )
         expect_success(result, "setup operator acceptance synthesis")
-        payload = json.loads(result.stdout)
+        payload = yaml.safe_load(result.stdout)
         cheap = payload["acceptance_buckets"]["cheap_first"]
         external = payload["acceptance_buckets"]["external_or_costly"]
         human = payload["acceptance_buckets"]["human_judgment"]

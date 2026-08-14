@@ -3,10 +3,10 @@
 
 CLI surface:
 
-    python3 prepare_ranker_packet.py --input <path-to-json>
+    python3 prepare_ranker_packet.py --input <path-to-merge-proposal>
     python3 prepare_ranker_packet.py --input -        # read stdin
 
-The packet is a self-contained JSON payload: the agent fills the
+The packet is a self-contained YAML payload: the agent fills the
 ``ranked_chunks`` array per the embedded ``response_schema`` and the
 parent calls
 ``chunked_routing_lib.validate_ranker_response`` on the filled payload.
@@ -16,7 +16,6 @@ repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
 which is not vendored with the skill).
 """
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -36,7 +35,7 @@ chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_r
 
 
 def _restore_merge_proposal(payload: dict):
-    """Rebuild a MergeProposal from JSON emitted by ``MergeProposal.to_dict()``."""
+    """Rebuild a MergeProposal from a payload emitted by ``MergeProposal.to_dict()``."""
 
     def restore_candidate(candidate_dict):
         return chunked_routing_lib.ChunkCandidate(
@@ -73,7 +72,7 @@ def main() -> int:
         )
         merge_proposal = _restore_merge_proposal(payload)
         packet = chunked_routing_lib.build_ranker_packet(merge_proposal)
-        sys.stdout.write(json.dumps(packet, ensure_ascii=False, indent=2) + "\n")
+        sys.stdout.write(chunked_routing_cli.render_yaml(packet))
         return 0
     finally:
         cancel_timeout()

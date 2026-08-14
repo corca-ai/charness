@@ -17,6 +17,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import yaml
+
 from tests.quality_gates.support import run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
@@ -70,7 +72,7 @@ def _bug_closeout_body(*, source_block: str, close_line: str = "Close #42.") -> 
 def test_created_body_with_source_text_passes(tmp_path: Path) -> None:
     result = _check_source(tmp_path, _fixture()["created_body_source_text"], require_external=True)
     assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["external_sourced"] is True
     assert "source-text" in payload["forms_present"]
@@ -79,7 +81,7 @@ def test_created_body_with_source_text_passes(tmp_path: Path) -> None:
 def test_created_body_with_reread_obligation_passes(tmp_path: Path) -> None:
     result = _check_source(tmp_path, _fixture()["created_body_reread"], require_external=True)
     assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["forms_present"] == ["re-read-required"]
 
@@ -87,7 +89,7 @@ def test_created_body_with_reread_obligation_passes(tmp_path: Path) -> None:
 def test_created_body_unpreserved_external_fails(tmp_path: Path) -> None:
     result = _check_source(tmp_path, _fixture()["created_body_unpreserved"], require_external=True)
     assert result.returncode == 1, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["external_sourced"] is True
     assert payload["missing"] is True
@@ -97,7 +99,7 @@ def test_created_body_unpreserved_external_fails(tmp_path: Path) -> None:
 def test_internal_body_is_exempt_noop(tmp_path: Path) -> None:
     result = _check_source(tmp_path, _fixture()["created_body_internal"], require_external=False)
     assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["external_sourced"] is False
     assert payload["missing"] is False
 
@@ -105,7 +107,7 @@ def test_internal_body_is_exempt_noop(tmp_path: Path) -> None:
 def test_require_external_flags_missing_origin_marker(tmp_path: Path) -> None:
     result = _check_source(tmp_path, _fixture()["created_body_internal"], require_external=True)
     assert result.returncode == 1, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["external_marker_missing"] is True
 
@@ -114,7 +116,7 @@ def test_check_source_preservation_missing_body_file(tmp_path: Path) -> None:
     missing = tmp_path / "does-not-exist.md"
     result = run_script(SCRIPT, "check-source-preservation", "--body-file", str(missing))
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "body file not found" in payload["error"]
 
@@ -129,7 +131,7 @@ def test_degraded_reason_satisfies_contract(tmp_path: Path) -> None:
     )
     result = _check_source(tmp_path, body, require_external=True)
     assert result.returncode == 0, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["forms_present"] == ["degraded"]
 
 
@@ -147,7 +149,7 @@ def test_verify_closeout_blocks_unpreserved_external_source(tmp_path: Path) -> N
         "--number", "42", "--classification", "bug", "--carrier", "pr-body", "--body-file", str(body),
     )
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["source_preservation"]["missing"] is True
     # Source preservation is the *only* failure: ledger + keywords are intact.
@@ -164,7 +166,7 @@ def test_verify_closeout_accepts_preserved_external_source(tmp_path: Path) -> No
         "--number", "42", "--classification", "bug", "--carrier", "pr-body", "--body-file", str(body),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
     assert payload["source_preservation"]["missing"] is False
     assert payload["source_preservation"]["forms_present"] == ["source-text"]
@@ -178,7 +180,7 @@ def test_verify_closeout_internal_issue_unaffected(tmp_path: Path) -> None:
         "--number", "42", "--classification", "bug", "--carrier", "pr-body", "--body-file", str(body),
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["source_preservation"]["external_sourced"] is False
 
 
@@ -193,7 +195,7 @@ def test_validate_closeout_draft_inherits_source_block(tmp_path: Path) -> None:
         "--number", "42", "--classification", "bug", "--body-file", str(body),
     )
     assert result.returncode == 2, result.stdout
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "draft_failed"
     assert payload["source_preservation"]["missing"] is True
 

@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:  # git-hook execution: `scripts/` is sys.path[0], not a package
+    from yaml_output import emit_yaml
 
 _CLASSIFICATION_RE = re.compile(
     r"(?im)^\s*(?:[-*]\s*)?(?:\*\*)?classification(?:\*\*)?\s*:\s*"
@@ -382,155 +386,85 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
     }
 
 
-def _stub_evidence_lines(critique: dict[str, Any]) -> list[str]:
-    """The stub-evidence refusal, rendered for the commit carrier.
+# Everything below is prose the deleted human renderer carried and the structured
+# report does not. This is the ONLY carrier that can block `git commit`, so a
+# bare snake_case token here is how a gate earns a route-around: the payload has
+# to say what the author must DO, not only which field failed.
+_PAUSE_SUMMARY = (
+    "a staged pausing resolution brief is missing its `AI-provenance:` line (the one "
+    "requirement kept for pause-state briefs)."
+)
+_FAILURE_SUMMARY = (
+    "this commit closes an issue (staged closeout artifact and/or a GitHub close keyword "
+    "in the message) without a valid closeout carrier."
+)
+_PAUSE_REMEDIATION = (
+    "Append one `AI-provenance:` line to the staged brief naming it as agent-drafted "
+    "pause state (see the resolution-brief Persistence contract), then retry. Close "
+    "keywords and the closeout ledger are not required while the brief is pausing and "
+    "the commit message close-keywords none of its issue numbers."
+)
+_FAILURE_REMEDIATION = (
+    "Put the close keywords and closeout ledger in the commit body, or unstage the issue "
+    "closeout artifact. If a close keyword above has no staged artifact and you do not "
+    "want to carry the full closeout ledger in this commit, rewrite the keyword to a bare "
+    "`#N` reference (e.g. `close #123` -> `#123`) so GitHub does not auto-close the issue "
+    "on push.",
+    "If this close really is a question or a recorded decision, declare it with an "
+    "explicit `Classification: question` / `Classification: decision-needed` line in the "
+    "staged artifact. That exemption is never inferred from body text.",
+)
+# The HOTL floor was folded into the verdict while printing nothing about itself.
+# `undispositioned` names the entry; only this sentence says what a valid value
+# looks like and that DELETING an inert line is the right move.
+_HOTL_REQUIREMENT = (
+    "An `HOTL:` value must LEAD WITH a typed HOTL status (or local-only-by-contract), "
+    "not merely mention one. If there was no live human loop, DELETE the line rather "
+    "than writing `none`/`n/a` -- a body with no HOTL entry is inert and passes."
+)
+# `commit_msg_closeout_authorization.format_refusal` was this report's only route
+# to the operator; its structured half is already in `closeout_authorization`, so
+# only the remedy paragraph needs a home here.
+_REFUSAL_REMEDIATION = (
+    "Rewrite the close keyword to a bare `#N` reference so GitHub does not auto-close, "
+    "or split the carrier so the protected issue is closed alone with its own evidence. "
+    "This gate applies only to the protected issues above; unrelated closes are "
+    "unaffected."
+)
+# `missing_fields` alone misdescribes the dominant cause (the field is present and
+# carries a placeholder), and for a SHAPE finding it is outright wrong -- the field
+# is present AND substantive, and only its shape failed.
+_LEDGER_FIELD_NOTE = (
+    "`missing_fields` covers absent, placeholder AND wrong-shape fields; each entry's "
+    "own explanation is in `missing_field_reasons`."
+)
 
-    The file exists and is non-empty, so none of the other refusal sets name it;
-    without this the author got nine words and no diagnosis on the one surface
-    that stops a commit -- the defect the sibling loops above already repaired.
-    """
-    return [
-        f"    {entry.get('name')}: {entry.get('detail')}"
-        for entry in critique.get("stub_evidence", []) or []
-    ]
 
-
-def _ledger_field_lines(item: dict[str, Any]) -> list[str]:
-    """The ledger-field block, with each finding's own reason under it.
-
-    "missing" alone misdescribes the dominant post-B1 cause (the field is present
-    and carries a placeholder), and for a SHAPE finding the prefix is outright
-    wrong -- the field is present AND substantive, and only its shape failed. So
-    each finding whose owner can explain itself prints that explanation, for the
-    same reason the resolution-critique block does: this is the ONLY carrier that
-    can block `git commit`, and a bare snake_case token there is how a gate earns
-    a route-around.
-
-    Extracted rather than inlined so `_format_failure` stays inside its
-    complexity budget -- the gate refused the inline version, and it was right.
-    """
-    if not item.get("missing_fields"):
-        return []
-    lines = [f"  missing or placeholder ledger fields: {', '.join(item['missing_fields'])}"]
-    lines.extend(f"    {detail}" for detail in item.get("missing_field_reasons") or [])
-    return lines
-
-
-def _format_failure(report: dict[str, Any]) -> str:
-    # #444 F5: a pause-only failure has exactly one remedy (the brief's
-    # `AI-provenance:` line); the generic header/footer would misdirect the
-    # author toward close keywords and the closeout ledger. Keyed on the
-    # *failing* reports only — a passing non-pause report staged beside a
-    # failing pause brief must not suppress the pause remedy text.
+def report_payload(report: dict[str, Any]) -> dict[str, Any]:
+    """Fold the remediation prose into the payload the gate emits."""
+    payload = dict(report)
+    if report["ok"]:
+        return payload
+    if report.get("status") == "refused":
+        payload["summary"] = (
+            "this commit's close targets are REFUSED by the evidence-boundary closeout "
+            "authorization."
+        )
+        payload["remediation"] = [_REFUSAL_REMEDIATION]
+        return payload
     failing = [item for item in report.get("reports", []) if not item.get("ok")]
-    pause_only = bool(failing) and all(
-        item.get("trigger") == "pause-brief" for item in failing
-    )
-    if pause_only:
-        lines = [
-            "charness commit-msg: a staged pausing resolution brief is missing its "
-            "`AI-provenance:` line (the one requirement kept for pause-state briefs).",
-        ]
-    else:
-        lines = [
-            "charness commit-msg: this commit closes an issue (staged closeout artifact and/or a "
-            "GitHub close keyword in the message) without a valid closeout carrier.",
-        ]
-    for item in report.get("reports", []):
-        source = item.get("source_artifact")
-        numbers = ", ".join(f"#{number}" for number in item.get("numbers", []))
-        if source is None:
-            lines.append(f"- commit message close keyword (no staged closeout artifact): {numbers}")
-        elif item.get("trigger") == "pause-brief":
-            lines.append(
-                f"- {source}: {numbers} (pausing resolution brief: exempt from the closeout "
-                "ledger, but the brief itself must carry an `AI-provenance:` line)"
-            )
-        else:
-            lines.append(f"- {source}: {numbers}")
-        # Name the classification the floors were actually run against. Which
-        # ledger a body owes depends entirely on it, and it can be INFERRED
-        # rather than declared, so "missing ledger fields: boundary" is
-        # undiagnosable without it — the author cannot tell that their
-        # `Classification: bug.` line was not read as a declaration.
-        if item.get("classification"):
-            lines.append(f"  classification checked: {item['classification']}")
-        if item.get("missing_close_keywords"):
-            missing = ", ".join(f"#{number}" for number in item["missing_close_keywords"])
-            lines.append(f"  missing close keywords: {missing}")
-        lines.extend(_ledger_field_lines(item))
-        critique = item.get("resolution_critique_check", {})
-        if not critique.get("ok", True):
-            lines.append("  missing/invalid resolution critique evidence")
-            # This is the ONLY carrier that can block `git commit`, and the
-            # library already built the specific reason (wrong enum head, or a
-            # signal under the detail floor). Dropping it left the author with
-            # nine words and no diagnosis on the one surface that stops them.
-            for entry in critique.get("invalid_skips", []):
-                lines.append(f"    {entry.get('name')}: {entry.get('detail')}")
-            for entry in critique.get("missing_evidence_files", []):
-                lines.append(f"    {entry.get('name')}: evidence file missing or empty: {entry.get('path')}")
-            for failure in critique.get("binding_failures", []):
-                lines.append(f"    #{failure.get('number')}: {failure.get('reason')}")
-            lines.extend(_stub_evidence_lines(critique))
-        behavioral = item.get("behavioral_verdict", {})
-        if behavioral.get("applies") and not behavioral.get("ok", True):
-            missing_behavior = ", ".join(f"#{number}" for number in behavioral.get("missing", []))
-            lines.append(
-                "  missing per-issue behavioral verdict (a `Behavior #N:` line naming a "
-                f"distinct channel or a typed non-verified disposition): {missing_behavior}"
-            )
-        hotl = item.get("hotl_dispositions", {})
-        for entry in hotl.get("undispositioned", []) or []:
-            # This carrier folded the HOTL floor into its verdict and printed nothing
-            # about it -- the same bare-refusal defect this file already repaired twice
-            # for its sibling floors, on the ONE carrier that can block `git commit`.
-            lines.append(
-                f"  undispositioned HOTL entry {entry.get('target') or ''}: the value must "
-                f"LEAD WITH a typed HOTL status (or local-only-by-contract), not merely "
-                f"mention one; got {entry.get('value')!r}. If there was no live human loop, "
-                "DELETE the line rather than writing `none`/`n/a` -- a body with no HOTL "
-                "entry is inert and passes."
-            )
-        provenance = item.get("ai_provenance", {})
-        if provenance.get("applies") and not provenance.get("ok", True):
-            lines.append("  missing `AI-provenance:` marker on the agent-authored carrier")
-    if pause_only:
-        lines.append(
-            "Append one `AI-provenance:` line to the staged brief naming it as agent-drafted "
-            "pause state (see the resolution-brief Persistence contract), then retry. Close "
-            "keywords and the closeout ledger are not required while the brief is pausing "
-            "and the commit message close-keywords none of its issue numbers."
-        )
-    else:
-        lines.append(
-            "Put the close keywords and closeout ledger in the commit body, or unstage the issue "
-            "closeout artifact. If a close keyword above has no staged artifact and you do not want "
-            "to carry the full closeout ledger in this commit, rewrite the keyword to a bare `#N` "
-            "reference (e.g. `close #123` -> `#123`) so GitHub does not auto-close the issue on push."
-        )
-        lines.append(
-            "If this close really is a question or a recorded decision, declare it with an "
-            "explicit `Classification: question` / `Classification: decision-needed` line in the "
-            "staged artifact. That exemption is never inferred from body text."
-        )
-    return "\n".join(lines)
-
-
-def _emit_human_output(report: dict[str, Any]) -> None:
-    """Non-JSON stderr rendering: the failure detail when the floor fails, plus
-    any non-blocking exemption advisory. A ``question``/``decision-needed`` close
-    self-exempts from the behavioral/critique floors; surfacing that here (it
-    mirrors ``close-with-comment``'s ``review_advisory``) keeps the exemption from
-    being the silent path on the commit-msg carrier, without ever changing exit.
-    """
-    if not report["ok"]:
-        if report.get("status") == "refused":
-            print(_AUTHZ.format_refusal(report), file=sys.stderr)
-        else:
-            print(_format_failure(report), file=sys.stderr)
-    for line in report.get("review_advisory", []):
-        print(f"charness commit-msg: {line}", file=sys.stderr)
+    # Keyed on the FAILING reports only -- a passing non-pause report staged beside
+    # a failing pause brief must not suppress the pause remedy text.
+    pause_only = bool(failing) and all(item.get("trigger") == "pause-brief" for item in failing)
+    payload["summary"] = _PAUSE_SUMMARY if pause_only else _FAILURE_SUMMARY
+    payload["remediation"] = [_PAUSE_REMEDIATION] if pause_only else list(_FAILURE_REMEDIATION)
+    if any(item.get("missing_fields") for item in failing):
+        payload["ledger_field_note"] = _LEDGER_FIELD_NOTE
+    if any(
+        (item.get("hotl_dispositions") or {}).get("undispositioned") for item in failing
+    ):
+        payload["hotl_requirement"] = _HOTL_REQUIREMENT
+    return payload
 
 
 def main() -> int:
@@ -538,15 +472,11 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--commit-msg-file", type=Path, required=True)
     parser.add_argument("--repo", default="corca-ai/charness")
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     report = evaluate(repo_root, args.commit_msg_file, args.repo)
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-    else:
-        _emit_human_output(report)
+    emit_yaml(report_payload(report))
     return 0 if report["ok"] else 1
 
 

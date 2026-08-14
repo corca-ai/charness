@@ -10,9 +10,10 @@ three-phase contract. This is advisory routing only -- never a blocking floor.
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 from pathlib import Path
+
+import yaml
 
 _ROOT = Path(__file__).resolve().parents[2]
 _SCRIPTS = _ROOT / "skills/public/achieve/scripts"
@@ -121,7 +122,7 @@ def _run_checker(*extra_args: str) -> dict:
         text=True,
         capture_output=True,
     )
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_draft_goal_carries_before_phase_brief(tmp_path: Path) -> None:

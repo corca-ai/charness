@@ -14,6 +14,7 @@ import tarfile
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
@@ -44,12 +45,23 @@ def test_headroom_reports_limit_minus_current_and_flags_near_limit(tmp_path: Pat
         str(short),
     )
     assert result.returncode == 0  # advisory: never blocks
-    assert "near.py: 340/360 code lines (20 left) NEAR-LIMIT" in result.stdout
-    assert "short.py: 10/360 code lines (350 left)" in result.stdout
-    assert "WARN:" in result.stdout and "near.py" in result.stdout.split("WARN:")[1]
+    payload = yaml.safe_load(result.stdout)
+    rows = {row["path"].rsplit("/", 1)[-1]: row for row in payload["headroom"]}
+    # `limit - current` per file, and the near-limit judgment, for both the
+    # near-limit and the roomy file.
+    assert (rows["near.py"]["lines"], rows["near.py"]["limit"], rows["near.py"]["headroom"]) == (340, 360, 20)
+    assert rows["near.py"]["near_limit"] is True
+    assert (rows["short.py"]["lines"], rows["short.py"]["limit"], rows["short.py"]["headroom"]) == (10, 360, 350)
+    assert rows["short.py"]["near_limit"] is False
+    # The near-limit roll-up and its "new module before adding more" advice —
+    # carried by the retired `WARN:` line — are payload keys now, and they name
+    # only the near-limit file.
+    assert [path.rsplit("/", 1)[-1] for path in payload["near_limit_paths"]] == ["near.py"]
+    assert payload["advisory"].startswith("WARN: 1 file(s) near the length limit")
+    assert "consider a new" in payload["advisory"]
 
 
-def test_headroom_json_shape(tmp_path: Path) -> None:
+def test_headroom_payload_shape(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     near = _skill_helper(repo, "near.py", 340)
     result = run_script(
@@ -57,18 +69,19 @@ def test_headroom_json_shape(tmp_path: Path) -> None:
         "--repo-root",
         str(repo),
         "--headroom",
-        "--json",
         "--paths",
         str(near),
     )
-    import json
 
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     row = payload["headroom"][0]
     assert row["lines"] == 340 and row["limit"] == 360 and row["headroom"] == 20
     assert row["measurement"] == "tokei-python-code-lines"
     assert row["near_limit"] is True
+    # The self-declaration rides only when a near-limit smell is present, and
+    # only the exact `limit - current` values above are verified facts.
+    assert payload["interpretation"]["proxy_for"]
 
 
 def test_headroom_ignores_non_gated_paths(tmp_path: Path) -> None:

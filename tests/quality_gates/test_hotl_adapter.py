@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 
 import yaml
@@ -42,14 +41,17 @@ def test_validate_adapter_accepts_the_shipped_example(tmp_path: Path) -> None:
     assert [entry["kind"] for entry in validated["proof_commands"]] == ["readiness", "readback", "live"]
     assert validated["proof_commands"][2]["boundary_reason_required"] is True
     assert validated["ledger_path"] == "charness-artifacts/hotl/proof-ledger.json"
-    assert validated["completion_audit_command"].endswith("--json")
+    # The example still names a completion audit command; repo-owned commands now
+    # emit YAML unconditionally, so the example must not name a `--json` flag.
+    assert validated["completion_audit_command"] == "<repo-owned completion audit command>"
+    assert "--json" not in validated["completion_audit_command"]
 
 
 def test_validate_adapter_defaults_boundary_reason_by_kind(tmp_path: Path) -> None:
     data = {
         "proof_commands": [
-            {"id": "go-live", "command": "x --json", "kind": "live"},
-            {"id": "read", "command": "y --json", "kind": "readback"},
+            {"id": "go-live", "command": "x", "kind": "live"},
+            {"id": "read", "command": "y", "kind": "readback"},
         ]
     }
 
@@ -155,7 +157,7 @@ def test_scripts_run_as_main_in_process(tmp_path: Path, monkeypatch, capsys) -> 
 
     monkeypatch.setattr("sys.argv", ["resolve_adapter.py", "--repo-root", str(tmp_path)])
     runpy.run_path(str(ROOT / "skills" / "public" / "hotl" / "scripts" / "resolve_adapter.py"), run_name="__main__")
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["valid"] is True
 
     monkeypatch.setattr("sys.argv", ["init_adapter.py", "--repo-root", str(tmp_path)])

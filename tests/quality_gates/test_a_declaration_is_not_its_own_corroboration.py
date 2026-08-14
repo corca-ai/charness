@@ -10,10 +10,11 @@ Each test names the pre-repair verdict it pins against, observed in the parent o
 """
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from tests.probe_drift_support import FLOOR_PROBE, probe_drift_message
 
@@ -571,9 +572,10 @@ def test_a_whole_repository_predating_the_contract_is_not_called_corroborated(tm
     assert "Corroborated:" not in result.stdout
 
 
-def test_the_floor_measurement_human_output_and_exit_code(tmp_path, monkeypatch, capsys):
-    # `measure_inventory_consumption_floor.py`'s human-render path and
-    # the exit expression, none of which the earlier tests reached.
+def test_the_floor_measurement_payload_and_exit_code(tmp_path, monkeypatch, capsys):
+    # `measure_inventory_consumption_floor.py`'s emit path and the exit expression,
+    # none of which the earlier tests reached. The prose render is gone, so the
+    # sections it labelled are asserted as the payload keys they came from.
     corpus = tmp_path / "quality"
     corpus.mkdir()
     (corpus / "a.md").write_text(
@@ -591,15 +593,19 @@ def test_the_floor_measurement_human_output_and_exit_code(tmp_path, monkeypatch,
     ])
 
     code = measure.main()
-    out = capsys.readouterr().out
+    payload = yaml.safe_load(capsys.readouterr().out)
 
     assert code in (0, 1)
-    assert "exemption states:" in out
-    assert "label-value residuals:" in out
-    assert "citations the floor drops below their requirement:" in out
+    assert payload["artifacts"] == 1
+    assert payload["corpus"]
+    assert payload["floor"]
+    assert "exemption_counts" in payload
+    assert "label_value_residuals" in payload
+    assert "field_mention_residuals" in payload
+    assert "citations_lowered_below_requirement" in payload
 
 
-def test_the_floor_measurement_emits_json(tmp_path, monkeypatch, capsys):
+def test_the_floor_measurement_emits_a_structured_payload(tmp_path, monkeypatch, capsys):
     # `:203-204`.
     corpus = tmp_path / "quality"
     corpus.mkdir()
@@ -611,17 +617,17 @@ def test_the_floor_measurement_emits_json(tmp_path, monkeypatch, capsys):
     fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
     monkeypatch.setattr("sys.argv", [
         "measure", "--repo-root", str(tmp_path), "--corpus", str(corpus),
-        "--consumer-fields-path", str(fields), "--json",
+        "--consumer-fields-path", str(fields),
     ])
 
     assert measure.main() == 0
-    assert json.loads(capsys.readouterr().out)["artifacts"] == 1
+    assert yaml.safe_load(capsys.readouterr().out)["artifacts"] == 1
 
 
 def test_the_floor_measurement_names_a_citation_it_lowers(tmp_path, monkeypatch, capsys):
-    # `measure_inventory_consumption_floor.py` — the per-entry print inside the
-    # lowered-citations loop, which needs a corpus where the floor actually drops a
-    # citation below its requirement.
+    # `measure_inventory_consumption_floor.py` — the per-entry detail the
+    # lowered-citations list carries, which needs a corpus where the floor actually
+    # drops a citation below its requirement.
     corpus = tmp_path / "quality"
     corpus.mkdir()
     (corpus / "a.md").write_text(
@@ -641,9 +647,13 @@ def test_the_floor_measurement_names_a_citation_it_lowers(tmp_path, monkeypatch,
     ])
 
     assert measure.main() == 1
-    out = capsys.readouterr().out
-    assert "citations the floor drops below their requirement: 1" in out
-    assert "inventory_skill_ergonomics.py" in out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    lowered = payload["citations_lowered_below_requirement"]
+    assert len(lowered) == 1
+    # The entry has to NAME the citation it lowered; a bare count would say a
+    # citation was dropped without saying which one.
+    assert "inventory_skill_ergonomics.py" in lowered[0]["inventory"]
+    assert lowered[0]["lost_to_the_floor"]
 
 
 def test_the_floor_measurement_runs_as_a_script(tmp_path):
@@ -661,4 +671,4 @@ def test_the_floor_measurement_runs_as_a_script(tmp_path):
     )
 
     assert result.returncode == 0
-    assert "1 artifact(s)" in result.stdout
+    assert yaml.safe_load(result.stdout)["artifacts"] == 1

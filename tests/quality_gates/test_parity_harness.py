@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
@@ -147,11 +149,10 @@ def test_uncomparable_paths_are_reported_rather_than_dropped(tmp_path: Path) -> 
         "review-snapshot",
         "--paths",
         "scripts/fresh.py",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["files"] == {}
     assert "scripts/fresh.py" in payload["uncomparable"]
 
@@ -183,11 +184,10 @@ def test_the_snapshot_captures_python_source_so_a_repair_has_a_baseline(tmp_path
         str(repo),
         "--against",
         "review-snapshot",
-        "--json",
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["files"] == {"scripts/gate.py": ["verdict"]}
 
 
@@ -222,7 +222,9 @@ _advisories = import_repo_module(
 def _canned_harness(payload: dict):
     class _Proc:
         returncode = 0
-        stdout = json.dumps(payload)
+        # The harness emits one YAML document unconditionally, so the canned stdout
+        # is rendered the same way the advisory will read it.
+        stdout = yaml.safe_dump(payload)
 
     return lambda *a, **k: _Proc()
 
@@ -239,7 +241,7 @@ def test_the_advisory_names_the_repaired_functions(monkeypatch, capsys) -> None:
     captured = capsys.readouterr()
     assert "scripts/gate.py: verdict" in captured.err
     assert "INTENDED delta" in captured.err
-    # stdout carries the `--json` closeout payload; an advisory there breaks it.
+    # stdout carries the closeout's one YAML document; an advisory there breaks it.
     assert captured.out == ""
 
 
@@ -355,9 +357,9 @@ def test_a_file_clean_at_snapshot_time_is_reported_uncomparable_not_clean(tmp_pa
     run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
 
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
-    result = run_script("scripts/parity_harness.py", "--repo-root", str(repo), "--json")
+    result = run_script("scripts/parity_harness.py", "--repo-root", str(repo))
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["files"] == {}
     assert "scripts/shipped.py" in payload["uncomparable"]
 
@@ -384,7 +386,7 @@ def test_the_snapshot_blobs_are_not_reported_as_reviewer_drift(tmp_path: Path) -
         str(repo / ".charness" / "reviewer-boundary" / "snapshot.json"),
     )
 
-    payload = json.loads(verify.stdout)
+    payload = yaml.safe_load(verify.stdout)
     assert payload["ok"] is True, payload["drift"]
     assert payload["drift"] == []
     assert verify.returncode == 0
@@ -446,7 +448,7 @@ def test_a_snapshot_written_at_the_repo_root_does_not_report_its_own_blobs(tmp_p
         "verify", "--repo-root", str(repo), "--before", str(out),
     )
 
-    payload = json.loads(verify.stdout)
+    payload = yaml.safe_load(verify.stdout)
     assert payload["ok"] is True, payload["drift"]
 
 
@@ -461,7 +463,7 @@ def test_a_destroyed_baseline_is_reported_as_lost_not_as_never_captured(tmp_path
         blob.unlink()
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
 
-    payload = json.loads(run_script("scripts/parity_harness.py", "--repo-root", str(repo), "--json").stdout)
+    payload = yaml.safe_load(run_script("scripts/parity_harness.py", "--repo-root", str(repo)).stdout)
 
     assert "LOST baseline" in payload["uncomparable"]["scripts/gate.py"]
 
@@ -631,7 +633,15 @@ def test_an_unreadable_worktree_path_is_uncomparable_not_clean(tmp_path: Path) -
 
 
 def test_the_cli_prints_both_branches_against_a_committed_ref(tmp_path: Path, monkeypatch, capsys) -> None:
-    """Human mode has a clean branch and a repairs branch; both carry the skipped count."""
+    """The payload has a clean branch and a repairs branch; both carry the skipped label.
+
+    The retired rendering said "No repair-shaped function changes" or named the
+    repaired functions, and appended `skipped: N uncomparable path(s)` either way.
+    Those three facts are payload keys now: `files` (empty versus named),
+    `next_step` (None versus the INTENDED-delta obligation, which only the repairs
+    branch owes), and `skipped`, which keeps the WORD that marks those paths as
+    unexamined rather than leaving a bare count to read as data.
+    """
     repo = seeded_repo(tmp_path / "repo")
     target = repo / "scripts" / "gate.py"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -643,15 +653,20 @@ def test_the_cli_prints_both_branches_against_a_committed_ref(tmp_path: Path, mo
     )
 
     code, clean = _run_cli(monkeypatch, capsys, "--repo-root", str(repo), "--against", "HEAD")
-    assert code == 0 and "No repair-shaped function changes" in clean and "skipped:" in clean
+    clean_payload = yaml.safe_load(clean)
+    assert code == 0
+    assert clean_payload["files"] == {}
+    assert clean_payload["next_step"] is None
+    assert clean_payload["skipped"].startswith("skipped:")
 
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
     code, repairs = _run_cli(monkeypatch, capsys, "--repo-root", str(repo), "--against", "HEAD")
+    repairs_payload = yaml.safe_load(repairs)
 
     assert code == 0
-    assert "scripts/gate.py: verdict" in repairs
-    assert "skipped:" in repairs
-    assert "INTENDED delta" in repairs
+    assert repairs_payload["files"] == {"scripts/gate.py": ["verdict"]}
+    assert repairs_payload["skipped"].startswith("skipped:")
+    assert "INTENDED delta" in repairs_payload["next_step"]
 
 
 def test_the_advisory_degrades_on_a_failing_or_unparsable_harness(monkeypatch, capsys) -> None:

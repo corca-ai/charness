@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ADAPTER_LIB, ROOT, _load_script_module
 
@@ -462,19 +463,23 @@ def test_the_measurement_exits_nonzero_on_a_file_it_could_not_parse(tmp_path, mo
     monkeypatch.setattr("sys.argv", ["measure", "--repo-root", str(tmp_path), "--roots", ".agents"])
 
     assert measure.main() == 1
-    assert "UNREADABLE" in capsys.readouterr().out
+    # The retired `UNREADABLE <path>: <error>` line is the `unreadable` key now:
+    # the refusal must still be attributed to the file that caused it.
+    report = yaml.safe_load(capsys.readouterr().out)
+    assert [entry["path"] for entry in report["unreadable"]] == [".agents/issue-adapter.yaml"]
+    assert "parser refused" in report["unreadable"][0]["error"]
 
 
-def test_the_measurement_emits_json_on_request(tmp_path, monkeypatch, capsys):
+def test_the_measurement_emits_a_structured_payload(tmp_path, monkeypatch, capsys):
     (tmp_path / ".agents").mkdir(parents=True)
     (tmp_path / ".agents" / "issue-adapter.yaml").write_text("version: 1\n", encoding="utf-8")
     measure = _measure()
     monkeypatch.setattr(
-        "sys.argv", ["measure", "--repo-root", str(tmp_path), "--roots", ".agents", "--json"]
+        "sys.argv", ["measure", "--repo-root", str(tmp_path), "--roots", ".agents"]
     )
 
     assert measure.main() == 0
-    assert json.loads(capsys.readouterr().out)["uninterpreted_line_count"] == 0
+    assert yaml.safe_load(capsys.readouterr().out)["uninterpreted_line_count"] == 0
 
 
 # --- round-2 repairs: the fixes that carried the class they fixed --------------------
@@ -621,7 +626,8 @@ def test_the_measurement_reports_a_file_it_cannot_decode(tmp_path, monkeypatch, 
     monkeypatch.setattr("sys.argv", ["measure", "--repo-root", str(tmp_path), "--roots", ".agents"])
 
     assert measure.main() == 1
-    assert "UNREADABLE" in capsys.readouterr().out
+    report = yaml.safe_load(capsys.readouterr().out)
+    assert [entry["path"] for entry in report["unreadable"]] == [".agents/a.yaml"]
 
 
 def test_the_measurement_raises_if_the_report_variant_ever_diverges(tmp_path, monkeypatch):

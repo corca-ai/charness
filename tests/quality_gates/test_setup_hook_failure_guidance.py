@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 from scripts import setup_hook_failure_visibility_lib as visibility
 from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
@@ -34,7 +35,9 @@ def _run_inspector(script: Path, repo: Path) -> dict[str, object]:
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    return json.loads(result.stdout)["hook_failure_visibility"]
+    # `inspect_repo.py` emits YAML since the `--json` removal; YAML is a JSON superset,
+    # so this also parses the compact-JSON fallback used when PyYAML is unavailable.
+    return yaml.safe_load(result.stdout)["hook_failure_visibility"]
 
 
 def test_hook_failure_guidance_is_mirrored_and_names_the_contract() -> None:

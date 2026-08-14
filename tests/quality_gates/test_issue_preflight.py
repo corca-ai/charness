@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
 import os
 from pathlib import Path
+
+import yaml
 
 from tests.quality_gates.support import ROOT, run_script, write_issue_adapter_with_backend
 
@@ -43,24 +44,30 @@ def test_issue_preflight_fails_when_gh_auth_fails(tmp_path: Path) -> None:
     result = run_script(
         SCRIPT,
         "preflight",
-        "--json",
         "--repo-root",
         str(tmp_path),
         env={**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"},
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["gh_found"] is True
     assert payload["ok"] is False
     assert payload["auth_status"]["exit_code"] == 1
     assert payload["selected_backend"]["id"] == "gh"
     assert payload["selected_backend"]["binary"] == "gh"
+    # The deleted "found but not authenticated/healthy" text line, now a payload field.
+    assert payload["preflight_status"] == "found-but-not-authenticated-or-unhealthy"
 
 
-def test_issue_preflight_non_json_reports_backend_config_error(
-    monkeypatch, capsys, tmp_path: Path
-) -> None:
+def test_issue_preflight_reports_backend_config_error(monkeypatch, capsys, tmp_path: Path) -> None:
+    """The backend-probe failure the deleted text renderer used to print alone.
+
+    That branch was the only channel carrying WHICH failure happened; it is now
+    `error` plus `preflight_status` in the one YAML payload, so this reads the
+    payload rather than a human line. Parsed rather than substring-matched because
+    YAML folds a long scalar across lines.
+    """
     issue_tool = _load_issue_tool()
     monkeypatch.setattr(
         issue_tool,
@@ -72,10 +79,13 @@ def test_issue_preflight_non_json_reports_backend_config_error(
         },
     )
 
-    code = issue_tool.command_preflight(argparse.Namespace(repo_root=tmp_path, json=False))
+    code = issue_tool.command_preflight(argparse.Namespace(repo_root=tmp_path))
 
     assert code == 1
-    assert "issue_backend produced no binary" in capsys.readouterr().out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["ok"] is False
+    assert "issue_backend produced no binary" in payload["error"]
+    assert payload["preflight_status"] == "backend-probe-failed"
 
 
 def test_issue_preflight_resolves_adapter_backend_when_gh_absent(tmp_path: Path) -> None:
@@ -102,15 +112,15 @@ def test_issue_preflight_resolves_adapter_backend_when_gh_absent(tmp_path: Path)
     result = run_script(
         SCRIPT,
         "preflight",
-        "--json",
         "--repo-root",
         str(tmp_path),
         env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is True
+    assert payload["preflight_status"] == "ready"
     backend = payload["selected_backend"]
     assert backend["id"] == "acme-github"
     assert backend["binary"] == "acme"
@@ -142,13 +152,12 @@ def test_issue_preflight_resolves_adapter_from_process_cwd_when_repo_root_omitte
     result = run_script(
         str(ROOT / SCRIPT),
         "preflight",
-        "--json",
         cwd=tmp_path,
         env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["adapter"]["found"] is True, payload
     assert payload["adapter"]["path"] == str(tmp_path / ".agents" / "issue-adapter.yaml")
     assert payload["selected_backend"]["id"] == "acme-github"
@@ -162,15 +171,16 @@ def test_issue_preflight_reports_missing_backend_binary_with_explicit_error(tmp_
     result = run_script(
         SCRIPT,
         "preflight",
-        "--json",
         "--repo-root",
         str(tmp_path),
         env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
     )
 
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["selected_backend"]["id"] == "acme-github"
     assert payload["selected_backend"]["found"] is False
     assert "acme" in payload["error"]
+    # The deleted "backend binary missing" text line, now a payload field.
+    assert payload["preflight_status"] == "backend-binary-missing"

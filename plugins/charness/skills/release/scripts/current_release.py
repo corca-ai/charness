@@ -25,6 +25,8 @@ _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resol
 load_adapter = _resolve_adapter_module.load_adapter
 _fresh_checkout_module = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 build_fresh_checkout_payload = _fresh_checkout_module.build_payload
+_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+emit_yaml = _yaml_output_module.emit_yaml
 
 
 def _read_json(path: Path) -> dict[str, object] | None:
@@ -289,7 +291,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
     args = parser.parse_args()
-    print(json.dumps(build_payload(args.repo_root.resolve()), ensure_ascii=False, indent=2))
+    emit_yaml(build_payload(args.repo_root.resolve()))
 
 
 if __name__ == "__main__":

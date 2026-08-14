@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -334,26 +335,34 @@ def test_a_version_inside_a_fenced_block_is_not_a_transcribed_fact(tmp_path: Pat
     _handoff.validate_no_regenerable_facts(repo / "docs" / "handoff.md")
 
 
-def test_the_regenerable_forecast_reaches_the_operator_facing_text(tmp_path: Path) -> None:
-    """The findings list is not what an author reads — `format_human` is. Asserting only
-    the payload leaves the rendering that carries the remedy unproven, which is the same
-    'tested the data, not the verdict the reader sees' gap this preflight exists to close.
+def test_the_regenerable_forecast_reaches_the_emitted_document(tmp_path: Path) -> None:
+    """The raw findings list is not the whole verdict — the EMITTED document is.
+
+    `format_human` was deleted with `--json` on 2026-08-14, so there is no separate
+    rendering left to drift from the payload; `report_payload` is what an author
+    reads. What still has to hold is what the old text carried: the finding, its
+    line, its class, and the REMEDY — plus the affordance note that keeps a
+    `status: ok` from being read as a commit-gate verdict.
     """
     repo = _seed_repo(tmp_path, "# Demo Handoff\n\nShipped v9.9.9.\n")
-    rendered = _pf.format_human(_pf.build_report(repo, "docs/handoff.md", "handoff"))
+    payload = _pf.report_payload(_pf.build_report(repo, "docs/handoff.md", "handoff"))
 
-    assert "regenerable-facts: BLOCK (1 finding(s))" in rendered
-    assert "line 3" in rendered
-    assert "a release or tool version" in rendered
-    # the remedy must survive into the text, not just the payload
-    assert "git describe --tags --abbrev=0" in rendered
+    assert payload["status"] == "blocked"
+    assert len(payload["regenerable_facts"]) == 1
+    row = payload["regenerable_facts"][0]
+    assert row["line"] == 3
+    assert "a release or tool version" in row["label"]
+    # the remedy must survive into the emitted document, not just the bare finding
+    assert "git describe --tags --abbrev=0" in row["replacement"]
+    assert "affordance only" in payload["note"]
 
-    # The clean branch renders too. Use an ORDINARY doc: passing as_surface=None for
+    # The clean branch emits too. Use an ORDINARY doc: passing as_surface=None for
     # docs/handoff.md still resolves the handoff surface from the PATH, so that would
-    # have asserted the clean line while exercising the block branch.
+    # have asserted the clean state while exercising the block branch.
     (repo / "docs" / "notes.md").write_text("# Notes\n\nDocuments v9.9.9.\n", encoding="utf-8")
-    clean = _pf.format_human(_pf.build_report(repo, "docs/notes.md", None))
-    assert "regenerable-facts: clean" in clean
+    clean = _pf.report_payload(_pf.build_report(repo, "docs/notes.md", None))
+    assert clean["regenerable_facts"] == []
+    assert clean["status"] == "ok"
 
 
 def test_a_path_outside_the_repo_is_refused_by_name(tmp_path: Path) -> None:
@@ -383,14 +392,44 @@ def test_a_path_outside_the_repo_is_refused_by_name(tmp_path: Path) -> None:
 # types out its own copy of the rules is the drift it exists to prevent.
 
 
+def _rules_text(rules: dict) -> str:
+    """The rules surface an operator actually receives, flattened for substring checks.
+
+    These drift proofs used to render `doc_authoring_rules.format_rules_human`. That
+    renderer lost its last production caller in the 2026-08-14 YAML migration, so the
+    proofs were guarding a surface nobody reads while `rules_payload` -- the one this
+    command emits -- was unprotected. Same single-sourcing claim, moved onto the live
+    surface.
+    """
+    def _strings(node):
+        if isinstance(node, (str, int, float)) and not isinstance(node, bool):
+            yield str(node)
+        elif isinstance(node, dict):
+            for key, value in node.items():
+                yield str(key)
+                yield from _strings(value)
+        elif isinstance(node, list):
+            for item in node:
+                yield from _strings(item)
+
+    # Joined from the payload's own scalars, NOT from rendered YAML: `safe_dump` wraps
+    # long strings at ~80 columns, so a substring proof against rendered text passes or
+    # fails on where the wrap lands rather than on whether the sentence is carried.
+    return "\n".join(_strings(_pf.rules_payload(rules)))
+
+
 def test_rules_mode_answers_with_no_target_at_all() -> None:
     result = _run_script(ROOT, "--as-surface", "handoff")
 
     assert result.returncode == 0, result.stderr
-    assert "RULES" in result.stdout
+    # The `RULES` headline and the per-class labels were text this command emitted
+    # through `format_rules_human`; since 2026-08-14 it emits `rules_payload` as YAML
+    # instead, and these proofs assert against that payload.
+    payload = yaml.safe_load(result.stdout)
+    assert payload["mode"] == "rules"
     # The point of the mode: no `--path`, and still a rule for each class.
-    for expected in ("length:", "regenerable-facts:", "link form:", "backticked file references:"):
-        assert expected in result.stdout, f"missing rule class {expected}: {result.stdout}"
+    for expected in ("length", "regenerable_facts", "link_shapes", "backticked_refs"):
+        assert payload.get(expected), f"missing rule class {expected}: {result.stdout}"
 
 
 def test_rules_mode_renders_the_length_cap_live(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -399,7 +438,7 @@ def test_rules_mode_renders_the_length_cap_live(monkeypatch: pytest.MonkeyPatch)
     rules = _rules.build_rules(ROOT, "handoff")
 
     assert rules["length"]["cap"] == 4321
-    assert "4321" in _rules.format_rules_human(rules)
+    assert "4321" in _rules_text(rules)
 
 
 def test_rules_mode_renders_the_regenerable_classes_live(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -410,7 +449,7 @@ def test_rules_mode_renders_the_regenerable_classes_live(monkeypatch: pytest.Mon
         "REGENERABLE_PATTERNS",
         ((_re.compile(r"\bv\d+\.\d+\.\d+\b"), "a fabricated class", "run the fabricated command"),),
     )
-    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+    rendered = _rules_text(_rules.build_rules(ROOT, "handoff"))
 
     assert "a fabricated class" in rendered
     assert "run the fabricated command" in rendered
@@ -423,7 +462,7 @@ def test_rules_mode_headline_is_the_validators_own_sentence() -> None:
     rules = _rules.build_rules(ROOT, "handoff")
 
     assert "goes stale in place" in rules["regenerable_facts"]["verdict"]
-    assert rules["regenerable_facts"]["verdict"] in _rules.format_rules_human(rules)
+    assert rules["regenerable_facts"]["verdict"] in _rules_text(rules)
 
 
 def test_rules_mode_renders_the_tree_marker_class_it_could_not_reach() -> None:
@@ -442,7 +481,7 @@ def test_rules_mode_covers_the_classes_that_need_no_backtick_or_link() -> None:
     # A doc can be blocked by a bare internal markdown ref or a documented
     # command naming a missing script without containing either of the forms the
     # probes above classify.
-    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+    rendered = _rules_text(_rules.build_rules(ROOT, "handoff"))
 
     assert _doc_links.BARE_INTERNAL_REF_REMEDY in rendered
     assert _doc_links.MISSING_COMMAND_TARGET_REMEDY in rendered
@@ -457,14 +496,14 @@ def test_rules_mode_declines_to_probe_rather_than_invent_a_sample(monkeypatch: p
 
     assert rules["link_shapes"] == []
     assert rules["backticked_refs"] == []
-    assert "not probed" in _rules.format_rules_human(rules)
+    assert "were NOT probed" in _rules_text(rules)
 
 
 def test_rules_mode_renders_the_backtick_remedy_the_gate_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     # The two remedy sentences are single-sourced in check_doc_links so the
     # forecast cannot teach an author a remedy the gate does not offer.
     monkeypatch.setattr(_doc_links, "LINK_FORM_REMEDY", "a fabricated remedy")
-    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+    rendered = _rules_text(_rules.build_rules(ROOT, "handoff"))
 
     assert "a fabricated remedy" in rendered
 
@@ -497,7 +536,7 @@ def test_rules_mode_names_the_capped_surfaces_when_none_is_selected() -> None:
 
     assert rules["length"]["surface"] is None
     assert "handoff" in rules["length"]["known_surfaces"]
-    assert "--as-surface" in _rules.format_rules_human(rules)
+    assert "--as-surface" in _rules_text(rules)
 
 
 def test_rules_mode_refuses_an_unknown_surface_by_name() -> None:
@@ -529,9 +568,9 @@ def test_rules_mode_falls_back_when_the_probe_stops_tripping_the_rule(
     # classes remain, the probe raises nothing. Render the classes alone rather
     # than the literal word `None` above three correct rows.
     monkeypatch.setattr(_rules, "_regenerable_verdict", lambda: None)
-    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+    rendered = _rules_text(_rules.build_rules(ROOT, "handoff"))
 
-    assert "regenerable-facts: the classes this surface refuses" in rendered
+    assert "the classes this surface refuses" in rendered
     assert "regenerable-facts: None" not in rendered
 
 
@@ -544,6 +583,6 @@ def test_rules_mode_says_markdownlint_was_not_forecast_when_absent(monkeypatch: 
     # The binary-absent arm must SAY the class was not forecast; a rules mode
     # silently omitting it would read as "no markdownlint rules apply here".
     monkeypatch.setattr(_pf, "_resolve_markdownlint_cmd", lambda: None)
-    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+    rendered = _rules_text(_rules.build_rules(ROOT, "handoff"))
 
     assert "binary unavailable here" in rendered

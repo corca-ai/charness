@@ -19,6 +19,7 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _control_plane_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.control_plane_lib")
 load_manifests_for_discovery = _control_plane_lib.load_manifests_for_discovery
 dependencies_path = _control_plane_lib.dependencies_path
@@ -54,7 +55,6 @@ def main() -> int:
         action="store_true",
         help="Overwrite an existing integrations/tools/dependencies.json.",
     )
-    parser.add_argument("--json", action="store_true", help="Emit the full seeding payload as JSON")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -74,10 +74,7 @@ def main() -> int:
             "dependencies_path": str(deps_path),
             "tool_dependencies": tool_ids,
         }
-        if args.json:
-            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
-        else:
-            print(result["reason"])
+        yaml_output.emit_yaml(result)
         return 1
 
     deps_path.parent.mkdir(parents=True, exist_ok=True)
@@ -98,15 +95,10 @@ def main() -> int:
         "tool_dependencies": tool_ids,
         "actions": actions,
     }
-    if args.json:
-        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        for action in actions:
-            print(action)
-        if tool_ids:
-            print(f"staged tool_dependencies: {', '.join(tool_ids)}")
-        else:
-            print("staged tool_dependencies: (empty)")
+    # Unconditional YAML. The former text lines were `actions` verbatim plus the
+    # staged tool ids, both already payload fields; `json` stays imported because
+    # dependencies.json is a real JSON file this writes.
+    yaml_output.emit_yaml(result)
     return 0
 
 

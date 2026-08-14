@@ -102,7 +102,32 @@ def _load_state_module():
     return module
 
 
+def _load_yaml_output():
+    """Load the shared YAML renderer from the nearest tree root, by path.
+
+    Same both-layouts problem `_load_state_module` solves for a sibling, one
+    tier up: the helper is `<repo>/scripts/yaml_output.py` in the authoring tree
+    and `<plugin-root>/scripts/yaml_output.py` once exported, which sit at
+    different depths from here, so the root is walked to rather than counted.
+    The walk is BOUNDED for the reason `authoring_script_shim.locate` records --
+    an unbounded one climbs past the package into the CONSUMING repository and
+    would execute whatever `scripts/yaml_output.py` it found there."""
+    directory = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(5):
+        directory = os.path.dirname(directory)
+        candidate = os.path.join(directory, "scripts", "yaml_output.py")
+        if os.path.isfile(candidate):
+            spec = importlib.util.spec_from_file_location("charness_yaml_output", candidate)
+            if spec is None or spec.loader is None:
+                break
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scripts/yaml_output.py not found within 5 ancestors of this script")
+
+
 _STATE = _load_state_module()
+emit_yaml = _load_yaml_output().emit_yaml
 FingerprintError = _STATE.FingerprintError
 build_snapshot = _STATE.build_snapshot
 new_window = _STATE.new_window
@@ -248,14 +273,13 @@ def _cmd_snapshot(args: argparse.Namespace) -> int:
     # flow would report the tool's own file as untracked-removed drift.
     _drop_self(snapshot, repo_root, out_path)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    # The SNAPSHOT FILE stays JSON, and deliberately so: it is persisted state
+    # that `verify` reads back with `json.load` and that `parity_harness.py`
+    # reads independently. Only the receipt below is command output.
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump(snapshot, handle, indent=2)
         handle.write("\n")
-    print(
-        json.dumps(
-            {"ok": True, "out": out_path, "head": snapshot["head"], "window": snapshot["window"]}
-        )
-    )
+    emit_yaml({"ok": True, "out": out_path, "head": snapshot["head"], "window": snapshot["window"]})
     return 0
 
 
@@ -264,21 +288,21 @@ def _cmd_verify(args: argparse.Namespace) -> int:
     before_path = os.path.abspath(args.before) if args.before else _default_snapshot_path(repo_root)
     if not os.path.isfile(before_path):
         # floor-addition-restraint: keep — enforcement teeth requested by tracked issue #428 after three recorded recurrences
-        print(json.dumps({"ok": False, "error": f"snapshot file not found: {before_path}", "before_path": before_path}))
+        emit_yaml({"ok": False, "error": f"snapshot file not found: {before_path}", "before_path": before_path})
         return 2
     try:
         with open(before_path, encoding="utf-8") as handle:
             before = json.load(handle)
     except (OSError, json.JSONDecodeError) as exc:
         # floor-addition-restraint: keep — enforcement teeth requested by tracked issue #428 after three recorded recurrences
-        print(json.dumps({"ok": False, "error": f"unreadable snapshot file {before_path}: {exc}", "before_path": before_path}))
+        emit_yaml({"ok": False, "error": f"unreadable snapshot file {before_path}: {exc}", "before_path": before_path})
         return 2
 
     missing = [key for key in ("head", "status", "staged_patch_sha256", "worktree_patch_sha256", "untracked") if key not in before]
     if missing:
-        # A snapshot that parses but is truncated must refuse as JSON, not die on
-        # a KeyError traceback with nothing on stdout for the caller to read.
-        print(json.dumps({"ok": False, "error": f"snapshot file {before_path} is missing keys: {missing}", "before_path": before_path}))
+        # A snapshot that parses but is truncated must refuse as a payload, not
+        # die on a KeyError traceback with nothing on stdout for the caller to read.
+        emit_yaml({"ok": False, "error": f"snapshot file {before_path} is missing keys: {missing}", "before_path": before_path})
         return 2
 
     window = before.get("window") or {}
@@ -287,7 +311,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:
         # review round.  Without an explicit window id, a stale default would
         # still produce a plausible drift/clean verdict for the wrong interval.
         snapshot_window = window.get("id") or "none (snapshot predates window binding)"
-        print(json.dumps({
+        emit_yaml({
             "ok": False,
             "error": (
                 f"default snapshot {before_path} is ambiguous: it records review window "
@@ -296,12 +320,12 @@ def _cmd_verify(args: argparse.Namespace) -> int:
             ),
             "before_path": before_path,
             "window": window,
-        }))
+        })
         return 2
     if args.window_id and window.get("id") != args.window_id:
         # Refusing beats answering: a snapshot from another window certifies a
         # different interval, so its drift says nothing about this review.
-        print(json.dumps({
+        emit_yaml({
             "ok": False,
             "error": (
                 f"snapshot records review window "
@@ -310,7 +334,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:
             ),
             "before_path": before_path,
             "window": window,
-        }))
+        })
         return 2
 
     after = build_snapshot(repo_root, window or None)
@@ -325,7 +349,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:
     ok = not undeclared
     declared_anything = bool(parent_paths or parent_staged or args.parent_head_moved)
     verdict = "boundary-drift" if undeclared else ("parent-attributed" if declared_anything else "clean")
-    print(json.dumps({
+    emit_yaml({
         "ok": ok,
         "verdict": verdict,
         "drift": undeclared,
@@ -349,12 +373,12 @@ def _cmd_verify(args: argparse.Namespace) -> int:
         "content_comparison": "per-path" if "changed_content" in before else "unavailable-legacy-snapshot",
         "attribution": _ATTRIBUTION_NOTE,
         "before_path": before_path,
-    }))
+    })
     if not ok:
         return 1
     # Exit 3, not 0, when the clean result rests on a parent declaration. Every
-    # closeout in this repo quotes `{"ok": true, "drift": []}` as proof of a clean
-    # review; an attributed pass prints exactly that shape, so the exit code is
+    # closeout in this repo quotes `ok: true` with an empty `drift` as proof of a
+    # clean review; an attributed pass prints exactly that shape, so the exit code is
     # what stops it from being cited as an undeclared clean run.
     return 3 if verdict == "parent-attributed" else 0
 
@@ -401,7 +425,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return args.func(args)
     except FingerprintError as exc:
-        print(json.dumps({"ok": False, "error": str(exc)}))
+        emit_yaml({"ok": False, "error": str(exc)})
         return 2
 
 

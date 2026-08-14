@@ -2,7 +2,7 @@
 
 These three tools exist to say no — to an unprovable capture, a stale freeze, an
 unauthorized close. Their refusals were converging on the same structure by accident
-(a `code`/`detail` pair, a JSON body on stdout, a named line on stderr, exit 1), which
+(a `code`/`detail` pair, a YAML body on stdout, a named line on stderr, exit 1), which
 is how two of them end up drifting into reporting the same failure differently and an
 operator learns to trust whichever wording they saw first.
 
@@ -12,9 +12,13 @@ this lane is machine-readable on stdout, human-readable on stderr, and nonzero.
 
 from __future__ import annotations
 
-import json
 import sys
 from typing import Any, Callable
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:
+    from yaml_output import emit_yaml
 
 
 class RefusalError(RuntimeError):
@@ -34,11 +38,11 @@ class RefusalError(RuntimeError):
 def emit_refusal(tool: str, exc: RefusalError, *, code_key: str = "error") -> int:
     """Print a refusal to both channels and return the nonzero exit.
 
-    Both channels, always: a caller piping stdout gets structured JSON, and a human
+    Both channels, always: a caller piping stdout gets structured YAML, and a human
     watching a terminal gets a named line. Emitting only one is how a refusal becomes
     invisible to whichever consumer was not anticipated.
     """
-    print(json.dumps({"ok": False, code_key: exc.code, "detail": exc.detail}, ensure_ascii=False, indent=2))
+    emit_yaml({"ok": False, code_key: exc.code, "detail": exc.detail})
     print(f"{tool}: REFUSED ({exc.code}) {exc.detail}", file=sys.stderr)
     return 1
 
@@ -60,5 +64,5 @@ def run_cli(
         payload = action()
     except refusals as exc:  # type: ignore[misc]
         return emit_refusal(tool, exc, code_key=code_key)
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(payload)
     return 0

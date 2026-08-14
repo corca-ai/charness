@@ -101,7 +101,18 @@ def test_unparseable_adapter_yaml_rejected_with_schema_present(tmp_path: Path) -
         validate_adapter_integration_schema(adapter_path)
 
 
-@pytest.mark.parametrize("missing_dep", ["jsonschema", "yaml"])
+@pytest.mark.parametrize(
+    "missing_dep",
+    [
+        "jsonschema",
+        # `yaml` was strict-xfail here while the YAML output migration had hoisted
+        # `import yaml` to module scope in scripts/validate_adapters.py, which turned
+        # this gate from degrades-to-no-gate into dies-at-IMPORT on a PyYAML-less
+        # interpreter. The import is back under the same `except ImportError: return`
+        # guard as jsonschema, so both dependencies are asserted the same way again.
+        "yaml",
+    ],
+)
 def test_missing_runtime_dependency_degrades_to_no_gate(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, missing_dep: str
 ) -> None:

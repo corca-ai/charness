@@ -29,12 +29,12 @@ to also fail on REVIEW items when a caller wants the stricter gate.
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _prose_pin = import_repo_module(__file__, "scripts.check_prose_pin")
@@ -260,64 +260,63 @@ def build_report(
     return {"status": status, "skills": skills}
 
 
-def format_human(report: dict[str, Any]) -> str:
-    lines = [f"skill-cut-safety: {report['status']}"]
+# Folded in from the deleted human renderer. The finding rows carry `kind`,
+# `severity` and `phrase`; what only the prose carried is what each severity
+# OBLIGES -- a BLOCK means restore or move the pin, a deleted-surface REVIEW means
+# a whole SKILL.md/reference vanished and a merged deletion is not reversible.
+# Output is unconditionally YAML now, so those obligations ride on the payload.
+_KIND_MEANING = {
+    "deleted-surface": (
+        "a whole SKILL.md or reference was removed: confirm the deletion is intentional "
+        "or re-home its contract before this lands, since a merged deletion is not "
+        "reversible"
+    ),
+    "test-pin": "a tests/ literal pins prose this cut removed",
+}
+_DEFAULT_REVIEW_MEANING = (
+    "the line vanished without a reference home: confirm it is a justified no-op "
+    "deletion (the section 5 no-op test) or re-home its content into a reference"
+)
+_BLOCKED_REMEDY = (
+    "A removed phrase is pinned by a contract or test. Restore it (a CORE pin must stay "
+    "in SKILL.md; a PACKAGE pin may move to a reference) or move the pinned test literal "
+    "before cutting."
+)
+_UNSCOPED_REMEDY = (
+    "This gate judges SKILL.md cuts only. Name the SKILL.md, or run without --path to "
+    "check the changed set (which also reviews deleted references)."
+)
+
+
+def report_payload(report: dict[str, Any]) -> dict[str, Any]:
+    payload = dict(report)
     if report["status"] == "unscoped":
-        lines.append(
-            "- none of the named --path values is a public/support SKILL.md, so "
-            "nothing was checked: "
-            + ", ".join(report["unscoped_paths"])
+        payload["summary"] = (
+            "none of the named --path values is a public/support SKILL.md, so nothing "
+            "was checked: " + ", ".join(report["unscoped_paths"])
         )
-        lines.append(
-            "This gate judges SKILL.md cuts only. Name the SKILL.md, or run without "
-            "--path to check the changed set (which also reviews deleted references)."
-        )
-        return "\n".join(lines)
+        payload["remedy"] = _UNSCOPED_REMEDY
+        return payload
     if not report["skills"]:
-        lines.append("- no changed public/support SKILL.md surfaces to check.")
-        return "\n".join(lines)
-    for skill in report["skills"]:
-        lines.append(f"- {skill['path']}: {skill['status']}")
-        for block in skill["blocks"]:
-            if block["kind"] == "test-pin":
-                lines.append(
-                    f"  BLOCK test-pin {block['test']}:{block['line']} pins removed prose: "
-                    f"\"{block['phrase']}\""
-                )
-            else:
-                lines.append(f"  BLOCK {block['kind']} no longer satisfied: \"{block['phrase']}\"")
-        for review in skill["reviews"]:
-            if review["kind"] == "deleted-surface":
-                lines.append(
-                    f"  REVIEW deleted-surface (confirm justified deletion or re-home "
-                    f"the contract): \"{review['phrase']}\""
-                )
-            else:
-                lines.append(
-                    f"  REVIEW {review['kind']} (confirm no-op deletion or re-home): "
-                    f"\"{review['phrase']}\""
-                )
+        payload["summary"] = "no changed public/support SKILL.md surfaces to check."
+        return payload
+    kinds = {
+        finding["kind"]
+        for skill in report["skills"]
+        for finding in (*skill["blocks"], *skill["reviews"])
+    }
+    if kinds:
+        payload["kind_meaning"] = {
+            kind: _KIND_MEANING.get(kind, _DEFAULT_REVIEW_MEANING) for kind in sorted(kinds)
+        }
     if report["status"] == "blocked":
-        lines.append(
-            "A removed phrase is pinned by a contract or test. Restore it (a CORE pin "
-            "must stay in SKILL.md; a PACKAGE pin may move to a reference) or move the "
-            "pinned test literal before cutting."
-        )
+        payload["remedy"] = _BLOCKED_REMEDY
     elif report["status"] == "review":
-        any_deleted = any(r["kind"] == "deleted-surface" for s in report["skills"] for r in s["reviews"])
-        if any_deleted:
-            lines.append(
-                "No contract/test pin broke. A deleted-surface REVIEW means a whole SKILL.md "
-                "or reference was removed: confirm the deletion is intentional or re-home its "
-                "contract before this lands, since a merged deletion is not reversible."
-            )
-        else:
-            lines.append(
-                "No contract/test pin broke. Each REVIEW line vanished without a reference "
-                "home: confirm it is a justified no-op deletion (the §5 no-op test) or "
-                "re-home its content into a reference."
-            )
-    return "\n".join(lines)
+        payload["remedy"] = (
+            "No contract/test pin broke. Each REVIEW line above names what to confirm "
+            "before this lands; see `kind_meaning`."
+        )
+    return payload
 
 
 def main() -> int:
@@ -334,7 +333,6 @@ def main() -> int:
         default=None,
         help="Test root to scan for literal pins (repeatable; defaults to tests/).",
     )
-    parser.add_argument("--json", action="store_true")
     parser.add_argument(
         "--strict",
         action="store_true",
@@ -352,10 +350,7 @@ def main() -> int:
     test_roots = [repo_root / name for name in test_root_names]
     report = build_report(repo_root, args.path, test_roots, staged=args.staged)
 
-    if args.json:
-        print(json.dumps(report, indent=2, sort_keys=True))
-    else:
-        print(format_human(report))
+    emit_yaml(report_payload(report))
 
     if report["status"] in {"blocked", "unscoped"}:
         return 1

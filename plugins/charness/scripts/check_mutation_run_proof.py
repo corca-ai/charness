@@ -52,6 +52,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from yaml_output import emit_yaml
+
 CLASS_KEY = "mutation-dispatch-no-base-sha-false-proof"
 SUPPORTED_CHANGED_LINE_PROOF_PATHS = [
     "the next scheduled mutation run (schedule events compute base_sha from the previous completed run)",
@@ -322,7 +324,7 @@ def main(argv: list[str] | None = None) -> int:
             f"any file. {remedy}",
             file=sys.stderr,
         )
-    print(json.dumps(verdict, indent=2, sort_keys=True))
+    emit_yaml(dict(sorted(verdict.items())))
     if verdict["provable"]:
         return 0
     refusal = [f"REFUSED: this run cannot prove the {args.claim} claim ({verdict['reason']})."]

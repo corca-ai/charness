@@ -30,9 +30,21 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
+import runpy
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 REQUIRE_BRIEF_CLASSIFICATIONS = ("feature", "deferred-work")
 EVENT_KINDS = ("classification", "brief", "trivial_brief", "mutation", "close")
@@ -151,30 +163,24 @@ def audit(events: list[dict[str, Any]]) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--transcript", type=Path, required=True, help="Path to the transcript JSON file listing fix-unit events")
-    parser.add_argument("--json", action="store_true", help="Emit the full brief-audit payload as JSON")
     args = parser.parse_args()
 
     try:
         events = load_transcript(args.transcript)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        message = {"ok": False, "error": str(exc), "transcript": str(args.transcript)}
-        if args.json:
-            print(json.dumps(message, ensure_ascii=False, indent=2, sort_keys=True))
-        else:
-            print(f"transcript error: {exc}", file=sys.stderr)
+        # Output is unconditionally YAML, so the shape error goes to the same
+        # channel as a verdict. `fix_unit_count` is absent here on purpose: this
+        # run audited nothing, and a zero would read as "nothing to audit".
+        yaml_output.emit_yaml({"ok": False, "error": str(exc), "transcript": str(args.transcript)})
         return 2
 
     summary = audit(events)
     summary["transcript"] = str(args.transcript)
-    if args.json:
-        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        if summary["ok"]:
-            print(f"audit ok: {len(summary['fix_units'])} fix-unit(s) checked")
-        else:
-            print(f"audit failed: {len(summary['violations'])} violation(s)", file=sys.stderr)
-            for violation in summary["violations"]:
-                print(f"  - {violation['reason']}", file=sys.stderr)
+    # The counts the former text lines carried, so a reader does not have to
+    # length-count two nested collections to learn how much was judged.
+    summary["fix_unit_count"] = len(summary["fix_units"])
+    summary["violation_count"] = len(summary["violations"])
+    yaml_output.emit_yaml(summary)
     return 0 if summary["ok"] else 1
 
 

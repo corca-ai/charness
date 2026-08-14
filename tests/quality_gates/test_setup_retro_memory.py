@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -30,7 +30,7 @@ def test_setup_seed_retro_memory_writes_adapter_and_digest(tmp_path: Path) -> No
 
     result = run_loaded_script_main("seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["created"] == {"adapter": True, "summary": True, "gitignore": True}
 
     adapter_text = (repo / ".agents" / "retro-adapter.yaml").read_text(encoding="utf-8")
@@ -78,7 +78,7 @@ def test_setup_seed_retro_memory_preserves_existing_gitignore(tmp_path: Path) ->
 
     result = run_loaded_script_main("seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["created"]["gitignore"] is False
     assert (repo / ".gitignore").read_text(encoding="utf-8") == "node_modules/\n.charness/retro/\n"

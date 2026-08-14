@@ -14,6 +14,21 @@ GITIGNORE_RELATIVE_PATH = Path(".gitignore")
 GITIGNORE_RUNTIME_LINES = (".charness/retro/",)
 LEDGER_RELATIVE_PATH = Path("charness-artifacts/retro/lesson-ledger.json")
 
+
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+# Loaded eagerly, unlike `_opt_in_command`'s defensive runtime probe below: the
+# report is only ever DELIVERED through this renderer, so a layout that cannot
+# reach it has no output channel to degrade into.
+emit_yaml = _load_skill_runtime_bootstrap().load_repo_module_from_skill_script(
+    __file__, "scripts.yaml_output"
+).emit_yaml
+
 # The same three words `check_auto_trigger.py` and the session-start lesson block
 # speak. No fourth spelling: `available`, `wired`, and a bare `enabled: false` are
 # how two surfaces end up describing the same repo differently.
@@ -121,12 +136,7 @@ def _opt_in_command(repo_root: Path) -> tuple[str | None, str | None]:
     the command must say so rather than take the seam bootstrap down with it.
     """
     try:
-        bootstrap = next(
-            ancestor / "skill_runtime_bootstrap.py"
-            for ancestor in Path(__file__).resolve().parents
-            if (ancestor / "skill_runtime_bootstrap.py").is_file()
-        )
-        runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
+        runtime = _load_skill_runtime_bootstrap()
         validator = runtime.load_repo_module_from_skill_script(
             __file__, "scripts.validate_retro_artifact"
         )
@@ -199,21 +209,18 @@ def main() -> int:
     created_adapter = write_if_missing(adapter_path, adapter_text(repo_root.name))
     created_summary = write_if_missing(summary_path, summary_text())
     updated_gitignore = ensure_gitignore_lines(gitignore_path, GITIGNORE_RUNTIME_LINES)
-    print(
-        json.dumps(
-            {
-                "adapter_path": str(ADAPTER_RELATIVE_PATH),
-                "summary_path": str(SUMMARY_RELATIVE_PATH),
-                "gitignore_path": str(GITIGNORE_RELATIVE_PATH),
-                "created": {
-                    "adapter": created_adapter,
-                    "summary": created_summary,
-                    "gitignore": updated_gitignore,
-                },
-                "lesson_loop": lesson_loop_report(repo_root),
+    emit_yaml(
+        {
+            "adapter_path": str(ADAPTER_RELATIVE_PATH),
+            "summary_path": str(SUMMARY_RELATIVE_PATH),
+            "gitignore_path": str(GITIGNORE_RELATIVE_PATH),
+            "created": {
+                "adapter": created_adapter,
+                "summary": created_summary,
+                "gitignore": updated_gitignore,
             },
-            ensure_ascii=False,
-        )
+            "lesson_loop": lesson_loop_report(repo_root),
+        }
     )
     return 0
 

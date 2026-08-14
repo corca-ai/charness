@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
-import sys
 from pathlib import Path
+
+try:
+    from scripts.yaml_output import emit_yaml
+except ModuleNotFoundError:
+    from yaml_output import emit_yaml
 
 DEFAULT_TOTAL_BUDGET_BYTES = 10 * 1024 * 1024 * 1024
 DEFAULT_PER_SEED_BUDGET_BYTES = 3 * 1024 * 1024 * 1024
@@ -66,7 +69,6 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_PER_SEED_BUDGET_BYTES,
         help=f"Fail when any single seed prefix exceeds this budget (default {DEFAULT_PER_SEED_BUDGET_BYTES}).",
     )
-    parser.add_argument("--json", action="store_true")
     parser.add_argument(
         "--advisory-on-scan-failure",
         action="store_true",
@@ -147,6 +149,74 @@ def collect_breaches(footprint: dict, args: argparse.Namespace) -> tuple[list[di
     return breaches, total_disk_bytes
 
 
+def _disposition(footprint: dict, classification: str, args: argparse.Namespace) -> dict[str, str]:
+    """The prose the deleted human renderer carried, keyed by classification.
+
+    Output is unconditionally YAML now, and `scope_classification:
+    advisory_only_unowned_temp_root` is an opaque token: what it MEANS (the
+    failure is not this repo's to block on), and what turns it back into a
+    blocking measurement (point PYTEST_DEBUG_TEMPROOT at an owned root), lived
+    only in these strings. Dropping them would leave a gate that names a state
+    and refuses to explain it.
+    """
+    root = footprint.get("root")
+    reason = footprint.get("reason")
+    if classification == "blocking_pytest_temp_scan_failed":
+        return {
+            "detail": (
+                f"the pytest tmp scan failed {footprint.get('attempts')}x (root {root}, "
+                f"reason {reason}); nothing was measured, so this run proves nothing "
+                "about the seed budget."
+            ),
+            "remediation": (
+                f"run `du -d 4 -B1 {root}` to see why the walk dies before printing the "
+                "root total. A vanished entry is already tolerated and an early death is "
+                "already retried, so a failure here is a real one. To report it without "
+                "blocking, pass --advisory-on-scan-failure directly, or set "
+                "CHARNESS_SEED_FIXTURE_ADVISORY=1 when this runs inside run-quality.sh "
+                "(where the argv is fixed)."
+            ),
+        }
+    if classification == "advisory_only_du_unavailable":
+        return {
+            "detail": (
+                f"`du` cannot run this measurement on this box ({reason}), so the seed "
+                "footprint is unmeasurable here; gate is advisory-only."
+            )
+        }
+    if classification == "advisory_only_unowned_temp_root":
+        return {
+            "detail": (
+                f"the pytest tmp scan failed ({reason}) against {root}, which is the "
+                "shared system temp dir rather than a chosen root, so the failure is not "
+                "this repo's to block on."
+            ),
+            "remediation": (
+                "Point PYTEST_DEBUG_TEMPROOT at a path this repo owns to make this "
+                "measurement -- and its failures -- yours. `run-quality.sh` already does; "
+                "a bare invocation of this gate does not."
+            ),
+        }
+    if classification == "advisory_only_scan_failure_waived":
+        return {
+            "detail": (
+                f"the pytest tmp scan failed ({reason}) and --advisory-on-scan-failure "
+                "waived the block; nothing was measured, so this run proves nothing about "
+                "the seed budget."
+            )
+        }
+    if classification.startswith("advisory_only"):
+        return {"detail": "no pytest tmp directory present yet; gate is advisory-only."}
+    return {
+        "detail": (
+            "Seed fixture budget within limits: total "
+            f"{_format_bytes(int(footprint.get('total_disk_bytes') or 0))} / "
+            f"{_format_bytes(args.total_budget_bytes)}, per-seed cap "
+            f"{_format_bytes(args.per_seed_budget_bytes)}."
+        )
+    }
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -171,82 +241,12 @@ def main() -> int:
         "per_seed_budget_bytes": args.per_seed_budget_bytes,
         "breaches": breaches,
     }
-    if args.json:
-        print(json.dumps(out, ensure_ascii=False, indent=2))
-        return 1 if breaches or scan_failed else 0
-    if scan_failed:
-        print(
-            f"scope_classification={classification}: the pytest tmp scan failed "
-            f"{footprint.get('attempts')}x (root {footprint.get('root')}, "
-            f"reason {footprint.get('reason')}); nothing was measured, so this run proves "
-            "nothing about the seed budget.",
-            file=sys.stderr,
-        )
-        print(
-            "    remediation: run `du -d 4 -B1 "
-            f"{footprint.get('root')}` to see why the walk dies before printing the root "
-            "total. A vanished entry is already tolerated and an early death is already "
-            "retried, so a failure here is a real one. To report it without blocking, pass "
-            "--advisory-on-scan-failure directly, or set CHARNESS_SEED_FIXTURE_ADVISORY=1 "
-            "when this runs inside run-quality.sh (where the argv is fixed).",
-            file=sys.stderr,
-        )
-        return 1
-    if classification == "advisory_only_du_unavailable":
-        print(
-            f"scope_classification={classification}: `du` cannot run this measurement on "
-            f"this box ({footprint.get('reason')}), so the seed footprint is unmeasurable "
-            "here; gate is advisory-only."
-        )
-        return 0
-    if classification == "advisory_only_unowned_temp_root":
-        print(
-            f"scope_classification={classification}: the pytest tmp scan failed "
-            f"({footprint.get('reason')}) against {footprint.get('root')}, which is the "
-            "shared system temp dir rather than a chosen root, so the failure is not this "
-            "repo's to block on. Point PYTEST_DEBUG_TEMPROOT at a path this repo owns to "
-            "make this measurement -- and its failures -- yours. `run-quality.sh` already "
-            "does; a bare invocation of this gate does not."
-        )
-        return 0
-    if classification == "advisory_only_scan_failure_waived":
-        print(
-            f"scope_classification={classification}: the pytest tmp scan failed "
-            f"({footprint.get('reason')}) and --advisory-on-scan-failure waived the block; "
-            "nothing was measured, so this run proves nothing about the seed budget."
-        )
-        return 0
-    if classification.startswith("advisory_only"):
-        print(f"scope_classification={classification}: no pytest tmp directory present yet; gate is advisory-only.")
-        return 0
-    if not breaches:
-        print(
-            f"Seed fixture budget within limits: "
-            f"total {_format_bytes(total_disk_bytes or 0)} / {_format_bytes(args.total_budget_bytes)}, "
-            f"per-seed cap {_format_bytes(args.per_seed_budget_bytes)}."
-        )
-        return 0
-    print(
-        f"Seed fixture budget exceeded ({len(breaches)} breach(es)):",
-        file=sys.stderr,
-    )
-    for breach in breaches:
-        if breach["type"] == "total_budget_exceeded":
-            print(
-                f"  total: {_format_bytes(int(breach['observed_bytes']))} "
-                f"> {_format_bytes(int(breach['budget_bytes']))}",
-                file=sys.stderr,
-            )
-        else:
-            print(
-                f"  per-seed `{breach['seed_prefix']}`: "
-                f"{_format_bytes(int(breach['observed_bytes']))} "
-                f"> {_format_bytes(int(breach['budget_bytes']))} "
-                f"(session_count={breach.get('session_count')})",
-                file=sys.stderr,
-            )
-        print(f"    remediation: {breach['remediation']}", file=sys.stderr)
-    return 1
+    out["pytest_temp_root"] = footprint.get("root")
+    out.update(_disposition(footprint, classification, args))
+    if breaches:
+        out["detail"] = f"Seed fixture budget exceeded ({len(breaches)} breach(es))."
+    emit_yaml(out)
+    return 1 if breaches or scan_failed else 0
 
 
 if __name__ == "__main__":

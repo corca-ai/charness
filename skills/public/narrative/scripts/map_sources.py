@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import subprocess
 from pathlib import Path
@@ -19,6 +18,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
 def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -99,7 +99,7 @@ def main() -> None:
         "dirty_paths": status_lines,
         "freshness": _git_freshness(repo_root, str(data.get("remote_name", "origin"))),
     }
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    yaml_output.emit_yaml(payload)
 
 
 if __name__ == "__main__":

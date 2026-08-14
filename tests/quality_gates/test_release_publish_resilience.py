@@ -9,6 +9,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
+
+from scripts.yaml_output import render_yaml as _render_yaml
 
 from .release_publish_fixtures import (
     REPO_ROOT,
@@ -66,7 +69,7 @@ def _failure_payload(stderr: str) -> dict:
     start = "BEGIN publish_release_failure_payload"
     end = "END publish_release_failure_payload"
     assert start in stderr and end in stderr, stderr
-    return json.loads(stderr.split(start, 1)[1].split(end, 1)[0].strip())
+    return yaml.safe_load(stderr.split(start, 1)[1].split(end, 1)[0].strip())
 
 
 def test_failure_payload_preserves_bounded_terminal_detail_when_record_write_fails(
@@ -78,8 +81,18 @@ def test_failure_payload_preserves_bounded_terminal_detail_when_record_write_fai
     subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
     stream = io.StringIO()
 
-    def broken_renderer(_payload):
-        raise OSError("renderer unavailable")
+    def broken_renderer(payload):
+        # The injected renderer now serves BOTH the durable record and the
+        # terminal print (it used to serve only the record, with the terminal
+        # half hardcoded to `json.dumps`). Fail only for the durable payload --
+        # identified by the placeholder detail `print_failure_payload` puts
+        # there -- so this still tests "the RECORD write failed", which is what
+        # the name and the assertions below are about.
+        if (payload.get("release_failure") or {}).get("detail") == (
+            "raw exception text omitted from durable local state"
+        ):
+            raise OSError("renderer unavailable")
+        return _render_yaml(payload)
 
     runtime.print_failure_payload(
         {"tag_name": "v1.0.0"},
@@ -194,7 +207,7 @@ def test_publish_auto_runs_declared_install_refresh_end_to_end(tmp_path: Path) -
     env = _release_env(tmp_path, bin_dir)
     result = _run_publish_patch(repo, env)
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["install_refresh"]["status"] == "refreshed"
     assert payload["install_refresh"]["command"] == "charness update"
     assert refresh_log.exists() and "ran update" in refresh_log.read_text(encoding="utf-8")
@@ -408,7 +421,7 @@ def test_prep_update_instructions_emits_stub_without_critique_or_clean_worktree(
 
     result = _run_publish(repo, env, "--prep-update-instructions", "--part", "minor")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["mode"] == "prep-update-instructions"
     assert payload["target_version"] == "0.1.0"  # current 0.0.0 -> minor
     assert "0.1.0" not in payload["stub_update_instructions_entry"]
@@ -435,7 +448,7 @@ def test_prep_reports_staleness_as_data_where_dry_run_would_hold(tmp_path: Path)
     # instead reports it as data and exits 0, so the maintainer can fix it first.
     result = _run_publish(repo, env, "--prep-update-instructions", "--part", "patch")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["update_instructions_stale"] is True
     assert payload["staleness_blocker"]
     assert "0.0.1" not in payload["stub_update_instructions_entry"]
@@ -450,13 +463,13 @@ def test_prep_update_instructions_honors_version_selectors(tmp_path: Path) -> No
 
     explicit = _run_publish(repo, env, "--prep-update-instructions", "--set-version", "9.9.9")
     assert explicit.returncode == 0, explicit.stderr
-    explicit_payload = json.loads(explicit.stdout)
+    explicit_payload = yaml.safe_load(explicit.stdout)
     assert explicit_payload["target_version"] == "9.9.9"
     assert "9.9.9" not in explicit_payload["stub_update_instructions_entry"]
 
     current = _run_publish(repo, env, "--prep-update-instructions", "--publish-current")
     assert current.returncode == 0, current.stderr
-    current_payload = json.loads(current.stdout)
+    current_payload = yaml.safe_load(current.stdout)
     assert current_payload["target_version"] == current_payload["current_version"]
 
 
@@ -645,7 +658,7 @@ def test_resume_reconciles_carrier_push_without_duplicate(
 
     resumed = _resume_patch_closeout(repo, env, carrier)
     assert resumed.returncode == 0, resumed.stderr
-    payload = json.loads(resumed.stdout)
+    payload = yaml.safe_load(resumed.stdout)
     assert payload["resume_remote_reconcile"]["status"] == expected_status
     log = subprocess.run(
         ["git", "log", "--format=%B"], cwd=repo, check=True, capture_output=True, text=True
@@ -686,7 +699,7 @@ def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Pa
 
     resumed = _resume_patch_closeout(repo, env, carrier)
     assert resumed.returncode == 0, resumed.stderr
-    payload = json.loads(resumed.stdout)
+    payload = yaml.safe_load(resumed.stdout)
     assert payload["issue_closeout"]["status"] == "state-verified"
 
 
@@ -742,7 +755,7 @@ def test_resume_reconciles_ambiguous_final_artifact_push(tmp_path: Path) -> None
 
     resumed = _resume_patch_closeout(repo, env, carrier)
     assert resumed.returncode == 0, resumed.stderr
-    payload = json.loads(resumed.stdout)
+    payload = yaml.safe_load(resumed.stdout)
     assert payload["resume_state"]["phase"] == "post-publication-claims-final"
     assert payload["resume_remote_reconcile"]["status"] == "already-shared"
 
@@ -774,7 +787,7 @@ def test_resume_with_clean_release_content_head_adds_post_observer_carrier(tmp_p
     result = _run_closeout_resume(repo, env, carrier)
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["resume_head_release_content_close_refs"] == []
     assert payload["issue_closeout_carrier_commit_sha"]
 
@@ -841,7 +854,7 @@ def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert any(entry[:2] == ["release", "create"] for entry in gh_log), gh_log
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     runtime_labels = {entry["label"] for entry in payload["release_runtime"]}
     assert "quality_command" in runtime_labels
     assert "push_create_verify_release" in runtime_labels
@@ -900,7 +913,7 @@ def test_resume_dry_run_describes_revalidation_without_mutating(tmp_path: Path) 
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["resume"].startswith("dry-run: would re-validate gates")
     assert subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
@@ -923,7 +936,7 @@ def test_normal_dry_run_prints_plan_without_mutating(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["execute"] is False
+    assert yaml.safe_load(result.stdout)["execute"] is False
     assert subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
     ).stdout.strip() == head_before
@@ -994,7 +1007,7 @@ def test_resume_commits_artifact_before_push_with_executed_retro_payload(tmp_pat
     # charness-artifacts/ tree at push time.
     assert min(commit_indices) < min(push_indices), git_log
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     retro = payload["retro_trigger_evaluation"]
     assert retro["evaluated_at"] == "final_release_paths", retro
     # No dry-run regression: would_write is the dry-run-only closeout status.

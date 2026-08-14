@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -239,31 +238,3 @@ def run_cleanup(
         "actions": actions,
         "next_step": None if yes else "Re-run with `--yes` to execute the planned cleanup actions.",
     }
-
-
-def render_cleanup_text(payload: dict[str, Any]) -> str:
-    lines = [
-        f"target: {payload.get('target_path')}",
-        f"status: {payload.get('status')}",
-    ]
-    if payload.get("dry_run"):
-        lines.append("dry-run: true")
-    branch = payload.get("branch")
-    if branch:
-        lines.append(f"branch: {branch} (base={payload.get('branch_base')})")
-    if payload.get("error"):
-        lines.append(f"error: {payload['error']}")
-    for action in payload.get("actions") or []:
-        command = " ".join(action.get("command") or [])
-        reason = f" — {action['reason']}" if action.get("reason") else ""
-        lines.append(f"{action['id']}: {action['status']} {command}{reason}".rstrip())
-    if payload.get("next_step"):
-        lines.append(f"NEXT: {payload['next_step']}")
-    return "\n".join(lines)
-
-
-def emit_payload(payload: dict[str, Any], *, json_mode: bool) -> None:
-    if json_mode:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print(render_cleanup_text(payload))

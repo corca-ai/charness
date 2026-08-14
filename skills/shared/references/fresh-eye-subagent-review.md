@@ -298,7 +298,7 @@ instruction-following alone.
    undeclared clean run: an attributed pass exits **3**, not 0, and prints
    `verdict: parent-attributed` with the full `parent_declared` set. Cite
    `verdict` and that set in closeout evidence whenever anything was declared;
-   a bare `{"ok": true, "drift": []}` quote is only honest for an exit-0 run.
+   a bare `ok: true` / `drift: []` quote is only honest for an exit-0 run.
    Drift that names no path is never attributable and always fails.
 2. Host envelope. Hosts that expose typed subagent definitions spawn bounded
    reviewers under a read-only envelope (Claude Code receives the installed

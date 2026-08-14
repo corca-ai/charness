@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import json
 import os
 import subprocess
 import sys
 import types
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
@@ -46,7 +47,7 @@ def test_classify_fetch_response_treats_soft_robot_marker_as_content_when_page_i
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "success"
     assert payload["confidence"] == "weak"
 
@@ -60,7 +61,7 @@ def test_classify_fetch_response_keeps_long_captcha_challenge_blocked() -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "captcha"
     assert payload["confidence"] == "none"
 
@@ -78,7 +79,7 @@ def test_classify_fetch_response_reports_cloudfront_403_as_error_page() -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "error-page"
     assert payload["confidence"] == "none"
 
@@ -107,7 +108,7 @@ def test_route_public_fetch_declares_headless_fallbacks() -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     stage_ids = [stage["stage_id"] for stage in payload["acquisition_plan"]]
     assert stage_ids.index("impersonated-public-fetch") < stage_ids.index("defuddle-reader-extraction")
     assert stage_ids.index("patchright-render-recon") < stage_ids.index("agent-browser-render-recon")
@@ -131,7 +132,7 @@ def test_acquire_public_url_records_missing_capabilities_and_untried_routes(tmp_
     )
 
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["missing_capabilities"] == ["defuddle", "agent-browser"]
     assert {
         (route["stage_id"], route["tool_id"], route["reason"])

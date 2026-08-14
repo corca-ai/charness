@@ -45,7 +45,6 @@ def test_full_plan_has_provenance_and_inventories() -> None:
         CRITIQUE,
         "--behavior-channel",
         "behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py",
-        "--json",
     )
     # Parsed from stdout regardless of exit code, and NOT asserting `ready`. #537: this test's
     # name and every other assertion in it are about plan SHAPE, which survives a blocked repo
@@ -94,7 +93,6 @@ def test_explicit_paths_are_diagnostic_only() -> None:
         "behavior=python3 -m pytest -q",
         "--paths",
         "scripts/slice_manifest_lib.py",
-        "--json",
     )
     assert result.returncode == 1, result.stdout[:400] or result.stderr[:400]
     payload = bundle_payload_or_report(result, "final_bundle_preflight")
@@ -213,33 +211,42 @@ def test_source_and_plugin_cli_copies_are_byte_identical() -> None:
         ).read_bytes()
 
 
-def test_final_bundle_cli_human_renderer_is_available() -> None:
+def test_final_bundle_cli_emits_the_verdict_and_its_blocker_detail() -> None:
+    """Was `test_final_bundle_cli_human_renderer_is_available`, before the YAML migration.
+
+    The CLI had a default human rendering and a `--json` opt-in; it now emits YAML
+    unconditionally and `--json` is gone, so "the human renderer is what the CLI
+    reaches for" is no longer a claim about this surface at all. What that test was
+    actually PROVING survives the move intact and is asserted here on the emitted
+    document: the CLI reports the verdict it actually has, and a blocked verdict
+    carries the blocker DETAIL rather than only a heading — the remediation is the
+    whole point of #537, and it is the one field that proves the detail is present.
+
+    (The prose renderer itself still exists as `_lib.render_text` for callers that
+    want it, and `test_final_bundle_private_error_and_render_branches` below owns
+    both of its branches. It is simply no longer what this CLI prints.)
+    """
     result = run_script(
         "scripts/final_bundle_preflight.py",
         "--repo-root", str(ROOT), "--manifest", MANIFEST,
         "--critique-path", CRITIQUE,
         "--behavior-channel", "behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py",
     )
-    # The subject is that the human renderer EXISTS and renders the verdict it actually has.
-    # A first version accepted either verdict and then asserted `"Blockers:" in stdout`, which a
-    # bounded round showed was vacuous: the ready branch prints "Blockers: none", which CONTAINS
-    # that substring, so the assertion could not distinguish the branches. Now the blocker line
-    # asserted is the one the status implies.
-    # The message names returncode and stderr too: `stdout[:120]` is EMPTY precisely when the
-    # renderer crashed, which is the one case this assertion trips.
-    assert result.stdout.startswith("Final-bundle preflight: "), (
-        f"returncode={result.returncode}, stdout={result.stdout[:200]!r}, "
-        f"stderr={result.stderr.strip()!r}"
-    )
-    verdict_line = result.stdout.splitlines()[0]
-    if verdict_line == "Final-bundle preflight: ready":
-        assert "Blockers: none" in result.stdout
+    # `bundle_payload_or_report` is the one that names returncode and stderr when stdout is
+    # empty or unparseable — which is exactly the crashed-emitter case this test trips on.
+    payload = bundle_payload_or_report(result, "final_bundle_preflight")
+    status = payload["status"]
+    assert status in {"ready", "blocked"}, status
+    if status == "ready":
+        # The ready counterpart of the old `Blockers: none` line. Asserted as EMPTY, not as
+        # "no `Remediation:` substring": the previous form could not distinguish the branches
+        # because the ready rendering printed a line containing the heading it searched for.
+        assert payload["blockers"] == [], payload["blockers"]
     else:
-        assert verdict_line == "Final-bundle preflight: blocked", verdict_line
-        # A blocked render must carry the blocker DETAIL, not just the heading — that detail is
-        # the whole point of #537, and nothing pinned it before. `Remediation:` only appears on
-        # the per-blocker line, so it is the one that proves the detail rendered.
-        assert "Remediation:" in result.stdout, result.stdout[:600]
+        assert payload["blockers"], "a blocked verdict with no blockers carries no detail at all"
+        for blocker in payload["blockers"]:
+            assert blocker["remediation"], blocker
+            assert blocker["code"] and blocker["subject"] and blocker["message"], blocker
 
 
 def test_critique_inventory_refusal_matrix(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -425,7 +432,6 @@ def test_this_repo_is_currently_bundle_ready() -> None:
         "--repo-root", str(ROOT), "--manifest", MANIFEST,
         "--critique-path", CRITIQUE,
         "--behavior-channel", "behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py",
-        "--json",
     )
     payload = bundle_payload_or_report(result, "final_bundle_preflight")
     assert payload["status"] == "ready", bundle_blocker_report(payload, "final_bundle_preflight")
@@ -466,7 +472,6 @@ def test_the_ready_path_is_owned_by_a_fixture_that_is_ready_by_construction(
         "--manifest", bundle_ready_repo["manifest"],
         "--critique-path", bundle_ready_repo["critique"],
         "--behavior-channel", BUNDLE_READY_BEHAVIOR_CHANNEL,
-        "--json",
     )
     payload = bundle_payload_or_report(result, "final_bundle_preflight")
 

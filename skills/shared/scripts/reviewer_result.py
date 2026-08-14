@@ -30,10 +30,38 @@ from __future__ import annotations
 
 import argparse
 import glob
+import importlib.util
 import json
 import os
 import re
 import sys
+
+
+def _load_yaml_output():
+    """Load the shared YAML renderer from the nearest tree root, by path.
+
+    This file runs from the repo AND from an installed plugin's
+    `shared/scripts/`, where no package context exists and the cwd is the
+    consuming repository -- so the helper (`<repo>/scripts/yaml_output.py` here,
+    `<plugin-root>/scripts/yaml_output.py` there) is walked to rather than
+    counted. The walk is BOUNDED for the reason `authoring_script_shim.locate`
+    records: an unbounded one climbs past the package into the CONSUMING
+    repository and would execute whatever `scripts/yaml_output.py` it found."""
+    directory = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(5):
+        directory = os.path.dirname(directory)
+        candidate = os.path.join(directory, "scripts", "yaml_output.py")
+        if os.path.isfile(candidate):
+            spec = importlib.util.spec_from_file_location("charness_yaml_output", candidate)
+            if spec is None or spec.loader is None:
+                break
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scripts/yaml_output.py not found within 5 ancestors of this script")
+
+
+emit_yaml = _load_yaml_output().emit_yaml
 
 _CONTRACT_NOTE = (
     "diagnostic only: transcript recovery is not the reviewer delivery contract path; "
@@ -339,7 +367,7 @@ def _list_payload(_args: argparse.Namespace, resolved: dict) -> tuple[dict, int]
 def _run(args: argparse.Namespace, build) -> int:
     resolved = resolve_root(args.repo_root, args.session, args.transcript_root)
     payload, code = _unresolved(args.repo_root, resolved) if not resolved["root"] else build(args, resolved)
-    print(json.dumps(payload, indent=2))
+    emit_yaml(payload)
     return code
 
 
@@ -372,12 +400,12 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     if getattr(args, "max_chars", 1) < 1:
-        print(json.dumps({"ok": False, "error": "--max-chars must be >= 1"}))
+        emit_yaml({"ok": False, "error": "--max-chars must be >= 1"})
         return 2
     try:
         return args.func(args)
     except ResultError as exc:
-        print(json.dumps({"ok": False, "error": str(exc)}))
+        emit_yaml({"ok": False, "error": str(exc)})
         return 2
 
 

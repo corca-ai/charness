@@ -13,11 +13,11 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import io
-import json
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CLI_PATH = (
@@ -102,13 +102,26 @@ def test_read_pipeline_json_missing_file_exits_2(cli, tmp_path):
     assert exc.value.code == 2
 
 
-def test_read_pipeline_json_invalid_json_exits_2_with_hint(cli, monkeypatch, capsys):
-    monkeypatch.setattr(sys, "stdin", io.StringIO("not json"))
+def test_read_pipeline_json_accepts_a_yaml_payload_json_cannot_parse(cli, monkeypatch):
+    """The reader tries JSON first and YAML second, so an upstream stage emitting
+    YAML (every repo-owned command now does) still composes into the pipeline."""
+    monkeypatch.setattr(sys, "stdin", io.StringIO("k: 1\n"))
+    assert cli.read_pipeline_json("-", stage="s", expects="e") == {"k": 1}
+
+
+def test_read_pipeline_json_unparseable_input_exits_2_with_hint(cli, monkeypatch, capsys):
+    """A payload that is neither JSON nor YAML must fail at the stage that read it.
+
+    The fixture is an unterminated flow sequence rather than bare prose: with the
+    YAML fallback in place, `not json` is a perfectly good YAML scalar, so only a
+    document both parsers reject still reaches the refusal branch under test.
+    """
+    monkeypatch.setattr(sys, "stdin", io.StringIO("[unterminated: {flow"))
     with pytest.raises(SystemExit) as exc:
         cli.read_pipeline_json("-", stage="propose", expects="entries[]")
     assert exc.value.code == 2
-    err = json.loads(capsys.readouterr().err)
-    assert err["stage"] == "propose" and "not valid JSON" in err["error"]
+    err = yaml.safe_load(capsys.readouterr().err)
+    assert err["stage"] == "propose" and "not valid YAML or JSON" in err["error"]
     assert "hint" in err  # the decode path supplies a hint
 
 
@@ -119,15 +132,17 @@ def test_fail_includes_hint_only_when_given(cli, capsys):
     """``if hint`` (mutated to ``if not hint``) gates the hint key."""
     with pytest.raises(SystemExit):
         cli._fail(stage="s", source="src", expects="e", reason="r", hint="do this")
-    assert json.loads(capsys.readouterr().err)["hint"] == "do this"
+    assert yaml.safe_load(capsys.readouterr().err)["hint"] == "do this"
 
     with pytest.raises(SystemExit):
         cli._fail(stage="s", source="src", expects="e", reason="r")
-    assert "hint" not in json.loads(capsys.readouterr().err)
+    assert "hint" not in yaml.safe_load(capsys.readouterr().err)
 
 
 def test_fail_preserves_non_ascii(cli, capsys):
-    """``ensure_ascii=False`` (mutated to ``True``) keeps non-ASCII raw."""
+    """The YAML emitter keeps non-ASCII raw (``allow_unicode=True`` in
+    ``scripts/yaml_output.py``, and ``ensure_ascii=False`` on its JSON fallback);
+    flipping either would escape the reason a Korean-speaking operator reads."""
     with pytest.raises(SystemExit):
         cli._fail(stage="s", source="src", expects="e", reason="입력 오류")
     raw = capsys.readouterr().err

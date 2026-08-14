@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import argparse
-import json
 import shutil
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -67,17 +67,14 @@ def main() -> int:
     manifest = manifest_with_version_override(manifest, args.version_override)
     plugin_root = export_plugin(repo_root, output_root, manifest, args.host, args.with_marketplace)
 
-    print(
-        json.dumps(
-            {
-                "package_id": args.package_id,
-                "host": args.host,
-                "version": manifest["version"],
-                "plugin_root": str(plugin_root),
-                "marketplace_written": args.host == "codex" and args.with_marketplace,
-            },
-            ensure_ascii=False,
-        )
+    emit_yaml(
+        {
+            "package_id": args.package_id,
+            "host": args.host,
+            "version": manifest["version"],
+            "plugin_root": str(plugin_root),
+            "marketplace_written": args.host == "codex" and args.with_marketplace,
+        }
     )
     return 0
 

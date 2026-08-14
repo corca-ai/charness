@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 
 import pytest
+import yaml
 
 from .support import ROOT
 
@@ -67,7 +67,7 @@ def test_per_file_floor_report_classifies_floor_violations() -> None:
     assert [item["path"] for item in report["warn_band"]] == ["scripts/warn.py"]
 
 
-def test_check_coverage_json_includes_per_file_floor(monkeypatch, capsys) -> None:
+def test_check_coverage_payload_includes_per_file_floor(monkeypatch, capsys) -> None:
     def fake_collect_counts(repo_root):
         return {
             (repo_root / rel_path).resolve(): CHECK_COVERAGE.executable_lines(repo_root / rel_path)
@@ -78,11 +78,11 @@ def test_check_coverage_json_includes_per_file_floor(monkeypatch, capsys) -> Non
     monkeypatch.setattr(
         CHECK_COVERAGE.sys,
         "argv",
-        ["check_coverage.py", "--repo-root", str(ROOT), "--json"],
+        ["check_coverage.py", "--repo-root", str(ROOT)],
     )
 
     assert CHECK_COVERAGE.main() == 0
-    payload = json.loads(capsys.readouterr().out)
+    payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["per_file_floor"]["relationship"] == "per-file-floor"
     assert payload["per_file_floor"]["floor"] == 0.85
 
@@ -313,12 +313,12 @@ def test_unmeasured_files_are_not_recorded_as_perfectly_covered() -> None:
     assert [item["path"] for item in report["exempt_below_floor"]] == ["tiny.py"]
 
 
-def test_human_report_names_the_exempt_and_unmeasured_populations(monkeypatch, capsys) -> None:
-    """`run-quality.sh` invokes this gate WITHOUT --json, so the non-JSON render
-    is the only surface an operator reads. These two lines are the whole reason
-    the exemption stopped being silent: a file excused for having fewer than
-    `PER_FILE_MIN_STATEMENTS` statements, and a file that contributed no
-    observation at all, must both be named rather than folded into the percent.
+def test_the_report_names_the_exempt_and_unmeasured_populations(monkeypatch, capsys) -> None:
+    """The gate emits one payload on every run, and that payload is the only
+    surface an operator reads. This is the whole reason the exemption stopped
+    being silent: a file excused for having fewer than `PER_FILE_MIN_STATEMENTS`
+    statements, and a file that contributed no observation at all, must both be
+    NAMED rather than folded into the percent.
     """
     summary = {
         "coverage": 0.5,
@@ -330,11 +330,11 @@ def test_human_report_names_the_exempt_and_unmeasured_populations(monkeypatch, c
         ],
         "per_file_floor": {
             # `files_received`/`files_evaluated` are load-bearing in this fixture:
-            # without them the renderer fails CLOSED onto the UNESTABLISHED caveat
-            # (correctly), and this — the only test that drives `main()`'s human
-            # block — would stop observing the POPULATED arm that ships on every
-            # real run. Round 2 caught the repair un-covering the old branch while
-            # making the new one reachable.
+            # without them `coverage_report` fails CLOSED onto the UNESTABLISHED
+            # caveat (correctly), and this — the only test that drives `main()`'s
+            # emitted document — would stop observing the POPULATED arm that ships
+            # on every real run. Round 2 caught the repair un-covering the old
+            # branch while making the new one reachable.
             "files_received": 2,
             "files_evaluated": 1,
             "violations": [],
@@ -351,15 +351,21 @@ def test_human_report_names_the_exempt_and_unmeasured_populations(monkeypatch, c
     )
 
     assert CHECK_COVERAGE.main() == 0
-    out = capsys.readouterr().out
-    assert "[UNMEASURED: 0 executable lines]" in out
-    # The populated arm's exact text, pinned so the extraction into
-    # `format_per_file_floor_line` cannot silently change what an operator reads.
-    assert "Per-file floor: 0 below 85.0%, 0 in 85.0-95.0% warn band" in out
-    assert "UNESTABLISHED" not in out
-    assert "1 file(s) below the floor but EXEMPT for having fewer than 30 statements: scripts/tiny.py" in out
-    assert "Unmeasured: 1 target file(s) have zero executable lines" in out
-    assert "scripts/empty.py" in out
+    payload = yaml.safe_load(capsys.readouterr().out)
+    # A file that contributed no observation is flagged as such per file, and
+    # named again in its own bucket — never folded into the percent.
+    unmeasured = [item for item in payload["files"] if not item["measured"]]
+    assert [item["path"] for item in unmeasured] == ["scripts/empty.py"]
+    assert payload["unmeasured_files"] == ["scripts/empty.py"]
+    # The POPULATED arm: a floor comparison that actually ran reports its
+    # violation/warn-band counts and carries no UNESTABLISHED caveat.
+    floor = payload["per_file_floor"]
+    assert (floor["files_received"], floor["files_evaluated"]) == (2, 1)
+    assert floor["violations"] == [] and floor["warn_band"] == []
+    assert "per_file_floor_caveat" not in payload
+    # The excused population is named, together with the threshold that excused it.
+    assert [item["path"] for item in floor["exempt_below_floor"]] == ["scripts/tiny.py"]
+    assert floor["min_statements_threshold"] == 30
 
 
 def test_cli_refuses_legibly_when_nothing_was_measured(monkeypatch) -> None:

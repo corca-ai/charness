@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import argparse
-import json
 import shlex
 import shutil
-import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+from yaml_output import emit_yaml
 
 _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
 _plan_helpers = import_repo_module(__file__, "scripts.staged_commit_gate_plan_helpers")
@@ -495,7 +494,6 @@ def block_on_structural_sweep(
     repo_root: Path,
     payload: dict[str, object],
     *,
-    as_json: bool,
     plan_only: bool,
     run_command,
     emit_payload,
@@ -520,19 +518,18 @@ def block_on_structural_sweep(
         f"cheap structural sweep failed at `{sweep['failed_label']}` (#332): the "
         "#329-class commit-boundary gate must not defer to the broad gate; fix and rerun"
     )
-    if not as_json:
-        failing = sweep["executed"][-1]
-        for stream, target in ((failing["stdout"], sys.stdout), (failing["stderr"], sys.stderr)):
-            if stream:
-                print(stream, end="" if stream.endswith("\n") else "\n", file=target)
-    return emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
+    # The failing child's streams are NOT echoed here: output is one YAML document
+    # since the 2026-08-14 --json removal, and a raw stdout blob printed alongside it
+    # is not part of that document. `payload["structural_sweep"]["executed"]` already
+    # carries every command's stdout and stderr, so the blocking evidence is in the
+    # payload rather than beside it.
+    return emit_payload(payload, stderr_message=payload["error"])
 
 
 def run_predict_commit(
     repo_root: Path,
     *,
     paths: list[str] | None,
-    as_json: bool,
     plan_only: bool,
     run_command,
     emit_payload,
@@ -560,42 +557,27 @@ def run_predict_commit(
         "executed_commands": [],
         "advisories": advisories,
     }
-    if not as_json:
-        for line in advisories:
-            print(line)
+    # Every branch below emits the one payload. The progress lines this function used
+    # to print when `--json` was absent (`charness pre-commit: <label>`, the advisory
+    # lines, the trailing `ok`) are gone rather than kept beside the document: output
+    # is unconditionally YAML since the 2026-08-14 --json removal, and each of those
+    # facts already rides in the payload as `advisories`, `planned_commands`,
+    # `executed_commands`, and `status`.
     if plan_only:
-        if as_json:
-            return emit_payload(payload, as_json=as_json)
-        for command in command_plan:
-            print(f"charness pre-commit: {command.label}")
-        return 0
-    if not command_plan and not as_json:
-        return 0
+        return emit_payload(payload)
     for command in command_plan:
-        if not as_json:
-            print(f"charness pre-commit: {command.label}")
         result = run_command(repo_root, shlex.join(command.argv), "pre-commit")
         payload["executed_commands"].append(result)
         if result["returncode"] != 0:
             payload["status"] = "failed"
-            if as_json:
-                return emit_payload(payload, as_json=as_json)
-            if result["stdout"]:
-                print(result["stdout"], end="" if result["stdout"].endswith("\n") else "\n")
-            if result["stderr"]:
-                print(result["stderr"], end="" if result["stderr"].endswith("\n") else "\n", file=sys.stderr)
-            return 1
-    if not as_json:
-        print("charness pre-commit: ok")
-        return 0
-    return emit_payload(payload, as_json=as_json)
+            return emit_payload(payload)
+    return emit_payload(payload)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--paths", nargs="*")
-    parser.add_argument("--json", action="store_true")
     parser.add_argument("--no-ruff", action="store_true", help="Plan as if ruff is unavailable.")
     args = parser.parse_args()
 
@@ -603,11 +585,9 @@ def main() -> int:
     paths = args.paths if args.paths is not None else None
     ruff_path = "" if args.no_ruff else None
     plan = staged_commit_gate_plan(repo_root, paths, ruff_path=ruff_path)
-    if args.json:
-        print(json.dumps([command.as_dict() for command in plan], indent=2))
-    else:
-        for command in plan:
-            print(command.label)
+    # The label-only listing is a strict subset of `as_dict()` (`label` plus the
+    # `argv` it hid), so nothing the reader had is lost by emitting one document.
+    emit_yaml([command.as_dict() for command in plan])
     return 0
 
 

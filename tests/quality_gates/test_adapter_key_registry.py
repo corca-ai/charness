@@ -443,12 +443,13 @@ def test_an_unparseable_module_is_skipped_rather_than_failing_the_survey(tmp_pat
     assert adapter_key_registry.find_readers(tmp_path, "anything", files=[broken]) == ((), ())
 
 
-def test_the_survey_cli_runs_and_emits_parseable_json() -> None:
+def test_the_survey_cli_runs_and_emits_parseable_yaml() -> None:
     """The CLI is the only callable surface this module has. An entry point nobody
     executes is an instrument nobody runs, which is the shape this goal targets."""
-    import json
     import subprocess
     import sys
+
+    import yaml
 
     completed = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "adapter_key_registry.py"), "--repo-root", str(ROOT)],
@@ -458,7 +459,7 @@ def test_the_survey_cli_runs_and_emits_parseable_json() -> None:
     )
 
     assert completed.returncode == 0, completed.stderr[-2000:]
-    payload = json.loads(completed.stdout)
+    payload = yaml.safe_load(completed.stdout)
     assert payload["adapters"] >= 35
     assert payload["registry_problems"] == []
 

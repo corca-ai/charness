@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 from scripts.adapter_lib import plan_generated_write
 from scripts.adapter_yaml_render_lib import render_yaml_mapping
@@ -188,7 +189,11 @@ def run_markdown_preview(repo_root: Path, *, config_path: str) -> tuple[int, dic
     payload: dict[str, Any] | None = None
     if completed.stdout.strip():
         try:
-            payload = json.loads(completed.stdout)
-        except json.JSONDecodeError:
+            payload = yaml.safe_load(completed.stdout)
+        except yaml.YAMLError:
+            payload = None
+        if not isinstance(payload, dict):
+            # `yaml.safe_load` returns a scalar where `json.loads` raised, so the
+            # mapping check preserves the "unreadable stdout -> no payload" contract.
             payload = None
     return completed.returncode, payload, completed.stderr.strip()

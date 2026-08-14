@@ -45,7 +45,10 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
     (repo / "docs").mkdir(parents=True)
 
     shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
-    for name in ("classify_push_diff.py", "classify_push_diff_lib.py"):
+    # `yaml_output.py` joined this set with the unconditional-YAML migration:
+    # `classify_push_diff.py` now imports `emit_yaml` at module scope, so a
+    # synthetic repo without it fails at import and never reaches classification.
+    for name in ("classify_push_diff.py", "classify_push_diff_lib.py", "yaml_output.py"):
         shutil.copy2(ROOT / "scripts" / name, repo / "scripts" / name)
 
     # Pre-classification phases the hook runs unconditionally; they are not what

@@ -12,14 +12,15 @@ from __future__ import annotations
 import copy
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import render_lesson_lifecycle_review as review
 from tests.script_loader import load_script_module
+from tests.script_main import run_loaded_script_main
 from tests.test_lesson_ledger import ROOT, _materialize, _payload, _retro, _session_event
 
 CATALOG = ROOT / "skills/public/quality/references/catalog.yaml"
@@ -167,21 +168,17 @@ def test_cli_is_read_only_and_exits_zero_over_an_unproposed_ledger(tmp_path: Pat
     _repo(tmp_path, score_events=[_anchored_quiet_score()])
     before = (tmp_path / LEDGER_RELATIVE).read_bytes()
 
-    command = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/render_lesson_lifecycle_review.py"),
-            "--repo-root",
-            str(tmp_path),
-            "--json",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    # In-process, not a subprocess: `review` is already imported at module scope, so
+    # spawning an interpreter to read its stdout is a boundary bypass the ratchet
+    # correctly flags -- the migration pushed this test that way when the payload moved
+    # to stdout. `run_loaded_script_main` drives the same `main()` and captures the same
+    # stdout, so the assertions below are unchanged.
+    command = run_loaded_script_main(
+        "render_lesson_lifecycle_review.py", review, "--repo-root", str(tmp_path)
     )
 
     assert command.returncode == 0, command.stderr
-    assert json.loads(command.stdout)["kind"] == "charness.lesson-lifecycle-review"
+    assert yaml.safe_load(command.stdout)["kind"] == "charness.lesson-lifecycle-review"
     assert (tmp_path / LEDGER_RELATIVE).read_bytes() == before
 
 
@@ -227,14 +224,16 @@ def test_a_malformed_score_event_is_dropped_rather_than_taking_the_report_down()
     }
 
 
-def test_the_prose_entrypoint_renders_the_report_a_human_actually_reads(
+def test_the_sole_entrypoint_emits_the_whole_report_the_catalog_gate_reads(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
-    """Without `--json` the CLI is the whole product: this gate is invoked as
+    """The CLI's one output path is the whole product: this gate is invoked as
     `./scripts/render_lesson_lifecycle_review.py --repo-root .` from the quality
-    catalog with no `--json`, so the human rendering is the default path, not a
-    convenience beside it. The JSON test above cannot notice a `main()` that emits
-    the structured payload on both branches."""
+    catalog with no flags, so whatever `main()` writes on the default path IS the
+    report. The prose renderer that used to carry the briefing is gone and `--json`
+    with it, so `main()` must emit the full review as YAML -- not a tally that drops
+    the fields a human dispositions on.
+    """
     _repo(tmp_path, score_events=[_anchored_quiet_score()])
     monkeypatch.setattr(
         sys, "argv", ["render_lesson_lifecycle_review.py", "--repo-root", str(tmp_path)]
@@ -243,23 +242,35 @@ def test_the_prose_entrypoint_renders_the_report_a_human_actually_reads(
     assert review.main() == 0
 
     out = capsys.readouterr().out
-    # Prose, not JSON -- and the discriminator the report exists for is in it.
-    assert not out.startswith("{")
-    assert out.startswith("Lesson lifecycle review: 2 lessons")
-    assert "Refused the release grant" in out
-    assert "No anchored evidence (1): loud" in out
-    assert "Dispositions to judge (recurrence cannot tell these apart):" in out
-    assert "Not claimed: This report proposes nothing" in out
+    payload = yaml.safe_load(out)
+    # Everything the prose header stated, now as keys.
+    assert payload["kind"] == "charness.lesson-lifecycle-review"
+    assert (payload["lesson_count"], payload["active_count"], payload["archived_count"]) == (2, 2, 0)
+    assert payload["anchored_lesson_count"] == 1
+    # ...and the discriminator the report exists for survives the entrypoint whole.
+    quiet = next(item for item in payload["lessons"] if item["lesson_id"] == "quiet")
+    assert any("Refused the release grant" in event.get("anchor", "") for event in quiet["score_events"])
+    assert payload["lessons_without_anchored_evidence"] == ["loud"]
+    assert set(payload["dispositions"]) == {"graduate", "rewrite-in-place", "strengthen-binding"}
+    assert any("proposes nothing" in claim for claim in payload["non_claims"])
 
 
-def test_human_output_shows_anchors_and_the_undetermined_group(tmp_path: Path) -> None:
-    _repo(tmp_path, score_events=[_anchored_quiet_score()])
+def test_the_payload_carries_anchors_and_the_undetermined_group(tmp_path: Path) -> None:
+    """What the deleted `_render_human` lines said, asserted on the payload keys the
+    information moved into: the anchor text itself, the undetermined group stated
+    against its denominator, and the three dispositions recurrence cannot tell apart.
+    """
+    payload = review.build_lifecycle_review(_repo(tmp_path, score_events=[_anchored_quiet_score()]))
 
-    rendered = review._render_human(review.build_lifecycle_review(tmp_path))
-
-    assert "Refused the release grant" in rendered
-    assert "No anchored evidence (1): loud" in rendered
-    assert "recurrence cannot tell these apart" in rendered
+    quiet = next(item for item in payload["lessons"] if item["lesson_id"] == "quiet")
+    anchors = [event["anchor"] for event in quiet["score_events"] if "anchor" in event]
+    assert any("Refused the release grant" in anchor for anchor in anchors)
+    # "No anchored evidence (1): loud" -- the group and the denominator it needs.
+    assert payload["lessons_without_anchored_evidence"] == ["loud"]
+    assert payload["lesson_count"] - payload["anchored_lesson_count"] == 1
+    # The editorial line "recurrence cannot tell these apart" restated this mapping.
+    assert set(payload["dispositions"]) == {"graduate", "rewrite-in-place", "strengthen-binding"}
+    assert all(payload["dispositions"].values())
 
 
 # --- the wiring itself: the owner surface must know it owns this -----------
@@ -379,16 +390,16 @@ def test_a_refusal_names_this_command_not_the_module_it_reuses(tmp_path: Path) -
 
 
 def test_the_cli_refuses_an_unreadable_ledger_nonzero(tmp_path: Path) -> None:
-    command = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/render_lesson_lifecycle_review.py"),
-            "--repo-root",
-            str(tmp_path),
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    # In-process, not a subprocess: `review` is already imported at module scope, so
+    # spawning an interpreter to read its stdout is a boundary bypass the ratchet
+    # correctly flags -- the migration pushed this test that way when the payload moved
+    # to stdout. `run_loaded_script_main` drives the same `main()` and captures the same
+    # stdout, so the assertions below are unchanged.
+    command = run_loaded_script_main(
+        "render_lesson_lifecycle_review.py", review, "--repo-root", str(tmp_path),
+        # The subprocess boundary used to absorb this into an exit code; in-process the
+        # runner has to be told which exception the CLI treats as a refusal.
+        cli_error_types=(FileNotFoundError,),
     )
 
     assert command.returncode == 1

@@ -18,6 +18,8 @@ _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
 run_processes_in_order = _subprocess_guard.run_processes_in_order
 _gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
+# Findings still go to stderr so a green run's stdout stays quotable; only the
+# FORMAT changed here, never the stream this gate writes a verdict on.
 emit_findings_report = _gate_report_emit.emit_findings_report
 
 DEFAULT_CONTRACT = Path(".agents/command-docs.yaml")
@@ -180,25 +182,14 @@ def build_report(repo_root: Path, contract_path: Path) -> dict[str, object]:
     }
 
 
-def render_report(report: dict[str, object]) -> str:
-    if report["status"] == "skipped":
-        return "No command-docs contract found; skipping command docs drift check."
-    if not report["findings"]:
-        return f"Validated command docs for {len(report['commands'])} command surface(s)."
-    lines = ["Command docs drift detected:"]
-    lines.extend(f"- {finding}" for finding in report["findings"])
-    return "\n".join(lines)
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--contract", type=Path, default=DEFAULT_CONTRACT)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     report = build_report(args.repo_root.resolve(), args.contract)
-    emit_findings_report(report, as_json=args.json, render=render_report)
+    emit_findings_report(report)
     return 1 if report["findings"] else 0
 
 

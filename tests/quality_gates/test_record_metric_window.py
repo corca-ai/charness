@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 from scripts import host_log_probe_lib
@@ -193,7 +193,7 @@ def test_record_metric_window_cli_updates_artifact(tmp_path: Path, monkeypatch, 
         str(session_file),
     )
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["action"] == "updated"
+    assert yaml.safe_load(result.stdout)["action"] == "updated"
     assert "Host metric window:" in goal.read_text(encoding="utf-8")
 
 

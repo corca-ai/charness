@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import check_skill_surface_preflight as preflight
 
@@ -81,8 +82,11 @@ def test_skill_surface_preflight_warns_near_cap_without_blocking(tmp_path: Path)
     assert [row["id"] for row in payload["warnings"]] == ["near_cap"]
     assert "195/200" in payload["warnings"][0]["message"]
     assert "never silently drop" in payload["warnings"][0]["message"]
-    human = preflight.format_human(payload)
-    assert "WARN near_cap:" in human
+    # The warning has to reach the reader through the payload the gate actually
+    # emits, not a side renderer: `preflight_payload` is that emitted surface.
+    emitted = preflight.preflight_payload(payload)
+    assert [row["id"] for row in emitted["warnings"]] == ["near_cap"]
+    assert "195/200" in emitted["warnings"][0]["message"]
 
 
 def test_skill_surface_preflight_no_near_cap_warning_below_floor(tmp_path: Path) -> None:
@@ -92,7 +96,7 @@ def test_skill_surface_preflight_no_near_cap_warning_below_floor(tmp_path: Path)
     payload = preflight.build_report(repo.resolve(), str(skill_path), 0, False)
     assert payload["status"] == "ok"
     assert payload["warnings"] == []
-    assert "WARN near_cap:" not in preflight.format_human(payload)
+    assert preflight.preflight_payload(payload)["warnings"] == []
 
 
 def test_skill_surface_preflight_at_ceiling_warns_and_blocks_independently(
@@ -366,7 +370,10 @@ def test_changed_skill_md_cli_blocks_with_exit_one(tmp_path: Path, monkeypatch, 
         ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--changed-skill-md", rel],
     )
     assert preflight.main() == 1
-    assert "BLOCK" in capsys.readouterr().out
+    emitted = yaml.safe_load(capsys.readouterr().out)
+    assert emitted["status"] == "blocked"
+    assert emitted["blocked"] == [rel]
+    assert "core_nonempty headroom buffer" in emitted["remedy"]
 
 
 def test_changed_skill_md_cli_empty_list_is_ok(tmp_path: Path, monkeypatch) -> None:
@@ -374,7 +381,7 @@ def test_changed_skill_md_cli_empty_list_is_ok(tmp_path: Path, monkeypatch) -> N
     repo.mkdir()
     monkeypatch.setattr(
         "sys.argv",
-        ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--changed-skill-md", "--json"],
+        ["check_skill_surface_preflight.py", "--repo-root", str(repo), "--changed-skill-md"],
     )
     assert preflight.main() == 0
 
@@ -427,7 +434,7 @@ def test_pressure_exempt_findings_empty_when_token_shaped() -> None:
     assert preflight.pressure_exempt_findings(text) == []
 
 
-def test_format_human_surfaces_exempt_section_block(tmp_path: Path) -> None:
+def test_payload_surfaces_exempt_section_block(tmp_path: Path) -> None:
     tokens = ["- token <command>", "One sentence here. And a second one follows."]
     skill_lines = [
         "---",
@@ -451,11 +458,13 @@ def test_format_human_surfaces_exempt_section_block(tmp_path: Path) -> None:
     skill_path = _write_skill(repo, skill_lines=skill_lines)
     payload = preflight.build_report(repo.resolve(), str(skill_path), 0, False)
     assert payload["exempt_findings"]
-    human = preflight.format_human(payload)
-    assert "BLOCK exempt-section:" in human
+    emitted = preflight.preflight_payload(payload)
+    assert emitted["status"] == "blocked"
+    assert any("multi-sentence prose" in finding for finding in emitted["exempt_findings"])
+    assert emitted["remedy"] == preflight.EXEMPT_SECTION_REMEDIATION
 
 
-def test_format_changed_human_surfaces_exempt_findings() -> None:
+def test_changed_payload_surfaces_exempt_findings() -> None:
     report = {
         "status": "blocked",
         "checked": [
@@ -469,9 +478,12 @@ def test_format_changed_human_surfaces_exempt_findings() -> None:
             }
         ],
     }
-    human = preflight.format_changed_human(report)
-    assert "exempt-section:" in human
-    assert "[BLOCK]" in human
+    payload = preflight.changed_payload(report)
+    assert payload["status"] == "blocked"
+    assert payload["checked"][0]["exempt_findings"] == [
+        "`## Closeout Vocabulary` line is multi-sentence prose"
+    ]
+    assert payload["remedy"] == preflight.EXEMPT_SECTION_REMEDIATION
 
 
 # --- S5 (2026-07-28 triage sweep): the exemption audited less than it exempted ---
@@ -697,8 +709,8 @@ def test_tilde_fenced_example_inside_an_exempt_block_is_not_audited_as_prose() -
     assert preflight.pressure_exempt_findings(text) == []
 
 
-def test_exempt_section_block_prints_its_own_remediation_not_the_headroom_one() -> None:
-    # The gate has two blocking causes with opposite remedies. Printing the
+def test_exempt_section_block_carries_its_own_remediation_not_the_headroom_one() -> None:
+    # The gate has two blocking causes with opposite remedies. Carrying the
     # headroom paragraph for an exempt-section block told an author with 158 lines
     # of headroom to split a concept out — an action that does not clear the block.
     report = {
@@ -715,13 +727,13 @@ def test_exempt_section_block_prints_its_own_remediation_not_the_headroom_one() 
         ],
     }
 
-    human = preflight.format_changed_human(report)
+    remedy = preflight.changed_payload(report)["remedy"]
 
-    assert "token-shaped" in human
-    assert "dropped below the core_nonempty headroom buffer" not in human
+    assert "token-shaped" in remedy
+    assert "dropped below the core_nonempty headroom buffer" not in remedy
 
 
-def test_headroom_block_still_prints_the_headroom_remediation() -> None:
+def test_headroom_block_still_carries_the_headroom_remediation() -> None:
     report = {
         "status": "blocked",
         "checked": [
@@ -736,7 +748,7 @@ def test_headroom_block_still_prints_the_headroom_remediation() -> None:
         ],
     }
 
-    human = preflight.format_changed_human(report)
+    remedy = preflight.changed_payload(report)["remedy"]
 
-    assert "dropped below the core_nonempty headroom buffer" in human
-    assert "token-shaped" not in human
+    assert "dropped below the core_nonempty headroom buffer" in remedy
+    assert "token-shaped" not in remedy

@@ -12,9 +12,10 @@ the one the sibling tests use is worse than an import.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from types import SimpleNamespace
+
+import yaml
 
 from tests.script_loader import load_script_module
 
@@ -40,7 +41,7 @@ def _load_scope_counts():
 
 
 def _counts(result) -> dict:
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert COUNTS_KEY in payload, f"verdict emitted no denominator: {payload}"
     return payload[COUNTS_KEY]
 
@@ -69,8 +70,8 @@ def test_a_partial_denominator_states_both_numbers_on_a_passing_run(tmp_path: Pa
     # Exit 4 (PARTIAL), not 0. Operator decision 2026-08-06 on #488, folding D40's
     # residual: a partial scope stops wearing a PASS, and still never refuses.
     assert result.returncode == 4, result.stdout + result.stderr
-    assert json.loads(result.stdout)["blocking"] == []
-    assert json.loads(result.stdout)["changed_line_proof"] == "partial"
+    assert yaml.safe_load(result.stdout)["blocking"] == []
+    assert yaml.safe_load(result.stdout)["changed_line_proof"] == "partial"
     assert _counts(result) == {"analyzed": 1, "changed": 2}
     # Both channels, agreeing. stderr already said "analyzed only 1 of 2"; the
     # machine-readable payload said it nowhere, so a consumer parsing JSON and an
@@ -197,7 +198,7 @@ def test_the_pair_is_the_ranges_population_and_says_so_beside_the_dirty_keys(tmp
         "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
     )
 
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert _counts(result) == {"analyzed": 1, "changed": 1}
     assert payload["dirty_pool_unverified"] is True
     assert payload["uncommitted_pool_files"] == ["scripts/foo.py"]

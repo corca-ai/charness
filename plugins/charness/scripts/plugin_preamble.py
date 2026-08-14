@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -78,6 +79,14 @@ def build_payload(repo_root: Path, consumer_root: Path) -> dict[str, object]:
         "package_id": packaging["package_id"],
         "version": packaging["version"],
         "runtime_self_update": False,
+        # The ATTENTION STATE, spelled as the operator-facing token it always was.
+        # `runtime_self_update: false` is a boolean nobody reads as "this capability
+        # is off"; the word `disabled` was printed only by the human renderer, so
+        # deleting that renderer without carrying the state would take the state out
+        # of this command's output while leaving it green -- which is precisely what
+        # `skills/public/quality/references/attention-state-visibility.json` declares
+        # this file must not do.
+        "runtime_self_update_attention": "RUNTIME_SELF_UPDATE: disabled",
         "update_hints": {
             "claude": "Run `charness update`, then restart Claude Code.",
             "codex": "Run `charness init` or `charness update`; both try Codex's official plugin/install path when the Codex CLI is available. Restart Codex only if the host state still needs to reload the installed plugin.",
@@ -89,38 +98,13 @@ def build_payload(repo_root: Path, consumer_root: Path) -> dict[str, object]:
     }
 
 
-def print_text(payload: dict[str, object]) -> None:
-    print(f"CHARNESS_VERSION: {payload['version']}")
-    print("RUNTIME_SELF_UPDATE: disabled")
-    root_install_surface = payload["root_install_surface"]
-    print(f"ROOT_INSTALL_SURFACE: {'ok' if root_install_surface['ok'] else 'warning'}")
-    if root_install_surface["warning"]:
-        print(f"INSTALL_WARNING: {root_install_surface['warning']}")
-    print("UPDATE_HINTS:")
-    print(f"- Claude: {payload['update_hints']['claude']}")
-    print(f"- Codex: {payload['update_hints']['codex']}")
-    print(f"- Grok: {payload['update_hints']['grok']}")
-    print("READINESS:")
-    for entry in payload["readiness"]:
-        print(f"- {entry['tool_id']}: {entry['status']}")
-    if payload["warnings"]:
-        print("WARNINGS:")
-        for warning in payload["warnings"]:
-            print(f"- {warning}")
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--consumer-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    payload = build_payload(args.repo_root.resolve(), args.consumer_root.resolve())
-    if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print_text(payload)
+    emit_yaml(build_payload(args.repo_root.resolve(), args.consumer_root.resolve()))
     return 0
 
 

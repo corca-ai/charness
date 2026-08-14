@@ -12,11 +12,20 @@ the reviewer's job, mirroring the achieve disposition floor. See
 from __future__ import annotations
 
 import argparse
-import json
 import re
+import runpy
 import sys
 from pathlib import Path
 from typing import Any
+
+# The issue skill's own YAML seam. NOT a fourth copy of the ancestor walk: that walk
+# was extracted to `issue_yaml_output.py` this session precisely because it had
+# accumulated copies here, in `issue_tool.py`, and in `issue_create.py`. The sibling
+# loader is how the other two reach it, and it works for a standalone script too.
+_load_local = runpy.run_path(
+    str(Path(__file__).resolve().parent / "issue_local_import.py")
+)["sibling_loader"](__file__)
+emit_yaml = _load_local("issue_yaml_output", "validate_proposal_fields_yaml_output").emit_yaml
 
 REQUIRED_FIELDS = ("Structural pattern", "Triggering instance(s)", "Destination")
 DESTINATION_VALUES = ("upstream-harness", "repo-local", "both")
@@ -79,7 +88,7 @@ def main() -> int:
     else:
         text = sys.stdin.read()
     report = evaluate_proposal_fields(text)
-    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(report)
     return 0 if report["ok"] else 1
 
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
+
 from .support import run_script
 
 AUDIT_SCRIPT = "skills/public/retro/scripts/audit_codex_session.py"
@@ -41,9 +43,9 @@ def test_session_jsonl_audit_counts_and_separates(tmp_path: Path) -> None:
     home = tmp_path / "home"
     write_rollout(home, "abc123de")
 
-    result = run_script(AUDIT_SCRIPT, "--home", str(home), "--session-id", "abc123de", "--format", "json")
+    result = run_script(AUDIT_SCRIPT, "--home", str(home), "--session-id", "abc123de", "--format", "yaml")
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     measured = payload["measured"]
     assert measured["function_calls"] == 7  # 3 git status + 3 pytest + 1 update_plan
@@ -82,10 +84,10 @@ def test_session_jsonl_audit_filters_goal_window(tmp_path: Path) -> None:
         "--completed-at",
         "2026-05-26T00:01:30Z",
         "--format",
-        "json",
+        "yaml",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["measured"]["function_calls"] == 1
     assert payload["proxy"]["repeated_vcs_commands"] == {}
@@ -116,10 +118,10 @@ def test_session_jsonl_audit_rejects_invalid_window_timestamp(tmp_path: Path) ->
         "--started-at",
         "not-a-time",
         "--format",
-        "json",
+        "yaml",
     )
     assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
 
     assert payload["measured"]["function_calls"] == 0
     assert payload["window_filter"] == {
@@ -136,6 +138,6 @@ def test_session_jsonl_audit_rejects_invalid_window_timestamp(tmp_path: Path) ->
 def test_session_jsonl_audit_missing_session_returns_2(tmp_path: Path) -> None:
     home = tmp_path / "home"
     (home / ".codex").mkdir(parents=True)
-    result = run_script(AUDIT_SCRIPT, "--home", str(home), "--session-id", "nope", "--format", "json")
+    result = run_script(AUDIT_SCRIPT, "--home", str(home), "--session-id", "nope", "--format", "yaml")
     assert result.returncode == 2
     assert "No Codex rollout JSONL found" in result.stdout

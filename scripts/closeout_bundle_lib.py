@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+import yaml
+
 from runtime_bootstrap import import_repo_module
 
 _preflight = import_repo_module(__file__, "scripts.final_bundle_preflight_lib")
@@ -110,7 +112,6 @@ def _authoring_argv(repo_root: Path, paths: list[str]) -> list[list[str]]:
                 ".",
                 "--path",
                 path,
-                "--json",
             ]
         )
     artifact_paths = [path for path in paths if path.startswith("charness-artifacts/")]
@@ -123,7 +124,6 @@ def _authoring_argv(repo_root: Path, paths: list[str]) -> list[list[str]]:
                 ".",
                 "--changed-artifacts",
                 *artifact_paths,
-                "--json",
             ]
         )
     return commands
@@ -147,9 +147,14 @@ def _packet_payload(repo_root: Path, result: dict[str, Any]) -> dict[str, Any]:
     if result["returncode"] != 0:
         raise BundleError(f"reviewer packet generation failed: {result['stderr'] or result['stdout']}")
     try:
-        payload = json.loads(result["stdout"])
-    except json.JSONDecodeError as exc:
-        raise BundleError("reviewer packet generator did not return JSON") from exc
+        payload = yaml.safe_load(result["stdout"])
+    except yaml.YAMLError as exc:
+        raise BundleError("reviewer packet generator did not return JSON-compatible YAML") from exc
+    if not isinstance(payload, dict):
+        # `yaml.safe_load` returns a plain scalar for unparsed prose where
+        # `json.loads` raised, so the mapping check is what keeps a non-payload
+        # stdout a refusal instead of an AttributeError further down.
+        raise BundleError("reviewer packet generator did not return JSON-compatible YAML")
     if not payload.get("ok"):
         raise BundleError("reviewer packet is not ready")
     binding = payload.get("reviewed_input_binding")

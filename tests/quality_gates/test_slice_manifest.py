@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 import scripts.slice_manifest_lib as slice_manifest_lib
 from scripts.slice_manifest_lib import ManifestError, validate_manifest
@@ -214,7 +215,7 @@ def test_non_ancestor_local_capture_head_refuses(fixture_path: Path) -> None:
     assert caught.value.code == "identity_mismatch"
 
 
-def test_cli_refuses_manifest_outside_repo_as_json(tmp_path: Path) -> None:
+def test_cli_refuses_manifest_outside_repo_in_payload(tmp_path: Path) -> None:
     external = tmp_path / "manifest.json"
     external.write_text("{}", encoding="utf-8")
     result = subprocess.run(
@@ -225,38 +226,39 @@ def test_cli_refuses_manifest_outside_repo_as_json(tmp_path: Path) -> None:
             str(ROOT),
             "--manifest",
             str(external),
-            "--json",
         ],
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["error"]["code"] == "unsafe_path"
     assert result.stderr == ""
 
 
 def test_cli_plugin_layout_names_source_checkout_boundary() -> None:
+    # The exported plugin copy must name the same boundary as the source CLI, on the
+    # same channel: unconditional YAML on stdout, no `--json` flag.
     result = subprocess.run(
         [
             sys.executable,
             str(ROOT / "plugins/charness/scripts/validate_slice_manifest.py"),
             "--repo-root",
             str(ROOT / "plugins/charness"),
-            "--json",
         ],
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 1
-    assert "missing_manifest" in result.stdout
-    assert "source-checkout-only" in result.stdout
-    assert "--manifest" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["error"]["code"] == "missing_manifest"
+    assert "source-checkout-only" in payload["error"]["message"]
+    assert "--manifest" in payload["error"]["message"]
 
 
-def test_cli_refuses_manifest_directory_as_json(tmp_path: Path) -> None:
+def test_cli_refuses_manifest_directory_in_payload(tmp_path: Path) -> None:
     isolated_root = tmp_path / "repo"
     isolated_root.mkdir()
     manifest_dir = isolated_root / "manifest-dir"
@@ -269,14 +271,13 @@ def test_cli_refuses_manifest_directory_as_json(tmp_path: Path) -> None:
             str(isolated_root),
             "--manifest",
             str(manifest_dir),
-            "--json",
         ],
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert payload["error"]["code"] == "invalid_manifest_path"
 
 
@@ -363,32 +364,35 @@ def test_manifest_private_validation_refusal_branches(fixture_path: Path, tmp_pa
 
     empty_root = tmp_path / "empty-root"
     empty_root.mkdir()
+    # One unconditional YAML channel replaces the old human/`--json` pair, so the
+    # refusal and the success are each proven once, on stdout. The retired human line
+    # prefixed the refusal with `REFUSED`; `status: invalid` plus the error's own
+    # code/path/message carry that same refusal, and they are asserted here so the
+    # named cause cannot silently drop out of the payload.
     refused = subprocess.run(
         [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(empty_root)],
         capture_output=True, text=True, check=False,
     )
     assert refused.returncode == 1
-    assert "slice-manifest: REFUSED [missing_manifest]" in refused.stderr
-    assert "source-checkout-only" in refused.stderr
-    machine_refused = subprocess.run(
-        [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(empty_root), "--json"],
-        capture_output=True, text=True, check=False,
-    )
-    assert machine_refused.returncode == 1
-    assert "source-checkout-only" in json.loads(machine_refused.stdout)["error"]["message"]
+    refused_payload = yaml.safe_load(refused.stdout)
+    assert refused_payload["status"] == "invalid"
+    assert refused_payload["error"]["code"] == "missing_manifest"
+    assert refused_payload["error"]["path"] == "manifest"
+    assert "source-checkout-only" in refused_payload["error"]["message"]
     manifest = repo / "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
-    human = subprocess.run(
+    accepted = subprocess.run(
         [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(repo), "--manifest", str(manifest)],
         capture_output=True, text=True, check=False,
     )
-    assert human.returncode == 0
-    assert "structurally-valid-captured-record" in human.stdout
-    machine = subprocess.run(
-        [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(repo), "--manifest", str(manifest), "--json"],
-        capture_output=True, text=True, check=False,
+    assert accepted.returncode == 0
+    accepted_payload = yaml.safe_load(accepted.stdout)
+    assert accepted_payload["status"] == "structurally-valid-captured-record"
+    # The retired success line was a projection of these fields; they must still be
+    # readable (and non-empty / non-zero) from the payload that replaced it.
+    assert all(
+        accepted_payload[key]
+        for key in ("slice_id", "target_sha", "reader_root_count", "parity_pair_count")
     )
-    assert machine.returncode == 0
-    assert json.loads(machine.stdout)["status"] == "structurally-valid-captured-record"
 
 
 def test_manifest_critique_target_and_loader_error_branches(fixture_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

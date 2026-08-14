@@ -18,7 +18,6 @@ update the prior record manually with the same lstat-aware care.
 from __future__ import annotations
 
 import argparse
-import json
 import runpy
 import sys
 from pathlib import Path
@@ -35,6 +34,11 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+# Command output is unconditionally YAML since the 2026-08-14 --json removal. These three
+# sites used `json.dump(payload, sys.stdout, ...)`, a spelling the sweep's scanners did not
+# match -- and `gather_public_url._run_json` reads this stdout with `yaml.safe_load`, which
+# accepted the JSON silently. The mismatch was invisible precisely because JSON is YAML.
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gather_writer_lib as wlib  # noqa: E402
 import resolve_adapter as gather_adapter  # noqa: E402
@@ -120,15 +124,13 @@ def main() -> int:
     if record_path.exists():
         payload["status"] = "blocked"
         payload["reason"] = "dated record already exists; choose a different slug or date"
-        json.dump(payload, sys.stdout, indent=2, sort_keys=True)
-        sys.stdout.write("\n")
+        emit_yaml(dict(sorted(payload.items())))
         return 1
     content = _read_content(args.content_file)
     if not args.execute:
         payload["status"] = "planned"
         payload["content_bytes"] = len(content.encode("utf-8"))
-        json.dump(payload, sys.stdout, indent=2, sort_keys=True)
-        sys.stdout.write("\n")
+        emit_yaml(dict(sorted(payload.items())))
         return 0
     output_dir.mkdir(parents=True, exist_ok=True)
     record_path.write_text(content, encoding="utf-8")
@@ -139,8 +141,7 @@ def main() -> int:
     )
     payload["pointer_refresh"] = refresh
     payload["status"] = "updated" if refresh.get("status") in {"updated", "noop"} else "partial"
-    json.dump(payload, sys.stdout, indent=2, sort_keys=True)
-    sys.stdout.write("\n")
+    emit_yaml(dict(sorted(payload.items())))
     return 0 if payload["status"] != "partial" else 1
 
 
