@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from scripts.subprocess_guard import heartbeat_interval_from_env, run_monitored_phase, run_process
+
 RELEASE_VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"tag"})
 RELEASE_CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"tag", "title"})
 AUTH_CHECK_PLACEHOLDERS: frozenset[str] = frozenset()
@@ -23,6 +25,7 @@ OP_PLACEHOLDERS: dict[str, frozenset[str]] = {
     "auth_check": AUTH_CHECK_PLACEHOLDERS,
 }
 COMMAND_TIMEOUT_SECONDS = 1800
+PROGRESS_INTERVAL_ENV = "CHARNESS_RELEASE_PROGRESS_INTERVAL_SECONDS"
 _RELEASE_DELTA = runpy.run_path(str(Path(__file__).with_name("release_delta.py")))
 collect_release_delta = _RELEASE_DELTA["collect_release_delta"]
 path_list_sha256 = _RELEASE_DELTA["path_list_sha256"]
@@ -30,60 +33,63 @@ _TAG_IDENTITY = runpy.run_path(str(Path(__file__).with_name("release_tag_identit
 _single_remote_object_id = _TAG_IDENTITY["single_remote_object_id"]
 
 
+def _refuse(rendered: str, result: subprocess.CompletedProcess[str]) -> None:
+    raise SystemExit(
+        f"command failed: {rendered}\n"
+        f"exit_code: {result.returncode}\n"
+        f"STDOUT:\n{result.stdout}\n"
+        f"STDERR:\n{result.stderr}"
+    )
+
+
 def run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
-    try:
-        result = subprocess.run(
-            command,
-            cwd=cwd,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=COMMAND_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        result = subprocess.CompletedProcess(
-            command,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {COMMAND_TIMEOUT_SECONDS}s",
-        )
+    """Quiet, buffered probe: `git` queries, backend reads, tag lookups.
+
+    These finish in milliseconds and their body is only interesting when they
+    fail, so `run_process`'s quiet shape is the correct one. Use `run_phase` for
+    anything an operator could end up waiting on.
+    """
+    result = run_process(command, cwd=cwd, timeout_seconds=COMMAND_TIMEOUT_SECONDS)
     if check and result.returncode != 0:
-        rendered = " ".join(command)
-        raise SystemExit(
-            f"command failed: {rendered}\n"
-            f"exit_code: {result.returncode}\n"
-            f"STDOUT:\n{result.stdout}\n"
-            f"STDERR:\n{result.stderr}"
-        )
+        _refuse(" ".join(command), result)
     return result
 
 
 def run_shell(command: str, *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
-    try:
-        result = subprocess.run(
-            command,
-            cwd=cwd,
-            shell=True,
-            executable="/bin/bash",
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=COMMAND_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        result = subprocess.CompletedProcess(
-            command,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {COMMAND_TIMEOUT_SECONDS}s",
-        )
+    """The shell-string form of `run`, with the same quiet-probe contract."""
+    result = run_process(
+        command,
+        cwd=cwd,
+        timeout_seconds=COMMAND_TIMEOUT_SECONDS,
+        shell=True,
+        executable="/bin/bash",
+    )
     if check and result.returncode != 0:
-        raise SystemExit(
-            f"command failed: {command}\n"
-            f"exit_code: {result.returncode}\n"
-            f"STDOUT:\n{result.stdout}\n"
-            f"STDERR:\n{result.stderr}"
-        )
+        _refuse(command, result)
+    return result
+
+
+def run_phase(command: str, *, cwd: Path, phase: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    """`run_shell` for a command an operator is WAITING on, not merely reading.
+
+    Same refusal contract; the difference is that start, a bounded heartbeat, and
+    the terminal status reach stderr while the child runs. The standing quality
+    runner is the reason this exists: it streams its own per-check lifecycle, and
+    routing it through `run_shell` bounded at 1800s turned an observable gate into
+    a half-hour of silence with no way to tell "still working" from "hung".
+    """
+    outcome = run_monitored_phase(
+        command,
+        cwd=cwd,
+        phase=phase,
+        timeout_seconds=COMMAND_TIMEOUT_SECONDS,
+        heartbeat_seconds=heartbeat_interval_from_env(PROGRESS_INTERVAL_ENV),
+        shell=True,
+        executable="/bin/bash",
+    )
+    result = outcome.completed_process()
+    if check and result.returncode != 0:
+        _refuse(command, result)
     return result
 
 

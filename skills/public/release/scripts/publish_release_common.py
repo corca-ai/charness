@@ -82,7 +82,17 @@ def run_pre_push_quality_gates(repo_root: Path, adapter_data: dict[str, Any], pa
         payload, "requested_review_gate", lambda: cli.run_requested_review_gate(repo_root)
     )
     timed(payload, "cli_skill_surface_gate", lambda: cli.run_cli_skill_surface_gate(repo_root, adapter_data))
-    timed(payload, "quality_command", lambda: cli.run_shell(str(adapter_data["quality_command"]), cwd=repo_root))
+    # `run_phase`, NOT `run_shell`: this is the longest child in the whole publish
+    # (the repo's standing quality runner, bounded at 1800s) and the one an operator
+    # actually waits on. `run_shell` buffers it, so a runner that streams its own
+    # per-check lifecycle produced pure silence until it exited -- indistinguishable
+    # from a hang, at the exact moment the operator is deciding whether to abort a
+    # publish. The body stays isolated; only the lifecycle reaches stderr.
+    timed(
+        payload,
+        "quality_command",
+        lambda: cli.run_phase(str(adapter_data["quality_command"]), cwd=repo_root, phase="quality_command"),
+    )
 
 
 def run_distinct_channel_floor(

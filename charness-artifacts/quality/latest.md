@@ -1,1 +1,1 @@
-2026-08-13-issue-616-applied-lifecycle.md
+2026-08-14-quality-review.md

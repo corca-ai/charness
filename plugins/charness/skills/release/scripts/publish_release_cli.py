@@ -43,6 +43,7 @@ run_narrative_audit = _narrative_gate.run_narrative_audit
 run_notes_file_preflight = _narrative_gate.run_notes_file_preflight
 run = _helpers.run
 run_shell = _helpers.run_shell
+run_phase = _helpers.run_phase
 git_status = _helpers.git_status
 changed_paths = _helpers.changed_paths
 write_current_artifact = _artifact.write_current_artifact
@@ -110,6 +111,7 @@ def _execution_context() -> SimpleNamespace:
         "run_requested_review_gate",
         "run_cli_skill_surface_gate",
         "run_shell",
+        "run_phase",
         "run_narrative_audit",
         "release_commit_body",
         "run_fresh_checkout_probes",

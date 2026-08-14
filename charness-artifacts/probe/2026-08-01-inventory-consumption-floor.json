@@ -1,11 +1,23 @@
 {
-  "artifacts": 140,
+  "_provenance": {
+    "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality; the artifact count and every residual figure live in this file's measured fields, which tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins against today's tree. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
+    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
+    "counterfactual_floor_20": "Re-runnable with --floor 20: 11 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
+    "date": "2026-08-14",
+    "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own probe at charness-artifacts/probe/2026-08-01-inventory-marker-rule.json; read the marker counts there rather than from this file, which has carried a wrong copy of them since 2026-08-01. It measures this repo's corpus and licenses no claim about a consumer repo's.",
+    "repo_head_at_run": "8617d799891280310229cc84ce4942b851d87c94",
+    "synchronized_after": "Refreshed after the 2026-08-14 monitored-execution-primitive quality record added one top-level quality artifact: artifacts 140 -> 141 and label values 405 -> 407. The residual field mentions, the floor, the floor-20 citation counterfactual, and the label-value counterfactual are all unchanged.",
+    "synchronized_reason": "Refresh the pinned residual-floor measurement because the release-runner visibility slice added a checked-in quality artifact. The rule and floor are unchanged. The drift message also names charness-artifacts/probe/2026-08-01-inventory-marker-rule.json and docs/deferred-decisions.md D47; neither was touched, because #596 replaced the mutable marker pin with the immutable 2026-08-12 snapshot and D47 states in its own text that unrelated quality-corpus growth does not rewrite it.",
+    "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because earlier refresh prose went stale while the executable probe correctly followed the corpus.",
+    "worktree": "dirty: the 2026-08-14 monitored-execution quality record and this synchronized residual-floor probe are present; the residual rule and floor are unchanged"
+  },
+  "artifacts": 141,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 140,
+    "not-claimed": 141,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
@@ -17,7 +29,7 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 405,
+    "count": 407,
     "median": 46,
     "min": 7
   },
@@ -1569,32 +1581,29 @@
     {
       "citations": {},
       "claims_pre_contract_exemption": false,
-      "commit_state": "uncommitted",
-      "declared_date": "2026-08-13",
+      "commit_state": "dated",
+      "declared_date": "2026-08-14",
       "exemption": "not-claimed",
-      "last_commit_date": "2026-08-13",
+      "last_commit_date": "2026-08-14",
       "path": "charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md"
     },
     {
       "citations": {},
       "claims_pre_contract_exemption": false,
-      "commit_state": "dirty",
-      "declared_date": "2026-08-13",
+      "commit_state": "uncommitted",
+      "declared_date": "2026-08-14",
       "exemption": "not-claimed",
-      "last_commit_date": "2026-08-13",
+      "last_commit_date": "2026-08-14",
+      "path": "charness-artifacts/quality/2026-08-14-quality-review.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dirty",
+      "declared_date": "2026-08-14",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-14",
       "path": "charness-artifacts/quality/latest.md"
     }
-  ],
-  "_provenance": {
-    "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality; the artifact count and every residual figure live in this file's measured fields, which tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins against today's tree. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
-    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
-    "counterfactual_floor_20": "Re-runnable with --floor 20: 11 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-    "date": "2026-08-13",
-    "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own probe at charness-artifacts/probe/2026-08-01-inventory-marker-rule.json; read the marker counts there rather than from this file, which has carried a wrong copy of them since 2026-08-01. It measures this repo's corpus and licenses no claim about a consumer repo's.",
-    "repo_head_at_run": "81e8836743270686a3159ed7ee11ede64eec12a0",
-    "synchronized_after": "Refreshed after the #616 applied-lifecycle quality record added one top-level quality artifact: artifacts 139 -> 140 and label values 400 -> 405. The residual field mentions, floor, floor-20 citation counterfactual, and label-value counterfactual otherwise remain unchanged.",
-    "synchronized_reason": "Refresh the pinned residual-floor measurement because #616 added a checked-in quality artifact. The rule and floor are unchanged; D47 value-marker evidence remains the immutable dated snapshot.",
-    "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because earlier refresh prose went stale while the executable probe correctly followed the corpus.",
-    "worktree": "dirty: the 2026-08-13 #616 quality record and synchronized residual-floor probe are present; the residual rule and floor are unchanged"
-  }
+  ]
 }
