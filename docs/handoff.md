@@ -4,7 +4,8 @@
 
 - Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <same>`
   BEFORE any brief or reviewer spawn. Both flags are REQUIRED.
-- Then invoke `impl` on slice **S1** of the release contract below. The commit
+- Then run `## Next Session` item 1 — the premise check over the scoped issues —
+  and only then invoke `impl` on slice **S1** of the release contract. The commit
   that blocked everything is done; the release is scope-locked, not started.
 
 ## Continuation Capability
