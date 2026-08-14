@@ -119,6 +119,17 @@ At a `prepared-awaiting-claims-review` stop, run
 the marker, names a `--critique-artifact` candidate that binds to the version
 being published, and emits the dry-run and execute packets.
 
+While a stop is outstanding — including at the claims-evidence commit, where the
+marker is inherited — a fresh `--execute` is refused before any mutation. This
+protects the boundary the claims record binds to: a second prepare over a stop
+bumps another version and leaves a HEAD with no single-parent prepared boundary,
+whose only resume recovery is a reset that discards an already-committed claims
+review. The exits are the resume above, or — only while nothing has been
+published, and after moving any blocker fix committed on top of the stop — a
+reset to the commit before the prepared record. Once the tag has reached the
+remote the resume is the only safe exit; a marker can still be at HEAD there,
+because a publish whose closeout tail failed leaves it.
+
 ## Timing
 
 The critique gate runs before version bump, manifest sync, generated export, tag,

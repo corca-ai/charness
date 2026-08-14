@@ -49,6 +49,25 @@ RECORD_SENTINELS = (
 )
 
 
+# The single owner of the `RECORD_SENTINELS` rule, because the comment above already CLAIMED
+# to be one while the rendered PATH fields never reached it: free text was guarded and paths
+# were not, and `:` and ` ` are legal filename characters. A critique artifact or claims
+# record simply NAMED after the prepared-stop marker publishes a finished release whose
+# record contains it, and `marker_at_commit` is a bare substring test -- so the prepare gate
+# then refuses every later release over a stop that does not exist. Callers must refuse
+# BEFORE mutation; every current one runs at gate time, so the repair is renaming a file
+# rather than amending a published commit.
+def assert_no_record_sentinel(value: str, field: str) -> None:
+    """Refuse an operator-supplied value rendered verbatim into the release record."""
+    for sentinel in RECORD_SENTINELS:
+        if sentinel in value:
+            raise SystemExit(
+                f"{field} must not contain {sentinel!r}; it is rendered into the published "
+                "release record, which other surfaces prove release state by "
+                "substring-matching. Rename the file."
+            )
+
+
 def claims_record_in_change_set(changed: list[str]) -> str | None:
     """The claims record in a changed-path set with the claims-evidence SHAPE, else None.
 
@@ -232,6 +251,7 @@ def _review_relative_path(value: object, field: str, suffix: str) -> str:
     normalized = path.as_posix()
     if not normalized.startswith(REVIEW_ROOT) or not normalized.endswith(suffix):
         raise SystemExit(f"--resume: claims-review {field} must be a {suffix} file under {REVIEW_ROOT}")
+    assert_no_record_sentinel(normalized, f"--resume: claims-review {field}")
     return normalized
 
 

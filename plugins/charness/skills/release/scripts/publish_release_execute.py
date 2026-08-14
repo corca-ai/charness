@@ -8,6 +8,64 @@ from typing import Any
 
 _common = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_common.py")))
 _rollback = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_rollback.py")))
+_claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
+
+
+def assert_no_outstanding_prepared_stop(repo_root: Path, *, adapter_data: dict[str, Any], run: Any) -> None:
+    """Refuse a fresh prepare while HEAD still carries a prepared claims-review stop.
+
+    The stop below is only an IMMUTABLE record for the claims reviewer if a second prepare
+    cannot be started on top of it, and re-running the same `--execute` is the likeliest
+    action at a stop: the stop exists to surface record blockers, and the command that
+    produced it is the one in the operator's shell history.
+
+    Unguarded, that second prepare SUCCEEDS. It bumps another version, re-runs the release
+    quality gates and the fresh-checkout probes, and commits a second marked record whose
+    parent already carries the marker -- after which `prepared_record` declines (no
+    single-parent boundary), `assert_resumable`'s `marker_at_head` branch refuses the
+    resume, and the only recovery that branch can name is a reset back to one prepared
+    record. On top of a committed claims review that reset discards the review; on top of a
+    stop whose tag already reached the remote it would rewrite history behind it. Refusing
+    here costs one message instead.
+
+    Keyed on the marker being PRESENT at HEAD, not on `prepared_record`: the marker is
+    inherited by descendants, so it is still there at the claims-evidence commit R, which
+    is exactly where a mistaken `--execute` (instead of `--resume`) is most destructive and
+    where a prepared-boundary test would wave the prepare through.
+
+    Publication rewrites the release record without the marker, so a finished release does
+    not latch this refusal -- asserted by a test that prepares again after a full publish,
+    because if that ever stopped holding the repo could never cut another release. A repo
+    with no release record yet reads as "no marker": that is a first release, not a stop.
+
+    Known residuals, stated rather than half-repaired. The path is derived from the CURRENT
+    adapter, so an `output_dir` edited at the stop (an ordinary action there) reads as no
+    marker, and a gitignored release output directory reads the same way. Neither can be
+    closed by refusing an unreadable record the way the resume lane does: a first release
+    legitimately has none.
+    """
+    record_path = _claims_review["release_record_path"](adapter_data)
+    if not _claims_review["marker_at_commit"](repo_root, commit="HEAD", record_path=record_path, run=run):
+        return
+    # The abandon exit is NOT stated unconditionally, and the resume lane is why: its
+    # sibling refusal splits the same advice on publication state, because a publish whose
+    # closeout tail failed leaves the marker at HEAD with the tag pushed and the release
+    # created. "Reset" there rewrites history behind a published tag and discards the
+    # claims record. This gate is deliberately cheap (one `git show`, no remote reads), so
+    # it names the condition for the operator instead of spending a `git ls-remote` here.
+    raise SystemExit(
+        f"publish_release: HEAD's release record `{record_path}` still carries "
+        f"`{_claims_review['MARKER']}`, so a prepared claims-review stop is outstanding and a "
+        "second prepare would destroy the boundary the claims review binds to.\n"
+        "  publish it: --resume --publish-current --claims-review-artifact <record> (run "
+        "plan_release_run.py --repo-root . for the exact invocation). This is the ONLY safe exit "
+        "once the stop's tag has reached the remote -- a resume republishes idempotently.\n"
+        "  abandon it: only while nothing has been published (check `git ls-remote --tags` for this "
+        "record's tag, and the remote branch), reset to the commit before the prepared release "
+        "record, then prepare again. That reset discards EVERY commit on top of the stop -- a "
+        "committed claims review and any blocker fix included; rebase or cherry-pick them off "
+        "first, and expect a force-push if the branch was already pushed."
+    )
 
 
 def _prepare_release_attempt(

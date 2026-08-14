@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 """Release fresh-checkout probe checker, and the state vocabulary it answers in.
 
-The key to read FIRST is ``status``. A verdict about the probes lives in
-``probe_results`` (and ``blockers``), and those keys exist ONLY when this
-invocation actually executed the declared probes:
+The key to read FIRST is ``status``. ``probe_results`` is NOT a reliable
+"probes ran" signal on its own, and this docstring used to claim it was: the
+key is also emitted empty by three branches that execute nothing (invalid
+adapter, ``not_configured``, and the two ``blocked`` setup failures below), and
+the clone-failure branch fills it with the CLONE's result, which is not a probe
+result. A bounded review caught that claim one branch after the commit that
+removed the same conflation from ``not_established``. Read ``status``:
 
-- ``passed`` / ``blocked`` -> exit 0 / 1. The probes RAN; ``probe_results``
-  carries what each one returned. A real answer.
+- ``passed`` -> exit 0. The probes RAN and every one succeeded; ``probe_results``
+  carries what each returned. A real answer.
+- ``blocked`` -> exit 1. Something refused. That is usually a declared probe
+  failing, but it also covers setup failures where NO probe ran -- a detached
+  HEAD, or a clone that did not complete. Fail-closed either way, so it can stop
+  a release it should not; distinguishing those is deferred, not solved.
 - ``not_configured`` -> exit 0. The adapter declares no probes, so there is
   nothing to prove. A genuine opt-out, and it must never start refusing: a repo
   that legitimately declares nothing is answered, not stonewalled.

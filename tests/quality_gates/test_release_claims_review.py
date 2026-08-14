@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ import pytest
 from .release_publish_fixtures import (
     _release_env,
     _run_publish,
+    _run_publish_patch,
     _seed_publish_release_repo,
     claims_review_narrative,
     claims_review_record,
@@ -19,6 +21,9 @@ from .release_publish_fixtures import (
 from .release_script_loading import load_release_script
 
 CLAIMS_REVIEW = load_release_script("publish_release_claims_review", suffix="topology")
+# The prepare-path precondition lives with the prepare process it protects.
+EXECUTE = load_release_script("publish_release_execute", suffix="claims_stop")
+PREFLIGHT = load_release_script("publish_release_preflight", suffix="claims_stop")
 SECTIONS = load_release_script("publish_release_artifact_sections", suffix="claims")
 NARRATIVE_PATH = "charness-artifacts/release-review/narrative.md"
 
@@ -417,7 +422,11 @@ def test_a_second_prepare_over_an_outstanding_marker_cannot_publish_unreviewed(t
     a release published with no claims review and no refusal.
 
     The trigger is the likeliest action at a prepared stop, because the stop exists to
-    surface record blockers -- the operator re-prepares after finding one."""
+    surface record blockers -- the operator re-prepares after finding one. `--execute` now
+    refuses that route outright (asserted below), so the state is built here the way the
+    routes it cannot guard still build it: a marker-bearing commit on top of the stop from
+    an older helper build, a hand-authored commit, or a cherry-pick. Both layers are
+    proven -- the CLI will not create this state, and the resume refuses it if it exists."""
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
     first = _run_publish(repo, env, "--part", "patch", "--execute",
@@ -425,7 +434,12 @@ def test_a_second_prepare_over_an_outstanding_marker_cannot_publish_unreviewed(t
     assert first.returncode == 0, first.stderr
     second = _run_publish(repo, env, "--part", "patch", "--execute",
                           "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
-    assert second.returncode == 0, second.stderr
+    assert second.returncode != 0
+    assert "prepared claims-review stop is outstanding" in second.stderr
+    readme = repo / "README.md"
+    readme.write_text(readme.read_text(encoding="utf-8") + "second marked release commit\n", encoding="utf-8")
+    _run(["git", "add", "README.md"], cwd=repo)
+    _run(["git", "commit", "-m", json.loads(first.stdout)["commit_message"]], cwd=repo)
     gh_log, git_log = tmp_path / "gh-log.json", tmp_path / "git-log.json"
     prior_gh = json.loads(gh_log.read_text(encoding="utf-8"))
     prior_git = json.loads(git_log.read_text(encoding="utf-8"))
@@ -704,6 +718,17 @@ def test_claims_review_helper_refusals_are_exercised_in_process(tmp_path: Path) 
     # A commit whose record cannot be read carries no marker.
     assert CLAIMS_REVIEW.marker_at_commit(tmp_path, commit="deadbeef", record_path=record_path, run=absent) is False
 
+    # A repo with no release record yet is preparing its FIRST release, not re-preparing
+    # over an outstanding stop; refusing it would block every greenfield publish.
+    adapter_data = {"output_dir": "charness-artifacts/release"}
+    assert EXECUTE.assert_no_outstanding_prepared_stop(tmp_path, adapter_data=adapter_data, run=absent) is None
+
+    def marked(command: list[str], *, cwd: Path, check: bool = True):
+        return subprocess.CompletedProcess(command, 0, stdout=f"# Release Surface Check\n<!-- {CLAIMS_REVIEW.MARKER} -->\n")
+
+    with pytest.raises(SystemExit, match="prepared claims-review stop is outstanding"):
+        EXECUTE.assert_no_outstanding_prepared_stop(tmp_path, adapter_data=adapter_data, run=marked)
+
     # The record path is DERIVED from the adapter, and normalized: a trailing slash would
     # otherwise derive `...release//latest.md`, which git reads as a miss — a formatting
     # difference silently reproducing the blindness the derivation exists to end.
@@ -746,6 +771,24 @@ def test_claims_review_helper_refusals_are_exercised_in_process(tmp_path: Path) 
     CLAIMS_REVIEW._assert_signal_is_renderable("a bounded reviewer ran in a separate agent context")
     assert SECTIONS.flatten_signal("two\nlines  here") == "two lines here"
 
+    # The path fields are rendered into the published record too, so the sentinel rule that
+    # guards `signal` has to guard them. `:` and ` ` are legal filename characters, so a
+    # record named after the marker was accepted, published, and then latched the prepare
+    # gate on a stop that does not exist.
+    for sentinel in CLAIMS_REVIEW.RECORD_SENTINELS:
+        with pytest.raises(SystemExit, match="must not contain"):
+            CLAIMS_REVIEW._review_relative_path(
+                f"{CLAIMS_REVIEW.REVIEW_ROOT}{sentinel}-record.json", "--claims-review-artifact", ".json"
+            )
+        # The critique artifact path renders into the SAME record (`## Review Proof`) on every
+        # write including the published one, so guarding only the claims paths left the latch
+        # reachable through a differently-named field. Refused at the critique gate, which runs
+        # before the bump: the repair is renaming a file, not amending a published commit.
+        with pytest.raises(SystemExit, match="must not contain"):
+            PREFLIGHT.validate_critique_artifact_arg(
+                tmp_path, f"charness-artifacts/critique/{sentinel}-review.md", run_command=absent
+            )
+
     # Path shape refusals.
     for value, message in (
         (None, "must be a repo-relative path"),
@@ -773,3 +816,153 @@ def test_claims_review_helper_refusals_are_exercised_in_process(tmp_path: Path) 
     assert CLAIMS_REVIEW.claims_record_in_change_set(
         ["charness-artifacts/release-review/a.json", "charness-artifacts/release-review/a.md"]
     ) == "charness-artifacts/release-review/a.json"
+
+
+@pytest.mark.release_only
+def test_execute_refuses_a_second_prepare_over_an_outstanding_stop(tmp_path: Path) -> None:
+    """Re-running the prepare at a stop must refuse BEFORE it mutates anything.
+
+    The stop exists to surface record blockers, so the operator standing at one reaches for
+    the command that produced it. Unguarded, that second `--execute` succeeded: it bumped a
+    second version, re-ran the release quality gates, and committed a second marked record
+    whose parent already carried the marker -- after which no single-parent prepared
+    boundary exists, the resume refuses, and the only recovery it can name is a reset that
+    discards whatever claims review was already committed on top of the stop.
+    """
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    prepared = _run_publish(repo, env, "--part", "patch", "--execute",
+                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    assert prepared.returncode == 0, prepared.stderr
+    prepared_commit = json.loads(prepared.stdout)["prepared_release_commit"]
+    manifest = repo / "packaging" / "demo.json"
+    manifest_before = manifest.read_text(encoding="utf-8")
+
+    second = _run_publish(repo, env, "--part", "patch", "--execute",
+                          "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+
+    assert second.returncode != 0
+    assert "prepared claims-review stop is outstanding" in second.stderr
+    # Both supported exits are named, so the refusal is actionable without reading source.
+    assert "--claims-review-artifact" in second.stderr
+    # Nothing moved: no second version bump, no second release commit.
+    assert _run(["git", "rev-parse", "HEAD"], cwd=repo).stdout.strip() == prepared_commit
+    assert manifest.read_text(encoding="utf-8") == manifest_before
+    assert _run(["git", "status", "--porcelain"], cwd=repo).stdout.strip() == ""
+
+
+@pytest.mark.release_only
+def test_the_claims_evidence_commit_is_still_refused_a_second_prepare(tmp_path: Path) -> None:
+    """The destructive case, and the reason this is keyed on the INHERITED marker.
+
+    At the claims-evidence commit R the operator's next step is `--resume`; reaching for
+    `--execute` instead is the same muscle memory. `prepared_record` declines at R (the
+    marker is inherited, not introduced), so a check keyed on the prepared boundary would
+    wave this through -- and the resume's recovery advice for the state it produces is a
+    reset back past R, i.e. discarding the committed claims review itself.
+    """
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    prepared = _run_publish(repo, env, "--part", "patch", "--execute",
+                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    assert prepared.returncode == 0, prepared.stderr
+    payload = json.loads(prepared.stdout)
+    commit = payload["prepared_release_commit"]
+    record = _run(["git", "show", f"{commit}:charness-artifacts/release/latest.md"], cwd=repo).stdout
+    review_path = commit_claims_review(
+        repo, prepared_commit=commit, prepared_record=record,
+        target_version=payload["target_version"], tag_name=payload["tag_name"], stem="second-prepare-claims",
+    )
+    evidence = _run(["git", "rev-parse", "HEAD"], cwd=repo).stdout.strip()
+
+    refused = _run_publish(repo, env, "--part", "patch", "--execute",
+                           "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+
+    assert refused.returncode != 0
+    assert "prepared claims-review stop is outstanding" in refused.stderr
+    assert _run(["git", "rev-parse", "HEAD"], cwd=repo).stdout.strip() == evidence
+    # The review the mistaken prepare would have stranded is still the direct child of the
+    # prepared record, so the supported resume still publishes it.
+    resumed = _run_publish(repo, env, "--resume", "--publish-current", "--execute",
+                           "--claims-review-artifact", review_path,
+                           "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    assert resumed.returncode == 0, resumed.stderr
+
+
+@pytest.mark.release_only
+def test_a_finished_release_does_not_latch_the_second_prepare_refusal(tmp_path: Path) -> None:
+    """The guard must not wedge the NEXT release.
+
+    It is keyed on a marker that descendants inherit, so the property it depends on is that
+    publication rewrites the release record without it. Asserted here rather than assumed:
+    if that ever stops holding, this repo could never cut another release, and the failure
+    would surface at the next publish rather than in this suite.
+    """
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    published = _run_publish_patch(repo, env)
+    assert published.returncode == 0, published.stderr
+    # Read at HEAD, which is what the gate reads. A worktree copy can be unmarked while the
+    # COMMITTED record still carries the marker, and that committed record is what latches.
+    record = _run(["git", "show", "HEAD:charness-artifacts/release/latest.md"], cwd=repo).stdout
+    assert CLAIMS_REVIEW.MARKER not in record
+
+    again = _run_publish(repo, env, "--part", "patch", "--execute",
+                         "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+
+    assert again.returncode == 0, again.stderr
+    assert json.loads(again.stdout)["target_version"] == "0.0.2"
+
+
+def test_the_prepared_stop_gate_is_wired_into_the_cli_before_the_plan(tmp_path: Path, monkeypatch) -> None:
+    """Proof that the gate is CALLED, in the standing suite rather than the release gate.
+
+    The end-to-end refusals above are `release_only`, so they are excluded from the standing
+    pre-push run; the in-process assertions call the function directly and stay green if the
+    call site is deleted. That is the inert-guard shape this repo keeps shipping: during
+    review of this very slice the call site sat behind `if False and ...` and nothing in the
+    standing suite noticed. Everything upstream of the gate is stubbed and the plan builder
+    is booby-trapped, so this pins the ORDER too -- the refusal precedes the plan build and
+    every mutation after it.
+    """
+    cli = load_release_script("publish_release_cli", suffix="wiring")
+
+    def reached(*_args, **kwargs):
+        # The adapter data is asserted, not discarded: passing a hardcoded default here is
+        # the exact defect `release_record_path` refuses a default for, and a stub that
+        # ignores its arguments would call that wiring correct.
+        assert kwargs["adapter_data"] == {"output_dir": "d"}
+        raise SystemExit("prepared-stop gate reached")
+
+    monkeypatch.setattr(cli, "load_adapter", lambda _root: {"valid": True, "data": {"output_dir": "d"}})
+    monkeypatch.setattr(cli, "validate_critique_artifact_arg", lambda *a, **k: None)
+    monkeypatch.setattr(cli, "enforce_release_critique_gate", lambda *a, **k: {})
+    monkeypatch.setattr(cli, "gate_target_version", lambda *a, **k: "1.2.3")
+    monkeypatch.setattr(cli, "git_status", lambda _root: [])
+    monkeypatch.setattr(cli, "build_publish_plan",
+                        lambda *a, **k: pytest.fail("plan built before the prepared-stop gate"))
+    monkeypatch.setattr(cli._execute, "assert_no_outstanding_prepared_stop", reached)
+    monkeypatch.setattr(sys, "argv", [
+        "publish_release.py", "--repo-root", str(tmp_path), "--part", "patch", "--execute",
+        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+    ])
+
+    with pytest.raises(SystemExit, match="prepared-stop gate reached"):
+        cli.main()
+
+    # ...and NOT on the lane that must reach the claims-review validator instead. A gate that
+    # also fired on `--resume` would refuse every publication of the stop it protects.
+    def refuse_if_called(*_args, **_kwargs):
+        pytest.fail("the prepared-stop gate ran on the resume lane")
+
+    def resume_lane(*_args, **_kwargs):
+        raise SystemExit("resume lane")
+
+    monkeypatch.setattr(cli._execute, "assert_no_outstanding_prepared_stop", refuse_if_called)
+    monkeypatch.setattr(cli, "preflight_resume_state", resume_lane)
+    monkeypatch.setattr(sys, "argv", [
+        "publish_release.py", "--repo-root", str(tmp_path), "--resume", "--publish-current", "--execute",
+        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+    ])
+    with pytest.raises(SystemExit, match="resume lane"):
+        cli.main()

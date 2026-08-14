@@ -364,6 +364,12 @@ def main() -> None:
     if status:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
 
+    if args.execute and not args.resume:
+        # Here rather than inside the prepare, so the refusal precedes every mutation AND
+        # the plan build's remote reads, and so it stays a gate refusal instead of a
+        # release-attempt failure payload. Its reasoning lives with the function.
+        _execute.assert_no_outstanding_prepared_stop(repo_root, adapter_data=adapter_data, run=run)
+
     resume_state = (
         preflight_resume_state(repo_root, args=args, adapter_data=adapter_data, cli=_execution_context())
         if args.resume

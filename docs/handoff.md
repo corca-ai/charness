@@ -65,9 +65,9 @@ or issue closure. Every verdict above is local to this worktree.
 2. Treat `rule-exists-but-does-not-bind` as a class; the method is yours, treating
    it is not. Now five hits, and the two added on 2026-08-14 were found by
    FOLLOWING this file, not auditing it: its own trigger command was unrunnable,
-   and `python3 skills/public/release/scripts/check_fresh_checkout_probes.py --repo-root . --detail`
-   still says `configured` at exit 0 while its own reason reads "declared but were
-   not run" (the five probes themselves ran clean on 2026-08-14). Cheapest probe
+   and the release fresh-checkout checker reported `configured` at exit 0 while its
+   own reason read "declared but were not run" -- both now repaired, the second in
+   `353f11b48`. Cheapest probe
    of any treatment — `grep -rn seed_lesson_transitions skills/public/retro/scripts/`
    returns no caller. Cost:
    [session retro](../charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md).

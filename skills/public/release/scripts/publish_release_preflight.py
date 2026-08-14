@@ -33,6 +33,9 @@ def _load_adapter_preflight_helper() -> Any:
 
 
 _adapter_preflight = _load_adapter_preflight_helper()
+# One owner for the record-sentinel rule. This path is rendered into the release record as
+# `## Review Proof` on every write, including the published one.
+_claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
 
 
 def _version_pins(text: str) -> list[str]:
@@ -83,6 +86,7 @@ def validate_critique_artifact_arg(
     normalized = relpath.as_posix()
     if not normalized.startswith(CRITIQUE_ARTIFACT_PREFIX) or relpath.suffix != ".md":
         raise SystemExit("--critique-artifact must point at a critique markdown artifact")
+    _claims_review["assert_no_record_sentinel"](normalized, "--critique-artifact")
     resolved = (repo_root / relpath).resolve()
     try:
         resolved.relative_to(repo_root)
