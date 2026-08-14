@@ -53,10 +53,14 @@ or issue closure. Every verdict above is local to this worktree.
 
 1. Push and release, deferred here by the owner. Unpushed set:
    `git log --oneline origin/main..HEAD`.
-2. Nothing binds a retro that tags a new recurrence class to seeding it; this
-   session missed its own two lessons on the slice that built the seeder.
-   Confirm with `grep -rn seed_lesson_transitions skills/public/retro/scripts/`
-   and decide where the binding belongs.
+2. Treat `rule-exists-but-does-not-bind` as a class; the method is yours to
+   choose, treating it is not optional. Three hits in one slice — `quality` not
+   knowing it owned the lesson lifecycle, the retro persist path never calling
+   the seeder, the handoff discipline documented but bound to nothing — and only
+   instances were repaired. The retro-to-seeder one is still open and is the
+   cheapest probe of any proposed treatment — `grep -rn seed_lesson_transitions skills/public/retro/scripts/`
+   returns no caller. Instances and their cost:
+   [session retro](../charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md).
 3. Run the `issue` closeout floor for both cohorts, post closeout comments, and
    add the retro-family evidence to
    [#628](https://github.com/corca-ai/charness/issues/628).
