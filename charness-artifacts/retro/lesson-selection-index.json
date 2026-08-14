@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-14",
-  "source_artifact_count": 503,
-  "candidate_count": 2033,
+  "source_artifact_count": 504,
+  "candidate_count": 2040,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -21,15 +21,15 @@
       "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 6,
-      "independent_source_count": 6,
+      "source_count": 8,
+      "independent_source_count": 8,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "latest_source_date": "2026-08-14",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 4.0,
+      "selection_weight": 5.2,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -62,6 +62,22 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability** — add a regenerate/accept flag to `check_boundary_bypass_ratchet.py` so its own error message names a runnable command, matching the dup ratchet's `--write-baseline` / `--accept-rotation` shape. Structural pattern: a gate that tells the operator to regenerate an artifact while providing no command to do it trains hand-editing, and its cross-check covers only some of the fields a rebuild would write. Triggering instance(s): three hand-edit cycles on one baseline in one session, two ENFORCED counts left stale. Destination: new issue."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "An agent was paid to redesign a decision the observability contract had already DEFERRED with a stated reason, because the brief was written without that contract. The workflow was stopped mid-flight and re-verified against the spec."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Three causal reviewers were briefed on distinct hazard lenses and all three were pointed at `scripts/`, `skills/`, `tests/`. Lens-diverse, source-uniform."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
@@ -543,15 +559,15 @@
       "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 6,
-      "independent_source_count": 6,
+      "source_count": 8,
+      "independent_source_count": 8,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "latest_source_date": "2026-08-14",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 4.0,
+      "selection_weight": 5.2,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -584,6 +600,22 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability** — add a regenerate/accept flag to `check_boundary_bypass_ratchet.py` so its own error message names a runnable command, matching the dup ratchet's `--write-baseline` / `--accept-rotation` shape. Structural pattern: a gate that tells the operator to regenerate an artifact while providing no command to do it trains hand-editing, and its cross-check covers only some of the fields a rebuild would write. Triggering instance(s): three hand-edit cycles on one baseline in one session, two ENFORCED counts left stale. Destination: new issue."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "An agent was paid to redesign a decision the observability contract had already DEFERRED with a stated reason, because the brief was written without that contract. The workflow was stopped mid-flight and re-verified against the spec."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Three causal reviewers were briefed on distinct hazard lenses and all three were pointed at `scripts/`, `skills/`, `tests/`. Lens-diverse, source-uniform."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
@@ -1092,6 +1124,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3c21f07c784e",
+      "kind": "current_focus",
+      "lesson": "Repaired the #618-#624 cohort (a broken `charness init`, six wrong-rooted shell gates, probes that reported `false` for undetermined, an overwritten quality record, a retro scaffold its own validator rejected, a drift message naming a superseded probe) and wired the session-start half of the lesson lifecycle.",
+      "normalized_key": "repaired the 618 624 cohort a broken charness init six wrong rooted shell gates",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Repaired the #618-#624 cohort (a broken `charness init`, six wrong-rooted shell gates, probes that reported `false` for undetermined, an overwritten quality record, a retro scaffold its own validator rejected, a drift message naming a superseded probe) and wired the session-start half of the lesson lifecycle."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:4c82c2173233",
       "kind": "current_focus",
       "lesson": "The user corrected the claim that #614's lesson presentation was unproven.",
@@ -1166,6 +1224,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This session turned three user corrections into one current-contract cleanup: retired migration and compatibility surfaces should be deleted rather than maintained, opened lesson content must survive compaction as readable bytes, and long-running runners must not hide their lifecycle merely because diagnostic bodies are isolated."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:aa6cce4a76c9",
+      "kind": "next_improvement",
+      "lesson": "a lesson needs an executable step and a declared work-type trigger, not only a claim; a planner can then emit it as a required read at the moment of use (#627).",
+      "normalized_key": "a lesson needs an executable step and a declared work type trigger not only",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a lesson needs an executable step and a declared work-type trigger, not only a claim; a planner can then emit it as a required read at the moment of use (#627)."
         }
       ]
     },
@@ -1248,6 +1332,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:3af5f5e03cd4",
+      "kind": "next_improvement",
+      "lesson": "this repo declares a lesson evaluator and still recorded `missing-start`, because nothing opened a session before the work. In a repo that HAS a ledger that value is a choice, not a configuration state, and should read as a finding.",
+      "normalized_key": "this repo declares a lesson evaluator and still recorded missing start because nothing opened",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "this repo declares a lesson evaluator and still recorded `missing-start`, because nothing opened a session before the work. In a repo that HAS a ledger that value is a choice, not a configuration state, and should read as a finding."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fffaf1e3fc0f",
+      "kind": "next_improvement",
+      "lesson": "when a fan-out reviews a surface this repo has designed before, assign one reviewer the design record rather than the code; recorded in `skills/shared/references/fresh-eye-subagent-review.md` so consuming repos inherit it.",
+      "normalized_key": "when a fan out reviews a surface this repo has designed before assign one",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when a fan-out reviews a surface this repo has designed before, assign one reviewer the design record rather than the code; recorded in `skills/shared/references/fresh-eye-subagent-review.md` so consuming repos inherit it."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:86988d355b53",
       "kind": "next_improvement",
       "lesson": "**workflow**: after opening a lesson session, retain its bundle path and reread that file after compaction and before retro.",
@@ -1296,6 +1432,84 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: when a gate's failure message instructs edits, verify each named surface still owns what the message claims before editing — two of the four named here were superseded by #596."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:99e3c6f22fae",
+      "kind": "repeat_trap",
+      "lesson": "A gate was piped through `head`, discarding its exit code, in a repo whose operating contract forbids exactly that.",
+      "normalized_key": "a gate was piped through head discarding its exit code in a repo whose",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "A gate was piped through `head`, discarding its exit code, in a repo whose operating contract forbids exactly that."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ded1495627b3",
+      "kind": "repeat_trap",
+      "lesson": "Audit greps carried `grep -v '^\\./charness-artifacts'` to cut noise, which removed the only directory holding the answer. A spec path that did surface in one grep was classified as a past artifact and never opened.",
+      "normalized_key": "audit greps carried grep v charness artifacts to cut noise which removed the only",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Audit greps carried `grep -v '^\\./charness-artifacts'` to cut noise, which removed the only directory holding the answer. A spec path that did surface in one grep was classified as a past artifact and never opened."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e14e7f1ab44f",
+      "kind": "repeat_trap",
+      "lesson": "The #618 lane returned RED for checks that could only pass after a mirror sync the lane was forbidden to run — a sequencing error in the brief, not a defect in the work.",
+      "normalized_key": "the 618 lane returned red for checks that could only pass after a mirror",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
+          "date": "2026-08-14",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The #618 lane returned RED for checks that could only pass after a mirror sync the lane was forbidden to run — a sequencing error in the brief, not a defect in the work."
         }
       ]
     },

@@ -9,6 +9,20 @@ checked in. `tests/` is also outside the mutation pool, so no gate covers it eit
 These pin the claims the message makes, and the paths and commands it names. They do not judge
 whether the prose reads well — they fail if it stops saying the load-bearing things, or if it
 names a script or a probe that does not exist.
+
+#624 showed that was not enough, and the gap is worth stating because it is the reason this file
+reported green over the defect. Every pin here was an EXISTENCE predicate — `path.is_file()`,
+`"_provenance" in payload`, `"recursive_variant" in ...`. None of them can see SUPERSESSION: when
+#596 replaced the mutable marker pin with an immutable dated snapshot, the superseded file kept
+existing with every key those pins name, so the message went on instructing edits to a frozen
+artifact while this file stayed green. The circularity is worth naming too — the only live reader
+of the superseded probe had become the test validating the message that named it.
+
+So two structural pins were added, and they are the ones to keep honest:
+`test_every_surface_named_is_one_a_live_caller_of_this_message_may_edit` derives the message's
+legitimate surfaces from ITS ACTUAL CALL SITES rather than from a hand-maintained list, and
+`test_the_decision_record_is_named_only_for_the_coupling_it_actually_has` pins the one figure D47
+and this probe share instead of asserting that D47 needs editing whenever anything moves.
 """
 
 from __future__ import annotations
@@ -19,17 +33,19 @@ from pathlib import Path
 
 from tests.probe_drift_support import (
     CORPUS_CAUSES,
+    CORPUS_LIB,
     DECISION_RECORD,
     DISCRIMINATION_PATHS,
+    DO_NOT_TOUCH_SURFACES,
     FLOOR_COMMAND,
     FLOOR_COUNTERFACTUAL_COMMAND,
+    FLOOR_MEASURE_SCRIPT,
     FLOOR_PROBE,
     GATE_MIRROR,
     GATE_MODULE,
-    MARKER_COMMAND,
-    MARKER_PROBE,
-    MARKER_RECURSIVE_COMMAND,
+    MARKER_SNAPSHOT,
     MIRROR_SYNC_COMMAND,
+    NOT_CAUSES,
     RESIDUAL_COMMAND,
     RESIDUAL_CONTRACT_DOC,
     RESIDUAL_FLOOR_HOME,
@@ -40,12 +56,18 @@ from tests.probe_drift_support import (
     RESIDUAL_TIMEBOX_TEST,
     RESIDUAL_UPDATE_SURFACES,
     RULE_CAUSES,
+    RULE_ONLY_SURFACES,
+    SUPERSEDED_MARKER_PROBE,
     UPDATE_SURFACES,
     probe_drift_message,
     residual_floor_message,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
+# Every `probe_drift_message(..., probe=NAME)` call, with `NAME` captured as the constant it is
+# written as. Resolved against the support module rather than matched as a literal, because the
+# call sites all pass constants and a literal-only parse would report zero callers and pass.
+CALL_SITE_RE = re.compile(r"probe_drift_message\(\s*\"[^\"]+\"\s*,\s*probe=(\w+)")
 
 
 def test_the_message_separates_a_corpus_cause_from_a_rule_cause() -> None:
@@ -55,7 +77,7 @@ def test_the_message_separates_a_corpus_cause_from_a_rule_cause() -> None:
     whenever the measurement rule moved rather than the corpus, and following it would launder a
     rule regression into the pinned probe and into the decision record.
     """
-    message = probe_drift_message("artifacts_scanned", probe=MARKER_PROBE)
+    message = probe_drift_message("artifacts", probe=FLOOR_PROBE)
 
     assert "FIRST decide WHICH changed" in message
     assert "If the CORPUS changed, re-record" in message
@@ -73,21 +95,39 @@ def test_the_message_separates_a_corpus_cause_from_a_rule_cause() -> None:
     assert "git was unavailable" not in message
     # And the corpus cause a reader would otherwise miss, because no file appears or vanishes.
     assert "REWRITTEN" in message
-    assert "history/" in message
+    # `quality/history/` is now a NON-cause, and the distinction is load-bearing rather than
+    # cosmetic: this probe's corpus glob is non-recursive, so a nested write cannot move a single
+    # number here. It was listed as a corpus cause — with a re-record remedy — while a second,
+    # recursive pin existed; #596 retired that pin and left the sentence, so a floor reader was
+    # being handed the re-record remedy for a write that explains nothing. Asserting mere presence
+    # of `history/` would pass either way, so the SECTION it sits under is what is pinned.
+    non_causes_at = message.index("do NOT move these numbers")
+    assert non_causes_at < message.index("quality/history/"), (
+        "`quality/history/` moved back above the non-cause heading; this probe's glob is "
+        "non-recursive, so a nested write is not a corpus cause for it"
+    )
+    assert "NON-RECURSIVE" in message
 
 
 def test_the_message_names_every_surface_that_carries_the_same_numbers() -> None:
-    """Five surfaces, not three. The probes themselves refuted the smaller claim."""
+    """Six surfaces, and NOT the two #624 found it had outlived."""
     message = probe_drift_message("floor", probe=FLOOR_PROBE)
 
-    assert MARKER_PROBE in message
     assert FLOOR_PROBE in message
-    assert DECISION_RECORD in message
-    assert "_provenance.recursive_variant" in message
-    assert "nests HERE, not at top level" in message
-    assert "_provenance.current_corpus" in message
+    assert GATE_MODULE in message
+    assert GATE_MIRROR in message
     assert "_provenance` bookkeeping" in message
-    assert "names the measured `field_mentions_presence_only`" in message
+    assert "_provenance` prose keys" in message
+    assert "_provenance.counterfactual_floor_20" in message
+    # The two surfaces #624 reported. They still appear — a message that silently dropped them
+    # would leave a reader acting on memory to re-do exactly what the issue reported — but they
+    # must appear under the do-not-touch heading, never as an edit target.
+    do_not_touch_at = message.index("And do NOT touch these")
+    for surface in (SUPERSEDED_MARKER_PROBE, MARKER_SNAPSHOT):
+        assert message.index(surface) > do_not_touch_at, (
+            f"{surface} is named before the do-not-touch heading, so a reader following the "
+            "update list literally will edit it — the #624 defect exactly"
+        )
 
 
 def test_the_message_does_not_tell_a_reader_to_overwrite_provenance() -> None:
@@ -97,70 +137,79 @@ def test_the_message_does_not_tell_a_reader_to_overwrite_provenance() -> None:
     `_provenance`, and the next run then fails with a bare `KeyError: '_provenance'` — the
     diagnostic class #536 exists to remove, reintroduced by the fix for #536.
     """
-    message = probe_drift_message("artifacts_scanned", probe=MARKER_PROBE)
+    message = probe_drift_message("floor", probe=FLOOR_PROBE)
 
-    # COUNT, not presence: both probe payload lines must carry it. A mutation that dropped the
-    # instruction from ONE of them survived a presence check, which would leave a reader
-    # correctly told to keep `_provenance` for one probe and silently told to destroy it for the
-    # other — the worse half of the bug this replaced.
-    assert message.count("keeping `_provenance`") == 2, message
-    assert "neither emits `_provenance`" in message
-    assert "no output can be pasted over a probe file wholesale" in message
-    # And the nesting warning, which is the specific step whose omission produced a bare
-    # `KeyError: '_provenance'` on the next run.
-    assert "nests HERE, not at top level" in message
+    # COUNT, and the count is DERIVED. It was hardcoded at 2 — one per probe — which meant that
+    # removing the two superseded marker entries would have red-ed this pin, and the cheap way to
+    # green it again is to keep a marker entry alive purely to satisfy the number. That is the pin
+    # driving the prose, the inversion this module warns about. The claim is "every surface whose
+    # command PASTES a payload says to keep `_provenance`", so that is what is counted.
+    payload_pastes = [
+        surface
+        for surface, command in UPDATE_SURFACES
+        if command is not None and command != MIRROR_SYNC_COMMAND
+    ]
+    assert payload_pastes, "no surface pastes a measured payload any more; re-derive this pin"
+    for surface in payload_pastes:
+        assert "keeping `_provenance`" in surface, surface
+    assert message.count("keeping `_provenance`") == len(payload_pastes), message
+    assert "does not emit `_provenance`" in message
+    assert "cannot be pasted over a probe" in message
 
 
 def test_every_path_and_command_the_message_names_actually_exists() -> None:
     """A message that names a wrong path is worse than the bare number it replaced."""
-    for probe in (MARKER_PROBE, FLOOR_PROBE):
-        path = ROOT / probe
-        assert path.is_file(), f"the drift message names a probe that does not exist: {probe}"
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        assert "_provenance" in payload, (
-            f"{probe} has no `_provenance`; the message's keep-provenance instruction is stale"
-        )
+    path = ROOT / FLOOR_PROBE
+    assert path.is_file(), f"the drift message names a probe that does not exist: {FLOOR_PROBE}"
+    assert "_provenance" in json.loads(path.read_text(encoding="utf-8")), (
+        f"{FLOOR_PROBE} has no `_provenance`; the message's keep-provenance instruction is stale"
+    )
     assert (ROOT / DECISION_RECORD).is_file()
 
-    marker_provenance = json.loads((ROOT / MARKER_PROBE).read_text(encoding="utf-8"))["_provenance"]
-    assert "recursive_variant" in marker_provenance, (
-        "the message says the recursive payload nests under `_provenance.recursive_variant`"
-    )
-    assert "current_corpus" in marker_provenance, (
-        "the message says `_provenance.current_corpus` quotes the counts in prose"
-    )
+    # The do-not-touch entries are held to the same standard. A trap naming a file that no longer
+    # exists is noise a reader learns to skip, and the next real trap is skipped with it.
+    for surface in DO_NOT_TOUCH_SURFACES:
+        named = surface.split(" — ")[0]
+        assert (ROOT / named).is_file(), f"the message warns about a missing file: {named}"
 
-    for command in (MARKER_COMMAND, MARKER_RECURSIVE_COMMAND, FLOOR_COMMAND):
+    for command in (FLOOR_COMMAND, FLOOR_COUNTERFACTUAL_COMMAND):
         script = command.split()[1]
         assert (ROOT / script).is_file(), f"the drift message names a missing script: {script}"
 
 
-def test_the_message_distinguishes_the_recursive_variant_in_its_own_heading() -> None:
-    """The site whose failure is about the nested payload must say which payload it means."""
-    plain = probe_drift_message("rows", probe=MARKER_PROBE)
-    recursive = probe_drift_message("rows", probe=MARKER_PROBE, variant="recursive variant")
+def test_the_heading_names_the_probe_the_call_site_passed() -> None:
+    """The heading took a `variant` argument until #624, and it had outlived its only caller.
 
-    assert "(recursive variant)" in recursive
-    assert "(recursive variant)" not in plain
+    `variant` existed to distinguish the marker probe's nested recursive payload from its
+    top-level one. That probe is no longer a caller and the floor probe has no nested payload, so
+    the parameter could only ever have produced a heading describing a shape the reader does not
+    have. What the heading still owes the reader is WHICH file the drifted key was read from.
+    """
+    message = probe_drift_message("rows", probe=FLOOR_PROBE)
+
+    assert message.startswith(f"`rows` drifted from the recorded measurement in {FLOOR_PROBE}.")
 
 
 def test_each_surface_is_paired_with_the_command_that_actually_produces_it() -> None:
     """The inversion a substring pin could not see.
 
-    A round showed that swapping `MARKER_COMMAND` and `FLOOR_COMMAND` in the surface list left
-    every assertion in this file green while instructing the reader to paste floor output over
-    the marker payload — strictly worse than the bare number the message replaced. So the
-    pairing is asserted, not just the presence of both strings.
+    A round showed that swapping the marker and floor commands in the surface list left every
+    assertion in this file green while instructing the reader to paste floor output over the
+    marker payload — strictly worse than the bare number the message replaced. So the pairing is
+    asserted, not just the presence of both strings. The marker half retired with #624; what the
+    episode leaves behind is the shape of the check, which now also covers the UNPAIRED entries.
     """
-    pairs = {surface: command for surface, command in UPDATE_SURFACES}
-    for surface, command in pairs.items():
+    for surface, command in (*UPDATE_SURFACES, *RULE_ONLY_SURFACES):
         if command is None:
+            # #624: a bare `continue` sat here, and it made this branch blind to precisely the
+            # entries that went wrong — every dead surface the issue found was UNPAIRED, so the
+            # one check that could have caught them skipped all of them. An unpaired surface is
+            # still a surface: it must name a file a reader may edit BY HAND.
+            assert surface.startswith((FLOOR_PROBE, GATE_MODULE, DECISION_RECORD)), (
+                f"an unpaired surface names a file no hand edit belongs in: {surface}"
+            )
             continue
-        if MARKER_PROBE in surface and "recursive_variant" in surface:
-            assert command == MARKER_RECURSIVE_COMMAND, surface
-        elif MARKER_PROBE in surface:
-            assert command == MARKER_COMMAND, surface
-        elif FLOOR_PROBE in surface:
+        if FLOOR_PROBE in surface:
             assert command == FLOOR_COMMAND, surface
         elif GATE_MIRROR in surface:
             # Generated, so it gets a REGENERATE command rather than a paste target. It is the
@@ -169,38 +218,119 @@ def test_each_surface_is_paired_with_the_command_that_actually_produces_it() -> 
         else:
             raise AssertionError(f"a command was paired with a surface it cannot produce: {surface}")
 
-    # And every payload-replacing surface must say to keep `_provenance` — one per probe, so a
-    # duplicated marker line cannot satisfy the count on its own.
-    keepers = [surface for surface, command in UPDATE_SURFACES if command and "keeping `_provenance`" in surface]
-    assert len(keepers) == 2, keepers
-    assert any(MARKER_PROBE in surface for surface in keepers)
-    assert any(FLOOR_PROBE in surface for surface in keepers)
+    # And exactly one surface replaces a probe payload, because exactly one probe is pinned by a
+    # live caller. The count is derived from the live callers rather than written down: see
+    # `test_every_surface_named_is_one_a_live_caller_of_this_message_may_edit`.
+    keepers = [s for s, command in UPDATE_SURFACES if command and "keeping `_provenance`" in s]
+    assert keepers == [s for s, _ in UPDATE_SURFACES if s.endswith("keeping `_provenance`")]
+    assert all(FLOOR_PROBE in surface for surface in keepers), keepers
+
+
+def test_every_surface_named_is_one_a_live_caller_of_this_message_may_edit() -> None:
+    """The pin #624 needed and did not have: the surfaces, checked against the CALLERS.
+
+    Every other pin in this file is an existence predicate, and existence cannot see supersession.
+    When #596 replaced the mutable marker pin with an immutable dated snapshot, the marker probe
+    stopped being something any reader of this message re-records — but it kept existing, kept its
+    `_provenance`, and kept every key the instructions named, so nothing here reddened while three
+    of nine entries told a floor-drift reader to rewrite a frozen historical artifact.
+
+    So the legitimate set is DERIVED from the call sites instead of maintained by hand: a probe
+    belongs in the surface list only if some live `probe_drift_message(...)` call actually pins
+    it. This file is excluded from the scan on purpose — the sole live reader of the superseded
+    probe had become the test validating the message that named it, and a guard that counts itself
+    as a caller reproduces exactly that circularity.
+    """
+    import tests.probe_drift_support as support
+
+    live_probes: set[str] = set()
+    call_sites: list[str] = []
+    for source in sorted((ROOT / "tests").rglob("*.py")):
+        if source == Path(__file__).resolve():
+            continue
+        text = source.read_text(encoding="utf-8")
+        for name in CALL_SITE_RE.findall(text):
+            call_sites.append(f"{source.relative_to(ROOT)}:{name}")
+            live_probes.add(getattr(support, name))
+
+    assert call_sites, (
+        "no live call site passes a probe to `probe_drift_message`; a message helper nobody "
+        "calls is the defect this module exists to catch, and every surface it names is dead"
+    )
+    assert SUPERSEDED_MARKER_PROBE not in live_probes, (
+        "a call site pins the superseded marker probe again; #596 replaced it with the immutable "
+        f"snapshot {MARKER_SNAPSHOT}, and the constant's name records that"
+    )
+
+    probe_re = re.compile(r"charness-artifacts/probe/[\w.-]+\.json")
+    for surface, _ in (*UPDATE_SURFACES, *RULE_ONLY_SURFACES):
+        target = surface.split(" — ")[0]
+        for named in probe_re.findall(target):
+            assert named in live_probes, (
+                f"the message tells a reader to edit {named}, which no live caller pins "
+                f"(live callers: {sorted(call_sites)}). That is #624: a surface list outliving "
+                "the callers it was written for"
+            )
+
+
+def test_no_surface_the_decision_record_calls_immutable_is_offered_as_an_edit_target() -> None:
+    """The second half of #624, and the substitution a reader makes when told 'figures moved'.
+
+    The superseded probe is caught by the caller pin above; the dated snapshot that REPLACED it
+    cannot be, because a reader who regenerates it is not following a stale entry — they are
+    doing what "D47's figures moved" sounds like it asks for. `docs/deferred-decisions.md` is the
+    source of truth for that refusal ("it must not overwrite or recompute this immutable
+    snapshot"), so the forbidden set is read out of the decision record rather than transcribed
+    here, where it would go stale the same way the surface list did.
+    """
+    decision_text = (ROOT / DECISION_RECORD).read_text(encoding="utf-8")
+    immutable: set[str] = set()
+    for bullet in re.split(r"\n(?=- |\*\*)", decision_text):
+        if "immutable" not in bullet and "must not overwrite" not in bullet:
+            continue
+        immutable.update(re.findall(r"charness-artifacts/probe/[\w.-]+\.json", bullet))
+
+    assert MARKER_SNAPSHOT in immutable, (
+        "the decision record stopped declaring the dated snapshot immutable, or stopped naming "
+        "it by path; re-derive this pin before trusting it, because an empty forbidden set "
+        "passes silently"
+    )
+    offered = {
+        surface.split(" — ")[0] for surface, _ in (*UPDATE_SURFACES, *RULE_ONLY_SURFACES)
+    }
+    assert not (offered & immutable), sorted(offered & immutable)
+    # And the message must say so out loud rather than merely omitting it, because omission is
+    # what a reader acting on memory overrides.
+    message = probe_drift_message("floor", probe=FLOOR_PROBE)
+    assert {surface.split(" — ")[0] for surface in DO_NOT_TOUCH_SURFACES} >= immutable, (
+        "an artifact the decision record declares immutable is neither listed as an edit target "
+        "nor named as one to leave alone; silence is not a warning"
+    )
+    assert "must NOT overwrite or recompute" in message
 
 
 def test_each_command_carries_the_flags_that_make_it_the_command_it_is_paired_with() -> None:
     """The pairing test compares CONSTANT to CONSTANT, so it cannot see a swap of their contents.
 
-    The resolution critique constructed it: move `--recursive` off `MARKER_RECURSIVE_COMMAND` onto
-    `MARKER_COMMAND` and every assertion in this file stays green, because the pairing check asks
-    `command == MARKER_RECURSIVE_COMMAND` and the existence check only splits out the script name,
-    which is the same file for both. The reader is then told to paste recursive output over the
-    top-level payload — round 2's exact harm, reproduced through the pin that was written to stop
-    it. Identity is not enough; the FLAGS are what distinguish these three invocations.
+    The resolution critique constructed it on the two marker commands, which #624 retired with the
+    marker probe: move a flag from one constant to the other and every pairing assertion stays
+    green, because the pairing check asks `command == THE_CONSTANT` and the existence check only
+    splits out the script name — the same file for both invocations. The same construction still
+    works on the pair that remains, since `FLOOR_COMMAND` and `FLOOR_COUNTERFACTUAL_COMMAND` run
+    one script and differ only by `--floor 20`, and that swap is the worse one: it pins a
+    threshold the gate does not use. Identity is not enough; the FLAGS distinguish them.
     """
-    assert "--recursive" in MARKER_RECURSIVE_COMMAND
-    assert "--recursive" not in MARKER_COMMAND, (
-        "the top-level marker command grew `--recursive`; its output belongs in "
-        "`_provenance.recursive_variant`, not in the top-level payload"
-    )
     # `--floor` selects a COUNTERFACTUAL measurement. Recording one as the probe would pin a
     # threshold the gate does not use, which is a rule change wearing a corpus change's clothes.
     assert "--floor" not in FLOOR_COMMAND, (
         "the floor probe's own command grew a `--floor` override; the probe records the DEFAULT"
     )
     assert "--floor 20" in FLOOR_COUNTERFACTUAL_COMMAND
-    # And all three must remain the same measured-payload shape: JSON, this repo, no probe write.
-    for command in (MARKER_COMMAND, MARKER_RECURSIVE_COMMAND, FLOOR_COMMAND,
-                    FLOOR_COUNTERFACTUAL_COMMAND):
+    assert FLOOR_COMMAND.split()[1] == FLOOR_COUNTERFACTUAL_COMMAND.split()[1] == (
+        FLOOR_MEASURE_SCRIPT
+    ), "the two floor invocations no longer run the script the rule causes tell a reader to diff"
+    # And both must remain the same measured-payload shape: JSON, this repo, no probe write.
+    for command in (FLOOR_COMMAND, FLOOR_COUNTERFACTUAL_COMMAND):
         assert "--json" in command, command
         assert "--repo-root ." in command, command
 
@@ -231,7 +361,7 @@ def test_every_file_a_rule_cause_names_is_a_path_the_reader_is_told_to_diff() ->
             f"measure it: {cause}"
         )
     named_files = {name for names in per_cause for name in names}
-    assert len(per_cause) == len(RULE_CAUSES) == 3, (
+    assert len(per_cause) == len(RULE_CAUSES) == 4, (
         "the rule-cause list changed size; re-derive what each new cause names before widening "
         "this pin, because an unmeasured cause reads exactly like a measured one"
     )
@@ -243,26 +373,29 @@ def test_every_file_a_rule_cause_names_is_a_path_the_reader_is_told_to_diff() ->
 
 
 def test_the_message_names_the_prose_fields_that_hide_corpus_counts() -> None:
-    """The surface list claimed `current_corpus` was THE prose field. `why` carries one too.
+    """The surface list claimed `current_corpus` was THE prose field. Three other keys carry one.
 
-    The provenance used to repeat the presence-only total in `why`, so a reader following the
-    list could refresh `current_corpus` and leave a stale figure one key away. The repair keeps
-    the value in the measured field and makes `why` name that field instead.
+    The marker probe's `current_corpus` was the original subject here, and it left with the probe
+    in #624. What survives is the correction that mattered: a `_provenance` block hides figures in
+    ordinary prose keys, so the list names them individually rather than as a category.
     """
-    payload = json.loads((ROOT / MARKER_PROBE).read_text(encoding="utf-8"))
-    provenance = payload["_provenance"]
-    assert "field_mentions_presence_only" in provenance["why"], (
-        "the marker probe's `_provenance.why` no longer names the measured field that owns the "
-        "live presence-only count"
-    )
-    assert str(payload["field_mentions_presence_only"]) not in provenance["why"], (
-        "the marker probe's `_provenance.why` copied the live presence-only count instead of "
-        "leaving that value in its measured field"
-    )
-    message = probe_drift_message("artifacts_scanned", probe=MARKER_PROBE)
-    assert "`_provenance.why`" in message
-    assert "rewrite `current_corpus` totals" in message
-    assert "retain the symbolic field reference in `why`" in message
+    message = probe_drift_message("floor", probe=FLOOR_PROBE)
+    assert "`_provenance` prose keys" in message
+    # #624, one key deeper than the issue reported: `does_not_license` sends readers to the
+    # superseded marker probe to "read the marker counts there". The message tells the next
+    # re-recorder to repoint it, so the pin fails once that has actually happened rather than
+    # keeping a stale instruction alive forever.
+    floor_provenance_keys = json.loads((ROOT / FLOOR_PROBE).read_text(encoding="utf-8"))
+    if SUPERSEDED_MARKER_PROBE in floor_provenance_keys["_provenance"].get("does_not_license", ""):
+        assert "check `does_not_license`" in message, (
+            "the floor probe's `does_not_license` still points at the superseded marker probe, "
+            "but the message no longer tells the re-recorder to repoint it"
+        )
+    else:
+        assert "check `does_not_license`" not in message, (
+            "`does_not_license` was repointed; drop the repoint instruction rather than leaving "
+            "the reader looking for a defect that is fixed"
+        )
 
     # Round 2's blocker: the first repair claimed the floor probe's `_provenance` was figure-free.
     # Three of its keys quote counts. Assert the CORRECTED claim over EVERY key, so the next
@@ -349,10 +482,10 @@ def test_the_cause_lists_are_not_swapped() -> None:
     """
     corpus = "\n".join(CORPUS_CAUSES)
     rules = "\n".join(RULE_CAUSES)
+    non_causes = "\n".join(NOT_CAUSES)
 
     # A corpus cause is about the measured artifacts; a rule cause is about the measuring code.
     assert "charness-artifacts/quality/" in corpus
-    assert "quality/history/" in corpus
     assert GATE_MODULE not in corpus, "a rule cause leaked into the corpus list"
     assert "inventory-consumer-fields.json" not in corpus
 
@@ -361,13 +494,28 @@ def test_the_cause_lists_are_not_swapped() -> None:
     assert "inventory-consumer-fields.json" in rules
     assert "REWRITTEN" not in rules, "a corpus cause leaked into the rule list"
 
+    # A third list now, and it is the one a swap would hurt most: a NON-cause promoted into
+    # either live list hands the reader a remedy for something that cannot have happened. Both
+    # entries here were live once — `quality/history/` for the recursive pin #596 retired, and
+    # the marker script for the probe #624 removed — so the drift is toward re-promotion.
+    assert "quality/history/" in non_causes
+    assert "measure_inventory_marker_rule.py" in non_causes
+    assert "quality/history/" not in corpus and "quality/history/" not in rules
+    assert "measure_inventory_marker_rule.py" not in rules, (
+        "the marker measure script is back in the rule causes; nothing in it feeds this probe, "
+        "so diffing it can only produce a false all-clear"
+    )
+
     message = probe_drift_message("floor", probe=FLOOR_PROBE)
     # And the message must place them under the right headings, in order.
     corpus_at = message.index("If the CORPUS changed, re-record")
     rules_at = message.index("If the RULE changed, do NOT re-record yet")
+    non_causes_at = message.index("do NOT move these numbers")
     first_corpus_cause = message.index(CORPUS_CAUSES[0])
     first_rule_cause = message.index(RULE_CAUSES[0])
+    first_non_cause = message.index(NOT_CAUSES[0])
     assert corpus_at < first_corpus_cause < rules_at < first_rule_cause
+    assert first_rule_cause < non_causes_at < first_non_cause
 
 
 def test_the_discrimination_paths_include_the_module_the_thresholds_actually_live_in() -> None:
@@ -378,6 +526,10 @@ def test_the_discrimination_paths_include_the_module_the_thresholds_actually_liv
     """
     assert GATE_MODULE in DISCRIMINATION_PATHS
     assert "charness-artifacts/quality/" in DISCRIMINATION_PATHS
+    # And the corpus resolver, which is the same lesson one level down: it decides which files
+    # are scanned at all, so a change there moves every number here while both the gate and the
+    # measure script diff clean.
+    assert CORPUS_LIB in DISCRIMINATION_PATHS
     for path in DISCRIMINATION_PATHS:
         target = ROOT / path
         assert target.exists(), f"the drift message tells a reader to diff a missing path: {path}"
@@ -397,21 +549,69 @@ def test_the_message_does_not_claim_a_field_the_floor_probe_lacks() -> None:
         "the floor probe grew a `current_corpus` field; the message now says it has none"
     )
     message = probe_drift_message("floor", probe=FLOOR_PROBE)
-    assert "The floor probe has NO such field" in message
+    assert "NO `current_corpus` summary key" in message
 
 
-def test_the_message_does_not_claim_D47_names_the_floor_probe() -> None:
-    """Version 2 said D47 cites the floor probe's `field_mention_residuals.count`. It does not.
+def test_the_decision_record_is_named_only_for_the_coupling_it_actually_has() -> None:
+    """#624's inversion: D47 was listed unconditionally, and its own text says the opposite.
 
-    The coupling is real but it is asserted by a test, not by D47's text, so a reader who went
-    to verify the claim found nothing and could conclude a floor drift needs no D47 edit.
+    D47's live figures come from the hash-bound immutable 2026-08-12 snapshot, and the entry says
+    "unrelated quality-corpus growth does not rewrite D47 or regenerate its evidence". So a
+    corpus-only drift — the common case, and the one the reporter hit — owes D47 nothing, while
+    the message said it "still needs a D47 edit whenever a figure it quotes moved".
+
+    Deleting the entry would have been the other wrong answer: there IS one residual coupling.
+    D47's question transcribes the floor itself, which is the constant this probe pins. That
+    coupling is asserted here on both sides rather than described, so it cannot rot into the
+    unconditional claim it replaced: if the constant moves without D47's sentence, this reddens.
     """
     decision_text = (ROOT / DECISION_RECORD).read_text(encoding="utf-8")
+    gate_text = (ROOT / GATE_MODULE).read_text(encoding="utf-8")
+
+    gate_floor = re.search(r"MIN_ENGAGEMENT_RESIDUAL_CHARS = (\d+)", gate_text)
+    d47_floor = re.search(r"carry ≥(\d+) alphanumerics", decision_text)
+    assert gate_floor is not None and d47_floor is not None, (
+        "the floor is no longer transcribed in both places; re-derive the rule-only D47 surface "
+        "before trusting it, because a missing side makes this pin vacuous"
+    )
+    assert gate_floor.group(1) == d47_floor.group(1), (
+        f"the gate enforces a floor of {gate_floor.group(1)} while D47's question describes "
+        f"{d47_floor.group(1)}; that is the rule-only edit the drift message names"
+    )
+
+    # Version 2's other false claim, kept because it is still true and now supports the OPPOSITE
+    # conclusion: D47 does not name this probe or its fields, so nothing in the entry tracks a
+    # corpus drift here.
     assert "field_mention_residuals" not in decision_text, (
-        "D47 now names the field; the message's `does NOT name the floor probe` line is stale"
+        "D47 now names the field; the message's `does NOT name this probe` line is stale"
     )
     message = probe_drift_message("floor", probe=FLOOR_PROBE)
-    assert "does NOT name the floor probe" in message
+    assert "does NOT name this probe" in message
+    # And the conditionality has to survive in the render, not only in the constant.
+    assert "ONLY when the FLOOR RULE moved" in message
+    rule_only_at = message.index("ONLY if the RULE moved, one further surface carries it")
+    assert message.index("To re-record, update ALL of these") < rule_only_at < message.index(
+        f"{DECISION_RECORD} D47"
+    ), "D47 moved back into the unconditional re-record list; that is what #624 filed"
+
+
+def test_the_decision_record_still_declares_itself_immune_to_corpus_growth() -> None:
+    """The premise the rule-only narrowing rests on, read from the source of truth.
+
+    If D47 ever starts tracking the live corpus again, the narrowing above becomes the new defect:
+    a corpus drift would owe it an edit and the message would say it owes nothing. So the premise
+    is pinned where it is stated rather than assumed from the issue report.
+    """
+    decision_text = (ROOT / DECISION_RECORD).read_text(encoding="utf-8")
+
+    # Whitespace-normalized: both sentences wrap in the record, and asserting the raw line breaks
+    # would pin the reflow rather than the claim.
+    flat = " ".join(decision_text.split())
+    assert "unrelated quality-corpus growth does not rewrite D47" in flat, (
+        "D47 no longer declares itself immune to corpus growth; the drift message's rule-only "
+        "narrowing of the D47 surface depends on that sentence"
+    )
+    assert "must not overwrite or recompute this immutable snapshot" in flat
 
 
 
@@ -424,14 +624,15 @@ def test_the_message_does_not_claim_D47_names_the_floor_probe() -> None:
 def test_the_residual_message_is_not_the_inventory_message() -> None:
     """The residual site's remedy is the OPPOSITE of the other two sites'.
 
-    Reusing `probe_drift_message` here would have told a reader to re-record the marker and floor
-    probes and edit D47 — none of which carry a residual figure. That is exactly the "version 2
-    was worse than the bare number it replaced" failure this module was written to record, so the
+    Reusing `probe_drift_message` here would have told a reader to re-record an unrelated probe
+    and edit D47 — neither of which carries a residual figure. That is exactly the "version 2 was
+    worse than the bare number it replaced" failure this module was written to record, so the
     separation is asserted rather than left to a reviewer's memory.
     """
     message = residual_floor_message("min_residual", kind="markdown_artifacts")
 
-    assert MARKER_PROBE not in message
+    assert SUPERSEDED_MARKER_PROBE not in message
+    assert MARKER_SNAPSHOT not in message
     assert FLOOR_PROBE not in message
     assert DECISION_RECORD not in message
     assert RESIDUAL_PROBE in message

@@ -53,8 +53,8 @@ def _proposal(**updates: object) -> dict[str, object]:
 def test_contract_reference_and_unit_shape_refusals(tmp_path: Path) -> None:
     outside = tmp_path.parent / "outside.md"
     outside.write_text("# Outside\n", encoding="utf-8")
-    assert register._canonical_markdown_ref(tmp_path, "") is False
-    assert register._canonical_markdown_ref(tmp_path, "../outside.md") is False
+    assert register.canonical_markdown_ref(tmp_path, "") is False
+    assert register.canonical_markdown_ref(tmp_path, "../outside.md") is False
     with pytest.raises(ValueError, match="invalid unit shapes"):
         register._validate_units([{}], "units")
     valid = [

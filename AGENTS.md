@@ -46,12 +46,18 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 
 ## Dynamic Workflows
 
+- **Parallel execution is the default shape of work here**, not an optimization.
+  Decompose a request into its independent parts and run them concurrently;
+  running independent parts one at a time now needs a reason.
 - Dynamic workflow/orchestration use is standing-approved, subject to
   higher-priority system/developer/host instructions and host capability, when
   fan-out, independent confidence, adversarial review, or context scale earns
   its cost. Do not wait for a second user message solely to repeat the standing
-  request. Scale to the task, report a concrete host block, and never claim an
-  unavailable workflow ran. The canonical root-doc shape lives in
+  request. Report a concrete host block; never claim an unavailable workflow ran.
+- Which channels this covers, why host product names are examples rather than
+  contract, the disjoint-writer rule, and the proof floor a fan-out must still
+  clear: [parallel execution](./docs/conventions/parallel-execution.md). The
+  canonical root-doc shape lives in
   [agent-docs-policy.md](./skills/public/setup/references/agent-docs-policy.md#dynamic-workflow-standing-request).
 
 ## External Boundaries

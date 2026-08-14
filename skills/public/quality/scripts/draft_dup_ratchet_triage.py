@@ -17,25 +17,57 @@ from pathlib import Path
 from typing import Any
 
 
-def _load_json(path: Path) -> Any:
+def _load_detail(path: Path) -> dict[str, Any]:
     try:
         raw = path.read_bytes()
     except OSError as exc:
         raise RuntimeError(f"cannot read {path}: {exc}") from exc
-    try:
-        return json.loads(raw.decode("utf-8"))
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"{path}: invalid JSON: {exc}") from exc
+    return _parse_detail_payload(raw.decode("utf-8"), str(path))
 
 
-def _run_json(cmd: list[str]) -> dict[str, Any]:
+def _run_detail(cmd: list[str]) -> dict[str, Any]:
     result = subprocess.run(cmd, check=False, capture_output=True, text=True)
     if result.returncode not in (0, 1):
         raise RuntimeError(f"{' '.join(cmd)} failed (rc={result.returncode}): {result.stderr.strip()}")
+    return _parse_detail_payload(result.stdout, " ".join(cmd))
+
+
+def _parse_detail_payload(text: str, source: str) -> dict[str, Any]:
+    """Read one `--detail` payload -- JSON fast path first, then YAML.
+
+    Both producers emit YAML through `scripts/yaml_output.render_yaml`, which
+    falls back to COMPACT JSON when PyYAML is missing. JSON is valid YAML, so the
+    JSON attempt is the cheaper path AND the only one available when PyYAML is
+    absent -- which is the same interpreter question for both sides here, since
+    these producers run under `sys.executable`.
+
+    This function is why the `--json` -> `--detail` fix is three coupled edits and
+    not one. The flag, the parser, and the `--ratchet-report` / `--code-inventory`
+    help text all named the same removed mode; migrating the flag alone would have
+    turned an exit-2 into a silent JSONDecodeError on YAML, and left an operator
+    saving `check_dup_ratchet.py --detail` to a file with a reader that rejects it.
+
+    A YAML payload with no PyYAML to read it is named as such: a clear remedy
+    beats a parse traceback from a helper that already handles the JSON case.
+    """
+    payload: Any
     try:
-        return json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"{' '.join(cmd)} did not emit JSON: {exc}") from exc
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        try:
+            import yaml
+        except ImportError as exc:
+            raise RuntimeError(
+                f"{source} emitted a YAML `--detail` payload and PyYAML is not importable here; "
+                "install PyYAML in this interpreter to read it"
+            ) from exc
+        try:
+            payload = yaml.safe_load(text)
+        except yaml.YAMLError as exc:
+            raise RuntimeError(f"{source}: unreadable `--detail` payload: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{source}: `--detail` payload is not a mapping")
+    return payload
 
 
 def _member_files(family: dict[str, Any]) -> list[str]:
@@ -238,30 +270,30 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=Path("."),
         help="Repository root used to locate ratchet and inventory inputs.",
     )
-    parser.add_argument("--ratchet-report", type=Path, help="Existing check_dup_ratchet --json payload.")
-    parser.add_argument("--code-inventory", type=Path, help="Existing inventory_nose_clones --json payload.")
+    parser.add_argument("--ratchet-report", type=Path, help="Existing check_dup_ratchet --detail payload.")
+    parser.add_argument("--code-inventory", type=Path, help="Existing inventory_nose_clones --detail payload.")
     parser.add_argument("--json", action="store_true", help="Emit the triage packet as JSON.")
     return parser.parse_args(argv)
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
-    ratchet = _load_json(args.ratchet_report) if args.ratchet_report else _run_json(
+    ratchet = _load_detail(args.ratchet_report) if args.ratchet_report else _run_detail(
         [
             sys.executable,
             str(repo_root / "skills/public/quality/scripts/check_dup_ratchet.py"),
             "--repo-root",
             str(repo_root),
-            "--json",
+            "--detail",
         ]
     )
-    inventory = _load_json(args.code_inventory) if args.code_inventory else _run_json(
+    inventory = _load_detail(args.code_inventory) if args.code_inventory else _run_detail(
         [
             sys.executable,
             str(repo_root / "skills/public/quality/scripts/inventory_nose_clones.py"),
             "--repo-root",
             str(repo_root),
-            "--json",
+            "--detail",
             "--top",
             "1000000",
             "--baseline",

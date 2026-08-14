@@ -15,7 +15,19 @@ from scripts.contract_unit_inventory_lib import (
 from scripts.contract_unit_inventory_lib import (
     heading_slug as heading_slug,
 )
-from scripts.lesson_ledger_lib import lesson_ledger_path, validate_lesson_ledger
+
+# `canonical_markdown_ref` is imported, not re-spelled: this register's
+# `approval_ref` and the lesson ledger's `decision_ref` encode the same governance
+# rule (an existing canonical repo-relative Markdown file), and they drifted apart
+# as two verbatim copies until 2026-08-14. The dependency on `lesson_ledger_lib`
+# is not new -- `validate_lesson_ledger` below already made it hard -- so nothing
+# about this register's failure surface changed. The refusal MESSAGE stays local,
+# because the reader of a register refusal must be told which field failed.
+from scripts.lesson_ledger_lib import (
+    canonical_markdown_ref,
+    lesson_ledger_path,
+    validate_lesson_ledger,
+)
 from scripts.recent_lessons_lib import retro_artifact_paths
 
 REGISTER_FILENAME = "contract-register.json"
@@ -108,17 +120,6 @@ def _committed_state(repo_root: Path, path: Path) -> dict[str, Any] | None:
     if previous.get("schema_version") != SCHEMA_VERSION or not TOP_LEVEL_KEYS <= set(previous):
         _fail("committed register has an unsupported shape")
     return previous
-
-
-def _canonical_markdown_ref(repo_root: Path, value: Any) -> bool:
-    if not _nonblank(value):
-        return False
-    path = repo_root / value
-    try:
-        canonical = path.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return False
-    return value == canonical and path.suffix == ".md" and path.is_file()
 
 
 def _validate_units(units: Any, label: str) -> list[dict[str, str]]:
@@ -319,7 +320,7 @@ def _replay_membership(
             not _nonblank(event_id)
             or event_id in event_ids
             or not _nonblank(event.get("rationale"))
-            or not _canonical_markdown_ref(repo_root, event.get("approval_ref"))
+            or not canonical_markdown_ref(repo_root, event.get("approval_ref"))
         ):
             _fail(f"applied transition {sequence} needs unique identity and reviewed approval")
         if action == "apply-graduation":

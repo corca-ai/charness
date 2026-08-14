@@ -208,6 +208,15 @@ instructions and actual host capability:
   explicitly; do not claim that orchestration ran when the tool was unavailable.
 ```
 
+A repo may raise this from judgment-gated to a default — parallel first, serial
+only for a real data dependency or a single-writer surface — by saying so in its
+own block. Two properties travel with that stronger form: name the *capability*
+(fan-out, independent confidence, adversarial review, detached execution) rather
+than one host's product word for it, since those names go stale exactly as a
+pinned model id does; and keep the proof floor, because N agents reporting
+success is not N verified outcomes. Repos that adopt the stronger default should
+keep the detail in a linked convention doc rather than growing the root file.
+
 When the repo routes work through Charness goals or skills, prefer a short
 `## Commit Discipline` rule like:
 

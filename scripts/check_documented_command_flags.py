@@ -33,6 +33,18 @@ it carries its own invocation regex instead of reusing `COMMAND_TARGET_RE`: it
 needs the arguments after the script, the `$SKILL_DIR/` form the quality skill's
 dispatch references use, and backslash continuations. Whether a named path
 resolves at all stays owned by `check_doc_links.py`.
+
+Carrier scope is NOT owned here. Markdown is where a flag claim is WRITTEN, not
+where it is EXECUTED, and answering that widened this gate from one carrier shape
+to three families -- so "which files store an invocation, and which spans of them
+could be one" now lives in `command_carrier_discovery.py`, along with the
+`--json` residue class that forced it and the non-claims that come with
+reconstructing an argv sequence from source. This file takes carrier strings and
+judges them; it does not know where they came from.
+
+Non-claims. Each carrier this gate cannot resolve to a runnable script is counted
+as `skipped` rather than waved through, so a pass never over-claims its own
+coverage; the carrier-side blind spots are listed with the carriers.
 """
 
 from __future__ import annotations
@@ -58,33 +70,70 @@ MAX_SUBCOMMAND_DEPTH = _argparse_surface.MAX_SUBCOMMAND_DEPTH
 _argparse_help_probe = import_repo_module(__file__, "scripts.argparse_help_probe")
 HelpProbe = _argparse_help_probe.HelpProbe
 _check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
-iter_docs = _check_doc_links.iter_docs
 iter_known_repo_paths = _check_doc_links.iter_known_repo_paths
 looks_like_repo_reference = _check_doc_links.looks_like_repo_reference
 build_unique_basename_index = _check_doc_links.build_unique_basename_index
 portable_skill_package_root = _check_doc_links.portable_skill_package_root
-BACKTICK_CONTENT_RE = _check_doc_links.BACKTICK_CONTENT_RE
-_markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
-iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 _gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
 emit_findings_report = _gate_report_emit.emit_findings_report
 render_findings_with_skipped = _gate_report_emit.render_findings_with_skipped
-
-# Three documented shapes, all live. The leading boundary class matters: without
+# The carrier side of this check -- which files store an invocation, and which
+# spans of one could be a command string. `CLI_NAME` is bound from there rather
+# than redeclared: the carrier scan is what has to recognize the bare name as a
+# command token, and two copies of the literal would drift apart silently.
+_command_carrier_discovery = import_repo_module(__file__, "scripts.command_carrier_discovery")
+iter_scanned_files = _command_carrier_discovery.iter_scanned_files
+iter_command_carriers = _command_carrier_discovery.iter_command_carriers
+CLI_NAME = _command_carrier_discovery.CLI_NAME
+# Four documented shapes, all live. The leading boundary class matters: without
 # it `sh\s+` matches the tail of any word ending in "sh" (`publish scripts/x.py`).
 # A path form needs an interpreter/`./` prefix so a bare markdown path token is
 # not read as a command; `$SKILL_DIR/` is self-identifying; and a bare
 # `issue_tool.py read --repo X` (dense in the `issue` skill's docs) is matched on
 # its basename and resolved only when that basename is unique in the repo.
+#
+# The repo's own CLI is the fourth, and it is the one shape with no `.py` to
+# match on: the highest-consequence flag claims in this tree are written
+# `charness tool doctor --json`, not `python3 charness ...`. `check_documented_
+# subcommands.py` already probes that argv prefix, so the authority exists; only
+# the FLAG half was unowned. `charness-artifacts/...`, the densest
+# `charness`-prefixed token in these docs, cannot match: a subcommand word must
+# follow.
+#
+# Requiring that word is deliberately the SAME boundary
+# `check_documented_subcommands.INVOCATION_RE` draws, and it means a top-level
+# option written with no subcommand (`charness --version`, `charness --help`) is
+# not judged here. That is a real limit, and it currently hides one true finding:
+# `charness --version` is accepted only through an exact-argv alias in `main()`
+# that rewrites it to the `version` subcommand BEFORE argparse sees it, so
+# `--help` -- this gate's whole authority -- does not declare it. Two adapters
+# probe the CLI with it. The honest repair is to declare the option so the help
+# surface stops lying, which also regenerates `docs/generated/cli-reference.md`;
+# widening this regex instead would make the gate report an option the CLI really
+# does accept.
 INVOCATION_RE = re.compile(
     r"(?:^|[\s|(\"'=&;])"
     r"(?:(?:(?:python3?|bash|sh)\s+|\./)[\"']?(?P<repo>[A-Za-z0-9._<>/-]+\.py)"
     r"|\$SKILL_DIR/[\"']?(?P<skill>[A-Za-z0-9._<>/-]+\.py)"
+    rf"|(?:(?:python3?|bash|sh)\s+|\./)?(?P<cli>{CLI_NAME})(?=\s+[A-Za-z0-9])"
     r"|(?P<bare>[A-Za-z0-9_-]+\.py))"
     r"[\"']?(?=\s|$)"
 )
 # Generated copies of a canonical script; a doc never means these.
 MIRROR_PREFIXES = ("plugins/", "mutants/")
+# A flag literally named for the thing it is NOT: the repo's convention for a
+# token argparse must REJECT. `.agents/cli-side-effect-probes.json` probes
+# option-like positionals with `./charness tool install --not-a-tool`, asserting
+# an exit 2. Read as a flag CLAIM that inverts the assertion -- the gate would
+# demand the CLI accept the very flag the probe exists to prove it rejects,
+# thirteen times on a clean tree.
+#
+# Keyed on the FLAG rather than on the config key that holds it, which was the
+# first attempt and was both leakier and blunter: the same file writes
+# `"dry_run_probe": "./charness tool install --dry-run --not-a-tool"`, so a
+# key-shaped rule missed three of the thirteen AND would have had to throw away
+# the real `--dry-run` claim beside them to catch the rest.
+NEGATIVE_PROBE_FLAG_RE = re.compile(r"--not-an?-")
 
 
 def build_canonical_basename_index(known_repo_paths: set[str]) -> dict[str, str]:
@@ -102,44 +151,6 @@ def build_canonical_basename_index(known_repo_paths: set[str]) -> dict[str, str]
 
 def _is_canonical_script(rel_path: str) -> bool:
     return rel_path.endswith(".py") and not rel_path.startswith(MIRROR_PREFIXES)
-
-
-def iter_command_carriers(doc: Path) -> Iterator[tuple[int, str]]:
-    """Yield ``(lineno, text)`` spans that can carry a documented command.
-
-    Fenced lines carry commands directly and join across a trailing backslash;
-    prose carries them inside backtick spans. The reported line is where the
-    invocation *starts*, which is the line an author has to edit.
-    """
-    pending_lineno: int | None = None
-    pending_text = ""
-    previous_lineno = 0
-    for lineno, line, in_fence in iter_doc_lines(doc):
-        # A continuation only joins the physically next line. `iter_doc_lines`
-        # consumes fence delimiters silently, so without this a dangling `\` at
-        # the end of one fenced block would swallow the first line of the next.
-        if pending_lineno is not None and lineno != previous_lineno + 1:
-            yield pending_lineno, pending_text
-            pending_lineno = None
-        previous_lineno = lineno
-        if not in_fence:
-            # No pending flush needed here: leaving a fence always crosses a
-            # delimiter line that `iter_doc_lines` consumes, so the gap check
-            # above has already flushed. A second flush would be dead code.
-            for span in BACKTICK_CONTENT_RE.finditer(line):
-                yield lineno, span.group(1)
-            continue
-        if pending_lineno is None:
-            pending_lineno, pending_text = lineno, line
-        else:
-            pending_text = f"{pending_text} {line.strip()}"
-        if pending_text.rstrip().endswith("\\"):
-            pending_text = pending_text.rstrip()[:-1]
-            continue
-        yield pending_lineno, pending_text
-        pending_lineno = None
-    if pending_lineno is not None:
-        yield pending_lineno, pending_text
 
 
 def _repo_relative(root: Path, path: Path) -> str | None:
@@ -184,6 +195,15 @@ def resolve_script(
     a pass from over-claiming its own coverage.
     """
     package_root = portable_skill_package_root(root, doc)
+    if match.group("cli") is not None:
+        # The repo's own CLI is a repo-root executable with no extension, so no
+        # path resolution applies -- it either exists in this tree or the
+        # invocation is describing the INSTALLED command, which is not this
+        # tree's to prove. `HelpProbe` runs `python3 charness --help`, the same
+        # argv prefix `check_documented_subcommands.py` already probes.
+        if known_repo_paths is None:
+            return (CLI_NAME, None) if (root / CLI_NAME).is_file() else (None, "cli-not-in-this-tree")
+        return (CLI_NAME, None) if CLI_NAME in known_repo_paths else (None, "cli-not-in-this-tree")
     skill_relative = match.group("skill")
     bare = match.group("bare")
     candidate = skill_relative or bare or match.group("repo")
@@ -230,24 +250,69 @@ def iter_documented_invocations(
     doc: Path,
     known_repo_paths: set[str] | None = None,
     basename_index: dict[str, str] | None = None,
+    carriers: Iterator[tuple[int, str]] | None = None,
 ) -> tuple[list[tuple[int, str, tuple[str, ...], tuple[str, ...]]], list[str]]:
     """``(invocations, skipped)`` -- ``(lineno, script, bare_words, flags)`` and skip reasons.
 
     Only flag-bearing invocations are collected; a bare `python3 scripts/x.py`
     has no flag claim to check and is `check_doc_links.py`'s to resolve.
+
+    ``carriers`` is threaded rather than derived so the three carrier families
+    (markdown spans, `.agents/` config lines, Python argv sequences) share one
+    resolution and reporting path. `doc` is still needed by resolution itself: a
+    package-relative `scripts/x.py` means the enclosing skill package's scripts/.
     """
     found: list[tuple[int, str, tuple[str, ...], tuple[str, ...]]] = []
     skipped: list[str] = []
-    for lineno, carrier in iter_command_carriers(doc):
+    for lineno, carrier in iter_command_carriers(doc) if carriers is None else carriers:
+        previous_end: int | None = None
         for match, tokens, flags in iter_invocation_tails(carrier, INVOCATION_RE):
-            script, reason = resolve_script(root, doc, match, known_repo_paths, basename_index)
-            if not flags:
+            reason = _cli_name_used_as_a_value(carrier, match, previous_end)
+            previous_end = match.end()
+            script = None
+            if reason is None:
+                script, reason = resolve_script(root, doc, match, known_repo_paths, basename_index)
+            # A rejection probe's own token is not a flag claim, so an invocation
+            # that carries nothing else has no claim left to check. Counted rather
+            # than dropped: it is a real stored invocation this gate declines to
+            # judge, and a pass that hides it over-claims its coverage.
+            claimed = [flag for flag in flags if not NEGATIVE_PROBE_FLAG_RE.match(flag)]
+            if not claimed:
+                if flags:
+                    skipped.append(reason or "negative-probe-invocation")
                 continue
             if script is None:
                 skipped.append(reason)
                 continue
-            found.append((lineno, script, tokens, tuple(flags)))
+            found.append((lineno, script, tokens, tuple(claimed)))
     return found, skipped
+
+
+def _cli_name_used_as_a_value(carrier: str, match: re.Match[str], previous_end: int | None) -> str | None:
+    """Reject a bare `charness` that is an ARGUMENT of the command in front of it.
+
+    `charness` is this repo's product name as well as its CLI, so it is a live
+    option value: `record_usage_feedback.py --repo-root . --product-id charness
+    --target-episode-id ...` is one command, and reading the value as a second
+    invocation cut six real flags off the first and reported all six as drift.
+
+    That exact case is now excluded one level earlier -- `INVOCATION_RE` requires a
+    subcommand WORD after the CLI name, and a flag follows `charness` there -- so
+    this rule covers what survives it: a value followed by another bare word
+    (`--path charness doctor --flag`). Kept rather than deleted with its
+    motivating instance, because the regex boundary is about the CLI's own shape
+    and this is about which token in a command line can be the program name.
+
+    One shell command has one program name, so a `charness` match that follows an
+    earlier invocation on the same carrier is a value -- UNLESS a shell operator
+    separates them, which starts a genuinely new command (`python3 a.py && charness
+    doctor`). Counted as skipped rather than dropped, because a second command
+    after an operator is a real invocation this rule declines to attribute.
+    """
+    if match.group("cli") is None or previous_end is None:
+        return None
+    between = carrier[previous_end : match.start()]
+    return None if any(char in between for char in "|;&") else "cli-name-as-an-argument-value"
 
 
 def _resolve_paths(probe, invocations: list[tuple]) -> list[tuple[str, ...]]:
@@ -283,8 +348,10 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
     basename_index = build_canonical_basename_index(known_repo_paths)
     invocations: list[tuple] = []
     skipped: Counter[str] = Counter()
-    for doc in iter_docs(root, require_git=require_git):
-        found, doc_skipped = iter_documented_invocations(root, doc, known_repo_paths, basename_index)
+    for doc, carriers in iter_scanned_files(root, require_git=require_git):
+        found, doc_skipped = iter_documented_invocations(
+            root, doc, known_repo_paths, basename_index, carriers=carriers
+        )
         invocations.extend((doc, lineno, script, bare, flags) for lineno, script, bare, flags in found)
         skipped.update(doc_skipped)
 
@@ -313,7 +380,10 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
         ]
         missing: list[str] = []
         for flag_index, (kind, token) in enumerate(tokens):
-            if kind != "flag" or token in missing:
+            # `--not-a-tool` beside a real `--dry-run` on the same probe line: the
+            # rejection token is excluded here rather than at collection, so the
+            # claim written next to it is still checked.
+            if kind != "flag" or token in missing or NEGATIVE_PROBE_FLAG_RE.match(token):
                 continue
             depth = active_depth(tokens, path, flag_index)
             if token not in accepted_by_depth[depth]:

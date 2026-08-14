@@ -57,6 +57,20 @@ LESSON_KEYS = {
 PREVIEW_KIND = "charness.lesson-selection-preview"
 PREVIEW_SCHEMA_VERSION = 1
 SNAPSHOT_BUCKET_KEYS = {"recent", "value", "uncertainty", "archive", "archive_fallback_uncertainty"}
+# The whole lifecycle state machine as data, so the refusal below can ENUMERATE
+# the legal moves instead of restating a rule the reader has to infer from a
+# rejection. Kept as the branch table itself rather than a parallel constant:
+# a message listing actions that the code no longer accepts is worse than no
+# message, and this shape makes that drift impossible.
+LIFECYCLE_TRANSITIONS = {("archive", "active"): "archived", ("resurrect", "archived"): "active"}
+# How a lesson becomes seedable at all. Named once because it is the answer to
+# every "nothing is eligible" dead end downstream (#621): a bullet with no
+# `recurrence-class:` tag produces a candidate whose class is `None`, which
+# `_candidate_sources` drops, so no transition citing it can ever validate.
+RECURRENCE_TAG_INSTRUCTION = (
+    "a lesson becomes seedable only when a bullet in the cited retro carries a "
+    "`recurrence-class: <slug>` tag whose slug equals the lesson_id"
+)
 
 
 def lesson_ledger_path(output_dir: Path) -> Path:
@@ -140,7 +154,10 @@ def _replay_transitions(
     ids: set[str] = set()
     for sequence, transition in enumerate(transitions, start=1):
         if not isinstance(transition, dict) or set(transition) != TRANSITION_KEYS:
-            _fail(f"transition {sequence} has deferred fields or lacks a required field")
+            _fail(
+                f"transition {sequence} has deferred fields or lacks a required field; a transition "
+                f"takes exactly keys {sorted(TRANSITION_KEYS)}"
+            )
         if type(transition.get("sequence")) is not int or transition["sequence"] != sequence:
             _fail("transition sequences must start at 1 and be contiguous")
         transition_id, lesson_id, source = (
@@ -156,7 +173,9 @@ def _replay_transitions(
             _fail(f"duplicate transition_id or lesson_id `{transition_id}`")
         if source not in available_sources.get(lesson_id, set()):
             _fail(
-                f"transition `{transition_id}` citation does not declare recurrence-class `{lesson_id}`"
+                f"transition `{transition_id}` citation does not declare recurrence-class "
+                f"`{lesson_id}`; {RECURRENCE_TAG_INSTRUCTION}, and source_retro must be one of "
+                "that tagged bullet's own retro artifacts"
             )
         ids.add(transition_id)
         replayed[lesson_id] = {
@@ -170,7 +189,29 @@ def _replay_transitions(
     return replayed
 
 
-def _canonical_markdown_ref(repo_root: Path, value: Any) -> bool:
+# PUBLIC, and single-sourced, because it is ONE governance rule wearing two field
+# names: an append-only ledger that cites a human decision must cite an EXISTING
+# file, at a CANONICAL repo-relative posix path, that is Markdown. This module's
+# `decision_ref` (which lifecycle event authorized archiving a lesson) and
+# `contract_register_lib`'s `approval_ref` (which document approved a contract
+# graduation) are the same rule, and they were verbatim-identical copies until
+# 2026-08-14.
+#
+# Living here rather than in a new third module: `contract_register_lib` ALREADY
+# imports `validate_lesson_ledger` and `lesson_ledger_path` from this module, so
+# the import edge is pre-existing and no new failure surface is created -- if this
+# module fails to import, the register validator was already dead. A new
+# `scripts/` module would have added a mirrored export surface for nine lines.
+#
+# The obvious objection -- "now loosening one rule silently loosens two proof
+# surfaces" -- is answered by the tests, not by copying the code: BOTH
+# `tests/test_lesson_lifecycle_refusals.py` and `tests/test_contract_lifecycle_refusals.py`
+# pin this predicate through their own module, so a loosening still fails each
+# validator's own suite. Independent implementations would have bought
+# independence of the rule at the cost of the two surfaces silently disagreeing
+# about what a canonical reference is, which is the worse failure for governance
+# refs that operators cross-read.
+def canonical_markdown_ref(repo_root: Path, value: Any) -> bool:
     if not _nonblank(value):
         return False
     path = repo_root / value
@@ -193,7 +234,10 @@ def _replay_lifecycle(
     event_ids: set[str] = set()
     for sequence, event in enumerate(events, start=1):
         if not isinstance(event, dict) or set(event) != LIFECYCLE_EVENT_KEYS:
-            _fail(f"lifecycle event {sequence} has unexpected or missing fields")
+            _fail(
+                f"lifecycle event {sequence} has unexpected or missing fields; a lifecycle event "
+                f"takes exactly keys {sorted(LIFECYCLE_EVENT_KEYS)}"
+            )
         if type(event.get("sequence")) is not int or event["sequence"] != sequence:
             _fail("lifecycle event sequences must start at 1 and be contiguous")
         event_id, lesson_id, action = (
@@ -207,15 +251,16 @@ def _replay_lifecycle(
             _fail(f"duplicate lifecycle event_id `{event_id}`")
         if lesson_id not in replayed:
             _fail(f"lifecycle event `{event_id}` names unseeded lesson")
-        if not _canonical_markdown_ref(repo_root, event.get("decision_ref")):
+        if not canonical_markdown_ref(repo_root, event.get("decision_ref")):
             _fail(f"lifecycle event `{event_id}` decision_ref is not existing canonical Markdown")
         current = replayed[lesson_id]["state"]
-        if action == "archive" and current == "active":
-            next_state = "archived"
-        elif action == "resurrect" and current == "archived":
-            next_state = "active"
-        else:
-            _fail(f"lifecycle event `{event_id}` cannot {action} lesson in state `{current}`")
+        next_state = LIFECYCLE_TRANSITIONS.get((action, current))
+        if next_state is None:
+            legal = sorted(f"{move} a lesson in state `{state}`" for move, state in LIFECYCLE_TRANSITIONS)
+            _fail(
+                f"lifecycle event `{event_id}` cannot {action} lesson in state `{current}`; the only "
+                f"legal moves are {legal}"
+            )
         replayed[lesson_id]["state"] = next_state
         replayed[lesson_id]["last_lifecycle_event_id"] = event_id
         event_ids.add(event_id)
@@ -228,7 +273,10 @@ def _replay_sessions(events: list[Any], replayed: dict[str, dict[str, Any]]) -> 
     sessions: dict[str, set[str]] = {}
     for position, event in enumerate(events, start=1):
         if not isinstance(event, dict) or set(event) != SESSION_EVENT_KEYS:
-            _fail(f"session event {position} has unexpected or missing fields")
+            _fail(
+                f"session event {position} has unexpected or missing fields; a session event takes "
+                f"exactly keys {sorted(SESSION_EVENT_KEYS)}"
+            )
         session_id, snapshot, digest = (
             event.get("session_id"),
             event.get("snapshot"),
@@ -239,7 +287,10 @@ def _replay_sessions(events: list[Any], replayed: dict[str, dict[str, Any]]) -> 
         if session_id in sessions:
             _fail(f"duplicate session_id `{session_id}`")
         if set(snapshot) != SNAPSHOT_KEYS or not _nonblank(snapshot.get("seed")):
-            _fail(f"session `{session_id}` has invalid snapshot shape")
+            _fail(
+                f"session `{session_id}` has invalid snapshot shape; a snapshot takes exactly keys "
+                f"{sorted(SNAPSHOT_KEYS)} with a non-empty seed"
+            )
         if (
             snapshot.get("kind") != PREVIEW_KIND
             or type(snapshot.get("schema_version")) is not int
@@ -255,7 +306,10 @@ def _replay_sessions(events: list[Any], replayed: dict[str, dict[str, Any]]) -> 
         if set(bucket_counts) != SNAPSHOT_BUCKET_KEYS or any(
             type(count) is not int or count < 0 for count in bucket_counts.values()
         ):
-            _fail(f"session `{session_id}` has invalid bucket_counts")
+            _fail(
+                f"session `{session_id}` has invalid bucket_counts; bucket_counts takes exactly keys "
+                f"{sorted(SNAPSHOT_BUCKET_KEYS)}, each a nonnegative integer"
+            )
         lesson_ids = snapshot.get("lesson_ids")
         if (
             not isinstance(lesson_ids, list)
@@ -263,7 +317,12 @@ def _replay_sessions(events: list[Any], replayed: dict[str, dict[str, Any]]) -> 
             or not all(_nonblank(item) for item in lesson_ids)
             or len(lesson_ids) != len(set(lesson_ids))
         ):
-            _fail(f"session `{session_id}` lesson_ids must be a non-empty ordered unique list")
+            _fail(
+                f"session `{session_id}` lesson_ids must be a non-empty ordered unique list; an empty "
+                f"list means the ledger has seeded no lesson yet, and {RECURRENCE_TAG_INSTRUCTION} "
+                "(the ledger file itself is created by the `init_lesson_ledger.py` helper beside "
+                "this module)"
+            )
         if any(lesson_id not in replayed for lesson_id in lesson_ids):
             _fail(f"session `{session_id}` names unseeded lesson")
         if snapshot["eligible_count"] < len(lesson_ids) or sum(bucket_counts.values()) != len(
@@ -288,7 +347,10 @@ def _replay_scores(
     sources: set[tuple[str, str]] = set()
     for position, event in enumerate(events, start=1):
         if not isinstance(event, dict) or not SCORE_EVENT_REQUIRED_KEYS <= set(event) <= SCORE_EVENT_KEYS:
-            _fail(f"score event {position} has unexpected or missing fields")
+            _fail(
+                f"score event {position} has unexpected or missing fields; a score event requires keys "
+                f"{sorted(SCORE_EVENT_REQUIRED_KEYS)} and allows only {sorted(EVENT_OPTIONAL_KEYS)} beyond them"
+            )
         event_id, source, lesson_id, score = (
             event.get(key) for key in ("event_id", "source_retro", "lesson_id", "score")
         )
@@ -327,7 +389,10 @@ def replay_validated_ledger_payload(
         or payload.get("schema_version") != SCHEMA_VERSION
         or set(payload) != TOP_LEVEL_KEYS
     ):
-        _fail(f"expected kind `{KIND}` at schema version {SCHEMA_VERSION}")
+        _fail(
+            f"expected kind `{KIND}` at schema version {SCHEMA_VERSION} with exactly the top-level "
+            f"keys {sorted(TOP_LEVEL_KEYS)}"
+        )
     transitions, events, sessions, lessons, lifecycle_events, budget = (
         payload.get(key)
         for key in (
@@ -377,7 +442,10 @@ def replay_validated_ledger_payload(
         or type(entry["score_count"]) is not int
         for entry in lessons.values()
     ):
-        _fail("materialized lessons may contain only integer replay fields")
+        _fail(
+            f"materialized lessons may contain only integer replay fields; each lesson takes exactly "
+            f"keys {sorted(LESSON_KEYS)} with integer score_total and score_count"
+        )
     if lessons != replayed:
         _fail("materialized lessons do not equal deterministic replay")
     return replayed

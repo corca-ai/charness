@@ -263,3 +263,83 @@ def test_build_report_reports_inventory_misses() -> None:
 
     assert report["ok"] is False
     assert report["missing_from_inventory"] == ["missing"]
+
+
+# --- `--detail` consumption -------------------------------------------------
+#
+# `run()` had zero coverage: every test above monkeypatches it away. That is why
+# both of its argv lists could keep passing a `--json` the producers had stopped
+# declaring, leaving the DEFAULT mode of this script exiting 2 on a clean tree.
+
+
+def test_run_asks_both_producers_for_detail_and_never_for_json(monkeypatch) -> None:
+    commands: list[list[str]] = []
+
+    def record(cmd: list[str]) -> dict[str, object]:
+        commands.append(cmd)
+        return {"status": "hard-block", "new_code_families": [], "families": []}
+
+    monkeypatch.setattr(triage, "_run_detail", record)
+    triage.run(triage.parse_args(["--repo-root", str(ROOT)]))
+
+    assert len(commands) == 2
+    assert [Path(cmd[1]).name for cmd in commands] == ["check_dup_ratchet.py", "inventory_nose_clones.py"]
+    for cmd in commands:
+        assert "--detail" in cmd
+        assert "--json" not in cmd
+
+
+def test_detail_payload_is_read_as_yaml_and_as_json() -> None:
+    # `--detail` is YAML, and `scripts/yaml_output.render_yaml` falls back to
+    # compact JSON when PyYAML is missing. Both have to read, or the fix trades an
+    # exit 2 for a JSONDecodeError on a working producer.
+    assert triage._parse_detail_payload("status: ok\nfamilies: []\n", "probe") == {"status": "ok", "families": []}
+    assert triage._parse_detail_payload('{"status":"ok","families":[]}', "probe") == {"status": "ok", "families": []}
+
+
+def test_a_non_mapping_detail_payload_is_refused() -> None:
+    with pytest.raises(RuntimeError, match="not a mapping"):
+        triage._parse_detail_payload("- one\n- two\n", "probe")
+
+
+def test_an_injected_report_file_may_be_yaml(tmp_path: Path) -> None:
+    # `--ratchet-report` / `--code-inventory` name a saved producer payload, and
+    # the producer now writes YAML. A reader that only took JSON would make the
+    # help text a lie the moment an operator followed it.
+    ratchet = tmp_path / "ratchet.yaml"
+    ratchet.write_text("status: hard-block\nnew_code_families: [fam1]\n", encoding="utf-8")
+    inventory = tmp_path / "inventory.yaml"
+    inventory.write_text(
+        "families:\n"
+        "- family_fingerprint: fam1\n"
+        "  shared_lines: 8\n"
+        "  members: 2\n"
+        "  sample_locations:\n"
+        "  - {file: scripts/x.py, start_line: 1, end_line: 8}\n"
+        "  - {file: scripts/x.py, start_line: 20, end_line: 27}\n",
+        encoding="utf-8",
+    )
+
+    report = triage.run(
+        triage.parse_args(
+            ["--repo-root", str(ROOT), "--ratchet-report", str(ratchet), "--code-inventory", str(inventory)]
+        )
+    )
+
+    assert report["ok"] is True
+    assert report["family_count"] == 1
+
+
+def test_triage_help_names_the_detail_payload_its_reader_accepts(capsys) -> None:
+    # The third coupled edit. Migrating the flag and the parser while leaving the
+    # help text naming `--json` sends the operator to a producer mode that exits 2.
+    with pytest.raises(SystemExit):
+        triage.parse_args(["--help"])
+
+    _assert_help_pairs(
+        capsys.readouterr().out,
+        {
+            "--ratchet-report": "Existing check_dup_ratchet --detail payload.",
+            "--code-inventory": "Existing inventory_nose_clones --detail payload.",
+        },
+    )

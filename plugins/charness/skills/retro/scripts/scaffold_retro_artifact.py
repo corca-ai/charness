@@ -36,6 +36,36 @@ def _slug(title: str) -> str:
     return slug or "retro"
 
 
+def _sections_without_owned_headings(artifact_sections: list[str], owned: frozenset[str]) -> list[str]:
+    """Drop every adapter-declared block whose H2 the scaffold already emits.
+
+    ``artifact_sections`` used to be appended verbatim, so an adapter declaring a
+    heading the scaffold also owns produced that section TWICE. This repo's own
+    ``.agents/retro-adapter.yaml`` declared ``## Lesson Evaluation`` -- the exact
+    heading the lesson-evaluation floor requires to appear EXACTLY once -- so the
+    scaffold emitted an artifact its own validator refused twice over (`expected
+    exactly one ... found 2`, then the duplicated `Lesson evaluation:` line).
+    That is the same "the prescribed path does not produce a valid artifact"
+    defect the seeded disposition block was added to fix -- shipped by that very
+    repair, because it appended without looking at what the adapter declared.
+
+    Scaffold-owned headings win because they are the ones the floors read and the
+    scaffold's block is the one seeded in a validating state; an adapter that
+    wants a different section names a different heading. Dropping is per BLOCK,
+    not per line, so the colliding section's body goes with its heading rather
+    than stranding orphan prose under the scaffold's own heading.
+    """
+    kept: list[str] = []
+    dropping = False
+    for line in artifact_sections:
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            dropping = stripped in owned
+        if not dropping:
+            kept.append(line)
+    return kept
+
+
 def render_template(*, title: str, date_text: str, artifact_sections: list[str] | None = None) -> str:
     lines = [f"# {title}", f"Date: {date_text}", ""]
     lines.extend(["## Context", "", "TODO what happened and why this retro.", ""])
@@ -49,9 +79,12 @@ def render_template(*, title: str, date_text: str, artifact_sections: list[str] 
         [
             "## North Star Alignment",
             "",
-            "TODO read docs/design-north-star.md and record what it says about THIS work:",
-            "which facets held, which were mis-applied, and any named failure signature the",
-            "run walked into. Reviewing the work only against itself has no frame.",
+            "TODO read this repo's governing design standard —"
+            " `<authoring-repo>/docs/design-north-star.md`",
+            "in the authoring repo, or whatever this repo names as its own (design principles,",
+            "invariants) — and record what it says about THIS work: which facets held, which",
+            "were mis-applied, and any named failure signature the run walked into. Reviewing",
+            "the work only against itself has no frame.",
             "",
         ]
     )
@@ -72,18 +105,32 @@ def render_template(*, title: str, date_text: str, artifact_sections: list[str] 
             "",
         ]
     )
-    if artifact_sections:
-        lines.extend([*artifact_sections, ""])
-    lines.extend(
-        [
-            "## Lesson Evaluation",
-            "",
-            'Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}',
-            "",
-        ]
+    # Built before the adapter sections are placed, because the collision check
+    # must see the headings the scaffold emits AFTER them too.
+    trailer = [
+        "## Lesson Evaluation",
+        "",
+        'Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}',
+        "",
+        "## Next Improvements",
+        "",
+        "- workflow: TODO",
+        "- capability: TODO",
+        "- memory: TODO",
+        "",
+        "## Persisted",
+        "",
+        "Persisted: yes: TODO path",
+        "",
+    ]
+    owned = frozenset(
+        line.strip() for line in (*lines, *trailer) if line.strip().startswith("## ")
     )
-    lines.extend(["## Next Improvements", "", "- workflow: TODO", "- capability: TODO", "- memory: TODO", ""])
-    lines.extend(["## Persisted", "", "Persisted: yes: TODO path", ""])
+    if artifact_sections:
+        kept = _sections_without_owned_headings(list(artifact_sections), owned)
+        if kept:
+            lines.extend([*kept, ""])
+    lines.extend(trailer)
     return "\n".join(lines).rstrip() + "\n"
 
 

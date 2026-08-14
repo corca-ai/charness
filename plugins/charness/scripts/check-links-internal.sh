@@ -1,7 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# package-root != git-root. scripts/check-markdown.sh carries the canonical statement of this
+# rule and the reasoning; this is the same guard with this gate's own consequence.
+#
+# Measured from the generated mirror BEFORE this guard: exit 0, "97 Total / 78 OK / 0 Errors".
+# A clean green over the wrong tree. Two things go wrong at once there: the
+# `:(exclude)plugins/**` pathspec below is cwd-relative, so from `plugins/charness` it excludes
+# NOTHING and the gate lints the mirror it is supposed to skip; and `--root-dir` then resolves
+# every repo-relative link against the package root instead of the git root. Note this gate was
+# predicted to "fail loud" from the mirror and does not -- it passes. Issue #618.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ -n "${CHARNESS_REPO_ROOT:-}" ]]; then
+  REPO_ROOT="$(cd "$CHARNESS_REPO_ROOT" && pwd)"
+else
+  git_toplevel="$(git -C "$REPO_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -n "$git_toplevel" && "$(cd "$git_toplevel" && pwd -P)" != "$(cd "$REPO_ROOT" && pwd -P)" ]]; then
+    {
+      echo "check-links-internal: refusing to run from an exported copy."
+      echo "  script root:  $REPO_ROOT"
+      echo "  git toplevel: $git_toplevel"
+      echo "This gate excludes plugins/** with a cwd-relative pathspec and resolves"
+      echo "repo-relative links against its root, so a package root that is not the git root"
+      echo "reports a clean pass over the mirror it should have skipped (issue #618)."
+      echo "Run scripts/check-links-internal.sh from the charness source checkout, or set"
+      echo "CHARNESS_REPO_ROOT to that checkout."
+    } >&2
+    exit 1
+  fi
+fi
 cd "$REPO_ROOT"
 
 run_git_listing_to_file() {

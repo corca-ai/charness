@@ -766,3 +766,194 @@ def test_a_choices_positional_value_is_judged_as_a_flag_scope_not_as_an_unrunnab
     assert len(findings) == 1
     assert "does not accept documented flag(s) `--label`" in findings[0]
     assert "not runnable" not in findings[0]
+
+
+def _write(root: Path, relative: str, body: str) -> Path:
+    target = root / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(body, encoding="utf-8")
+    return target
+
+
+# --- carrier scope: the `--json` residue class ------------------------------
+#
+# Seven live callers passed a `--json` the migrated skill scripts had stopped
+# accepting; six of them were invisible to this gate because they were not
+# markdown, and the seventh was markdown this gate silently did not read. Each
+# test below pins one of those carrier shapes.
+
+
+def test_a_backtick_span_wrapping_across_a_prose_line_break_is_scanned(gate, tmp_path: Path) -> None:
+    """The `docs/deferred-decisions.md` shape, and the worst kind of miss: not
+    checked AND not counted as skipped, so the run reported full coverage of a
+    doc it had not read. `BACKTICK_CONTENT_RE` excludes newlines and the fenced
+    join only fires on a trailing backslash, so NEITHER line formed a carrier."""
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT},
+        doc="Regenerate that fact with `python3 scripts/log.py --path .\n--gone` (2026-08-10).\n",
+    )
+    report = gate.build_report(root)
+    assert report["invocations"] == 1
+    assert len(report["findings"]) == 1
+    assert "docs/guide.md:1" in report["findings"][0]
+    assert "`--gone`" in report["findings"][0]
+
+
+def test_an_unclosed_backtick_span_ends_at_the_paragraph_break(gate, tmp_path: Path) -> None:
+    # Markdown inline code cannot cross a blank line. Without that stop an odd
+    # backtick count swallows the rest of the document into one carrier.
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT},
+        doc="An unclosed `python3 scripts/log.py --gone\n\nprose --run-checks after the break\n",
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "`--gone`" in findings[0]
+    assert "`--run-checks`" not in findings[0]
+
+
+def test_a_command_stored_in_an_agents_config_is_checked(gate, tmp_path: Path) -> None:
+    """`.agents/surfaces.json` verify commands and `.agents/release-adapter.yaml`
+    probe lists are executed verbatim by an adapter runner, so drift there breaks
+    a run rather than a sentence. Two of the seven residues lived here."""
+    root = _repo(tmp_path, scripts={"scripts/log.py": PLAIN_SCRIPT}, doc="no commands here\n")
+    _write(root, ".agents/surfaces.json", '{\n  "verify_commands": [\n    "python3 scripts/log.py --repo-root . --gone >/dev/null"\n  ]\n}\n')
+    _write(root, ".agents/release-adapter.yaml", "fresh_checkout_probes:\n- python3 scripts/log.py --path .\n")
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert ".agents/surfaces.json:3" in findings[0]
+    assert "`--gone`" in findings[0]
+
+
+def test_a_config_line_that_quotes_its_command_in_prose_is_read_as_a_span(gate, tmp_path: Path) -> None:
+    """`real_host_checklist` items are sentences, so the whole line ends the last
+    flag with a fused closing backtick (``--gone` `` is not a flag token) and the
+    invocation is silently judged flagless. The RELEASE-phase residue was exactly
+    this shape."""
+    root = _repo(tmp_path, scripts={"scripts/log.py": PLAIN_SCRIPT}, doc="no commands here\n")
+    _write(
+        root,
+        ".agents/release-adapter.yaml",
+        "real_host_checklist:\n- Run `python3 scripts/log.py --path . --gone` once and confirm findings.\n",
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert ".agents/release-adapter.yaml:2" in findings[0]
+    assert "`--gone`" in findings[0]
+
+
+ARGV_CALLER = '''
+import subprocess
+import sys
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+
+
+def run(repo_root):
+    return subprocess.run(
+        [
+            sys.executable,
+            str(repo_root / "scripts/log.py"),
+            "--path",
+            str(repo_root),
+            "--gone",
+        ],
+        check=False,
+    )
+'''
+
+
+def test_an_argv_sequence_built_in_python_is_checked(gate, tmp_path: Path) -> None:
+    """The `draft_dup_ratchet_triage.py` shape. Its DEFAULT mode exited 2 on a
+    clean tree with every gate green, because the flag claim lived in a list
+    literal rather than a doc. `sys.executable` is why the interpreter prefix has
+    to be synthesized: it renders as a placeholder, so nothing anchors the regex."""
+    root = _repo(tmp_path, scripts={"scripts/log.py": PLAIN_SCRIPT}, doc="no commands here\n")
+    _write(root, "scripts/caller.py", ARGV_CALLER)
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "scripts/caller.py" in findings[0]
+    assert "`--gone`" in findings[0]
+
+
+def test_a_cli_invocation_built_in_a_test_argv_is_checked(gate, tmp_path: Path) -> None:
+    # The seventh residue: a `charness tool doctor --json` in a `release_only`
+    # test, i.e. a flag claim with no `.py` anywhere in it.
+    root = _repo(tmp_path, scripts={"charness": SUBCOMMAND_SCRIPT}, doc="no commands here\n")
+    _write(root, "tests/test_cli.py", 'def test_x(run_script):\n    run_script("charness", "resolve-destination", "--gone")\n')
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "tests/test_cli.py:2" in findings[0]
+    assert "`--gone`" in findings[0]
+
+
+def test_a_list_of_shell_script_lines_is_not_read_as_one_argv(gate, tmp_path: Path) -> None:
+    """A list of strings is argv only when its elements are TOKENS. A fixture that
+    builds a shell script line by line is the other thing it is here, and joining
+    those lines spliced each command's flags into its neighbour: nine findings no
+    runnable command carried. An argv element with whitespace is always a value."""
+    root = _repo(tmp_path, scripts={"scripts/log.py": PLAIN_SCRIPT}, doc="no commands here\n")
+    _write(
+        root,
+        "tests/test_hook.py",
+        'def test_x(tmp_path):\n'
+        '    (tmp_path / "pre-push").write_text("\\n".join([\n'
+        '        "#!/usr/bin/env bash",\n'
+        '        "python3 scripts/log.py --path .",\n'
+        '        "python3 -m pytest --gone -q tests",\n'
+        '    ]))\n',
+    )
+    assert _findings(gate, root) == []
+
+
+def test_an_argument_value_that_names_a_command_does_not_start_a_second_one(gate, tmp_path: Path) -> None:
+    """`run_script("scripts/log.py", "--paths", "charness", "--run-checks")`. The
+    value of `--paths` is not a program name: reading it as one cut the real
+    command's tail at that token and reported every flag after it as drift."""
+    root = _repo(tmp_path, scripts={"scripts/log.py": PLAIN_SCRIPT, "charness": SUBCOMMAND_SCRIPT}, doc="no commands here\n")
+    _write(
+        root,
+        "tests/test_paths.py",
+        'def test_x(run_script):\n'
+        '    run_script("scripts/log.py", "--path", "charness", "--run-checks")\n',
+    )
+    assert _findings(gate, root) == []
+
+
+def test_the_cli_name_used_as_an_option_value_is_counted_not_reported(gate, tmp_path: Path) -> None:
+    """`--product-id charness` in a documented command. `charness` is this repo's
+    product name as well as its CLI, so the value read as a second invocation cut
+    six real flags off the first and reported all six as drift. Counted rather
+    than dropped, because after a shell operator it really would be a command."""
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/log.py": PLAIN_SCRIPT, "charness": SUBCOMMAND_SCRIPT},
+        doc="Run `python3 scripts/log.py --run-checks --path charness resolve-destination --gone`.\n",
+    )
+    report = gate.build_report(root)
+    assert report["findings"] == []
+    assert report["skipped"] == {"cli-name-as-an-argument-value": 1}
+
+
+def test_a_rejection_probe_flag_is_skipped_while_its_neighbour_is_still_checked(gate, tmp_path: Path) -> None:
+    """`.agents/cli-side-effect-probes.json` asserts argparse REJECTS
+    `--not-a-tool`. Read as a flag claim that inverts the assertion. Keyed on the
+    flag rather than the config key because the same file writes a real
+    `--dry-run` beside it, and a key-shaped rule would have to discard both."""
+    root = _repo(tmp_path, scripts={"scripts/log.py": PLAIN_SCRIPT}, doc="no commands here\n")
+    _write(
+        root,
+        ".agents/cli-side-effect-probes.json",
+        '{\n'
+        '  "option_like_positional_probes": ["python3 scripts/log.py --not-a-path"],\n'
+        '  "dry_run_probe": "python3 scripts/log.py --path . --gone --not-a-path"\n'
+        '}\n',
+    )
+    report = gate.build_report(root)
+    assert len(report["findings"]) == 1
+    assert "`--gone`" in report["findings"][0]
+    assert "`--not-a-path`" not in report["findings"][0]
+    assert report["skipped"] == {"negative-probe-invocation": 1}

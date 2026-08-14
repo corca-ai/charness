@@ -176,8 +176,8 @@
       "sync_commands": [],
       "verify_commands": [
         "for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done",
-        "python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null",
-        "python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null",
+        "python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --detail >/dev/null",
+        "python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --detail >/dev/null",
         "python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary"
       ],
       "notes": [

@@ -373,6 +373,13 @@
     },
     {
       "class": "intentional",
+      "id": "1bf0acd032a9b829",
+      "note": "Both members are in ONE file -- skills/public/setup/scripts/seed_retro_memory.py:70-92 (`summary_text`) and :193-218 (`main`) -- and both are in this slice's diff, but there is nothing to extract. nose's own record for this family reports `1/26 shared, ~1 removable`, and the single shared line is the closing `)`. One member returns a `\"\\n\".join([...])` Markdown seed template; the other prints a `json.dumps({...})` setup receipt. Two large nested literals whose IL windows converge on the call/paren shape, not on any behavior: a helper here would have to take the whole literal as its argument. Same class as 3545c3c0cc82104c / 3d7b2ef149238b19 -- scanner window overlap inside one file rather than two behavior owners to merge. Surfaced because this slice added `lesson_loop_report(repo_root)` to the receipt, lengthening `main` past the scan threshold.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "1c86132e0253481d",
       "note": "ROTATION of the repo-standard gate-skeleton families as check_plugin_dir_references joins them (main() argparse+resolve+report skeleton, the runtime_bootstrap portability preamble, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal -- 217bca482c08d1da, 606ea765fb3c8ee8, 804b8f9cc0c609cb, 3eb918907263eb6b, d7021cae01c1a7b0, 1d36956dff2fc82b and their rotations. Each new gate re-forms the cluster; the preamble cannot be imported (it IS the bootstrap), and a shared runner would own every gate's argument surface and its operator-facing summary wording, which is the part a reader relies on to tell one gate's silence from another's.",
       "reviewed_at": "2026-08-04",
@@ -1108,6 +1115,13 @@
     },
     {
       "class": "intentional",
+      "id": "5124c7cb4911fd79",
+      "note": "ROTATION of the already-accepted debug/retro `_gate_packets` family (c86d5365eb700947 2026-07-11, a5afbb9f4f8d35d8 2026-08-08, 62a2d1c487bedb21 2026-08-13): skills/public/retro/scripts/plan_retro_run.py:291-332 vs skills/public/debug/scripts/plan_debug_run.py:223-253. Re-fingerprinted because this slice added `_repo_module_payload` / `_date_activated_rules` / `_lesson_session` ABOVE it in the retro planner, shifting the window; `_gate_packets` itself is unchanged in both planners and plan_debug_run.py is untouched entirely. nose measures 19/42 shared across SEVEN varying spots and its own hint warns that a high-parameter extraction costs divergence readability. What varies is everything a reader cares about: packet ids, trust sentences, the validator script each packet names, and the retro-only adapter-metric loop that the debug planner has no equivalent of. The two planners ship in independently exported skill packages (skills/public/retro, skills/public/debug) that stay skill-local-portable by design (planner-uniformity item 2), so a cross-skill helper would couple two shipped packages' packet vocabularies without changing any verdict.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "5159d62f261a8894",
       "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
@@ -1332,6 +1346,13 @@
     },
     {
       "class": "intentional",
+      "id": "5bb4a446d5610520",
+      "note": "ROTATION/WIDENING of the accepted runtime_bootstrap import preamble family (ee2f2b3e036c78a7 2026-07-02, 9a5d2a32988cd4c7 and d5de82d94e2b9a73 2026-07-26): `import argparse` / `import json` / `import sys` / `from pathlib import Path` / `from typing import Any` / `from runtime_bootstrap import import_repo_module, repo_root_from_script`. Four of the five members -- build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics -- are the same untouched scripts already accepted under those ids; the fifth, scripts/init_lesson_ledger.py, is new in this slice and joins the idiom rather than inventing a variant. Not extractable: an import statement cannot be factored out without an indirection module the importing script would still have to import first, and `runtime_bootstrap` IS that module -- this preamble is the bootstrap that makes one file work both in the source tree and in the exported plugin mirror. Recorded against a misread worth correcting: all five spans were read, and this is the repo-script `runtime_bootstrap` header, NOT the skill-side `_load_skill_runtime_bootstrap` preamble (765234fbcb826726).",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "5bdec49283c0883e",
       "note": "paired uninstall tails deliberately keep each standalone hook's ownership, result labels, and cleanup lifecycle visible; a cross-hook helper would add coupling",
       "reviewed_at": "2026-07-13",
@@ -1552,6 +1573,13 @@
       "id": "6a29dc4549b6f485",
       "note": "ROTATION of 606ea765fb3c8ee8 / 217bca482c08d1da / cf4daacbe7eaf226 after the round-1 repairs moved parity_harness.py's line numbers: the same repo-standard gate `main()` skeleton (argparse `--repo-root`, `args.repo_root.resolve()`, run, print a summary or raise), paired with check_plugin_doc_links.py. Third rotation of one concept in one slice, which is the fingerprint-instability the handoff already records; the judgment is unchanged.",
       "reviewed_at": "2026-08-04",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6b6dbbbb6fea8eb5",
+      "note": "ROTATION/WIDENING of the accepted direct-execution entrypoint family (1d36956dff2fc82b, 69026ef11d8ee529, ae2be6fde5341c64, 8ccdd836fc988bd5): `if __name__ == \"__main__\": try: raise SystemExit(main()) except <Errors> as exc: print(str(exc), file=sys.stderr); raise SystemExit(1)`. TWENTY-SIX members across twenty-six unrelated repo commands; twenty-five are untouched and only scripts/init_lesson_ledger.py is new in this slice. Each member names its OWN caught exception tuple -- init_lesson_ledger catches (FileExistsError, FileNotFoundError, OSError, ValueError), check_lesson_ledger catches (FileNotFoundError, ValueError), validate_surfaces catches SurfaceError -- so a shared runner would either widen every command's caught set to the union (turning an uncaught bug into a clean exit 1 in some other command) or take the tuple as a parameter, saving no lines while hiding each command's exit contract from the reader of that command. Python also cannot factor out a module's own `__main__` block.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2354,6 +2382,13 @@
     },
     {
       "class": "intentional",
+      "id": "ada365428933cd91",
+      "note": "The env-gated `_debug` stderr helper (`CHARNESS_SESSION_START_DEBUG` in {1,true,yes,on}) shared by two STANDALONE SessionStart entrypoints, scripts/session_start_routing.py:212-261 and scripts/usage_episode_session_start.py:34-40, differing only by the module-name prefix in the message. Same helper and same reasoning already accepted as 604e4e6088db9c52 (2026-07-04) and 98b8f8037638d203 (2026-07-13) for the sibling pair. nose measures 4/50 shared across three varying spots and marks the family shallow: the rest of the window is `build_additional_context` on one side and the usage-episode module constants on the other, so almost none of it is shared behavior. These files install as user-level hooks that run on EVERY session start; a shared helper would give one hook an import-time dependency on another hook module, and a hook that fails to import loses its injected context silently -- the exact failure the local four-line copy exists to prevent. Surfaced because this slice extended the routing hook's lesson block, shifting the surrounding window. session_start_routing.py was additionally under concurrent verification by another agent and was deliberately not edited.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "ae2be6fde5341c64",
       "note": "ROTATION/WIDENING of the accepted `__main__` entrypoint family (1d36956dff2fc82b / 69026ef11d8ee529 / 61d7a55b4688babd): `if __name__ == \"__main__\": try: sys.exit(main()) except <Error> as exc: print(str(exc), file=sys.stderr); sys.exit(1)`. Now 10+ members across bootstrap_runtime, build_debug_seam_risk_index, check_coverage, check_doc_links, check_export_safe_imports, check_plugin_doc_links, check_plugin_import_smoke, check_python_lengths, check_skill_contracts and more -- ALL untouched, so the family long predates this slice. It is the per-script entrypoint preamble that cannot be centralized without an import indirection every script would still have to spell out.",
       "reviewed_at": "2026-08-04",
@@ -3012,6 +3047,13 @@
     },
     {
       "class": "intentional",
+      "id": "de07a48f9b36e4cd",
+      "note": "The two-line `_on_demand_reads()` -- `return [_read(path, \"reference\", why, base=\"skill\") for path, why in ON_DEMAND_REFERENCE_READS]` -- identical in skills/public/debug/scripts/plan_debug_run.py:219-220 and skills/public/retro/scripts/plan_retro_run.py:287-288. Same class as 2dd39753778c7cb1 (planner `_read(...)` required-read shape mirrored across portable planners) and 03d10d6a644edf28. The line IS the canonical planner-uniformity spelling; what it reads, `ON_DEMAND_REFERENCE_READS`, is a per-skill constant, and `_read` is per-planner. plan_debug_run.py is untouched -- the family surfaced only because plan_retro_run.py grew three announcement helpers above it. A cross-skill helper for a two-line comprehension would couple two independently exported skill packages and save nothing.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "de4ecc062765a5eb",
       "note": "ROTATED from 5f672b193b2f3c05 (itself rotated from 5505a8794c55f12d) — same two members, same reasoning, third re-fingerprint. Members: scripts/inventory_skill_script_references.py and skills/public/handoff/scripts/prepare_chunk_packet.py, sharing `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option. Re-fingerprinted this time by adding `--strict` when the operator promoted the check from advisory to gate. Not extractable: a portable skill package must not import repo-level scripts/, and check_documented_command_flags/argparse_surface_lib read the option surface back off each script's own parser, so a shared builder would blind the documented-flag gate. The repeated rotation is itself evidence the family is boilerplate rather than debt — its membership never grows, only its hash.",
       "reviewed_at": "2026-08-02",
@@ -3246,6 +3288,13 @@
       "id": "f0cd50275aae0366",
       "note": "the five-line `importlib.util.spec_from_file_location` / module_from_spec / exec_module path-loader idiom, already present in five owners across achieve, issue, and repo scripts. It exists precisely BECAUSE these modules are executed directly as often as imported and the plugin export flattens the layout, so a dotted import works in one tree and not the other -- a shared loader would itself need loading by this same idiom. The premise-state CLI already collapsed its own two copies of this into one memoized helper before this classification.",
       "reviewed_at": "2026-08-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f14b8748ab267b3f",
+      "note": "contract_register_lib.replay_validated_contract_register_payload (:388-460) vs lesson_ledger_lib.replay_validated_ledger_payload (:364-429) -- the repo's two append-only replay validators. nose measures 10/73 shared across FOUR varying blocks and marks the family shallow: the shared content is only the skeleton `if payload is not a dict / wrong kind / wrong schema_version / wrong TOP_LEVEL_KEYS: _fail(...)`, then domain replay, then `committed = _committed_state(repo_root, path)` / `if committed is not None:`. Every body inside those blocks is a different algorithm: the register replays seed units, graduation proposals and a fixed displacement budget; the ledger replays transitions, lifecycle events, sessions and scores. Extracting the skeleton means a template-method helper parameterized by four blocks, which would put the committed-prefix comparison -- the append-only proof itself, run against `git show HEAD:<path>`, spelling a different key set and a different refusal message per ledger -- inside a generic wrapper shared by two proof surfaces. That is the one place where independent implementations are worth their cost, because a single loosening there would silently stop enforcing append-only on both governance ledgers at once. Surfaced as NEW only because this slice rewrote lesson_ledger_lib's refusal messages to name their accepted key sets (`sorted(TOP_LEVEL_KEYS)` and friends, the #621 dead-end repair), converging the ledger's guard text with the register's equivalent; neither replay body changed. The genuinely verbatim duplication between these two modules WAS removed in the same slice rather than classified: `_canonical_markdown_ref` is now single-sourced as `lesson_ledger_lib.canonical_markdown_ref` (family bbb595d785726d29, no longer reported).",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {

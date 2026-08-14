@@ -19,6 +19,17 @@ SECTION_HEADING = "## Lesson Evaluation"
 LINE_PREFIX = "Lesson evaluation: "
 STATUSES = frozenset({"effect-recorded", "no-effect", "not-evaluated"})
 REASONS = frozenset({"missing-start", "emission-unproven", "presentation-unproven"})
+# The keys every disposition carries; `reason` joins them only for
+# `not-evaluated`. Named once so the enforcing check and the refusal that
+# teaches the grammar cannot drift apart.
+BASE_DISPOSITION_KEYS = frozenset({"status", "session_id", "score_event_count"})
+# The one disposition a repo that opened no lesson session can honestly write.
+MISSING_START_DISPOSITION = {
+    "reason": "missing-start",
+    "score_event_count": 0,
+    "session_id": "none",
+    "status": "not-evaluated",
+}
 AGGREGATE_VIOLATION_IDS = (
     "score-count-mismatch",
     "duplicate-session-reference",
@@ -88,13 +99,36 @@ def _outside_fence_lines(text: str) -> list[str]:
     return output
 
 
+def grammar_summary() -> str:
+    """The whole authoring grammar, rendered INTO the refusals that demand it.
+
+    Every rule below already names its own accepted values, but they are
+    unreachable for the failure an author actually hits: the FIRST two refusals
+    are the section-count and line-count checks in ``parse_disposition``, which
+    named ZERO keys and pointed at ``references/lesson-evaluation.md`` -- a file
+    that deliberately keeps the grammar repo-owned. The grammar's only prose home
+    was ``docs/development.md``, which the plugin does not ship, so a consuming
+    author paid two validator round-trips and a source dive to write one line
+    (#623). Interpolated from the same constants the checks enforce, so the
+    lesson cannot drift from the rule.
+    """
+    return (
+        f"the JSON object takes exactly keys {sorted(BASE_DISPOSITION_KEYS)}, plus `reason` when "
+        f"status is `not-evaluated`; status is one of {sorted(STATUSES)}; reason is one of "
+        f"{sorted(REASONS)}; `missing-start` requires session_id `none` and score_event_count 0, "
+        "`effect-recorded` requires score_event_count >= 1, and `no-effect` / `not-evaluated` "
+        "require 0. A repo that opened no lesson session writes exactly: "
+        f"`{LINE_PREFIX}{canonical_json(MISSING_START_DISPOSITION)}`"
+    )
+
+
 def _validate_disposition_value(value: Any) -> dict[str, Any]:
     if not isinstance(value, dict):
         _fail("disposition JSON must be an object")
     status = value.get("status")
     if status not in STATUSES:
         _fail(f"status must be one of {sorted(STATUSES)}")
-    expected = {"status", "session_id", "score_event_count"}
+    expected = set(BASE_DISPOSITION_KEYS)
     if status == "not-evaluated":
         expected.add("reason")
     if set(value) != expected:
@@ -125,7 +159,10 @@ def parse_disposition(text: str) -> dict[str, Any]:
     lines = _outside_fence_lines(text)
     headings = [index for index, raw in enumerate(lines) if raw.strip() == SECTION_HEADING]
     if len(headings) != 1:
-        _fail(f"expected exactly one `{SECTION_HEADING}` section, found {len(headings)}")
+        _fail(
+            f"expected exactly one `{SECTION_HEADING}` section, found {len(headings)}. "
+            f"{grammar_summary()}"
+        )
     start = headings[0] + 1
     end = next(
         (index for index in range(start, len(lines)) if lines[index].strip().startswith("## ")),
@@ -135,7 +172,8 @@ def parse_disposition(text: str) -> dict[str, Any]:
     all_matches = [raw.strip() for raw in lines if raw.strip().startswith(LINE_PREFIX)]
     if len(matches) != 1 or len(all_matches) != 1:
         _fail(
-            f"the artifact must contain exactly one `{LINE_PREFIX}<JSON object>` line, inside `{SECTION_HEADING}`"
+            f"the artifact must contain exactly one `{LINE_PREFIX}<JSON object>` line, inside "
+            f"`{SECTION_HEADING}`. {grammar_summary()}"
         )
     raw_json = matches[0][len(LINE_PREFIX) :]
     if raw_json.startswith(("TODO", "TBD", "<")):
@@ -412,6 +450,29 @@ def _reconcile_retro_row(
     return rows
 
 
+def receipt_emitted_date(receipt: dict[str, Any]) -> date:
+    return datetime.fromisoformat(receipt["emitted_at"].replace("Z", "+00:00")).date()
+
+
+def unclaimed_receipted_sessions(
+    *, receipts: dict[str, dict[str, Any]], references: dict[str, list[str]],
+    since: date = ACTIVATION_DATE, before: date | None = None,
+) -> list[str]:
+    """Receipted sessions in the cohort that no retro disposition claims.
+
+    ONE membership rule read two opposite ways: ``reconcile_records`` passes
+    ``before=as_of`` and raises ``unclaimed-emission``; the retro run planner
+    passes ``before=None`` and routes the author to the session that still owes a
+    score (rationale at ``lesson_evaluation_records_lib.lesson_session_routing``).
+    A second spelling would let the router skip a session the gate fails over.
+    """
+    end = before if before is not None else date.max
+    return sorted(
+        key for key, receipt in receipts.items()
+        if key not in references and since <= receipt_emitted_date(receipt) < end
+    )
+
+
 def reconcile_records(
     *,
     retros: Iterable[tuple[str, dict[str, Any]]],
@@ -448,10 +509,11 @@ def reconcile_records(
     for session_id, paths in references.items():
         if len(paths) > 1:
             violations.append(violation("duplicate-session-reference", session_id=session_id, detail=f"session is cited by {len(paths)} retros: {', '.join(sorted(paths))}"))
-    for session_id, receipt in receipts.items():
-        emitted = datetime.fromisoformat(receipt["emitted_at"].replace("Z", "+00:00")).date()
-        if emitted >= ACTIVATION_DATE and emitted < as_of and session_id not in references:
-            violations.append(violation("unclaimed-emission", session_id=session_id, detail=f"receipt from {emitted.isoformat()} has no in-cohort retro disposition"))
+    for session_id in unclaimed_receipted_sessions(
+        receipts=receipts, references=references, before=as_of
+    ):
+        emitted = receipt_emitted_date(receipts[session_id])
+        violations.append(violation("unclaimed-emission", session_id=session_id, detail=f"receipt from {emitted.isoformat()} has no in-cohort retro disposition"))
 
     completed = status_counts["effect-recorded"] + status_counts["no-effect"]
     aggregate_violation_counts = {

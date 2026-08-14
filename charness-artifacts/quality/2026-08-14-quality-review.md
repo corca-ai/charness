@@ -136,5 +136,5 @@ Filed, not merged into this slice.
 
 ## History
 
-- [Current-contract cleanup and runner visibility](./2026-08-13-issue-616-applied-lifecycle.md)
+- [Current-contract cleanup and runner visibility](./2026-08-14-current-contract-cleanup.md)
 - [Portable proof-path learning review](./history/2026-07-19-portable-proof-path-learning-review.md)

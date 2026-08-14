@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -15,66 +14,23 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 ROOT = repo_root_from_script(__file__)
 _continuity = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
-_ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
-_packet = import_repo_module(__file__, "scripts.prepare_packet_markdown_kind")
-
-_PACKET_TITLE = re.compile(r"^# Retro Prepare Packet(?:\s+—\s+\S.*)?$")
-
-
-def _retro_candidates(repo_root: Path) -> list[tuple[str, str]]:
-    output_dir = repo_root / "charness-artifacts/retro"
-    rows: list[tuple[str, str]] = []
-    for path in sorted(output_dir.glob("*.md")):
-        if path.name == "recent-lessons.md" or _packet.file_is_prepare_packet_markdown_kind(
-            path,
-            expected_kind="charness.retro_prepare_packet",
-            expected_title_re=_PACKET_TITLE,
-        ):
-            continue
-        text = path.read_text(encoding="utf-8")
-        if _continuity.is_eligible_retro(path, text):
-            rows.append((path.relative_to(repo_root).as_posix(), text))
-    return rows
+# The ledger read, the retro scan, and the receipt scan moved into `lesson_evaluation_records_lib`
+# when the retro run planner had to read the SAME facts to route an author to the
+# session that still owes a score. They stay one implementation on purpose: a
+# router that disagreed with this gate about which sessions exist would silently
+# skip the session the gate later fails the repo over.
+_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
 
 
 def build_report(repo_root: Path, *, as_of: date) -> dict[str, Any]:
-    output_dir = repo_root / "charness-artifacts/retro"
-    ledger_path = _ledger.lesson_ledger_path(output_dir)
-    _ledger.validate_lesson_ledger(
-        repo_root=repo_root,
-        output_dir=output_dir,
-        summary_path=output_dir / "recent-lessons.md",
+    output_dir = _records.retro_output_dir(repo_root)
+    sessions, score_events = _records.load_validated_ledger(repo_root)
+    candidates = _records.collect_retro_candidates(repo_root)
+    dispositions, receipt_violations = _records.collect_dispositions(candidates)
+    receipts, collected_receipt_violations = _records.collect_receipts(
+        output_dir=output_dir, sessions=sessions
     )
-    payload = json.loads(ledger_path.read_text(encoding="utf-8"))
-    sessions = {event["session_id"]: event for event in payload["session_events"]}
-    score_events = payload["score_events"]
-
-    candidates = _retro_candidates(repo_root)
-    dispositions: list[tuple[str, dict[str, Any]]] = []
-    receipt_violations: list[dict[str, str]] = []
-    for relpath, text in candidates:
-        try:
-            dispositions.append((relpath, _continuity.parse_disposition(text)))
-        except ValueError as exc:
-            identifier = "missing-disposition" if "found 0" in str(exc) else "invalid-disposition"
-            receipt_violations.append(_continuity.violation(identifier, path=relpath, detail=str(exc)))
-
-    receipts: dict[str, dict[str, Any]] = {}
-    directory = _continuity.receipt_directory(output_dir)
-    for path in sorted(directory.glob("*.json")) if directory.is_dir() else []:
-        session_id = path.stem
-        try:
-            raw = json.loads(path.read_text(encoding="utf-8"))
-            if raw.get("session_id") != session_id:
-                raise _continuity.LessonEvaluationError("receipt filename does not match session_id")
-            receipt = _continuity.validate_receipt(
-                raw, sessions=sessions, output_dir=output_dir
-            )
-            receipts[session_id] = receipt
-        except (OSError, ValueError, json.JSONDecodeError) as exc:
-            receipt_violations.append(
-                _continuity.violation("invalid-receipt", session_id=session_id, detail=str(exc))
-            )
+    receipt_violations = [*receipt_violations, *collected_receipt_violations]
     report = _continuity.reconcile_records(
         retros=dispositions,
         sessions=sessions,

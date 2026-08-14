@@ -207,6 +207,35 @@ Current v1 output is intentionally read-only:
 This keeps startup guidance centralized without turning skill execution into a
 networked self-update loop.
 
+## SessionStart Hook Reach
+
+The SessionStart routing hook — which now also presents the lesson-selection list
+when a repo declares a lesson evaluator — is installed at USER level
+(`~/.claude/settings.json`, `~/.codex/config.toml` or `~/.codex/hooks.json`) by
+`charness init` / `charness update`, gated on the checkout's own
+[usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml) `session_routing` intent.
+
+What that means for reach:
+
+- the hook fires in EVERY session on that machine and resolves the SESSION's repo
+  from the payload `cwd`, so it operates on a consuming repo while executing from
+  the managed charness checkout;
+- `build_command` hardcodes an absolute path into that checkout, so the command
+  string never changes and an existing installed hook picks up new script content
+  on the next `charness update` — no hook reinstall is required;
+- consequently a CLI-installed consumer gets the lesson presentation seam for
+  free, subject only to that repo's own `init_lesson_ledger.py` opt-in.
+
+The honest hole: a consumer who installs charness ONLY through the Claude plugin
+marketplace, never running the `charness` CLI, gets no SessionStart hook at all.
+[plugin.json](../plugins/charness/.claude-plugin/plugin.json) declares no `hooks` key and there is
+no `plugins/charness/hooks/` directory, so for that population the lesson loop is
+not wired. Declaring the hook in the plugin manifest would double-fire for every
+CLI-installed user (nothing dedups a plugin-declared hook against the
+user-settings entry — `settings_file_scan` / `hook_state_liveness` never see it),
+so it needs its own mutual-exclusion design and real-host readback. Filed in
+[deferred-decisions.md](./deferred-decisions.md).
+
 ## Non-Goals
 
 - inventing a second metadata system for host-specific skill behavior

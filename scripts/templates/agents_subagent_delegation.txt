@@ -39,6 +39,10 @@
 - A higher-priority system, developer, or host instruction may prohibit a
   workflow; the repo request cannot override it. Scale to the task instead of
   using orchestration for trivial work.
+- A repo may raise this to a default — parallel first, serial only for a real
+  dependency or a single-writer surface — by saying so here. Name the capability
+  rather than one host's product word for it, and keep the proof floor: agents
+  reporting success are not verified outcomes.
 - The spawn-shape rule above applies to orchestration spawns too: a named
   agent's result can strand silently, so an orchestration parent proves delivery
   the same way — findings in context, or a recorded delivery failure.

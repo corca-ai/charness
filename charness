@@ -49,6 +49,45 @@ def emit_yaml(payload: object) -> None:
     print(render_yaml(payload), end="")
 
 
+def parse_repo_script_payload(stdout: str, source: str) -> object:
+    """Read one repo-script `--detail` payload -- JSON fast path first, then YAML.
+
+    The mirror image of `render_yaml` above, and it has to be, for the reason that
+    function has its own ImportError branch: a producer without PyYAML emits
+    COMPACT JSON, and JSON is valid YAML, so the JSON attempt is both the common
+    case and the only one this deliberately standalone-copyable CLI can serve when
+    PyYAML is absent from ITS interpreter. `invoke_repo_script` runs the producer
+    under `resolve_repo_python(repo_root)`, which normally has PyYAML, so the
+    payload usually IS real YAML while this process may be a bare system python3.
+
+    That crossing is the one case that must not crash: a real YAML payload with no
+    PyYAML here raises a CharnessError naming the remedy, because `charness init`
+    reaching this line has already cloned and installed, and a parse traceback
+    would read as a broken install rather than a missing dependency.
+
+    This function replaced a `json.loads` of a `--json` flag that
+    `render_skill_routing.py` had stopped declaring, which is why `charness init`
+    was broken at HEAD: a double fault, since the flag exited 2 AND the payload it
+    would have produced was YAML.
+    """
+    try:
+        return json.loads(stdout)
+    except json.JSONDecodeError:
+        pass
+    try:
+        import yaml
+    except ImportError as exc:
+        raise CharnessError(
+            f"`{source}` returned a YAML payload and PyYAML is not importable by this interpreter "
+            f"({sys.executable}).\nInstall PyYAML for it, or run the command through the managed "
+            "runtime (`python3 scripts/bootstrap_runtime.py --repo-root . --print-python`)."
+        ) from exc
+    try:
+        return yaml.safe_load(stdout)
+    except yaml.YAMLError as exc:
+        raise CharnessError(f"`{source}` did not return a readable YAML payload\nSTDOUT:\n{stdout}") from exc
+
+
 def default_home_root() -> Path:
     return Path.home().resolve()
 
@@ -485,14 +524,15 @@ def build_repo_onboarding_payload(
             str(resolved_target),
         )
     )
-    skill_routing_payload = json.loads(
+    skill_routing_payload = parse_repo_script_payload(
         invoke_repo_script(
             source_repo_root,
             "skills/public/setup/scripts/render_skill_routing.py",
             "--repo-root",
             str(resolved_target),
-            "--json",
-        )
+            "--detail",
+        ),
+        "skills/public/setup/scripts/render_skill_routing.py",
     )
     payload["inspection"] = inspect_payload
     payload["skill_routing"] = skill_routing_payload

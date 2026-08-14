@@ -362,7 +362,18 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path, mon
     assert payload["failed_checks"] == ["demo-ready-file"]
 
 
-@pytest.mark.release_only
+# Deliberately NOT `release_only`. This is the only observer of a public CLI
+# surface contract (`charness tool doctor` exit code + payload shape), and it sat
+# in the lane no standing gate runs -- so a flag rename broke it and nothing said
+# so until an operator hit the same break by hand. `release_only` means "excluded
+# from standing pre-push", which is the wrong home for an assertion about a
+# command a consumer runs on day one. Measured cost of moving it: +1.7s on this
+# file (2.09s -> 3.75s), against a standing pytest phase of ~44s, and it overlaps
+# under xdist. The alternative -- making the standing battery run the whole
+# release lane -- was rejected on the cost `run-quality.sh` already records beside
+# `pytest-release`: that lane adds minutes of subprocess-heavy tests, and merging
+# the two labels is what previously made the runtime budget blind to a standing
+# regression.
 def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     tools_dir = repo / "integrations" / "tools"
@@ -377,13 +388,18 @@ def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path
     (repo / "bin" / "demo-tool").chmod(0o755)
     (repo / ".demo-ready").unlink()
 
+    # `--detail`, not `--json`: this call was half-migrated -- the flag still named
+    # the removed hidden JSON mode while the assertion below already parsed YAML.
+    # argparse rejects it with exit 2, so the returncode assertion failed FIRST and
+    # reported the wrong cause, and the whole test is `release_only`, so the
+    # standing battery never ran it.
     cli_doctor = run_script(
         "charness",
         "tool",
         "doctor",
         "--repo-root",
         str(repo),
-        "--json",
+        "--detail",
         "--no-write-locks",
         "demo-tool",
     )

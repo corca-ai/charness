@@ -1,7 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# package-root != git-root. scripts/check-markdown.sh carries the canonical statement of this
+# rule and the reasoning; this is the same guard with this gate's own consequence.
+#
+# This gate already failed rather than passing from the mirror, so it was never a false green --
+# but what it printed was `FTL unable to load gitleaks config, err: open
+# .../plugins/charness/.gitleaks.toml: no such file or directory`, which names a missing file
+# instead of the reason it is missing. The scanned population is cwd-scoped too, so if the
+# config resolution were ever relaxed this would silently scan a narrower tree, and a narrowed
+# secret scan is the one green in this repo that must never be wrong. Guarding it converts an
+# archaeology-shaped diagnostic into the actual cause. Issue #618.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ -n "${CHARNESS_REPO_ROOT:-}" ]]; then
+  REPO_ROOT="$(cd "$CHARNESS_REPO_ROOT" && pwd)"
+else
+  git_toplevel="$(git -C "$REPO_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -n "$git_toplevel" && "$(cd "$git_toplevel" && pwd -P)" != "$(cd "$REPO_ROOT" && pwd -P)" ]]; then
+    {
+      echo "check-secrets: refusing to run from an exported copy."
+      echo "  script root:  $REPO_ROOT"
+      echo "  git toplevel: $git_toplevel"
+      echo "This gate scans a git-tracked population and loads .gitleaks.toml from its root,"
+      echo "so a package root that is not the git root scans a narrower tree with no config"
+      echo "(issue #618)."
+      echo "Run scripts/check-secrets.sh from the charness source checkout, or set"
+      echo "CHARNESS_REPO_ROOT to that checkout."
+    } >&2
+    exit 1
+  fi
+fi
 cd "$REPO_ROOT"
 
 run_git_listing_to_file() {

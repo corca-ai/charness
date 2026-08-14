@@ -196,6 +196,26 @@ SKILL_ERGONOMICS_COUNT_RE = re.compile(
 )
 BACKTICKED_TOKEN_RE = re.compile(r"`([a-z0-9-]+)`")
 PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
+QUALITY_RECORD_FILENAME_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-")
+QUALITY_BODY_DATE_RE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\b")
+CURRENT_POINTER_FILENAME = "latest.md"
+# One measured exception, keyed by exact repo-relative path AND by the exact pair of
+# dates measured on it — `(filename date, body date)`. The pair is what keeps this from
+# turning the named file into a permanently overwritable slot: a SECOND overwrite of
+# that same record would carry a third date and still red. It is NOT an honest
+# past-midnight write: that path at revision 05608dd16 is a `Date: 2026-06-25` review
+# of `inventory_skill_ergonomics.py` summary output, and commit c6b934f2c replaced the
+# whole body with a different 2026-06-26 review of runtime-hotspot ranking and
+# prompt-bulk inventory. (Cited as a revision rather than as a VCS command line on
+# purpose: `inventory_boundary_bypass_lib.has_internal_boundary` scores this file's
+# TEXT, so a command literal in a comment reads as this validator shelling out
+# internally and moves the boundary-bypass ratchet for tests that only spawn it.) It is the same overwrite this rule refuses, found by the same
+# signal, seven weeks before this rule existed — the displaced 06-25 record is
+# recoverable and should be refiled under its own dated path, at which point this entry
+# is deleted rather than kept.
+DATE_COHERENCE_GRANDFATHERED = {
+    "charness-artifacts/quality/2026-06-25-skill-ergonomics-yaml-summary-quality-review.md": ("2026-06-25", "2026-06-26"),
+}
 
 
 def validate_history_section(lines: list[str]) -> None:
@@ -480,6 +500,68 @@ def validate_skill_ergonomics_count_claims(lines: list[str], repo_root: Path) ->
             )
 
 
+# The `Date:` header value, read from the PREAMBLE only: the scan stops at the first
+# `## ` heading so a body line that happens to start with `Date:` can never become the
+# artifact's date channel.
+def preamble_date(lines: list[str]) -> str | None:
+    preamble_end = next((index for index, raw in enumerate(lines) if raw.strip().startswith("## ")), len(lines))
+    matched = (QUALITY_BODY_DATE_RE.match(raw.strip()) for raw in lines[:preamble_end])
+    return next((match.group(1) for match in matched if match), None)
+
+
+def validate_date_channel_coherence(path: Path, lines: list[str], repo_root: Path) -> None:
+    """Refuse a quality record whose `Date:` header disagrees with its own filename."""
+    # In THIS family that disagreement is not a dating nuance — it is the fingerprint of
+    # a lost record. #620: `scaffold_quality_artifact.py` writes a FRESH `date_text` into the STALE
+    # path `scaffold_artifact_lib.current_pointer_write_path` hands back — the current
+    # pointer's TARGET, i.e. the PREVIOUS review's dated file. A new review therefore
+    # lands on top of an old one with no rename, no collision, and no error; the only
+    # thing left on disk pointing at the loss is the body date no longer matching the
+    # filename date. That is exactly what happened: the 2026-08-14 current-contract
+    # cleanup review overwrote the 2026-08-13 issue-616 lifecycle record in place, and
+    # the next review's `## History` then linked one review's TITLE to the other
+    # review's FILE. `write_target_facts` already reports `overwrite_existing_content`
+    # and says of itself that it is "a FACT, not a policy"; nothing consumed it. The
+    # skill prose warned at length. The prose is what failed, so the teeth go here.
+    #
+    # Deliberately NOT a +/-1 day tolerance. The #620 instance is itself exactly +1
+    # day (filename 2026-08-13, body 2026-08-14), because a review written after the
+    # previous day's pointer is the ordinary way this happens — a tolerance would be a
+    # hole shaped like the reported defect.
+    #
+    # `critique_enforcement_scope.date_channel_disagreement` computes the same signal
+    # and deliberately only REPORTS it. That disposition does NOT transfer, and
+    # re-deriving it here would reproduce #620: it rests on `critique_observed_date`
+    # taking `max(body, filename)`, so on the critique surface a disagreement already
+    # buys the artifact no grandfather and failing would cost a real artifact to close
+    # a hole that is already closed. The quality family has no such `max()` and no hole
+    # to be already-closed — a disagreement here means content was destroyed.
+    #
+    # A symlinked current pointer is followed, not exempted: `run-quality.sh` validates
+    # the adapter default `charness-artifacts/quality/latest.md`, which is the very
+    # channel #620 was written through, so reading the LINK's name would exempt the
+    # repo's own gate run from the rule. A `latest.md` that is a real file is a
+    # different object — a pointer whose body is a copy of the record it stands for
+    # (`charness-artifacts/quality/sloc-inventory/latest.md` carries `Date: 2026-05-04`
+    # by design) — and stays exempt. A filename with no date prefix has no second
+    # channel to disagree with and is exempt too.
+    filename = path.resolve().name if path.is_symlink() else path.name
+    if filename == CURRENT_POINTER_FILENAME:
+        return
+    named = QUALITY_RECORD_FILENAME_DATE_RE.match(filename)
+    recorded = preamble_date(lines)
+    if named is None or recorded is None or recorded == named.group(1):
+        return
+    relative = repo_relative(repo_root, path)
+    if DATE_COHERENCE_GRANDFATHERED.get(relative) == (named.group(1), recorded):
+        return
+    raise ValidationError(
+        f"quality record `{relative}` says `Date: {recorded}` but its filename is dated "
+        f"{named.group(1)}: a dated record was overwritten in place. Write the new review to its own "
+        f"dated path (`resolve_quality_artifact.py --intent record`) and restore the displaced record."
+    )
+
+
 def validate_surface_contract(lines: list[str]) -> None:
     try:
         _surface_contract.validate_surface_contract_section(lines)
@@ -499,6 +581,7 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
         _header,
         lambda: validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="quality artifact"),
         lambda: validate_date_line(lines),
+        lambda: validate_date_channel_coherence(path, lines, resolved_repo_root),
         lambda: validate_section_order(normalized_recommended_heading_lines(lines), REQUIRED_SECTIONS),
         lambda: validate_surface_contract(lines),
         lambda: validate_runtime_signals_section(lines),

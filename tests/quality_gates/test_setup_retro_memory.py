@@ -11,6 +11,14 @@ SEED_RETRO_MEMORY = load_script_module(
     "tests.quality_gates.setup_seed_retro_memory",
     ROOT / "skills/public/setup/scripts/seed_retro_memory.py",
 )
+# In-process on purpose: the exit-code half of the trigger probe's contract is proven in
+# tests/quality_gates/test_retro_auto_trigger.py, so joining the two seams here needs the
+# payload only — and a fresh subprocess call site would add a new boundary-bypass
+# candidate for a fact an import already establishes.
+CHECK_AUTO_TRIGGER = load_script_module(
+    "tests.quality_gates.retro_check_auto_trigger",
+    ROOT / "skills/public/retro/scripts/check_auto_trigger.py",
+)
 
 
 def test_setup_seed_retro_memory_writes_adapter_and_digest(tmp_path: Path) -> None:
@@ -26,11 +34,38 @@ def test_setup_seed_retro_memory_writes_adapter_and_digest(tmp_path: Path) -> No
     summary_text = (repo / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
     gitignore_text = (repo / ".gitignore").read_text(encoding="utf-8")
     assert "summary_path: charness-artifacts/retro/recent-lessons.md" in adapter_text
-    assert "auto_session_trigger_surfaces: []" in adapter_text
-    assert "auto_session_trigger_path_globs: []" in adapter_text
     assert "repo: repo" in adapter_text
+    # The two auto-retro trigger keys must be seeded COMMENTED, never as bare `[]`.
+    # `[]` reads as `explicit-empty` -> `intentional-empty` -> an opt-out the repo never
+    # chose, and `check_auto_trigger.py` then suppresses its own remediation for it. This
+    # asserts the seam both ways: the guidance is present, and no uncommented form of
+    # either key is.
+    assert "# auto_session_trigger_surfaces: []" in adapter_text
+    assert "# auto_session_trigger_path_globs: []" in adapter_text
+    for line in adapter_text.splitlines():
+        assert not line.startswith("auto_session_trigger_"), line
     assert "No durable retro summary yet." in summary_text
     assert ".charness/retro/" in gitignore_text
+
+
+def test_seeded_adapter_leaves_the_trigger_question_open_end_to_end(tmp_path: Path) -> None:
+    """The two mechanisms, joined. Asserting the seeded TEXT is not enough: the defect was
+    that setup's `[]` and the probe's reading of `[]` agreed on an opt-out nobody chose,
+    so the seam only holds if the seeded file actually drives the probe to
+    `not-established` instead of a `triggered: false` that reads as a judged answer."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    seed = run_loaded_script_main("seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo))
+    assert seed.returncode == 0, seed.stderr
+
+    payload = CHECK_AUTO_TRIGGER.build_payload(repo, paths=["README.md"])
+
+    assert payload["state"] == "not-established"
+    assert "triggered" not in payload
+    assert payload["configuration_status"] == "unset"
+    assert payload["field_state"]["auto_session_trigger_surfaces"] == "unset"
+    assert payload["field_state"]["auto_session_trigger_path_globs"] == "unset"
+    assert "intentional opt-out" in payload["remediation"]
 
 
 def test_setup_seed_retro_memory_preserves_existing_gitignore(tmp_path: Path) -> None:

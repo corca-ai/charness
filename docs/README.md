@@ -31,6 +31,9 @@ your question instead of opening four that mention it.
 - [Authoring preflight](./conventions/authoring-preflight.md) — how to learn a
   gated surface's constraints BEFORE authoring into it, rather than by failing one
   gate at a time.
+- [Parallel execution](./conventions/parallel-execution.md) — what the default
+  parallel shape covers, why host product names are examples rather than
+  contract, and the proof floor a fan-out never lowers.
 - [Validator timing layers](./conventions/validator-timing-layers.md) — why one
   portable validator runs at several cheap timings, and how to place a new one.
 - See [surface-driven adapter triggers](./conventions/surface-driven-adapter-triggers.md)

@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Repaired the #618-#624 cohort (a broken `charness init`, six wrong-rooted shell gates, probes that reported `false` for undetermined, an overwritten quality record, a retro scaffold its own validator rejected, a drift message naming a superseded probe) and wired the session-start half of the lesson lifecycle. (source: `charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md`)
 - The user corrected the claim that #614's lesson presentation was unproven. (source: `charness-artifacts/retro/2026-08-14-compaction-lesson-presentation-miss-retro.md`)
-- This session took the release-runner visibility owner the previous retro named as its `capability` next-improvement, and shipped it. (source: `charness-artifacts/retro/2026-08-14-monitored-execution-retro.md`)
 
 ## Repeat Traps
 
@@ -14,7 +14,7 @@
 
 ## Next-Time Checklist
 
-- **workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 6)
+- **workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 8)
 - **capability**: give long-running child execution one reusable `monitored_phase` path and reserve `atomic_capture` for short value-returning probes; start with release runners and skill A/B. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 5)
 - **memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 5)
 - **workflow**: run the broad deterministic gate before minting the final review binding whenever the cost is already required for closeout. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 4)
@@ -36,5 +36,6 @@
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
 - `charness-artifacts/retro/2026-08-13-session-retro.md`
 - `charness-artifacts/retro/2026-08-14-compaction-lesson-presentation-miss-retro.md`
+- `charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md`
 - `charness-artifacts/retro/2026-08-14-monitored-execution-retro.md`
 - `charness-artifacts/retro/2026-08-14-session-retro.md`

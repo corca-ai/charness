@@ -13,10 +13,15 @@ evidence_paths:
   - docs/development.md
 metrics_commands:
   - python3 scripts/check_lesson_evaluation_continuity.py --repo-root .
-artifact_sections:
-  - "## Lesson Evaluation"
-  - ""
-  - "Lesson evaluation: TODO replace with the exact Charness JSON form in docs/development.md#lesson-evaluation-disposition"
+# Deliberately empty. This declared `## Lesson Evaluation` with a `TODO replace
+# with the exact Charness JSON form in docs/development.md#...` line, which was
+# wrong twice: the scaffold owns that heading and emits it in a VALIDATING state,
+# so declaring it here produced the section twice and failed the scaffold's own
+# validator; and the anchor named `docs/development.md`, an authoring-repo doc the
+# plugin does not ship, so a consuming repo that copied this adapter was pointed at
+# a file it does not have. The grammar now lives in the refusal itself
+# (`scripts/lesson_evaluation_continuity_lib.grammar_summary`).
+artifact_sections: []
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces

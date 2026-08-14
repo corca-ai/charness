@@ -5,6 +5,7 @@ import json
 import subprocess
 from pathlib import Path
 
+import session_start_lesson_context as lesson_context
 import session_start_routing as hook
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -292,6 +293,206 @@ def test_read_payload_reports_oserror_in_debug_mode(monkeypatch, capsys) -> None
 
 def test_read_payload_empty_input_returns_empty_mapping() -> None:
     assert hook._read_payload(io.StringIO("  \n")) == {}
+
+
+# --- lesson block ---------------------------------------------------------
+#
+# The lesson block is appended to the SAME directive. These pin the two halves of
+# its contract: a repo that never opted in must get byte-identical routing text
+# (no new cost, no new failure), and a repo that DID opt in must never lose its
+# lesson list silently.
+
+
+def test_lesson_ledger_gate_constant_matches_the_context_module() -> None:
+    """The fallback gate copy exists only for a broken install; it must not drift.
+
+    `session_start_routing` re-spells the ledger path so that, if this hook ever
+    ships without its sibling module, an opted-OUT repo still hears nothing while
+    an opted-IN repo hears that its loop is broken. Two spellings of the gate would
+    make one of those two branches wrong.
+    """
+    assert hook.LESSON_LEDGER_RELATIVE == lesson_context.LEDGER_RELATIVE
+
+
+def test_directive_is_unchanged_for_a_repo_that_declared_no_lesson_evaluator(
+    tmp_path: Path,
+) -> None:
+    repo = _configured_handoff_repo(tmp_path)
+    (repo / "state").mkdir()
+    (repo / "state" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+
+    directive = hook.build_additional_context(str(repo), {"session_id": "host-1"})
+
+    assert "lesson loop" not in directive
+    assert directive.endswith("report the command failure.")
+
+
+def test_opted_in_repo_appends_the_lesson_block_to_the_routing_directive(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _configured_handoff_repo(tmp_path)
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        hook._lesson_context,
+        "build_lesson_context",
+        lambda root, payload: {"state": "evaluated", "text": f"LESSON BLOCK for {payload['session_id']}"},
+    )
+
+    directive = hook.build_additional_context(str(repo), {"session_id": "host-1"})
+
+    assert "charness catalog list" in directive
+    assert directive.endswith("\n\nLESSON BLOCK for host-1")
+
+
+def test_a_crashing_lesson_context_still_speaks_and_never_breaks_the_session(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _configured_handoff_repo(tmp_path)
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text("{}", encoding="utf-8")
+
+    def explode(*_args, **_kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(hook._lesson_context, "build_lesson_context", explode)
+
+    directive = hook.build_additional_context(str(repo), {"session_id": "host-1"})
+
+    assert "state: not-established" in directive
+    assert "RuntimeError" in directive
+
+
+def test_a_missing_context_module_is_loud_for_opted_in_and_silent_for_opted_out(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A packaging failure must not be paid for by repos that never opted in.
+
+    A hard import would instead crash this hook in EVERY session on the machine,
+    which is a far larger blast radius than the loop it protects.
+    """
+    monkeypatch.setattr(hook, "_lesson_context", None)
+
+    (tmp_path / "out").mkdir()
+    (tmp_path / "in").mkdir()
+    opted_out = _configured_handoff_repo(tmp_path / "out")
+    assert "lesson loop" not in hook.build_additional_context(str(opted_out), {})
+
+    opted_in = _configured_handoff_repo(tmp_path / "in")
+    (opted_in / "charness-artifacts" / "retro").mkdir(parents=True)
+    (opted_in / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text(
+        "{}", encoding="utf-8"
+    )
+    directive = hook.build_additional_context(str(opted_in), {})
+    assert "state: not-established" in directive
+    assert "session_start_lesson_context.py" in directive
+
+
+def test_a_corrupt_sibling_module_never_costs_the_routing_directive(tmp_path: Path) -> None:
+    """A TRUNCATED sibling file is the realistic packaging failure, and it is not
+    an `ImportError`.
+
+    A half-written `session_start_lesson_context.py` raises `SyntaxError` at
+    module import, which is outside `except ImportError` AND outside `main()`'s
+    own `except Exception` (module import runs first). Narrowly guarding the
+    import therefore loses the whole hook -- empty stdout, no routing directive --
+    in EVERY session on the machine, opted in or not, which is precisely the
+    "a missing optional host hook must not block session startup" line.
+
+    Run as a real subprocess against a real broken file: monkeypatching
+    `hook._lesson_context = None` cannot reach an import-time failure, which is
+    why the previous guard's mutation survived the suite.
+    """
+    install = tmp_path / "install" / "scripts"
+    install.mkdir(parents=True)
+    (install / "session_start_routing.py").write_text(
+        HOOK_SCRIPT.read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    (install / "session_start_lesson_context.py").write_text(
+        "def build_lesson_context(  # truncated mid-signature\n", encoding="utf-8"
+    )
+    (tmp_path / "repo").mkdir()
+    opted_in = _configured_handoff_repo(tmp_path / "repo")
+    (opted_in / "charness-artifacts" / "retro").mkdir(parents=True)
+    (opted_in / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text(
+        "{}", encoding="utf-8"
+    )
+
+    completed = subprocess.run(
+        ["python3", str(install / "session_start_routing.py"), "--host", "claude"],
+        input=json.dumps({"cwd": str(opted_in), "source": "startup"}),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    context = json.loads(completed.stdout)["hookSpecificOutput"]["additionalContext"]
+    # The routing half survives untouched...
+    assert "charness session-start routing" in context
+    # ...and the lesson half degrades to the same loud `not-established` a missing
+    # module produces, rather than to silence or to a dead hook.
+    assert "state: not-established" in context
+    assert "session_start_lesson_context.py" in context
+
+
+def test_a_corrupt_sibling_module_stays_silent_for_a_repo_that_never_opted_in(
+    tmp_path: Path,
+) -> None:
+    """The blast radius of a broken install must stop at repos that opted in."""
+    install = tmp_path / "install" / "scripts"
+    install.mkdir(parents=True)
+    (install / "session_start_routing.py").write_text(
+        HOOK_SCRIPT.read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    (install / "session_start_lesson_context.py").write_text("(", encoding="utf-8")
+    (tmp_path / "repo").mkdir()
+    opted_out = _configured_handoff_repo(tmp_path / "repo")
+
+    completed = subprocess.run(
+        ["python3", str(install / "session_start_routing.py"), "--host", "claude"],
+        input=json.dumps({"cwd": str(opted_out), "source": "startup"}),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    context = json.loads(completed.stdout)["hookSpecificOutput"]["additionalContext"]
+    assert "charness session-start routing" in context
+    assert "lesson" not in context.lower()
+
+
+def test_main_threads_the_host_payload_into_the_lesson_block(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """`main()` must hand the WHOLE payload down, not just its `cwd`.
+
+    The host `session_id` is what makes the suggested session id (and therefore
+    the selection seed) reproducible across the hook block, the declare command an
+    operator retypes, and the retro that cites it. Dropping it silently downgrades
+    every session to the repo+source digest fallback, and nothing else in the hook
+    would notice.
+    """
+    repo = _configured_handoff_repo(tmp_path)
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text(
+        "{}", encoding="utf-8"
+    )
+    seen: list[dict[str, object]] = []
+
+    def record(root, payload):
+        seen.append(payload)
+        return {"state": "evaluated", "text": "LESSON BLOCK"}
+
+    monkeypatch.setattr(hook._lesson_context, "build_lesson_context", record)
+    monkeypatch.setattr(
+        "sys.stdin", io.StringIO(json.dumps({"cwd": str(repo), "session_id": "host-42"}))
+    )
+
+    assert hook.main(["--host", "claude"]) == 0
+
+    assert seen and seen[0].get("session_id") == "host-42"
 
 
 def test_repo_root_discovery_and_configured_state_fail_closed_at_each_boundary(

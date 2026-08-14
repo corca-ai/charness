@@ -1081,7 +1081,7 @@ reopen trigger fires.
   what every bar in four profile blocks means and would need all of them re-derived; no
   *runtime budget* bar is currently red, so nothing forces that now. Regenerate that fact
   with `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .
-  --json` (2026-08-10 on `local-linux-x86_64-36cpu`: 28 budgets, `missing_samples: []`,
+  --detail` (2026-08-10 on `local-linux-x86_64-36cpu`: 28 budgets, `missing_samples: []`,
   `violations: []`, exit 0). Other quality gates may be red independently; this sentence
   is only about the budget bars.
 - Non-claims: the mismatch is **not** fixed. The bar still grades fan-out, and the
@@ -1143,3 +1143,77 @@ reopen trigger fires.
   skill, at which point force-applying this floor becomes satisfiable and the omission
   becomes real; or a released light-classification close that should have been reviewed
   and was not. Both are in-repo observable, unlike D53's.
+
+### D56. Should the Claude plugin manifest declare the SessionStart hook?
+
+- Question: the SessionStart routing hook (which now also presents the lesson-selection
+  list) is installed at USER level by `charness init` / `charness update`. A consumer who
+  installs charness ONLY through the Claude plugin marketplace, never running the CLI, gets
+  no hook and therefore no lesson presentation seam at all. Declaring `hooks` in
+  [plugin.json](../plugins/charness/.claude-plugin/plugin.json) would reach that
+  population. Should it?
+- Current choice: **Defer.** For every CLI-installed user the plugin-declared hook and the
+  user-settings hook would BOTH fire: two SessionStart entries, two preview subprocesses,
+  two copies of the injected block. Nothing dedups them — `settings_file_scan` /
+  `hook_state_liveness` in
+  [reconcile_usage_episodes_host_hooks.py](../scripts/reconcile_usage_episodes_host_hooks.py)
+  only inspect `~/.claude/settings.json` and `~/.codex/*`, never a plugin-declared hook.
+- Why now: this slice wired the lesson loop through the existing user-level hook and must
+  not smuggle a second install channel in beside it.
+- Non-claims: this is NOT a claim that the marketplace population is small, or that they
+  have another path. They do not — for them the loop is unwired, and that is stated in
+  [host-packaging.md](./host-packaging.md) rather than left implied.
+- Impact surfaces: [plugin.json](../plugins/charness/.claude-plugin/plugin.json),
+  [host_hook_session_routing.py](../scripts/host_hook_session_routing.py),
+  [reconcile_usage_episodes_host_hooks.py](../scripts/reconcile_usage_episodes_host_hooks.py).
+- Reopen trigger: a mutual-exclusion design (plugin hook self-suppresses when the
+  user-settings entry is present, or the installer stops writing user settings when the
+  plugin declares it) plus real-host readback on both hosts; or a marketplace-only consumer
+  reporting the missing loop.
+
+### D57. Should `build_lesson_selection_preview` take a prebuilt selection index?
+
+- Question: one preview costs 0.78 s in-process here (0.85 s as a subprocess), which is
+  ~4 full index rebuilds:
+  [lesson_selection_preview_lib.py](../scripts/lesson_selection_preview_lib.py) calls
+  `check_lesson_selection_index` (which rebuilds and also calls
+  `build_indexed_recent_lessons`), then `_load_validated_ledger` →
+  `validate_lesson_ledger` → `_candidate_sources` (another rebuild), then
+  `build_lesson_selection_index` again. Threading one prebuilt index through would remove
+  three of the four. Cost is linear in retro-artifact count (566 here), not ledger size.
+- Current choice: **Defer.** Correct optimization, wrong slice: it edits the surface that
+  produces the snapshot the ledger digests and the receipt attests, so it belongs with its
+  own proof-surface review rather than inside the wiring change that made the cost visible.
+- Why now: the SessionStart lesson block pays this cost once per session in every opted-in
+  repo, so it is now a user-visible latency rather than a helper's internal cost.
+- Non-claims: the measured 0.85 s is this repo's corpus. A consumer with a small retro
+  corpus pays far less, and a repo that never opted in pays one `is_file()`. This is not a
+  claim that the current cost is unacceptable.
+- Impact surfaces: [lesson_selection_preview_lib.py](../scripts/lesson_selection_preview_lib.py),
+  [recent_lessons_lib.py](../scripts/recent_lessons_lib.py),
+  [session_start_lesson_context.py](../scripts/session_start_lesson_context.py).
+- Reopen trigger: a measured session-start latency complaint, or a repo whose preview
+  exceeds `LESSON_PREVIEW_TIMEOUT_SECONDS` and starts reporting `not-established` on a
+  healthy loop.
+
+### D58. Should `missing-start` saturation fail the lesson-continuity gate?
+
+- Question: after this slice, `check_lesson_evaluation_continuity.py` can still report
+  `not-evaluated/missing-start=N; violations=0` on an opted-in repo — a GREEN verdict over
+  a loop nothing is using. That is the exact shape (`#622`) the slice set out to remove
+  everywhere else. Should 100% `missing-start` over the eligible cohort be a gate failure,
+  or an advisory, or neither?
+- Current choice: **Defer, but file it rather than leave it implied by the wiring.** The
+  wiring makes a non-`missing-start` disposition *reachable*; it does not establish what
+  rate is healthy, and a threshold picked without evidence would either fire on every repo
+  in its first week or never fire at all.
+- Why now: the wiring is exactly what makes the question answerable — before it, 100%
+  `missing-start` was the only possible state and failing on it would have been failing on
+  a capability that did not exist.
+- Non-claims: this is NOT a claim that the current green is correct. It is a green verdict
+  over an unused capability, stated as such.
+- Impact surfaces:
+  [check_lesson_evaluation_continuity.py](../scripts/check_lesson_evaluation_continuity.py),
+  [lesson_evaluation_continuity_lib.py](../scripts/lesson_evaluation_continuity_lib.py).
+- Reopen trigger: this repo accumulating a few weeks of dispositions under the wired loop,
+  so a rate is observable rather than guessed.

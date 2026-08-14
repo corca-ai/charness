@@ -299,7 +299,11 @@ def test_hook_parse_args_defaults_to_no_flags(monkeypatch) -> None:
 
 def test_hook_main_yaml_detail_output(monkeypatch, capsys) -> None:
     hook = _load_hook()
+    # `state` leads and `triggered` follows it, because the probe reports whether it
+    # RAN before it reports what it found (#622). A stub payload without `state` is
+    # not a shape this hook can emit, so pinning one here would pin a fiction.
     fake_payload = {
+        "state": "evaluated",
         "triggered": True,
         "changed_paths": ["scripts/reducer.py"],
         "probe": {"globs": ["scripts/*.py"], "surfaces": []},
@@ -314,6 +318,7 @@ def test_hook_main_yaml_detail_output(monkeypatch, capsys) -> None:
 def test_hook_main_plain_output(monkeypatch, capsys) -> None:
     hook = _load_hook()
     fake_payload = {
+        "state": "evaluated",
         "triggered": True,
         "changed_paths": ["scripts/reducer.py"],
         "probe": {"globs": ["scripts/*.py"], "surfaces": []},
@@ -323,7 +328,11 @@ def test_hook_main_plain_output(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py"])
     assert hook.main() == 0
     out = capsys.readouterr().out
-    assert out == "escalate this slice to a standalone critique\ntriggered: true\n"
+    # The plain path is the one a shell caller reads, and it is why #622 existed: it
+    # used to print `triggered: false` alone in all three worlds. `state` must be on
+    # it, not only in --detail, or the cheap channel still cannot tell "no" from
+    # "could not tell".
+    assert out == "escalate this slice to a standalone critique\nstate: evaluated\ntriggered: true\n"
 
 
 def test_hook_module_main_guard_executes(monkeypatch, capsys) -> None:
@@ -346,7 +355,12 @@ def test_hook_module_main_guard_executes(monkeypatch, capsys) -> None:
         )
     assert exc.value.code == 0
     out = capsys.readouterr().out
-    assert "no cross-surface probe hit" in out
+    # A judged miss now says so in words — "evaluated ... none matched" — instead of the
+    # old "no cross-surface probe hit (empty config or no match)", which folded an
+    # unconfigured probe and a judged miss into one sentence (#622).
+    assert "was evaluated over" in out
+    assert "none matched" in out
+    assert "state: evaluated" in out
     assert "triggered: false" in out
 
 

@@ -186,6 +186,23 @@ each verifier a distinct lens, not N identical refuters) applied to review-lens
 assignment. The lens names are a request like the reviewer tier, not a fixed
 taxonomy: pick the hazard classes the diff actually crosses.
 
+**Diversify the SOURCE, not only the hazard.** When a fan-out reviews a surface
+the repo has designed before, assign at least one reviewer the question *what has
+this repo already decided about this?* — pointed at the design record (specs,
+goals, deferred decisions, prior issues), not at the code. Hazard-diverse lenses
+all reading the same source share one blind spot: they can only find defects that
+are visible in the implementation.
+
+The incident behind this note: a parent spawned three reviewers over a subsystem,
+gave each a distinct and well-chosen hazard lens, and briefed all three to read
+`scripts/`, `skills/`, and `tests/`. They found real defects. None was asked what
+the repo intended, so none opened the 73 checked-in artifacts specifying that
+subsystem — including a completed contract whose *Deferred Decisions* section had
+already ruled on the exact question the parent then paid an agent to redesign. The
+parent's own audit greps had filtered the artifact directory out as noise, and a
+spec path that did surface in one grep was classified as a past artifact and never
+opened. Reviewer redundancy cannot catch that; a source axis can.
+
 ## Two Rounds For Verdict-Rendering Code
 
 A slice that changes what a **proof surface** decides — a gate, validator, or any

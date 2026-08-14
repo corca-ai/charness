@@ -30,10 +30,10 @@ def _event(**updates: object) -> dict[str, object]:
 
 def test_lifecycle_replay_rejects_closed_event_shapes(tmp_path: Path) -> None:
     (tmp_path / "decision.md").write_text("# Decision\n", encoding="utf-8")
-    assert ledger._canonical_markdown_ref(tmp_path, "") is False
+    assert ledger.canonical_markdown_ref(tmp_path, "") is False
     outside = tmp_path.parent / "outside.md"
     outside.write_text("# Outside\n", encoding="utf-8")
-    assert ledger._canonical_markdown_ref(tmp_path, "../outside.md") is False
+    assert ledger.canonical_markdown_ref(tmp_path, "../outside.md") is False
     cases = [
         ([], 49, "active_lesson_budget"),
         ([{}], 50, "unexpected or missing"),

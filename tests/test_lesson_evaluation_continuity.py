@@ -1,7 +1,20 @@
+"""The lesson-evaluation READ side: disposition grammar, reconciliation, gate CLI.
+
+What a retro artifact is allowed to CLAIM (the single `Lesson evaluation:` machine
+line and the validator that requires it), what the reconciler concludes when those
+claims are checked against the ledger's sessions, receipts and score events, and
+what the `check_lesson_evaluation_continuity` gate reports and exits with.
+
+The counterpart WRITE side -- `open_lesson_session` emitting preview bytes and the
+receipt/bundle that binds them -- lives in `test_lesson_session_emission.py`, which
+was split out of this module. That split is cohesive rather than a length-cap
+spill: nothing here calls `open_lesson_session`, and nothing there reads a retro
+artifact or builds a report. Invalid-input refusals across both halves live in
+`test_lesson_evaluation_contract_boundaries.py`.
+"""
+
 from __future__ import annotations
 
-import copy
-import io
 import json
 import runpy
 from datetime import date
@@ -11,7 +24,8 @@ import pytest
 
 from scripts import check_lesson_evaluation_continuity as checker
 from scripts import lesson_evaluation_continuity_lib as continuity
-from scripts import open_lesson_session, validate_retro_artifact
+from scripts import lesson_evaluation_records_lib as records
+from scripts import validate_retro_artifact
 
 
 def _disposition(**values: object) -> dict[str, object]:
@@ -118,203 +132,6 @@ def test_disposition_parser_allows_explanatory_prose_but_not_a_second_machine_li
         continuity.parse_disposition(
             f"## Lesson Evaluation\n\n{valid}\n\n## Context\n\n{valid}\n"
         )
-
-
-def test_receipt_binds_ledger_snapshot_renderer_bytes_and_integrity(tmp_path: Path) -> None:
-    stdout = "Lesson selection preview (1/1 eligible):\n- a — 안녕\n".encode()
-    snapshot = "a" * 64
-    receipt = continuity.build_receipt(
-        session_id="s-1",
-        snapshot_sha256=snapshot,
-        stdout_bytes=stdout,
-        emitted_at="2026-08-14T00:00:00Z",
-    )
-    continuity.write_bundle(continuity.bundle_path(tmp_path, "s-1"), stdout)
-    assert receipt["stdout_byte_count"] == len(stdout)
-    assert continuity.validate_receipt(
-        receipt, sessions={"s-1": {"snapshot_sha256": snapshot}}, output_dir=tmp_path
-    ) == receipt
-    assert continuity.load_session_bundle(
-        receipt, sessions={"s-1": {"snapshot_sha256": snapshot}}, output_dir=tmp_path
-    ) == stdout
-
-    for field, value in (("snapshot_sha256", "b" * 64), ("renderer_id", "changed"), ("stdout_byte_count", 1)):
-        tampered = copy.deepcopy(receipt)
-        tampered[field] = value
-        with pytest.raises(ValueError):
-            continuity.validate_receipt(
-                tampered,
-                sessions={"s-1": {"snapshot_sha256": snapshot}},
-                output_dir=tmp_path,
-            )
-
-
-def test_open_session_writes_exact_bytes_before_atomic_receipt(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    snapshot = "a" * 64
-    event = {"session_id": "s-1", "snapshot_sha256": snapshot}
-    preview = {
-        "eligible_count": 1,
-        "items": [{"lesson_id": "a", "lesson": "lesson text"}],
-    }
-    monkeypatch.setattr(
-        open_lesson_session._session,
-        "declare_session",
-        lambda **_kwargs: (event, preview),
-    )
-    stdout = io.BytesIO()
-    result = open_lesson_session.open_session(
-        repo_root=tmp_path,
-        session_id="s-1",
-        seed="seed",
-        stdout=stdout,
-        emitted_at="2026-08-14T00:00:00Z",
-    )
-    expected = continuity.render_preview_bytes(preview)
-    assert stdout.getvalue() == expected
-    bundle = tmp_path / result["bundle_path"]
-    assert bundle.read_bytes() == expected
-    path = tmp_path / result["receipt_path"]
-    assert path.is_file()
-    receipt = json.loads(path.read_text(encoding="utf-8"))
-    assert continuity.validate_receipt(
-        receipt,
-        sessions={"s-1": event},
-        output_dir=tmp_path / "charness-artifacts/retro",
-    ) == receipt
-
-
-def test_open_session_broken_stdout_never_writes_receipt(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    event = {"session_id": "s-1", "snapshot_sha256": "a" * 64}
-    preview = {"eligible_count": 0, "items": []}
-    monkeypatch.setattr(
-        open_lesson_session._session,
-        "declare_session",
-        lambda **_kwargs: (event, preview),
-    )
-
-    class Broken:
-        def write(self, _payload: bytes) -> None:
-            raise BrokenPipeError("closed")
-
-        def flush(self) -> None:
-            raise AssertionError("flush must not follow failed write")
-
-    with pytest.raises(BrokenPipeError):
-        open_lesson_session.open_session(
-            repo_root=tmp_path, session_id="s-1", seed="seed", stdout=Broken()
-        )
-    assert not continuity.receipt_path(
-        tmp_path / "charness-artifacts/retro", "s-1"
-    ).exists()
-    assert continuity.bundle_path(
-        tmp_path / "charness-artifacts/retro", "s-1"
-    ).is_file()
-
-
-def test_open_session_failed_flush_never_writes_receipt(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    event = {"session_id": "s-1", "snapshot_sha256": "a" * 64}
-    preview = {"eligible_count": 0, "items": []}
-    monkeypatch.setattr(
-        open_lesson_session._session,
-        "declare_session",
-        lambda **_kwargs: (event, preview),
-    )
-
-    class FlushFails(io.BytesIO):
-        def flush(self) -> None:
-            raise OSError("flush failed")
-
-    with pytest.raises(OSError, match="flush failed"):
-        open_lesson_session.open_session(
-            repo_root=tmp_path, session_id="s-1", seed="seed", stdout=FlushFails()
-        )
-    assert not continuity.receipt_path(
-        tmp_path / "charness-artifacts/retro", "s-1"
-    ).exists()
-    assert continuity.bundle_path(
-        tmp_path / "charness-artifacts/retro", "s-1"
-    ).is_file()
-
-
-def test_open_session_completes_short_writes_before_receipting(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    event = {"session_id": "s-1", "snapshot_sha256": "a" * 64}
-    preview = {"eligible_count": 1, "items": [{"lesson_id": "a", "lesson": "lesson"}]}
-    monkeypatch.setattr(
-        open_lesson_session._session,
-        "declare_session",
-        lambda **_kwargs: (event, preview),
-    )
-
-    class ShortWriter:
-        def __init__(self) -> None:
-            self.data = bytearray()
-
-        def write(self, payload: bytes) -> int:
-            amount = min(3, len(payload))
-            self.data.extend(payload[:amount])
-            return amount
-
-        def flush(self) -> None:
-            pass
-
-    stdout = ShortWriter()
-    open_lesson_session.open_session(
-        repo_root=tmp_path,
-        session_id="s-1",
-        seed="seed",
-        stdout=stdout,
-        emitted_at="2026-08-14T00:00:00Z",
-    )
-    assert bytes(stdout.data) == continuity.render_preview_bytes(preview)
-
-
-def test_open_session_rejects_unsafe_id_before_declaration(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    called = False
-
-    def declare(**_kwargs: object) -> None:
-        nonlocal called
-        called = True
-
-    monkeypatch.setattr(open_lesson_session._session, "declare_session", declare)
-    with pytest.raises(ValueError, match="path-safe"):
-        open_lesson_session.open_session(
-            repo_root=tmp_path,
-            session_id="../../bad",
-            seed="seed",
-            stdout=io.BytesIO(),
-        )
-    assert called is False
-    assert not (tmp_path / "charness-artifacts").exists()
-
-
-@pytest.mark.parametrize("kind", ["receipt", "bundle"])
-def test_atomic_replace_failure_leaves_no_output_or_temp(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, kind: str
-) -> None:
-    path = tmp_path / "receipts" / ("s-1.json" if kind == "receipt" else "s-1.md")
-    def replace_error(*_args: object) -> None:
-        raise OSError("replace failed")
-
-    monkeypatch.setattr(continuity.os, "replace", replace_error)
-
-    with pytest.raises(OSError, match="replace failed"):
-        if kind == "receipt":
-            continuity.write_receipt(path, _receipt())
-        else:
-            continuity.write_bundle(path, b"preview\n")
-
-    assert not path.exists()
-    assert not list(path.parent.glob(f".{path.name}.*"))
 
 
 def _receipt(session_id: str = "s-1", emitted_at: str = "2026-08-14T00:00:00Z") -> dict:
@@ -460,6 +277,73 @@ def test_pre_activation_and_same_day_receipts_are_not_unclaimed() -> None:
     assert report["ok"] is True
 
 
+def test_unclaimed_helper_window_excludes_pre_activation_claimed_and_future_receipts() -> None:
+    """The window rule the gate and the retro router now SHARE, pinned directly.
+
+    `before=as_of` is the gate's reading: a session declared today is owed a retro
+    tonight, not now. `before=None` is the router's: that same session is exactly
+    the work tonight's retro must do. One helper, two windows — a second spelling
+    is how a router silently skips the session its gate later fails the repo over.
+    """
+    receipts = {
+        "pre": _receipt("pre", "2026-08-13T12:00:00Z"),
+        "claimed": _receipt("claimed", "2026-08-14T12:00:00Z"),
+        "past": _receipt("past", "2026-08-14T12:00:00Z"),
+        "today": _receipt("today", "2026-08-15T12:00:00Z"),
+    }
+    references = {"claimed": ["charness-artifacts/retro/2026-08-14-a.md"]}
+
+    gate_view = continuity.unclaimed_receipted_sessions(
+        receipts=receipts, references=references, before=date(2026, 8, 15)
+    )
+    router_view = continuity.unclaimed_receipted_sessions(
+        receipts=receipts, references=references, before=None
+    )
+
+    assert gate_view == ["past"]
+    assert router_view == ["past", "today"]
+
+
+def test_reconcile_records_unclaimed_emissions_equal_the_shared_helper() -> None:
+    """`reconcile_records` must be a pure consumer of the helper, not a second rule."""
+    receipts = {
+        "pre": _receipt("pre", "2026-08-13T12:00:00Z"),
+        "claimed": _receipt("claimed", "2026-08-14T09:00:00Z"),
+        "past": _receipt("past", "2026-08-14T12:00:00Z"),
+        "today": _receipt("today", "2026-08-15T01:00:00Z"),
+    }
+    retros = [
+        (
+            "charness-artifacts/retro/2026-08-14-a.md",
+            {
+                "status": "not-evaluated",
+                "reason": "presentation-unproven",
+                "session_id": "claimed",
+                "score_event_count": 0,
+            },
+        )
+    ]
+    as_of = date(2026, 8, 15)
+    report = continuity.reconcile_records(
+        retros=retros,
+        sessions={key: {"snapshot_sha256": "a" * 64} for key in receipts},
+        score_events=[],
+        receipts=receipts,
+        receipt_violations=[],
+        as_of=as_of,
+    )
+
+    named = sorted(
+        item["session_id"] for item in report["violations"] if item["id"] == "unclaimed-emission"
+    )
+    assert named == continuity.unclaimed_receipted_sessions(
+        receipts=receipts,
+        references={"claimed": ["charness-artifacts/retro/2026-08-14-a.md"]},
+        before=as_of,
+    )
+    assert named == ["past"]
+
+
 def test_reconciler_names_duplicate_receiptless_score_and_unclaimed_emission() -> None:
     retros = [
         (
@@ -577,7 +461,7 @@ def test_reporter_on_disk_cohort_preserves_denominator_and_human_json_fields(
     path.parent.mkdir(parents=True)
     path.write_text(json.dumps(receipt), encoding="utf-8")
     _write_bundle(output)
-    monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
+    monkeypatch.setattr(records.ledger_lib, "validate_lesson_ledger", lambda **_kwargs: {})
 
     report = checker.build_report(tmp_path, as_of=date(2026, 8, 14))
     human = checker.render_human(report)
@@ -610,9 +494,11 @@ def test_reporter_skips_generated_digest_and_prepare_packet(
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
+    monkeypatch.setattr(records.ledger_lib, "validate_lesson_ledger", lambda **_kwargs: {})
+    # The retro scan lives in `lesson_evaluation_records_lib` now, shared with the
+    # retro run planner; patch it where the one implementation actually reads it.
     monkeypatch.setattr(
-        checker._packet,
+        records,
         "file_is_prepare_packet_markdown_kind",
         lambda path, **_kwargs: path == packet,
     )
@@ -636,7 +522,7 @@ def test_reporter_rejects_receipt_filename_session_mismatch(
     receipt_path = continuity.receipt_directory(output) / "wrong-name.json"
     receipt_path.parent.mkdir(parents=True)
     receipt_path.write_text(json.dumps(_receipt()), encoding="utf-8")
-    monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
+    monkeypatch.setattr(records.ledger_lib, "validate_lesson_ledger", lambda **_kwargs: {})
 
     report = checker.build_report(tmp_path, as_of=date(2026, 8, 15))
 
@@ -665,7 +551,7 @@ def test_reporter_names_missing_disposition_and_invalid_receipt(
     receipt_path = continuity.receipt_path(output, "s-1")
     receipt_path.parent.mkdir(parents=True)
     receipt_path.write_text("{}\n", encoding="utf-8")
-    monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
+    monkeypatch.setattr(records.ledger_lib, "validate_lesson_ledger", lambda **_kwargs: {})
 
     report = checker.build_report(tmp_path, as_of=date(2026, 8, 15))
 
@@ -758,7 +644,7 @@ def test_cli_json_snapshot_and_exit_status(
     receipt_path.parent.mkdir(parents=True)
     receipt_path.write_text(json.dumps(_receipt()), encoding="utf-8")
     _write_bundle(output)
-    monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
+    monkeypatch.setattr(records.ledger_lib, "validate_lesson_ledger", lambda **_kwargs: {})
     monkeypatch.setattr(
         checker.sys,
         "argv",
@@ -843,54 +729,3 @@ def test_reporter_script_entrypoint_returns_nonzero_for_missing_repo(
     with pytest.raises(SystemExit) as caught:
         runpy.run_path(str(Path(checker.__file__)), run_name="__main__")
     assert caught.value.code == 1
-
-
-def test_open_session_cli_main_delegates_arguments(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    seen: dict[str, object] = {}
-
-    def fake_open_session(**kwargs: object) -> dict[str, object]:
-        seen.update(kwargs)
-        return {}
-
-    monkeypatch.setattr(open_lesson_session, "open_session", fake_open_session)
-    monkeypatch.setattr(
-        open_lesson_session.sys,
-        "argv",
-        [
-            "open_lesson_session.py",
-            "--repo-root",
-            str(tmp_path),
-            "--session-id",
-            "s-1",
-            "--seed",
-            "seed",
-        ],
-    )
-    assert open_lesson_session.main() == 0
-    assert seen["repo_root"] == tmp_path.resolve()
-    assert seen["session_id"] == "s-1"
-    assert seen["seed"] == "seed"
-
-
-def test_open_session_script_entrypoint_reports_operational_error(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    monkeypatch.setattr(
-        open_lesson_session.sys,
-        "argv",
-        [
-            "open_lesson_session.py",
-            "--repo-root",
-            str(tmp_path),
-            "--session-id",
-            "s-1",
-            "--seed",
-            "seed",
-        ],
-    )
-    with pytest.raises(SystemExit) as caught:
-        runpy.run_path(str(Path(open_lesson_session.__file__)), run_name="__main__")
-    assert caught.value.code == 1
-    assert capsys.readouterr().err

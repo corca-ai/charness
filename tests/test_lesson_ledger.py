@@ -678,3 +678,153 @@ def test_two_concurrent_score_writers_preserve_both_events(tmp_path: Path) -> No
         "concurrent-b",
     }
     assert _validate(tmp_path)["score_event_count"] == 2
+
+
+def test_empty_ledger_bootstrap_is_valid_reachable_and_refuses_to_overwrite(tmp_path: Path) -> None:
+    """The opt-in that makes the lifecycle reachable, and its honest limit.
+
+    Every lifecycle entry point required this file to already exist and nothing
+    created it, so a repo that adopted charness after the ledger landed had the
+    reporting half of the loop and no path to the evaluating half. The bootstrap
+    is deliberately EMPTY: seeding transitions from the selection index would
+    commit append-only rows citing mutable retro files, which break unrepairably
+    when a retro is renamed or its tag edited away.
+    """
+    init = load_script_module("init_lesson_ledger_for_test", ROOT / "scripts/init_lesson_ledger.py")
+    output_dir = tmp_path / "charness-artifacts/retro"
+    summary_path = output_dir / "recent-lessons.md"
+
+    result = init.init_lesson_ledger(
+        repo_root=tmp_path, output_dir=output_dir, summary_path=summary_path
+    )
+
+    assert result == {
+        "lesson_count": 0,
+        "transition_count": 0,
+        "score_event_count": 0,
+        "lifecycle_event_count": 0,
+        "active_lesson_count": 0,
+        "path": "charness-artifacts/retro/lesson-ledger.json",
+    }
+    assert _validate(tmp_path)["lesson_count"] == 0
+    payload = json.loads((output_dir / "lesson-ledger.json").read_text(encoding="utf-8"))
+    assert set(payload) == ledger.TOP_LEVEL_KEYS
+    assert payload["schema_version"] == ledger.SCHEMA_VERSION
+    assert payload["active_lesson_budget"] == ledger.ACTIVE_LESSON_BUDGET
+
+    with pytest.raises(FileExistsError, match="append-only"):
+        init.init_lesson_ledger(
+            repo_root=tmp_path, output_dir=output_dir, summary_path=summary_path
+        )
+
+
+def test_empty_ledger_bootstrap_refuses_to_wipe_a_committed_ledger(tmp_path: Path) -> None:
+    """A committed ledger absent from the worktree is not an uninitialized repo.
+
+    `not path.exists()` alone would have written an empty file over a ledger whose
+    committed transitions, scores and lifecycle decisions are append-only and
+    globally unique forever. Validating BEFORE the write is what catches it.
+    """
+    init = load_script_module("init_lesson_ledger_wipe_test", ROOT / "scripts/init_lesson_ledger.py")
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path)
+    _git(tmp_path, "init")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    path.unlink()
+
+    with pytest.raises(ValueError, match="committed transitions were rewritten"):
+        init.init_lesson_ledger(
+            repo_root=tmp_path,
+            output_dir=tmp_path / "charness-artifacts/retro",
+            summary_path=tmp_path / "charness-artifacts/retro/recent-lessons.md",
+        )
+    assert not path.exists()
+
+
+def test_ledger_refusals_name_the_key_set_or_next_step_they_demand(tmp_path: Path) -> None:
+    """A hand-seeder's first errors used to state a requirement without its values.
+
+    The reporter who hand-authored a ledger guessed a `legacy_score_event_count`
+    key and the wrong schema version, because no refusal ever named the accepted
+    set. Each constant is defined in the same module as its check and was never
+    rendered.
+    """
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path)
+    cases: list[tuple[dict, list[str]]] = []
+
+    unknown_top_level = _payload()
+    unknown_top_level["legacy_score_event_count"] = 0
+    cases.append((unknown_top_level, sorted(ledger.TOP_LEVEL_KEYS)))
+
+    broken_transition = _payload()
+    broken_transition["transitions"] = [{"sequence": 1, "transition_id": "seed-a"}]
+    cases.append((broken_transition, sorted(ledger.TRANSITION_KEYS)))
+
+    broken_lifecycle = _payload()
+    broken_lifecycle["lifecycle_events"] = [{"sequence": 1, "event_id": "e-1"}]
+    cases.append((broken_lifecycle, sorted(ledger.LIFECYCLE_EVENT_KEYS)))
+
+    broken_session = _payload(session_events=[{"session_id": "s-1"}])
+    cases.append((broken_session, sorted(ledger.SESSION_EVENT_KEYS)))
+
+    broken_snapshot = _payload(session_events=[_session_event()])
+    del broken_snapshot["session_events"][0]["snapshot"]["seed"]
+    cases.append((broken_snapshot, sorted(ledger.SNAPSHOT_KEYS)))
+
+    broken_buckets = _payload(session_events=[_session_event()])
+    del broken_buckets["session_events"][0]["snapshot"]["bucket_counts"]["archive"]
+    cases.append((broken_buckets, sorted(ledger.SNAPSHOT_BUCKET_KEYS)))
+
+    broken_score = _payload(
+        session_events=[_session_event()],
+        score_events=[{"event_id": "score-a", "lesson_id": "a", "score": 0}],
+    )
+    cases.append((broken_score, sorted(ledger.SCORE_EVENT_REQUIRED_KEYS)))
+
+    empty_selection = _payload(session_events=[_session_event()])
+    empty_selection["session_events"][0]["snapshot"]["lesson_ids"] = []
+    cases.append((empty_selection, ["recurrence-class:", "init_lesson_ledger.py"]))
+
+    # Written raw, not through `_materialize`: every case above fails its own
+    # shape check long before the lessons-equal-replay comparison, and the helper
+    # cannot walk events that are malformed on purpose.
+    for payload, expected in cases:
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(ValueError) as excinfo:
+            _validate(tmp_path)
+        for token in expected:
+            assert token in str(excinfo.value), (token, str(excinfo.value))
+
+    projection = _payload()
+    projection["lessons"]["a"]["score_total"] = 0.0
+    path.write_text(json.dumps(projection), encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        _validate(tmp_path)
+    for token in sorted(ledger.LESSON_KEYS):
+        assert token in str(excinfo.value)
+
+
+def test_lifecycle_refusal_enumerates_the_only_legal_moves(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path)
+    payload = _payload()
+    payload["lifecycle_events"] = [
+        {
+            "sequence": 1,
+            "event_id": "life-1",
+            "lesson_id": "a",
+            "action": "resurrect",
+            "decision_ref": "charness-artifacts/retro/source.md",
+            "rationale": "wrong move for an active lesson",
+        }
+    ]
+    path.write_text(json.dumps(_materialize(payload)), encoding="utf-8")
+
+    with pytest.raises(ValueError) as excinfo:
+        _validate(tmp_path)
+
+    message = str(excinfo.value)
+    assert "archive a lesson in state `active`" in message
+    assert "resurrect a lesson in state `archived`" in message

@@ -82,18 +82,30 @@ verification preferences or `truth_surfaces`.
      docs/spec synchronization; the
      [boundary ownership brief](../../shared/references/boundary-ownership-brief.md)
      owns the producer/consumer questions and the disposition this closeout records
-   - run `$SKILL_DIR/scripts/check_boundary_escalation.py --repo-root . --detail`; if
-     it reports `triggered: true`, the changed paths matched the repo's cross-surface
-     probe — escalate this slice to a standalone `critique`, and validate that durable
-     artifact with the critique validator's `--changed-ref <base>` so the cross-surface
-     `single-surface` rejection actually fires (the objective probe overrides a
-     self-assessed small slice; presence-only validation would let it through)
+   - run `$SKILL_DIR/scripts/check_boundary_escalation.py --repo-root . --detail`; read
+     `state` first, never `triggered` alone
+   - `state: evaluated` + `triggered: true` — the changed paths matched the repo's
+     cross-surface probe: escalate this slice to a standalone `critique`, and validate
+     that durable artifact with the critique validator's `--changed-ref <base>` so the
+     cross-surface `single-surface` rejection actually fires (the objective probe
+     overrides a self-assessed small slice; presence-only validation would let it through)
+   - `state: not-established` (exit 3, and no `triggered` key) — the probe is configured
+     but could not run, so this is NOT a `no`: fix the cause it names, or re-run with
+     `--changed-path`/`--changed-ref` naming the slice, then decide; if it still cannot
+     be established, escalate to a standalone `critique` and record the unestablished
+     probe rather than closing on a verdict the probe never gave
+   - `state: not-configured` — no cross-surface probe in this repo, so the objective
+     override is off by design and the always-brief + presence floors carry the slice
 4. End with execution status.
    - what changed, what was verified, what truth surfaces moved, what the
      critique found, what contract updates were made, and what remains for the
      next slice
-   - if `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` reports `triggered: true`
-     for the current repo, run a short `session` retro before the final stop
+   - run `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` for the current repo and
+     read `state` first: on `evaluated` + `triggered: true`, run a short `session` retro
+     before the final stop; on any nonzero exit (`not-established` — no adapter, unset
+     trigger keys, an adapter the loader could not fully read, an empty changed set, or a
+     typo'd surface id) the probe gave no answer, so decide the retro yourself and say
+     which you chose instead of treating the missing `triggered` key as a skip
    - if the user explicitly asked to keep going, treat this as a terse progress
      checkpoint and continue into the next locally decidable slice
    - keep evidence compact: exact command or input identity → outcome → measured

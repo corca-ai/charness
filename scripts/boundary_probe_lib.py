@@ -26,6 +26,22 @@ _critique_adapter_lib = import_repo_module(__file__, "scripts.critique_adapter_l
 BOUNDARY_GLOBS_KEY = "boundary_cross_surface_globs"
 BOUNDARY_SURFACES_KEY = "boundary_cross_surface_surfaces"
 
+# The probe's typed outcome vocabulary (#622). Deliberately the SAME three words
+# `scripts/critique_enforcement_scope.py` already uses for `CrossSurfaceScope` and the
+# release real-host probe uses for `evaluation_scope` (D7) -- a fourth private spelling
+# of "we could not tell" is how the concept drifts back apart.
+#
+# It lives HERE, under the wrapper, because the wrapper alone could not close the hole:
+# `resolve_cross_surface_scope` typed the states it could see from OUTSIDE the probe (no
+# config, no changed scope) and then delegated the rest to `cross_surface_hit`, which
+# returned a bare `False` when `.agents/surfaces.json` was absent. A repo that configured
+# `boundary_cross_surface_surfaces` and had no manifest therefore resolved to
+# `evaluated (no match)` -- a positive claim that the probe ran -- and silently disarmed
+# the #408 5b tooth in `validate-critique-artifacts`, not just in `prove`.
+PROBE_EVALUATED = "evaluated"
+PROBE_NOT_CONFIGURED = "not-configured"
+PROBE_NOT_ESTABLISHED = "not-established"
+
 
 def probe_config_from_adapter(adapter_data: dict) -> dict[str, list[str]]:
     """Extract the (globs, surfaces) probe config from an adapter's data dict,
@@ -40,6 +56,100 @@ def probe_config_from_adapter(adapter_data: dict) -> dict[str, list[str]]:
     }
 
 
+def cross_surface_probe_state(
+    repo_root: Path,
+    changed_paths: list[str],
+    *,
+    surfaces: list[str] | None = None,
+    globs: list[str] | None = None,
+) -> dict[str, object]:
+    """Run the probe and report WHICH QUESTION it managed to answer, not just the answer.
+
+    Returns ``{"state", "hit", "scanned_paths", "undetermined_reasons",
+    "unresolved_surfaces"}`` where ``state`` is one of ``evaluated`` /
+    ``not-configured`` / ``not-established``, and ``hit`` is a verdict ONLY under
+    ``evaluated``.
+
+    Three conditions used to collapse into the same bare ``False`` this function
+    replaces (#622):
+
+    - no config at all -- the opt-in design (spec DBD-4); genuinely "no override",
+      not "could not tell", so it stays exit-0 for callers and keeps ``hit: False``;
+    - a configured surface id with NO ``.agents/surfaces.json`` on disk -- the probe
+      could not resolve a single id, so it compared nothing;
+    - a configured surface id that is not declared in the manifest (a typo) -- the
+      old docstring said unknown ids "simply cannot match" and deferred to the adapter
+      validator, which means a typo and a genuine miss printed the same word.
+
+    A HIT SHORT-CIRCUITS TO ``evaluated`` even when another part of the config is
+    unresolvable, and that asymmetry is deliberate: the positive is established by the
+    path that matched, and downgrading it would DISARM the #408 override (a glob hit
+    beside a typo'd surface id used to reject a bare ``single-surface`` verdict, and
+    must keep doing so). Only the negative can be undetermined.
+
+    A malformed manifest still raises ``SurfaceError`` out of ``load_surfaces`` rather
+    than becoming ``not-established``: that path is already loud, and softening it to a
+    typed state would turn a hard failure of `validate-critique-artifacts` into an
+    ``overrides: False`` that quietly stops gating.
+    """
+    surfaces = list(surfaces or [])
+    globs = list(globs or [])
+    scanned = len(changed_paths)
+    if not surfaces and not globs:
+        return _probe_state(PROBE_NOT_CONFIGURED, False, scanned)
+    if globs and any(_surfaces_lib.path_matches_patterns(path, globs) for path in changed_paths):
+        return _probe_state(PROBE_EVALUATED, True, scanned)
+    undetermined: list[str] = []
+    unresolved: list[str] = []
+    if not changed_paths:
+        undetermined.append(
+            "the probe is configured but was handed zero changed paths, so nothing was compared against it"
+        )
+    if surfaces:
+        manifest = _surfaces_lib.load_surfaces(repo_root, required=False)
+        if manifest is None:
+            undetermined.append(
+                "`boundary_cross_surface_surfaces` is configured but `.agents/surfaces.json` is absent, "
+                "so no configured surface id could be resolved"
+            )
+        else:
+            resolved = _surfaces_lib.resolve_trigger_surfaces(manifest, surfaces)
+            declared = set(resolved["declared"])
+            matched_ids = {
+                surface["surface_id"]
+                for surface in _surfaces_lib.match_surfaces(manifest, changed_paths)["matched_surfaces"]
+            }
+            if matched_ids & declared:
+                return _probe_state(PROBE_EVALUATED, True, scanned)
+            unresolved = list(resolved["unresolved"])
+            if unresolved:
+                undetermined.append(
+                    "`boundary_cross_surface_surfaces` references surface ids that are not declared in "
+                    f"{manifest['path']}: {', '.join(unresolved)}"
+                )
+    if undetermined:
+        return _probe_state(PROBE_NOT_ESTABLISHED, False, scanned, undetermined, unresolved)
+    return _probe_state(PROBE_EVALUATED, False, scanned)
+
+
+def _probe_state(
+    state: str,
+    hit: bool,
+    scanned_paths: int,
+    undetermined_reasons: list[str] | None = None,
+    unresolved_surfaces: list[str] | None = None,
+) -> dict[str, object]:
+    """Every return of `cross_surface_probe_state`, built once, so no branch can omit a
+    key a consumer branches on."""
+    return {
+        "state": state,
+        "hit": hit,
+        "scanned_paths": scanned_paths,
+        "undetermined_reasons": list(undetermined_reasons or []),
+        "unresolved_surfaces": list(unresolved_surfaces or []),
+    }
+
+
 def cross_surface_hit(
     repo_root: Path,
     changed_paths: list[str],
@@ -47,27 +157,14 @@ def cross_surface_hit(
     surfaces: list[str] | None = None,
     globs: list[str] | None = None,
 ) -> bool:
-    """True iff any changed path matches a configured cross-surface glob OR is a
-    source/derived path of a configured surface id. Empty config -> always False
-    (opt-in). Unknown surface ids are ignored (they resolve to ``unresolved`` and
-    simply cannot match); the adapter validator is where a typo surfaces."""
-    surfaces = list(surfaces or [])
-    globs = list(globs or [])
-    if not surfaces and not globs:
-        return False
-    if globs and any(_surfaces_lib.path_matches_patterns(path, globs) for path in changed_paths):
-        return True
-    if surfaces:
-        manifest = _surfaces_lib.load_surfaces(repo_root, required=False)
-        if manifest is not None:
-            declared = set(_surfaces_lib.resolve_trigger_surfaces(manifest, surfaces)["declared"])
-            matched_ids = {
-                surface["surface_id"]
-                for surface in _surfaces_lib.match_surfaces(manifest, changed_paths)["matched_surfaces"]
-            }
-            if matched_ids & declared:
-                return True
-    return False
+    """True iff the probe EVALUATED and matched. Kept as the positive-only shorthand for
+    callers that only act on a hit (the #408 severity upgrade, and the per-path witness
+    search that explains one). Anything that renders or exits on the NEGATIVE must call
+    `cross_surface_probe_state` instead: `False` here still cannot distinguish "no match"
+    from "could not tell" -- it just no longer has to, because the typed answer exists."""
+    return bool(
+        cross_surface_probe_state(repo_root, changed_paths, surfaces=surfaces, globs=globs)["hit"]
+    )
 
 
 def resolve_changed_paths(
@@ -106,6 +203,27 @@ def resolve_changed_paths(
     )
 
 
+def resolve_probe_state(
+    repo_root: Path,
+    *,
+    changed_path: list[str] | None = None,
+    changed_ref: str | None = None,
+    include_worktree: bool = False,
+) -> tuple[dict[str, object], list[str], dict[str, list[str]]]:
+    """Resolve the changed paths, read the critique adapter's probe config, and return
+    ``(probe_state, changed_paths, probe_config)``. The one home both the critique
+    validator's severity upgrade and the impl stop-gate hook call, so the
+    resolve-and-probe logic lives in a single place."""
+    changed = resolve_changed_paths(
+        repo_root, changed_path, changed_ref, include_worktree=include_worktree
+    )
+    probe = probe_config_from_adapter(_critique_adapter_lib.load_adapter(repo_root)["data"])
+    state = cross_surface_probe_state(
+        repo_root, changed, surfaces=probe["surfaces"], globs=probe["globs"]
+    )
+    return state, changed, probe
+
+
 def resolve_hit(
     repo_root: Path,
     *,
@@ -113,13 +231,14 @@ def resolve_hit(
     changed_ref: str | None = None,
     include_worktree: bool = False,
 ) -> tuple[bool, list[str], dict[str, list[str]]]:
-    """Resolve the changed paths, read the critique adapter's probe config, and
-    return ``(triggered, changed_paths, probe_config)``. The one home both the
-    critique validator's severity upgrade and the impl stop-gate hook call so the
-    resolve-and-probe logic lives in a single place."""
-    changed = resolve_changed_paths(
-        repo_root, changed_path, changed_ref, include_worktree=include_worktree
+    """`resolve_probe_state` with the state flattened back to ``(triggered, ...)``.
+
+    Kept for callers that already type the surrounding states themselves. Same warning as
+    `cross_surface_hit`: the `False` this returns is not a verdict on its own."""
+    state, changed, probe = resolve_probe_state(
+        repo_root,
+        changed_path=changed_path,
+        changed_ref=changed_ref,
+        include_worktree=include_worktree,
     )
-    probe = probe_config_from_adapter(_critique_adapter_lib.load_adapter(repo_root)["data"])
-    triggered = cross_surface_hit(repo_root, changed, surfaces=probe["surfaces"], globs=probe["globs"])
-    return triggered, changed, probe
+    return bool(state["hit"]), changed, probe
