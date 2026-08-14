@@ -273,8 +273,36 @@ def test_opted_in_repo_with_no_seeded_lesson_says_so_and_names_the_next_step(
     assert context["state"] == lesson_context.STATE_EVALUATED
     assert context["eligible_lessons_present"] is False
     assert "0 eligible lessons" in context["text"]
-    assert lesson_context.SEED_LESSON_NEXT_STEP in context["text"]
+    assert lesson_context.seed_lesson_next_step(repo) in context["text"]
     assert "recurrence-class:" in context["text"]
+
+
+def test_the_seed_next_step_names_a_command_the_reading_repo_actually_has(
+    tmp_path: Path,
+) -> None:
+    """A consuming repo has no `scripts/`, so a bare `scripts/...` is unrunnable there.
+
+    This is the #624 class ("instructs an action the reader cannot perform") as it
+    reappeared inside the #625 fix: the sentence shipped as a constant naming one
+    spelling, and its whole audience is a repo that just opted in -- which, for a
+    consumer, is a repo with no `scripts/` at all.
+    """
+    consumer = _opted_in_empty_repo(tmp_path)
+
+    step = lesson_context.seed_lesson_next_step(consumer)
+
+    commands = [part for part in step.split("`") if part.startswith("python3 ")]
+    assert commands, f"next step names no runnable command: {step}"
+    for command in commands:
+        named = Path(command.split()[1])
+        # Resolved against the READING repo, which is what the sentence addresses.
+        # `Path(named).is_file()` alone would not do it: a bare
+        # `scripts/seed_lesson_transitions.py` is cwd-relative, so it is TRUE whenever
+        # the suite runs from the authoring repo root -- meaning that assertion would
+        # have PASSED on the exact defect this test is named after. A round-2 review
+        # caught that; the assertion now demands a path the consumer can actually reach.
+        assert named.is_absolute(), f"next step names {named}, relative to the reader's cwd"
+        assert named.is_file(), f"next step names {named}, which does not exist"
 
 
 def test_stale_or_missing_selection_index_is_not_established_and_still_speaks(

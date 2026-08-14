@@ -218,6 +218,15 @@ def validate_adapter_data(
             continue
         if isinstance(raw_list, list) and all(isinstance(item, str) for item in raw_list):
             validated[key] = list(raw_list)
+        elif raw_list == {}:
+            # `key:` with nothing under it. The parser renders that as an empty mapping,
+            # and it is how an author writes "declared, and deliberately empty" -- the
+            # same EXPLICIT-EMPTY declaration the sibling auto-retro probe already
+            # honours as a real opt-out rather than a malformation. It was being
+            # recorded as an error, which nothing noticed because the boundary probe
+            # discarded `errors` entirely; the moment that discard was fixed, every repo
+            # that had opted out this way would have started refusing instead.
+            validated[key] = []
         else:
             errors.append(f"{key} must be a list of strings")
 

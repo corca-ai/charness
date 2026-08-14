@@ -401,6 +401,31 @@ def uninterpreted_warnings(uninterpreted: list[dict[str, Any]]) -> list[str]:
     ]
 
 
+UNINTERPRETED_WARNING_MARKER = " was not interpreted ("
+
+
+def unreadable_reasons(adapter: dict[str, Any]) -> list[str]:
+    """The loader's own complaints that make ANY verdict from this adapter unsafe.
+
+    A refused parse, plus every line the parser silently DROPPED -- a dropped line is
+    exactly where the key a probe reads would have been, and `uninterpreted_warnings`
+    above says so in its own text ("Any field it meant to set is serving an inferred
+    default instead"). So a half-read adapter can establish neither a `no` nor an
+    opt-out; only `not-established` is honest.
+
+    Lives beside the producer of both facts because a consumer that re-derives this
+    grows a second, drifting copy of the loader's verdict. Other warnings are NOT
+    reasons: "no adapter found" is the opt-in design, not a failure to read one.
+    """
+    reasons = [str(error) for error in (adapter.get("errors") or [])]
+    reasons += [
+        str(warning)
+        for warning in (adapter.get("warnings") or [])
+        if UNINTERPRETED_WARNING_MARKER in str(warning)
+    ]
+    return reasons
+
+
 def parse_failure_error(exc: Exception) -> str:
     """The message for a construct the parser refuses outright, as opposed to one it
     silently drops. A refusal is not a drop and must not read like one."""

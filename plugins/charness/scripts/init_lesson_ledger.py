@@ -42,12 +42,16 @@ _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
 _writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
 # One sentence, one owner. The SessionStart lesson block prints this same next
 # step when a repo has opted in but the preview selects 0 lessons, and that block
-# runs inside a host hook, so the constant lives in the stdlib-only module and is
+# runs inside a host hook, so the sentence is BUILT by the stdlib-only module and
 # imported HERE rather than the reverse. Two hand-written copies is how a repo
 # ends up being told two different next steps for the identical state.
 _hook_context = import_repo_module(__file__, "scripts.session_start_lesson_context")
+_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
 
-NEXT_STEP = _hook_context.SEED_LESSON_NEXT_STEP
+# A function called per repo root, not a constant bound once at import: the seeder's
+# runnable spelling differs between this source tree and an installed plugin inside a
+# consuming repo, and a consuming repo is exactly who reads this sentence.
+next_step = _hook_context.seed_lesson_next_step
 
 
 def empty_ledger_payload() -> dict[str, Any]:
@@ -75,10 +79,14 @@ def init_lesson_ledger(*, repo_root: Path, output_dir: Path, summary_path: Path)
     # in its ids forever, so replacing one with an empty file is not a reset, it is
     # the destruction of every score and lifecycle decision the repo ever recorded.
     if path.exists() or path.is_symlink():
+        # Resolved, not spelled. This refusal fires when a repo runs the opt-in twice --
+        # a bootstrap moment whose audience is the same freshly-opted-in consumer as the
+        # next-step sentence below, and a consuming repo has no `scripts/` to run.
         raise FileExistsError(
             f"lesson ledger already exists at `{path.relative_to(repo_root)}`; it is append-only, "
             "so this refuses to overwrite it. Validate it with "
-            "`python3 scripts/check_lesson_ledger.py --repo-root .` instead."
+            f"`{_records.repo_or_installed_command(repo_root, 'check_lesson_ledger.py', '--repo-root', '.')}`"
+            " instead."
         )
     payload = empty_ledger_payload()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -115,14 +123,15 @@ def main() -> int:
         output_dir=root / "charness-artifacts/retro",
         summary_path=root / "charness-artifacts/retro/recent-lessons.md",
     )
+    step = next_step(root)
     if args.json:
-        print(json.dumps({**result, "next_step": NEXT_STEP}, ensure_ascii=False, sort_keys=True))
+        print(json.dumps({**result, "next_step": step}, ensure_ascii=False, sort_keys=True))
         return 0
     print(
         f"Created empty lesson ledger `{result['path']}`: "
         f"{result['lesson_count']} lessons, {result['transition_count']} seed transitions."
     )
-    print(NEXT_STEP)
+    print(step)
     return 0
 
 

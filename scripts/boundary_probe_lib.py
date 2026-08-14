@@ -12,7 +12,10 @@ touches a cross-surface path. Both consumers share this one core:
 The taxonomy (which paths are cross-surface) stays repo-owned via the adapter;
 this portable core never names a surface itself. An empty config never hits, so
 the probe is opt-in and a repo that configures nothing keeps the always-brief +
-presence-floor without the objective override (spec DBD-4)."""
+presence-floor without the objective override (spec DBD-4) -- provided its
+adapter READ. A repo whose adapter the loader refused gets ``not-established``
+rather than that opt-in silence, because an unread adapter cannot declare an
+opt-out any more than it can declare a probe."""
 
 from __future__ import annotations
 
@@ -22,6 +25,7 @@ from runtime_bootstrap import import_repo_module
 
 _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
 _critique_adapter_lib = import_repo_module(__file__, "scripts.critique_adapter_lib")
+_adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 
 BOUNDARY_GLOBS_KEY = "boundary_cross_surface_globs"
 BOUNDARY_SURFACES_KEY = "boundary_cross_surface_surfaces"
@@ -217,10 +221,63 @@ def resolve_probe_state(
     changed = resolve_changed_paths(
         repo_root, changed_path, changed_ref, include_worktree=include_worktree
     )
-    probe = probe_config_from_adapter(_critique_adapter_lib.load_adapter(repo_root)["data"])
+    adapter = _critique_adapter_lib.load_adapter(repo_root)
+    probe = probe_config_from_adapter(adapter["data"])
     state = cross_surface_probe_state(
         repo_root, changed, surfaces=probe["surfaces"], globs=probe["globs"]
     )
+    # The loader's `errors`/`warnings` used to be dropped on the floor here, so a
+    # critique adapter that FAILED TO PARSE -- or whose `boundary_cross_surface_globs`
+    # was a string instead of a list, which `validate_adapter_data` records as an error
+    # -- produced empty probe config, then `not-configured`, then exit 0 with
+    # `triggered: false`. That is the #622 defect ("errored probes fail toward silence")
+    # in the probe #622 also named: a verdict-shaped "do nothing" over a broken config.
+    #
+    # A HIT still wins, preserving this module's documented asymmetry: the positive is
+    # established by the path that matched, and downgrading it would disarm the #408
+    # override. Only a negative or an opt-out can be undetermined.
+    #
+    # Keyed on `hit`, NOT on `state != PROBE_EVALUATED`. The state spelling looks
+    # equivalent and is not: the two probe keys validate INDEPENDENTLY, so an adapter
+    # the loader refused can still yield usable globs, and a change that simply does
+    # not match them lands on `evaluated`/`hit=False`. A state-keyed guard exempts that
+    # negative and re-ships the very defect this block exists to remove, narrowed from
+    # "no config" to "partially-valid config". A round-2 bounded review caught it here
+    # after round 1 caught the original; the retro sibling keys on the hit for the same
+    # reason (`check_auto_trigger` establishes on `triggered or not undetermined`).
+    #
+    # Measured 2026-08-14, so the next reader does not assume more cover than exists:
+    # of `unreadable_reasons`' two sources, only ERRORS can fire at THIS call site.
+    # `load_adapter` reads through `load_yaml_file`, not `load_yaml_file_report`, so it
+    # never produces an uninterpreted-line warning. The warnings arm stays in the shared
+    # helper because it IS live for the retro adapter, whose loader uses the report
+    # variant -- the two callers are not equally armed, and that is a fact about the
+    # loaders, not about the rule. THREE gaps remain, all pre-existing and NOT closed
+    # here: an unsupported scalar (`&anchor`) still RAISES out of `load_adapter` rather
+    # than becoming a typed state; a key the parser silently DROPS is invisible to this
+    # loader entirely; and a MISSPELLED key name (`boundary_cross_surface_glob:`) is
+    # neither an error nor a drop, because the validator has no unknown-key detection --
+    # it passes through to empty config and `not-configured`. That last one is the most
+    # likely operator typo and the least covered.
+    unreadable = _adapter_lib.unreadable_reasons(adapter)
+    if unreadable and not state["hit"]:
+        state = _probe_state(
+            PROBE_NOT_ESTABLISHED,
+            False,
+            len(changed),
+            # EXTENDED, not replaced. A rebuilt state drops the reasons the probe had
+            # already established -- an unresolved surface id is the actionable half of
+            # a repo that also has an adapter error, and rebuilding threw it away.
+            undetermined_reasons=[
+                *state["undetermined_reasons"],
+                *(
+                    "critique adapter could not be read whole, so its probe config is "
+                    f"not the repo's answer: {reason}"
+                    for reason in unreadable
+                ),
+            ],
+            unresolved_surfaces=state["unresolved_surfaces"],
+        )
     return state, changed, probe
 
 

@@ -2928,6 +2928,13 @@
     },
     {
       "class": "intentional",
+      "id": "d3fea2dbc2463d22",
+      "note": "ROTATED from 275d5bdd800e9f8c by CONTENT EDIT, not new duplication. Same two members as that entry names (scripts/seed_lesson_transitions.py, scripts/record_lesson_session.py); membership carried forward from that entry's own text and corroborated by the gate reporting exactly one new family whose sample names those two paths, not read off an independent nose scan. The rotation cause is the CHANGED STRING LITERAL in the seeder's missing-ledger refusal, which now resolves the bootstrap command against the reading tree instead of spelling a bare `scripts/...` a consuming repo does not have. An import was added and a comment block written in the same slice; per dup-ratchet-baseline's own churn caveat -- the fingerprint is stable across pure line-shifts and, under algo v2, across in-place comment edits inside a Python span -- neither of those rotates it, so this entry does NOT credit them. Nothing in the edit touches the shared envelope the family is about. Reasoning carried forward unchanged from 275d5bdd800e9f8c: the literally identical part is the ~10-line lock/read/replay-validate/build/replay-validate/atomic-replace envelope whose safety property is `every rejected request leaves the ledger bytes unchanged`, while the 70-line matched span is structural -- the middles are different domain logic with different refusal contracts. Still NOT a permanent verdict: four writers now spell this envelope (seed/score/session/lifecycle) and extracting it into lesson_ledger_writer_lib.py remains a real candidate, deliberately deferred because those writers are proof surfaces and migrating them is its own slice with its own two-round bounded review.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "d44c7c8b2422d9a4",
       "note": "skill-script bootstrap preamble shared by the release and retro packages; the two files became byte-identical here only after four dead `REPO_ROOT / skills / public` constants were deleted, and the preamble is per-package portability boilerplate the plugin export copies verbatim -- extracting it would reintroduce the cross-package import the bootstrap exists to avoid",
       "reviewed_at": "2026-07-25",

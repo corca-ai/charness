@@ -329,5 +329,13 @@ def test_cli_refuses_a_missing_ledger_and_names_the_bootstrap(tmp_path: Path) ->
         text=True,
     )
     assert command.returncode == 1
-    assert "init_lesson_ledger.py" in command.stderr
     assert not (tmp_path / "charness-artifacts/retro/lesson-ledger.json").exists()
+    # Not just the bare filename: that assertion held both before and after the message
+    # was repaired, so it could not fail on a revert. `tmp_path` has no `scripts/` of its
+    # own -- the shape of a consuming repo -- and the bootstrap command must therefore
+    # resolve to a path that reader can actually run, not to `scripts/...`.
+    assert "python3 scripts/init_lesson_ledger.py" not in command.stderr
+    commands = [part for part in command.stderr.split("`") if part.startswith("python3 ")]
+    assert commands, command.stderr
+    named = Path(commands[0].split()[1])
+    assert named.is_absolute() and named.is_file(), command.stderr

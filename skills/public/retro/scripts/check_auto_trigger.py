@@ -75,39 +75,31 @@ def parse_args() -> argparse.Namespace:
 
 # The typed-state vocabulary, spelled the same way the release real-host probe spells its
 # `evaluation_scope` and the critique cross-surface scope spells its `state`. Literal
-# strings rather than a shared constant module, matching that precedent: this script must
-# not grow an import of the critique/release adapter stack to say three words.
+# strings rather than a shared constant module, matching that precedent: three words are
+# not worth a dependency, and the critique/release ADAPTER stack in particular stays
+# unimported here. That rule is about adapter stacks, not about every repo module -- this
+# script already imports `scripts.surfaces_lib` below, and now `scripts.adapter_lib`,
+# which is the loader whose own output these states describe.
 STATE_EVALUATED = "evaluated"
 STATE_NOT_CONFIGURED = "not-configured"
 STATE_NOT_ESTABLISHED = "not-established"
 
 UNDETERMINED_EXIT = 3
 
-# `adapter_lib.uninterpreted_warnings` is the ONE producer of this sentence, so the marker
-# is stable, and `test_retro_auto_trigger_undetermined_when_adapter_line_uninterpretable`
-# fails loudly if that wording ever moves. The alternative -- re-parsing the adapter here
-# -- would give this script a second, drifting copy of the loader's own verdict.
-UNINTERPRETED_WARNING_MARKER = " was not interpreted ("
+# `adapter_lib` owns both the marker and the rule that reads it, because it is the ONE
+# producer of the sentence. This script kept its own copy until the cross-surface boundary
+# probe needed the identical judgment and the duplicate-ratchet gate named the pair -- two
+# consumers re-deriving a loader's verdict is exactly the drift the old comment here
+# warned about, arrived at from the other direction. Re-exported under this module's
+# original name, which its own call sites below still use. The marker constant is NOT
+# re-exported: nothing referenced it outside the deleted function body, and a name kept
+# "for callers" that has no caller is the shape this repo keeps filing.
+_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+adapter_unreadable_reasons = _scripts_adapter_lib_module.unreadable_reasons
 
 
 def matches_any(path: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
-
-
-def adapter_unreadable_reasons(adapter: dict[str, object]) -> list[str]:
-    """The loader's own complaints that make ANY trigger verdict from this adapter
-    unsafe: a refused parse, and every line it silently dropped.
-
-    A dropped line is exactly where a trigger key would have been -- the loader says so
-    itself ("Any field it meant to set is serving an inferred default instead") -- so a
-    half-read adapter cannot establish a `no`, and cannot establish an opt-out either."""
-    reasons = [str(error) for error in (adapter.get("errors") or [])]
-    reasons += [
-        str(warning)
-        for warning in (adapter.get("warnings") or [])
-        if UNINTERPRETED_WARNING_MARKER in str(warning)
-    ]
-    return reasons
 
 
 def no_config_payload(paths: list[str], adapter: dict[str, object]) -> dict[str, object]:

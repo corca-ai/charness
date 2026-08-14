@@ -72,9 +72,11 @@ _REASON = {
         "the always-brief + closeout presence-floor still apply"
     ),
     _boundary_probe_lib.PROBE_NOT_ESTABLISHED: (
-        "the cross-surface probe is CONFIGURED but could not be evaluated, so this run has no "
-        "answer either way — do not read it as `no escalation`; fix the cause below, or re-run "
-        "with an explicit --changed-path/--changed-ref, then decide"
+        "the cross-surface probe could not be evaluated, so this run has no answer either way — "
+        "do not read it as `no escalation`; fix the cause named below, then decide. An "
+        "unreadable critique adapter reaches this state too, so the cause is not always a "
+        "missing changed-path scope and re-running with an explicit "
+        "--changed-path/--changed-ref will not always help"
     ),
 }
 

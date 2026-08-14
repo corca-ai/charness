@@ -68,6 +68,7 @@ LEDGER_RELATIVE = Path("charness-artifacts/retro/lesson-ledger.json")
 
 PREVIEW_SCRIPT_NAME = "render_lesson_selection_preview.py"
 OPEN_SESSION_SCRIPT_NAME = "open_lesson_session.py"
+SEED_SCRIPT_NAME = "seed_lesson_transitions.py"
 REFRESH_SCRIPT_RELATIVE = (
     Path("skills") / "public" / "retro" / "scripts" / "refresh_recent_lessons.py",
     Path("skills") / "retro" / "scripts" / "refresh_recent_lessons.py",
@@ -105,15 +106,25 @@ _SESSION_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 # exactly how a repo ends up being told two different next steps for the same
 # state. The dependency arrow points from the heavy bootstrap script to this
 # stdlib-only module, never the other way.
-SEED_LESSON_NEXT_STEP = (
-    "Next: a lesson enters the ledger only from a retro bullet tagged "
-    "`recurrence-class: <slug>`; tag one, then append its seed transition with "
-    "`python3 scripts/seed_lesson_transitions.py --repo-root . --dry-run` to inspect and the "
-    "same command without `--dry-run` to write. Until at least "
-    "one lesson is seeded, `record_lesson_session.py` refuses with `preview selected no "
-    "eligible lessons` and the only honest retro disposition stays `not-evaluated / "
-    "missing-start`."
-)
+#
+# A FUNCTION, not a constant, because the command's spelling depends on the tree
+# it is read in and a constant can only carry one spelling. It shipped as a
+# constant naming `python3 scripts/seed_lesson_transitions.py`, which is the one
+# path a consuming repo does not have -- the same "instructs an action the reader
+# cannot perform" defect #624 fixed, reproduced inside the fix for #625, and in a
+# module that already resolves two other commands this way (`_refresh_command`,
+# `_declare_command`). The audience for this sentence is precisely a repo with an
+# empty ledger, which in a consuming repo is every repo that just opted in.
+def seed_lesson_next_step(repo_root: Path) -> str:
+    return (
+        "Next: a lesson enters the ledger only from a retro bullet tagged "
+        "`recurrence-class: <slug>`; tag one, then append its seed transition with "
+        f"`{_seed_command(repo_root)} --dry-run` to inspect and the "
+        "same command without `--dry-run` to write. Until at least "
+        "one lesson is seeded, `record_lesson_session.py` refuses with `preview selected no "
+        "eligible lessons` and the only honest retro disposition stays `not-evaluated / "
+        "missing-start`."
+    )
 
 _EMISSION_CEILING = (
     "This text being injected proves the lesson bytes were EMITTED, not that they were "
@@ -148,6 +159,28 @@ def _refresh_command(repo_root: Path) -> str:
         "python3 <charness>/skills/public/retro/scripts/refresh_recent_lessons.py "
         f"--repo-root {repo_root}"
     )
+
+
+def _seed_command(repo_root: Path) -> str:
+    """The runnable seeder command for THIS layout, not for one repo's spelling.
+
+    Repo-local first, then the copy beside this module, mirroring
+    `lesson_evaluation_records_lib.repo_or_installed_command`'s resolution order so
+    a consuming author cites the same script its own broad gate would. That helper
+    is not imported here because this module is stdlib-only by contract (see the
+    module docstring): it runs inside a host SessionStart path in every session on
+    the machine, and an import of the repo-module stack is what takes the routing
+    directive down with it.
+    """
+    local = repo_root / "scripts" / SEED_SCRIPT_NAME
+    if local.is_file():
+        # `repo_root`, not `.`. The root is used to CHOOSE this branch and must not then
+        # be discarded: `init_lesson_ledger.py --repo-root <other checkout>` would
+        # otherwise print a next step whose `.` resolves to the operator's cwd -- a
+        # different repo than the one just initialized. The script path stays relative
+        # here, matching `repo_or_installed_command`'s in-repo spelling.
+        return f"python3 scripts/{SEED_SCRIPT_NAME} --repo-root {repo_root}"
+    return f"python3 {_sibling_script(SEED_SCRIPT_NAME)} --repo-root {repo_root}"
 
 
 def _utc_date() -> str:
@@ -333,7 +366,7 @@ def _evaluated(repo_root: Path, ledger: Path, seed: str, preview_text: str) -> d
             "text": (
                 f"charness lesson loop (state: {STATE_EVALUATED}): this repo declares a lesson "
                 "evaluator, but the selection preview chose 0 eligible lessons, so no list can be "
-                f"presented and no session can be declared yet. {SEED_LESSON_NEXT_STEP}"
+                f"presented and no session can be declared yet. {seed_lesson_next_step(repo_root)}"
             ),
         }
     declare = _declare_command(repo_root, seed)

@@ -122,6 +122,123 @@ def test_probe_state_hit_short_circuits_an_unresolvable_sibling(tmp_path: Path) 
     assert state["hit"] is True
 
 
+def test_a_broken_adapter_cannot_render_a_not_configured_verdict(tmp_path: Path) -> None:
+    """#622's "errored probes" half, in the probe #622 also named.
+
+    `resolve_probe_state` read only `load_adapter(...)["data"]` and dropped the
+    loader's `errors`, so an adapter whose `boundary_cross_surface_globs` is a string
+    instead of a list -- one keystroke -- yielded empty probe config, then
+    `not-configured`, then exit 0 with `triggered: false`. A verdict-shaped "do
+    nothing" over a config the loader had already refused.
+    """
+    repo = _repo(tmp_path, 'boundary_cross_surface_globs: "docs/**"')
+
+    state, _, _ = boundary_probe_lib.resolve_probe_state(repo, changed_path=["docs/x.md"])
+
+    assert state["state"] == boundary_probe_lib.PROBE_NOT_ESTABLISHED
+    assert state["hit"] is False
+    assert any("must be a list of strings" in reason for reason in state["undetermined_reasons"])
+
+
+def test_a_broken_adapter_cannot_render_an_evaluated_MISS_either(tmp_path: Path) -> None:
+    """The half a state-keyed guard exempts, and the reason this keys on `hit`.
+
+    The two probe keys validate INDEPENDENTLY, so a refused adapter can still hand over
+    usable globs. A change that simply does not match them then lands on
+    `evaluated`/`hit=False` -- and a guard spelled `state != PROBE_EVALUATED` waves that
+    through as a verdict, re-shipping the defect narrowed from "no config" to
+    "partially-valid config". This is the one a round-2 review caught after round 1
+    caught the original, so it gets its own test rather than sharing one with the hit
+    case above it.
+    """
+    repo = _repo(
+        tmp_path,
+        "boundary_cross_surface_globs:",
+        "  - docs/**",
+        "boundary_cross_surface_surfaces: not-a-list",
+    )
+
+    state, _, _ = boundary_probe_lib.resolve_probe_state(repo, changed_path=["scripts/x.py"])
+
+    assert state["state"] == boundary_probe_lib.PROBE_NOT_ESTABLISHED
+    assert state["hit"] is False
+    assert any("must be a list of strings" in reason for reason in state["undetermined_reasons"])
+
+
+def test_the_downgrade_keeps_the_reasons_the_probe_had_already_established(
+    tmp_path: Path,
+) -> None:
+    """An adapter error must not erase an unresolved surface id.
+
+    The unresolved id is the actionable half: it names a typo the author can fix. A
+    downgrade that rebuilds the state from scratch reports only the adapter error and
+    silently drops it.
+    """
+    repo = _repo(
+        tmp_path,
+        "boundary_cross_surface_surfaces:",
+        "  - declaredd-surface",
+        "boundary_cross_surface_globs: not-a-list",
+        surfaces=True,
+    )
+
+    state, _, _ = boundary_probe_lib.resolve_probe_state(repo, changed_path=["scripts/x.py"])
+
+    assert state["state"] == boundary_probe_lib.PROBE_NOT_ESTABLISHED
+    assert state["unresolved_surfaces"] == ["declaredd-surface"]
+    assert any("must be a list of strings" in reason for reason in state["undetermined_reasons"])
+
+
+def test_a_broken_adapter_still_loses_to_an_established_hit(tmp_path: Path) -> None:
+    """The documented asymmetry survives the fix: only a NEGATIVE can be undetermined.
+
+    Downgrading an established hit to `not-established` would disarm the #408 override,
+    turning a fix against silence into a new silence -- the exact trade the sibling test
+    above this one pins for the typo'd-surface case.
+    """
+    repo = _repo(
+        tmp_path,
+        "boundary_cross_surface_globs:",
+        "  - docs/**",
+        "boundary_cross_surface_surfaces: not-a-list",
+    )
+
+    state, _, _ = boundary_probe_lib.resolve_probe_state(repo, changed_path=["docs/x.md"])
+
+    assert state["state"] == boundary_probe_lib.PROBE_EVALUATED
+    assert state["hit"] is True
+
+
+def test_an_unconfigured_repo_is_still_an_opt_out_not_an_error(tmp_path: Path) -> None:
+    """The fix must not convert every unconfigured repo into a permanent refusal."""
+    repo = _repo(tmp_path)
+
+    state, _, _ = boundary_probe_lib.resolve_probe_state(repo, changed_path=["scripts/x.py"])
+
+    assert state["state"] == boundary_probe_lib.PROBE_NOT_CONFIGURED
+    assert state["undetermined_reasons"] == []
+
+
+def test_a_declared_but_empty_probe_key_is_an_opt_out_not_a_malformation(
+    tmp_path: Path,
+) -> None:
+    """`boundary_cross_surface_globs:` with nothing under it is a DECLARATION.
+
+    The parser renders that as an empty mapping, and the adapter validator recorded it
+    as `must be a list of strings`. Nothing noticed, because the probe discarded the
+    loader's errors -- so the latent defect only became reachable at the moment that
+    discard was fixed, and it would have turned every repo that opted out this way into
+    a permanent refusal. The sibling auto-retro probe already treats an explicitly empty
+    field as a real opt-out; this pins the same reading here.
+    """
+    repo = _repo(tmp_path, "boundary_cross_surface_globs:")
+
+    state, _, _ = boundary_probe_lib.resolve_probe_state(repo, changed_path=["scripts/x.py"])
+
+    assert state["state"] == boundary_probe_lib.PROBE_NOT_CONFIGURED
+    assert state["undetermined_reasons"] == []
+
+
 def test_cross_surface_hit_keeps_its_bool_contract_for_positive_only_callers(
     tmp_path: Path,
 ) -> None:
@@ -181,6 +298,28 @@ def test_cli_not_configured_is_exit_zero_with_a_real_false(tmp_path: Path) -> No
             (),
             "zero changed paths",
             id="empty-changed-scope",
+        ),
+        # The reported defect was an EXIT CODE + payload defect ("exit 0 +
+        # `triggered: false`"), so the refused-adapter case belongs here at the CLI and
+        # not only at the library. Both shapes: config the loader refused outright, and
+        # config it refused only in part while the surviving half fails to match.
+        pytest.param(
+            ('boundary_cross_surface_globs: "docs/**"',),
+            False,
+            ("docs/x.md",),
+            "must be a list of strings",
+            id="refused-adapter-whole",
+        ),
+        pytest.param(
+            (
+                "boundary_cross_surface_globs:",
+                "  - docs/**",
+                "boundary_cross_surface_surfaces: not-a-list",
+            ),
+            False,
+            ("scripts/x.py",),
+            "must be a list of strings",
+            id="refused-adapter-evaluated-miss",
         ),
     ],
 )

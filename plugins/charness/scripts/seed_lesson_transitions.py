@@ -50,6 +50,7 @@ ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
 _writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
 _index = import_repo_module(__file__, "scripts.recent_lessons_lib")
+_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
 
 # Same prefix the 16 hand-authored transitions already use, so a reader cannot
 # tell a bootstrap seed from a later append -- correctly, because the ledger draws
@@ -172,9 +173,14 @@ def seed_transitions(
     require_repo_local_helper(__file__, repo_root)
     path = _ledger.lesson_ledger_path(output_dir)
     if not path.is_file():
+        # Resolved, not spelled: a consuming repo has no `scripts/` of its own, and
+        # naming one here would answer "the ledger is missing" with a command the
+        # reader cannot run -- the #624 class, at the one moment the reader is
+        # certainly bootstrapping.
         raise FileNotFoundError(
             f"missing lesson ledger `{path.relative_to(repo_root)}`; create it with "
-            "`python3 scripts/init_lesson_ledger.py --repo-root .` first"
+            f"`{_records.repo_or_installed_command(repo_root, 'init_lesson_ledger.py', '--repo-root', '.')}`"
+            " first"
         )
     with _writer.ledger_lock(path):
         payload = json.loads(path.read_text(encoding="utf-8"))
