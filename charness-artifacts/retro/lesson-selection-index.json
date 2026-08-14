@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-14",
-  "source_artifact_count": 504,
-  "candidate_count": 2040,
+  "source_artifact_count": 505,
+  "candidate_count": 2043,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -21,15 +21,15 @@
       "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 8,
-      "independent_source_count": 8,
+      "source_count": 9,
+      "independent_source_count": 9,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "latest_source_date": "2026-08-14",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 5.2,
+      "selection_weight": 5.8,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -78,6 +78,14 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Three causal reviewers were briefed on distinct hazard lenses and all three were pointed at `scripts/`, `skills/`, `tests/`. Lens-diverse, source-uniform."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** (recurs: premise-not-checked-against-source): before writing any claim about a mechanism's behavior into code, docs, or an emitted surface, open the mechanism. The session-start read caught three wrong premises; three review blockers were premises about behavior nobody read. The lesson fires at phase boundaries and does not transfer to in-flight assertions."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
@@ -559,15 +567,15 @@
       "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 8,
-      "independent_source_count": 8,
+      "source_count": 9,
+      "independent_source_count": 9,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "latest_source_date": "2026-08-14",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 5.2,
+      "selection_weight": 5.8,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -616,6 +624,14 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Three causal reviewers were briefed on distinct hazard lenses and all three were pointed at `scripts/`, `skills/`, `tests/`. Lens-diverse, source-uniform."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** (recurs: premise-not-checked-against-source): before writing any claim about a mechanism's behavior into code, docs, or an emitted surface, open the mechanism. The session-start read caught three wrong premises; three review blockers were premises about behavior nobody read. The lesson fires at phase boundaries and does not transfer to in-flight assertions."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
@@ -1124,6 +1140,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:ee9ca79bf965",
+      "kind": "current_focus",
+      "lesson": "Handoff pickup for the release-blocking lesson-loop cohort, ordered #625 -> #627 -> #626 by the owner because #626 alone would make `quality` propose on recurrence count.",
+      "normalized_key": "handoff pickup for the release blocking lesson loop cohort ordered 625 627 626 by",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+          "date": "2026-08-14",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Handoff pickup for the release-blocking lesson-loop cohort, ordered #625 -> #627 -> #626 by the owner because #626 alone would make `quality` propose on recurrence count."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3c21f07c784e",
       "kind": "current_focus",
       "lesson": "Repaired the #618-#624 cohort (a broken `charness init`, six wrong-rooted shell gates, probes that reported `false` for undetermined, an overwritten quality record, a retro scaffold its own validator rejected, a drift message naming a superseded probe) and wired the session-start half of the lesson lifecycle.",
@@ -1280,6 +1322,32 @@
       ]
     },
     {
+      "candidate_id": "class:b2fd259552ba",
+      "kind": "next_improvement",
+      "lesson": "**capability** (novel:) a claim of gate coverage must name the fields the gate actually compares. `_provenance.baseline_check` said \"every residual figure\" over a gate that pinned four, and the field this refresh moved was unpinned.",
+      "normalized_key": "capability novel a claim of gate coverage must name the fields the gate actually",
+      "recurrence_class": "coverage-claim-exceeds-the-pin",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** (novel:) a claim of gate coverage must name the fields the gate actually compares. `_provenance.baseline_check` said \"every residual figure\" over a gate that pinned four, and the field this refresh moved was unpinned."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:fcb63c7a453c",
       "kind": "next_improvement",
       "lesson": "**capability**: write the exact rendered lesson bytes to a session-specific Markdown companion and bind them with the existing receipt integrity fields.",
@@ -1406,6 +1474,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: after opening a lesson session, retain its bundle path and reread that file after compaction and before retro."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:e0b7c3ebcc2b",
+      "kind": "next_improvement",
+      "lesson": "**workflow** (novel:) when a bar guards a proof surface, make it a required value rather than a comment. A comment can be deleted with nothing red.",
+      "normalized_key": "workflow novel when a bar guards a proof surface make it a required value",
+      "recurrence_class": "bar-recorded-as-prose",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** (novel:) when a bar guards a proof surface, make it a required value rather than a comment. A comment can be deleted with nothing red."
         }
       ]
     },

@@ -387,6 +387,14 @@
       "lesson_id": "guard-adjacent-to-action",
       "score": 2,
       "anchor": "The handoff audit removed inline SHA, version, and test-count receipts and replaced them with links to the current retro, carrier, ledger, and issue owners."
+    },
+    {
+      "event_id": "2026-08-14-lesson-loop-premise-not-checked",
+      "session_id": "2026-08-14-lesson-loop-625-627-626",
+      "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+      "lesson_id": "premise-not-checked-against-source",
+      "score": 2,
+      "anchor": "Fired at session start and not in flight. Reading the two governing specs before designing caught three wrong premises: #626 claiming zero production callers when the mechanics exist and only the wiring is missing, #626 asking for an automatic archive its own Eighth Slice supersedes, and the handoff asking for a score no declared session can carry. It then failed to transfer to in-flight assertions: the catalog gate was spelled `python3 scripts/...` on the belief that run_when gates availability when _catalog_gate_path only recognizes ./ commands, and \"exits zero always\" was written without reading the entrypoint wrapper. Reviewers caught both."
     }
   ],
   "lessons": {
@@ -401,8 +409,8 @@
     "premise-not-checked-against-source": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-premise-not-checked-against-source",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 2,
+      "score_count": 1,
       "state": "active",
       "last_lifecycle_event_id": null
     },
