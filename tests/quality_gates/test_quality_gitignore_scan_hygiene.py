@@ -136,3 +136,31 @@ def test_gitignore_scan_hygiene_respects_gitignore_for_inventory_inputs(tmp_path
     payload = _run_hygiene(tmp_path, "--path-glob", "**/*.py")
 
     assert payload["findings"] == []
+
+
+def test_subagent_worktrees_are_ignored_so_a_live_agent_cannot_red_the_gates() -> None:
+    """A host-created subagent worktree lands INSIDE this repo, at `.claude/worktrees/`.
+
+    Measured 2026-08-14 while two worktree-isolated subagents were running: the
+    directory is a live embedded git repo, so `git add -A` staged it as one (the
+    staged-worktree gate refused the commit), and `collect_changed_paths` reported it
+    as a changed path with no owning surface, which blocked
+    `test_this_repo_is_currently_closeout_bundle_ready`,
+    `test_this_repo_is_currently_bundle_ready`, and the critique prepare packet's
+    reviewed-input identity for as long as the agents ran.
+
+    One ignore line answers all of it, because the changed-path collector reads
+    `git ls-files --others --exclude-standard`. This test exists because deleting that
+    line turns nothing red until the next time someone happens to run an isolated
+    subagent, and the failure then looks like a broken gate rather than a missing
+    ignore.
+    """
+    probe = ROOT / ".claude" / "worktrees" / "agent-probe-not-created"
+    result = subprocess.run(
+        ["git", "check-ignore", str(probe)], cwd=ROOT, capture_output=True, text=True
+    )
+
+    assert result.returncode == 0, (
+        "`.claude/worktrees/` is not gitignored; a worktree-isolated subagent will be "
+        "staged as an embedded repo and will red the bundle preflights while it runs"
+    )

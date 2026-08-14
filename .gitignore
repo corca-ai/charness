@@ -40,6 +40,16 @@ charness-artifacts/efficiency/**/preserved/**/stream.jsonl
 # Personal Claude Code overrides (local sandbox permissions, etc.)
 .claude/settings.local.json
 
+# Host-created subagent worktrees. A worktree-isolated subagent gets a checkout
+# INSIDE this repo, and while it runs the directory is a live embedded git repo:
+# `git add -A` stages it as one (the staged-worktree gate refuses the commit), and
+# `collect_changed_paths` reports it as a changed path with no owning surface, which
+# turns the closeout-bundle and final-bundle preflights red for the duration. Both
+# symptoms are the same missing line: the changed-path collector reads
+# `git ls-files --others --exclude-standard`, so ignoring the path answers both.
+# Scoped to `worktrees/` on purpose -- `.claude/agents/` is tracked.
+.claude/worktrees/
+
 # Ephemeral specdown config written by scripts/specdown_ephemeral_config.py so an
 # automated gate does not rewrite the tracked .charness/specdown/ report.
 .specdown.ephemeral.json
