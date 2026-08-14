@@ -106,13 +106,12 @@ UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
     ),
     (
         f"{FLOOR_PROBE} `_provenance` prose keys — this probe has NO `current_corpus` summary"
-        " key, but do NOT read that as a figure-free block: its `_provenance` quotes counts in"
-        " THREE keys (`why`, `synchronized_after`, and `counterfactual_floor_20`), and `why` is"
-        " the one that says the headline figures are not transcribed there — a scope limited to"
-        " the headline pair, not a promise about the key. While you are in this block, check"
-        " `does_not_license`: it still sends readers to the SUPERSEDED marker probe for the"
-        " marker counts, which is the #624 defect one key deeper. Repoint it at the immutable"
-        " snapshot rather than leaving a live pointer to a frozen file",
+        " key, but do NOT read that as a figure-free block: `counterfactual_floor_20` still"
+        " quotes counts, and it is now the ONLY key that does. `synchronized_after` used to"
+        " quote the headline delta and no longer does — it went stale one commit after it was"
+        " written, so the 2026-08-14 refresh replaced the numbers with the cause and left the"
+        " figures to this file's own measured fields, extending what `why` already promised."
+        " Keep it that way: name what changed the corpus, not by how much",
         None,
     ),
     (

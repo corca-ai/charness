@@ -40,6 +40,62 @@ STATE_EVALUATED = "evaluated"
 STATE_NOT_CONFIGURED = "not-configured"
 STATE_NOT_ESTABLISHED = "not-established"
 
+# The questions the ledger contract FIXED and nothing ever asked (#627). Scoring
+# was designed as a human judgment on purpose -- the spec refuses to infer it from
+# score volume -- but a judgment that is never solicited is never made, which is
+# how `effect-recorded=0` sat under `violations=0` over a loop that had never
+# closed.
+#
+# WHAT A SCORE DOES AND DOES NOT DO. It moves the lesson's value/uncertainty
+# statistic in `lesson_selection_preview_lib`, so it changes the WEIGHT at which a
+# lesson is drawn. It does NOT revise the lesson's text: wording is rebuilt from
+# the retro bullet corpus in `recent_lessons_lib`, which never reads a score, and
+# the ledger contract's Eighth Slice is explicit that no score value creates an
+# event. What a score leaves behind is an ANCHOR, and the anchor is what
+# `render_lesson_lifecycle_review.py` gives `quality` to judge rewrite-in-place
+# against. So the honest chain is score -> anchor -> a human disposition, never
+# score -> rewrite; do not promise the second one here.
+#
+# `harmful` is asked FIRST and by name because the contract says `-3` is asked for
+# explicitly: actively harmful is the most valuable and least volunteered signal,
+# and an author walking a list of lessons volunteers praise long before blame.
+#
+# Kept here, in repo-owned evidence, rather than in the public retro skill: the
+# skill core stays evaluator-generic and routes a contract it does not define.
+SCORE_SOLICITATION = {
+    "harmful": (
+        "Which of these pushed you toward a WRONG action, or cost a read that returned "
+        "nothing? Score those negative, `-3` for actively harmful. This is the least "
+        "volunteered and most valuable signal; answer it before the positive ones."
+    ),
+    "changed_an_action": (
+        "Which of these changed a specific action you took? Name the anchor: the decision, "
+        "file, or command where it changed one."
+    ),
+    "read_and_failed": (
+        "Which of these you READ and did not act on, in a session that then committed the "
+        "class the lesson names? That is a negative score with an anchor, not a skip. An "
+        "unscored miss leaves no anchor, and the anchor is the ledger's only record of WHY a "
+        "lesson did not land -- recurrence count cannot distinguish a lesson that needs rewriting "
+        "from one that was simply never consulted."
+    ),
+    "presented_before_the_work": (
+        "Score only lessons from a list presented BEFORE the work they affected. Reading a "
+        "lesson's wording here, at retro time, is not presentation and does not justify a "
+        "score; if presentation is absent or uncertain, append nothing and use the "
+        "`presentation-unproven` disposition."
+    ),
+    "anchor_rule": (
+        "A score of magnitude 2 or more requires an anchor and is refused without one. "
+        "Unanchored judgments belong at -1, 0, or +1."
+    ),
+    "no_score_is_valid": (
+        "Scoring every lesson is NOT the goal and a high score count is not a health "
+        "measure. Leave a lesson unscored when nothing observable happened, and record the "
+        "affirmative `no-effect` disposition when that is true of the whole list."
+    ),
+}
+
 
 def retro_output_dir(repo_root: Path) -> Path:
     return repo_root / RETRO_OUTPUT_RELATIVE
@@ -193,6 +249,45 @@ def _score_command_template(repo_root: Path, session_id: str, lesson_id: str, so
     )
 
 
+def _bundle_lesson_texts(
+    receipt: dict[str, Any] | None, *, sessions: dict[str, dict[str, Any]], output_dir: Path
+) -> dict[str, str]:
+    """`lesson_id -> the wording that was actually emitted`, from the frozen bundle.
+
+    The ledger snapshot freezes IDs only, so a router that lists bare slugs asks an
+    author to score `premise-not-checked-against-source` from its name. That is the
+    re-derivation a loaded context skips, and skipping it is how a lesson gets a
+    ceremonial score instead of a judged one.
+
+    The bundle rather than a re-render: `load_session_bundle` re-digests the file
+    against the receipt, so this returns the bytes that were emitted, not what the
+    same seed would select today. Those differ as soon as any score lands, and
+    showing today's selection under a past session's id would be a quiet lie about
+    what was presented.
+
+    Best-effort by design. A missing or unreadable bundle drops the texts and keeps
+    the IDs; the receipt violation is already reported by the caller, and losing the
+    convenience text must never turn into losing the routing.
+    """
+    if receipt is None:
+        return {}
+    try:
+        content = continuity.load_session_bundle(
+            receipt, sessions=sessions, output_dir=output_dir
+        ).decode("utf-8")
+    except (OSError, ValueError, UnicodeDecodeError):
+        return {}
+    texts: dict[str, str] = {}
+    for line in content.splitlines():
+        # The bundle's own emitted shape: `- <lesson-id> — <text>`.
+        if not line.startswith("- "):
+            continue
+        lesson_id, separator, text = line[2:].partition(" — ")
+        if separator and lesson_id.strip() and text.strip():
+            texts[lesson_id.strip()] = text.strip()
+    return texts
+
+
 def _session_row(
     *,
     repo_root: Path,
@@ -201,9 +296,12 @@ def _session_row(
     score_events: list[dict[str, Any]],
     output_dir: Path,
     source_retro: str,
+    receipt: dict[str, Any] | None,
 ) -> dict[str, Any]:
     lesson_ids = list(sessions[session_id]["snapshot"]["lesson_ids"])
     existing = [event for event in score_events if event.get("session_id") == session_id]
+    scored = {event.get("lesson_id") for event in existing}
+    texts = _bundle_lesson_texts(receipt, sessions=sessions, output_dir=output_dir)
     return {
         "session_id": session_id,
         # The FROZEN bundle, not a newest-file guess: `references/lesson-evaluation.md`
@@ -214,6 +312,29 @@ def _session_row(
         .as_posix(),
         "lesson_ids": lesson_ids,
         "existing_score_event_count": len(existing),
+        # The questions, asked. Routing to a session told the author WHERE to score
+        # and never WHAT to judge, so a lesson that was read and failed produced no
+        # signal, left no anchor for `quality` to judge a rewrite against, and
+        # returned at the same weight (#627). `solicitation` is the ask; `lessons`
+        # is what it is asked about.
+        "solicitation": dict(SCORE_SOLICITATION),
+        "lessons": [
+            {
+                "lesson_id": lesson_id,
+                # Absent when the bundle could not be read; never re-rendered from
+                # current state, so a missing text reads as missing rather than as a
+                # different lesson's wording.
+                **({"lesson_text": texts[lesson_id]} if lesson_id in texts else {}),
+                "already_scored": lesson_id in scored,
+                "score_command_template": _score_command_template(
+                    repo_root, session_id, lesson_id, source_retro
+                ),
+            }
+            for lesson_id in lesson_ids
+        ],
+        "unscored_lesson_ids": [
+            lesson_id for lesson_id in lesson_ids if lesson_id not in scored
+        ],
         "score_command_templates": [
             _score_command_template(repo_root, session_id, lesson_id, source_retro)
             for lesson_id in lesson_ids
@@ -317,6 +438,7 @@ def lesson_session_routing(repo_root: Path, *, source_retro: str | None = None) 
                 score_events=score_events,
                 output_dir=output_dir,
                 source_retro=source_retro or "<repo-relative path of the retro being written>",
+                receipt=receipts.get(session_id),
             )
             for session_id in unclaimed
         ],

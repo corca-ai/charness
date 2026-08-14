@@ -155,6 +155,18 @@ gates:
     cost_tier: cheap
     parallel_group: inventories
     run_when: skills_in_scope
+  # `./scripts/...` rather than `python3 scripts/...` ON PURPOSE: the applicability
+  # filter only recognizes a repo-native path when argv[0] starts with `./`
+  # (quality_catalog_gate_applicability._catalog_gate_path). Spelled with an
+  # interpreter prefix, this gate would be unconditionally applicable and would
+  # advertise a charness-local command to every consuming repo's plan.
+  - id: lesson-lifecycle-review
+    command: ./scripts/render_lesson_lifecycle_review.py --repo-root .
+    purpose: lesson-lifecycle evidence for the graduate / rewrite-in-place / strengthen-binding judgment the ledger contract assigns to quality
+    trust_model: evidence only, never a verdict; orders by anchored evidence and reports recurrence as context because recurrence cannot discriminate the three dispositions. Exits zero over any validatable ledger including one with nothing to propose; a nonzero exit is a refusal to render -- an unreadable or unreplayable ledger at 1, a helper-provenance refusal at 2 -- never a finding about a lesson
+    cost_tier: cheap
+    parallel_group: inventories
+    run_when: repo exposes this repo-native command declaring a lesson evaluator
 # brief: load-bearing residue of demoted required-primers, carried inline in the
 # planner stdout so a run keeps the discipline without a mandatory prose read.
 # The planner (plan_quality_run.py:_quality_brief) injects the final-gate probe

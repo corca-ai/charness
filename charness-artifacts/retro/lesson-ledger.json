@@ -97,6 +97,96 @@
       "transition_id": "seed-structured-edit-by-line-pattern",
       "lesson_id": "structured-edit-by-line-pattern",
       "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md"
+    },
+    {
+      "sequence": 17,
+      "transition_id": "seed-agent-authored-score-role",
+      "lesson_id": "agent-authored-score-role",
+      "source_retro": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md"
+    },
+    {
+      "sequence": 18,
+      "transition_id": "seed-artifact-contract-late-feedback",
+      "lesson_id": "artifact-contract-late-feedback",
+      "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md"
+    },
+    {
+      "sequence": 19,
+      "transition_id": "seed-cause-named-from-one-observation",
+      "lesson_id": "cause-named-from-one-observation",
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md"
+    },
+    {
+      "sequence": 20,
+      "transition_id": "seed-changed-line-proof-before-broad-quality",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md"
+    },
+    {
+      "sequence": 21,
+      "transition_id": "seed-conservative-static-verdicts",
+      "lesson_id": "conservative-static-verdicts",
+      "source_retro": "charness-artifacts/retro/2026-08-14-session-retro.md"
+    },
+    {
+      "sequence": 22,
+      "transition_id": "seed-evidence-channel-identity",
+      "lesson_id": "evidence-channel-identity",
+      "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md"
+    },
+    {
+      "sequence": 23,
+      "transition_id": "seed-green-test-is-not-covered-line",
+      "lesson_id": "green-test-is-not-covered-line",
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md"
+    },
+    {
+      "sequence": 24,
+      "transition_id": "seed-harness-differential-not-test",
+      "lesson_id": "harness-differential-not-test",
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md"
+    },
+    {
+      "sequence": 25,
+      "transition_id": "seed-line-anchored-ledger-fields",
+      "lesson_id": "line-anchored-ledger-fields",
+      "source_retro": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md"
+    },
+    {
+      "sequence": 26,
+      "transition_id": "seed-premises-not-debt",
+      "lesson_id": "premises-not-debt",
+      "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md"
+    },
+    {
+      "sequence": 27,
+      "transition_id": "seed-proof-surface-message-drift",
+      "lesson_id": "proof-surface-message-drift",
+      "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md"
+    },
+    {
+      "sequence": 28,
+      "transition_id": "seed-release-candidate-preflight-order",
+      "lesson_id": "release-candidate-preflight-order",
+      "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md"
+    },
+    {
+      "sequence": 29,
+      "transition_id": "seed-skipped-is-not-passed",
+      "lesson_id": "skipped-is-not-passed",
+      "source_retro": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md"
+    },
+    {
+      "sequence": 30,
+      "transition_id": "seed-unbounded-cache",
+      "lesson_id": "unbounded-cache",
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md"
+    },
+    {
+      "sequence": 31,
+      "transition_id": "seed-unchecked-redundant-flag",
+      "lesson_id": "unchecked-redundant-flag",
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md"
     }
   ],
   "session_events": [
@@ -219,6 +309,35 @@
         ]
       },
       "snapshot_sha256": "4e1234f584ae7f3a1f9ff9e06cdb7b85d8280c738d2aa224c611f018702903a3"
+    },
+    {
+      "session_id": "2026-08-14-lesson-loop-625-627-626",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 2,
+        "seed": "2026-08-14-lesson-loop-625-627-626",
+        "eligible_count": 16,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 0
+        },
+        "lesson_ids": [
+          "goal-closeout-evidence-binding",
+          "premise-not-checked-against-source",
+          "proof-surface-review-binding",
+          "closeout-diagnostic-visibility",
+          "closeout-authoring-rework",
+          "durable-lesson-ledger-first",
+          "counted-limit-retry-loop",
+          "graduation-is-proposal",
+          "guard-adjacent-to-action"
+        ]
+      },
+      "snapshot_sha256": "2a79f6e89017d81a695e5f1479f55ff4467efbe8022bf906a5b72b4a784ad310"
     }
   ],
   "score_events": [
@@ -394,6 +513,126 @@
     "structured-edit-by-line-pattern": {
       "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
       "transition_id": "seed-structured-edit-by-line-pattern",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "agent-authored-score-role": {
+      "source_retro": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "transition_id": "seed-agent-authored-score-role",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "artifact-contract-late-feedback": {
+      "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+      "transition_id": "seed-artifact-contract-late-feedback",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "cause-named-from-one-observation": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "transition_id": "seed-cause-named-from-one-observation",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "changed-line-proof-before-broad-quality": {
+      "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "transition_id": "seed-changed-line-proof-before-broad-quality",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "conservative-static-verdicts": {
+      "source_retro": "charness-artifacts/retro/2026-08-14-session-retro.md",
+      "transition_id": "seed-conservative-static-verdicts",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "evidence-channel-identity": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
+      "transition_id": "seed-evidence-channel-identity",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "green-test-is-not-covered-line": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "transition_id": "seed-green-test-is-not-covered-line",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "harness-differential-not-test": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "transition_id": "seed-harness-differential-not-test",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "line-anchored-ledger-fields": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "transition_id": "seed-line-anchored-ledger-fields",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "premises-not-debt": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
+      "transition_id": "seed-premises-not-debt",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "proof-surface-message-drift": {
+      "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+      "transition_id": "seed-proof-surface-message-drift",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "release-candidate-preflight-order": {
+      "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "transition_id": "seed-release-candidate-preflight-order",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "skipped-is-not-passed": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "transition_id": "seed-skipped-is-not-passed",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "unbounded-cache": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "transition_id": "seed-unbounded-cache",
+      "score_total": 0,
+      "score_count": 0,
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "unchecked-redundant-flag": {
+      "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "transition_id": "seed-unchecked-redundant-flag",
       "score_total": 0,
       "score_count": 0,
       "state": "active",

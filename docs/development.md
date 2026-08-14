@@ -85,7 +85,31 @@ fresh-eye, provider, installed-consumer, remote-CI, push, or release proof.
 
 ## Local Lesson-Ledger Authoring
 
-The lesson ledger has a deliberately local eligibility path. At session start,
+### Getting a Lesson Into the Ledger
+
+A repo creates its ledger once with `python3 scripts/init_lesson_ledger.py
+--repo-root .`, which deliberately seeds nothing. A lesson becomes eligible only
+when an author tags a retro bullet `recurrence-class: <slug>`; the ledger then
+needs one append-only seed transition citing that retro. Rehearse and apply it:
+
+```bash
+python3 scripts/seed_lesson_transitions.py --repo-root . --dry-run
+python3 scripts/seed_lesson_transitions.py --repo-root .
+```
+
+Appending a newly tagged class later is the same command, not a separate
+operation. Use `--lesson-id <slug>` (repeatable) to seed a subset. The command
+never invents a class, never edits a retro tag, and refuses a class that is
+already seeded.
+
+Inspect the cited retros before committing. Validation rebuilds each citation
+live from `charness-artifacts/retro/*.md`, and transitions are append-only with
+archive as the only withdrawal, so a committed transition breaks unrepairably if
+its cited retro is renamed or its tag is removed.
+
+### Declaring a Session
+
+At session start,
 use the one command that declares the frozen session, writes the deterministic
 Markdown bundle, emits those same bytes, and leaves a subordinate receipt:
 
@@ -163,6 +187,26 @@ python3 scripts/check_lesson_ledger.py --repo-root .
 `record_lesson_lifecycle.py` has no preview mode: after validating the complete
 candidate it appends the event immediately. Commit or otherwise preserve the
 current repo-local ledger before recording a reviewed archive or resurrection.
+
+`quality` owns the lifecycle judgment, not `retro`: a retro sees one session, and
+promoting a lesson is a multi-session claim about an always-loaded surface. Read
+the evidence with:
+
+```bash
+python3 scripts/render_lesson_lifecycle_review.py --repo-root .
+```
+
+The review is read-only and proposes nothing. It exits zero over any ledger it
+can validate, including one with nothing to propose, so a nonzero exit is always
+a refusal to render — an unreadable or unreplayable ledger at 1, a
+helper-provenance refusal at 2 — and never a finding about a lesson. It orders
+lessons by ANCHORED evidence and reports recurrence only as context, because a
+high-recurrence lesson may need graduation, a rewrite in place, or a stronger
+binding to a step, and recurrence count cannot tell those apart — ranking by it
+selects the loudest lesson rather than the one whose prose is the problem. A
+lesson with no anchored score is undetermined, not a candidate. No score value
+triggers an archive, promotion, or retirement: threshold calibration is deferred
+and every lifecycle event still requires a reviewed `decision_ref`.
 
 Use `--action resurrect` to return an archived lesson to the active cohort. The
 selection preview draws its recent, value, and uncertainty slots only from active

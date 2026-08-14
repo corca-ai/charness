@@ -506,6 +506,13 @@
     },
     {
       "class": "intentional",
+      "id": "275d5bdd800e9f8c",
+      "note": "append-only ledger WRITE TRANSACTION shape shared by seed_lesson_transitions.py (new, #625) and record_lesson_session.py. The literally identical part is the ~10-line envelope -- acquire the path-derived writer lock, read, replay-validate the current payload, build a candidate, replay-validate the candidate, atomic-replace -- which is the safety property `every rejected request leaves the ledger bytes unchanged`. The 70-line span the detector matched is structural, not textual: the middles are different domain logic with different refusal contracts (the seeder plans transitions from the selection index and pre-checks the active budget; the session recorder builds a deterministic preview INSIDE the lock and freezes its snapshot digest). Same reasoning already accepted for record_lesson_score.py joining this family: a shared wrapper would obscure each command's refusal contract without removing domain behavior. NOT a permanent verdict -- there are now four writers of this envelope (seed/score/session/lifecycle), and extracting it into lesson_ledger_writer_lib.py is a real candidate. Deferred deliberately: those writers are proof surfaces, so migrating them is its own slice with its own two-round bounded review, not a side effect of adding the fourth.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "2826323f1e95a766",
       "note": "one-line status delegate wrappers for two hook kinds; extracting the call would obscure the public names without reducing behavior duplication",
       "reviewed_at": "2026-07-13",
@@ -880,6 +887,13 @@
       "id": "3e585e6d2db885a6",
       "note": "The capture adapter keeps its direct-execution runtime-bootstrap import preamble local, matching the retro-index, risk-interrupt, and packaging producers. Established repo pattern for portable CLIs that must run in both source-checkout and installed-plugin layouts.",
       "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3e6704ed3f5423a4",
+      "note": "two-line `def _fail(message): raise ValueError(f\"<surface>: {message}\")` refusal helper. Seven members across the ledger/register modules, six untouched; seed_lesson_transitions.py:68-69 (#625) is the joining member. Each copy names its own surface in the message prefix, which is the whole point -- a shared helper would have to take the prefix as an argument and would make every refusal read as coming from one place.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -1717,6 +1731,13 @@
     },
     {
       "class": "intentional",
+      "id": "77231193d8eb266d",
+      "note": "two-line predicate returning a fixed classification string; the joining member is render_lesson_lifecycle_review.py:136-137 (#626), whose `_evidence_state` maps anchored/unanchored/absent score evidence. The other member is narrative_adapter_lib.py and shares only the if/return shape, not the domain.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "7829f2db48725111",
       "note": "two-line sibling-loader bootstrap in independently executable issue scripts; extraction would require importing before the loader can resolve local modules",
       "reviewed_at": "2026-07-13",
@@ -1734,6 +1755,13 @@
       "id": "79ba72c5ceb24784",
       "note": "A single dictionary-comprehension idiom appears in independent register validation and lesson preview ranking. It is below an extractable behavioral unit and has different key/value semantics at each owner.",
       "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7a89b15116362c3f",
+      "note": "two-line dict/counter comprehension idiom across five unrelated modules, four untouched; render_lesson_lifecycle_review.py:138-139 (#626) is the joining member. Idiom-sized, different keys, different domains.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -2378,6 +2406,13 @@
       "id": "ad0b426cd3ffde59",
       "note": "the issue skill package's sibling-loader preamble, shared by issue_close.py and issue_runtime.py: the `runpy.run_path(... 'issue_local_import.py')['sibling_loader'](__file__)` line plus the `_BACKEND = _load_local('issue_backend', ...)` binding. This is the public-skill portability contract (a skill script must not import repo-internal modules), and every module in the package carries it by design -- it is the mechanism that makes factoring impossible, since the loader must exist before anything can be loaded. Surfaced as new because the close-comment carrier extraction shifted line offsets in issue_close.py; neither preamble was edited.",
       "reviewed_at": "2026-08-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ad7cc7b6c9ecf231",
+      "note": "the standard repo-script import prologue (`from runtime_bootstrap import import_repo_module, repo_root_from_script...` plus ROOT and module handles). Six members, five untouched; render_lesson_lifecycle_review.py:48-54 (#626) is the joining member. This is the required bootstrap contract for a repo-owned script that must also work from the installed plugin tree, not incidental duplication.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {
@@ -3117,6 +3152,13 @@
     },
     {
       "class": "intentional",
+      "id": "e1f68b22b81247de",
+      "note": "the `if __name__ == \"__main__\": try: raise SystemExit(main()) except (...) as exc: print to stderr; SystemExit(1)` entrypoint block. TWENTY-EIGHT members, twenty-six untouched; render_lesson_lifecycle_review.py and seed_lesson_transitions.py join it. Directly executable command entrypoints keep their exception-to-stderr-and-exit boundary local so each command owns its own caught-exception set; already the accepted reasoning for this family repo-wide.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "e2be6ebfbea2ac95",
       "note": "The closeout bundle CLI keeps the repo-owned runtime bootstrap preamble local, matching other directly executable proof CLIs. The entrypoint must work in both source-checkout and installed-plugin layouts; centralizing this short bootstrap would add indirection without removing the per-entrypoint portability contract.",
       "reviewed_at": "2026-08-06",
@@ -3309,6 +3351,13 @@
       "id": "f1ecdb322d57f29e",
       "note": "a 14-member family of two-to-five-line `if <cond>: return <literal>` guard clauses spread over eight unrelated modules (a staged-reversion check, a mutation-testing proposer, a t-signal classifier, a prompt-sentinel scorer, a tool-recommendation table, a JS eval runtime, and this release qualifier). It has no shared concept to centralize: each member returns its own module's own message for its own condition. It surfaced as new because widening the `same-proxy-flagged` qualifier text (S93) changed this file's normalized shape, not because duplication was introduced; the same guard-clause chain is present at 920b05ab.",
       "reviewed_at": "2026-07-28",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f1fc3a438d383388",
+      "note": "two-line list comprehension filtering event dicts by a key; four members, three untouched; lesson_evaluation_records_lib.py:255-256 (#627) is the joining member, selecting the score events belonging to one session. Idiom-sized.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {

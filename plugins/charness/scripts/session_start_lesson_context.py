@@ -107,7 +107,9 @@ _SESSION_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 # stdlib-only module, never the other way.
 SEED_LESSON_NEXT_STEP = (
     "Next: a lesson enters the ledger only from a retro bullet tagged "
-    "`recurrence-class: <slug>`; tag one, then append its seed transition. Until at least "
+    "`recurrence-class: <slug>`; tag one, then append its seed transition with "
+    "`python3 scripts/seed_lesson_transitions.py --repo-root . --dry-run` to inspect and the "
+    "same command without `--dry-run` to write. Until at least "
     "one lesson is seeded, `record_lesson_session.py` refuses with `preview selected no "
     "eligible lessons` and the only honest retro disposition stays `not-evaluated / "
     "missing-start`."

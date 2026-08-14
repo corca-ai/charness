@@ -31,7 +31,13 @@ def test_preview_is_flat_seeded_and_leaves_empty_archive_slot_unfilled() -> None
     assert first["kind"] == preview.KIND
     assert first["schema_version"] == preview.SCHEMA_VERSION
     assert first["mode"] == "preview"
-    assert first["eligible_count"] == 16
+    # Derived from the live ledger, not transcribed. This asserted `== 16` until
+    # `seed_lesson_transitions.py` (#625) made adding a lesson a routine command,
+    # at which point a hardcoded count fails on every seed and says nothing about
+    # the preview. The invariant is that every seeded lesson is eligible.
+    assert first["eligible_count"] == len(
+        json.loads((RETRO_DIR / "lesson-ledger.json").read_text(encoding="utf-8"))["lessons"]
+    )
     assert first["bucket_counts"] == {
         "recent": 3,
         "value": 3,

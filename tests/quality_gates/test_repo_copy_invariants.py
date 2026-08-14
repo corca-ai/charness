@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import ast
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -187,6 +189,124 @@ def test_check_test_repo_copy_invariants_accepts_release_only_copy_heavy_test(
     result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
+
+
+def test_recorded_standing_copy_heavy_test_is_exempt_from_the_marker_rule_only(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """A test-level exemption, scoped to one test's marker requirement.
+
+    `ALLOWED_FILES` was the alternative and is the wrong tool: it skips a file
+    from ALL FOUR checks, so exempting one marker would have disarmed the
+    ignore-patterns, copytree-ROOT, and real-checkout-write rules over every test
+    in that file, permanently.
+    """
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "repo_copy.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "test_copy_heavy.py").write_text(
+        "def test_recorded(tmp_path, seeded_charness_repo):\n"
+        "    clone_seeded_charness_repo(tmp_path, seeded_charness_repo)\n\n"
+        "def test_unrecorded(tmp_path, seeded_charness_repo):\n"
+        "    clone_seeded_charness_repo(tmp_path, seeded_charness_repo)\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        _repo_copy_invariants,
+        "STANDING_COPY_HEAVY_TESTS",
+        {"tests/test_copy_heavy.py::test_recorded": "+0.4s measured"},
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    # The recorded one passes; its unrecorded sibling in the SAME FILE still fails.
+    assert result.returncode == 1
+    assert "::test_recorded" not in result.stderr
+    assert "tests/test_copy_heavy.py::test_unrecorded" in result.stderr
+    assert "STANDING_COPY_HEAVY_TESTS" in result.stderr
+
+
+def test_a_recorded_standing_test_still_obeys_the_other_three_checks(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The exemption must not become a file-level pass by another name."""
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "repo_copy.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "test_copy_heavy.py").write_text(
+        "import shutil\n"
+        "from pathlib import Path\n\n"
+        "ROOT = Path('/repo')\n"
+        "IGNORE = shutil.ignore_patterns('.git')\n\n"
+        "def test_recorded(tmp_path, seeded_charness_repo):\n"
+        "    clone_seeded_charness_repo(tmp_path, seeded_charness_repo)\n"
+        "    shutil.copytree(ROOT, tmp_path / 'repo')\n"
+        "    (ROOT / 'x.txt').write_text('mutating the real checkout')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        _repo_copy_invariants,
+        "STANDING_COPY_HEAVY_TESTS",
+        {"tests/test_copy_heavy.py::test_recorded": "+0.4s measured"},
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    # All three of the other checks still fire on the exempted test's file.
+    assert "defines shutil.ignore_patterns" in result.stderr
+    assert "shutil.copytree(ROOT, ...)" in result.stderr
+    assert any("write_text" in line or "ROOT" in line for line in result.stderr.splitlines())
+    # ...and the marker rule stays exempted, so the exemption is scoped, not broad.
+    assert "pytest.mark.release_only" not in result.stderr
+
+
+def test_the_recorded_standing_test_exists_and_is_still_copy_heavy() -> None:
+    """An entry that outlives its test becomes a silent hole.
+
+    Judged with the GATE'S OWN per-function predicate, not a per-file regex. A
+    review round caught the weaker version: `COPY_HEAVY_TOKEN_RE.search(source)`
+    scans the whole file and is satisfied by the `from tests.repo_copy import
+    clone_seeded_charness_repo` line alone, so a test rewritten to use a light
+    fixture would keep its exemption with nothing red -- and a later re-heavying
+    of that name would then be exempt without a measured cost.
+    """
+    for entry, cost in _repo_copy_invariants.STANDING_COPY_HEAVY_TESTS.items():
+        rel_path, separator, test_name = entry.partition("::")
+        assert separator and test_name, f"entry must be `path::test_name`: {entry}"
+        assert (ROOT / rel_path).is_file(), entry
+        tree = ast.parse((ROOT / rel_path).read_text(encoding="utf-8"), filename=rel_path)
+        node = next(
+            (
+                item
+                for item in ast.walk(tree)
+                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and item.name == test_name
+            ),
+            None,
+        )
+        assert node is not None, f"{entry} names no such test"
+        # The same predicate the gate exempts on, so "still copy-heavy" cannot
+        # drift away from what the gate means by copy-heavy.
+        assert _repo_copy_invariants._copy_heavy_reason(node) is not None, entry
+        # "MEASURED and recorded" made machine-checkable: a comment can be deleted
+        # with nothing red, a required value cannot.
+        assert re.search(r"\d", cost) and re.search(r"\b(s|ms|sec|second)", cost), entry
+
+
+def test_the_standing_exemption_membership_is_pinned() -> None:
+    """A second entry must be argued in a gate test, not only in the gate.
+
+    The recorded bar ("observes something no standing gate otherwise observes,
+    and the cost is measured") is prose that nothing executes, so without this
+    the next entry costs one string and no review.
+    """
+    assert set(_repo_copy_invariants.STANDING_COPY_HEAVY_TESTS) == {
+        "tests/control_plane/test_integrations_validation.py"
+        "::test_tool_doctor_cli_returns_nonzero_for_blocking_disposition"
+    }
 
 
 def test_check_test_repo_copy_invariants_flags_real_repo_root_write(

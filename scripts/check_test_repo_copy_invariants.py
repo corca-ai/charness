@@ -18,6 +18,40 @@ ALLOWED_FILES = frozenset(
         "tests/quality_gates/test_repo_copy_invariants.py",
     }
 )
+# Copy-heavy tests deliberately kept in the STANDING lane, keyed `path::test_name`
+# so the exemption covers exactly one test's marker requirement and nothing else.
+#
+# Deliberately NOT `ALLOWED_FILES`: that set skips a file from ALL FOUR checks --
+# inline `shutil.ignore_patterns`, `copytree(ROOT, ...)`, the marker rule, and
+# direct writes to the real checkout -- and its two current members are files the
+# rule cannot structurally apply to (the canonical module, and this guard's own
+# self-test, which must write violating sample code into fake repos). Adding an
+# ordinary test file there would silently disarm three unrelated checks over every
+# test in it, permanently.
+#
+# The bar for an entry: the test must observe something no standing gate otherwise
+# observes, and the cost of keeping it standing must be MEASURED.
+#
+# A MAPPING, not a set, so the measured cost is a required VALUE rather than a
+# comment. A comment can be deleted with nothing red; a missing value cannot, and
+# `tests/quality_gates/test_repo_copy_invariants.py` asserts each one carries a
+# figure and a time unit. Membership is pinned there too, so a second entry has to
+# be argued in a gate test and not only added here as one string.
+STANDING_COPY_HEAVY_TESTS = {
+    # `charness tool doctor`'s exit code and payload shape is a public CLI contract
+    # a consumer hits on day one, and this is its only STANDING observer -- the
+    # other `tool doctor` drivers in tests/charness_cli/test_tool_lifecycle.py are
+    # all release_only. It sat in the release-only lane too, so a flag rename broke
+    # it and nothing said so until an operator hit the same break by hand. Moving
+    # the whole release lane into standing was rejected instead: that adds minutes
+    # of subprocess-heavy tests, and merging the two labels is what previously made
+    # the runtime budget blind to a standing regression.
+    "tests/control_plane/test_integrations_validation.py"
+    "::test_tool_doctor_cli_returns_nonzero_for_blocking_disposition": (
+        "+1.7s on this file (2.09s -> 3.75s) against a ~44s standing pytest phase; overlaps under xdist"
+    ),
+}
+
 SKIP_DIR_NAMES = {
     ".cautilus",
     ".charness",
@@ -139,10 +173,16 @@ def _copy_heavy_marker_violations(source: str, rel_path: Path) -> list[str]:
         reason = _copy_heavy_reason(node)
         if reason is None or _function_is_release_only(node):
             continue
+        if f"{rel_path.as_posix()}::{node.name}" in STANDING_COPY_HEAVY_TESTS:
+            continue
         violations.append(
             f"{rel_path.as_posix()}::{node.name}: uses {reason}. "
             "Copy-heavy repo/home/plugin tests must be marked `pytest.mark.release_only` "
-            "so standing pre-push excludes full-copy lifecycle proof."
+            "so standing pre-push excludes full-copy lifecycle proof. The only alternative is a "
+            "`path::test_name` entry in `STANDING_COPY_HEAVY_TESTS` in "
+            "scripts/check_test_repo_copy_invariants.py, whose bar is BOTH halves: the test "
+            "observes something no standing gate otherwise observes, AND its cost as a standing "
+            "test is measured and recorded as the entry's value."
         )
     return violations
 

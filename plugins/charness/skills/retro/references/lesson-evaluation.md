@@ -70,6 +70,30 @@ receipted session, if any, is still unclaimed, with its frozen lesson ids, its
 bundle path, and a filled-in score command. Append scores first, write the
 disposition second, run the reconciler after persistence.
 
+## Being asked, not just routed
+
+When the repo-owned evaluator defines one, that block also carries a
+`solicitation`: the questions the evaluator wants answered about the emitted
+list, alongside each lesson's emitted wording rather than its id alone. Routing
+an author to a session says where to record a judgment; it does not obtain one.
+A lesson that failed to change anything produces no signal unless something
+asks, and with no signal there is nothing later to judge its form against.
+
+Reading a lesson's wording at retro time is not presentation, and an evaluator
+that renders wording here must not be read as licensing a score for it. The
+scoring precondition is unchanged: a list emitted before the affected work.
+
+Answer the evaluator's harmful or negative question first and explicitly. A
+reader walking a list volunteers what helped long before what hurt, and the
+unhelpful cases are the ones that can change a lesson's form. Answering is still
+not the same as scoring everything: an unobserved lesson stays unscored, and a
+high score count is not a health measure.
+
+Claim only what the evaluator implements. Where scoring feeds a ranking, a score
+changes the weight at which a lesson is drawn; it does not rewrite the lesson.
+Unless the repo declares a mechanism that revises wording from scores, do not
+tell an author that scoring will.
+
 ## Declaring an evaluator, or not
 
 Declaring one is an explicit repo-level opt-in, because it turns on a per-retro

@@ -376,8 +376,13 @@ def test_the_recorded_probe_still_matches_todays_tree():
     assert live["field_mention_residuals"] == recorded["field_mention_residuals"], (
         probe_drift_message("field_mention_residuals", probe=FLOOR_PROBE)
     )
-    assert live["label_value_residuals"]["min"] == recorded["label_value_residuals"]["min"], (
-        probe_drift_message("label_value_residuals.min", probe=FLOOR_PROBE)
+    # The WHOLE dict, not just `min`. `_provenance.baseline_check` claims the gate
+    # pins "every residual figure", and it did not: `count` and `median` were
+    # unpinned, and `count` is one of the two figures the 2026-08-14 refresh moved
+    # (407 -> 411). A claim of gate coverage over a field the gate never compared
+    # is the declaration-is-not-corroboration defect this file is named for.
+    assert live["label_value_residuals"] == recorded["label_value_residuals"], (
+        probe_drift_message("label_value_residuals", probe=FLOOR_PROBE)
     )
     assert live["citations_lowered_below_requirement"] == []
     assert live["label_value_residuals"]["below_floor"] == 0

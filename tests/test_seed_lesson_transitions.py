@@ -1,0 +1,333 @@
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from scripts import lesson_ledger_lib as ledger
+from scripts import seed_lesson_transitions as seeder
+from tests.test_lesson_ledger import ROOT, _git, _ledger, _retro, _validate
+
+
+def _empty_ledger(repo: Path) -> Path:
+    """A ledger with no transitions, the state `init_lesson_ledger.py` leaves."""
+    path = repo / "charness-artifacts/retro/lesson-ledger.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "kind": ledger.KIND,
+                "schema_version": ledger.SCHEMA_VERSION,
+                "transitions": [],
+                "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
+                "lifecycle_events": [],
+                "session_events": [],
+                "score_events": [],
+                "lessons": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def _seed(repo: Path, **kwargs: object) -> dict:
+    return seeder.seed_transitions(
+        repo_root=repo,
+        output_dir=repo / "charness-artifacts/retro",
+        summary_path=repo / "charness-artifacts/retro/recent-lessons.md",
+        lesson_ids=kwargs.get("lesson_ids"),  # type: ignore[arg-type]
+        dry_run=bool(kwargs.get("dry_run")),
+    )
+
+
+def test_seeding_an_empty_ledger_makes_a_tagged_class_validate(tmp_path: Path) -> None:
+    """The whole point of #625: ledger exists -> a lesson is actually in it.
+
+    The pre-fix state was an empty ledger that validated forever while
+    `render_lesson_selection_preview` reported `0 eligible`, and no command could
+    change that.
+    """
+    _retro(tmp_path, "source.md", "a")
+    path = _empty_ledger(tmp_path)
+    assert _validate(tmp_path)["lesson_count"] == 0
+
+    receipt = _seed(tmp_path)
+
+    assert receipt["seeded_count"] == 1
+    assert receipt["seeded"][0] == {
+        "sequence": 1,
+        "transition_id": "seed-a",
+        "lesson_id": "a",
+        "source_retro": "charness-artifacts/retro/source.md",
+    }
+    assert _validate(tmp_path)["lesson_count"] == 1
+    lesson = json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]
+    assert lesson == {
+        "source_retro": "charness-artifacts/retro/source.md",
+        "transition_id": "seed-a",
+        "score_total": 0,
+        "score_count": 0,
+        "state": "active",
+        "last_lifecycle_event_id": None,
+    }
+
+
+def test_dry_run_reports_the_plan_and_writes_nothing(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _empty_ledger(tmp_path)
+    before = path.read_bytes()
+
+    receipt = _seed(tmp_path, dry_run=True)
+
+    assert receipt["dry_run"] is True
+    assert [item["lesson_id"] for item in receipt["seeded"]] == ["a"]
+    assert path.read_bytes() == before
+
+
+def test_empty_plan_is_not_reported_as_a_dry_run(tmp_path: Path) -> None:
+    """`dry_run` must mean "asked to rehearse", never "happened to write nothing"."""
+    _retro(tmp_path, "source.md", "a")
+    _ledger(tmp_path)
+
+    receipt = _seed(tmp_path)
+
+    assert receipt["seeded"] == []
+    assert receipt["dry_run"] is False
+
+
+def test_appending_a_later_class_is_the_same_operation_as_seeding(tmp_path: Path) -> None:
+    """A lesson authored after the ledger existed must have a path in.
+
+    A bootstrap-only seeder would close the cold start and leave this open, which
+    is the state the authoring repo was actually in: 16 seeded classes, 15 tagged
+    classes with no command that could add them.
+    """
+    _retro(tmp_path, "source.md", "a")
+    _ledger(tmp_path)
+    _retro(tmp_path, "later.md", "b")
+
+    receipt = _seed(tmp_path)
+
+    assert [item["lesson_id"] for item in receipt["seeded"]] == ["b"]
+    assert receipt["seeded"][0]["sequence"] == 2
+    assert set(json.loads((tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text()) ["lessons"]) == {"a", "b"}
+
+
+def test_multi_source_class_cites_its_latest_source(tmp_path: Path) -> None:
+    """The digest renders a class from its newest observation, so the ledger cites
+    the same artifact; citing an older member would attribute the shown wording to
+    a retro that does not contain it."""
+    _retro(tmp_path, "2026-08-01-old.md", "a")
+    _retro(tmp_path, "2026-08-30-new.md", "a")
+    _empty_ledger(tmp_path)
+
+    receipt = _seed(tmp_path)
+
+    assert receipt["seeded"][0]["source_retro"] == "charness-artifacts/retro/2026-08-30-new.md"
+    assert _validate(tmp_path)["lesson_count"] == 1
+
+
+def test_untagged_lesson_is_never_invented_as_a_class(tmp_path: Path) -> None:
+    path = tmp_path / "charness-artifacts/retro/untagged.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "# Session Retro\nDate: 2026-08-12\n\n## Waste\n\n- a lesson with no class tag\n",
+        encoding="utf-8",
+    )
+    ledger_path = _empty_ledger(tmp_path)
+    before = ledger_path.read_bytes()
+
+    assert _seed(tmp_path)["seeded"] == []
+    assert ledger_path.read_bytes() == before
+    with pytest.raises(ValueError, match="not a tagged retro class"):
+        _seed(tmp_path, lesson_ids=["invented"])
+    assert ledger_path.read_bytes() == before
+
+
+def test_reseeding_a_seeded_lesson_is_refused_without_rewriting(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path)
+    before = path.read_bytes()
+
+    with pytest.raises(ValueError, match="already seeded"):
+        _seed(tmp_path, lesson_ids=["a"])
+
+    assert path.read_bytes() == before
+
+
+def test_selected_subset_leaves_other_classes_unseeded(tmp_path: Path) -> None:
+    _retro(tmp_path, "a.md", "a")
+    _retro(tmp_path, "b.md", "b")
+    _empty_ledger(tmp_path)
+
+    receipt = _seed(tmp_path, lesson_ids=["b"])
+
+    assert [item["lesson_id"] for item in receipt["seeded"]] == ["b"]
+    assert set(_validate(tmp_path) and json.loads(
+        (tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text()
+    )["lessons"]) == {"b"}
+
+
+def test_over_budget_seeding_is_refused_with_its_arithmetic(tmp_path: Path, monkeypatch) -> None:
+    _retro(tmp_path, "a.md", "a")
+    _retro(tmp_path, "b.md", "b")
+    # Both module objects: the seeder imports the library through
+    # `import_repo_module`, which can hand back a distinct instance, and the ledger
+    # file itself must carry the same budget or its own fixed-budget check fires
+    # first and the seeder's arithmetic is never reached.
+    for module in {id(ledger): ledger, id(seeder._ledger): seeder._ledger}.values():
+        monkeypatch.setattr(module, "ACTIVE_LESSON_BUDGET", 1)
+    path = _empty_ledger(tmp_path)
+    before = path.read_bytes()
+
+    with pytest.raises(ValueError, match="past the fixed budget of 1"):
+        _seed(tmp_path)
+
+    assert path.read_bytes() == before
+    # And the one-lesson subset still fits, so the refusal is about the arithmetic
+    # rather than the command being broken at a small budget.
+    assert _seed(tmp_path, lesson_ids=["a"])["seeded_count"] == 1
+
+
+def test_committed_transition_prefix_is_preserved_across_a_seed(tmp_path: Path) -> None:
+    """The append-only gate compares against `git show HEAD:<path>`, which is exactly
+    what the hand-edit this command replaces could not satisfy."""
+    _retro(tmp_path, "source.md", "a")
+    _ledger(tmp_path)
+    _git(tmp_path, "init")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    _retro(tmp_path, "later.md", "b")
+
+    _seed(tmp_path)
+
+    payload = json.loads((tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text())
+    assert [item["lesson_id"] for item in payload["transitions"]] == ["a", "b"]
+    assert _validate(tmp_path)["transition_count"] == 2
+
+
+def test_cli_dry_run_and_write_roundtrip(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _empty_ledger(tmp_path)
+    command = [
+        sys.executable,
+        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        "--repo-root",
+        str(tmp_path),
+        "--json",
+    ]
+
+    rehearsal = subprocess.run([*command, "--dry-run"], check=False, capture_output=True, text=True)
+    assert rehearsal.returncode == 0, rehearsal.stderr
+    planned = json.loads(rehearsal.stdout)
+    assert planned["dry_run"] is True and planned["seeded_count"] == 1
+    assert "unrepairably" in planned["freeze_note"]
+    assert json.loads(path.read_text(encoding="utf-8"))["transitions"] == []
+
+    applied = subprocess.run(command, check=False, capture_output=True, text=True)
+    assert applied.returncode == 0, applied.stderr
+    assert json.loads(applied.stdout)["seeded"] == planned["seeded"]
+    assert _validate(tmp_path)["lesson_count"] == 1
+
+
+def test_prose_receipt_carries_the_freeze_warning_on_both_paths(tmp_path: Path) -> None:
+    """The receipt an operator actually reads, not just the JSON field.
+
+    The freeze warning was gated on the WRITE, so it arrived only after the bytes
+    it warned about had landed -- while the dry run, the inspection moment the
+    whole mitigation rests on, stayed silent. Untested prose on a surface whose
+    own job is stating a risk is the `proof-surface-message-drift` class this
+    slice seeded as a lesson.
+    """
+    _retro(tmp_path, "source.md", "a")
+    _empty_ledger(tmp_path)
+    command = [
+        sys.executable,
+        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        "--repo-root",
+        str(tmp_path),
+    ]
+
+    rehearsal = subprocess.run([*command, "--dry-run"], check=False, capture_output=True, text=True)
+    assert rehearsal.returncode == 0, rehearsal.stderr
+    assert "Would seed 1 transition(s)" in rehearsal.stdout
+    assert "unrepairably" in rehearsal.stdout
+    assert "a <- charness-artifacts/retro/source.md" in rehearsal.stdout
+
+    applied = subprocess.run(command, check=False, capture_output=True, text=True)
+    assert applied.returncode == 0, applied.stderr
+    assert "Seeded 1 transition(s)" in applied.stdout
+    assert "unrepairably" in applied.stdout
+
+    # And the nothing-to-do receipt names why, rather than printing an empty list.
+    idle = subprocess.run(command, check=False, capture_output=True, text=True)
+    assert idle.returncode == 0, idle.stderr
+    assert "No unseeded tagged classes" in idle.stdout
+    assert "recurrence-class" in idle.stdout
+
+
+def test_two_concurrent_seeders_smoke_check_the_shared_lock(tmp_path: Path) -> None:
+    """A SMOKE CHECK, deliberately weaker than it first claimed to be.
+
+    Two unsynchronized `Popen` processes cannot force the interleaving: with two
+    interpreter cold starts dominating a sub-millisecond critical section, this
+    would usually pass even with the lock removed. The real mutual-exclusion proof
+    for this lock is `tests/test_lesson_ledger.py`'s fork-plus-`Barrier` pair,
+    which rendezvouses both writers inside the window and skips where `fcntl` is
+    unavailable.
+
+    Kept because it cannot produce a false FAILURE -- with the lock held the loser
+    always re-reads inside it and plans zero -- so it catches a gross regression
+    (a double-seed or a lost append) at near-zero cost. It does not establish
+    mutual exclusion, and an earlier docstring claiming parity with that fork-based
+    proof was corrected by a review round.
+    """
+    _retro(tmp_path, "a.md", "a")
+    _retro(tmp_path, "b.md", "b")
+    _empty_ledger(tmp_path)
+
+    command = [
+        sys.executable,
+        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        "--repo-root",
+        str(tmp_path),
+        "--json",
+    ]
+    first, second = (
+        subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        for _ in range(2)
+    )
+    outputs = [process.communicate() for process in (first, second)]
+    codes = [process.returncode for process in (first, second)]
+
+    assert codes == [0, 0], outputs
+    # Whoever wins seeds both; the loser re-reads inside the lock and plans nothing.
+    seeded = sorted(json.loads(out)["seeded_count"] for out, _err in outputs)
+    assert seeded == [0, 2], outputs
+    payload = json.loads(
+        (tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text(encoding="utf-8")
+    )
+    assert [item["lesson_id"] for item in payload["transitions"]] == ["a", "b"]
+    assert _validate(tmp_path)["lesson_count"] == 2
+
+
+def test_cli_refuses_a_missing_ledger_and_names_the_bootstrap(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    command = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/seed_lesson_transitions.py"),
+            "--repo-root",
+            str(tmp_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert command.returncode == 1
+    assert "init_lesson_ledger.py" in command.stderr
+    assert not (tmp_path / "charness-artifacts/retro/lesson-ledger.json").exists()

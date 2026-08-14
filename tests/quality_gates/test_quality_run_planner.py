@@ -289,13 +289,23 @@ def test_quality_run_plan_uses_adapter_packets_when_generic_runner_is_absent(
     assert "read-only-quality" not in packets
     assert packets["adapter-gate-1"]["command"] == "npm run check"
     assert packets["adapter-security-1"]["command"] == "npm audit --omit=dev"
+    # Every repo-native catalog gate this consumer lacks, reported as unavailable
+    # rather than advertised. `lesson-lifecycle-review` joined when the charness
+    # lesson-lifecycle briefing landed (#626); it is charness-local, so a consumer
+    # must see it here and never in `gate_packets`.
     assert plan["declaration_lifecycle"]["unavailable_catalog_gates"] == [
         {
             "id": "read-only-quality",
             "command": "./scripts/run-quality.sh --read-only",
             "reason": "missing repo-native command scripts/run-quality.sh",
-        }
+        },
+        {
+            "id": "lesson-lifecycle-review",
+            "command": "./scripts/render_lesson_lifecycle_review.py --repo-root .",
+            "reason": "missing repo-native command scripts/render_lesson_lifecycle_review.py",
+        },
     ]
+    assert "lesson-lifecycle-review" not in packets
     assert {
         "kind": "catalog_gate_unavailable",
         "detail": "read-only-quality: missing repo-native command scripts/run-quality.sh",

@@ -70,6 +70,18 @@ that retains existing comments.
    extraction, interface narrowing, advisory, existing-gate reuse, or a
    candidate floor that has passed the north-star and floor-addition-restraint
    checks.
+   When the repo declares a lesson evaluator, "could this prose be a validator
+   instead" is the same question on its recorded lessons, and it belongs here
+   rather than in `retro`: a retro sees one session, and promoting a lesson is a
+   multi-session claim about the always-loaded contract surface. Read the
+   evaluator's lifecycle evidence and judge each lesson as graduate, rewrite in
+   place, or strengthen its binding to a step. Judge on ANCHORS — the recorded
+   moment where a lesson changed or failed to change an action — never on
+   recurrence count, which selects the loudest lesson rather than the one whose
+   prose is the problem. A lesson with no anchored evidence is undetermined, not
+   a candidate. Graduation stays a proposal behind review; archive and
+   resurrection stay explicit reviewed events, and no score value triggers
+   either automatically.
 8. Scaffold the quality artifact FIRST with
    `scaffold_quality_artifact.py --repo-root .` (it emits the artifact contract as
    a JSON payload whose `template` already passes the validator) and fill real

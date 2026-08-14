@@ -358,6 +358,11 @@ def build_plan(
     work_paths, work_paths_source = _work_paths(repo_root, changed_paths)
     work_class = _classify_work_class(work_paths)
     lens_brief = _lens_brief(work_class)
+    # Hoisted so a barrier can be conditioned on it. A barrier that names
+    # `lesson_session[].solicitation` in a repo with no evaluator points at keys
+    # that payload does not carry -- the "names a path nothing creates" defect this
+    # planner's own lesson-routing module cites as its motivation.
+    lesson_session = _lesson_session(repo_root, artifact)
     return ENVELOPE.build_envelope(
         schema_version="retro.run_plan.v1",
         required_reads=_required_reads(
@@ -374,7 +379,7 @@ def build_plan(
         artifact=artifact,
         on_demand_reads=_on_demand_reads(),
         date_activated_rules=_date_activated_rules(repo_root),
-        lesson_session=_lesson_session(repo_root, artifact),
+        lesson_session=lesson_session,
         phase_barriers=[
             "Open required_reads (esp. expert-lens.md for the briefed lens) before writing the retro.",
             "Read date_activated_rules before concluding a floor is broken: a section your last "
@@ -386,6 +391,16 @@ def build_plan(
             "the score count, so it is the assertion ABOUT the appends and can never drive them; "
             "`state: not-established` means the only honest disposition is the `honest_disposition` "
             "it names, and `state: not-configured` means the floor is inert.",
+            *(
+                [
+                    "When `lesson_session.sessions[]` carries a `solicitation`, answer it against that "
+                    "session's own `lessons` before deciding the disposition, and answer its "
+                    "harmful/negative question first and out loud. The evaluator owns what the "
+                    "answers mean; do not restate its scoring rules from memory."
+                ]
+                if lesson_session.get("sessions")
+                else []
+            ),
             "Treat gate_packets as cheap deterministic evidence: trust them for shape, not for judgment.",
             "Never close without a Persisted: yes/no line.",
         ],

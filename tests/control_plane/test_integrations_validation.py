@@ -367,13 +367,13 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path, mon
 # in the lane no standing gate runs -- so a flag rename broke it and nothing said
 # so until an operator hit the same break by hand. `release_only` means "excluded
 # from standing pre-push", which is the wrong home for an assertion about a
-# command a consumer runs on day one. Measured cost of moving it: +1.7s on this
-# file (2.09s -> 3.75s), against a standing pytest phase of ~44s, and it overlaps
-# under xdist. The alternative -- making the standing battery run the whole
-# release lane -- was rejected on the cost `run-quality.sh` already records beside
-# `pytest-release`: that lane adds minutes of subprocess-heavy tests, and merging
-# the two labels is what previously made the runtime budget blind to a standing
-# regression.
+# command a consumer runs on day one.
+#
+# That decision is RECORDED, not just argued here: this test is listed in
+# `scripts/check_test_repo_copy_invariants.STANDING_COPY_HEAVY_TESTS`, which holds
+# the measured cost and the rejected alternative. The decision previously lived
+# only in this comment while the guard forbade it, so the guard failed for a week
+# behind a skipped broad gate. Change one and the other refuses.
 def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     tools_dir = repo / "integrations" / "tools"
