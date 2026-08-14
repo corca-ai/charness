@@ -17,7 +17,9 @@ import builtins
 
 import pytest
 
-from .test_managed_install import load_charness_module
+from .test_managed_install import CLI, load_charness_module
+
+ROOT = CLI.parent
 
 
 @pytest.fixture(scope="module")
@@ -69,3 +71,44 @@ def test_an_unreadable_yaml_payload_is_refused_with_the_stdout_that_produced_it(
     assert "did not return a readable YAML payload" in message
     assert "STDOUT:" in message
     assert "a: [1," in message
+
+
+def test_repo_onboarding_parses_the_skill_routing_payload_through_the_yaml_fallback(
+    charness, tmp_path, monkeypatch
+) -> None:
+    """The `init`/`doctor` call site, which is where the original break was observed.
+
+    `charness init` passed `--json` to `render_skill_routing.py` after the flag stopped
+    being declared and then `json.loads`-ed the result: a double fault, since the flag
+    exited 2 AND the payload it would have produced was YAML. Covering
+    `parse_repo_script_payload` alone does not pin the caller, so this drives the
+    onboarding payload with the routing script answering in YAML -- the format it
+    actually speaks -- and asserts the routing block survives into the payload.
+
+    `invoke_repo_script` is replaced rather than spawned: the contract under test is
+    the parse-and-embed at the call site, not the subprocess, and this repo's ratchets
+    treat a new script spawn as a boundary that needs its own justification.
+    """
+    target = tmp_path / "consumer"
+    (target / ".git").mkdir(parents=True)
+    (target / "AGENTS.md").write_text("# consumer\n", encoding="utf-8")
+
+    answers = {
+        "skills/public/setup/scripts/inspect_repo.py": '{"repo_mode": "PARTIAL", "agent_docs": {}}',
+        "skills/public/setup/scripts/render_skill_routing.py": (
+            "recommended_action: adopt\npublic_skills:\n  - setup\n"
+        ),
+    }
+
+    def fake_invoke(_source_root, script, *args):
+        assert "--json" not in args, f"`{script}` must not be asked for a removed flag"
+        return answers[script]
+
+    monkeypatch.setattr(charness, "invoke_repo_script", fake_invoke)
+
+    payload = charness.build_repo_onboarding_payload(
+        source_repo_root=ROOT, target_repo_root=target
+    )
+
+    assert payload["skill_routing"] == {"recommended_action": "adopt", "public_skills": ["setup"]}
+    assert payload["inspection"]["repo_mode"] == "PARTIAL"

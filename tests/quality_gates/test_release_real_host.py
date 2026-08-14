@@ -598,3 +598,40 @@ def test_distinct_channel_section_carries_the_claim_and_its_limits() -> None:
         {"status": "confirmed", "channel": "http", "url": "https://x/v1", "fetched_url": "https://x/v1"}
     )
     assert not any("Redirected to" in line for line in same)
+
+
+def test_an_unestablished_real_host_scope_is_recorded_by_name_not_as_a_false_verdict() -> None:
+    """The else-arm of `record_real_host_verdict`, flagged as unproven when it shipped.
+
+    `check_real_host_proof` emits `required` ONLY when it evaluated the configured
+    triggers against a non-empty changed scope. Two publish call sites used to
+    subscript it unconditionally, which is a KeyError once the key can be absent --
+    and writing `real_host_required: null` instead would put a key SHAPED like a
+    verdict where none was produced, which is the conflation that state exists to end.
+    So the absence is recorded under its own name, and the checklist still travels.
+    """
+    from .release_script_loading import load_release_script
+
+    cli = load_release_script("publish_release_cli", suffix="real_host_verdict")
+    payload: dict[str, object] = {}
+
+    cli.record_real_host_verdict(
+        payload, {"evaluation_scope": "empty", "checklist": ["probe the host"]}
+    )
+
+    assert "real_host_required" not in payload
+    assert payload["real_host_verdict_unestablished_scope"] == "empty"
+    assert payload["real_host_checklist"] == ["probe the host"]
+
+
+def test_an_established_real_host_verdict_is_still_recorded_as_one() -> None:
+    """The other arm, so the fix cannot be "never record a verdict"."""
+    from .release_script_loading import load_release_script
+
+    cli = load_release_script("publish_release_cli", suffix="real_host_verdict_established")
+    payload: dict[str, object] = {}
+
+    cli.record_real_host_verdict(payload, {"required": True, "checklist": []})
+
+    assert payload["real_host_required"] is True
+    assert "real_host_verdict_unestablished_scope" not in payload
