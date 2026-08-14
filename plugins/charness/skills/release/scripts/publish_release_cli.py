@@ -105,6 +105,7 @@ def _execution_context() -> SimpleNamespace:
         "changed_paths",
         "safe_real_host_payload",
         "build_real_host_payload",
+        "record_real_host_verdict",
         "build_retro_trigger_evaluation",
         "build_fresh_checkout_payload",
         "write_current_artifact",
@@ -204,6 +205,23 @@ def run_fresh_checkout_probes(repo_root: Path) -> dict[str, Any]:
         raise SystemExit("fresh checkout release probes blocked publish:\n" + "\n".join(payload.get("blockers", [])))
     return payload
 
+def record_real_host_verdict(payload: dict[str, Any], host_payload: dict[str, Any]) -> None:
+    """Copy the real-host verdict into a release payload, or record that none exists.
+
+    `check_real_host_proof` emits `required` ONLY when it evaluated the configured
+    triggers against a non-empty changed scope. Subscripting it unconditionally
+    would raise for the empty-scope state; writing `real_host_required: null`
+    instead would put a key shaped like a verdict where no verdict was produced,
+    which is the conflation that state exists to end. So the verdict key is
+    written only when there is one, and its absence is recorded by name.
+    """
+    if "required" in host_payload:
+        payload["real_host_required"] = host_payload["required"]
+    else:
+        payload["real_host_verdict_unestablished_scope"] = host_payload.get("evaluation_scope")
+    payload["real_host_checklist"] = host_payload["checklist"]
+
+
 def run_bump(args: argparse.Namespace, repo_root: Path) -> None:
     if args.publish_current:
         return
@@ -230,8 +248,7 @@ def finalize_release_payload(
 ) -> None:
     payload["commit_sha"] = run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
     payload["artifact_path"] = artifact_relpath
-    payload["real_host_required"] = host_payload["required"]
-    payload["real_host_checklist"] = host_payload["checklist"]
+    record_real_host_verdict(payload, host_payload)
     payload["public_release_verification"] = "verified" if release_verified else "failed"
     payload["release_url"] = next((line.strip() for line in reversed(release_stdout.splitlines()) if line.strip()), None)
     if payload["release_url"] and expected_release_url and payload["release_url"] != expected_release_url:

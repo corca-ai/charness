@@ -322,6 +322,16 @@ def main() -> int:
             if isinstance(real_host, dict) and real_host.get("required"):
                 scope = real_host.get("evidence_scope") or "unknown"
                 print(f"real_host=required scope={scope}; inspect --detail evidence_packets.real_host before closeout")
+            elif isinstance(real_host, dict) and "required" not in real_host and "error" not in real_host:
+                # No verdict key means the probe evaluated nothing. Staying SILENT
+                # here reads the same as a clean non-match in the one summary the
+                # release preflight prints, which is the conflation this whole
+                # slice removes -- one surface over.
+                evaluation_scope = real_host.get("evaluation_scope") or "unknown"
+                print(
+                    f"real_host=not-established evaluation_scope={evaluation_scope}; "
+                    "no real-host verdict was produced for this plan"
+                )
         return 0
     finally:
         cancel_timeout()

@@ -298,6 +298,16 @@ def fresh_checkout_lines(fresh_checkout_payload: dict[str, Any] | None) -> list[
         return lines + ["- Fresh-checkout probe status: pending release-helper execution."]
     if fresh_checkout_payload.get("status") == "not_configured":
         return lines + ["- No repo-declared fresh checkout probes were configured for this release."]
+    if fresh_checkout_payload.get("status") == "not_established":
+        # The word alone is not enough in the artifact a human audit reads: the
+        # previous status here was `configured`, which described the ADAPTER and
+        # read as a satisfied probe run. Say what was and was not established.
+        lines.append(
+            "- Fresh-checkout probes are DECLARED but were not run by this invocation, so no "
+            "probe verdict was established here."
+        )
+        lines.extend(f"- `{command}`" for command in fresh_checkout_payload.get("fresh_checkout_probes", []))
+        return lines
     lines.append(f"- Fresh-checkout probe status: {fresh_checkout_payload.get('status')}.")
     lines.extend(f"- `{command}`" for command in fresh_checkout_payload.get("fresh_checkout_probes", []))
     return lines

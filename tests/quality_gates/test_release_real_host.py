@@ -81,19 +81,90 @@ def test_release_real_host_proof_stays_off_for_unrelated_paths() -> None:
     assert payload["checklist"] == []
 
 
-def test_release_real_host_proof_clean_changeset_does_not_trigger() -> None:
+def test_release_real_host_proof_empty_changeset_establishes_no_verdict() -> None:
+    """An EMPTY changed scope is not evidence of "not required".
+
+    This is the byte a release preflight reads. Before, a configured repo handed
+    zero paths exited 0 with `required: False` and printed
+    `real_host=not-required` -- SUCCESS from a check whose own reason string said
+    it evaluated nothing. Now: exit 3 (`run-quality.sh`'s UNESTABLISHED byte),
+    the summary word is `not-established`, and there is NO `required` key, so a
+    caller cannot read a verdict that was never produced.
+
+    Fails on revert on all three assertions independently."""
     result = _run_real_host_proof(
         "--repo-root",
         str(ROOT),
         "--paths",
     )
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == _REAL_HOST.UNESTABLISHED_EXIT, result.stdout + result.stderr
     payload = yaml.safe_load(result.stdout)
-    assert payload["required"] is False
+    assert "required" not in payload
+    assert payload["evaluation_scope"] == "empty"
     assert payload["changed_paths"] == []
     assert payload["surface_hits"] == []
     assert payload["path_hits"] == []
     assert payload["checklist"] == []
+
+    summary = run_loaded_script_main(
+        "check_real_host_proof.py", _REAL_HOST, "--repo-root", str(ROOT), "--paths"
+    )
+    assert summary.returncode == _REAL_HOST.UNESTABLISHED_EXIT
+    assert summary.stdout.startswith("real_host=not-established: ")
+
+
+def test_release_real_host_proof_unconfigured_repo_never_starts_refusing(tmp_path: Path) -> None:
+    """The opt-out stays an ANSWER, at exit 0, however empty the scope is.
+
+    A repo that legitimately declares no triggers must not inherit the empty-scope
+    refusal: `not-configured` is checked before `empty`, and it keeps its
+    `required: False` verdict because "there is nothing to evaluate" IS a verdict.
+
+    NON-DISCRIMINATING BY DESIGN: this passes before and after the change. It is a
+    false-refusal guard on the opt-out path, not bite proof; the test above is
+    what bites."""
+    unconfigured = _seed_adapter(tmp_path / "unconfigured", "")
+
+    for scope_args in (["--paths"], ["--paths", "scripts/anything.py"]):
+        result = _run_real_host_proof("--repo-root", str(unconfigured), *scope_args)
+        assert result.returncode == 0, result.stdout + result.stderr
+        payload = yaml.safe_load(result.stdout)
+        assert payload["evaluation_scope"] == "not-configured"
+        assert payload["required"] is False
+
+
+def test_release_plan_summary_names_an_unestablished_real_host_verdict(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The release preflight's own one-line summary.
+
+    It printed a `real_host=` line only when `required` was TRUE, so an empty
+    changed scope and a clean evaluated non-match were both rendered as SILENCE --
+    the same conflation, one surface over from the probe. Fails on revert: before,
+    nothing was printed for a payload carrying no verdict key."""
+    plan = {
+        "next_action": {"kind": "inspect", "reason": "fixture"},
+        "evidence_packets": {
+            "real_host": {"evaluation_scope": "empty", "evidence_scope": "release_delta"}
+        },
+    }
+    monkeypatch.setattr(_PLANNER, "build_plan", lambda _args: plan)
+    monkeypatch.setattr(_PLANNER, "resume_summary_lines", lambda _payload: [])
+
+    printed = run_loaded_script_main("plan_release_run.py", _PLANNER, "--repo-root", str(ROOT)).stdout
+
+    assert "real_host=not-established" in printed
+    assert "evaluation_scope=empty" in printed
+
+    # Falsifiable counterparts: a real verdict still renders as one, and a clean
+    # evaluated non-match must NOT be labelled unestablished.
+    plan["evidence_packets"]["real_host"] = {"required": True, "evidence_scope": "release_delta"}
+    required = run_loaded_script_main("plan_release_run.py", _PLANNER, "--repo-root", str(ROOT)).stdout
+    assert "real_host=required" in required
+
+    plan["evidence_packets"]["real_host"] = {"required": False, "evaluation_scope": "evaluated"}
+    evaluated = run_loaded_script_main("plan_release_run.py", _PLANNER, "--repo-root", str(ROOT)).stdout
+    assert "not-established" not in evaluated
 
 
 def test_release_real_host_proof_supports_summary_output() -> None:
@@ -376,7 +447,10 @@ def test_real_host_proof_names_the_scope_it_evaluated(tmp_path: Path) -> None:
     unconfigured = _seed_adapter(tmp_path / "unconfigured", "")
 
     empty_scope = _REAL_HOST.build_payload(configured, [])
-    assert empty_scope["required"] is False
+    # The verdict key is emitted ONLY when the triggers were actually evaluated.
+    # Naming the scope was not enough on its own: `required: False` sat beside
+    # `evaluation_scope: empty`, and `required` is the key callers subscript.
+    assert "required" not in empty_scope
     assert empty_scope["evaluation_scope"] == "empty"
     assert "EMPTY" in empty_scope["reason"]
 

@@ -257,7 +257,6 @@ def execute_publish_plan(
     # A prepared release deliberately stops before publication, but its caller still
     # needs the release-time host-proof obligation that the committed record carries.
     # Do not make an execute-stage payload look like the adapter had no host gate.
-    payload["real_host_required"] = host_payload["required"]
-    payload["real_host_checklist"] = host_payload["checklist"]
+    cli.record_real_host_verdict(payload, host_payload)
     payload["next_action"] = "commit a bound claims-review artifact, then resume publication"
     print(json.dumps(payload, ensure_ascii=False, indent=2))

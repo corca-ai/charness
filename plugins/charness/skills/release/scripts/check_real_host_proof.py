@@ -1,4 +1,32 @@
 #!/usr/bin/env python3
+"""Release real-host proof trigger detector, and the state vocabulary it answers in.
+
+``evaluation_scope`` is always emitted and is the key to read FIRST. The VERDICT
+key is ``required``, and it exists ONLY when the triggers were actually evaluated
+against a non-empty changed scope:
+
+- ``evaluated`` -> exit 0, ``required`` present. Configured triggers were
+  compared against N > 0 changed paths. A real answer either way.
+- ``not-configured`` -> exit 0, ``required: False``. This repo declares no
+  triggers, so there is nothing to evaluate. A genuine opt-out, checked BEFORE
+  the empty-scope state so a repo that legitimately declares nothing is answered
+  rather than made to refuse forever.
+- ``empty`` -> exit 3, and NO ``required`` key. Triggers are configured and the
+  changed-path scope handed to this check was EMPTY, so nothing was evaluated
+  against them. An empty scope is not evidence of "not required".
+- ``not-established`` -> exit 1 on stderr. The trigger configuration itself could
+  not be resolved (unknown surface id, unreadable surfaces manifest). A broken
+  config is an error to fix, not an undetermined verdict.
+
+The ``empty`` state used to be exit 0 with ``required: False``, printing
+"real_host=not-required" -- a release gate reporting SUCCESS while its own reason
+string said it evaluated nothing. Exit 3 is ``run-quality.sh``'s
+``UNESTABLISHED_EXIT``, which that runner renders UNPROVEN rather than FAIL for
+the labels that opted into it.
+
+The absent-``required`` rule is what makes this structural: a caller cannot read a
+verdict that was never produced, because there is no key to read.
+"""
 from __future__ import annotations
 
 import argparse
@@ -36,6 +64,12 @@ SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _release_delta_module = SKILL_RUNTIME.load_local_skill_module(__file__, "release_delta")
 collect_immutable_range = _release_delta_module.collect_immutable_range
+
+#: "Ran, established nothing" -- the same byte `run-quality.sh` reads as
+#: UNESTABLISHED and renders UNPROVEN. Deliberately distinct from 1, which this
+#: command already spends on a BROKEN trigger configuration: that is a defect to
+#: repair, while an empty changed scope is a question this run could not answer.
+UNESTABLISHED_EXIT = 3
 
 
 def parse_args() -> argparse.Namespace:
@@ -129,15 +163,35 @@ def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object
     # payload. `scope` names which one, so "not required" stops being a single
     # word covering "we checked and it is fine" and "we never checked" (D7).
     configured = bool(trigger_surfaces or trigger_globs)
+    if configured and not changed_paths:
+        # No `required` key, and exit 3 upstream in `main`. Naming the scope
+        # `empty` was already true here, but it travelled with `required: False`
+        # at exit 0 -- so every caller that reads the verdict key or the byte was
+        # told "not required" by a check that evaluated nothing. The verdict key
+        # is absent because a verdict was never produced.
+        #
+        # Guarded on `configured` so the opt-out above stays FIRST: a repo that
+        # declares no triggers reports `not-configured` at exit 0 forever,
+        # regardless of how many paths it hands in.
+        return {
+            "evaluation_scope": "empty",
+            "changed_paths": changed_paths,
+            "surface_hits": [],
+            "path_hits": [],
+            "checklist": [],
+            "reason": (
+                "Release-time real-host proof triggers are configured, but the changed-path scope "
+                "handed to this check was EMPTY, so nothing was evaluated against them."
+            ),
+            "remediation": (
+                "Hand this check the release's changed paths (--paths or --changed-range) to get a "
+                "verdict. An empty scope is not evidence that real-host proof is not required."
+            ),
+        }
     if not configured:
         scope, reason = "not-configured", (
             "This repo declares no release-time real-host proof triggers "
             "(`real_host_required_surfaces` / `real_host_required_path_globs`), so no check ran."
-        )
-    elif not changed_paths:
-        scope, reason = "empty", (
-            "Release-time real-host proof triggers are configured, but the changed-path scope "
-            "handed to this check was EMPTY, so nothing was evaluated against them."
         )
     elif required:
         scope, reason = "evaluated", "Changed surfaces hit configured release-time real-host proof seams."
@@ -179,9 +233,14 @@ def main() -> int:
         return 1
     if args.detail:
         yaml_output.emit_yaml(payload)
+    elif "required" not in payload:
+        # No verdict key, so the summary line must not spell a verdict. The word
+        # `not-required` here was the whole defect at the one-line surface most
+        # callers read.
+        print(f"real_host=not-established: {payload['reason']}")
     else:
         print(f"real_host={'required' if payload['required'] else 'not-required'}: {payload['reason']}")
-    return 0
+    return UNESTABLISHED_EXIT if "required" not in payload else 0
 
 
 if __name__ == "__main__":

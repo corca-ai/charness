@@ -1,4 +1,31 @@
 #!/usr/bin/env python3
+"""Release fresh-checkout probe checker, and the state vocabulary it answers in.
+
+The key to read FIRST is ``status``. A verdict about the probes lives in
+``probe_results`` (and ``blockers``), and those keys exist ONLY when this
+invocation actually executed the declared probes:
+
+- ``passed`` / ``blocked`` -> exit 0 / 1. The probes RAN; ``probe_results``
+  carries what each one returned. A real answer.
+- ``not_configured`` -> exit 0. The adapter declares no probes, so there is
+  nothing to prove. A genuine opt-out, and it must never start refusing: a repo
+  that legitimately declares nothing is answered, not stonewalled.
+- ``not_established`` -> exit 3. Probes ARE declared and this invocation did not
+  run them, so nothing about them was established. It carries NO
+  ``probe_results`` key, because an empty result list is a verdict shape --
+  "zero failures" -- for a run that produced no results at all.
+
+``not_established`` used to be ``configured`` at exit 0, with ``probe_results:
+[]``: a caller reading the byte could not tell "checked and clean" from "did not
+check", inside a release gate. Exit 3 is ``run-quality.sh``'s
+``UNESTABLISHED_EXIT``, which that runner renders UNPROVEN (counted in neither
+the pass nor the fail column) for the labels that opted into it.
+
+This checker does not run the probes on its own initiative. Execution is the
+CALLER's spend to authorize (``--run-probes``; the release publish helper does it
+before tag push), so a status listing never shells out to adapter-declared
+commands a consumer repo wrote.
+"""
 from __future__ import annotations
 
 import argparse
@@ -23,6 +50,12 @@ _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adap
 load_adapter = _resolve_adapter.load_adapter
 GIT_TIMEOUT_SECONDS = 120
 FRESH_CHECKOUT_PROBE_TIMEOUT_SECONDS = 300
+#: "Ran, established nothing" -- the same byte `run-quality.sh` reads as
+#: UNESTABLISHED and renders UNPROVEN. Deliberately distinct from 1: no probe was
+#: proven to fail, so this is not a blocker anyone can act on by fixing code; it
+#: is a caller who asked for a listing and must ask again with `--run-probes` to
+#: get a verdict.
+UNESTABLISHED_EXIT = 3
 
 
 def _run(command: list[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -96,11 +129,23 @@ def build_payload(repo_root: Path, *, run_probes: bool) -> dict[str, Any]:
             "probe_results": [],
         }
     if not run_probes:
+        # No `probe_results` key. `probe_results: []` read as a verdict -- zero
+        # failing probes -- for a run that executed none of them, and the status
+        # word next to it (`configured`) named the ADAPTER's state, not this
+        # run's. Both were exit 0, so a release preflight consulting this could
+        # not tell "checked and clean" from "did not check".
         return {
-            "status": "configured",
-            "reason": "fresh_checkout_probes are declared but were not run",
+            "status": "not_established",
+            "reason": (
+                "fresh_checkout_probes are declared but this invocation did not run them, "
+                "so nothing was established about them"
+            ),
+            "remediation": (
+                "Re-run with --run-probes for an established verdict, or read the release "
+                "publish helper's own probe run (it executes them before tag push). "
+                "This listing is not a pass."
+            ),
             "fresh_checkout_probes": probes,
-            "probe_results": [],
         }
 
     with tempfile.TemporaryDirectory(prefix="charness-release-fresh-checkout-") as temp_dir:
@@ -173,9 +218,15 @@ def main() -> int:
             yaml_output.emit_yaml(payload)
         else:
             print(f"fresh checkout probes: {payload['status']}")
+            if remediation := payload.get("remediation"):
+                print(f"- {remediation}")
             for blocker in payload.get("blockers", []):
                 print(f"- {blocker}")
-        return 1 if payload["status"] == "blocked" else 0
+        if payload["status"] == "blocked":
+            return 1
+        if payload["status"] == "not_established":
+            return UNESTABLISHED_EXIT
+        return 0
     finally:
         cancel_timeout()
 

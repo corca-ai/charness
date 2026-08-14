@@ -164,8 +164,17 @@ policy.
 Each entry is a bash shell string executed from the temporary clone root. Use
 it for release evidence that can pass in a maintainer worktree but fail from a
 fresh checkout because of clone depth, generated artifact determinism, or other
-checkout-shape assumptions. `current_release.py` reports whether probes are
-configured. `publish_release.py --execute` runs declared probes in a temporary
+checkout-shape assumptions.
+
+`check_fresh_checkout_probes.py` reports `passed`/`blocked` (exit 0/1) only when
+it actually ran the probes, which it does only under `--run-probes`. Declared but
+not run is `not_established` at exit 3 (`run-quality.sh`'s `UNESTABLISHED_EXIT`),
+carrying no `probe_results` key, because a listing is not a pass. A repo that
+declares no probes is `not_configured` at exit 0 — a genuine opt-out that never
+refuses. `current_release.py` embeds the listing, so its fresh-checkout block is
+always `not_established` or `not_configured`, never a probe verdict.
+
+`publish_release.py --execute` runs declared probes in a temporary
 shallow fresh clone after the release commit is created and before tag push or
 release creation, records passing status in the release artifact, and reruns
 the probes against that amended release commit. A failing probe blocks publish.

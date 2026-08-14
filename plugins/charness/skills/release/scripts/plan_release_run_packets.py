@@ -224,22 +224,28 @@ def gate_packets(real_host_scope: dict[str, Any] | None = None) -> list[dict[str
         gate_packet(
             "current-release",
             'python3 "$SKILL_DIR/scripts/current_release.py" --repo-root .',
-            "release surface, version drift, worktree, and configured fresh-checkout status",
-            "hard drift facts plus configured-but-not-run probe status",
+            "release surface, version drift, worktree, and declared fresh-checkout probes",
+            "hard drift facts; its embedded fresh-checkout block is `not_established` (declared, not run here)",
             "always before release mutation",
         ),
         gate_packet(
+            # `--run-probes` is on the ALWAYS gate deliberately. Without it this
+            # command establishes nothing about the probes and now says so (exit
+            # 3, `not_established`), which would make the always-gate a permanent
+            # UNPROVEN -- a verdict word nobody reads after the third release. The
+            # checker still never runs probes on its own initiative; the caller
+            # that wants a verdict asks for one.
             "fresh-checkout-probes",
-            'python3 "$SKILL_DIR/scripts/check_fresh_checkout_probes.py" --repo-root . --detail',
-            "detect whether fresh-checkout probes are declared",
-            "configuration packet; publish helper runs probes before tag push",
-            "always; add --run-probes only for explicit pre-publish proof",
+            'python3 "$SKILL_DIR/scripts/check_fresh_checkout_probes.py" --repo-root . --run-probes --detail',
+            "execute the repo-declared fresh-checkout probes in a temp clone of this branch",
+            "executed probe verdict; exit 1 on a failing probe, exit 3 if invoked without --run-probes",
+            "always; the publish helper re-runs them after the version bump, before tag push",
         ),
         gate_packet(
             "real-host-proof",
             _real_host_command(real_host_scope),
             "determine whether release-time human/host proof is required",
-            "trigger detector, not the proof itself",
+            "trigger detector, not the proof itself; exit 3 and no `required` key when the changed scope is empty",
             "always before closeout claims",
         ),
         gate_packet(

@@ -30,6 +30,22 @@ range provenance plus actual trigger hits; do not expand the range into a large
 resolved by Git rather than assuming SHA-1 width, and the path digest uses Git's
 NUL-delimited bytes so unusual filenames cannot make the evidence ambiguous.
 
+## What Each Exit Code Means
+
+`evaluation_scope` is always emitted and is the key to read first. The verdict key
+`required` exists ONLY when the triggers were actually evaluated.
+
+| `evaluation_scope` | exit | `required` | meaning |
+| --- | --- | --- | --- |
+| `evaluated` | 0 | present | triggers were compared against N > 0 changed paths |
+| `not-configured` | 0 | `false` | this repo declares no triggers; nothing to evaluate |
+| `empty` | 3 | absent | triggers are configured and the changed scope was EMPTY |
+| `not-established` | 1 | `false`, on stderr | the trigger configuration could not be resolved |
+
+Exit 3 is `run-quality.sh`'s `UNESTABLISHED_EXIT`. An empty changed scope is not
+evidence that real-host proof is not required: hand the check the release's
+changed paths (`--paths` or `--changed-range`) to get a verdict.
+
 ## Broken Trigger Configuration
 
 Each `real_host_required_surfaces` entry must resolve to a declared

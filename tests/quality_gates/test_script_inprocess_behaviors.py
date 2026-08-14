@@ -35,7 +35,13 @@ def test_release_current_release_reports_packaging_version(monkeypatch, capsys) 
     assert payload["package_id"] == "charness"
     assert payload["surface_versions"]["packaging_manifest"] == expected
     assert payload["checked_in_plugin_root"].endswith("plugins/charness")
-    assert payload["fresh_checkout_probes"]["status"] in {"configured", "not_configured"}
+    # `current_release` is a status dump; it deliberately does NOT run the probes,
+    # so the block it embeds is `not_established`, never a probe verdict.
+    # `configured` used to be that word, and it read as a satisfied probe run.
+    fresh_checkout = payload["fresh_checkout_probes"]
+    assert fresh_checkout["status"] in {"not_established", "not_configured"}
+    if fresh_checkout["status"] == "not_established":
+        assert "probe_results" not in fresh_checkout
 
     monkeypatch.setattr(sys, "argv", ["current_release.py", "--repo-root", str(ROOT)])
     CURRENT_RELEASE.main()
