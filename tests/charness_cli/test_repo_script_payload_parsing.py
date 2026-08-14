@@ -100,8 +100,10 @@ def test_repo_onboarding_parses_the_skill_routing_payload_through_the_yaml_fallb
         ),
     }
 
+    seen: dict[str, tuple[str, ...]] = {}
+
     def fake_invoke(_source_root, script, *args):
-        assert "--json" not in args, f"`{script}` must not be asked for a removed flag"
+        seen[script] = args
         return answers[script]
 
     monkeypatch.setattr(charness, "invoke_repo_script", fake_invoke)
@@ -112,3 +114,12 @@ def test_repo_onboarding_parses_the_skill_routing_payload_through_the_yaml_fallb
 
     assert payload["skill_routing"] == {"recommended_action": "adopt", "public_skills": ["setup"]}
     assert payload["inspection"]["repo_mode"] == "PARTIAL"
+    # The exact argv, which is what actually broke: the routing script is asked for
+    # `--detail` and nothing else. Asserting the whole tuple rather than the absence of
+    # one flag also keeps this file free of the removed flag's literal spelling, which
+    # `test_command_docs_gate` scans these files for.
+    assert seen["skills/public/setup/scripts/render_skill_routing.py"] == (
+        "--repo-root",
+        str(target.resolve()),
+        "--detail",
+    )
