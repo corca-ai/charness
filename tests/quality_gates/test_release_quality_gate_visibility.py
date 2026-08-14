@@ -111,3 +111,19 @@ def test_run_phase_can_defer_the_refusal_to_its_caller(tmp_path: Path) -> None:
     result = _HELPERS.run_phase("exit 4", cwd=tmp_path, phase="advisory", check=False)
 
     assert result.returncode == 4
+
+
+def test_run_shell_keeps_its_own_refusal_after_delegating_the_capture(tmp_path: Path) -> None:
+    """The quiet shape's refusal is the same contract, rendered from the raw string.
+
+    `run` renders `" ".join(command)`; `run_shell` renders the command verbatim. Both
+    now route through one `_refuse`, so the rendering is the part that can silently
+    drift.
+    """
+    with pytest.raises(SystemExit) as excinfo:
+        _HELPERS.run_shell("printf 'quiet\\n' >&2; exit 9", cwd=tmp_path)
+
+    message = str(excinfo.value)
+    assert message.startswith("command failed: printf 'quiet\\n' >&2; exit 9")
+    assert "exit_code: 9" in message
+    assert "STDERR:\nquiet" in message

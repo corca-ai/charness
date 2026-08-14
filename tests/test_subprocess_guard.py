@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import os
+import signal
 import subprocess
 import time
 from pathlib import Path
 
 import pytest
 
+import scripts.subprocess_guard as subprocess_guard
 from scripts.subprocess_guard import (
     DEFAULT_HEARTBEAT_SECONDS,
     DRAIN_UNAVAILABLE,
@@ -361,6 +363,98 @@ def test_monitored_phase_runs_unbounded_when_the_budget_is_none(tmp_path: Path, 
     assert not outcome.timed_out
     assert "timed out after" not in outcome.stderr
     assert "HEARTBEAT [unbounded] elapsed=" in capsys.readouterr().err
+
+
+class _FakeProcess:
+    """Stands in for a Popen so the kill guards can be exercised without a real kill."""
+
+    def __init__(self, *, pid: int, returncode: int | None = None, waits: list[bool] | None = None) -> None:
+        self.pid = pid
+        self.returncode = returncode
+        self.killed = 0
+        self._waits = list(waits or [])
+
+    def kill(self) -> None:
+        self.killed += 1
+
+    def wait(self, timeout=None):
+        if self._waits and not self._waits.pop(0):
+            raise subprocess.TimeoutExpired(["fake"], timeout)
+        return 0
+
+
+def test_kill_tree_never_signals_an_already_reaped_pid(monkeypatch) -> None:
+    """bpo-38630: a reaped pid may already belong to somebody else.
+
+    `Popen.send_signal` self-guards on this. `os.killpg` is worse than `os.kill`
+    here — it would destroy a recycled pid's whole GROUP, plausibly our own.
+    """
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("killpg must not run against a reaped pid")
+
+    monkeypatch.setattr(os, "killpg", forbidden)
+    process = _FakeProcess(pid=-1, returncode=0)
+
+    subprocess_guard._kill_tree(process)
+
+    assert process.killed == 0
+
+
+def test_kill_tree_falls_back_to_the_child_when_the_group_is_our_own(monkeypatch) -> None:
+    """If `start_new_session` did not take effect, a group kill kills the caller."""
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("killpg must not run against the caller's own group")
+
+    monkeypatch.setattr(os, "killpg", forbidden)
+    monkeypatch.setattr(os, "getpgid", lambda _pid: os.getpgrp())
+    process = _FakeProcess(pid=424242)
+
+    subprocess_guard._kill_tree(process)
+
+    assert process.killed == 1
+
+
+def test_kill_tree_falls_back_to_the_child_when_no_group_is_addressable(monkeypatch) -> None:
+    def missing(_pid):
+        raise ProcessLookupError
+
+    monkeypatch.setattr(os, "getpgid", missing)
+    process = _FakeProcess(pid=424242)
+
+    subprocess_guard._kill_tree(process)
+
+    assert process.killed == 1
+
+
+def test_kill_tree_escalates_to_sigkill_only_when_sigterm_is_ignored(monkeypatch) -> None:
+    """SIGTERM first so a child's EXIT trap can still run; SIGKILL only if it does not."""
+    sent: list[int] = []
+    monkeypatch.setattr(os, "getpgid", lambda _pid: os.getpgrp() + 1)
+    monkeypatch.setattr(os, "killpg", lambda _pgid, sig: sent.append(sig))
+
+    polite = _FakeProcess(pid=424242, waits=[True])
+    subprocess_guard._kill_tree(polite)
+    assert sent == [signal.SIGTERM]
+
+    sent.clear()
+    stubborn = _FakeProcess(pid=424242, waits=[False, True])
+    subprocess_guard._kill_tree(stubborn)
+    assert sent == [signal.SIGTERM, signal.SIGKILL]
+
+
+def test_kill_tree_stops_when_the_group_signal_is_refused(monkeypatch) -> None:
+    def refused(_pgid, _sig):
+        raise PermissionError
+
+    monkeypatch.setattr(os, "getpgid", lambda _pid: os.getpgrp() + 1)
+    monkeypatch.setattr(os, "killpg", refused)
+    process = _FakeProcess(pid=424242)
+
+    subprocess_guard._kill_tree(process)
+
+    assert process.killed == 0
 
 
 def test_render_display_collapses_and_bounds_a_command() -> None:
