@@ -12,24 +12,24 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-15",
-  "source_artifact_count": 507,
-  "candidate_count": 2056,
+  "source_artifact_count": 508,
+  "candidate_count": 2062,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
+      "kind": "repeat_trap",
+      "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 10,
-      "independent_source_count": 10,
+      "source_count": 11,
+      "independent_source_count": 11,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-      "latest_source_date": "2026-08-14",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 6.3022,
+      "selection_weight": 7.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -110,6 +110,14 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer."
         }
       ]
     },
@@ -587,19 +595,19 @@
   "candidates": [
     {
       "candidate_id": "class:2aa33565760a",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
+      "kind": "repeat_trap",
+      "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 10,
-      "independent_source_count": 10,
+      "source_count": 11,
+      "independent_source_count": 11,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
-      "latest_source_date": "2026-08-14",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 6.3022,
+      "selection_weight": 7.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -680,6 +688,14 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer."
         }
       ]
     },
@@ -1214,6 +1230,58 @@
       ]
     },
     {
+      "candidate_id": "current_focus:1f51ca52872a",
+      "kind": "current_focus",
+      "lesson": "Handoff pickup with an explicit task: commit the verified tree, then design what the next release implements and ships from the open issues and the handoff.",
+      "normalized_key": "handoff pickup with an explicit task commit the verified tree then design what the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+          "date": "2026-08-15",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Handoff pickup with an explicit task: commit the verified tree, then design what the next release implements and ships from the open issues and the handoff."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e71597891165",
+      "kind": "next_improvement",
+      "lesson": "before placing any issue into a build slice, open the surface it names and confirm the defect reproduces on the current tree. An issue is a claim about the past. This is the third recorded failure of the same lesson and the second on the same issue number, so the remedy has to be a step in the work, not a thing to remember.",
+      "normalized_key": "before placing any issue into a build slice open the surface it names and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "before placing any issue into a build slice, open the surface it names and confirm the defect reproduces on the current tree. An issue is a claim about the past. This is the third recorded failure of the same lesson and the second on the same issue number, so the remedy has to be a step in the work, not a thing to remember."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:579a730f760a",
       "kind": "next_improvement",
       "lesson": "finish a bounded review window — verify the fingerprint — before starting any repair, so the boundary proof covers the review it is meant to.",
@@ -1266,6 +1334,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7a5e6c4e2c5b",
+      "kind": "next_improvement",
+      "lesson": "give the score outcome vocabulary its slice, so a lesson that worked can be recorded as having worked. Three lessons demonstrably held this session and the ledger can represent none of them, which biases every future selection toward lessons that fail loudly over lessons that quietly work.",
+      "normalized_key": "give the score outcome vocabulary its slice so a lesson that worked can be",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "give the score outcome vocabulary its slice, so a lesson that worked can be recorded as having worked. Three lessons demonstrably held this session and the ledger can represent none of them, which biases every future selection toward lessons that fail loudly over lessons that quietly work."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e73a4b790002",
       "kind": "next_improvement",
       "lesson": "the shared worktree needs the no-mutating-git rule enforced for **write-capable** agents, not just bounded reviewers; one `git stash` cost eleven agents' in-flight work this session.",
@@ -1314,6 +1408,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "this artifact, plus the two recurrence tags above."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:043f24b4734f",
+      "kind": "next_improvement",
+      "lesson": "this artifact, the recurrence tag on its Waste bullet, and [the critique](../critique/2026-08-15-release-scope-contract.md) holding the 21 findings and their rulings.",
+      "normalized_key": "this artifact the recurrence tag on its waste bullet and the critique critique 2026",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "this artifact, the recurrence tag on its Waste bullet, and [the critique](../critique/2026-08-15-release-scope-contract.md) holding the 21 findings and their rulings."
         }
       ]
     },
@@ -1418,6 +1538,58 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Four false completeness claims.** I declared the source migration done four times. Each time the cause was identical: a detector narrower than the claim I made from it — `print(json.dumps(...))`, then `sys.stdout.write(...)`, then `json.dump(..., sys.stdout)`, then one level of variable/helper indirection. Cost: three re-sweeps and two rounds of test fallout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:7caeb6844e35",
+      "kind": "repeat_trap",
+      "lesson": "**I prescribed a mechanism that was inert against the defect it named.** Generalizing quality's date-coherence guard across scaffold families cannot fire on #628, because the overwriting artifact carries today's date under today's filename — a fact recorded in a checked-in retro I did not read — and would have broken `debug`'s designed continue-in-place behavior.",
+      "normalized_key": "i prescribed a mechanism that was inert against the defect it named generalizing quality",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I prescribed a mechanism that was inert against the defect it named.** Generalizing quality's date-coherence guard across scaffold families cannot fire on #628, because the overwriting artifact carries today's date under today's filename — a fact recorded in a checked-in retro I did not read — and would have broken `debug`'s designed continue-in-place behavior."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9b08b572f037",
+      "kind": "repeat_trap",
+      "lesson": "**I specified a gate that tests the direction which never failed.** The notes check I wrote detects surfaces the notes fail to mention, while the failure that shipped twice is an over-claim — which mentions the surface and produces no diff. I wrote a guard against the mirror image of my own evidence, three paragraphs after quoting that evidence.",
+      "normalized_key": "i specified a gate that tests the direction which never failed the notes check",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I specified a gate that tests the direction which never failed.** The notes check I wrote detects surfaces the notes fail to mention, while the failure that shipped twice is an over-claim — which mentions the surface and produces no diff. I wrote a guard against the mirror image of my own evidence, three paragraphs after quoting that evidence."
         }
       ]
     },
