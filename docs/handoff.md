@@ -21,8 +21,8 @@
   supersedes the earlier "archive is automatic" text.
 - [Observability contract](../charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md)
   — session open/dispose/reconcile, and the deferred SessionStart decision.
-- [Draft release notes](../charness-artifacts/release/2026-08-14-v6.0.0-notes.md)
-  — breaking changes and the `--json` migration.
+- [Release notes](../charness-artifacts/release/2026-08-14-v6.0.0-notes.md)
+  — breaking changes, the `--json` migration, and the known-weak surfaces.
 - [dup-review.json](../charness-artifacts/quality/dup-review.json) family
   `d3fea2dbc2463d22` (rotated from `275d5bdd800e9f8c` on 2026-08-14) — why the
   four-writer ledger transaction was not extracted.
@@ -51,8 +51,10 @@
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md) is the digest;
   the ledger is the scored selection surface and the two are not substitutes.
 
-Non-claims: no push, tag, version bump, release, hosted CI, installed-consumer,
-or issue closure. Every verdict above is local to this worktree.
+Non-claims: no tag, version bump, release publish, hosted CI, installed-consumer
+readback, or issue closure. The 20-commit set IS pushed (`origin/main`
+`0a1a53405`, verified by `git ls-remote`); everything after that boundary is
+unclaimed.
 
 ## Next Session
 
@@ -77,10 +79,10 @@ or issue closure. Every verdict above is local to this worktree.
 
 ## Discuss
 
-- **Release readiness.** Local proof is green; the release PROCESS is not ready.
-  [#608](https://github.com/corca-ai/charness/issues/608) blocks it. The closeout
-  floor has now run, so the remaining gap is publication, not evidence. Green is
-  not a grant — the
+- **Release readiness.** #608 was already fixed by `f149ad0bc` and does not
+  block; the handoff carried it as the blocker because nobody read the code. A
+  pre-release critique returned DO-NOT-PUBLISH on the NOTES, not the code, and
+  its four false claims are repaired. Green is not a grant — the
   [session retro](../charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md)
   records four rounds of claims that passed every gate and were false. Route
   through `quality` and `release`.
