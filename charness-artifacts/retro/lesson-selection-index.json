@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-14",
-  "source_artifact_count": 505,
-  "candidate_count": 2043,
+  "source_artifact_count": 506,
+  "candidate_count": 2047,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -21,15 +21,15 @@
       "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 9,
-      "independent_source_count": 9,
+      "source_count": 10,
+      "independent_source_count": 10,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "latest_source_date": "2026-08-14",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 5.8,
+      "selection_weight": 6.4,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -62,6 +62,14 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability** — add a regenerate/accept flag to `check_boundary_bypass_ratchet.py` so its own error message names a runnable command, matching the dup ratchet's `--write-baseline` / `--accept-rotation` shape. Structural pattern: a gate that tells the operator to regenerate an artifact while providing no command to do it trains hand-editing, and its cross-check covers only some of the fields a rebuild would write. Triggering instance(s): three hand-edit cycles on one baseline in one session, two ENFORCED counts left stale. Destination: new issue."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: before describing any surface in a published artifact — release notes, issue comment, exemption rationale, docstring — open the file and read the line. Three of this session's four false published claims were one `sed -n` away from never existing."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
@@ -567,15 +575,15 @@
       "lesson": "**workflow**: delete compatibility and migration debt by owner cohort only after proving current-state capability equality; strict old-form refusal is not debt.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 9,
-      "independent_source_count": 9,
+      "source_count": 10,
+      "independent_source_count": 10,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "latest_source_date": "2026-08-14",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 5.8,
+      "selection_weight": 6.4,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -608,6 +616,14 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability** — add a regenerate/accept flag to `check_boundary_bypass_ratchet.py` so its own error message names a runnable command, matching the dup ratchet's `--write-baseline` / `--accept-rotation` shape. Structural pattern: a gate that tells the operator to regenerate an artifact while providing no command to do it trains hand-editing, and its cross-check covers only some of the fields a rebuild would write. Triggering instance(s): three hand-edit cycles on one baseline in one session, two ENFORCED counts left stale. Destination: new issue."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: before describing any surface in a published artifact — release notes, issue comment, exemption rationale, docstring — open the file and read the line. Three of this session's four false published claims were one `sed -n` away from never existing."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-14-design-record-unread-while-fixing-the-gate-cohort.md",
@@ -1140,6 +1156,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b4c077c0922b",
+      "kind": "current_focus",
+      "lesson": "A pickup that read \"run the `issue` closeout floor on two landed cohorts\" and ended as: ten issues carrying published closeout evidence and still open, two defects repaired inside the fixes being closed out, a release probe pair made honest, a 20-commit push, and a prepared release blocked on a scope decision the owner made mid-session.",
+      "normalized_key": "a pickup that read run the issue closeout floor on two landed cohorts and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+          "date": "2026-08-14",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "A pickup that read \"run the `issue` closeout floor on two landed cohorts\" and ended as: ten issues carrying published closeout evidence and still open, two defects repaired inside the fixes being closed out, a release probe pair made honest, a 20-commit push, and a prepared release blocked on a scope decision the owner made mid-session."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:ee9ca79bf965",
       "kind": "current_focus",
       "lesson": "Handoff pickup for the release-blocking lesson-loop cohort, ordered #625 -> #627 -> #626 by the owner because #626 alone would make `quality` propose on recurrence count.",
@@ -1296,6 +1338,32 @@
       ]
     },
     {
+      "candidate_id": "class:646424246b02",
+      "kind": "next_improvement",
+      "lesson": "**capability**: a worktree-isolated subagent branches from the default branch, not from the parent's HEAD. Brief it against that base, hand it the diff, or do not isolate it. Name the base ref in every isolated brief.",
+      "normalized_key": "capability a worktree isolated subagent branches from the default branch not from the parent",
+      "recurrence_class": "isolated-agent-base-mismatch",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: a worktree-isolated subagent branches from the default branch, not from the parent's HEAD. Brief it against that base, hand it the diff, or do not isolate it. Name the base ref in every isolated brief."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:3761b7954159",
       "kind": "next_improvement",
       "lesson": "**capability**: have the quality artifact scaffold report its line budget against a draft rather than only after a complete artifact, so the trim loop costs one pass instead of six.",
@@ -1348,6 +1416,32 @@
       ]
     },
     {
+      "candidate_id": "class:8beef6d39ff6",
+      "kind": "next_improvement",
+      "lesson": "**capability**: the ledger can record that a lesson failed but not that one worked, because a score's citation requires the citing retro to tag that lesson as recurring. That biases the corpus toward negatives and leaves \"this lesson is doing its job\" invisible to the lifecycle review that decides what to graduate.",
+      "normalized_key": "capability the ledger can record that a lesson failed but not that one worked",
+      "recurrence_class": "positive-effect-cannot-be-cited",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: the ledger can record that a lesson failed but not that one worked, because a score's citation requires the citing retro to tag that lesson as recurring. That biases the corpus toward negatives and leaves \"this lesson is doing its job\" invisible to the lifecycle review that decides what to graduate."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:fcb63c7a453c",
       "kind": "next_improvement",
       "lesson": "**capability**: write the exact rendered lesson bytes to a session-specific Markdown companion and bind them with the existing receipt integrity fields.",
@@ -1370,6 +1464,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability**: write the exact rendered lesson bytes to a session-specific Markdown companion and bind them with the existing receipt integrity fields."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:638c85efabf2",
+      "kind": "next_improvement",
+      "lesson": "**memory**: a retired convention stays quotable until its line is deleted. When a decision supersedes a spec sentence, retire the sentence in the same slice — `cli-command-flag-conventions.md:27` outlived its decision and misled a session that cited it in good faith.",
+      "normalized_key": "memory a retired convention stays quotable until its line is deleted when a decision",
+      "recurrence_class": "superseded-line-stays-quotable",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+      "latest_source_date": "2026-08-14",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: a retired convention stays quotable until its line is deleted. When a decision supersedes a spec sentence, retire the sentence in the same slice — `cli-command-flag-conventions.md:27` outlived its decision and misled a session that cited it in good faith."
         }
       ]
     },
