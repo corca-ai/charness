@@ -69,6 +69,24 @@ def _scaffold_rel(artifact_type: str) -> str | None:
     return None
 
 
+def _skill_id(artifact_type: str) -> str | None:
+    """The skill that owns an artifact type, DERIVED from its scaffold path.
+
+    `skills/public/<id>/scripts/scaffold_*.py` already declares the owner, so a
+    second mapping here would be a registry that rots independently of the one it
+    duplicates -- the failure this module's `_scaffold_rel` docstring already
+    refuses. Anything not under `skills/public/` yields no name rather than a
+    guessed one.
+    """
+    scaffold = _scaffold_rel(artifact_type)
+    if scaffold is None:
+        return None
+    parts = Path(scaffold).parts
+    if len(parts) < 3 or parts[0] != "skills" or parts[1] != "public":
+        return None
+    return f"charness:{parts[2]}"
+
+
 def scaffold_hint(artifact_type: str) -> str | None:
     """One trailing hint line naming the scaffold an author should start from.
 
@@ -80,10 +98,20 @@ def scaffold_hint(artifact_type: str) -> str | None:
     scaffold = _scaffold_rel(artifact_type)
     if scaffold is None:
         return None
+    # The SKILL is named alongside the scaffold, because they teach different
+    # halves and an author who follows only the scaffold gets only one. The
+    # scaffold emits shape; the skill body holds the disciplines an author
+    # otherwise meets one refusal at a time -- what the size budget charges for,
+    # why an owner must sit ON its entry, why paraphrasing a second artifact
+    # beside an owner still fills the budget. A session that hand-authored a
+    # handoff hit exactly those three, in a repo whose skill already documented
+    # all of them, because nothing in this refusal pointed at the skill.
+    skill = _skill_id(artifact_type)
+    invoke = f" Load the `{skill}` skill for the authoring discipline." if skill else ""
     return (
         f"hint: start from the owning scaffold instead of hand-authoring — "
         f'`python3 {scaffold} --repo-root . --title "<title>"` emits a conforming '
-        f"stub plus the write path and validator command."
+        f"stub plus the write path and validator command.{invoke}"
     )
 
 

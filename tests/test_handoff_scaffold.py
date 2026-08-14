@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
 _export_plugin = import_repo_module(__file__, "scripts.export_plugin")
@@ -82,6 +83,46 @@ def test_handoff_scaffold_reports_validator_and_template(tmp_path: Path) -> None
         text=True,
     )
     assert validation.returncode == 0, validation.stderr
+
+
+def test_handoff_scaffold_carries_the_budget_before_the_author_writes(
+    tmp_path: Path,
+) -> None:
+    """The template models the link shape; it cannot model why the budget fills.
+
+    A session hand-authored this artifact and hit three refusals in a row that
+    the template could not have prevented: trimming formatting instead of state,
+    putting the owning command in a fenced block below its bullet, and carrying
+    one owner while restating what a second artifact already held. The quality
+    scaffold already answers this class with `size_budget`; this is the same
+    affordance on the surface that needed it.
+    """
+    repo = tmp_path / "repo"
+    _write_adapter(repo, "demo")
+
+    payload = json.loads(run_script(SCAFFOLD, "--repo-root", str(repo)).stdout)
+
+    budget = payload["size_budget"]
+    guidance = budget["guidance"]
+    assert "cut STATE instead" in guidance
+    assert "fenced block below a bullet owns nothing" in guidance
+    assert "restates what a second artifact already holds" in guidance
+    assert "WITH ARGUMENTS" in guidance
+
+
+def test_scaffold_budget_is_read_from_the_gate_not_transcribed(tmp_path: Path) -> None:
+    """A second copy of the ceiling goes stale the next time it is re-based; the
+    repo already re-based this one from 58 to 78."""
+    repo = tmp_path / "repo"
+    _write_adapter(repo, "demo")
+    budget_module = load_script_module(
+        "handoff_content_budget_for_scaffold_test",
+        ROOT / "skills/public/handoff/scripts/handoff_content_budget.py",
+    )
+
+    payload = json.loads(run_script(SCAFFOLD, "--repo-root", str(repo)).stdout)
+
+    assert payload["size_budget"]["max_lines"] == budget_module.DEFAULT_MAX_CONTENT_LINES
 
 
 def test_handoff_scaffold_guards_custom_title(tmp_path: Path) -> None:

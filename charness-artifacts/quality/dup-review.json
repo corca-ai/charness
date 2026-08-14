@@ -653,6 +653,13 @@
     },
     {
       "class": "intentional",
+      "id": "30fb12f299ca320c",
+      "note": "structural match between `main()`'s argparse block (117-197) and `detect_hosts()` (97-102) in scripts/install_machine_local.py -- both enumerate the same supported-host set, one as CLI overrides and one as a `shutil.which` probe. The literal overlap is the repeated host names, not logic: the flags carry help text and path semantics, the detector carries availability. BOTH members untouched by this slice; surfaced by the same Grok host addition in f44508b86. Owner: quality. Revisit if the host set gains a declared registry that both could read instead of restating.",
+      "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "313be5be463ac19e",
       "note": "two independent AST inspections use the idiomatic walk/call-name set construction for different policies (mutation call-site verification versus doc-authoring preflight); a shared traversal would couple their node semantics for a six-line idiom",
       "reviewed_at": "2026-08-09",
@@ -2007,6 +2014,13 @@
       "id": "881bfadf34629bca",
       "note": "The `apply_<floor>_floor` protocol shared by goal_artifact_figure_form and goal_artifact_operator_queue: call `check`, attach the fragment under the floor's own report key, and flip `report[\"ok\"]` only when `applies and not ok`. Every Created-gated floor in this family implements this three-line contract identically ON PURPOSE -- it is the protocol goal_artifact_closeout_evidence calls them through, and the `applies and not ok` guard specifically is the invariant a bounded round just caught two consumers getting WRONG (guarding on reason-truthiness instead). Making it uniform and greppable is worth more than removing three lines.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8956dbf2c5ebc8d6",
+      "note": "two-line per-host path helpers in scripts/install_machine_local.py: `default_plugin_root` (`.codex/plugins/<pkg>`) beside `default_grok_plugin_root` (`.grok/plugins/<pkg>`). Deliberately parallel -- each host's install root is one readable line at the same shape, which is how a reader confirms all supported hosts at a glance; folding them behind a host parameter would hide the very mapping the file exists to declare. BOTH members untouched by this slice: surfaced when f44508b86 (minimal Grok Build install path) added the third host and this branch merged it. Owner: quality. Revisit if a fourth host makes the literal list the wrong shape.",
+      "reviewed_at": "2026-08-14",
       "surface": "code"
     },
     {

@@ -18,6 +18,9 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
+# The same budget module `validate_handoff_artifact.py` loads, so
+# `size_budget.max_lines` cannot disagree with the ceiling the gate enforces.
+_budget = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_content_budget")
 
 # Mirrors REQUIRED_SECTIONS in scripts/validate_handoff_artifact.py. The handoff
 # validator enforces an EXACT H2 set, a `# ... Handoff` title, a content-line
@@ -32,6 +35,29 @@ SECTIONS = (
     "## References",
 )
 VALIDATOR_SCRIPT_NAMES = ("validate_handoff_artifact.py", "validate-handoff-artifact.py")
+
+# The budget an author needs BEFORE writing, mirroring the quality scaffold's
+# `size_budget`. The template already models the link shape; it cannot model the
+# three rules an author only meets by failing the gate, which is what a session
+# that hand-authored this artifact actually hit, four refusals in a row:
+#
+#   1. formatting is free, so trimming it buys nothing and STATE must go instead;
+#   2. an owner counts only ON the entry -- a command in a fenced block below it
+#      owns nothing, and that bullet belongs in the artifact it should link;
+#   3. an entry that carries one owner while PARAPHRASING a second artifact
+#      beside it passes the gate and still fills the budget.
+#
+# All three are in the skill body. Nothing bound them to the moment of authoring,
+# which is the `rule-exists-but-does-not-bind` class this repo already records.
+SIZE_GUIDANCE = (
+    "Write the whole artifact within max_lines. Blank lines, the required `##` headings, and "
+    "the whole `## References` block are free, so trimming formatting or shortening links buys "
+    "nothing — cut STATE instead, spilling detail to the artifact that owns it. `## Current "
+    "State` and `## Next Session` read as a flat list of links: each entry is a link, an issue "
+    "id, or an inline command WITH ARGUMENTS, on the entry itself. A command in a fenced block "
+    "below a bullet owns nothing and is refused. The budget fills fastest when an entry names "
+    "one owner and then restates what a second artifact already holds; link it instead."
+)
 
 
 def default_title(title: str | None) -> str:
@@ -89,6 +115,16 @@ def validator_command(repo_root: Path) -> str:
     return _scaffold_lib.validator_command(repo_root=repo_root, script_file=__file__, script_names=VALIDATOR_SCRIPT_NAMES)
 
 
+def max_content_lines() -> int:
+    """The validator's own ceiling, read rather than transcribed.
+
+    A second copy of `78` here would be a number that goes stale silently the
+    next time an operator re-bases the budget -- the class this repo's
+    `regenerable-facts` gate exists for.
+    """
+    return int(_budget.DEFAULT_MAX_CONTENT_LINES)
+
+
 def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     adapter = load_adapter(repo_root)
     artifact_path = str(adapter["artifact_path"])
@@ -102,6 +138,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         "title": resolved_title,
         "template": render_template(title=resolved_title, date_text=date_text),
         "validator_command": validator_command(repo_root),
+        "size_budget": {"max_lines": max_content_lines(), "guidance": SIZE_GUIDANCE},
     })
 
 
