@@ -437,3 +437,35 @@ def test_cli_exits_three_only_when_undetermined(
 
     assert code == expected_exit
     assert json.loads(capsys.readouterr().out)["state"] == expected_state
+
+
+def test_the_seed_command_targets_the_repo_it_was_given_not_the_readers_cwd(
+    tmp_path: Path,
+) -> None:
+    """The repo-local branch, which round 3 found untested and mis-targeting.
+
+    `_seed_command` used the root to CHOOSE the branch and then emitted `--repo-root .`,
+    so `init_lesson_ledger.py --repo-root <other checkout>` printed a next step whose `.`
+    resolves to the operator's cwd -- a different repo than the one just initialized.
+    """
+    repo_local = tmp_path / "authoring"
+    (repo_local / "scripts").mkdir(parents=True)
+    (repo_local / "scripts" / lesson_context.SEED_SCRIPT_NAME).write_text("", encoding="utf-8")
+
+    step = lesson_context.seed_lesson_next_step(repo_local)
+
+    assert f"--repo-root {repo_local}" in step
+    assert "--repo-root ." not in step
+
+
+def test_the_refresh_command_resolves_against_the_tree_it_runs_from(tmp_path: Path) -> None:
+    """`_refresh_command` names a path that exists in THIS layout.
+
+    Same class as the seed command: a consuming repo has no `skills/public/...`, so a
+    hardcoded spelling would name a file the reader does not have.
+    """
+    text = lesson_context._refresh_command(tmp_path)
+
+    named = Path(text.split()[1])
+    assert named.is_absolute() and named.is_file(), text
+    assert f"--repo-root {tmp_path}" in text

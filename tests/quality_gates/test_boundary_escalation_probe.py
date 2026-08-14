@@ -378,3 +378,29 @@ def test_prove_skill_names_the_undetermined_case() -> None:
     assert "not-configured" in text
     assert "check_boundary_escalation.py" in text
     assert "check_auto_trigger.py" in text
+
+
+def test_the_critique_validator_consumer_also_refuses_an_unreadable_adapter(
+    tmp_path: Path,
+) -> None:
+    """The SECOND named consumer, which a round-3 review found still discarding errors.
+
+    `resolve_cross_surface_scope` read `load_adapter(...)["data"]` and dropped the
+    loader's refusals, so an adapter whose keys were dropped read as `not-configured` --
+    an opt-out the repo never declared, over a file that failed to parse. The two
+    consumers must not disagree about the same adapter.
+    """
+    from scripts import critique_adapter_lib, critique_enforcement_scope
+
+    repo = _repo(tmp_path, 'boundary_cross_surface_globs: "docs/**"')
+
+    scope = critique_enforcement_scope.resolve_cross_surface_scope(
+        repo,
+        None,
+        ["docs/x.md"],
+        probe_lib=boundary_probe_lib,
+        adapter_lib=critique_adapter_lib,
+    )
+
+    assert scope.state == critique_enforcement_scope.CROSS_SURFACE_NOT_ESTABLISHED
+    assert scope.hit is False

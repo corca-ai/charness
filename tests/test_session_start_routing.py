@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+import importlib.util
 import io
 import json
+import runpy
 import subprocess
+import sys
 from pathlib import Path
 
+import pytest
 import session_start_lesson_context as lesson_context
 import session_start_routing as hook
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 HOOK_SCRIPT = REPO_ROOT / "scripts" / "session_start_routing.py"
+LESSON_CONTEXT_SCRIPT = REPO_ROOT / "scripts" / "session_start_lesson_context.py"
 PLUGIN_HOOK_SCRIPT = REPO_ROOT / "plugins" / "charness" / "scripts" / "session_start_routing.py"
 
 # The session-start routing trigger is installed at USER level
@@ -468,6 +473,126 @@ def test_a_corrupt_sibling_module_stays_silent_for_a_repo_that_never_opted_in(
     context = json.loads(completed.stdout)["hookSpecificOutput"]["additionalContext"]
     assert "charness session-start routing" in context
     assert "lesson" not in context.lower()
+
+
+def test_importing_the_hook_over_a_broken_sibling_degrades_instead_of_raising(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """The `except Exception` around the sibling import, executed on THIS file.
+
+    The two subprocess cases above prove the end-to-end behavior against a copied
+    install, but they exercise a copy at another path -- nothing observes the guard
+    in the module this repo ships. So load the real hook file with a truncated
+    sibling shadowing the good one on `sys.path`: the import raises `SyntaxError`
+    at module level, which is outside `except ImportError` and outside `main()`'s
+    own handler, and narrowing or removing this clause means `exec_module` below
+    raises instead of returning a usable module -- in every session on the machine.
+    """
+    broken_install = tmp_path / "broken-install"
+    broken_install.mkdir()
+    (broken_install / "session_start_lesson_context.py").write_text(
+        "def build_lesson_context(  # truncated mid-signature\n", encoding="utf-8"
+    )
+    monkeypatch.syspath_prepend(str(broken_install))
+    # The good sibling is already imported by this module; drop it so the import
+    # inside the hook really re-resolves and finds the truncated file.
+    monkeypatch.delitem(sys.modules, "session_start_lesson_context", raising=False)
+    importlib.invalidate_caches()
+
+    spec = importlib.util.spec_from_file_location("session_start_routing_broken_sibling", HOOK_SCRIPT)
+    degraded = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(degraded)
+
+    assert degraded._lesson_context is None
+    # The routing half is untouched -- that is the thing an import-time crash costs.
+    assert "charness session-start routing" in degraded.build_additional_context()
+
+    (tmp_path / "opted-in").mkdir()
+    opted_in = _configured_handoff_repo(tmp_path / "opted-in")
+    (opted_in / "charness-artifacts" / "retro").mkdir(parents=True)
+    (opted_in / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text(
+        "{}", encoding="utf-8"
+    )
+    block = degraded._lesson_block(str(opted_in), {})
+    # Loud for a repo that opted in: silence here would read as `no lessons owed`.
+    assert "state: not-established" in block
+    assert "session_start_lesson_context.py" in block
+    assert "reinstall or update charness" in block
+
+    # ...and mute for a repo that never opted in, so a broken install costs nothing
+    # in the sessions that never asked for a lesson loop.
+    (tmp_path / "opted-out").mkdir()
+    opted_out = _configured_handoff_repo(tmp_path / "opted-out")
+    assert degraded._lesson_block(str(opted_out), {}) == ""
+
+
+# --- the sibling module's own CLI ------------------------------------------
+#
+# Pinned here rather than beside `build_lesson_context`'s unit tests because this
+# is the surface the hook above degrades around: the exit byte and the prose line
+# are what an operator sees when they run the module by hand after reading the
+# `not-established` block, and both are stdlib-only by contract.
+
+
+def test_the_lesson_context_cli_prints_prose_and_falls_back_to_its_state_line(
+    tmp_path: Path, capsys
+) -> None:
+    """Two prose shapes, because `text or <state line>` has two sides.
+
+    `text` is `None` only under `not-configured`, and printing an empty line there
+    would tell an operator who just ran the command nothing at all. Every other
+    state carries injectable text, and printing the terse `state:` summary instead
+    of it would drop the cause and the remediation the state exists to carry.
+    """
+    opted_out = tmp_path / "opted-out"
+    opted_out.mkdir()
+
+    assert lesson_context.main(["--repo-root", str(opted_out)]) == 0
+
+    out = capsys.readouterr().out
+    assert out.startswith("state: not-configured — ")
+    assert "declares no lesson evaluator" in out
+
+    opted_in = tmp_path / "opted-in"
+    (opted_in / "charness-artifacts" / "retro").mkdir(parents=True)
+    (opted_in / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text(
+        "{ not a ledger", encoding="utf-8"
+    )
+
+    assert lesson_context.main(["--repo-root", str(opted_in)]) == 3
+
+    out = capsys.readouterr().out
+    # The injected text itself, not the `state:` fallback: it names the state, the
+    # cause, and what to run next.
+    assert not out.startswith("state: ")
+    assert "not-established" in out
+    assert "lesson-ledger.json" in out
+
+
+def test_the_lesson_context_entrypoint_exits_with_the_undetermined_byte(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """`raise SystemExit(main())`, and the byte it must not flatten.
+
+    The hook block reads `nonzero means not a no`: `not-configured` is a recorded
+    answer and exits 0, while `not-established` could not tell and exits 3. An
+    entrypoint that exited 0 unconditionally would turn every undetermined session
+    into a recorded opt-out, which is the exact reading the module forbids.
+    """
+    repo = tmp_path / "opted-in"
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text(
+        "{ not a ledger", encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        sys, "argv", ["session_start_lesson_context.py", "--repo-root", str(repo), "--json"]
+    )
+
+    with pytest.raises(SystemExit) as caught:
+        runpy.run_path(str(LESSON_CONTEXT_SCRIPT), run_name="__main__")
+
+    assert caught.value.code == lesson_context.UNDETERMINED_EXIT == 3
+    assert json.loads(capsys.readouterr().out)["state"] == "not-established"
 
 
 def test_main_threads_the_host_payload_into_the_lesson_block(

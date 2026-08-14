@@ -159,6 +159,68 @@ def test_reseeding_a_seeded_lesson_is_refused_without_rewriting(tmp_path: Path) 
     assert path.read_bytes() == before
 
 
+def test_a_transition_id_burned_by_another_lesson_is_refused_by_name(tmp_path: Path) -> None:
+    """The collision the `already seeded` check cannot see.
+
+    `seeded` is keyed by lesson_id and `existing_ids` by transition_id, and the two
+    disagree exactly when a transition_id was spent on a DIFFERENT lesson -- the
+    hand-edited rows this command replaces are how that happens, and archiving does
+    not release the id afterwards. Left to the validator it surfaces as a generic
+    duplicate after a partial plan was already built, which names neither the id nor
+    the lesson that holds it.
+
+    Driven through `plan_seeds` with an explicit payload because the state is
+    unreachable from a ledger this command itself wrote: nothing here mints
+    `seed-a` for anything but `a`.
+    """
+    _retro(tmp_path, "source.md", "a")
+    _retro(tmp_path, "other.md", "b")
+    payload = {
+        # `b` holds `seed-a`, and `a` is tagged, unseeded, and therefore a target.
+        "transitions": [
+            {
+                "sequence": 1,
+                "transition_id": "seed-a",
+                "lesson_id": "b",
+                "source_retro": "charness-artifacts/retro/other.md",
+            }
+        ],
+        "lessons": {"b": {"transition_id": "seed-a"}},
+    }
+
+    with pytest.raises(ValueError) as raised:
+        seeder.plan_seeds(
+            repo_root=tmp_path,
+            output_dir=tmp_path / "charness-artifacts/retro",
+            summary_path=tmp_path / "charness-artifacts/retro/recent-lessons.md",
+            payload=payload,
+            lesson_ids=None,
+        )
+
+    message = str(raised.value)
+    # The id itself, not "a duplicate exists": the operator's only move is to look
+    # up who holds `seed-a`, and the permanence is what rules out renaming it back.
+    assert "`seed-a`" in message
+    assert "already used by a different lesson" in message
+    assert "archiving does not release one" in message
+    # And `b` alone -- the only lesson whose id is spent -- still plans cleanly, so
+    # the refusal is about the collision rather than about the fixture.
+    assert seeder.plan_seeds(
+        repo_root=tmp_path,
+        output_dir=tmp_path / "charness-artifacts/retro",
+        summary_path=tmp_path / "charness-artifacts/retro/recent-lessons.md",
+        payload={"transitions": [], "lessons": {}},
+        lesson_ids=["b"],
+    ) == [
+        {
+            "sequence": 1,
+            "transition_id": "seed-b",
+            "lesson_id": "b",
+            "source_retro": "charness-artifacts/retro/other.md",
+        }
+    ]
+
+
 def test_selected_subset_leaves_other_classes_unseeded(tmp_path: Path) -> None:
     _retro(tmp_path, "a.md", "a")
     _retro(tmp_path, "b.md", "b")

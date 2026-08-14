@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import contextlib
 import copy
 import json
 import multiprocessing
+import runpy
 import subprocess
 import sys
 import tempfile
@@ -740,6 +742,74 @@ def test_empty_ledger_bootstrap_refuses_to_wipe_a_committed_ledger(tmp_path: Pat
             summary_path=tmp_path / "charness-artifacts/retro/recent-lessons.md",
         )
     assert not path.exists()
+
+
+def test_empty_ledger_bootstrap_yields_to_a_ledger_that_appeared_inside_the_lock(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """The re-check the pre-lock `path.exists()` cannot make.
+
+    Two opt-ins racing on one repo both pass the pre-check and both pass the replay
+    validation, because at that instant neither ledger exists yet. Only the loser's
+    re-read INSIDE the lock can see the winner's file, and without it the loser
+    replaces a ledger whose transitions are already append-only and unique forever.
+    The lock is stubbed with one that plants the winner's bytes on entry, which is
+    the interleaving the real `flock` window admits and a wall-clock race cannot be
+    made to reproduce on demand.
+    """
+    init = load_script_module("init_lesson_ledger_race_test", ROOT / "scripts/init_lesson_ledger.py")
+    winner = b'{"the winner already wrote this"}'
+
+    @contextlib.contextmanager
+    def _lock_that_loses_the_race(path: Path):
+        path.write_bytes(winner)
+        yield
+
+    monkeypatch.setattr(init._writer, "ledger_lock", _lock_that_loses_the_race)
+
+    with pytest.raises(FileExistsError) as raised:
+        init.init_lesson_ledger(
+            repo_root=tmp_path,
+            output_dir=tmp_path / "charness-artifacts/retro",
+            summary_path=tmp_path / "charness-artifacts/retro/recent-lessons.md",
+        )
+
+    # Named as the RACE it is, not as the ordinary "you ran this twice" refusal --
+    # the two demand different things of the reader, and the repo-relative path is
+    # what a consuming repo can act on.
+    assert "appeared at `charness-artifacts/retro/lesson-ledger.json`" in str(raised.value)
+    assert "while initializing" in str(raised.value)
+    # The whole point: the winner's bytes are still there.
+    assert (tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_bytes() == winner
+
+
+def test_empty_ledger_bootstrap_entrypoint_reports_a_refusal_as_exit_one(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The refusal has to survive the trip through `__main__` as a message.
+
+    Everything this bootstrap refuses -- an existing ledger, a committed ledger
+    missing from the worktree, an unreadable output dir -- arrives as an exception,
+    and an operator running the opt-in a second time must get the sentence naming
+    the validator, on stderr, with a nonzero code. A bare traceback would be exit 1
+    too, so the assertion is on the sentence.
+    """
+    _retro(tmp_path, "source.md", "a")
+    _ledger(tmp_path)
+    monkeypatch.setattr(
+        sys, "argv", ["init_lesson_ledger.py", "--repo-root", str(tmp_path), "--json"]
+    )
+
+    with pytest.raises(SystemExit) as caught:
+        runpy.run_path(str(ROOT / "scripts/init_lesson_ledger.py"), run_name="__main__")
+
+    assert caught.value.code == 1
+    captured = capsys.readouterr()
+    # Nothing on stdout: a `--json` consumer must not be handed a half-receipt.
+    assert captured.out == ""
+    assert "it is append-only" in captured.err
+    assert "check_lesson_ledger.py" in captured.err
+    assert "Traceback" not in captured.err
 
 
 def test_ledger_refusals_name_the_key_set_or_next_step_they_demand(tmp_path: Path) -> None:

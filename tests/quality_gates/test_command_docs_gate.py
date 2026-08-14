@@ -12,6 +12,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.script_loader import load_script_module
+
 from .support import ROOT, run_script, write_executable
 
 
@@ -324,3 +326,56 @@ def test_run_help_raises_systemexit_on_signal_death(tmp_path: Path) -> None:
     mod = _load_render_cli_reference()
     with pytest.raises(SystemExit):
         mod.run_help(tmp_path, ("bash", "-c", "kill -9 $$"))
+
+
+# --- the flag gate in a tree that does not own the CLI -----------------------
+#
+# `check_documented_command_flags.build_report` always builds a repo path index from
+# this tree's own git listing, so the arm a CONSUMING repo takes -- no index, decide
+# from the filesystem -- is only reachable through the collector itself.
+FLAG_GATE = load_script_module(
+    "tests.quality_gates.command_docs_flag_gate",
+    ROOT / "scripts" / "check_documented_command_flags.py",
+)
+
+
+def _consumer_doc(tmp_path: Path, text: str) -> tuple[Path, Path]:
+    root = tmp_path / "consumer"
+    doc = root / "docs" / "guide.md"
+    doc.parent.mkdir(parents=True)
+    doc.write_text(text, encoding="utf-8")
+    return root, doc
+
+
+def test_a_documented_cli_command_is_skipped_when_the_tree_has_no_cli(tmp_path: Path) -> None:
+    """A consuming repo documents `charness ...` but does not ship the executable.
+
+    The gate proves a flag claim by running the command's own `--help`, so with no CLI
+    at the root there is nothing to run. Reporting drift would fail a doc that is
+    correct about the INSTALLED command; accepting it silently is worse -- a pass
+    claiming to have scanned a command this tree cannot execute. The counted skip is
+    what keeps the pass from over-claiming its own coverage.
+    """
+    root, doc = _consumer_doc(tmp_path, "Run `charness quality run --json` in your repo.\n")
+
+    found, skipped = FLAG_GATE.iter_documented_invocations(root, doc)
+
+    assert found == []
+    assert skipped == ["cli-not-in-this-tree"]
+
+
+def test_a_documented_cli_command_is_scanned_when_the_tree_ships_the_cli(tmp_path: Path) -> None:
+    """The same doc in a tree that owns the executable IS this gate's to prove.
+
+    Identical call, identical carrier: the two tests differ only in whether the
+    repo-root CLI exists, which is the whole question the index-free arm answers.
+    """
+    root, doc = _consumer_doc(tmp_path, "Run `charness quality run --json` in your repo.\n")
+    (root / FLAG_GATE.CLI_NAME).write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+    found, skipped = FLAG_GATE.iter_documented_invocations(root, doc)
+
+    assert skipped == []
+    assert [(script, flags) for _lineno, script, _tokens, flags in found] == [
+        (FLAG_GATE.CLI_NAME, ("--json",))
+    ]

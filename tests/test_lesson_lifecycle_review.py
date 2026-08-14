@@ -185,6 +185,73 @@ def test_cli_is_read_only_and_exits_zero_over_an_unproposed_ledger(tmp_path: Pat
     assert (tmp_path / LEDGER_RELATIVE).read_bytes() == before
 
 
+def test_a_malformed_score_event_is_dropped_rather_than_taking_the_report_down() -> None:
+    """The shape tolerance in `_anchors_by_lesson`, exercised where it can be reached.
+
+    `build_lifecycle_review` reads a REPLAYED payload, and the ledger validator
+    refuses both of these shapes outright, so this is the one entry point that can
+    reach the guards. They still earn their place: this report is briefing evidence
+    for a human disposition, and the failure mode it must not have is dying on the
+    row it cannot read instead of rendering the rows it can. A bare `event.get` over
+    a string raises `AttributeError`, which the entrypoint's `except` clause does
+    not even catch, and an unhashable-slug event would file its anchors under a key
+    no lesson_id can ever match -- an anchor silently present and never shown.
+    """
+    anchors = review._anchors_by_lesson(
+        {
+            "score_events": [
+                "a row from a hand-edited ledger, not an object",
+                {"lesson_id": None, "score": 3, "anchor": "filed under nothing"},
+                {
+                    "lesson_id": "quiet",
+                    "score": -2,
+                    "session_id": "session-a",
+                    "source_retro": "charness-artifacts/retro/quiet.md",
+                    "anchor": "The gate was green and the loop had never closed.",
+                },
+            ]
+        }
+    )
+
+    # Only the readable row survives, and it survives WHOLE: the score travels with
+    # the anchor because `+3 "..."` and `-3 "..."` render identically without it.
+    assert anchors == {
+        "quiet": [
+            {
+                "score": -2,
+                "source_retro": "charness-artifacts/retro/quiet.md",
+                "session_id": "session-a",
+                "anchor": "The gate was green and the loop had never closed.",
+            }
+        ]
+    }
+
+
+def test_the_prose_entrypoint_renders_the_report_a_human_actually_reads(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """Without `--json` the CLI is the whole product: this gate is invoked as
+    `./scripts/render_lesson_lifecycle_review.py --repo-root .` from the quality
+    catalog with no `--json`, so the human rendering is the default path, not a
+    convenience beside it. The JSON test above cannot notice a `main()` that emits
+    the structured payload on both branches."""
+    _repo(tmp_path, score_events=[_anchored_quiet_score()])
+    monkeypatch.setattr(
+        sys, "argv", ["render_lesson_lifecycle_review.py", "--repo-root", str(tmp_path)]
+    )
+
+    assert review.main() == 0
+
+    out = capsys.readouterr().out
+    # Prose, not JSON -- and the discriminator the report exists for is in it.
+    assert not out.startswith("{")
+    assert out.startswith("Lesson lifecycle review: 2 lessons")
+    assert "Refused the release grant" in out
+    assert "No anchored evidence (1): loud" in out
+    assert "Dispositions to judge (recurrence cannot tell these apart):" in out
+    assert "Not claimed: This report proposes nothing" in out
+
+
 def test_human_output_shows_anchors_and_the_undetermined_group(tmp_path: Path) -> None:
     _repo(tmp_path, score_events=[_anchored_quiet_score()])
 
