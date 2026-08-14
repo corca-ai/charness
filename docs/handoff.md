@@ -64,7 +64,9 @@ readback, or issue closure.
    `awiki lint -root docs` exits 1 with `link_only_lines=196` while
    `scripts/check_docs_graph.py:12-18` deliberately reads only `orphans`/`islands`.
    Assert the count the gate ALREADY parses, or 196 becomes 0 once and silently
-   returns: item 5's class, inside the surface that would measure it.
+   returns: item 5's class, inside the surface that would measure it. Design for
+   item 4 is decided and written:
+   [score outcome vocabulary](../charness-artifacts/spec/2026-08-14-lesson-score-outcome-vocabulary.md).
 4. **Repair the lesson score signal — three coupled defects, all measured.** One
    number carries both "this lesson pushed a wrong action" and "this lesson was
    fine and did not transfer", which is exactly the distinction
