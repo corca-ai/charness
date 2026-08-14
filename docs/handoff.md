@@ -2,11 +2,15 @@
 
 ## Workflow Trigger
 
-- Run `python3 scripts/open_lesson_session.py` BEFORE any brief or reviewer
-  spawn, then `grep -rl <concept> charness-artifacts/spec charness-artifacts/goals docs/`
-  for the concepts you will touch. Why, and where it did not transfer:
+- Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <same>`
+  BEFORE any brief or reviewer spawn, then
+  `grep -rl <concept> charness-artifacts/spec charness-artifacts/goals docs/`
+  for the concepts you will touch. Both flags are REQUIRED — this line named the
+  command bare until 2026-08-14, when following it produced a usage error: the
+  discipline was written and bound to nothing, which is the class item 2 below
+  asks to treat. Why, and where it did not transfer:
   [session retro](../charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md).
-- Then invoke `issue` on the closeout cohort below.
+- Then invoke `release` on the push-and-close decision in `## Next Session`.
 
 ## Continuation Capability
 
@@ -20,22 +24,23 @@
 - [Draft release notes](../charness-artifacts/release/2026-08-14-v6.0.0-notes.md)
   — breaking changes and the `--json` migration.
 - [dup-review.json](../charness-artifacts/quality/dup-review.json) family
-  `275d5bdd800e9f8c` — why the four-writer ledger transaction was not extracted.
+  `d3fea2dbc2463d22` (rotated from `275d5bdd800e9f8c` on 2026-08-14) — why the
+  four-writer ledger transaction was not extracted.
 - [#608](https://github.com/corca-ai/charness/issues/608) — release helper cannot
   pause for the claims review.
 - [#628](https://github.com/corca-ai/charness/issues/628) — scaffold write-path
-  class; the retro's Sibling Search adds a third instance.
+  class, now measured across all four families rather than argued from one.
 - [#617](https://github.com/corca-ai/charness/issues/617) — lesson presentation
   lost across compaction.
 
 ## Current State
 
-- [#625](https://github.com/corca-ai/charness/issues/625),
-  [#627](https://github.com/corca-ai/charness/issues/627),
-  [#626](https://github.com/corca-ai/charness/issues/626) — landed and reviewed;
-  closeout not run, issues open.
-- [#618](https://github.com/corca-ai/charness/issues/618)-[#624](https://github.com/corca-ai/charness/issues/624)
-  — landed previous slice; closeout not run.
+- [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627)
+  — closeout floor RUN, evidence posted to each, all ten OPEN by decision: the
+  carrier is unpushed and `skills/public/issue/SKILL.md:102` refuses a close
+  before publication. Review found two defects inside the fixes being closed out;
+  both repaired and re-reviewed:
+  [critique](../charness-artifacts/critique/2026-08-14-issue-618-628-closeout.md).
 - The lesson loop closed end to end for the first time; regenerate with
   `python3 scripts/check_lesson_evaluation_continuity.py --repo-root .`.
 - `origin/main` is merged in and the broad gate passes over the integrated tree:
@@ -51,27 +56,31 @@ or issue closure. Every verdict above is local to this worktree.
 
 ## Next Session
 
-1. Push and release, deferred here by the owner. Unpushed set:
-   `git log --oneline origin/main..HEAD`.
-2. Treat `rule-exists-but-does-not-bind` as a class; the method is yours to
-   choose, treating it is not optional. Three hits in one slice — `quality` not
-   knowing it owned the lesson lifecycle, the retro persist path never calling
-   the seeder, the handoff discipline documented but bound to nothing — and only
-   instances were repaired. The retro-to-seeder one is still open and is the
-   cheapest probe of any proposed treatment — `grep -rn seed_lesson_transitions skills/public/retro/scripts/`
-   returns no caller. Instances and their cost:
+1. Push, then close #618-#625 with a closeout commit carrying `Closes #N` and the
+   classification ledger (the `#614`/`#615`/`#616` carrier shape), then
+   `verify-closeout --expect-state CLOSED`. The comment bodies are already on each
+   issue and are reusable verbatim. Push is deferred by the owner and is not
+   standing-approved. Unpushed set: `git log --oneline origin/main..HEAD`.
+   #626/#627 need a scope decision first, not just a push — see their comments.
+2. Treat `rule-exists-but-does-not-bind` as a class; the method is yours, treating
+   it is not. Now five hits, and the two added on 2026-08-14 were found by
+   FOLLOWING this file, not auditing it: its own trigger command was unrunnable,
+   and `python3 skills/public/release/scripts/check_fresh_checkout_probes.py --repo-root . --detail`
+   still says `configured` at exit 0 while its own reason reads "declared but were
+   not run" (the five probes themselves ran clean on 2026-08-14). Cheapest probe
+   of any treatment — `grep -rn seed_lesson_transitions skills/public/retro/scripts/`
+   returns no caller. Cost:
    [session retro](../charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md).
-3. Run the `issue` closeout floor for both cohorts, post closeout comments, and
-   add the retro-family evidence to
-   [#628](https://github.com/corca-ai/charness/issues/628).
-4. `fresh_checkout_probes` are declared and have never run:
-   `python3 skills/public/release/scripts/check_fresh_checkout_probes.py --repo-root .`.
+3. Same class, unfinished sibling: three consuming-repo-facing refusals were
+   repaired, but `grep -n "python3 scripts/" scripts/recent_lessons_lib.py` still
+   returns two. Treated in the lesson-bootstrap files only.
 
 ## Discuss
 
 - **Release readiness.** Local proof is green; the release PROCESS is not ready.
-  [#608](https://github.com/corca-ai/charness/issues/608) blocks it and closeout
-  is unrun. Green is not a grant — the
+  [#608](https://github.com/corca-ai/charness/issues/608) blocks it. The closeout
+  floor has now run, so the remaining gap is publication, not evidence. Green is
+  not a grant — the
   [session retro](../charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md)
   records four rounds of claims that passed every gate and were false. Route
   through `quality` and `release`.
