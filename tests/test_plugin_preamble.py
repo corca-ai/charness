@@ -19,6 +19,9 @@ def test_plugin_preamble_json_output_includes_hints_and_readiness() -> None:
         "Run `charness init` or `charness update`; both try Codex's official plugin/install path when the Codex CLI is available. "
         "Restart Codex only if the host state still needs to reload the installed plugin."
     )
+    assert payload["update_hints"]["grok"] == (
+        "Run `charness update`, then restart Grok Build. Grok loads `~/.grok/plugins/charness` when `[plugins].enabled` lists `charness`. No marketplace step."
+    )
     assert isinstance(payload["readiness"], list)
     assert any(entry["tool_id"] == "agent-browser" for entry in payload["readiness"])
 

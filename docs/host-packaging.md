@@ -1,14 +1,14 @@
 # Host Packaging Contract
 
 This document defines the first host-packaging contract for exporting the
-host-neutral `charness` repo into Claude-compatible and Codex-compatible plugin
-layouts.
+host-neutral `charness` repo into Claude-compatible, Codex-compatible, and
+minimal Grok Build plugin layouts.
 
 ## Goals
 
 - keep `charness` as the only source of truth for shared skills, profiles,
   presets, and integrations
-- prevent Claude and Codex plugin trees from becoming hand-maintained forks
+- prevent Claude, Codex, and Grok plugin trees from becoming hand-maintained forks
 - make host-specific manifests and marketplaces generated artifacts rather than
   policy surfaces
 - give future sessions a stable target for export scripts and packaging tests
@@ -92,6 +92,26 @@ The Claude export must map the shared bundle into:
 `commands/` remains a future host-specific output and should only appear when
 a future export iteration has a clear shared source or a clearly bounded host
 adapter.
+
+### Grok Build
+
+Grok consumes the same exported plugin tree. There is no Grok marketplace in
+this contract.
+
+The operator install path is:
+
+- copy the exported tree to `~/.grok/plugins/charness` (auto-trusted)
+- list `charness` in `~/.grok/config.toml` `[plugins].enabled`
+- or point `[plugins].paths` at a plugin directory that already contains
+  `charness/`
+
+`charness init` / `charness update` materialize that user plugin directory.
+They do not add a Grok marketplace source.
+
+Grok Build currently ignores `SessionStart` and `PostToolUse` hook stdout, so
+this slice does not install Grok-native session-routing or edit-guard hooks.
+Usage-episode capture can still ride Claude-compatible hook settings when Grok
+reads `~/.claude/settings.json`.
 
 ## Current Export Scope
 
@@ -199,7 +219,7 @@ Current v1 output is intentionally read-only:
 
 - package version
 - root install-surface drift status
-- explicit update hints for Claude and Codex installs, including the best-effort Codex cache refresh path
+- explicit update hints for Claude, Codex, and Grok installs, including the best-effort Codex cache refresh path
 - lock-based readiness summary for known integrations
 - vendored-copy warnings for consumer repos that still carry a local
   non-symlink `charness` copy

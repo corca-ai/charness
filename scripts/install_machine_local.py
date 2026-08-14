@@ -32,6 +32,10 @@ def default_plugin_root(home_root: Path, package_id: str) -> Path:
     return home_root / ".codex" / "plugins" / package_id
 
 
+def default_grok_plugin_root(home_root: Path, package_id: str) -> Path:
+    return home_root / ".grok" / "plugins" / package_id
+
+
 def default_codex_marketplace_path(home_root: Path) -> Path:
     return home_root / ".agents" / "plugins" / "marketplace.json"
 
@@ -94,6 +98,7 @@ def detect_hosts() -> dict[str, bool]:
     return {
         "codex": shutil.which("codex") is not None,
         "claude": shutil.which("claude") is not None,
+        "grok": shutil.which("grok") is not None,
     }
 
 
@@ -171,6 +176,7 @@ def main() -> int:
                 "codex_marketplace_path": str(marketplace_path) if marketplace_path else None,
                 "codex_source_path": source_path,
                 "claude_plugin_dir": str(plugin_root),
+                "grok_plugin_root": str(default_grok_plugin_root(home_root, args.package_id)),
                 "detected_hosts": detected_hosts,
                 "host_next_steps": {
                     "codex": (
@@ -179,6 +185,10 @@ def main() -> int:
                         else "Codex marketplace update skipped."
                     ),
                     "claude": f"Use `claude --plugin-dir {plugin_root}` to exercise the same exported install surface.",
+                    "grok": (
+                        "Copy the exported plugin tree to `~/.grok/plugins/charness` and list "
+                        "`charness` in `[plugins].enabled`. Do not add a Grok marketplace."
+                    ),
                 },
             },
             ensure_ascii=False,

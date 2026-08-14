@@ -168,7 +168,7 @@ def run(payload: dict[str, object], *, host: str, cwd_override: Path | None = No
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--host", choices=["claude", "codex", "unknown"], default="unknown", help="Host that fired the hook; recorded into start.json for downstream analysis.")
+    parser.add_argument("--host", choices=["claude", "codex", "grok", "unknown"], default="unknown", help="Host that fired the hook; recorded into start.json for downstream analysis.")
     parser.add_argument("--cwd", type=Path, default=None, help="Override the cwd used for adapter discovery (debugging only).")
     args = parser.parse_args(argv)
     payload = _read_payload(sys.stdin)

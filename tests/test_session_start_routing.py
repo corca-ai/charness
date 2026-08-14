@@ -80,6 +80,13 @@ def test_render_output_unknown_emits_plain_directive() -> None:
     assert "charness catalog list" in out
 
 
+def test_render_output_grok_emits_plain_directive() -> None:
+    # Grok Build ignores SessionStart stdout; do not pretend the Claude JSON wrapper injects.
+    out = hook.render_output("grok")
+    assert "hookSpecificOutput" not in out
+    assert "charness catalog list" in out
+
+
 def test_hook_runs_end_to_end_and_injects_directive() -> None:
     """Simulate the host firing the hook: SessionStart payload on stdin."""
     payload = json.dumps(
