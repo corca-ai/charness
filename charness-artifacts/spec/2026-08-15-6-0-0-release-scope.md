@@ -166,6 +166,45 @@ Ordering is by dependency pressure, not by theme.
   GRAMMAR — a different proof surface than S3 touched, and S3 was already at its
   review cap. It lands before S7 so the release does not publish a lesson-loop
   gate with a known bypass while closing the lesson-loop issues that rest on it.
+- **S6b — cost as a proof surface** (owner ruling, 2026-08-15, in this release).
+  MEASURED during S5 and the reason this slice exists: `scripts/run_standing_pytest.py`
+  runs the suite with xdist in **84s** (9403 tests) over **567 of 567** test files —
+  zero uncovered — is budgeted (`pytest: 97500` on this profile) and BLOCKS via
+  `check_runtime_budget.py`. The handoff instead prescribes
+  `python3 -m pytest tests/ -q --no-header`, which takes **~22 minutes** for the same
+  scope. **14.7x, and the fast path already existed, was measured, and was enforced.**
+  S5 paid that cost three times without questioning it, because the handoff records
+  "~22 minutes ... Budget it per slice" — a cost stated as a constant of nature rather
+  than as a bar with a direction.
+
+  The gap is NOT missing cost measurement. Measurement exists, is tuned, and blocks.
+  Three things are missing, and each is the same shape as a defect this release already
+  fixed elsewhere:
+
+  1. **Nothing refuses a document that prescribes a command outside the measured
+     universe.** `check_runtime_budget_universe` asks budget -> universe ("does every
+     budgeted label exist"), never universe -> prescription ("is the expensive thing we
+     tell sessions to run budgeted at all"). Same one-directional defect S5 repaired in
+     the parity gate's `absent_by_design` check.
+  2. **`validate_handoff_artifact.py` already blocks and already refuses prose** — it
+     carries `FORBIDDEN_SUBAGENT_BLOCKER_PHRASES` — so a superseded-command registry is
+     the same mechanism in the same file, not new machinery. A bare-pytest regex is
+     already checked in at `.agents/quality-adapter.yaml:23` for a different purpose.
+  3. **No review angle asks about cost.** The handoff DID get fresh-eye review. The
+     instruction passed because it is TRUE: that command really does re-prove the suite
+     and ~22 minutes was really measured. Every angle this repo ships
+     (`implementer-misread`, `overstated-acceptance`, `hidden-sequencing`) asks whether a
+     claim matches the tree. None asks whether a dominated path was chosen. A dominated
+     instruction is not a false one, so nothing caught it.
+
+  **Consumer-facing half, which is the larger half.** What the quality skill exports
+  today is the BUDGET apparatus (`check_runtime_budget.py`, `runtime_budget_lib.py`,
+  `runtime_profile_lib.py`, `render_runtime_summary.py`), not the fast RUNNER. A
+  consuming repo that simply runs `pytest` inherits the ledger and none of the speed, and
+  nothing tells it so. The exported surface must either scaffold a standing-runner
+  equivalent or render the verdict "the command your docs prescribe is outside your
+  measured universe".
+
 - **S7 — release execution.** Reword the 8 blocking quantities the S1 lint finds
   in the prepared notes that have no registered claim surface to move into
   (owner ruling, 2026-08-15: reword rather than expand the registry — an ad-hoc
@@ -388,6 +427,15 @@ Each criterion names the slice that owns it. Coverage is asserted in
 12. **(S7)** Both #608 and #618-#627 read back `CLOSED` from the provider via
     `verify-closeout --expect-state CLOSED`, over a complete classification
     ledger committed before the prepared release record.
+14. **(S6b)** A repo-owned document cannot prescribe a command that a registry marks
+    superseded, and the refusal names the replacement. This repo's own handoff is the
+    first subject.
+15. **(S6b)** The runtime-budget universe check answers BOTH directions: a prescribed or
+    queued expensive command with no budget is reported, not just a budgeted label with
+    no command.
+16. **(S6b)** A critique/review run carries a cost-dominance angle — "is there a cheaper
+    path to the same evidence?" — and it is exported to consuming repos rather than
+    living only in this repo's review prompts.
 13. **(S4)** A `## References` entry in a handoff artifact cannot carry a link
     with no descriptor on the link's own physical line, and the scaffold emits a
     stub that satisfies that rule unedited. Added 2026-08-15 with the scope
@@ -456,6 +504,17 @@ Each criterion names the slice that owns it. Coverage is asserted in
   is the case that distinguishes the same-line rule from a same-entry one, and it
   is the shape this repo's own handoff carried. Plus: the scaffold's emitted stub
   passes the real validator unedited.
+- Verification type: unit — (SC14) the handoff validator REFUSES an artifact whose body
+  prescribes a registered superseded command, and the message names the replacement.
+  Negative: an UNregistered slow command passes — the registry is a denylist, so its false
+  negatives are real and must be stated rather than implied away. Plus: this repo's own
+  `docs/handoff.md` passes only after its `pytest tests/` line is replaced.
+- Verification type: integration — (SC15) a queued or prescribed command with no runtime
+  budget entry is reported by the universe check. Negative: the existing budgeted-label
+  direction still reports a budget naming a label that does not exist.
+- Verification type: manual + exported-surface — (SC16) the cost-dominance angle appears
+  in the shipped critique surface, and a consuming repo running the quality skill is told
+  when its prescribed test command sits outside its own budgeted universe.
 - Verification type: manual — (SC12) `verify-closeout --expect-state CLOSED`
   reads back #608 and each of #618-#627 from the provider after the publish, and
   the classification ledger commit precedes the prepared release record.
@@ -470,6 +529,7 @@ Each criterion names the slice that owns it. Coverage is asserted in
 | S4 | 8, 13 | docs graph; 13 is the recorded scope extension |
 | S5 | 9 | umbrellas; the probe question bounds it |
 | S6 | 10, 11 | operating contract |
+| S6b | 14, 15, 16 | cost as a proof surface; measured in S5 |
 | S7 | 12 | release execution and closes |
 
 No slice may close without its criteria; no criterion is without a check above.
@@ -588,6 +648,23 @@ whether SC10 is satisfiable on a given host depends on that choice.
   today. The detective control stays as the backstop for anything still sharing
   the tree — `reviewer_boundary_fingerprint` snapshot/verify, which S4 ran across
   both review windows.
+
+- **RULED 2026-08-15: cost becomes a proof surface, and it ships in THIS release.**
+  Owner decision after S5 measured the gap. The ask was raised as "why do these speed
+  problems keep recurring, and why can't an agent find slowness strange on its own", and
+  the measurement answered it: the fast path existed and the operating instruction pointed
+  away from it. So the ruling is NOT "add cost measurement" — that exists, is tuned, and
+  blocks. It is: **make a dominated instruction refusable, and give review an angle that
+  can see cost.** Scoped as S6b above, landing before S7.
+
+  Recorded so it is not re-litigated: the reason fresh-eye review did not catch the
+  handoff's prescription is that the prescription is TRUE. Review is aimed at falsity.
+  A dominated-but-true instruction passes every angle this repo ships, which is why the
+  remedy is a new angle plus a deterministic registry, not more review of the same kind.
+
+  Also recorded: the consuming-repo half is the larger one. The quality skill exports the
+  budget apparatus and not the fast runner, so a consumer inherits the ledger without the
+  speed and is told nothing about it.
 
 - **RULED 2026-08-15: the exported gate's `link_only_lines` bar defaults to 0,
   and the work lands in S6.** A consuming repo must not inherit a threshold
