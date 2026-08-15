@@ -223,7 +223,7 @@ def _lifecycle_commands(repo_root: Path, lesson_id: str, state: str, sequence: i
 
 
 def _graduation_command(
-    repo_root: Path, lesson_id: str, events: list[dict[str, Any]], source_retro: str
+    repo_root: Path, lesson_id: str, events: list[dict[str, Any]], source_retro: str, state: str
 ) -> str | None:
     """The graduation-proposal move, when the lesson has the evidence for it.
 
@@ -234,12 +234,17 @@ def _graduation_command(
     reviewer caught the under-delivery against the criterion's own wording, and
     #626 does name graduation-proposal alongside archive and resurrection.
 
-    Returned only when at least two DISTINCT sessions carry an encounter, because
-    that is the writer's own evidence floor -- graduation is a multi-session
-    claim, which is exactly why the ledger contract assigns it to `quality` and
-    not to `retro`. Emitting it for a one-session lesson would route an operator
-    to a guaranteed refusal, the defect `_lifecycle_commands` was just repaired
-    for. `None` here means "not yet proposable", not "not a candidate".
+    Returned only when at least two DISTINCT sessions carry a
+    `changed-an-action` encounter. That is STRICTER than the writer's own floor,
+    deliberately: `contract_register_lib` accepts any two scored sessions
+    including legacy ones, and round 3 caught this docstring claiming parity with
+    it. The reason for the narrowing is in the inline comment below. So `None`
+    here means "no graduate-disposition evidence yet" -- NOT "the writer would
+    refuse", which is what a reader auditing offer-versus-accept would otherwise
+    conclude.
+
+    Graduation is a multi-session claim either way, which is exactly why the
+    ledger contract assigns it to `quality` and not to `retro`.
     """
     # `changed-an-action` sessions only. `events` includes legacy scalars, and
     # this module is explicit that the legacy cohort routes NOWHERE because
@@ -257,6 +262,13 @@ def _graduation_command(
         }
     )
     if len(sessions) < 2:
+        return None
+    # ARCHIVED lessons are not proposable. `_lifecycle_commands` filters by state
+    # precisely so no guaranteed-refusal move is offered, and round 3 found this
+    # function had no such filter -- so the report could brief "propose this for
+    # graduation" for a lesson it was simultaneously briefing as archived, which
+    # is reachable in the SC7 fixture one step after the archive.
+    if state != "active":
         return None
     evidence: list[str] = []
     for session_id in sessions:
@@ -282,8 +294,11 @@ def _graduation_command(
         "<the heading this becomes>",
         "--rationale",
         "<why this belongs in the always-loaded contract rather than the ledger>",
+        # DELETE this flag when the budget is not full -- it is the one argument
+        # here whose correct action is removal rather than substitution, because
+        # the register refuses any id that is not already a known unit.
         "--displacement-unit-id",
-        "<the unit it displaces or retires; required once the unit budget is full>",
+        "<DELETE this flag unless the unit budget is full; otherwise the unit it displaces>",
     )
 
 
@@ -391,6 +406,7 @@ def build_lifecycle_review(repo_root: Path) -> dict[str, Any]:
                             row["lesson_id"],
                             events,
                             payload["lessons"][row["lesson_id"]]["source_retro"],
+                            row["state"],
                         )
                     )
                     else {}

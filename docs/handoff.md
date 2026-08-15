@@ -35,12 +35,11 @@
   repairs carrying the class they fixed. **S3's round-2 repairs are
   accepted-unreviewed**; the two-round cap was reached. The round record is the
   commit body: `git show 34c5f4ec1 --no-patch --format=%B`.
-- **Four false prose claims were written and caught in S3**, including one that
-  reached the governing release contract. Each is now stated as measured, with
-  the refuted version kept beside it — see the S3 entry and the carried-findings
-  list in the
-  [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md).
-  This is the class the whole release exists to prevent, committed inside it.
+- **Four false prose claims were written and caught in S3** — the class this
+  release exists to prevent, committed inside it. Each is now stated as measured
+  beside the refuted version; the S3 entry and carried-findings list in the
+  [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md)
+  own the detail.
 - Full suite GREEN at `34c5f4ec1`: 9440 passed, 0 failed, 21m17s. Re-prove with
   `python3 -m pytest tests/ -q --no-header`, BACKGROUNDED, and do not edit under
   an open collection. A suite run started before a repair does not prove the tree
@@ -52,8 +51,9 @@
   #620, #628, #617, #626, #627, #631 are fixed in-repo and unreleased.
   [#629](https://github.com/corca-ai/charness/issues/629) is still broken and is
   S4's first item. [#633](https://github.com/corca-ai/charness/issues/633) was
-  filed during S3 and is untouched. Still no checked-in classification ledger;
-  the closeout floor requires one.
+  filed during S3 and is **scoped to S6 by owner ruling** — it lands before S7
+  publishes. Still no checked-in classification ledger; the closeout floor
+  requires one.
 
 Non-claims: no push, tag, version bump, publish, hosted CI, installed-consumer
 readback, or issue closure. S4-S7 have not started. `foreign-score-source` is
@@ -72,7 +72,8 @@ event lands, which will be this session's own retro.
    "assert the count it already parses", and it REVERSES a deliberately pinned
    decision at `tests/test_docs_graph_gate.py:168-170`, which must be retracted
    explicitly the way S3 retracted the archive-slot pin.
-3. Then S5-S6 in order, then S7 publishes and closes
+3. Then S5, then S6 — which now also carries
+   [#633](https://github.com/corca-ai/charness/issues/633) — then S7 publishes and closes
    [#608](https://github.com/corca-ai/charness/issues/608) and
    [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627);
    the classification ledger commits BEFORE the prepared release record.

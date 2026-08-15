@@ -104,7 +104,15 @@ Ordering is by dependency pressure, not by theme.
   Constraints entry.
 - **S5 — structural umbrellas.** #586, then #584, #583, #582.
 - **S6 — operating contract.** No-mutating-git for write-capable subagents; a
-  monitored-phase path for long-running children.
+  monitored-phase path for long-running children. **Plus
+  [#633](https://github.com/corca-ai/charness/issues/633)** (owner ruling,
+  2026-08-15): a disposition spelling `session_id: "none"` under any status other
+  than `missing-start` parses, increments `completed_evaluation_count`, and skips
+  every reconciler check. Pre-existing, found by an S3 bounded reviewer, and
+  folded here rather than into S3 because repairing it changes the disposition
+  GRAMMAR — a different proof surface than S3 touched, and S3 was already at its
+  review cap. It lands before S7 so the release does not publish a lesson-loop
+  gate with a known bypass while closing the lesson-loop issues that rest on it.
 - **S7 — release execution.** Reword the 8 blocking quantities the S1 lint finds
   in the prepared notes that have no registered claim surface to move into
   (owner ruling, 2026-08-15: reword rather than expand the registry — an ad-hoc

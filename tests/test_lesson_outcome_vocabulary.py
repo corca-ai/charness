@@ -15,7 +15,10 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+import yaml
 
+from scripts import check_lesson_evaluation_continuity as checker
+from scripts import lesson_evaluation_continuity_lib as continuity
 from scripts import lesson_evaluation_reconcile_lib as reconcile
 from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import lesson_selection_preview_lib as preview
@@ -169,12 +172,23 @@ def test_the_four_value_vocabulary_round_trips_and_routes_to_one_disposition_eac
 
 
 def test_an_outcome_with_no_anchor_is_refused(tmp_path: Path) -> None:
-    """With magnitude gone there is no unanchored tier left to fall back to."""
+    """With magnitude gone there is no unanchored tier left to fall back to.
+
+    Both layers, because round 3 found this test only ever reached the writer's
+    `_nonblank` guard -- whose message also contains "anchor", so the regex
+    matched an unrelated earlier failure and `anchor_shape_error`'s blank branch
+    was never exercised. A blank anchor reaching the ledger by hand edit would
+    have validated.
+    """
     path = _seeded(tmp_path)
     for anchor in ("", "   "):
-        with pytest.raises(ValueError, match="anchor"):
+        with pytest.raises(ValueError, match="non-empty non-whitespace"):
             _score(tmp_path, path, outcome="read-but-not-applied", anchor=anchor)
     assert json.loads(path.read_text(encoding="utf-8"))["score_events"] == []
+    # The validator's own arm, reached directly rather than through the writer.
+    for anchor in ("", "   ", None, 7):
+        assert outcome_lib.anchor_shape_error("read-but-not-applied", anchor) is not None
+    assert outcome_lib.anchor_shape_error("read-but-not-applied", "it did not land") is None
 
 
 def test_the_legacy_scalar_shape_cannot_come_back_once_an_outcome_lands(tmp_path: Path) -> None:
@@ -440,6 +454,29 @@ def test_the_graduation_move_is_offered_only_with_two_evidence_sessions(tmp_path
     # template naming one would be refused on submission.
     assert template.count("--evidence-session-id") == 2
     assert "--displacement-unit-id" in template
+    # The register refuses a proposal whose source_retro is not the lesson's
+    # seeded value, so this is emitted as a real value rather than a placeholder.
+    assert "--source-retro charness-artifacts/retro/source.md" in template
+
+    # ...and an ARCHIVED lesson is not proposable, the same way it is not offered
+    # `archive`. Round 3 found `_graduation_command` had no state filter, so the
+    # report could brief "propose this for graduation" for a lesson it was
+    # simultaneously briefing as archived. Reached here because this is the one
+    # fixture that satisfies the evidence floor AND can be archived.
+    decision = tmp_path / "quality-review.md"
+    decision.write_text("# Quality Review\n", encoding="utf-8")
+    archive = [
+        line
+        for line in _review(tmp_path)["lessons"][0]["lifecycle_command_templates"]
+        if "--action archive" in line
+    ][0]
+    argv = shlex.split(archive)
+    argv[argv.index("--decision-ref") + 1] = "quality-review.md"
+    argv[argv.index("--rationale") + 1] = "Reviewed: archived."
+    argv[argv.index("--repo-root") + 1] = str(tmp_path)
+    applied = subprocess.run([sys.executable, *argv[1:]], capture_output=True, text=True, check=False)
+    assert applied.returncode == 0, applied.stderr
+    assert "graduation_command_template" not in _review(tmp_path)["lessons"][0]
 
 
 def test_one_lesson_cannot_carry_two_encounters_in_one_session(tmp_path: Path) -> None:
@@ -542,3 +579,264 @@ def test_a_score_citation_outside_the_canonical_retro_shape_is_refused(
     with pytest.raises(ValueError, match="must be a repo-relative"):
         _score(tmp_path, path, source_retro=citation)
     assert json.loads(path.read_text(encoding="utf-8"))["score_events"] == []
+
+
+def test_an_encounter_that_did_not_work_lowers_the_ranking_statistic(tmp_path: Path) -> None:
+    """`valence` returning -1, which nothing proved.
+
+    Round 3 mutated it to `return 1` and the whole suite stayed green: the writer
+    and the replay call the SAME function, so `lessons != replayed` is blind to
+    it, and no fixture held a non-`changed-an-action` outcome event. This is the
+    field the selection ranking is built on, and "the ledger had no path in for
+    negative signal" is the defect the vocabulary exists to remove -- so a
+    negative that does not move score_total DOWN is the whole thing failing
+    silently.
+    """
+    _retro(tmp_path, "source.md", "a")
+    _retro(tmp_path, "2026-08-15-r0.md", "a")
+    _retro(tmp_path, "2026-08-15-r1.md", "a")
+    path = _ledger(
+        tmp_path,
+        session_events=[_session_event(session_id="s-0"), _session_event(session_id="s-1")],
+    )
+    _score(tmp_path, path, event_id="e-0", session_id="s-0",
+           source_retro="charness-artifacts/retro/2026-08-15-r0.md")
+    assert json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]["score_total"] == 1
+
+    _score(tmp_path, path, event_id="e-1", session_id="s-1",
+           source_retro="charness-artifacts/retro/2026-08-15-r1.md",
+           outcome="read-but-not-applied", anchor="in view at the decision and still not applied")
+    lesson = json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]
+    assert lesson["score_total"] == 0, "a failing encounter must cancel a working one"
+    assert lesson["score_count"] == 2
+    # And directly, so every arm is pinned rather than only the two used above.
+    assert outcome_lib.valence({"outcome": "changed-an-action"}) == 1
+    for failing in ("read-but-not-applied", "not-consulted", "pushed-a-wrong-action"):
+        assert outcome_lib.valence({"outcome": failing}) == -1, failing
+    assert outcome_lib.valence({"score": 3}) == 1
+    assert outcome_lib.valence({"score": -3}) == -1
+
+
+def test_each_outcome_routes_to_its_own_named_disposition() -> None:
+    """The mapping, pinned VALUE BY VALUE rather than as a set.
+
+    Round 3 showed the set assertion survives swapping `changed-an-action` and
+    `not-consulted`'s dispositions -- which would route a lesson that worked to
+    `strengthen-binding` and one that was never consulted to `graduate`. The
+    routing is the load-bearing half of the split; a set only pins that three
+    dispositions exist.
+    """
+    assert outcome_lib.SCORE_OUTCOMES == {
+        "changed-an-action": "graduate",
+        "read-but-not-applied": "rewrite-in-place",
+        "not-consulted": "strengthen-binding",
+        "pushed-a-wrong-action": "rewrite-in-place",
+    }
+    # The one that must never drift: the outcome asserting the lesson WORKED is
+    # the only one feeding `graduate`.
+    assert outcome_lib.SCORE_OUTCOMES[outcome_lib.WORKING_OUTCOME] == "graduate"
+    assert [o for o, d in outcome_lib.SCORE_OUTCOMES.items() if d == "graduate"] == [
+        outcome_lib.WORKING_OUTCOME
+    ]
+
+
+def test_graduation_is_not_offered_on_legacy_or_failing_evidence(tmp_path: Path) -> None:
+    """The round-2 narrowing, which had no negative case.
+
+    Round 3 deleted the `changed-an-action` filter and this file stayed green,
+    because the only graduation test used two working sessions. The filter exists
+    because `graduate` is the disposition `changed-an-action` routes to, so
+    offering a promote move on legacy or failing encounters hands quality
+    evidence that appears nowhere in `by_disposition`.
+    """
+    _retro(tmp_path, "source.md", "a")
+    _retro(tmp_path, "2026-08-15-one.md", "a")
+    _retro(tmp_path, "2026-08-15-two.md", "a")
+    path = _ledger(
+        tmp_path,
+        session_events=[_session_event(session_id="s-0"), _session_event(session_id="s-1")],
+    )
+    _write_index(tmp_path, path.parent)
+
+    _score(tmp_path, path, event_id="e-0", session_id="s-0",
+           source_retro="charness-artifacts/retro/2026-08-15-one.md")
+    _score(tmp_path, path, event_id="e-1", session_id="s-1",
+           source_retro="charness-artifacts/retro/2026-08-15-two.md",
+           outcome="read-but-not-applied", anchor="in view at the decision and still not applied")
+
+    lesson = _review(tmp_path)["lessons"][0]
+    assert lesson["score_count"] == 2, "two sessions carry encounters"
+    assert "graduation_command_template" not in lesson, (
+        "two sessions, but only one of them changed an action -- not graduate evidence"
+    )
+
+
+def test_by_disposition_reports_the_routing_the_author_chose(tmp_path: Path) -> None:
+    """`by_disposition`, which had no test at all.
+
+    It could `return {}` silently while the module docstring calls it "the answer
+    to the question quality actually asks". Every disposition key is present even
+    when empty, and the legacy cohort routes NOWHERE -- inferring a disposition
+    from events recorded before `changed-an-action` was expressible would
+    manufacture evidence nobody gave.
+    """
+    _retro(tmp_path, "source.md", "a")
+    _retro(tmp_path, "2026-08-15-one.md", "a")
+    path = _ledger(tmp_path, session_events=[_session_event(session_id="s-0")])
+    _write_index(tmp_path, path.parent)
+
+    empty = _review(tmp_path)["by_disposition"]
+    assert empty == {"graduate": [], "rewrite-in-place": [], "strengthen-binding": []}, (
+        "every disposition key present even with nothing to report"
+    )
+
+    _score(tmp_path, path, event_id="e-0", session_id="s-0",
+           source_retro="charness-artifacts/retro/2026-08-15-one.md",
+           outcome="read-but-not-applied", anchor="in view at the decision and still not applied")
+    assert _review(tmp_path)["by_disposition"] == {
+        "graduate": [],
+        "rewrite-in-place": ["a"],
+        "strengthen-binding": [],
+    }
+
+
+def test_the_named_gate_runs_the_precondition_over_a_real_ledger(tmp_path: Path, monkeypatch) -> None:
+    """SC6's integration half, through `check_lesson_evaluation_continuity.py`.
+
+    SC6 names that command, and its Acceptance Check labels the proof
+    `integration` -- but every existing proof called the pure reconciler directly
+    with hand-supplied inputs, so round 3 could replace
+    `recurrence_sources=_records.recurrence_sources(repo_root)` in the CLI with
+    `{}` and leave the suite green. That is the "reachable only from its own
+    test" class SC7 exists to refuse, sitting on the precondition round 2 added.
+
+    `{}` is MAXIMALLY strict, not inert: it makes every `not-consulted` encounter
+    unrecurred. So a properly tagged encounter passing this gate is exactly the
+    assertion that kills the mutation.
+    """
+    _retro(tmp_path, "source.md", "a")
+    output = tmp_path / "charness-artifacts/retro"
+    declaring = "2026-08-15-encounter.md"
+    # The recording retro carries BOTH the recurrence tag the precondition reads
+    # and the disposition line the reconciler claims the session with.
+    (output / declaring).write_text(
+        "# Session Retro\nDate: 2026-08-15\n\n"
+        "## North Star Alignment\n\n- P1 held.\n\n"
+        "## Waste\n\n- the class came up again (recurrence-class: a)\n\n"
+        "## Lesson Evaluation\n\n"
+        + continuity.disposition_line(
+            {"status": "effect-recorded", "session_id": "session-a", "score_event_count": 1}
+        )
+        + "\n\n## Next Improvements\n\n- workflow: do it\n\n"
+        "## Persisted\n\nPersisted: yes: charness-artifacts/retro/" + declaring + "\n",
+        encoding="utf-8",
+    )
+    session = _session_event()
+    path = _ledger(tmp_path, session_events=[session])
+    _write_index(tmp_path, output)
+
+    rendered = b"preview\n"
+    continuity.write_bundle(continuity.bundle_path(output, "session-a"), rendered)
+    continuity.write_receipt(
+        continuity.receipt_path(output, "session-a"),
+        continuity.build_receipt(
+            session_id="session-a",
+            snapshot_sha256=session["snapshot_sha256"],
+            stdout_bytes=rendered,
+            emitted_at="2026-08-15T00:00:00Z",
+        ),
+    )
+    _score(
+        tmp_path,
+        path,
+        source_retro=f"charness-artifacts/retro/{declaring}",
+        outcome="not-consulted",
+        anchor="never revisited it when the class came up",
+    )
+
+    report = checker.build_report(tmp_path, as_of=date(2026, 8, 16))
+
+    assert report["violations"] == [], report["violations"]
+    assert report["ok"] is True
+    assert report["status_counts"]["effect-recorded"] == 1
+    # The mutation this test exists to kill, asserted directly: hand the pure
+    # core an empty map and the same encounter is refused.
+    starved = reconcile.reconcile_records(
+        retros=[(f"charness-artifacts/retro/{declaring}",
+                 {"status": "effect-recorded", "session_id": "session-a", "score_event_count": 1})],
+        sessions={"session-a": session},
+        score_events=json.loads(path.read_text(encoding="utf-8"))["score_events"],
+        receipts={"session-a": continuity.build_receipt(
+            session_id="session-a", snapshot_sha256=session["snapshot_sha256"],
+            stdout_bytes=rendered, emitted_at="2026-08-15T00:00:00Z")},
+        receipt_violations=[],
+        as_of=date(2026, 8, 16),
+        recurrence_sources={},
+    )
+    assert "unrecurred-encounter" in {item["id"] for item in starved["violations"]}
+
+
+def test_the_emitted_graduation_command_is_accepted_by_the_register(tmp_path: Path) -> None:
+    """SC7's THIRD slot, executed rather than asserted.
+
+    Archive and resurrect are run end-to-end above, and this file's own docstring
+    records why "a template is present" was rejected as proof for them. Round 3
+    caught graduation still sitting in exactly that rejected shape: the flags
+    happen to line up with the writer's argparse today, so a renamed or reordered
+    flag would ship a template that dies on `unrecognized arguments` with a green
+    suite. Running it closes the last of the three slots SC7 names.
+    """
+    from tests.test_contract_register import _contract_sources, _register
+
+    _retro(tmp_path, "source.md", "a")
+    _retro(tmp_path, "2026-08-15-one.md", "a")
+    _retro(tmp_path, "2026-08-15-two.md", "a")
+    _contract_sources(tmp_path)
+    path = _ledger(
+        tmp_path,
+        session_events=[_session_event(session_id="s-0"), _session_event(session_id="s-1")],
+    )
+    _write_index(tmp_path, path.parent)
+    _register(tmp_path)
+    _score(tmp_path, path, event_id="e-0", session_id="s-0",
+           source_retro="charness-artifacts/retro/2026-08-15-one.md")
+    _score(tmp_path, path, event_id="e-1", session_id="s-1",
+           source_retro="charness-artifacts/retro/2026-08-15-two.md")
+
+    template = _review(tmp_path)["lessons"][0]["graduation_command_template"]
+    argv = shlex.split(template)
+    argv[argv.index("--repo-root") + 1] = str(tmp_path)
+    argv[argv.index("--target-path") + 1] = "AGENTS.md"
+    # A NEW heading: the register refuses a proposal whose unit id collides with
+    # an existing one, which is the conservation rule doing its job.
+    argv[argv.index("--target-heading") + 1] = "Check Premises Against Source"
+    argv[argv.index("--rationale") + 1] = "This belongs in the always-loaded contract."
+    # DISPLACEMENT IS BUDGET-CONDITIONAL, and this fixture proves which branch it
+    # is in rather than assuming: the seeded register is at its fixed unit budget,
+    # so the register refuses the proposal without a displacement. Filled with a
+    # real seeded unit id, because it also refuses any id that is not already
+    # known. Deleting the flag here is what the placeholder tells an operator to
+    # do only when the budget is NOT full -- asserted below.
+    argv[argv.index("--displacement-unit-id") + 1] = "AGENTS.md#alpha"
+
+    proposed = subprocess.run(
+        [sys.executable, *argv[1:]], capture_output=True, text=True, check=False
+    )
+
+    assert proposed.returncode == 0, proposed.stderr
+    assert yaml.safe_load(proposed.stdout)["lesson_id"] == "a"
+
+    # The other branch of the same rule: drop the displacement and the full-budget
+    # register refuses. This is why the template emits the flag unconditionally
+    # with a placeholder that says to delete it, rather than omitting it.
+    drop = argv.index("--displacement-unit-id")
+    without = [*argv[:drop], *argv[drop + 2 :]]
+    without[without.index("--proposal-id") + 1] = "graduate-a-again"
+    # A fresh target too, so the refusal we observe is the BUDGET rule and not the
+    # identity rule firing first on the unit the accepted proposal just claimed.
+    without[without.index("--target-heading") + 1] = "Score What Actually Bit"
+    refused = subprocess.run(
+        [sys.executable, *without[1:]], capture_output=True, text=True, check=False
+    )
+    assert refused.returncode == 1
+    assert "unit budget" in refused.stderr
