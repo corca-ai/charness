@@ -41,10 +41,9 @@
   `python3 -m pytest tests/quality_gates/test_regenerable_facts.py -q` refused a
   transcribed count on this file, identically at `0f4f47b0c` on a throwaway
   worktree — so S1's "full suite green at that commit" was not true.
-- Full suite before the length-cap splits: 9418 passed, 4 failed; three were
-  S2's and are fixed, the fourth was the regenerable-facts red above. **Re-run it
-  first**: `python3 -m pytest tests/ -q --no-header`, ~21 min, BACKGROUNDED, and
-  do not edit under an open collection.
+- Full suite GREEN at `a7e3bb636`: 9422 passed, 0 failed, 21m07s. Re-prove with
+  `python3 -m pytest tests/ -q --no-header`, BACKGROUNDED, and do not edit under
+  an open collection.
 - Ruff is clean only cache-free: `ruff check --no-cache .`, never `ruff check .`.
 - The release is still PREPARED: no bump, tag, or publish. Confirm with
   `python3 skills/public/release/scripts/current_release.py --repo-root .`.
