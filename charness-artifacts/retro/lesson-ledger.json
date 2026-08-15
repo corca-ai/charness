@@ -621,19 +621,51 @@
       "lesson_id": "premise-not-checked-against-source",
       "score": 2,
       "anchor": "Changed the opening action: checked 630 and 599 against source before implementing, which found removed_name_consumers.py already covers the deletion-time variant and confirmed check-markdown.sh:82 lacked --no. Not full transfer: the same class then reached a dup-review.json note claiming the slice added six release scripts when it added four and modified two."
+    },
+    {
+      "event_id": "2026-08-15-s3-proof-surface-review-binding",
+      "session_id": "2026-08-15-s3",
+      "source_retro": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "lesson_id": "proof-surface-review-binding",
+      "outcome": "changed-an-action",
+      "anchor": "Held every edit until each of three review windows closed, and declared the two handoff/contract writes with --parent-path at the r3 window; all three fingerprint verifies came back clean. Otherwise I would have repaired round-1 findings while the window was open, exactly as the prior slice did when verify returned boundary-drift over twelve paths and quarantined the reviewers' verdicts."
+    },
+    {
+      "event_id": "2026-08-15-s3-bar-recorded-as-prose",
+      "session_id": "2026-08-15-s3",
+      "source_retro": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "changed-an-action",
+      "anchor": "Made recurrence_sources a REQUIRED keyword parameter of reconcile_records rather than defaulting it, and said why in the signature comment. Otherwise I would have defaulted it to {} for the tests' convenience, which round 3 later proved would have left the not-consulted precondition silently inert in the production CLI."
+    },
+    {
+      "event_id": "2026-08-15-s3-premise-not-checked-against-source",
+      "session_id": "2026-08-15-s3",
+      "source_retro": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "lesson_id": "premise-not-checked-against-source",
+      "outcome": "read-but-not-applied",
+      "anchor": "It was in view and cited by name while I wrote 'Every legacy event in this repo's ledger is positive' into scripts/lesson_score_outcome_lib.py, transcribed from the 2026-08-14 spec where it was true. Four of the twelve are -2. Three more false claims followed the same shape; a bounded reviewer measured the ledger, I had not."
+    },
+    {
+      "event_id": "2026-08-15-s3-guard-adjacent-to-action",
+      "session_id": "2026-08-15-s3",
+      "source_retro": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "lesson_id": "guard-adjacent-to-action",
+      "outcome": "read-but-not-applied",
+      "anchor": "Presented at session open, then the handoff I wrote carried two ## Current State entries with no owning link, command, or issue id. validate_handoff_artifact.py refused the commit and named both lines. The lesson describes that exact shape."
     }
   ],
   "lessons": {
     "guard-adjacent-to-action": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-guard-adjacent-to-action",
-      "score_total": 1,
-      "score_count": 1,
+      "score_total": 0,
+      "score_count": 2,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 1
       },
       "state": "active",
@@ -642,13 +674,13 @@
     "premise-not-checked-against-source": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-premise-not-checked-against-source",
-      "score_total": 0,
-      "score_count": 4,
+      "score_total": -1,
+      "score_count": 5,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 4
       },
       "state": "active",
@@ -807,10 +839,10 @@
     "proof-surface-review-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
       "transition_id": "seed-proof-surface-review-binding",
-      "score_total": 1,
-      "score_count": 3,
+      "score_total": 2,
+      "score_count": 4,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1092,10 +1124,10 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,

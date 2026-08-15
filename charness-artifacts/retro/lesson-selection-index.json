@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-15",
-  "source_artifact_count": 510,
-  "candidate_count": 2075,
+  "source_artifact_count": 511,
+  "candidate_count": 2081,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -21,15 +21,15 @@
       "lesson": "**The premise check ran first and the class still got through one surface over.** Checking #630 and #599 against source before implementing is exactly what the lesson asks, and it worked — it refuted a live assumption about #599. Then I wrote into a `dup-review.json` review note that the slice \"added six release scripts\" when it added four and modified two, asserting a quantity I had not counted, inside the artifact that records WHY duplicate families are accepted. A bounded reviewer caught it. The lesson transferred to the code path it was written about and not to artifact prose, which is the same shape as writing a false quantity into release notes — the defect this whole slice exists to prevent.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 12,
-      "independent_source_count": 12,
+      "source_count": 13,
+      "independent_source_count": 13,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
       "latest_source_date": "2026-08-15",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 7.6,
+      "selection_weight": 8.2,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -120,6 +120,14 @@
           "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer."
         },
         {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The lesson `premise-not-checked-against-source` was presented at session open, cited by name during the work, and still recurred: \"every legacy event in this repo's ledger is positive\" was transcribed forward from a 2026-08-14 spec where it was true into shipped code where it was not. Four of twelve are `-2`. Three further false claims followed the same shape. A bounded reviewer measured the ledger; I had not."
+        },
+        {
           "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
           "date": "2026-08-15",
           "section": "Waste",
@@ -196,6 +204,72 @@
       ]
     },
     {
+      "candidate_id": "class:da0e4841a6b9",
+      "kind": "repeat_trap",
+      "lesson": "The lesson `guard-adjacent-to-action` was presented at session open and the handoff I then wrote carried two `## Current State` entries with no owning link, command, or issue id. The handoff validator refused the commit. The lesson names exactly that shape.",
+      "normalized_key": "two failed publish attempts 4 min of gate runtime each from invoking the installed",
+      "recurrence_class": "guard-adjacent-to-action",
+      "source_count": 6,
+      "independent_source_count": 6,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.6,
+      "selection_weight": 4.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\")."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The reviewer-boundary fingerprint `verify` was run after applying fixes**, so it reported drift it could not attribute. I had to reconcile it by hand in the critique artifact rather than cite it as evidence."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The lesson `guard-adjacent-to-action` was presented at session open and the handoff I then wrote carried two `## Current State` entries with no owning link, command, or issue id. The handoff validator refused the commit. The lesson names exactly that shape."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:2c53fdd5a072",
       "kind": "repeat_trap",
       "lesson": "**Repairing inside an open review window.** I spawned the round-2 bounded reviewers and began fixing their findings before the window closed, so `reviewer_boundary_fingerprint verify` returned `boundary-drift` over twelve paths — all mine, but the proof no longer covers the review it exists to cover, and the reviewers' sound-verdicts are quarantined.",
@@ -250,64 +324,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Repairing inside an open review window.** I spawned the round-2 bounded reviewers and began fixing their findings before the window closed, so `reviewer_boundary_fingerprint verify` returned `boundary-drift` over twelve paths — all mine, but the proof no longer covers the review it exists to cover, and the reviewers' sound-verdicts are quarantined."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:da0e4841a6b9",
-      "kind": "next_improvement",
-      "lesson": "**memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts.",
-      "normalized_key": "two failed publish attempts 4 min of gate runtime each from invoking the installed",
-      "recurrence_class": "guard-adjacent-to-action",
-      "source_count": 5,
-      "independent_source_count": 5,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.6,
-      "selection_weight": 3.2969,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\")."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The reviewer-boundary fingerprint `verify` was run after applying fixes**, so it reported drift it could not attribute. I had to reconcile it by hand in the critique artifact rather than cite it as evidence."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts."
         }
       ]
     },
@@ -607,15 +623,15 @@
       "lesson": "**The premise check ran first and the class still got through one surface over.** Checking #630 and #599 against source before implementing is exactly what the lesson asks, and it worked — it refuted a live assumption about #599. Then I wrote into a `dup-review.json` review note that the slice \"added six release scripts\" when it added four and modified two, asserting a quantity I had not counted, inside the artifact that records WHY duplicate families are accepted. A bounded reviewer caught it. The lesson transferred to the code path it was written about and not to artifact prose, which is the same shape as writing a false quantity into release notes — the defect this whole slice exists to prevent.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 12,
-      "independent_source_count": 12,
+      "source_count": 13,
+      "independent_source_count": 13,
       "generator_authored": 0,
       "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
       "latest_source_date": "2026-08-15",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 7.6,
+      "selection_weight": 8.2,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -706,6 +722,14 @@
           "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer."
         },
         {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The lesson `premise-not-checked-against-source` was presented at session open, cited by name during the work, and still recurred: \"every legacy event in this repo's ledger is positive\" was transcribed forward from a 2026-08-14 spec where it was true into shipped code where it was not. Four of twelve are `-2`. Three further false claims followed the same shape. A bounded reviewer measured the ledger; I had not."
+        },
+        {
           "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
           "date": "2026-08-15",
           "section": "Waste",
@@ -782,6 +806,72 @@
       ]
     },
     {
+      "candidate_id": "class:da0e4841a6b9",
+      "kind": "repeat_trap",
+      "lesson": "The lesson `guard-adjacent-to-action` was presented at session open and the handoff I then wrote carried two `## Current State` entries with no owning link, command, or issue id. The handoff validator refused the commit. The lesson names exactly that shape.",
+      "normalized_key": "two failed publish attempts 4 min of gate runtime each from invoking the installed",
+      "recurrence_class": "guard-adjacent-to-action",
+      "source_count": 6,
+      "independent_source_count": 6,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.6,
+      "selection_weight": 4.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\")."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The reviewer-boundary fingerprint `verify` was run after applying fixes**, so it reported drift it could not attribute. I had to reconcile it by hand in the critique artifact rather than cite it as evidence."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The lesson `guard-adjacent-to-action` was presented at session open and the handoff I then wrote carried two `## Current State` entries with no owning link, command, or issue id. The handoff validator refused the commit. The lesson names exactly that shape."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:2c53fdd5a072",
       "kind": "repeat_trap",
       "lesson": "**Repairing inside an open review window.** I spawned the round-2 bounded reviewers and began fixing their findings before the window closed, so `reviewer_boundary_fingerprint verify` returned `boundary-drift` over twelve paths — all mine, but the proof no longer covers the review it exists to cover, and the reviewers' sound-verdicts are quarantined.",
@@ -836,64 +926,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Repairing inside an open review window.** I spawned the round-2 bounded reviewers and began fixing their findings before the window closed, so `reviewer_boundary_fingerprint verify` returned `boundary-drift` over twelve paths — all mine, but the proof no longer covers the review it exists to cover, and the reviewers' sound-verdicts are quarantined."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:da0e4841a6b9",
-      "kind": "next_improvement",
-      "lesson": "**memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts.",
-      "normalized_key": "two failed publish attempts 4 min of gate runtime each from invoking the installed",
-      "recurrence_class": "guard-adjacent-to-action",
-      "source_count": 5,
-      "independent_source_count": 5,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.6,
-      "selection_weight": 3.2969,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\")."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The reviewer-boundary fingerprint `verify` was run after applying fixes**, so it reported drift it could not attribute. I had to reconcile it by hand in the critique artifact rather than cite it as evidence."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts."
         }
       ]
     },
@@ -1324,6 +1356,58 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c4b0a645a5c1",
+      "kind": "current_focus",
+      "lesson": "S3 of the 6.0.0 release scope: refresh the #617 spec and close its debug interrupt, then the lesson score outcome vocabulary, #631, #626, #627.",
+      "normalized_key": "s3 of the 6 0 0 release scope refresh the 617 spec and close",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S3 of the 6.0.0 release scope: refresh the #617 spec and close its debug interrupt, then the lesson score outcome vocabulary, #631, #626, #627."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:295d88985056",
+      "kind": "next_improvement",
+      "lesson": "a lesson presented at session open and cited during the work still recurred twice here, so presentation and citation are not the binding step — the binding step is a check at the moment of writing.",
+      "normalized_key": "a lesson presented at session open and cited during the work still recurred twice",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a lesson presented at session open and cited during the work still recurred twice here, so presentation and citation are not the binding step — the binding step is a check at the moment of writing."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:d6a39cb5b7b2",
       "kind": "next_improvement",
       "lesson": "a repair to a proof surface must be re-read for the class it repaired, not only for the finding it closed — measured again here, on the third consecutive slice.",
@@ -1424,6 +1508,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "before placing any issue into a build slice, open the surface it names and confirm the defect reproduces on the current tree. An issue is a claim about the past. This is the third recorded failure of the same lesson and the second on the same issue number, so the remedy has to be a step in the work, not a thing to remember."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fc4ab49227f9",
+      "kind": "next_improvement",
+      "lesson": "derive authored quantities about the tree wherever they are written, not only in release notes; four false ones reached specs, comments, and the governing contract in a single slice.",
+      "normalized_key": "derive authored quantities about the tree wherever they are written not only in release",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "derive authored quantities about the tree wherever they are written, not only in release notes; four false ones reached specs, comments, and the governing contract in a single slice."
         }
       ]
     },
@@ -1580,6 +1690,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**run a new judging rule over the repo's own existing artifacts before writing its tests.** The corpus is the specification; 49 findings on the 6.0.0 notes was available in minute five and arrived in hour three."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2287da6783dd",
+      "kind": "next_improvement",
+      "lesson": "run the mutation check on a review repair before calling it done — three of the four repairs that carried their own class were caught by the next round, and the check that found them takes one command per claim.",
+      "normalized_key": "run the mutation check on a review repair before calling it done three of",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the mutation check on a review repair before calling it done — three of the four repairs that carried their own class were caught by the next round, and the check that found them takes one command per claim."
         }
       ]
     },
@@ -1944,6 +2080,58 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**I specified a gate that tests the direction which never failed.** The notes check I wrote detects surfaces the notes fail to mention, while the failure that shipped twice is an over-claim — which mentions the surface and produces no diff. I wrote a guard against the mirror image of my own evidence, three paragraphs after quoting that evidence."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2a7b5c454464",
+      "kind": "repeat_trap",
+      "lesson": "Round-1 repairs shipped three defects carrying the class they repaired, and round-2 repairs shipped one more. Repairing under review pressure is its own failure mode and the rounds are what caught it, not the author.",
+      "normalized_key": "round 1 repairs shipped three defects carrying the class they repaired and round 2",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Round-1 repairs shipped three defects carrying the class they repaired, and round-2 repairs shipped one more. Repairing under review pressure is its own failure mode and the rounds are what caught it, not the author."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:63789d9dc3ea",
+      "kind": "repeat_trap",
+      "lesson": "Two commit-gate refusals arrived after the work was finished: the Python file-length cap and the boundary-bypass ratchet. Headroom WAS measured before implementation this time — 794 of 800 — and then spent by a review repair without re-checking, so the measurement bought a warning I did not re-read.",
+      "normalized_key": "two commit gate refusals arrived after the work was finished the python file length",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Two commit-gate refusals arrived after the work was finished: the Python file-length cap and the boundary-bypass ratchet. Headroom WAS measured before implementation this time — 794 of 800 — and then spent by a review repair without re-checking, so the measurement bought a warning I did not re-read."
         }
       ]
     },
