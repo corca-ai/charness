@@ -99,9 +99,8 @@ When you add or change a trigger consumer:
 
 ## References
 
-- [scripts/surfaces_lib.py](../../scripts/surfaces_lib.py) —
-  `resolve_trigger_surfaces` and `match_surfaces`
-- [skills/public/retro/scripts/check_auto_trigger.py](../../skills/public/retro/scripts/check_auto_trigger.py)
-- [skills/public/release/scripts/check_real_host_proof.py](../../skills/public/release/scripts/check_real_host_proof.py)
-- [tests/quality_gates/test_retro_auto_trigger.py](../../tests/quality_gates/test_retro_auto_trigger.py)
-- [tests/quality_gates/test_release_real_host.py](../../tests/quality_gates/test_release_real_host.py)
+- [scripts/surfaces_lib.py](../../scripts/surfaces_lib.py) — `resolve_trigger_surfaces` and `match_surfaces`
+- [skills/public/retro/scripts/check_auto_trigger.py](../../skills/public/retro/scripts/check_auto_trigger.py) — the auto-retro trigger probe and its `state`/exit contract
+- [skills/public/release/scripts/check_real_host_proof.py](../../skills/public/release/scripts/check_real_host_proof.py) — the real-host trigger detector and its `evaluation_scope` states
+- [tests/quality_gates/test_retro_auto_trigger.py](../../tests/quality_gates/test_retro_auto_trigger.py) — retro probe fixtures: hits, non-matches, undetermined, unresolved id
+- [tests/quality_gates/test_release_real_host.py](../../tests/quality_gates/test_release_real_host.py) — release probe fixtures for states, commit ranges, and artifact claims

@@ -76,7 +76,7 @@ Authoritative detail lives in:
 
 Surface:
 
-- [AGENTS.md](../AGENTS.md)
+- [AGENTS.md](../AGENTS.md) — the repo-root operating stance, skill routing, and delegation rules
 - `docs/*.md`
 
 Owns:
@@ -151,8 +151,8 @@ Does not own:
 
 Authoritative detail lives in:
 
-- [external-integrations.md](./external-integrations.md)
-- [runtime-capability-contract.md](./runtime-capability-contract.md)
+- [external-integrations.md](./external-integrations.md) — the upstream-vs-charness ownership split and the manifest contract
+- [runtime-capability-contract.md](./runtime-capability-contract.md) — access modes, the secrets rule, and capability resolution
 
 ### Validators and Scripts
 
@@ -184,7 +184,7 @@ Authoritative detail lives in:
 Surface:
 
 - `charness-artifacts/**`
-- [handoff.md](./handoff.md)
+- [handoff.md](./handoff.md) — the workflow trigger, current state, and next-session pickup
 
 Owns:
 
@@ -199,7 +199,7 @@ Does not own:
 
 Authoritative detail lives in:
 
-- [artifact-policy.md](./artifact-policy.md)
+- [artifact-policy.md](./artifact-policy.md) — durability classes plus default placement and naming rules
 - skill-specific adapter contracts for path conventions
 
 ### Hidden Runtime State
@@ -222,7 +222,7 @@ Does not own:
 
 Authoritative detail lives in:
 
-- [artifact-policy.md](./artifact-policy.md)
+- [artifact-policy.md](./artifact-policy.md) — the visibility rule and the hidden-knowledge durability class
 - [handoff.md](./handoff.md) when the next maintainer needs a visible summary
 
 ## Precedence Inside `charness`
@@ -255,8 +255,8 @@ Use this order when building context for a `charness` task:
 
 1. Start from the user request and route to the likely public skill.
 2. Read the repo-level operating context that can change the move:
-   - [AGENTS.md](../AGENTS.md)
-   - [handoff.md](./handoff.md)
+   - [AGENTS.md](../AGENTS.md) — repo-wide stance, routing, and external-boundary rules
+   - [handoff.md](./handoff.md) — the active workflow trigger and current repo state
    - any obviously relevant repo policy doc
 3. Resolve the repo-local adapter or manifest for the selected surface.
 4. Read the current visible artifact or runtime state only if it is relevant to

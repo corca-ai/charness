@@ -54,7 +54,7 @@ def test_validate_handoff_artifact_rejects_an_unowned_numbered_next_item(tmp_pat
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )
@@ -139,7 +139,7 @@ def test_validate_handoff_artifact_does_not_require_an_owner_in_discuss(tmp_path
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )
@@ -195,7 +195,7 @@ def test_validate_handoff_artifact_reports_a_sibling_of_a_numbered_parent(tmp_pa
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )
@@ -332,7 +332,7 @@ def test_validate_handoff_artifact_ignores_a_heading_inside_a_fence(tmp_path: Pa
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )

@@ -59,7 +59,7 @@ def handoff_body(*, current_lines: int = 1, omit_references: bool = False, dated
     if dated_session:
         lines.extend(["## This Session (2026-06-24)", "", "- stale diary", ""])
     if not omit_references:
-        lines.extend(["## References", "", "- [guide](docs/guide.md)", ""])
+        lines.extend(["## References", "", "- [guide](docs/guide.md) — the demo guide.", ""])
     return "\n".join(lines)
 
 
@@ -491,7 +491,7 @@ def _pickup_body(next_entries: int) -> str:
             "",
             "## References",
             "",
-            "- [guide](docs/guide.md)",
+            "- [guide](docs/guide.md) — the demo guide.",
             "",
         ]
     )

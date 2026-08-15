@@ -69,6 +69,11 @@ def test_handoff_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     # line on what the document holds — not describe it in prose.
     assert "## Current State\n\n- [" in template
     assert "## Next Session\n\n- [" in template
+    # `## References` models it too. It was the ONE section emitting a bare link,
+    # and it is the section links pool into, because References lines are free
+    # against the content ceiling. A consumer repo cannot fix that locally: the
+    # next handoff run rewrites the stub.
+    assert "## References\n\n- [TODO pickup doc](./handoff.md) —" in template
     # Stay under the strict 70-line ceiling out of the box.
     assert len(template.splitlines()) <= 70
 

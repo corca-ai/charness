@@ -3,6 +3,9 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
+from runtime_bootstrap import import_repo_module
 from tests.handoff_artifact_fixtures import (
     OWNED_NEXT,
     OWNED_STATE,
@@ -60,7 +63,7 @@ def test_validate_handoff_artifact_rejects_extra_top_level_section(tmp_path: Pat
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )
@@ -133,7 +136,7 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )
@@ -185,7 +188,7 @@ def test_handoff_budget_ignores_blank_lines_headings_and_references(tmp_path: Pa
     for index in range(MAX_CONTENT_LINES - 8):
         state.append(f"- state detail {index} in `git status --short`")
         state.append("")
-    references = [f"- [guide {index}](docs/guide.md)" for index in range(12)]
+    references = [f"- [guide {index}](docs/guide.md) — the demo guide." for index in range(12)]
     repo = seed_repo(tmp_path, _handoff_with(state, references))
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     raw_line_count = len((repo / "docs" / "handoff.md").read_text(encoding="utf-8").splitlines())
@@ -194,11 +197,105 @@ def test_handoff_budget_ignores_blank_lines_headings_and_references(tmp_path: Pa
     assert result.returncode == 0, result.stderr
 
 
+def _run_with_references(tmp_path: Path, *reference_lines: str) -> object:
+    repo = seed_repo(tmp_path, _handoff_with([OWNED_STATE], list(reference_lines)))
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    return run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+
+
+def test_validate_handoff_artifact_rejects_a_reference_link_with_no_descriptor(
+    tmp_path: Path,
+) -> None:
+    # The shape the scaffold used to TEACH: `## References` is exempt from the
+    # content ceiling and required to hold a link, so links pool here, and the
+    # placeholder modelled them arriving context-free.
+    result = _run_with_references(tmp_path, "- [guide](docs/guide.md)")
+    assert result.returncode == 1
+    assert "no descriptor on the link's own line" in result.stderr
+    assert "- [guide](docs/guide.md)" in result.stderr
+
+
+def test_validate_handoff_artifact_accepts_a_reference_descriptor(tmp_path: Path) -> None:
+    result = _run_with_references(tmp_path, "- [guide](docs/guide.md) — what the guide holds.")
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_accepts_a_descriptor_before_the_link(tmp_path: Path) -> None:
+    # Context ahead of the link is context. The rule asks for a line that is not
+    # ONLY a link, not for one particular punctuation.
+    result = _run_with_references(tmp_path, "- See [guide](docs/guide.md) for the demo walkthrough.")
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_rejects_a_descriptor_wrapped_onto_the_next_line(
+    tmp_path: Path,
+) -> None:
+    # SAME-LINE is the decision, and this is the case that makes it non-obvious:
+    # the entry reads fine to a human and still leaves a physical line whose whole
+    # content is one link, which a same-entry rule would call clean. This repo's
+    # own handoff carried entries of exactly this shape when the rule landed --
+    # under `## Continuation Capability`, not `## References`, so the rule did not
+    # refuse them; the docs-graph gate is what counted them.
+    result = _run_with_references(
+        tmp_path,
+        "- [guide](docs/guide.md)",
+        "  — what the guide holds, on the following line.",
+    )
+    assert result.returncode == 1
+    assert "no descriptor on the link's own line" in result.stderr
+
+
+def test_the_reference_rule_stops_at_the_next_heading() -> None:
+    # The rule is scoped to `## References`, and the H2 check asserts membership,
+    # not ORDER. With the scan running to EOF, a handoff whose References section
+    # was not last had the FOLLOWING section's bullets refused under a message
+    # naming References.
+    #
+    # In-process, unlike its neighbours here: the CLI contract for this rule is
+    # already proven by the tests above, and this one is about which LINES the
+    # predicate reads. A fourth subprocess call site would buy no coverage the
+    # others do not have.
+    validator = import_repo_module(__file__, "scripts.validate_handoff_artifact")
+    lines = [
+        "# Demo Handoff",
+        "",
+        "## References",
+        "",
+        "- [guide](docs/guide.md) — what the guide holds.",
+        "",
+        "## Discuss",
+        "",
+        "- [guide](docs/guide.md)",
+    ]
+    validator.validate_reference_descriptors(lines)
+
+    # And the same bare bullet INSIDE the section is still refused, so the bound
+    # is what changed rather than the rule going quiet.
+    lines[4] = "- [guide](docs/guide.md)"
+    with pytest.raises(validator.ValidationError):
+        validator.validate_reference_descriptors(lines)
+
+
+def test_validate_handoff_artifact_reports_every_descriptorless_reference_at_once(
+    tmp_path: Path,
+) -> None:
+    # One pass, like the ownership rule: a References section with N bare links
+    # must not cost N gate runs.
+    result = _run_with_references(
+        tmp_path,
+        "- [first](docs/guide.md)",
+        "- [second](docs/guide.md)",
+        "- [third](docs/guide.md) — this one is fine.",
+    )
+    assert result.returncode == 1
+    assert "2 `## References` entry(s)" in result.stderr
+
+
 def test_handoff_budget_still_charges_for_prose_density(tmp_path: Path) -> None:
     # The other half: padding `## References` buys no room for content. 56 state
     # bullets + 4 fixed content lines put the body 2 over the ceiling.
     state = [f"- state detail {index} in `git status --short`" for index in range(MAX_CONTENT_LINES - 2)]
-    repo = seed_repo(tmp_path, _handoff_with(state, ["- [guide](docs/guide.md)"]))
+    repo = seed_repo(tmp_path, _handoff_with(state, ["- [guide](docs/guide.md) — the demo guide."]))
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
@@ -349,7 +446,7 @@ def test_validate_handoff_artifact_accepts_the_optional_continuation_capability(
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )
@@ -387,7 +484,7 @@ def test_validate_handoff_artifact_rejects_an_empty_continuation_capability(tmp_
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )
@@ -424,7 +521,7 @@ def test_validate_handoff_artifact_rejects_explicit_allowance_as_subagent_blocke
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )
@@ -529,7 +626,7 @@ def test_validate_handoff_artifact_path_argument_bypasses_the_adapter(tmp_path: 
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )

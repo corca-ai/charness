@@ -32,8 +32,11 @@ FIXTURES = ROOT / "tests" / "fixtures"
 _CLEAN_OUTPUT = (FIXTURES / "awiki-0.5.0-connected-graph.stdout.txt").read_text(encoding="utf-8")
 _EMPTY_ROOT_OUTPUT = (FIXTURES / "awiki-0.5.0-empty-root.stdout.txt").read_text(encoding="utf-8")
 _ISLAND_OUTPUT = (FIXTURES / "awiki-0.5.0-island.stdout.txt").read_text(encoding="utf-8")
+# `link_only_lines` sits UNDER the bar here on purpose: this fixture is about
+# orphans, and a value over the bar would make every assertion on it depend on a
+# second failing metric.
 _ORPHAN_OUTPUT = (
-    "// lint_failed documents=43 orphans=2 islands=0 link_only_lines=229 "
+    "// lint_failed documents=43 orphans=2 islands=0 link_only_lines=12 "
     "largest_component_ratio=0.9767 orphan_rate=0.0233 content_coverage=1.0000\n"
     "// orphan\n"
     "// why: no resolved links connect these pages to the wiki graph.\n"
@@ -165,16 +168,204 @@ def test_islands_fail_even_with_zero_orphans(monkeypatch: pytest.MonkeyPatch) ->
     assert result["failures"] == {"islands": 1}
 
 
-def test_link_only_lines_alone_do_not_fail_the_gate(monkeypatch: pytest.MonkeyPatch) -> None:
-    # The deliberate scope decision, pinned so it cannot be widened by accident:
-    # awiki exits 1 on link-only lines, and this gate does not gate on them.
+# RETRACTED: `test_link_only_lines_alone_do_not_fail_the_gate` stood here, pinning
+# "awiki exits 1 on link-only lines, and this gate does not gate on them" as a
+# deliberate scope decision so it could not be widened by accident. It is widened
+# ON PURPOSE now, and the pin is retracted rather than deleted quietly, because a
+# decision reversed without a record reads as an oversight to the next reader.
+#
+# What changed: the scope decision was made when adopting the rule meant adopting
+# awiki's exit code wholesale, which bundles every rule it has and cannot be
+# selected down. Gating a NAMED metric against a declared bar is a different
+# instrument -- it adopts the count without adopting the exit code, and it can sit
+# above 0 where the rule over-reports. What did NOT change is the measurement the
+# pin rested on: most link-only lines here are hard-wrapped prose, a reflow sweep
+# is still not the remedy, and the bar's residual is exactly that population.
+def test_link_only_lines_above_the_bar_fail_the_gate(monkeypatch: pytest.MonkeyPatch) -> None:
+    over = _gate.LINK_ONLY_LINES_BAR + 1
     _patch_awiki(
         monkeypatch,
-        "// lint_failed documents=42 orphans=0 islands=0 link_only_lines=229 "
+        f"// lint_failed documents=42 orphans=0 islands=0 link_only_lines={over} "
+        "largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000\n"
+        "// link_only_line\n"
+        "// why: a line with only one link gives no local context.\n"
+        "[[artifact-policy]]:23: - [deferred-decisions.md](./deferred-decisions.md)\n",
+    )
+    result = _gate.evaluate(ROOT)
+    payload = _gate.report(result)
+
+    # A RENDERED verdict, which is the half that was silent by construction: a
+    # metric added to the gated set without its block header reports NOT-RUN
+    # instead, and NOT-RUN is not a failure an operator acts on.
+    assert result["status"] == "fail"
+    assert result["failures"] == {"link_only_lines": over}
+    assert result["named"]["link_only_lines"] == ["artifact-policy"]
+    assert payload["failure_label"]["link_only_lines"] == "context-free on"
+    # The remedy must refuse the cheapest wrong move, which is re-baselining.
+    assert "only decreases" in payload["remedies"]["link_only_lines"]
+
+
+def test_link_only_lines_at_the_bar_pass(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The bar is a ceiling, not a target: AT it is clean. Written because `> 0`
+    # was the previous failure computation, and `>= bar` would refuse the very
+    # tree that set the bar.
+    _patch_awiki(
+        monkeypatch,
+        f"// lint_failed documents=42 orphans=0 islands=0 link_only_lines={_gate.LINK_ONLY_LINES_BAR} "
         "largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000\n",
     )
     result = _gate.evaluate(ROOT)
     assert result["status"] == "pass"
+    assert result["failures"] == {}
+
+
+def test_every_real_verdict_echoes_the_bars_it_judged_against(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A count without its bar does not say whether it was judged against 0 or
+    # against the ratchet, and a bar nobody can see is one nobody notices being
+    # raised. Both the counted and the absence-as-zero pass paths carry it.
+    _patch_awiki(
+        monkeypatch,
+        "// lint_failed documents=42 orphans=0 islands=0 link_only_lines=1 "
+        "largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000\n",
+    )
+    counted = _gate.evaluate(ROOT)
+    _patch_awiki(monkeypatch, _CLEAN_OUTPUT)
+    absent = _gate.evaluate(ROOT)
+
+    for result in (counted, absent):
+        assert result["status"] == "pass"
+        assert result["bars"] == dict(_gate.METRIC_BARS)
+        assert result["bars"]["link_only_lines"] == _gate.LINK_ONLY_LINES_BAR
+
+
+def test_a_gated_metric_without_its_tables_fails_loudly() -> None:
+    # The negative case the acceptance check names. Adding a metric to the gated
+    # set without these entries fails in the two worst available ways:
+    # `BLOCK_FOR_METRIC[metric]` raises inside `_evaluate`, where the blanket
+    # `except Exception` renders it as NOT-RUN -- the gate reporting it observed
+    # nothing on a run where it observed a failure -- while the label and remedy
+    # are read from `report()`, outside that guard, and crash uncaught.
+    with pytest.raises(RuntimeError) as excinfo:
+        _gate.assert_metric_tables_complete(
+            ("orphans", "newly_added_metric"),
+            {"BLOCK_FOR_METRIC": {"orphans": "orphan"}, "_REMEDY": {"orphans": "..."}},
+        )
+    message = str(excinfo.value)
+    assert "newly_added_metric" in message
+    assert "BLOCK_FOR_METRIC" in message and "_REMEDY" in message
+    assert "orphans: " not in message, "a metric with every entry must not be reported"
+
+
+def test_the_shipped_metric_tables_are_complete() -> None:
+    # Against the SHIPPED tables via the default argument, and with a metric the
+    # tables do not carry. Calling it with a hand-built `tables` dict proved the
+    # function and nothing about the gate; and because
+    # `missing_metric_table_entries` iterates whatever the registry contains,
+    # DELETING a table from `_METRIC_TABLES` makes the check strictly weaker and
+    # still returns `{}` -- so the registry's membership is pinned by name.
+    assert set(_gate._METRIC_TABLES) == {"BLOCK_FOR_METRIC", "_FAILURE_LABEL", "_REMEDY"}
+    assert _gate.missing_metric_table_entries(_gate.GATED_METRICS, _gate._METRIC_TABLES) == {}
+    _gate.assert_metric_tables_complete()
+    with pytest.raises(RuntimeError) as excinfo:
+        _gate.assert_metric_tables_complete((*_gate.GATED_METRICS, "newly_added_metric"))
+    assert "newly_added_metric" in str(excinfo.value)
+
+
+def test_the_completeness_guard_runs_at_import() -> None:
+    # A guard nobody invokes is the state the guard exists against: the next
+    # metric added to `METRIC_BARS` would degrade to NOT-RUN or crash uncaught,
+    # silently. Deleting the module-level call leaves every other assertion in
+    # this file passing, so the call SITE is what gets pinned -- by AST, not by
+    # text. A text scan matches the same characters inside a docstring, which is
+    # a false pass in the one direction that matters, and reddens on a trailing
+    # comment, which is a false failure that makes the pin annoying rather than
+    # durable.
+    import ast
+
+    source = (ROOT / "scripts" / "check_docs_graph.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+    calls = [
+        node.value
+        for node in module.body
+        if isinstance(node, ast.Expr)
+        and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Name)
+        and node.value.func.id == "assert_metric_tables_complete"
+    ]
+    assert len(calls) == 1, "the completeness guard must run once at import, at module level"
+    assert not calls[0].args and not calls[0].keywords, (
+        "the import-time call must use the shipped defaults, not narrowed arguments"
+    )
+
+    # And the defaults it relies on. Retargeting `metrics` to `()` leaves the call
+    # site, both explicit-argument tests, and the whole suite green while the
+    # import-time guard checks nothing at all.
+    import inspect
+
+    defaults = inspect.signature(_gate.assert_metric_tables_complete).parameters
+    assert defaults["metrics"].default == _gate.GATED_METRICS
+    assert defaults["tables"].default is None
+
+
+def test_the_import_time_guard_would_catch_an_incomplete_shipped_table(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # End-to-end through the no-argument call, which is the one that runs at
+    # import. The other negative tests pass their own metrics, so none of them
+    # exercises the composition of call site and defaults.
+    monkeypatch.setitem(_gate._METRIC_TABLES, "_REMEDY", {"orphans": "..."})
+    with pytest.raises(RuntimeError) as excinfo:
+        _gate.assert_metric_tables_complete()
+    assert "_REMEDY" in str(excinfo.value)
+
+
+def test_the_bar_matches_its_ratchet_record_and_never_rose() -> None:
+    # The ratchet's executable half. "May only decrease" lived in comments and a
+    # remedy string, so the cheapest repair for a red lane was editing one
+    # three-digit literal -- the zero-work move the release contract's Fixed
+    # Decision names. Raising the bar now also needs a row in the record whose
+    # value the parse below refuses.
+    record = (ROOT / "docs" / "docs-graph-checks.md").read_text(encoding="utf-8")
+    section = record.split("## The `link_only_lines` ratchet record", 1)[1]
+    # BOUNDED at the next H2. Unbounded, the slice ran to EOF, so any later table
+    # in the file whose rows happen to start `| 20` would silently become the
+    # ratchet -- the test would then compare the bar against an unrelated table.
+    section = section.split("\n## ", 1)[0]
+    rows = [
+        line for line in section.splitlines()
+        if line.startswith("| 20")  # data rows only; the header and separator are not dated
+    ]
+    assert rows, "the ratchet record has no dated rows"
+    bars = [int(row.split("|")[2].strip()) for row in rows]
+
+    # The FOUNDING row is an immutable anchor. Without it the record's history can
+    # be rewritten rather than appended to: with a single row present, "never
+    # increases downward" is vacuous, so raising the bar needed only an in-place
+    # edit of that row plus the literal in the gate -- two files, no test, green.
+    # Anchoring row zero means a raise must APPEND, and an appended higher row is
+    # what the ordering assertion below refuses.
+    assert rows[0].startswith("| 2026-08-15 |"), "the founding ratchet row was rewritten"
+    assert bars[0] == 167, "the founding bar was rewritten; the ratchet records history"
+
+    assert bars[-1] == _gate.LINK_ONLY_LINES_BAR, (
+        "the gate's bar disagrees with the last row of its ratchet record"
+    )
+    assert bars == sorted(bars, reverse=True), f"the ratchet record rose: {bars}"
+
+
+def test_named_pages_collapses_repeats_into_a_count() -> None:
+    # `link_only_line` is per LINE, so one page appears once per finding. The raw
+    # list named a single page dozens of times in a row, which is a list an
+    # operator scrolls past rather than reads.
+    output = (
+        "// link_only_line\n"
+        "[[artifact-policy]]:23: - [a](a.md)\n"
+        "[[artifact-policy]]:24: - [b](b.md)\n"
+        "[[handoff]]:13: - [c](c.md)\n"
+    )
+    assert _gate.named_pages(output, "link_only_line") == ["artifact-policy x2", "handoff"]
 
 
 def test_a_missing_binary_is_not_run_rather_than_a_pass(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -201,11 +392,89 @@ def test_a_summary_without_the_gated_metrics_is_not_run(monkeypatch: pytest.Monk
     # A subtler drift than an unparseable line: the summary parses, but the
     # fields this gate judges are gone. Silently passing would mean gating on
     # nothing while reporting a clean docs verdict.
-    _patch_awiki(monkeypatch, "// lint_failed documents=42 link_only_lines=229\n")
+    #
+    # The one metric this line DOES carry sits under its bar on purpose. With a
+    # value over the bar the gate now fails on it -- correctly, and proven in
+    # `test_an_observed_failure_is_judged_even_when_another_metric_is_missing` --
+    # which would make this test pass or fail for the other reason.
+    _patch_awiki(monkeypatch, "// lint_failed documents=42 link_only_lines=12\n")
     result = _gate.evaluate(ROOT)
 
     assert result["status"] == "not-run"
     assert "orphans, islands" in result["reason"]
+
+
+def test_an_observed_failure_is_judged_even_when_another_metric_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Deciding `missing` first discarded measurements the tool actually printed.
+    # An `ok` line carrying `orphans=2` with `islands` omitted resolved through
+    # the absence-as-zero branch to `pass, failures: {}`; the same line under
+    # `lint_failed` resolved to NOT-RUN, which is the one verdict SC8 says this
+    # gate must not return when a count exceeds its bar.
+    #
+    # SYNTHETIC, and labelled so rather than passed off as captured: awiki prints
+    # finding blocks only on a `lint_failed` run, so an `ok` line followed by an
+    # `// orphan` block is a contradiction it does not emit. It is written that
+    # way to hold the ordering and the naming in one case; the shape awiki could
+    # actually produce is the next test.
+    _patch_awiki(
+        monkeypatch,
+        "// ok connected_graph documents=100 orphans=2 "
+        "largest_component_ratio=1.0000 orphan_rate=0.0000\n"
+        "// orphan\n"
+        "[[stranded]]: an excerpt\n",
+        returncode=0,
+    )
+    result = _gate.evaluate(ROOT)
+
+    assert result["status"] == "fail"
+    assert result["failures"] == {"orphans": 2}
+    assert result["named"]["orphans"] == ["stranded"]
+    # And the verdict must not read as a verdict over all three metrics.
+    assert result["not_observed"] == ["islands", "link_only_lines"]
+    assert result["named_unavailable"] == []
+
+
+def test_a_failure_with_no_finding_block_says_the_block_was_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The realistic form of the same path, and the one the naming repair could
+    # regress into: a printed count now outranks the verdict token, and an `ok`
+    # run prints no finding blocks at all. `named: {orphans: []}` alone reads as
+    # "the block was empty" rather than "there was no block", which is the
+    # difference between a docs defect and a tool-output surprise.
+    _patch_awiki(
+        monkeypatch,
+        "// ok connected_graph documents=100 orphans=2 "
+        "largest_component_ratio=1.0000 orphan_rate=0.0000\n",
+        returncode=0,
+    )
+    result = _gate.evaluate(ROOT)
+
+    assert result["status"] == "fail"
+    assert result["named"]["orphans"] == []
+    assert result["named_unavailable"] == ["orphans"]
+
+
+def test_the_bar_can_be_overridden_for_a_repo_that_calibrated_its_own(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The built-in bar measures THIS repo's 80-column tree and travels with the
+    # exported plugin, while the ratchet record and the test enforcing it do not.
+    # A consuming repo has to be able to say its own number -- or 0.
+    _patch_awiki(
+        monkeypatch,
+        "// lint_failed documents=42 orphans=0 islands=0 link_only_lines=3 "
+        "largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000\n",
+    )
+    assert _gate.evaluate(ROOT)["status"] == "pass"
+
+    strict = dict(_gate.METRIC_BARS, link_only_lines=0)
+    result = _gate.evaluate(ROOT, _gate.DEFAULT_SCAN_ROOT, strict)
+    assert result["status"] == "fail"
+    assert result["failures"] == {"link_only_lines": 3}
+    assert result["bars"]["link_only_lines"] == 0
 
 
 def test_every_run_names_what_it_did_not_judge(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -298,7 +567,7 @@ def test_an_islands_only_failure_names_the_pages_too(monkeypatch: pytest.MonkeyP
     assert result["failures"] == {"islands": 1}
     assert result["named"]["islands"], "the island block named no page"
     assert payload["failures"]["islands"] == 1
-    assert payload["unreachable_label"]["islands"] == "cut off with"
+    assert payload["failure_label"]["islands"] == "cut off with"
     assert "main" in payload["named"]["islands"]
     # And the advice must fit an island: a cluster is bridged, not retired.
     remedy = payload["remedies"]["islands"]
@@ -306,13 +575,32 @@ def test_an_islands_only_failure_names_the_pages_too(monkeypatch: pytest.MonkeyP
     assert "nobody decided to retire" not in remedy
 
 
-def test_the_gate_does_not_hardcode_a_link_only_count() -> None:
-    # It printed "229 here" while the captured fixture recorded 230. A magic count
-    # inside the text a proof surface prints on every run drifts with every docs
-    # edit, and a proof surface stating a stale number is the class under repair.
+def test_the_gate_does_not_print_a_live_link_only_count() -> None:
+    # NARROWED, not dropped. The original refused any hardcoded count anywhere in
+    # the source, after the docstring printed "229 here" while the captured
+    # fixture recorded 230. The bar is now a deliberate hardcoded number, so the
+    # blanket form would refuse the fix -- but the reason survives intact for the
+    # surface it was really about: `--help` renders this docstring, so a live
+    # measurement inside it is a proof surface stating a number that drifts with
+    # every docs edit. The bar belongs in code as a required value, where the
+    # ratchet governs it; a snapshot of the current tree belongs in neither.
     source = (ROOT / "scripts" / "check_docs_graph.py").read_text(encoding="utf-8")
-    assert "229" not in source
-    assert "230" not in source
+    docstring = _gate.__doc__ or ""
+    assert docstring, "the module docstring is the --help text; it must not be empty"
+    # Three digits or more: every count this docstring has ever carried is that
+    # shape (229, 230, 255), while the ordinals of its numbered properties and
+    # the `awiki 0.5.0` version it names are not. Known erosion, stated rather
+    # than papered over: the bar only ever decreases, so once it falls below a
+    # hundred a live two-digit count pasted here would slip past this pattern.
+    import re as _re
+
+    assert _re.search(r"\d{3,}", docstring) is None, (
+        "the --help docstring carries a live count; bars belong in code, measurements in comments"
+    )
+    # The bar is a VALUE, not a comment: a comment can be deleted with nothing red.
+    assert isinstance(_gate.LINK_ONLY_LINES_BAR, int)
+    assert _gate.METRIC_BARS["link_only_lines"] == _gate.LINK_ONLY_LINES_BAR
+    assert f"LINK_ONLY_LINES_BAR = {_gate.LINK_ONLY_LINES_BAR}" in source
 
 
 def test_the_not_run_verdict_is_rendered_and_exits_unestablished(monkeypatch: pytest.MonkeyPatch) -> None:

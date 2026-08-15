@@ -35,27 +35,66 @@ question, honestly, and nobody was asking this one.
 
 ## What this means for the gate
 
-The repo gates on awiki's **connectivity** answer — `orphans` and `islands` — and
-not on its exit code. Two reasons, both measured:
+The repo gates on NAMED METRICS against declared bars, and never on awiki's exit
+code. Three points, all measured:
 
-1. **The exit code is dominated by a rule we are not adopting yet.** It also
-   fails on `link_only_lines`, which this repo has hundreds of. Recount rather
-   than trusting a number here — `awiki lint -root docs -recursive` prints it, and
-   the checked-in capture and a live run already disagree, because the count moves
-   with every docs edit. Measured on 2026-08-09, roughly three-fifths of them were
-   this repo's own 80-column prose wrapping putting a link alone on a physical
-   line rather than context-free links; the rest are genuine bare list items. The
-   rule is worth pursuing; a reflow sweep across the whole docs tree is not the
-   way, and it is not what this gate is for.
-2. **Nothing else answers the connectivity question.** Before the docs index hub
+1. **Nothing else answers the connectivity question.** Before the docs index hub
    existed, seven pages were unreachable while `check_doc_links.py` was green —
    correctly green, because every link in the repo resolved. That is the exact
    shape of a gate reporting a verdict it never observed, and it is why awiki is
    worth a lane of its own rather than being folded into the existing one.
+   `orphans` and `islands` are barred at zero.
+2. **`link_only_lines` is gated too, at a RATCHET above zero.** This reverses a
+   decision this page used to record and no longer contains — that the rule was
+   "worth pursuing" but that adopting it "is not what this gate is for" — and the
+   test that pinned it, `test_link_only_lines_alone_do_not_fail_the_gate`, whose
+   retraction is written out by name in
+   [test_docs_graph_gate.py](../tests/test_docs_graph_gate.py). What changed is the instrument, not the
+   measurement: adopting the rule then meant adopting awiki's exit code, which
+   bundles every rule it has and cannot be selected down. A named metric judged
+   against a bar takes the count without the exit code, and can sit above zero
+   where the rule over-reports. The bar lives in
+   [check_docs_graph.py](../scripts/check_docs_graph.py) as a required value and
+   may only ever decrease.
+3. **The residual under that bar is the wrapping population, and the sweep
+   decision still stands.** Recount rather than trusting a number here —
+   `awiki lint -root docs -recursive` prints it and it moves with every docs
+   edit. Measured 2026-08-09, roughly three-fifths of the findings were this
+   repo's own 80-column prose wrapping putting a link alone on a physical line.
+   Re-measured 2026-08-15 — by reading each flagged source line, which is a
+   different question from the count and is not corroborated by it — the
+   wrapping share was nearer two-thirds. The list entries whose link line
+   carried no descriptor were rewritten to carry one. The wrapped-prose
+   remainder was NOT: a reflow sweep across the whole docs tree is still not the
+   way, and the bar is sized to that remainder rather than to zero.
 
-The gate must therefore SAY that it does not judge link-only style or link
-resolution, and it must report NOT-RUN with a named reason when the binary is
-absent. An unobserved orphan count is not zero.
+The gate must therefore SAY what it did not judge — link resolution, page
+accuracy, and whether a counted link-only line is a bare link or wrapped prose —
+and it must report NOT-RUN with a named reason when the binary is absent. An
+unobserved orphan count is not zero.
+
+## The `link_only_lines` ratchet record
+
+The bar may only ever decrease. That sentence lived only in prose, which made the
+cheapest repair for a red lane "edit one three-digit literal" — the exact
+zero-work move the release contract's Fixed Decision names. This table is the
+second surface. [test_docs_graph_gate.py](../tests/test_docs_graph_gate.py)
+parses the rows below — bounded at the next `##` heading — and asserts exactly
+four things: the founding row's date and value are unchanged, `LINK_ONLY_LINES_BAR`
+in [check_docs_graph.py](../scripts/check_docs_graph.py) equals the LAST row, and
+the values never increase downward.
+
+It is a speed bump, not a proof. Stated precisely, because the first version of
+this paragraph over-claimed and a round-2 reviewer measured the gap: an author
+can still raise the bar by editing the gate, appending a row here, and editing
+the test that refuses it. What the founding-row anchor buys is that the record
+must be APPENDED to rather than rewritten, so a raise cannot be a quiet in-place
+edit of the only row present — it has to add a row the ordering assertion then
+refuses, which is a third edit in a test that says what it is protecting.
+
+| date | bar | why it moved |
+| --- | --- | --- |
+| 2026-08-15 | 167 | First bar. Every list entry whose link line carried no descriptor was repaired; the remainder is the hard-wrapped-prose population this rule over-reports on, and the bar is sized to it. |
 
 ## Reproductions
 

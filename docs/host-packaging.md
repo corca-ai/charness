@@ -41,7 +41,7 @@ The first contract keeps these repo directories host-neutral:
 - `profiles/`
 - `presets/`
 - `integrations/tools/`
-- [`README.md`](../README.md)
+- [`README.md`](../README.md) — operator quick start, install path, and skill map
 
 That means the export script can materialize a host plugin layout without
 needing a second skill taxonomy or a second profile catalog.
@@ -49,10 +49,10 @@ needing a second skill taxonomy or a second profile catalog.
 The repo also carries a checked-in generated plugin tree so the GitHub
 repository exposes one stable install surface:
 
-- [`plugins/charness/.claude-plugin/plugin.json`](../plugins/charness/.claude-plugin/plugin.json)
-- [`plugins/charness/.codex-plugin/plugin.json`](../plugins/charness/.codex-plugin/plugin.json)
-- [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json)
-- [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json)
+- [`plugins/charness/.claude-plugin/plugin.json`](../plugins/charness/.claude-plugin/plugin.json) — Claude plugin identity: name, version, author, repository
+- [`plugins/charness/.codex-plugin/plugin.json`](../plugins/charness/.codex-plugin/plugin.json) — Codex plugin identity plus skills path and interface metadata
+- [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json) — Claude marketplace entry pointing at the checked-in plugin root
+- [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json) — Codex repo marketplace with the local plugin source and install policy
 
 These files are generated from the shared packaging manifest and validated
 against it. They are still derived artifacts, not the source of truth.
@@ -120,7 +120,7 @@ repo also keeps a generated checked-in install tree under `plugins/charness/`.
 
 What it materializes today:
 
-- [`README.md`](../README.md)
+- [`README.md`](../README.md) — repo overview covering workflow routes, core concepts, and support integrations
 - flat public `skills/`
 - Charness-owned `support/` assets only
 - `profiles/`
@@ -213,7 +213,7 @@ Operationally this means:
 
 Instead, hosts may render a thin startup advisory from:
 
-- [scripts/plugin_preamble.py](../scripts/plugin_preamble.py)
+- [scripts/plugin_preamble.py](../scripts/plugin_preamble.py) — builds the advisory payload from the packaging manifest, capability locks, and copy checks
 
 Current v1 output is intentionally read-only:
 

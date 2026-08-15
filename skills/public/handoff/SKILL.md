@@ -49,11 +49,11 @@ block are free — with a target of 25-50 and a hard stop at 78; the planner
 reports `content_line_count` and flags `near_limit`/`over_limit`. Trimming formatting
 or shortening reference links buys nothing, so cut state instead. Multiple dated
 `## This Session (<date>)` sections are a hard diary smell.
-Assume a competent next operator can follow one good link.
-Aim for `## Current State` and `## Next Session` to read as a list of links,
-with prose only where no artifact owns the claim yet.
-Each entry is a link plus one line saying what that document HOLDS — not what to
-do about it. The reading agent decides the action; a contents description goes
+Assume a competent next operator can follow one good link. Aim for `## Current
+State` and `## Next Session` to read as a list of links, with prose only where no
+artifact owns the claim yet. Each entry — and every `## References` line, which is
+refused when its whole content is one link — is a link plus one line on the same
+physical line saying what that document HOLDS, not what to do about it. The reading agent decides the action; a contents description goes
 stale only when that document changes, while a next-action description goes
 stale whenever the world does. Order carries the priority, and the section
 heading carries the verb. The link target is whatever artifact owns the detail —

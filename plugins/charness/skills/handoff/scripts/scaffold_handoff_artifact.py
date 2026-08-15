@@ -25,8 +25,9 @@ _budget = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_content_budge
 # Mirrors REQUIRED_SECTIONS in scripts/validate_handoff_artifact.py. The handoff
 # validator enforces an EXACT H2 set, a `# ... Handoff` title, a content-line
 # ceiling (blank lines, the required headings, and `## References` are not
-# counted), non-empty sections, and a markdown link under `## References`, so the
-# scaffold emits a skeleton that passes that validator out of the box.
+# counted), non-empty sections, and a markdown link under `## References` that
+# carries a descriptor on the link's OWN line, so the scaffold emits a skeleton
+# that passes that validator out of the box.
 SECTIONS = (
     "## Workflow Trigger",
     "## Current State",
@@ -73,12 +74,22 @@ def _heading_title(title: str) -> str:
 # One body per section, as DATA. The if-chain this replaces said the same four
 # lines five times, which read as five decisions and was one.
 #
-# The two gated sections MODEL the shape rather than describing it: link first,
-# em dash, one line. An author fills in a template; if the template is a
-# paragraph, the artifact becomes paragraphs, and the gate then refuses work
+# The three link-carrying sections MODEL the shape rather than describing it:
+# link first, em dash, one line. An author fills in a template; if the template
+# is a paragraph, the artifact becomes paragraphs, and the gate then refuses work
 # that already looks finished. The stub also has to VALIDATE — the failure hint
 # points authors at this scaffold, and a scaffold whose output fails the gate
 # teaches that the gate is noise.
+#
+# `## References` carried a BARE link until this rule landed. It was the one
+# section modelling a link with no descriptor, and it is the section consumers pool
+# links into — `## References` lines are free against the content ceiling, so the
+# budget pushes links here and the placeholder then taught them to arrive
+# context-free. Two consumer repos measured `docs/handoff.md` as a leading
+# contributor to their `link_only_lines` count, and could not fix it locally
+# because the next handoff run rewrites the stub. The descriptor is modelled here
+# AND required by the validator, because a placeholder alone does not bind: an
+# author who deletes the TODO line is back to the shape this fixes.
 #
 # The line after the em dash says what the linked document HOLDS, never what to
 # do about it. That is the wiki convention this artifact follows, and it is also
@@ -100,7 +111,8 @@ SECTION_BODIES = {
     "## Next Session": "- [TODO the artifact](./handoff.md)"
     " — TODO what this document holds, in one line.",
     "## Discuss": "- TODO open decisions for the next operator, or `none` when there are none.",
-    "## References": "- [TODO pickup doc](./handoff.md)",
+    "## References": "- [TODO pickup doc](./handoff.md)"
+    " — TODO what this document holds, in one line.",
 }
 
 

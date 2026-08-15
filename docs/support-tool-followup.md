@@ -279,7 +279,7 @@ Required payload fields:
 
 Likely touch points:
 
-- [scripts/capability_catalog.py](../scripts/capability_catalog.py)
+- [scripts/capability_catalog.py](../scripts/capability_catalog.py) — CLI that reads and refreshes the deterministic capability catalog.
 - shared control-plane helpers under `scripts/`
 - possibly [docs/control-plane.md](./control-plane.md) if the operator-facing
   contract needs one small addition

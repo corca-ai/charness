@@ -95,13 +95,60 @@ Ordering is by dependency pressure, not by theme.
   surfaces including this contract. It is the release's own defect class,
   committed inside the release that exists to stop it. The `archive` bucket
   proper HAS always been 0 — that part was true and is what #626 reported.
-- **S4 — docs graph.** #629 at the handoff scaffold, then this repo's own
-  `link_only_lines` count, then make `check_docs_graph.py` gate it. Re-measure
-  before sizing the rewrite; `python3 scripts/check_docs_graph.py --repo-root .`
-  and `awiki lint -root docs -recursive` are two independent channels that agree
-  on the current figure, and every count checked into an older artifact disagrees
-  with it. This is not the one-clause edit the first revision implied; see the
-  Constraints entry.
+- **S4 — docs graph. BUILT 2026-08-15; two-round review in progress.** #629 at
+  the handoff scaffold, then this repo's own `link_only_lines` count, then make
+  `check_docs_graph.py` gate it. Re-measure before sizing the rewrite;
+  `python3 scripts/check_docs_graph.py --repo-root .` and
+  `awiki lint -root docs -recursive` both report the current figure, and every
+  count checked into an older artifact disagrees with it. **Correction measured
+  during the slice: those are NOT two independent channels.** The gate shells out
+  to awiki and regex-reads its summary line, so it is the same observer read
+  twice — the shape P4 refuses — and this contract's own revision said otherwise.
+  A round-1 reviewer caught the same false sentence after it had been copied into
+  the gate's source comment and into `docs/docs-graph-checks.md`. This is not the
+  one-clause edit the first revision implied; see the Constraints entry.
+
+  What the slice found that the plan did not predict, stated as MEASURED: the
+  findings are two populations, not one. Reading each flagged source line put the
+  list entries whose link line carried no descriptor in one group and links that
+  landed alone inside hard-wrapped prose in the other, at roughly a third and two
+  thirds. The first group was repaired; the bar is sized to the second, which is
+  the population awiki's per-physical-line rule over-reports on. Both counts are
+  scoped to what awiki flags — it models markdown pages inside its root, so a
+  list entry whose only link is an external URL is in neither.
+
+  **SCOPE EXTENSION, recorded rather than inferred from the diff.** The contract
+  scoped the issue work to "#629 at the handoff scaffold", and the slice also
+  added a blocking rule to `scripts/validate_handoff_artifact.py`: a
+  `## References` entry must carry a descriptor on the link's own physical line.
+  Reason: the scaffold placeholder alone does not bind — an author who deletes
+  the TODO line is back to the shape #629 reports, and closing #629 on a
+  placeholder would assert behavior the tree does not have, which
+  `## Non-Goals` forbids. It is owned by SC13 below rather than left uncovered.
+  It is also a BREAKING CHANGE for consumers: a `docs/handoff.md` that was legal
+  in `5.2.0` and carries a bare `## References` link now fails the validator on
+  upgrade. S7 must carry it in the release notes; the notes generator derives
+  registered claim surfaces, and a new blocking validator rule is exactly the
+  "claim surface nobody thought to derive" the Known Weaknesses name.
+
+  **S4 review record.** Two rounds, three angle reviewers then two, all
+  `parent-delegated` and read-only, on windows `s4-docs-graph-r1` and `-r2`; the
+  r1 `reviewer_boundary_fingerprint verify` returned `parent-attributed` with
+  every drift path declared, so no approval is quarantined. Round 1 found the
+  unsynced export mirror, the false two-channel claim, an absence-of-one-metric
+  branch that discarded another metric's observed failure, and a ratchet with no
+  executable form. Round 2 read the repairs and found defects IN them — the
+  ratchet's first fix was satisfiable by two in-place edits, the completeness
+  guard could be narrowed to nothing through its own signature default, the
+  `## References` scan ran to end of file rather than to the next heading, and
+  one repaired sentence still presented an inferred claim as measured. Round-2
+  repairs are **accepted-unreviewed** at the two-round cap.
+
+  Carried, not fixed: the exported gate ships this repo's calibrated bar with
+  neither the ratchet record nor the test that governs it, and its remedy text
+  cites paths absent from an installed plugin. `--link-only-lines-bar` makes a
+  consumer's own bar expressible; whether a repo-calibrated threshold should ship
+  as a DEFAULT is left open rather than decided inside this slice.
 - **S5 — structural umbrellas.** #586, then #584, #583, #582.
 - **S6 — operating contract.** No-mutating-git for write-capable subagents; a
   monitored-phase path for long-running children. **Plus
@@ -256,17 +303,36 @@ Ordering is by dependency pressure, not by theme.
   [check-python-lint](../../scripts/check-python-lint.sh) are clean as of this
   revision, so S1 arms a flag over a green path, not a red one.
 - **S4's docs-graph work is larger than "assert the count it already parses".**
-  The gated set is `GATED_METRICS` at `scripts/check_docs_graph.py:52`, not the
-  docstring at `:12-18`. Adding a metric there without four other edits breaks
-  the gate: `BLOCK_FOR_METRIC[metric]` at `:248` raises `KeyError` swallowed into
-  NOT-RUN by the blanket `except Exception` at `:184`, and
-  `_UNREACHABLE_LABEL`/`_REMEDY` at `:296-297` are called from `main` at `:316`
-  outside that guard and crash uncaught. `:239` also computes failures as
-  `> 0`, which is not a bar. And S4 **reverses a deliberate decision**, not an
-  oversight: `tests/test_docs_graph_gate.py:168`
-  `test_link_only_lines_alone_do_not_fail_the_gate` is pinned at `:169-170` as
+  Written before the slice and left in the past tense it was measured in; the
+  line numbers below are the PRE-SLICE tree, and reading them as live claims is
+  what made this bullet worth re-tensing. The gated set WAS `GATED_METRICS` at
+  `scripts/check_docs_graph.py:52`, not the docstring at `:12-18`. Adding a
+  metric there without four other edits broke the gate:
+  `BLOCK_FOR_METRIC[metric]` at `:248` raised `KeyError` swallowed into NOT-RUN
+  by the blanket `except Exception` at `:184`, and `_UNREACHABLE_LABEL`/`_REMEDY`
+  at `:296-297` were called from `main` at `:316` outside that guard and crashed
+  uncaught. `:239` also computed failures as `> 0`, which is not a bar. And S4
+  **reverses a deliberate decision**, not an oversight:
+  `tests/test_docs_graph_gate.py:168`
+  `test_link_only_lines_alone_do_not_fail_the_gate` was pinned at `:169-170` as
   "the deliberate scope decision, pinned so it cannot be widened by accident".
   Retract that rationale explicitly or the reversal is undocumented.
+  **Delivered:** the bar is a required value, every failure path carries its
+  block header, label, and remedy behind an import-time completeness guard, and
+  the pin is retracted by name in the test file and in
+  [docs-graph-checks](../../docs/docs-graph-checks.md). Two defects round 1
+  found in the repair itself: the gate decided "some metric is missing" BEFORE
+  judging the metrics awiki did print, so an observed over-bar count could
+  resolve to a pass or to NOT-RUN; and "may only decrease" existed only in
+  comments, leaving a red lane repairable by editing one literal. Present metrics
+  are now judged first, and the bar is pinned to a dated ratchet record the tests
+  parse. Round 2 then measured that the FIRST ratchet repair was itself weaker
+  than the sentence describing it — with one row present, "never increases
+  downward" is vacuous, so a raise needed two in-place edits and no test change.
+  The founding row is now an anchor, the parse is bounded at the next heading,
+  and the doc states what the mechanism actually buys. The retraction is written
+  out by name in the test file; the docs page names the decision and the test it
+  reverses.
 - The full suite costs **~22 minutes** (9331 tests). Budget it per slice.
 - Slices changing verdict logic on a proof surface owe the two-round bounded
   review: S1 (the notes gate), S2, S3, S4, S5. If the host blocks spawning,
@@ -312,6 +378,11 @@ Each criterion names the slice that owns it. Coverage is asserted in
 12. **(S7)** Both #608 and #618-#627 read back `CLOSED` from the provider via
     `verify-closeout --expect-state CLOSED`, over a complete classification
     ledger committed before the prepared release record.
+13. **(S4)** A `## References` entry in a handoff artifact cannot carry a link
+    with no descriptor on the link's own physical line, and the scaffold emits a
+    stub that satisfies that rule unedited. Added 2026-08-15 with the scope
+    extension recorded in the S4 entry; the rule shipped before the criterion
+    existed, which is the ordering this entry exists to stop being invisible.
 
 ## Acceptance Checks
 
@@ -361,6 +432,13 @@ Each criterion names the slice that owns it. Coverage is asserted in
   Negative: `git add`/`commit` by the same agent still succeed.
 - Verification type: integration — (SC11) a child exceeding the wrapper timeout is
   still tracked to completion and its result retrievable.
+- Verification type: unit — (SC13) the handoff validator REFUSES a `## References`
+  list entry whose whole line is a markdown link, accepts a descriptor after the
+  link and a phrase before it, and reports every offending entry in one pass.
+  Negative: a descriptor WRAPPED onto the following line is still refused — that
+  is the case that distinguishes the same-line rule from a same-entry one, and it
+  is the shape this repo's own handoff carried. Plus: the scaffold's emitted stub
+  passes the real validator unedited.
 - Verification type: manual — (SC12) `verify-closeout --expect-state CLOSED`
   reads back #608 and each of #618-#627 from the provider after the publish, and
   the classification ledger commit precedes the prepared release record.
@@ -372,7 +450,7 @@ Each criterion names the slice that owns it. Coverage is asserted in
 | S1 | 1, 2, 3, 4 | tooling; generator built here, run at S7 |
 | S2 | 5 | subject identity |
 | S3 | 6, 7 | lesson loop |
-| S4 | 8 | docs graph |
+| S4 | 8, 13 | docs graph; 13 is the recorded scope extension |
 | S5 | 9 | umbrellas; the probe question bounds it |
 | S6 | 10, 11 | operating contract |
 | S7 | 12 | release execution and closes |

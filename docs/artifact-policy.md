@@ -20,11 +20,11 @@ Put it in:
 
 Examples:
 
-- [deferred-decisions.md](./deferred-decisions.md)
-- [runtime-capability-contract.md](./runtime-capability-contract.md)
-- [external-integrations.md](./external-integrations.md)
+- [deferred-decisions.md](./deferred-decisions.md) — closed product-boundary decisions, their record shape, and reopen triggers.
+- [runtime-capability-contract.md](./runtime-capability-contract.md) — how host capability grants replace raw env-secret fallbacks.
+- [external-integrations.md](./external-integrations.md) — what upstream tools own versus what charness owns.
 - `skills/public/<skill-id>/SKILL.md`
-- [`.agents/quality-adapter.yaml`](../.agents/quality-adapter.yaml)
+- [`.agents/quality-adapter.yaml`](../.agents/quality-adapter.yaml) — this repo's quality preset, coverage floor policy, and gate globs.
 
 Do not use fixed surfaces for:
 
@@ -45,10 +45,10 @@ Put it in:
 
 Examples:
 
-- [handoff.md](./handoff.md)
-- [../charness-artifacts/gather/latest.md](../charness-artifacts/gather/latest.md)
-- [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
-- [../charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)
+- [handoff.md](./handoff.md) — the rolling next-session workflow trigger and current state.
+- [../charness-artifacts/gather/latest.md](../charness-artifacts/gather/latest.md) — the current gathered source, route family, and acquisition trace.
+- [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) — the current quality review's scope, surface contract, and findings.
+- [../charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md) — the current release surface check, versions, and push state.
 
 Use semi-fixed surfaces when later sessions should see the current best summary
 without re-reading every historical record, but the exact past records still
@@ -74,9 +74,9 @@ Put it in:
 
 Examples:
 
-- [`charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md`](../charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md)
-- [`charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md`](../charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md)
-- [`charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md`](../charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md)
+- [`charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md`](../charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md) — a dated gather of a public agent-harness article.
+- [`charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md`](../charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md) — a dated retro on failures surfaced by external dogfooding.
+- [`charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md`](../charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md) — archived quality reviews with the commands run then.
 
 Use dated visible records when:
 
@@ -218,10 +218,10 @@ file, symlink, rolling file, missing pointer, or adapter-unmanaged workflow.
 
 Current repo examples:
 
-- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md)
-- [charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md](../charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md)
-- [`charness-artifacts/gather/latest.md`](../charness-artifacts/gather/latest.md)
-- [`charness-artifacts/release/latest.md`](../charness-artifacts/release/latest.md)
+- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md) — a symlink current pointer at the newest dated debug record.
+- [charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md](../charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md) — a dated debug record on unbounded subprocess and daemon lifecycles.
+- [`charness-artifacts/gather/latest.md`](../charness-artifacts/gather/latest.md) — a regular-file current pointer holding the latest gather run.
+- [`charness-artifacts/release/latest.md`](../charness-artifacts/release/latest.md) — a regular-file current pointer holding the latest release check.
 
 ## Current Repo Classification
 
@@ -346,8 +346,8 @@ Avoid these mistakes:
 
 ## Related Contracts
 
-- [harness-composition.md](./harness-composition.md)
-- [handoff.md](./handoff.md)
-- [runtime-capability-contract.md](./runtime-capability-contract.md)
-- [external-integrations.md](./external-integrations.md)
+- [harness-composition.md](./harness-composition.md) — which repo surface owns which kind of rule.
+- [handoff.md](./handoff.md) — the rolling repo entry pointer for next-session pickup.
+- [runtime-capability-contract.md](./runtime-capability-contract.md) — capability grants, access modes, and repo-local capability config.
+- [external-integrations.md](./external-integrations.md) — the integration-over-vendoring principle and upstream ownership model.
 - `skills/public/*/references/adapter-contract.md`

@@ -349,7 +349,7 @@ def test_handoff_artifact_path_accepts_a_repo_relative_value(tmp_path) -> None:
             "",
             "## References",
             "",
-            "- [guide](docs/guide.md)",
+            "- [guide](docs/guide.md) — the demo guide.",
             "",
         ]
     )

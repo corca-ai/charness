@@ -34,10 +34,10 @@ Focus: keep deferred product-boundary decisions closed unless a real reopen trig
 
 Read first:
 
-- [docs/handoff.md](./handoff.md)
-- [docs/deferred-decisions.md](./deferred-decisions.md)
-- [docs/host-packaging.md](./host-packaging.md)
-- [docs/control-plane.md](./control-plane.md)
+- [docs/handoff.md](./handoff.md) — current session state, next-session trigger, and standing non-claims.
+- [docs/deferred-decisions.md](./deferred-decisions.md) — closed product-boundary decisions, record shape, and reopen triggers.
+- [docs/host-packaging.md](./host-packaging.md) — export contract for host plugin layouts and its source-of-truth surfaces.
+- [docs/control-plane.md](./control-plane.md) — external tool manifests, support capability metadata, and lock state rules.
 
 Acceptance:
 
@@ -52,10 +52,10 @@ Focus: take `cautilus` from integration-manifest presence to honest maintained e
 
 Read first:
 
-- [docs/public-skill-validation.md](./public-skill-validation.md)
-- [docs/control-plane.md](./control-plane.md)
-- [docs/handoff.md](./handoff.md)
-- [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml)
+- [docs/public-skill-validation.md](./public-skill-validation.md) — narrative layer for the per-skill validation tier policy.
+- [docs/control-plane.md](./control-plane.md) — external tool manifests, support capability metadata, and lock state rules.
+- [docs/handoff.md](./handoff.md) — current session state, next-session trigger, and standing non-claims.
+- [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml) — the repo's Cautilus run mode, preflight commands, and evaluation surfaces.
 
 Useful local commands:
 
@@ -83,9 +83,9 @@ Focus: confirm that the managed install/update path changes the host-visible pay
 
 Read first:
 
-- [README.md](../README.md)
-- [docs/host-packaging.md](./host-packaging.md)
-- [packaging/charness.json](../packaging/charness.json)
+- [README.md](../README.md) — product framing, managed install quick start, and everyday CLI commands.
+- [docs/host-packaging.md](./host-packaging.md) — export contract for host plugin layouts and its source-of-truth surfaces.
+- [packaging/charness.json](../packaging/charness.json) — shared packaging manifest: identity, version, bundle inputs, host export paths.
 
 Useful local commands:
 
@@ -146,12 +146,12 @@ Focus: move `create-skill` and `spec` from marker-level checks to stronger workf
 
 Read first:
 
-- [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md)
-- [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md)
-- [docs/public-skill-dogfood.md](./public-skill-dogfood.md)
-- [scripts/check_skill_contracts.py](../scripts/check_skill_contracts.py)
-- [scripts/run_evals.py](../scripts/run_evals.py)
-- [scripts/validate_public_skill_dogfood.py](../scripts/validate_public_skill_dogfood.py)
+- [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md) — the portable skill authoring workflow and its bootstrap reads.
+- [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md) — the implementation-contract workflow and its bootstrap reads.
+- [docs/public-skill-dogfood.md](./public-skill-dogfood.md) — human-readable contract for the reviewed consumer-prompt registry.
+- [scripts/check_skill_contracts.py](../scripts/check_skill_contracts.py) — pinned SKILL.md contract phrases and the pin-deletion discipline.
+- [scripts/run_evals.py](../scripts/run_evals.py) — runner for the repo-owned deterministic skill and adapter scenarios.
+- [scripts/validate_public_skill_dogfood.py](../scripts/validate_public_skill_dogfood.py) — validator entrypoint for the dogfood registry JSON.
 
 Acceptance:
 
@@ -166,10 +166,10 @@ Focus: classify which public skills must fail closed on missing adapters and tur
 
 Read first:
 
-- [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md)
-- [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md)
-- [docs/public-skill-validation.md](./public-skill-validation.md)
-- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
+- [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md) — the slice implementation workflow and its stop gate into `prove`.
+- [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md) — the quality posture workflow, adapter bootstrap, and gate planning.
+- [docs/public-skill-validation.md](./public-skill-validation.md) — validation tiers plus per-skill adapter and missing-adapter rules.
+- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) — the latest quality review: scope, gates, weak and missing areas.
 
 Useful local commands:
 

@@ -483,14 +483,14 @@ self-test, all additive.
 
 ## References
 
-- [Goal artifact](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md)
-- [Source retro](../charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md)
-- [achieve lifecycle](../skills/public/achieve/references/lifecycle.md)
-- [achieve goal artifact reference](../skills/public/achieve/references/goal-artifact.md)
-- [issue closeout discipline](../skills/shared/references/closeout-discipline.md)
-- [issue verify-closeout helper](../skills/public/issue/scripts/issue_verify_closeout.py)
-- [release SKILL.md](../skills/public/release/SKILL.md)
-- [critique SKILL.md](../skills/public/critique/SKILL.md)
-- [prescribed-path self-test (read-side counterpart)](../skills/shared/references/prescribed-path-self-test.md)
-- [implementation discipline](./conventions/implementation-discipline.md)
-- [operating contract](./conventions/operating-contract.md)
+- [Goal artifact](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md) — the achieve goal scratchpad, slice plan, and plan-critique findings behind this spec.
+- [Source retro](../charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md) — measured waste from the achieve run that skipped its prescribed retro.
+- [achieve lifecycle](../skills/public/achieve/references/lifecycle.md) — before/during/after phase split and honest-proof discipline.
+- [achieve goal artifact reference](../skills/public/achieve/references/goal-artifact.md) — goal artifact location, section shape, and helper scripts.
+- [issue closeout discipline](../skills/shared/references/closeout-discipline.md) — shared verified-ledger, target-durability, and external-source identity rules.
+- [issue verify-closeout helper](../skills/public/issue/scripts/issue_verify_closeout.py) — checks closeout carrier body, ledger fields, and proof mismatch.
+- [release SKILL.md](../skills/public/release/SKILL.md) — release workflow contract: planner bootstrap, invariants, publish output.
+- [critique SKILL.md](../skills/public/critique/SKILL.md) — angle probes, counterweight pass, and bounded fresh-subagent rule.
+- [prescribed-path self-test (read-side counterpart)](../skills/shared/references/prescribed-path-self-test.md) — when a self-test counts as evidence for a later agent.
+- [implementation discipline](./conventions/implementation-discipline.md) — validation, change, repair, and generated-surface rules for maintenance.
+- [operating contract](./conventions/operating-contract.md) — commit, external side-effect, critique, and session conventions.

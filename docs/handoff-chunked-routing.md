@@ -557,13 +557,13 @@ folded revisions without re-running critique.
 
 ## References
 
-- [Goal artifact](../charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md)
-- [handoff SKILL.md](../skills/public/handoff/SKILL.md)
-- [achieve SKILL.md](../skills/public/achieve/SKILL.md)
-- [achieve goal-artifact-lib](../skills/public/achieve/scripts/goal_artifact_lib.py)
-- [achieve check_goal_artifact](../skills/public/achieve/scripts/check_goal_artifact.py)
-- [issue SKILL.md (generative-sequence idiom, step 5)](../skills/public/issue/SKILL.md)
-- [issue resolve-flow reference](../skills/public/issue/references/resolve-flow.md)
-- [implementation discipline](./conventions/implementation-discipline.md)
-- [operating contract](./conventions/operating-contract.md)
-- [docs/handoff.md (current snapshot is the slice-2 fixture)](./handoff.md)
+- [Goal artifact](../charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md) — this goal's outcome, non-goals, boundaries, and stop conditions.
+- [handoff SKILL.md](../skills/public/handoff/SKILL.md) — the handoff skill contract: planner bootstrap, intents, size budget.
+- [achieve SKILL.md](../skills/public/achieve/SKILL.md) — the achieve skill contract: one goal artifact across three phases.
+- [achieve goal-artifact-lib](../skills/public/achieve/scripts/goal_artifact_lib.py) — markdown helpers that scaffold, append to, and check goal artifacts.
+- [achieve check_goal_artifact](../skills/public/achieve/scripts/check_goal_artifact.py) — CLI checking a goal artifact's sections, status, and activation line.
+- [issue SKILL.md (generative-sequence idiom, step 5)](../skills/public/issue/SKILL.md) — the issue skill contract for filing and resolving GitHub issues.
+- [issue resolve-flow reference](../skills/public/issue/references/resolve-flow.md) — how resolve selects, reads, orders, and classifies issues.
+- [implementation discipline](./conventions/implementation-discipline.md) — repo validation, change, repair, and generated-surface rules.
+- [operating contract](./conventions/operating-contract.md) — repo commit, external side-effect, critique, and session rules.
+- [docs/handoff.md (current snapshot is the slice-2 fixture)](./handoff.md) — the live pickup state: workflow trigger, continuation capability, current state.

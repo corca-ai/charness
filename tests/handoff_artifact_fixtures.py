@@ -65,7 +65,7 @@ def seed_with_current_state(tmp_path: Path, *state_lines: str) -> Path:
                 "",
                 "## References",
                 "",
-                "- [guide](docs/guide.md)",
+                "- [guide](docs/guide.md) — the demo guide.",
                 "",
             ]
         )

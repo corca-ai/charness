@@ -55,7 +55,7 @@ adapter is an explicit do-not-run policy.
 
 Default prompt-affecting surfaces in this repo:
 
-- [`AGENTS.md`](../AGENTS.md)
+- [`AGENTS.md`](../AGENTS.md) — root agent instruction file: session entry and link index.
 - public/support `SKILL.md` trigger contracts
 - public/support skill `references/**` that materially steer routing or
   operator-facing behavior

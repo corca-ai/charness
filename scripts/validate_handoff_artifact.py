@@ -183,6 +183,69 @@ def validate_references(lines: list[str]) -> None:
         raise ValidationError("`## References` must contain at least one markdown link")
 
 
+# What remains of a line once its markdown links are gone. Link TEXT goes with
+# the link: `- [deferred-decisions.md](./deferred-decisions.md)` names the file
+# twice and still says nothing about the relationship, which is the whole
+# finding. Punctuation-only remainders (`- [x](y).`) do not count either.
+_DESCRIPTOR_TEXT_RE = re.compile(r"[A-Za-z0-9]")
+
+
+def _descriptorless_reference_lines(lines: list[str], start: int) -> list[tuple[int, str]]:
+    found: list[tuple[int, str]] = []
+    for offset, raw in enumerate(lines[start:], start=start + 1):
+        stripped = raw.strip()
+        # STOP at the next H2. The exact-H2 check asserts membership, not ORDER,
+        # and `## Continuation Capability` is optional and legal anywhere -- so a
+        # handoff that puts `## References` before `## Discuss` was having its
+        # Discuss bullets refused, under a message calling them References
+        # entries. Scanning to EOF made the docstring's "scoped to `## References`"
+        # false for every artifact whose References section is not last.
+        if stripped.startswith("## "):
+            break
+        if not MARKDOWN_LINK_RE.search(stripped):
+            continue
+        remainder = MARKDOWN_LINK_RE.sub("", stripped).lstrip("-*").strip()
+        if not _DESCRIPTOR_TEXT_RE.search(remainder):
+            found.append((offset, stripped))
+    return found
+
+
+def validate_reference_descriptors(lines: list[str]) -> None:
+    """Refuse a `## References` link that carries no context on its OWN line.
+
+    The section is exempt from the content-line ceiling and is required to hold a
+    link, so it is where links pool — a budget-free, link-required section is
+    exactly where context-free links collect. Two consumer repos measured their
+    `docs/handoff.md` as a leading contributor to a wiki linter's
+    `link_only_lines` count, and neither could fix it locally: the next handoff
+    run rewrites the section from the scaffold.
+
+    SAME-LINE deliberately, not same-entry. A descriptor wrapped onto the
+    following line reads fine to a human and still leaves a physical line whose
+    entire content is one link, which is what the linter judges and what makes a
+    grep hit uninterpretable. So wrap AFTER the first words of the descriptor,
+    not before it. Markdownlint's line-length rule is off in this repo
+    (`.markdownlint-cli2.jsonc` sets `MD013: false`), so the long line this
+    sometimes produces is not trading one gate for another.
+
+    Scoped to `## References` because that is the section this validator's own
+    contract shapes. `## Current State` and `## Next Session` are already held by
+    the stronger ownership rule.
+    """
+    start = find_index(lines, "## References") + 1
+    found = _descriptorless_reference_lines(lines, start)
+    if not found:
+        return
+    detail = "; ".join(f"line {lineno}: {text[:60]}" for lineno, text in found)
+    raise ValidationError(
+        f"{len(found)} `## References` entry(s) carry a link and no descriptor on the link's own "
+        f"line — {detail}. Add a short phrase saying what the linked document HOLDS, on the same "
+        "physical line as the link (`- [name](path) — what it holds`), and wrap after those words "
+        "rather than before them. A line whose whole content is one link gives a reader no local "
+        "context and makes a grep hit uninterpretable."
+    )
+
+
 def validate_closed_fences(lines: list[str]) -> None:
     """Refuse an artifact whose fence never closes.
 
@@ -270,6 +333,7 @@ def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
         ),
         lambda: validate_nonempty_sections(lines, ordered_present_sections(lines)),
         lambda: validate_references(lines),
+        lambda: validate_reference_descriptors(lines),
         lambda: validate_closed_fences(lines),
         lambda: validate_bullet_ownership(lines),
         lambda: validate_no_regenerable_facts(path),
