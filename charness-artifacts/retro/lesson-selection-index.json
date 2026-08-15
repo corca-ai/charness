@@ -12,24 +12,24 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-15",
-  "source_artifact_count": 508,
-  "candidate_count": 2062,
+  "source_artifact_count": 509,
+  "candidate_count": 2069,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
       "kind": "repeat_trap",
-      "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer.",
+      "lesson": "**The premise check ran first and the class still got through one surface over.** Checking #630 and #599 against source before implementing is exactly what the lesson asks, and it worked — it refuted a live assumption about #599. Then I wrote into a `dup-review.json` review note that the slice \"added six release scripts\" when it added four and modified two, asserting a quantity I had not counted, inside the artifact that records WHY duplicate families are accepted. A bounded reviewer caught it. The lesson transferred to the code path it was written about and not to artifact prose, which is the same shape as writing a false quantity into release notes — the defect this whole slice exists to prevent.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 11,
-      "independent_source_count": 11,
+      "source_count": 12,
+      "independent_source_count": 12,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
       "latest_source_date": "2026-08-15",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 7.0,
+      "selection_weight": 7.6,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -118,6 +118,14 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The premise check ran first and the class still got through one surface over.** Checking #630 and #599 against source before implementing is exactly what the lesson asks, and it worked — it refuted a live assumption about #599. Then I wrote into a `dup-review.json` review note that the slice \"added six release scripts\" when it added four and modified two, asserting a quantity I had not counted, inside the artifact that records WHY duplicate families are accepted. A bounded reviewer caught it. The lesson transferred to the code path it was written about and not to artifact prose, which is the same shape as writing a false quantity into release notes — the defect this whole slice exists to prevent."
         }
       ]
     },
@@ -596,18 +604,18 @@
     {
       "candidate_id": "class:2aa33565760a",
       "kind": "repeat_trap",
-      "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer.",
+      "lesson": "**The premise check ran first and the class still got through one surface over.** Checking #630 and #599 against source before implementing is exactly what the lesson asks, and it worked — it refuted a live assumption about #599. Then I wrote into a `dup-review.json` review note that the slice \"added six release scripts\" when it added four and modified two, asserting a quantity I had not counted, inside the artifact that records WHY duplicate families are accepted. A bounded reviewer caught it. The lesson transferred to the code path it was written about and not to artifact prose, which is the same shape as writing a false quantity into release notes — the defect this whole slice exists to prevent.",
       "normalized_key": "three planned items were premises not debt and one was work that already shipped",
       "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 11,
-      "independent_source_count": 11,
+      "source_count": 12,
+      "independent_source_count": 12,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
       "latest_source_date": "2026-08-15",
       "age_days": 0,
       "recency_weight": 1.0,
       "alpha": 0.6,
-      "selection_weight": 7.0,
+      "selection_weight": 7.6,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -696,6 +704,14 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**I named #608 a release blocker from the issue text without reading the code that already fixed it.** The claims-review pause ships: `execute_publish_plan` stops at `prepared-awaiting-claims-review` and never tags, pushes, or publishes, with a test asserting exactly that. Three of four reviewers found it independently. The cost was a false Problem statement, a false success criterion, a false acceptance check, and a slice item — all of which had to be rewritten. This is not a first recurrence. The ledger already carries `2026-08-14-closeout-618-628-premise` at score -2, whose anchor reads \"Named #608 the release blocker from the handoff and the open issue without reading the code that already fixed it\". **Same lesson, same issue number, same failure, one day later** — and the lesson was item 1 in the nine served to this session at open. Reading a lesson is not transfer."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The premise check ran first and the class still got through one surface over.** Checking #630 and #599 against source before implementing is exactly what the lesson asks, and it worked — it refuted a live assumption about #599. Then I wrote into a `dup-review.json` review note that the slice \"added six release scripts\" when it added four and modified two, asserting a quantity I had not counted, inside the artifact that records WHY duplicate families are accepted. A bounded reviewer caught it. The lesson transferred to the code path it was written about and not to artifact prose, which is the same shape as writing a false quantity into release notes — the defect this whole slice exists to prevent."
         }
       ]
     },
@@ -1256,6 +1272,84 @@
       ]
     },
     {
+      "candidate_id": "current_focus:673c5dd181ef",
+      "kind": "current_focus",
+      "lesson": "S1 of the 6.0.0 release contract, committed at `667f6dcdb`: the release-notes generator, its notes-versus-tree gate, the narrative-containment lint, the `what-reads-this` command (#599), and the `check-markdown.sh` npm fallback (#630).",
+      "normalized_key": "s1 of the 6 0 0 release contract committed at 667f6dcdb the release notes",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S1 of the 6.0.0 release contract, committed at `667f6dcdb`: the release-notes generator, its notes-versus-tree gate, the narrative-containment lint, the `what-reads-this` command (#599), and the `check-markdown.sh` npm fallback (#630)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e6af31fa0847",
+      "kind": "next_improvement",
+      "lesson": "audit date-coupled test fixtures; one already self-destructed at a UTC midnight boundary on an unchanged checkout.",
+      "normalized_key": "audit date coupled test fixtures one already self destructed at a utc midnight boundary",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "audit date-coupled test fixtures; one already self-destructed at a UTC midnight boundary on an unchanged checkout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b0f6ab3e1df0",
+      "kind": "next_improvement",
+      "lesson": "audit the `except Exception` / `SystemExit` class named in the sibling search; `RepoFileListingError` is a `SystemExit` and any handler written for it is dead.",
+      "normalized_key": "audit the except exception systemexit class named in the sibling search repofilelistingerror is a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "audit the `except Exception` / `SystemExit` class named in the sibling search; `RepoFileListingError` is a `SystemExit` and any handler written for it is dead."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e71597891165",
       "kind": "next_improvement",
       "lesson": "before placing any issue into a build slice, open the surface it names and confirm the defect reproduces on the current tree. An issue is a claim about the past. This is the third recorded failure of the same lesson and the second on the same issue number, so the remedy has to be a step in the work, not a thing to remember.",
@@ -1278,6 +1372,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "before placing any issue into a build slice, open the surface it names and confirm the defect reproduces on the current tree. An issue is a claim about the past. This is the third recorded failure of the same lesson and the second on the same issue number, so the remedy has to be a step in the work, not a thing to remember."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:eb74b07b1e20",
+      "kind": "next_improvement",
+      "lesson": "**do not start a full-suite run until the tree is settled.** Two ~21-minute runs were invalidated by edits landing mid-collection.",
+      "normalized_key": "do not start a full suite run until the tree is settled two 21",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**do not start a full-suite run until the tree is settled.** Two ~21-minute runs were invalidated by edits landing mid-collection."
         }
       ]
     },
@@ -1360,6 +1480,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:cfcc98d46833",
+      "kind": "next_improvement",
+      "lesson": "**run a new judging rule over the repo's own existing artifacts before writing its tests.** The corpus is the specification; 49 findings on the 6.0.0 notes was available in minute five and arrived in hour three.",
+      "normalized_key": "run a new judging rule over the repo s own existing artifacts before writing",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**run a new judging rule over the repo's own existing artifacts before writing its tests.** The corpus is the specification; 49 findings on the 6.0.0 notes was available in minute five and arrived in hour three."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:be56d297c969",
+      "kind": "next_improvement",
+      "lesson": "**S3 now has a measured instance, not just a spec clause.** Five positive lesson effects were observed and could not be recorded, because scoring requires the citing retro to declare a `recurrence-class` for that lesson. Carry this retro as the evidence when S3 implements SC6.",
+      "normalized_key": "s3 now has a measured instance not just a spec clause five positive lesson",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**S3 now has a measured instance, not just a spec clause.** Five positive lesson effects were observed and could not be recorded, because scoring requires the citing retro to declare a `recurrence-class` for that lesson. Carry this retro as the evidence when S3 implements SC6."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e73a4b790002",
       "kind": "next_improvement",
       "lesson": "the shared worktree needs the no-mutating-git rule enforced for **write-capable** agents, not just bounded reviewers; one `git stash` cost eleven agents' in-flight work this session.",
@@ -1434,6 +1606,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "this artifact, the recurrence tag on its Waste bullet, and [the critique](../critique/2026-08-15-release-scope-contract.md) holding the 21 findings and their rulings."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cc62ae24c852",
+      "kind": "next_improvement",
+      "lesson": "when one configuration switch governs two mechanisms with different false-positive profiles, split the mechanism rather than shipping the switch — the noisy arm's escape hatch will disarm the quiet one.",
+      "normalized_key": "when one configuration switch governs two mechanisms with different false positive profiles split the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when one configuration switch governs two mechanisms with different false-positive profiles, split the mechanism rather than shipping the switch — the noisy arm's escape hatch will disarm the quiet one."
         }
       ]
     },
