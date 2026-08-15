@@ -1,8 +1,46 @@
 # Issue 617 Durable Lesson Session Bundle
 
-Status: in-progress
+Status: delivered-unreleased
 Date: 2026-08-14
+Refreshed: 2026-08-15 (S3 of the 6.0.0 release scope) — interrupt carry-forward
+and delivery evidence; the contract below is unchanged, and no decision in it was
+reopened.
 Source: https://github.com/corca-ai/charness/issues/617
+
+## Delivery Status
+
+Built and consumed on the current tree. Measured 2026-08-15, not transcribed:
+
+- `lesson_evaluation_continuity_lib.bundle_path` and `write_bundle` landed in
+  `311844e23` (`git log -S "def bundle_path"`), an ancestor of `eae80f660`. The
+  release-scope contract cites `eae80f660` for this capability; that commit
+  contains it but is not where it shipped, and this line is the accurate one.
+- `open_lesson_session.py:33-34,53` writes the bundle and names its path;
+  `lesson_evaluation_records_lib.py:325` is the production consumer that reads it
+  back through `load_session_bundle`, inside `_bundle_lesson_texts`.
+- ALL EIGHT receipts on disk re-digest to their bundles exactly, each matching
+  its own `stdout_sha256` and `stdout_byte_count` (re-digested with `hashlib`, not
+  read off the field). Seven are committed at HEAD; the eighth,
+  `2026-08-15-s3`, is this slice's own and still untracked — round 2 caught the
+  earlier "checked-in" doing work it had not earned: `2026-08-13-issue-614` (3,122
+  bytes), `2026-08-14-closeout-618-628` (2,260), `2026-08-14-json-removal`
+  (2,260), `2026-08-14-lesson-loop-625-627-626` (2,396),
+  `2026-08-15-release-design` (2,594), `2026-08-15-s1-release-tooling` (3,321),
+  `2026-08-15-s2` (3,145), `2026-08-15-s3` (3,145). An earlier draft cited "both
+  checked-in receipts" and named two of the eight; a bounded reviewer caught a
+  sample presented as the population, in the artifact whose whole point is that
+  the bundle set is complete. `collect_receipts` validates every `.json` in that
+  directory, so the other six are load-bearing, not context.
+- `tests/test_lesson_session_emission.py`,
+  `tests/test_lesson_evaluation_continuity.py`, and
+  `tests/test_lesson_evaluation_contract_boundaries.py` pass — 80 tests.
+- `skills/public/retro/references/lesson-evaluation.md:10-13` binds retro to the
+  explicit-session-ID lookup and refuses the newest-file guess.
+
+Not claimed: the issue is delivered in-repo and **unreleased**, so it still
+reproduces for its reporter until S7 publishes. Nothing here proves human
+readback, agent use, or lesson effect — the bundle proves only which lessons the
+session-start action issued, which is the non-claim the contract fixed below.
 
 ## Problem
 
@@ -159,7 +197,17 @@ audit code owns only historical incident diagnosis.
 - What Disproving Observation Is Resolved: the #614 selected output reconstructs
   to 3,122 bytes whose SHA-256 exactly matches the existing receipt, proving the
   lesson-session owner already possessed the content that should have been
-  frozen.
+  frozen. **Resolved by delivery, not by argument (2026-08-15):** the host no
+  longer disproves the local record, because the local record now holds the
+  bytes — a checked-in bundle written by the current code path, re-digested
+  against its receipt, and read back by a production consumer. The debug
+  artifact's `Resolution` is `resolved` as of this refresh.
+- Interrupt Carry-Forward: the `host-disproves-local` risk class is FORCED and
+  therefore never stops being required; what changes is that the disproving
+  observation is discharged. The residual is the standing one this contract
+  already states: a bundle proves issued content only. If a future session again
+  finds the host contradicting a `presentation-unproven` disposition, that is a
+  NEW interrupt, not this one reopening.
 - Contract critique: two producer/first-use angles and a separate counterweight
   accepted the bundle owner, rejected host-log lookup and v1 runtime
   compatibility, and required only an exact derived path, durable work citation,

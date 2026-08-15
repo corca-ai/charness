@@ -124,15 +124,50 @@ work's durable artifact. After context loss, read that exact bundle before
 evaluating lesson effects; do not reconstruct it from mutable lesson sources or
 search a host transcript.
 
-At retro, add only sparse cited scores for effects observed after that
+At retro, add only sparse cited encounters for effects observed after that
 presentation, then validate the replayed state:
 
 ```bash
 python3 scripts/record_lesson_score.py --repo-root . \
   --event-id <unique-event-id> --session-id <unique-session-id> \
-  --lesson-id <listed-lesson-id> --source-retro <cited-retro-path> --score <integer>
+  --lesson-id <listed-lesson-id> --source-retro <this-retro-path> \
+  --outcome <changed-an-action|read-but-not-applied|not-consulted|pushed-a-wrong-action> \
+  --anchor <what you observed>
 python3 scripts/check_lesson_ledger.py --repo-root .
 ```
+
+An encounter records a **typed outcome**, not a signed number. Each value
+answers a question about your own behaviour and routes to one disposition
+without anyone re-deriving which: `changed-an-action` (did it change a specific
+action you took?) to `graduate`; `read-but-not-applied` (was it in view AT the
+decision and still did not land?) and `pushed-a-wrong-action` (did it move the
+work toward something wrong, or cost a read that returned nothing?) to
+`rewrite-in-place`; `not-consulted` (did you never revisit it when the class
+came up?) to `strengthen-binding`.
+
+Three rules the vocabulary is built on, all three refused when you author the
+encounter rather than later. `not-consulted` is the one with an ordering
+consequence: it asserts the class recurred, so its `recurrence-class:` bullet
+must already be in the recording retro before you score it. Write that bullet
+first; the rest of the disposition still comes after the scores.
+
+- **Every outcome needs an anchor.** There is no unanchored tier, because there
+  is no magnitude left to carry one. A commit hash is permitted evidence and
+  never required — a lesson usually fails at a judgement, not at an edit.
+- **`changed-an-action` anchors must name the counterfactual**, not only the
+  action: where the work would have gone otherwise. It is the easiest and most
+  flattering claim available to an agent scoring its own session.
+- **`not-consulted` requires the session to have committed the class**, proven by
+  a `recurrence-class: <lesson-id>` bullet in the retro doing the recording.
+  Without that guard it is trivially true of every lesson a session had no
+  occasion to use.
+
+`--source-retro` names the retro **recording the encounter** — the one being
+written now — not the lesson's origin retro. Scoring cites evidence that an
+encounter happened; seeding a lesson cites evidence that the class exists. One
+rule used to serve both, which made a working lesson uncreditable (crediting it
+meant declaring that its class recurred) and made a session drawing lessons from
+two origin retros unclearable by any disposition.
 
 The session is a local declaration of the deterministic snapshot at record
 time. Its receipt proves the bundle matches the completed stdout bytes; the
@@ -203,15 +238,30 @@ helper-provenance refusal at 2 — and never a finding about a lesson. It orders
 lessons by ANCHORED evidence and reports recurrence only as context, because a
 high-recurrence lesson may need graduation, a rewrite in place, or a stronger
 binding to a step, and recurrence count cannot tell those apart — ranking by it
-selects the loudest lesson rather than the one whose prose is the problem. A
-lesson with no anchored score is undetermined, not a candidate. No score value
-triggers an archive, promotion, or retirement: threshold calibration is deferred
-and every lifecycle event still requires a reviewed `decision_ref`.
+selects the loudest lesson rather than the one whose prose is the problem. Its
+`by_disposition` grouping answers "which lessons have a `read-but-not-applied`
+encounter" as a lookup rather than an inference, because the outcome an author
+recorded already carries the routing. A lesson with no anchored evidence is
+undetermined, not a candidate, and legacy-scalar encounters route nowhere: they
+were recorded when `changed-an-action` was not expressible, so reading a
+disposition out of them would manufacture evidence nobody gave.
+
+Each reviewed lesson also carries `lifecycle_command_templates` — the archive or
+resurrect move that is legal in its CURRENT state, with its arguments filled in.
+The review emits the command and never runs it: threshold calibration is
+deferred, and every lifecycle event still requires a reviewed `decision_ref` and
+rationale. What was missing was never automation, only the operator ever being
+handed the command.
 
 Use `--action resurrect` to return an archived lesson to the active cohort. The
 selection preview draws its recent, value, and uncertainty slots only from active
-lessons and its archive slot only from archived lessons. If no archived lesson
-exists, that slot stays empty; it is not filled with a second active lesson.
+lessons and its archive slot only from archived lessons. When no archived lesson
+exists, the slot falls back to the next lesson in the uncertainty ordering and
+reports that under `archive_fallback_uncertainty` rather than folding it into
+`uncertainty` — so "the archive is empty" stays visible while the presentation
+still carries its full ten lessons. Selection policy v2 had hardcoded that
+fallback to `0`, so every session recorded under it presented nine rather than
+ten; policy v1 sessions did fill the slot, and policy v3 restores it.
 [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) remains the generated rolling digest and is not rewritten by
 preview selection or lifecycle events.
 

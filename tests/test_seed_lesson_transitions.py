@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 from scripts import lesson_ledger_lib as ledger
+from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import seed_lesson_transitions as seeder
 from tests.test_lesson_ledger import ROOT, _git, _ledger, _retro, _validate
 
@@ -72,6 +73,7 @@ def test_seeding_an_empty_ledger_makes_a_tagged_class_validate(tmp_path: Path) -
         "transition_id": "seed-a",
         "score_total": 0,
         "score_count": 0,
+        "outcome_counts": outcome_lib.outcome_counts([]),
         "state": "active",
         "last_lifecycle_event_id": None,
     }

@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from scripts import lesson_ledger_lib as ledger
+from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import lesson_selection_preview_lib as preview
 from scripts import record_lesson_lifecycle as lifecycle_recorder
 from tests.test_lesson_ledger import _ledger, _retro
@@ -109,6 +110,7 @@ def test_preview_refuses_a_validated_lesson_with_unknown_lifecycle_state(
         "selection_weight": 1,
         "score_total": 0,
         "score_count": 0,
+        "outcome_counts": outcome_lib.outcome_counts([]),
         "state": "unknown",
     }
     monkeypatch.setattr(preview, "check_lesson_selection_index", lambda *_args: None)

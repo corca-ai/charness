@@ -1,6 +1,6 @@
 {
   "kind": "charness.lesson-ledger",
-  "schema_version": 5,
+  "schema_version": 6,
   "transitions": [
     {
       "sequence": 1,
@@ -495,6 +495,35 @@
         ]
       },
       "snapshot_sha256": "e62c6a4737a1f37db0ccec2dd7e1170c4c74b2b3f73532e2c8e00ae5ee71c8f6"
+    },
+    {
+      "session_id": "2026-08-15-s3",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 2,
+        "seed": "2026-08-15-s3",
+        "eligible_count": 33,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 0
+        },
+        "lesson_ids": [
+          "goal-closeout-evidence-binding",
+          "proof-surface-review-binding",
+          "closeout-diagnostic-visibility",
+          "durable-lesson-ledger-first",
+          "artifact-contract-late-feedback",
+          "guard-adjacent-to-action",
+          "premise-not-checked-against-source",
+          "agent-authored-score-role",
+          "bar-recorded-as-prose"
+        ]
+      },
+      "snapshot_sha256": "c6d78ea255788a13ff80cb41f137b7e05dd614cd0bd6a473dee4e16ec64f3ff2"
     }
   ],
   "score_events": [
@@ -598,8 +627,15 @@
     "guard-adjacent-to-action": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-guard-adjacent-to-action",
-      "score_total": 2,
+      "score_total": 1,
       "score_count": 1,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 1
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -608,6 +644,13 @@
       "transition_id": "seed-premise-not-checked-against-source",
       "score_total": 0,
       "score_count": 4,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 4
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -616,6 +659,13 @@
       "transition_id": "seed-release-proof-identity-churn",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -624,6 +674,13 @@
       "transition_id": "seed-runtime-budget-contention",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -632,6 +689,13 @@
       "transition_id": "seed-stale-current-pointer-at-closeout",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -640,6 +704,13 @@
       "transition_id": "seed-removal-consumer-grep-incomplete",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -648,30 +719,58 @@
       "transition_id": "seed-graduation-is-proposal",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
     "durable-lesson-ledger-first": {
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
       "transition_id": "seed-durable-lesson-ledger-first",
-      "score_total": 3,
+      "score_total": 2,
       "score_count": 2,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 2
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
     "goal-closeout-evidence-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
       "transition_id": "seed-goal-closeout-evidence-binding",
-      "score_total": 2,
+      "score_total": 1,
       "score_count": 1,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 1
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
     "closeout-diagnostic-visibility": {
       "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
       "transition_id": "seed-closeout-diagnostic-visibility",
-      "score_total": -2,
+      "score_total": -1,
       "score_count": 1,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 1
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -680,6 +779,13 @@
       "transition_id": "seed-closeout-authoring-rework",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -688,14 +794,28 @@
       "transition_id": "seed-mutation-producer-selection",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
     "proof-surface-review-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
       "transition_id": "seed-proof-surface-review-binding",
-      "score_total": 3,
+      "score_total": 1,
       "score_count": 3,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 3
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -704,6 +824,13 @@
       "transition_id": "seed-rule-exists-but-does-not-bind",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -712,6 +839,13 @@
       "transition_id": "seed-counted-limit-retry-loop",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -720,6 +854,13 @@
       "transition_id": "seed-structured-edit-by-line-pattern",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -728,6 +869,13 @@
       "transition_id": "seed-agent-authored-score-role",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -736,6 +884,13 @@
       "transition_id": "seed-artifact-contract-late-feedback",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -744,6 +899,13 @@
       "transition_id": "seed-cause-named-from-one-observation",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -752,6 +914,13 @@
       "transition_id": "seed-changed-line-proof-before-broad-quality",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -760,6 +929,13 @@
       "transition_id": "seed-conservative-static-verdicts",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -768,6 +944,13 @@
       "transition_id": "seed-evidence-channel-identity",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -776,6 +959,13 @@
       "transition_id": "seed-green-test-is-not-covered-line",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -784,6 +974,13 @@
       "transition_id": "seed-harness-differential-not-test",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -792,6 +989,13 @@
       "transition_id": "seed-line-anchored-ledger-fields",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -800,6 +1004,13 @@
       "transition_id": "seed-premises-not-debt",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -808,6 +1019,13 @@
       "transition_id": "seed-proof-surface-message-drift",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -816,6 +1034,13 @@
       "transition_id": "seed-release-candidate-preflight-order",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -824,6 +1049,13 @@
       "transition_id": "seed-skipped-is-not-passed",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -832,6 +1064,13 @@
       "transition_id": "seed-unbounded-cache",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -840,6 +1079,13 @@
       "transition_id": "seed-unchecked-redundant-flag",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -848,6 +1094,13 @@
       "transition_id": "seed-bar-recorded-as-prose",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     },
@@ -856,6 +1109,13 @@
       "transition_id": "seed-coverage-claim-exceeds-the-pin",
       "score_total": 0,
       "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
       "state": "active",
       "last_lifecycle_event_id": null
     }

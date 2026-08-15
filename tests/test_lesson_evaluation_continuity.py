@@ -25,6 +25,7 @@ import yaml
 
 from scripts import check_lesson_evaluation_continuity as checker
 from scripts import lesson_evaluation_continuity_lib as continuity
+from scripts import lesson_evaluation_reconcile_lib as reconcile
 from scripts import lesson_evaluation_records_lib as records
 from scripts import validate_retro_artifact
 
@@ -152,7 +153,7 @@ def _write_bundle(output: Path, session_id: str = "s-1") -> None:
 
 def test_reconciler_keeps_disposition_health_separate_from_score_volume() -> None:
     sessions = {"s-1": {"snapshot_sha256": "a" * 64}}
-    clean = continuity.reconcile_records(
+    clean = reconcile.reconcile_records(
         retros=[
             (
                 "charness-artifacts/retro/2026-08-14-a.md",
@@ -164,6 +165,7 @@ def test_reconciler_keeps_disposition_health_separate_from_score_volume() -> Non
         receipts={"s-1": _receipt()},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
     assert clean["ok"] is True
     assert clean["completed_evaluation_count"] == 1
@@ -181,25 +183,27 @@ def test_presentation_unproven_requires_receipt_and_remains_visible() -> None:
         },
     )
     sessions = {"s-1": {"snapshot_sha256": "a" * 64}}
-    clean = continuity.reconcile_records(
+    clean = reconcile.reconcile_records(
         retros=[row],
         sessions=sessions,
         score_events=[],
         receipts={"s-1": _receipt()},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
     assert clean["ok"] is True
     assert clean["not_evaluated_reason_counts"]["presentation-unproven"] == 1
     assert clean["completed_evaluation_count"] == 0
 
-    missing = continuity.reconcile_records(
+    missing = reconcile.reconcile_records(
         retros=[row],
         sessions=sessions,
         score_events=[],
         receipts={},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
     assert "emission-unproven" in {item["id"] for item in missing["violations"]}
 
@@ -246,13 +250,14 @@ def test_reconciler_accepts_each_complete_truth_table_row(
     reason_count: str | None,
 ) -> None:
     sessions = {"s-1": {"snapshot_sha256": "a" * 64}}
-    report = continuity.reconcile_records(
+    report = reconcile.reconcile_records(
         retros=[("charness-artifacts/retro/2026-08-14-a.md", disposition)],
         sessions=sessions,
         score_events=scores,
         receipts={"s-1": _receipt()} if with_receipt else {},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
     assert report["ok"] is True, report["violations"]
     if reason_count is not None:
@@ -264,7 +269,7 @@ def test_pre_activation_and_same_day_receipts_are_not_unclaimed() -> None:
         "old": {"snapshot_sha256": "a" * 64},
         "today": {"snapshot_sha256": "a" * 64},
     }
-    report = continuity.reconcile_records(
+    report = reconcile.reconcile_records(
         retros=[],
         sessions=sessions,
         score_events=[],
@@ -274,6 +279,7 @@ def test_pre_activation_and_same_day_receipts_are_not_unclaimed() -> None:
         },
         receipt_violations=[],
         as_of=date(2026, 8, 15),
+        recurrence_sources={},
     )
     assert report["ok"] is True
 
@@ -294,10 +300,10 @@ def test_unclaimed_helper_window_excludes_pre_activation_claimed_and_future_rece
     }
     references = {"claimed": ["charness-artifacts/retro/2026-08-14-a.md"]}
 
-    gate_view = continuity.unclaimed_receipted_sessions(
+    gate_view = reconcile.unclaimed_receipted_sessions(
         receipts=receipts, references=references, before=date(2026, 8, 15)
     )
-    router_view = continuity.unclaimed_receipted_sessions(
+    router_view = reconcile.unclaimed_receipted_sessions(
         receipts=receipts, references=references, before=None
     )
 
@@ -325,19 +331,20 @@ def test_reconcile_records_unclaimed_emissions_equal_the_shared_helper() -> None
         )
     ]
     as_of = date(2026, 8, 15)
-    report = continuity.reconcile_records(
+    report = reconcile.reconcile_records(
         retros=retros,
         sessions={key: {"snapshot_sha256": "a" * 64} for key in receipts},
         score_events=[],
         receipts=receipts,
         receipt_violations=[],
         as_of=as_of,
+        recurrence_sources={},
     )
 
     named = sorted(
         item["session_id"] for item in report["violations"] if item["id"] == "unclaimed-emission"
     )
-    assert named == continuity.unclaimed_receipted_sessions(
+    assert named == reconcile.unclaimed_receipted_sessions(
         receipts=receipts,
         references={"claimed": ["charness-artifacts/retro/2026-08-14-a.md"]},
         before=as_of,
@@ -361,7 +368,7 @@ def test_reconciler_names_duplicate_receiptless_score_and_unclaimed_emission() -
             {"status": "no-effect", "session_id": "s-1", "score_event_count": 0},
         ),
     ]
-    report = continuity.reconcile_records(
+    report = reconcile.reconcile_records(
         retros=retros,
         sessions={
             "s-1": {"snapshot_sha256": "a" * 64},
@@ -376,6 +383,7 @@ def test_reconciler_names_duplicate_receiptless_score_and_unclaimed_emission() -
         receipts={"orphan": _receipt("orphan")},
         receipt_violations=[],
         as_of=date(2026, 8, 15),
+        recurrence_sources={},
     )
     ids = {item["id"] for item in report["violations"]}
     assert {
@@ -388,6 +396,8 @@ def test_reconciler_names_duplicate_receiptless_score_and_unclaimed_emission() -
         "score-count-mismatch": 0,
         "duplicate-session-reference": 1,
         "unclaimed-emission": 1,
+        "unrecurred-encounter": 0,
+        "duplicate-encounter": 0,
     }
 
 
@@ -568,7 +578,7 @@ def test_reporter_names_missing_disposition_and_invalid_receipt(
 
 
 def test_reconciler_names_foreign_session_and_score_count_mismatch() -> None:
-    report = continuity.reconcile_records(
+    report = reconcile.reconcile_records(
         retros=[
             (
                 "charness-artifacts/retro/2026-08-14-foreign.md",
@@ -584,6 +594,7 @@ def test_reconciler_names_foreign_session_and_score_count_mismatch() -> None:
         receipts={"s-1": _receipt()},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
 
     assert {item["id"] for item in report["violations"]} >= {
@@ -595,21 +606,23 @@ def test_reconciler_names_foreign_session_and_score_count_mismatch() -> None:
 def test_many_scores_incomplete_is_not_healthier_than_zero_score_complete() -> None:
     path = "charness-artifacts/retro/2026-08-14-a.md"
     sessions = {"s-1": {"snapshot_sha256": "a" * 64}}
-    complete = continuity.reconcile_records(
+    complete = reconcile.reconcile_records(
         retros=[(path, {"status": "no-effect", "session_id": "s-1", "score_event_count": 0})],
         sessions=sessions,
         score_events=[],
         receipts={"s-1": _receipt()},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
-    incomplete = continuity.reconcile_records(
+    incomplete = reconcile.reconcile_records(
         retros=[(path, {"status": "effect-recorded", "session_id": "s-1", "score_event_count": 1})],
         sessions=sessions,
         score_events=[{"session_id": "s-1", "source_retro": path} for _ in range(5)],
         receipts={"s-1": _receipt()},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
 
     assert complete["ok"] is True
@@ -663,6 +676,8 @@ def test_cli_yaml_snapshot_and_exit_status(
         "score-count-mismatch": 0,
         "duplicate-session-reference": 0,
         "unclaimed-emission": 0,
+        "unrecurred-encounter": 0,
+        "duplicate-encounter": 0,
     }
     assert clean["violation_count"] == 0
 
@@ -696,13 +711,14 @@ def test_reporter_cli_payload_output_and_error_path(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    clean = continuity.reconcile_records(
+    clean = reconcile.reconcile_records(
         retros=[],
         sessions={},
         score_events=[],
         receipts={},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
     monkeypatch.setattr(checker, "build_report", lambda *_args, **_kwargs: clean)
     monkeypatch.setattr(

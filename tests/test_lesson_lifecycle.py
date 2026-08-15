@@ -56,7 +56,9 @@ def test_archive_and_resurrection_preserve_scores_and_refuse_invalid_transition(
     assert command.returncode == 0, command.stderr
     assert yaml.safe_load(command.stdout)["event_id"] == "archive-a"
     archived = json.loads(path.read_text(encoding="utf-8"))
-    assert archived["lessons"]["a"]["score_total"] == 2
+    # 1, not 2: archiving still PRESERVES the score, and the score itself is now
+    # a valence sum -- a legacy `+2` contributes its sign, never its size.
+    assert archived["lessons"]["a"]["score_total"] == 1
     assert archived["lessons"]["a"]["state"] == "archived"
     before = path.read_bytes()
     with pytest.raises(ValueError, match="cannot archive"):
@@ -78,7 +80,7 @@ def test_archive_and_resurrection_preserve_scores_and_refuse_invalid_transition(
         rationale="Reviewed archive-slot resurrection.",
     )
     resurrected = json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]
-    assert (resurrected["score_total"], resurrected["score_count"]) == (2, 1)
+    assert (resurrected["score_total"], resurrected["score_count"]) == (1, 1)
     assert resurrected["state"] == "active"
 
 

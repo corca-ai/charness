@@ -21,6 +21,9 @@ _continuity = import_repo_module(__file__, "scripts.lesson_evaluation_continuity
 # router that disagreed with this gate about which sessions exist would silently
 # skip the session the gate later fails the repo over.
 _records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
+# AGREEMENT lives apart from AUTHORING/INTEGRITY: this gate asks whether what a
+# retro claims matches what the ledger holds, which is the reconcile half.
+_reconcile = import_repo_module(__file__, "scripts.lesson_evaluation_reconcile_lib")
 
 
 def build_report(repo_root: Path, *, as_of: date) -> dict[str, Any]:
@@ -32,13 +35,14 @@ def build_report(repo_root: Path, *, as_of: date) -> dict[str, Any]:
         output_dir=output_dir, sessions=sessions
     )
     receipt_violations = [*receipt_violations, *collected_receipt_violations]
-    report = _continuity.reconcile_records(
+    report = _reconcile.reconcile_records(
         retros=dispositions,
         sessions=sessions,
         score_events=score_events,
         receipts=receipts,
         receipt_violations=receipt_violations,
         as_of=as_of,
+        recurrence_sources=_records.recurrence_sources(repo_root),
     )
     # The denominator includes invalid-disposition retros too; the pure core sees
     # only successfully parsed rows, so restore the observable cohort count here.

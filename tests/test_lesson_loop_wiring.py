@@ -184,12 +184,18 @@ def test_routing_asks_the_harmful_question_and_carries_the_emitted_wording(
     session = records.lesson_session_routing(tmp_path)["sessions"][0]
 
     solicitation = session["solicitation"]
-    # `-3` by name: the contract asks for actively-harmful explicitly because it is
-    # the least volunteered signal.
-    assert "-3" in solicitation["harmful"]
-    assert "WRONG action" in solicitation["harmful"]
-    assert "READ and did not act on" in solicitation["read_and_failed"]
-    assert "magnitude 2 or more requires an anchor" in solicitation["anchor_rule"]
+    # The harmful arm by name: the contract asks for it explicitly because it is
+    # the least volunteered signal, and it is asked FIRST.
+    assert "WRONG action" in solicitation["pushed_a_wrong_action"]
+    assert "pushed-a-wrong-action" in solicitation["pushed_a_wrong_action"]
+    # The two arms a single number used to collapse. `read-but-not-applied` says
+    # the lesson may be perfect and never landed; `not-consulted` says it never
+    # reached the decision. Different repairs, so they must be asked separately.
+    assert "IN VIEW at the decision" in solicitation["read_but_not_applied"]
+    assert "never revisit" in solicitation["not_consulted"]
+    assert "EVERY outcome requires an anchor" in solicitation["anchor_rule"]
+    # And the citation rule the whole #631 repair rests on.
+    assert "not the lesson's origin retro" in solicitation["cite_this_retro"]
     # And the counterweight, so the ask cannot be read as "score everything".
     assert "not a health measure" in solicitation["no_score_is_valid"]
 
@@ -215,8 +221,11 @@ def test_scored_lessons_are_marked_so_the_open_question_stays_visible(
         session_id="2026-08-14-host-1",
         lesson_id="a",
         source_retro="charness-artifacts/retro/source.md",
-        score=1,
-        anchor=None,
+        outcome="changed-an-action",
+        anchor=(
+            "took the measured path here rather than the assumed one, which would have "
+            "shipped a false count"
+        ),
     )
 
     session = records.lesson_session_routing(tmp_path)["sessions"][0]
@@ -290,7 +299,7 @@ def test_retro_planner_barrier_names_the_solicitation(tmp_path: Path) -> None:
     barriers = [line for line in payload["phase_barriers"] if "solicitation" in line]
     assert barriers, payload["phase_barriers"]
     assert "harmful/negative question first" in barriers[0]
-    assert payload["lesson_session"]["sessions"][0]["solicitation"]["harmful"]
+    assert payload["lesson_session"]["sessions"][0]["solicitation"]["pushed_a_wrong_action"]
 
 
 def test_the_solicitation_barrier_is_absent_where_no_evaluator_is_declared(
@@ -424,8 +433,11 @@ def _append(repo: Path, **overrides: object) -> dict[str, object]:
         "session_id": "session-a",
         "lesson_id": "a",
         "source_retro": "charness-artifacts/retro/source.md",
-        "score": 1,
-        "anchor": None,
+        "outcome": "changed-an-action",
+        "anchor": (
+            "recorded the encounter against this session's own retro rather than the origin "
+            "retro, which would have declared a recurrence that did not happen"
+        ),
     }
     arguments.update(overrides)
     return scorer.append_score(**arguments)

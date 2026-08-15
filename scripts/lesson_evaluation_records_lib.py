@@ -11,7 +11,7 @@ Before this module the gate owned the retro scan and the receipt scan inline, so
 router would have had to grow a second copy of both. A router that disagrees with
 its gate about which sessions exist is worse than no router: it silently skips the
 session the gate later fails the repo over. The scan lives here once; the shared
-membership rule lives once in `lesson_evaluation_continuity_lib`.
+membership rule lives once in `lesson_evaluation_reconcile_lib`.
 
 This module reads. It never writes to the ledger, and never appends a score --
 `record_lesson_score.py` is the only append path, and it runs by operator/agent
@@ -22,11 +22,14 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
 from pathlib import Path
 from typing import Any
 
 from scripts import lesson_evaluation_continuity_lib as continuity
+from scripts import lesson_evaluation_reconcile_lib as reconcile
 from scripts import lesson_ledger_lib as ledger_lib
+from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts.prepare_packet_markdown_kind import file_is_prepare_packet_markdown_kind
 
 RETRO_OUTPUT_RELATIVE = "charness-artifacts/retro"
@@ -35,6 +38,7 @@ LEDGER_BOOTSTRAP_SCRIPT = "init_lesson_ledger.py"
 SCORE_SCRIPT = "record_lesson_score.py"
 
 _PACKET_TITLE = re.compile(r"^# Retro Prepare Packet(?:\s+—\s+\S.*)?$")
+_NEEDS_QUOTING = re.compile(r"\s")
 
 STATE_EVALUATED = "evaluated"
 STATE_NOT_CONFIGURED = "not-configured"
@@ -56,28 +60,43 @@ STATE_NOT_ESTABLISHED = "not-established"
 # against. So the honest chain is score -> anchor -> a human disposition, never
 # score -> rewrite; do not promise the second one here.
 #
-# `harmful` is asked FIRST and by name because the contract says `-3` is asked for
-# explicitly: actively harmful is the most valuable and least volunteered signal,
-# and an author walking a list of lessons volunteers praise long before blame.
+# `pushed_a_wrong_action` is asked FIRST and by name: actively harmful is the most
+# valuable and least volunteered signal, and an author walking a list of lessons
+# volunteers praise long before blame. The four questions are the four outcomes in
+# `lesson_score_outcome_lib`, one each -- they are not a separate taxonomy, and
+# the ONE-NUMBER-TWO-MEANINGS defect they replace was exactly this list asking two
+# different questions ("harmful" and "read and failed") that both produced a
+# negative: the first says the lesson is defective, the second says it may be
+# perfect and never landed, and those are different repairs.
 #
 # Kept here, in repo-owned evidence, rather than in the public retro skill: the
 # skill core stays evaluator-generic and routes a contract it does not define.
 SCORE_SOLICITATION = {
-    "harmful": (
+    "pushed_a_wrong_action": (
         "Which of these pushed you toward a WRONG action, or cost a read that returned "
-        "nothing? Score those negative, `-3` for actively harmful. This is the least "
-        "volunteered and most valuable signal; answer it before the positive ones."
+        "nothing? Record `--outcome pushed-a-wrong-action`. This is the least volunteered "
+        "and most valuable signal; answer it before the positive one."
     ),
     "changed_an_action": (
-        "Which of these changed a specific action you took? Name the anchor: the decision, "
-        "file, or command where it changed one."
+        "Which of these changed a specific action you took? Record "
+        "`--outcome changed-an-action`, and name BOTH the action and where the work would "
+        "have gone otherwise -- the anchor is refused without the counterfactual, because "
+        "this is the easiest and most flattering claim available to an agent scoring its "
+        "own session."
     ),
-    "read_and_failed": (
-        "Which of these you READ and did not act on, in a session that then committed the "
-        "class the lesson names? That is a negative score with an anchor, not a skip. An "
-        "unscored miss leaves no anchor, and the anchor is the ledger's only record of WHY a "
-        "lesson did not land -- recurrence count cannot distinguish a lesson that needs rewriting "
-        "from one that was simply never consulted."
+    "read_but_not_applied": (
+        "Which of these were IN VIEW at the decision and still did not land? Record "
+        "`--outcome read-but-not-applied`. That is an encounter with an anchor, not a skip: "
+        "the anchor is the ledger's only record of WHY a lesson did not land, and it is "
+        "what routes the lesson to `rewrite-in-place` rather than to a louder ranking."
+    ),
+    "not_consulted": (
+        "Which did you never revisit at the moment the class came up, in a session that "
+        "then COMMITTED that class? Record `--outcome not-consulted`. The precondition is "
+        "load-bearing and enforced AT WRITE TIME: the recording retro must ALREADY carry a "
+        "`recurrence-class: <lesson-id>` bullet, so write that bullet before scoring this "
+        "one. Without the precondition, every lesson a session had no occasion to use is "
+        "trivially 'not consulted'."
     ),
     "presented_before_the_work": (
         "Score only lessons from a list presented BEFORE the work they affected. Reading a "
@@ -86,8 +105,16 @@ SCORE_SOLICITATION = {
         "`presentation-unproven` disposition."
     ),
     "anchor_rule": (
-        "A score of magnitude 2 or more requires an anchor and is refused without one. "
-        "Unanchored judgments belong at -1, 0, or +1."
+        "EVERY outcome requires an anchor; there is no unanchored tier, because there is no "
+        "magnitude left to carry one. A commit hash is permitted evidence and never required "
+        "-- a lesson usually fails at a judgement, not at an edit, and a hash requirement "
+        "would collect only the failures that edited something."
+    ),
+    "cite_this_retro": (
+        "`--source-retro` names the retro RECORDING this encounter -- the one being written "
+        "now -- not the lesson's origin retro. Crediting a lesson that worked used to mean "
+        "declaring that its class recurred, which is why positives went unrecorded (#627), "
+        "and citing origins made a two-origin session unclearable by any retro (#631)."
     ),
     "no_score_is_valid": (
         "Scoring every lesson is NOT the goal and a high score count is not a health "
@@ -116,7 +143,13 @@ def repo_or_installed_command(repo_root: Path, script_name: str, *args: str) -> 
     `scaffold_artifact_lib.validator_command`'s resolution order so a consumer cites
     the same script its broad gate would.
     """
-    tail = " ".join(args)
+    # QUOTED, because these are commands an operator copy-pastes. An unquoted
+    # placeholder containing a space (`--anchor <what you observed>`) parses as
+    # several arguments and the command dies on `unrecognized arguments`, which
+    # reads as the tool being broken rather than the template being wrong.
+    # `shlex.quote` only when needed, so every argument that was already a single
+    # token renders exactly as before.
+    tail = " ".join(shlex.quote(value) if _NEEDS_QUOTING.search(value) else value for value in args)
     if (repo_root / "scripts" / script_name).is_file():
         return f"python3 scripts/{script_name} {tail}".rstrip()
     installed = Path(__file__).resolve().parent / script_name
@@ -141,6 +174,19 @@ def load_validated_ledger(repo_root: Path) -> tuple[dict[str, dict[str, Any]], l
         {event["session_id"]: event for event in payload["session_events"]},
         list(payload["score_events"]),
     )
+
+
+def recurrence_sources(repo_root: Path) -> dict[str, set[str]]:
+    """`lesson_id -> the retros carrying its `recurrence-class:` bullet`.
+
+    The same index the ledger validates transitions against, reused rather than
+    re-derived: the `not-consulted` precondition asks exactly the question the
+    seeding rule asks ("did the class recur in this retro"), and two spellings of
+    "which retros declare this class" would let a score be recordable under one
+    and unseedable under the other.
+    """
+    output_dir = retro_output_dir(repo_root)
+    return ledger_lib.candidate_sources(repo_root, output_dir, summary_path(repo_root))
 
 
 def collect_retro_candidates(repo_root: Path) -> list[tuple[str, str]]:
@@ -244,8 +290,13 @@ def _score_command_template(repo_root: Path, session_id: str, lesson_id: str, so
         lesson_id,
         "--source-retro",
         source_retro,
-        "--score",
-        "<-3..3>",
+        "--outcome",
+        f"<{'|'.join(sorted(outcome_lib.SCORE_OUTCOMES))}>",
+        # In the template because it is REQUIRED, not because it is encouraged: a
+        # template that omitted it would route an author to a command that
+        # refuses, which is how a solicitation turns back into a routing.
+        "--anchor",
+        "<what you observed; for changed-an-action also where the work would have gone otherwise>",
     )
 
 
@@ -395,7 +446,7 @@ def lesson_session_routing(repo_root: Path, *, source_retro: str | None = None) 
     candidates = collect_retro_candidates(repo_root)
     dispositions, _disposition_violations = collect_dispositions(candidates)
     receipts, receipt_violations = collect_receipts(output_dir=output_dir, sessions=sessions)
-    unclaimed = continuity.unclaimed_receipted_sessions(
+    unclaimed = reconcile.unclaimed_receipted_sessions(
         receipts=receipts, references=disposition_references(dispositions), before=None
     )
     if not unclaimed:

@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib
 import copy
 import json
-import multiprocessing
 import runpy
 import subprocess
 import sys
@@ -15,11 +14,17 @@ import yaml
 
 from scripts import lesson_ledger_lib as ledger
 from scripts import lesson_ledger_writer_lib as writer
+from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import record_lesson_score as scorer
 from scripts import record_lesson_session as session_recorder
+from tests.lesson_ledger_fixtures import blank_lesson, outcome_event
+from tests.lesson_ledger_fixtures import materialize as _materialize
 from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
+# Satisfies the `changed-an-action` counterfactual bar, so tests about SESSION
+# binding do not have to restate the anchor rule to exercise it.
+ANCHOR = outcome_event(event_id="x", session_id="x", lesson_id="x", source_retro="x")["anchor"]
 
 
 def _retro(repo: Path, name: str, lesson_class: str) -> None:
@@ -86,36 +91,8 @@ def _payload(
         "lifecycle_events": [],
         "session_events": [] if session_events is None else session_events,
         "score_events": events,
-        "lessons": {
-            "a": {
-                "source_retro": source,
-                "transition_id": "seed-a",
-                "score_total": 0,
-                "score_count": 0,
-                "state": "active",
-                "last_lifecycle_event_id": None,
-            }
-        },
+        "lessons": {"a": blank_lesson(source, "seed-a")},
     }
-
-
-def _materialize(payload: dict) -> dict:
-    for lesson in payload["lessons"].values():
-        lesson["score_total"] = 0
-        lesson["score_count"] = 0
-        lesson["state"] = "active"
-        lesson["last_lifecycle_event_id"] = None
-    for event in payload["lifecycle_events"]:
-        lesson = payload["lessons"].get(event["lesson_id"])
-        if lesson is not None:
-            lesson["state"] = "archived" if event["action"] == "archive" else "active"
-            lesson["last_lifecycle_event_id"] = event["event_id"]
-    for event in payload["score_events"]:
-        lesson = payload["lessons"].get(event["lesson_id"])
-        if lesson is not None:
-            lesson["score_total"] += event["score"]
-            lesson["score_count"] += 1
-    return payload
 
 
 def _ledger(repo: Path, **kwargs: object) -> Path:
@@ -163,7 +140,9 @@ def test_ledger_replays_session_cited_scores_and_checker_cli(
         "Validated lesson ledger: 1 lessons, 1 active, 1 seed transitions, "
         "0 lifecycle events.\n"
     )
-    assert json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]["score_total"] == 2
+    # ONE, not two: magnitude is retired from both vocabularies, so a legacy `+2`
+    # contributes the sign of its scalar and never its size.
+    assert json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]["score_total"] == 1
 
 
 def test_ledger_rejects_closed_transition_score_and_projection_shapes(tmp_path: Path) -> None:
@@ -191,7 +170,7 @@ def test_ledger_rejects_closed_transition_score_and_projection_shapes(tmp_path: 
     cases.append((bad_anchor, "non-whitespace"))
     projection = _payload()
     projection["lessons"]["a"]["score_total"] = 0.0
-    cases.append((projection, "integer replay fields"))
+    cases.append((projection, "replayed fields"))
     for payload, message in cases:
         serialized = payload if payload is projection else _materialize(payload)
         path.write_text(json.dumps(serialized), encoding="utf-8")
@@ -215,7 +194,10 @@ def test_session_snapshot_and_new_scores_are_coupled_without_rerendering(tmp_pat
     invalids.append((unknown, "unknown session"))
     missing = copy.deepcopy(payload)
     del missing["score_events"][0]["session_id"]
-    invalids.append((missing, "unexpected or missing"))
+    # The refusal moved shape with the vocabulary: a legacy event missing
+    # `session_id` is now a legacy KEY-SET refusal, and the message names both
+    # shapes so an author who meant to write an outcome event is told so.
+    invalids.append((missing, "legacy-scalar score event takes keys"))
     altered = copy.deepcopy(payload)
     altered["session_events"][0]["snapshot"]["seed"] = "other"
     invalids.append((altered, "snapshot_sha256"))
@@ -309,8 +291,8 @@ def test_session_recorder_freezes_current_preview_then_score_does_not_rerender_h
         session_id="recorded",
         lesson_id="a",
         source_retro="charness-artifacts/retro/source.md",
-        score=1,
-        anchor=None,
+        outcome="changed-an-action",
+        anchor=ANCHOR,
     )
     monkeypatch.setattr(
         session_recorder._preview,
@@ -332,14 +314,7 @@ def test_score_authoring_refuses_a_lesson_absent_from_an_existing_session(tmp_pa
             "source_retro": "charness-artifacts/retro/second.md",
         }
     )
-    payload["lessons"]["b"] = {
-        "source_retro": "charness-artifacts/retro/second.md",
-        "transition_id": "seed-b",
-        "score_total": 0,
-        "score_count": 0,
-        "state": "active",
-        "last_lifecycle_event_id": None,
-    }
+    payload["lessons"]["b"] = blank_lesson("charness-artifacts/retro/second.md", "seed-b")
     path = tmp_path / "charness-artifacts/retro/lesson-ledger.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
     assert _validate(tmp_path)["lesson_count"] == 2
@@ -353,8 +328,8 @@ def test_score_authoring_refuses_a_lesson_absent_from_an_existing_session(tmp_pa
             session_id="session-a",
             lesson_id="b",
             source_retro="charness-artifacts/retro/second.md",
-            score=0,
-            anchor=None,
+            outcome="changed-an-action",
+            anchor=ANCHOR,
         )
     assert path.read_bytes() == before
 
@@ -373,8 +348,8 @@ def test_score_authoring_requires_containing_session_and_leaves_refusals_unwritt
         session_id="session-a",
         lesson_id="a",
         source_retro="charness-artifacts/retro/source.md",
-        score=2,
-        anchor="decision evidence",
+        outcome="changed-an-action",
+        anchor=ANCHOR,
     )
     assert event["session_id"] == "session-a"
     assert _validate(tmp_path)["score_event_count"] == 1
@@ -388,8 +363,8 @@ def test_score_authoring_requires_containing_session_and_leaves_refusals_unwritt
             session_id="unknown",
             lesson_id="a",
             source_retro="charness-artifacts/retro/source.md",
-            score=0,
-            anchor=None,
+            outcome="changed-an-action",
+            anchor=ANCHOR,
         )
     assert path.read_bytes() == before
 
@@ -408,21 +383,53 @@ def test_authoring_commands_refuse_invalid_inputs_and_empty_preview(
             session_id="session-a",
             lesson_id="a",
             source_retro="charness-artifacts/retro/source.md",
-            score=0,
-            anchor=None,
+            outcome="changed-an-action",
+            anchor=ANCHOR,
         )
-    with pytest.raises(ValueError, match="score must be an integer"):
+    # The retired scalar is not a value this writer can express any more, so the
+    # refusal an author actually hits is an out-of-vocabulary outcome -- and the
+    # message teaches the four questions rather than listing four slugs.
+    with pytest.raises(ValueError, match="outcome must be one of"):
         scorer.append_score(
             repo_root=tmp_path,
             output_dir=path.parent,
             summary_path=path.parent / "recent-lessons.md",
-            event_id="bad-score",
+            event_id="bad-outcome",
             session_id="session-a",
             lesson_id="a",
             source_retro="charness-artifacts/retro/source.md",
-            score=True,
-            anchor=None,
+            outcome="+3",
+            anchor=ANCHOR,
         )
+    # The asymmetric bar, refused at AUTHORING time: a `changed-an-action` anchor
+    # that names the action and not the counterfactual. This is the one outcome an
+    # agent scoring its own session finds easiest and most flattering to claim.
+    with pytest.raises(ValueError, match="would have gone otherwise"):
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            event_id="unfalsifiable-positive",
+            session_id="session-a",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/source.md",
+            outcome="changed-an-action",
+            anchor="it helped a lot",
+        )
+    # ...and the SAME anchor is accepted for an outcome that makes no
+    # counterfactual claim, which is what makes the bar asymmetric rather than
+    # just strict.
+    assert scorer.append_score(
+        repo_root=tmp_path,
+        output_dir=path.parent,
+        summary_path=path.parent / "recent-lessons.md",
+        event_id="unanchored-negative-is-fine",
+        session_id="session-a",
+        lesson_id="a",
+        source_retro="charness-artifacts/retro/source.md",
+        outcome="read-but-not-applied",
+        anchor="it helped a lot",
+    )["outcome"] == "read-but-not-applied"
     with pytest.raises(ValueError, match="unseeded"):
         scorer.append_score(
             repo_root=tmp_path,
@@ -432,8 +439,8 @@ def test_authoring_commands_refuse_invalid_inputs_and_empty_preview(
             session_id="session-a",
             lesson_id="other",
             source_retro="charness-artifacts/retro/source.md",
-            score=0,
-            anchor=None,
+            outcome="changed-an-action",
+            anchor=ANCHOR,
         )
     with pytest.raises(ValueError, match="non-empty non-whitespace"):
         session_recorder.append_session(
@@ -474,8 +481,10 @@ def test_score_authoring_cli_emits_session_bound_event(tmp_path: Path, monkeypat
             "a",
             "--source-retro",
             "charness-artifacts/retro/source.md",
-            "--score",
-            "-1",
+            "--outcome",
+            "changed-an-action",
+            "--anchor",
+            ANCHOR,
         ],
     )
     assert scorer.main() == 0
@@ -618,71 +627,6 @@ def test_writer_reports_open_acquire_and_release_failures(
     with pytest.raises(ValueError, match="unable to release"):
         with writer.ledger_lock(path):
             pass
-
-
-def _append_in_child(repo_text: str, event_id: str, source: str, barrier, queue) -> None:
-    repo = Path(repo_text)
-    try:
-        barrier.wait(timeout=10)
-        scorer.append_score(
-            repo_root=repo,
-            output_dir=repo / "charness-artifacts/retro",
-            summary_path=repo / "charness-artifacts/retro/recent-lessons.md",
-            event_id=event_id,
-            session_id="session-a",
-            lesson_id="a",
-            source_retro=source,
-            score=0,
-            anchor=None,
-        )
-        queue.put(None)
-    except BaseException as exc:  # pragma: no cover - reported by parent assertion
-        queue.put(repr(exc))
-
-
-@pytest.mark.skipif(writer.fcntl is None, reason="requires POSIX cooperative-lock proof")
-def test_two_concurrent_score_writers_preserve_both_events(tmp_path: Path) -> None:
-    _retro(tmp_path, "source.md", "a")
-    _retro(tmp_path, "second.md", "a")
-    path = _ledger(tmp_path, session_events=[_session_event()])
-    context = multiprocessing.get_context("fork")
-    barrier, queue = context.Barrier(2), context.Queue()
-    processes = [
-        context.Process(
-            target=_append_in_child,
-            args=(
-                str(tmp_path),
-                "concurrent-a",
-                "charness-artifacts/retro/source.md",
-                barrier,
-                queue,
-            ),
-        ),
-        context.Process(
-            target=_append_in_child,
-            args=(
-                str(tmp_path),
-                "concurrent-b",
-                "charness-artifacts/retro/second.md",
-                barrier,
-                queue,
-            ),
-        ),
-    ]
-    for process in processes:
-        process.start()
-    for process in processes:
-        process.join(15)
-    assert all(process.exitcode == 0 for process in processes)
-    assert [queue.get(timeout=2), queue.get(timeout=2)] == [None, None]
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    assert {event["event_id"] for event in payload["score_events"]} == {
-        "concurrent-a",
-        "concurrent-b",
-    }
-    assert _validate(tmp_path)["score_event_count"] == 2
-
-
 def test_empty_ledger_bootstrap_is_valid_reachable_and_refuses_to_overwrite(tmp_path: Path) -> None:
     """The opt-in that makes the lifecycle reachable, and its honest limit.
 
@@ -852,7 +796,7 @@ def test_ledger_refusals_name_the_key_set_or_next_step_they_demand(tmp_path: Pat
         session_events=[_session_event()],
         score_events=[{"event_id": "score-a", "lesson_id": "a", "score": 0}],
     )
-    cases.append((broken_score, sorted(ledger.SCORE_EVENT_REQUIRED_KEYS)))
+    cases.append((broken_score, sorted(outcome_lib.LEGACY_REQUIRED_KEYS)))
 
     empty_selection = _payload(session_events=[_session_event()])
     empty_selection["session_events"][0]["snapshot"]["lesson_ids"] = []

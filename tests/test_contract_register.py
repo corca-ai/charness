@@ -13,6 +13,7 @@ import yaml
 from scripts import apply_contract_transition as transition_writer
 from scripts import contract_register_lib as register
 from scripts import lesson_ledger_lib as lesson_ledger
+from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import record_contract_citation as citation_writer
 from scripts import record_contract_graduation_proposal as proposal_writer
 from scripts import render_contract_retention_review as retention_review
@@ -106,6 +107,10 @@ def _ledger(repo: Path) -> None:
                 "transition_id": "seed-a",
                 "score_total": 1,
                 "score_count": 2,
+                # Both fixture events are LEGACY scalars, so they count under the
+                # frozen cohort and route to no disposition -- reinterpreting them
+                # into the outcome vocabulary would manufacture evidence.
+                "outcome_counts": {**outcome_lib.outcome_counts([]), "legacy-scalar": 2},
                 "state": "active",
                 "last_lifecycle_event_id": None,
             }

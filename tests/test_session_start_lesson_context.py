@@ -23,6 +23,7 @@ import yaml
 
 from scripts import lesson_evaluation_continuity_lib as continuity
 from scripts import lesson_ledger_lib as ledger_lib
+from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import render_lesson_selection_preview as _preview
 from tests.script_main import run_loaded_script_main
 from tests.test_lesson_ledger import _ledger, _retro
@@ -91,6 +92,7 @@ def _multi_lesson_repo(tmp_path: Path, slugs: tuple[str, ...]) -> Path:
                         "transition_id": f"seed-{slug}",
                         "score_total": 0,
                         "score_count": 0,
+                        "outcome_counts": outcome_lib.outcome_counts([]),
                         "state": "active",
                         "last_lifecycle_event_id": None,
                     }

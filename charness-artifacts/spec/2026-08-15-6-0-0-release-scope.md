@@ -71,9 +71,30 @@ Ordering is by dependency pressure, not by theme.
   recorded instances: `quality` (#620), `debug` (#628), `retro`. See the Fixed
   Decision below for why the mechanism is subject identity and not date
   coherence.
-- **S3 — lesson loop.** Refresh the #617 spec and close its debug interrupt (the
-  capability shipped in `eae80f660`; this session's own run produced a bundle).
-  Then the score outcome vocabulary, #631, #626, #627.
+- **S3 — lesson loop. BUILT 2026-08-15; two-round review in progress.** Refresh
+  the #617 spec and close its debug interrupt, then the score outcome vocabulary,
+  #631, #626, #627. (An earlier revision of this line said "DELIVERED" while
+  round 1 was still open — a bounded reviewer flagged asserting completion in the
+  governing contract ahead of the constraint that governs it.)
+  Correction measured during the slice: the #617 capability shipped in
+  `311844e23`, not `eae80f660` — the latter contains it but is the `--json`
+  removal. `git log -S "def bundle_path"` is the check; the false attribution
+  came from this contract and would have reached the release notes' commit
+  citations unchallenged.
+  What the slice found that the plan did not predict, stated as MEASURED rather
+  than as first written: `archive_fallback_uncertainty` was hardcoded to `0` in
+  selection policy v2, which REGRESSED the tenth presentation slot. Eleven
+  snapshots show it — ten committed at HEAD plus this slice's own, still
+  uncommitted. Four are `selection_policy_version: 1` and each carries
+  `archive_fallback_uncertainty: 1` with ten `lesson_ids`; seven are v2 and carry
+  `0` with nine. (Round 2 caught the word "committed" doing work it had not
+  earned here, on a surface where `committed` means `git show HEAD:` elsewhere in
+  this very repo.) A first draft of this entry claimed the slot "had never been
+  filled by ANYTHING" for "the entire life of the ledger"; a bounded reviewer
+  refuted it from those snapshots, and the same false sentence had reached four
+  surfaces including this contract. It is the release's own defect class,
+  committed inside the release that exists to stop it. The `archive` bucket
+  proper HAS always been 0 — that part was true and is what #626 reported.
 - **S4 — docs graph.** #629 at the handoff scaffold, then this repo's own
   `link_only_lines` count, then make `check_docs_graph.py` gate it. Re-measure
   before sizing the rewrite; `python3 scripts/check_docs_graph.py --repo-root .`
@@ -413,11 +434,19 @@ whether SC10 is satisfiable on a given host depends on that choice.
 - Seam Summary: lesson-session rendered output to repo-owned retro verdict
 - Chosen Next Step: impl (S3, first item)
 - Impl Status: allowed
-- Impl Status Reason: the #617 capability shipped in `eae80f660` —
-  `scripts/open_lesson_session.py:33` resolves `bundle_path` and this session's
-  own open wrote its bundle. What remains is the spec refresh and the debug
-  artifact's `Resolution: open`, which is what holds `plan_risk_interrupt.py` at
-  `status: blocked`.
+- Impl Status Reason: **superseded 2026-08-15 by the S3 entry above.** As
+  written this said the #617 capability "shipped in `eae80f660`" and that the
+  debug artifact's `Resolution: open` holds `plan_risk_interrupt.py` at
+  `status: blocked`. Both are wrong. `git log -S "def bundle_path"` puts the
+  capability in `311844e23` (`eae80f660` merely contains it). And
+  `risk_interrupt_lib` never reads `Resolution` at all — only
+  `validate_debug_artifact.py` does. The planner blocks when the spec handoff is
+  absent from the slice's changed paths or its `## Critique` fields do not parse
+  and match the debug seam; it reports `handoff-recorded` once they do, which is
+  why `plan_risk_interrupt.py --repo-root .` with no `--paths` still reads
+  `blocked` today. Round 2 caught the correction re-endorsing a causal model the
+  code does not implement, which is the same class round 1 was called for. Kept
+  rather than deleted so a reader sees the corrected claim beside its predecessor.
 - What Disproving Observation Is Resolved: the observation that lesson
   presentation survives only in active context is disproved by a checked-in
   bundle written by the current code path.
@@ -437,6 +466,48 @@ whether SC10 is satisfiable on a given host depends on that choice.
   probe, the `bar-recorded-as-prose` citation, and a ratchet firing on later
   slices. The remainder are carried as stated open risks in Constraints and
   Probe Questions.
+
+S3 round-1 findings carried forward rather than fixed, each with why:
+
+- **`session_id: "none"` bypasses every reconciler check, and is PRE-EXISTING.**
+  `_validate_disposition_value` pins `"none"` only for `missing-start`, but
+  `"none"` also fullmatches the session-id pattern, so
+  `{"status":"effect-recorded","session_id":"none","score_event_count":7}` parses,
+  increments `completed_evaluation_count`, and `continue`s past every check.
+  Confirmed pre-existing by
+  `git show HEAD:scripts/lesson_evaluation_continuity_lib.py | sed -n '494,498p'`,
+  which prints the bypass at line 496 of the then-543-line file. On the shipped
+  tree the two halves live apart: the grammar pin in
+  `scripts/lesson_evaluation_continuity_lib.py` `_validate_disposition_value`, and
+  the bypass in `scripts/lesson_evaluation_reconcile_lib.py` `reconcile_records` —
+  a module S3 created by splitting, which is why the HEAD citation needs its own
+  command rather than a line number on a file that no longer has one. Filed as
+  [#633](https://github.com/corca-ai/charness/issues/633). Repairing it means changing the disposition
+  GRAMMAR, a different proof surface than the one this slice touched, and doing it
+  inside a slice already carrying two review rounds is how a repair ships
+  unreviewed. Filed rather than folded in.
+- **A score event in a session that no retro claims and that has no in-window
+  receipt is reconciled by nothing.** `_reconcile_retro_row` runs per claiming
+  retro and `unclaimed_receipted_sessions` iterates receipts, so that combination
+  falls between them. Also pre-existing; same reason.
+- **`foreign-score-source` is presently inert on this repo's real corpus**, because
+  all twelve committed score events are legacy-scalar and legacy events are exempt
+  by design. It arms the moment the first outcome event lands. Stated because a
+  green gate here currently proves less than it will.
+- **The `changed-an-action` counterfactual bar publishes its own bypass tokens** in
+  the refusal message, so the cheapest repair available to a refused author is to
+  append the word "otherwise". Accepted for now — the alternative is a refusal that
+  does not say what it wants — and the spec's ten-session falsification measurement
+  should count how many counterfactual clauses are one of the fixture strings.
+- **The schema migration was an ad-hoc inline recompute, not a checked-in command.**
+  Acceptable because the recomputed fields are DERIVED and the validator refuses any
+  `lessons` block disagreeing with replay, so it is idempotent and independently
+  checkable; the append-only lists were untouched. What is missing is a trace, which
+  is why the recompute rule is stated here and in the commit rather than left to a diff.
+- **`score_total`'s dynamic range shrank ~3x** (±1 valences replacing ±1..±3
+  magnitudes) while `_uncertainty`'s exploration term is unchanged, so exploration now
+  weighs relatively more in selection than when it was tuned. No gate will flag it.
+  Accepted and recorded rather than retuned blind.
 
 Known weaknesses, stated rather than hidden:
 

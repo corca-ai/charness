@@ -14,7 +14,11 @@ from scripts.recent_lessons_lib import build_lesson_selection_index, check_lesso
 
 KIND = "charness.lesson-selection-preview"
 SCHEMA_VERSION = 1
-SELECTION_POLICY_VERSION = 2
+# 3 fills the archive-resurrection slot from the uncertainty ordering when the
+# archive is empty. Bumped because the same seed over the same ledger now selects
+# a different set, and a frozen snapshot must not be readable as though this
+# policy produced it.
+SELECTION_POLICY_VERSION = 3
 BUCKETS = ("recent", "value", "uncertainty", "archive", "archive_fallback_uncertainty")
 
 
@@ -145,7 +149,25 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
         key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]),
     )
     archive = _take(archive_rows, selected_ids, 1)
-    selected = recent + value + uncertainty + archive
+    # THE TENTH SLOT, restored (#626). MEASURED against the eleven snapshots in
+    # this repo's ledger -- ten committed, one this session's -- not asserted: the four at
+    # `selection_policy_version: 1` each record `archive_fallback_uncertainty: 1`
+    # with ten `lesson_ids`; the seven at v2 record `0` with nine. So the fallback
+    # worked, and policy v2 REGRESSED it by hardcoding this value to 0 -- since
+    # then every session has presented nine while the contract said ten. An
+    # earlier draft of this comment said the slot had "never" been filled; a
+    # bounded reviewer refuted that from these same snapshots. What HAS always
+    # been 0 is the `archive` bucket proper, because nothing ever wrote
+    # `state == "archived"` for it to draw from.
+    #
+    # Filling from the uncertainty ordering rather than leaving the slot empty:
+    # the slot exists to spend one draw on a lesson the ranking is least sure
+    # about, and with no archive that is exactly the next uncertainty row.
+    # Reported under its OWN key rather than folded into `uncertainty`, so "the
+    # archive is empty" stays visible instead of being disguised as a fourth
+    # uncertainty pick.
+    archive_fallback = _take(uncertainty_rows, selected_ids, 1 - len(archive))
+    selected = recent + value + uncertainty + archive + archive_fallback
     return {
         "kind": KIND,
         "schema_version": SCHEMA_VERSION,
@@ -157,7 +179,7 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
             "value": len(value),
             "uncertainty": len(uncertainty),
             "archive": len(archive),
-            "archive_fallback_uncertainty": 0,
+            "archive_fallback_uncertainty": len(archive_fallback),
         },
         "items": _shuffled_items(seed, selected),
     }

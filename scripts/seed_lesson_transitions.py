@@ -52,6 +52,7 @@ _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
 _writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
 _index = import_repo_module(__file__, "scripts.recent_lessons_lib")
 _records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
+_outcome = import_repo_module(__file__, "scripts.lesson_score_outcome_lib")
 
 # Same prefix the 16 hand-authored transitions already use, so a reader cannot
 # tell a bootstrap seed from a later append -- correctly, because the ledger draws
@@ -259,6 +260,13 @@ def _replayable_lessons(
             "transition_id": transition["transition_id"],
             "score_total": 0,
             "score_count": 0,
+            # The VALUES stay independently constructed -- a freshly seeded
+            # lesson has no encounters, so every count is zero and this asserts
+            # that directly. Only the KEY SET is single-sourced, deliberately:
+            # a hand-written literal here would drift silently the first time
+            # the outcome vocabulary changes, and the validator already reads
+            # the same constructor for its key check.
+            "outcome_counts": _outcome.outcome_counts([]),
             "state": "active",
             "last_lifecycle_event_id": None,
         }

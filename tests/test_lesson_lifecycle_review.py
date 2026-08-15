@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import render_lesson_lifecycle_review as review
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
@@ -55,6 +56,7 @@ def _repo(tmp_path: Path, *, score_events: list[dict] | None = None) -> Path:
             "transition_id": "seed-loud",
             "score_total": 0,
             "score_count": 0,
+            "outcome_counts": outcome_lib.outcome_counts([]),
             "state": "active",
             "last_lifecycle_event_id": None,
         },
@@ -63,6 +65,7 @@ def _repo(tmp_path: Path, *, score_events: list[dict] | None = None) -> Path:
             "transition_id": "seed-quiet",
             "score_total": 0,
             "score_count": 0,
+            "outcome_counts": outcome_lib.outcome_counts([]),
             "state": "active",
             "last_lifecycle_event_id": None,
         },
@@ -210,12 +213,17 @@ def test_a_malformed_score_event_is_dropped_rather_than_taking_the_report_down()
         }
     )
 
-    # Only the readable row survives, and it survives WHOLE: the score travels with
-    # the anchor because `+3 "..."` and `-3 "..."` render identically without it.
+    # Only the readable row survives, and it survives WHOLE: the OUTCOME travels
+    # with the anchor because the same anchor text means opposite things under
+    # different outcomes. A legacy event keeps its scalar under a name that says
+    # so, and routes to NO disposition -- inferring one would manufacture evidence
+    # recorded when `changed-an-action` was not expressible.
     assert anchors == {
         "quiet": [
             {
-                "score": -2,
+                "outcome": "legacy-scalar",
+                "disposition": None,
+                "legacy_score": -2,
                 "source_retro": "charness-artifacts/retro/quiet.md",
                 "session_id": "session-a",
                 "anchor": "The gate was green and the loop had never closed.",
@@ -419,3 +427,22 @@ def test_the_quality_skill_claims_the_lifecycle_and_forbids_ranking_on_recurrenc
     assert "never on recurrence count" in text
     assert "no anchored evidence is undetermined, not a candidate" in text
     assert "no score value triggers either automatically" in text
+
+
+def test_within_an_anchored_tier_the_failing_lesson_sorts_above_the_working_one() -> None:
+    """The `score_total` component of the sort key, which nothing covered.
+
+    Round 2 measured that reverting it left the suite green: every existing
+    ordering assertion is decided by `anchored_score_count` alone, because no
+    fixture had two anchored lessons differing in direction. Tier-local by
+    design -- across tiers `-anchored_score_count` still dominates, and that is
+    asserted here too so the comment and the key cannot drift apart again.
+    """
+    reviewed = [
+        {"lesson_id": "working", "anchored_score_count": 1, "score_total": 1, "score_count": 1},
+        {"lesson_id": "failing", "anchored_score_count": 1, "score_total": -1, "score_count": 1},
+        {"lesson_id": "loudest", "anchored_score_count": 3, "score_total": 3, "score_count": 3},
+    ]
+    reviewed.sort(key=review.review_sort_key)
+
+    assert [item["lesson_id"] for item in reviewed] == ["loudest", "failing", "working"]

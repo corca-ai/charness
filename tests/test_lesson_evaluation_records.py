@@ -123,4 +123,4 @@ def test_a_session_row_without_a_receipt_still_routes_its_frozen_lessons(
     assert "record_lesson_score.py" in row["lessons"][0]["score_command_template"]
     # The solicitation is what makes the routing worth keeping: it names WHAT to
     # judge, and it does not come from the bundle.
-    assert "-3" in row["solicitation"]["harmful"]
+    assert "WRONG action" in row["solicitation"]["pushed_a_wrong_action"]

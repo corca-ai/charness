@@ -8,11 +8,16 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts.recent_lessons_lib import build_lesson_selection_index
 
 LEDGER_FILENAME = "lesson-ledger.json"
 KIND = "charness.lesson-ledger"
-SCHEMA_VERSION = 5
+# 6 retires the signed `-3..3` scalar in favour of the typed outcome vocabulary
+# in `lesson_score_outcome_lib`. Bumped rather than added additively because
+# `score_total` changed MEANING -- it is now a sum of per-encounter valences, so
+# a v5 consumer reading a v6 ledger would report a magnitude nobody recorded.
+SCHEMA_VERSION = 6
 ACTIVE_LESSON_BUDGET = 50
 TOP_LEVEL_KEYS = {
     "kind",
@@ -33,9 +38,10 @@ LIFECYCLE_EVENT_KEYS = {
     "decision_ref",
     "rationale",
 }
-SCORE_EVENT_REQUIRED_KEYS = {"event_id", "source_retro", "lesson_id", "score", "session_id"}
-EVENT_OPTIONAL_KEYS = {"anchor"}
-SCORE_EVENT_KEYS = SCORE_EVENT_REQUIRED_KEYS | EVENT_OPTIONAL_KEYS
+# Score-event shape, vocabulary, and citation now live in
+# `lesson_score_outcome_lib`: they are ONE concept (what an encounter record
+# means) that this module only replays, and keeping them here is what let the
+# seeding rule and the scoring rule share a line for as long as they did.
 SESSION_EVENT_KEYS = {"session_id", "snapshot", "snapshot_sha256"}
 SNAPSHOT_KEYS = {
     "kind",
@@ -49,8 +55,14 @@ SNAPSHOT_KEYS = {
 LESSON_KEYS = {
     "source_retro",
     "transition_id",
+    # The RANKING statistic, and no longer a magnitude sum: each encounter
+    # contributes +1 or -1 via `outcome_lib.valence`. `outcome_counts` carries
+    # the split the dispositions are routed by, because a scalar cannot tell
+    # "the lesson is defective" from "the lesson may be perfect and never
+    # landed", and those are different repairs.
     "score_total",
     "score_count",
+    "outcome_counts",
     "state",
     "last_lifecycle_event_id",
 }
@@ -66,7 +78,7 @@ LIFECYCLE_TRANSITIONS = {("archive", "active"): "archived", ("resurrect", "archi
 # How a lesson becomes seedable at all. Named once because it is the answer to
 # every "nothing is eligible" dead end downstream (#621): a bullet with no
 # `recurrence-class:` tag produces a candidate whose class is `None`, which
-# `_candidate_sources` drops, so no transition citing it can ever validate.
+# `candidate_sources` drops, so no transition citing it can ever validate.
 RECURRENCE_TAG_INSTRUCTION = (
     "a lesson becomes seedable only when a bullet in the cited retro carries a "
     "`recurrence-class: <slug>` tag whose slug equals the lesson_id"
@@ -93,7 +105,7 @@ def _nonblank(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def _candidate_sources(
+def candidate_sources(
     repo_root: Path, output_dir: Path, summary_path: Path
 ) -> dict[str, set[str]]:
     index = build_lesson_selection_index(
@@ -130,9 +142,41 @@ def _committed_state(
         or not isinstance(previous.get("transitions"), list)
     ):
         _fail("committed ledger has an unrecognized shape")
+    # MONOTONIC, not equal. Requiring equality made every schema bump
+    # unvalidatable at exactly the commit that performs it, and the only escapes
+    # were a temporary accept-the-previous-version branch (dead code the moment it
+    # lands) or rewriting committed events (the thing this check exists to
+    # refuse). Accepting an OLDER committed version is therefore right; accepting
+    # a NEWER one is not, and an earlier version of this change dropped both.
+    # A bounded reviewer traced the hole: with a v7 ledger committed and a v6 tool
+    # checked out, `record_lesson_score.py` rewrites the derived `lessons` block
+    # under v6 meaning and writes `schema_version: 6` over a committed 7, and
+    # every remaining check passes because the append-only lists are untouched and
+    # `lessons` is deliberately not prefix-protected.
+    committed_version = previous.get("schema_version")
+    # Two conditions, two messages. Round 2 caught one message covering both, so a
+    # committed ledger with a MISSING version read as "newer than this tool's 6",
+    # which is the message-drift class this module lectures about at its
+    # `LIFECYCLE_TRANSITIONS` comment.
+    if type(committed_version) is not int:
+        _fail(
+            f"committed ledger has a non-integer schema_version {committed_version!r}; it cannot be "
+            "compared against this tool's, so refuse rather than assume it is older"
+        )
+    if committed_version > SCHEMA_VERSION:
+        _fail(
+            f"committed ledger is at schema version {committed_version}, newer than this tool's "
+            f"{SCHEMA_VERSION}; upgrade the tool rather than writing an older shape over it"
+        )
+    # The same reviewer refuted the rationale an earlier draft gave here -- that an
+    # incompatible older shape "fails loudly one line down as a prefix mismatch".
+    # It does not: a ledger with empty append-only lists prefix-matches trivially.
+    # The property that actually holds is that the WORKING payload is validated in
+    # full at the current schema below, and each committed list must compare
+    # equal (as parsed JSON, not as bytes) to the working list's prefix, so an
+    # incompatible committed event is refused when the working copy is replayed.
     if (
-        previous.get("schema_version") == SCHEMA_VERSION
-        and isinstance(previous.get("score_events"), list)
+        isinstance(previous.get("score_events"), list)
         and isinstance(previous.get("session_events"), list)
         and isinstance(previous.get("lifecycle_events"), list)
         and type(previous.get("active_lesson_budget")) is int
@@ -144,7 +188,11 @@ def _committed_state(
             previous["active_lesson_budget"],
             previous["lifecycle_events"],
         )
-    _fail("committed ledger has an unsupported session shape")
+    # Named for what it actually checks. Three of its four triggers are not
+    # session events, and with the version compare gone this is the only guard
+    # an older committed shape reaches, so the old wording sent an operator to
+    # look at the wrong thing.
+    _fail("committed ledger is missing a required append-only list or its budget")
 
 
 def _replay_transitions(
@@ -183,6 +231,10 @@ def _replay_transitions(
             "transition_id": transition_id,
             "score_total": 0,
             "score_count": 0,
+            # Every outcome key present at zero, for every seeded lesson, so an
+            # unscored lesson renders as "no encounters yet" rather than as a
+            # missing field a consumer has to guess the meaning of.
+            "outcome_counts": outcome_lib.outcome_counts([]),
             "state": "active",
             "last_lifecycle_event_id": None,
         }
@@ -345,26 +397,23 @@ def _replay_scores(
 ) -> None:
     ids: set[str] = set()
     sources: set[tuple[str, str]] = set()
+    scored: dict[str, list[dict[str, Any]]] = {}
+    prefix_error = outcome_lib.legacy_prefix_error(events)
+    if prefix_error is not None:
+        _fail(prefix_error)
     for position, event in enumerate(events, start=1):
-        if not isinstance(event, dict) or not SCORE_EVENT_REQUIRED_KEYS <= set(event) <= SCORE_EVENT_KEYS:
-            _fail(
-                f"score event {position} has unexpected or missing fields; a score event requires keys "
-                f"{sorted(SCORE_EVENT_REQUIRED_KEYS)} and allows only {sorted(EVENT_OPTIONAL_KEYS)} beyond them"
-            )
-        event_id, source, lesson_id, score = (
-            event.get(key) for key in ("event_id", "source_retro", "lesson_id", "score")
+        if not isinstance(event, dict):
+            _fail(f"score event {position} is not an object")
+        shape_error = outcome_lib.score_event_error(event)
+        if shape_error is not None:
+            _fail(f"score event {position} {shape_error}")
+        event_id, source, lesson_id = (
+            event.get(key) for key in ("event_id", "source_retro", "lesson_id")
         )
         if not all(_nonblank(value) for value in (event_id, source, lesson_id)):
             _fail(
                 f"score event {position} needs non-empty non-whitespace event_id, source_retro, and lesson_id"
             )
-        if type(score) is not int or not -3 <= score <= 3:
-            _fail(f"score event `{event_id}` score must be an integer in -3..3")
-        anchor = event.get("anchor")
-        if "anchor" in event and not _nonblank(anchor):
-            _fail(f"score event `{event_id}` anchor must be non-empty non-whitespace when present")
-        if abs(score) >= 2 and "anchor" not in event:
-            _fail(f"score event `{event_id}` with magnitude at least two needs an anchor")
         session_id = event.get("session_id")
         if not _nonblank(session_id) or session_id not in sessions:
             _fail(f"score event `{event_id}` names unknown session")
@@ -372,12 +421,29 @@ def _replay_scores(
             _fail(f"score event `{event_id}` lesson is absent from session `{session_id}`")
         if event_id in ids or (source, lesson_id) in sources:
             _fail(f"duplicate score event_id or score source for `{lesson_id}`")
-        if lesson_id not in replayed or source not in available_sources.get(lesson_id, set()):
-            _fail(f"score event `{event_id}` names an unseeded lesson or invalid citation")
+        if lesson_id not in replayed:
+            _fail(f"score event `{event_id}` names an unseeded lesson")
+        # THE SPLIT (#627, #631): seeding cites evidence that the class EXISTS,
+        # scoring cites evidence that an ENCOUNTER happened. A legacy event is
+        # held to the rule it was written under; an outcome event names the retro
+        # recording the encounter, whose existence and session ownership the
+        # post-persistence reconciler proves (`canonical_retro_citation` says why
+        # existence cannot be checked here).
+        if outcome_lib.is_legacy_scalar(event):
+            if source not in available_sources.get(lesson_id, set()):
+                _fail(f"score event `{event_id}` names an invalid legacy citation")
+        elif not outcome_lib.canonical_retro_citation(source):
+            _fail(
+                f"score event `{event_id}` source_retro must be a repo-relative "
+                f"`{outcome_lib.RETRO_DIR}/<name>.md` path naming the retro that records the encounter"
+            )
         ids.add(event_id)
         sources.add((source, lesson_id))
-        replayed[lesson_id]["score_total"] += score
+        scored.setdefault(lesson_id, []).append(event)
+        replayed[lesson_id]["score_total"] += outcome_lib.valence(event)
         replayed[lesson_id]["score_count"] += 1
+    for lesson_id, entry in replayed.items():
+        entry["outcome_counts"] = outcome_lib.outcome_counts(scored.get(lesson_id, []))
 
 
 def replay_validated_ledger_payload(
@@ -417,7 +483,7 @@ def replay_validated_ledger_payload(
         )
     ):
         _fail("ledger has invalid containers")
-    available = _candidate_sources(repo_root, output_dir, summary_path)
+    available = candidate_sources(repo_root, output_dir, summary_path)
     replayed = _replay_transitions(transitions, available)
     _replay_lifecycle(lifecycle_events, replayed, budget=budget, repo_root=repo_root)
     declared = _replay_sessions(sessions, replayed)
@@ -440,11 +506,15 @@ def replay_validated_ledger_payload(
         or set(entry) != LESSON_KEYS
         or type(entry["score_total"]) is not int
         or type(entry["score_count"]) is not int
+        or not isinstance(entry["outcome_counts"], dict)
+        or set(entry["outcome_counts"]) != set(outcome_lib.outcome_counts([]))
+        or any(type(count) is not int or count < 0 for count in entry["outcome_counts"].values())
         for entry in lessons.values()
     ):
         _fail(
-            f"materialized lessons may contain only integer replay fields; each lesson takes exactly "
-            f"keys {sorted(LESSON_KEYS)} with integer score_total and score_count"
+            f"materialized lessons may contain only replayed fields; each lesson takes exactly "
+            f"keys {sorted(LESSON_KEYS)} with integer score_total and score_count, and an "
+            f"outcome_counts map over exactly {sorted(outcome_lib.outcome_counts([]))}"
         )
     if lessons != replayed:
         _fail("materialized lessons do not equal deterministic replay")

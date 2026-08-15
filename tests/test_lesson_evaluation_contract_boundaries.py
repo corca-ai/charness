@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from scripts import lesson_evaluation_continuity_lib as continuity
+from scripts import lesson_evaluation_reconcile_lib as reconcile
 from scripts import open_lesson_session
 
 
@@ -250,12 +251,13 @@ def test_reconciler_rejects_contradictory_disposition_evidence(
     scores: list[dict[str, str]],
     violation_id: str,
 ) -> None:
-    report = continuity.reconcile_records(
+    report = reconcile.reconcile_records(
         retros=[("charness-artifacts/retro/2026-08-14-a.md", disposition)],
         sessions={"s-1": {"snapshot_sha256": "a" * 64}},
         score_events=scores,
         receipts={"s-1": _receipt()},
         receipt_violations=[],
         as_of=date(2026, 8, 14),
+        recurrence_sources={},
     )
     assert violation_id in {item["id"] for item in report["violations"]}

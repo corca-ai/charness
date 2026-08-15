@@ -25,7 +25,19 @@ def _build(seed: str = "stable-preview-seed") -> dict:
     )
 
 
-def test_preview_is_flat_seeded_and_leaves_empty_archive_slot_unfilled() -> None:
+def test_preview_is_flat_seeded_and_fills_the_empty_archive_slot_from_uncertainty() -> None:
+    """RETRACTS this test's previous name and assertion, deliberately (#626, S3).
+
+    It used to be `..._leaves_empty_archive_slot_unfilled` and pinned
+    `archive_fallback_uncertainty: 0` with `len(items) == 9`. That was not a
+    considered policy: selection policy v2 hardcoded the fallback to `0` at the
+    call site, and this test pinned the resulting shape. Measured against the
+    eleven committed snapshots, the four policy-v1 sessions DID fill the slot
+    (`archive_fallback_uncertainty: 1`, ten ids) and the seven v2 sessions did
+    not (nine ids) -- so v2 regressed the contract's "ten lessons per session" to
+    nine, and this test pinned the regression rather than a decision. The
+    reversal is recorded here rather than left to a diff.
+    """
     first = _build()
     second = _build()
     assert first == second
@@ -44,10 +56,10 @@ def test_preview_is_flat_seeded_and_leaves_empty_archive_slot_unfilled() -> None
         "value": 3,
         "uncertainty": 3,
         "archive": 0,
-        "archive_fallback_uncertainty": 0,
+        "archive_fallback_uncertainty": 1,
     }
-    assert len(first["items"]) == 9
-    assert len({item["lesson_id"] for item in first["items"]}) == 9
+    assert len(first["items"]) == 10
+    assert len({item["lesson_id"] for item in first["items"]}) == 10
     assert all(
         set(item) == {"lesson_id", "lesson", "latest_source_path"} for item in first["items"]
     )

@@ -126,14 +126,24 @@ validated the authored disposition instead of exposing the missing content.
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md
+
+Resolved 2026-08-15 (S3). The prevention below is built and consumed:
+`lesson_evaluation_continuity_lib.bundle_path`/`write_bundle` landed in
+`311844e23`, `open_lesson_session.py` writes the bundle before emitting the same
+bytes, and `lesson_evaluation_records_lib.py` reads it back through
+`load_session_bundle`. All eight checked-in receipts re-digest to their bundles,
+including the original `2026-08-13-issue-614` at 3,122 bytes. The spec
+handoff carries the resolution forward; this pointer stops hijacking a fresh bug.
 
 ## Prevention
 
 Persist the rendered lesson preview once, beside the existing receipt, and make
 the command output and readable bundle byte-identical. Require explicit session
-ID lookup after compaction and at retro. Keep host logs forensic-only, preserve
-legacy receipt compatibility, and add no generic conversation store.
+ID lookup after compaction and at retro. Keep host logs forensic-only, carry one
+current receipt contract rather than a legacy-compatibility branch (the spec
+overturned the compatibility line this section originally carried), and add no
+generic conversation store.
