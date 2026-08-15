@@ -1,0 +1,104 @@
+# Commands this repo has measured as DOMINATED, and what replaces them.
+#
+# A dominated command buys the same evidence as a cheaper one. It is not a FALSE
+# command, which is why fresh-eye review never caught the instance that produced
+# this file: `python3 -m pytest tests/ -q --no-header` really does re-prove the
+# suite. Review is aimed at falsity, so cost gets a deterministic reader instead.
+#
+# Read by ONE owner, `skills/public/quality/scripts/command_dominance_lib.py`,
+# whose module docstring states what the mechanism cannot see. The short version,
+# because a registry that reads as a coverage claim is worse than none: every
+# entry here is an AUTHORED claim. Nothing measures it, nothing checks that the
+# replacement is faster or still exists, and a slow command nobody listed passes.
+version: 1
+
+dominated_commands:
+  - id: bare-pytest-whole-suite
+    # Matched on the RESOLVED program plus the breadth of its positional targets,
+    # never on the substring `pytest` -- the replacement's own path contains that
+    # substring, so a substring reader reports the fix as the defect.
+    program: pytest
+    broad_targets:
+      - tests
+    # Without these, `-m 'not release_only'` reads as a positional target and the
+    # command looks focused when it is the whole suite.
+    value_flags:
+      - -m
+      - -k
+      - -n
+      - -p
+      - -c
+      - --tb
+      - --rootdir
+      - --deselect
+      - --ignore
+    # Flags that NARROW a run. Consulted only when no positional target is
+    # present, so `-m 'not release_only' tests` stays dominated while
+    # `pytest -k smoke` -- which runs one test -- is not.
+    focus_flags:
+      - -k
+      - -m
+      - --deselect
+      - --last-failed
+    # NOT `--failed-first`: it REORDERS the suite so prior failures run first and
+    # excludes nothing, so treating it as narrowing let a full ~22-minute run pass
+    # clean. It was in this list for one round; a round-2 reviewer caught that it
+    # contradicts the field's own definition. `--last-failed` stays, because that
+    # one genuinely runs only the previously-failing subset.
+    replacement: python3 scripts/run_standing_pytest.py
+    reason: >-
+      A bare whole-suite pytest run costs ~22 minutes; the standing runner covers
+      the same scope with xdist, is budgeted under `pytest` in
+      `.agents/quality-adapter.yaml`, and blocks via `check_runtime_budget.py`. A
+      FOCUSED bare-pytest run is deliberately not dominated -- the parallel
+      runner's startup is not worth paying for one test file, and this repo's own
+      `.agents/surfaces.json` carries a dozen such commands.
+    measured: >-
+      2026-08-15 (S5): 84s for 9403 tests over 567 of 567 test files via
+      `scripts/run_standing_pytest.py`, against ~22 minutes for the same scope via
+      bare pytest. 14.7x. Re-measure before trusting this line; nothing here
+      re-runs it.
+
+# Programs that RUN another program. Without these, every command this repo
+# queues resolves to `queue_selected` and the standing-gate arm reads clean
+# while a dominated command sits one token inside it.
+#
+# RE-MEASURED 2026-08-16 by running the discovery: 14 snippets, 8 wrapped and 6
+# unwrapped. An earlier revision of this comment said "13 are wrapped", which was
+# inferred rather than counted and was refuted by a bounded reviewer. The ratio
+# is now pinned by a test, so it cannot drift silently again.
+wrapper_programs:
+  - program: queue_selected
+    skip_args: 1
+  - program: queue_timed
+    skip_args: 1
+  - program: queue_agent_browser_runtime_gate
+    skip_args: 1
+
+# Config literals a GATE reads and then SPAWNS. A document appears nowhere in
+# this chain, which is why the document seam alone was inert against the
+# recurrence that produced SC17.
+config_literals:
+  - path: cosmic-ray.toml
+    key: test-command
+
+exemptions:
+  - id: cosmic-ray-per-mutant-fallback
+    site: cosmic-ray.toml:test-command
+    rule: bare-pytest-whole-suite
+    # An exemption changes `exempt`, never presence: this site stays in the
+    # report with this reason attached. Pinned by
+    # `test_an_exemption_does_not_remove_the_site_from_the_report`.
+    reason: >-
+      MEASURED 2026-08-16: on the default (coverage-enabled) path this literal is
+      never what cosmic-ray runs -- `mutation_test_command_for_sample` builds a
+      focused `python3 -m pytest -q <nodeids>` command and ignores it, and
+      `rewrite_cosmic_ray_test_command` writes that focused command into the
+      config before cosmic-ray starts. Its remaining reader was the serial
+      coverage probe, which now takes `--test-command` and is wired to the
+      standing runner in `.agents/quality-adapter.yaml`. What is left is the
+      `--skip-coverage` fallback cosmic-ray runs per mutant. Substituting the
+      standing runner there is plausibly faster and is NOT exempted on that
+      ground: it is unmeasured under cosmic-ray, and converting a mutation
+      pipeline on an unmeasured assumption is the regression shape S6 recorded.
+      Carried as a stated remainder rather than converted blind.

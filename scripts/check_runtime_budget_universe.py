@@ -57,36 +57,121 @@ from pathlib import Path
 import adapter_lib
 import quality_label_universe
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import load_path_module, repo_root_from_script, skill_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
 ADAPTER_PATH = Path(".agents/quality-adapter.yaml")
 
+_PROFILE_LIB_CACHE = {}
+
+
+def _runtime_profile_lib():
+    """Cached: `load_path_module` execs a fresh module per call."""
+    if "lib" not in _PROFILE_LIB_CACHE:
+        _PROFILE_LIB_CACHE["lib"] = load_path_module(
+            "runtime_profile_lib_for_universe",
+            skill_script(REPO_ROOT, "quality", "runtime_profile_lib.py"),
+        )
+    return _PROFILE_LIB_CACHE["lib"]
+
 
 def budgeted_labels(adapter: dict) -> dict[str, list[str]]:
     """Every budgeted label, mapped to the blocks that budget it.
 
-    Both shapes are read: the top-level `runtime_budgets` map (used when the
-    selected profile is `default`) and every `runtime_budget_profiles.<name>.budgets`
-    block. A label budgeted in a profile this machine never selects is exactly the
-    case a single-profile reader cannot see.
+    Delegates to the EXPORTED owner. The union loop used to live here as a second
+    copy of logic the consumer inventory also needed; consolidating it is the same
+    one-owner move SC18 made for the coverage builders, and for the same reason --
+    two readers of one adapter shape drift, and the drift is invisible until they
+    disagree about a bar.
     """
-    found: dict[str, list[str]] = {}
-    top = adapter.get("runtime_budgets")
-    if isinstance(top, dict):
-        for label in top:
-            found.setdefault(str(label), []).append("runtime_budgets")
-    profiles = adapter.get("runtime_budget_profiles")
-    if isinstance(profiles, dict):
-        for name, config in profiles.items():
-            budgets = (config or {}).get("budgets") if isinstance(config, dict) else None
-            if not isinstance(budgets, dict):
-                continue
-            for label in budgets:
-                found.setdefault(str(label), []).append(f"runtime_budget_profiles.{name}")
-    return found
+    return _runtime_profile_lib().budgeted_label_union(adapter)
+
+
+def unbudgeted_expensive_commands(repo_root: Path, budgeted_label_set: set[str]) -> list[dict[str, object]]:
+    """The direction this gate did not have: universe -> prescription (SC15).
+
+    The recorded defect was one-directional. This gate asked "does every budgeted
+    label still exist", and never "is the expensive thing we tell sessions to run
+    budgeted at all". The second question is what let a 25-minute serial pytest
+    run live in `cosmic-ray.toml`, spawned by a gate, measured by nothing: it is
+    not a `run-quality.sh` queue call site, so it has no label, so no bar could
+    ever fail on it.
+
+    REPAIRED after two independent bounded reviewers found that the first version
+    computed a different predicate than the sentence it printed. It derived a
+    "label" from the TAIL OF THE SITE STRING -- a config key like `test-command`,
+    or a file path like `scripts/run-quality.sh` -- and compared it against the
+    RUNNER UNIVERSE rather than the budgeted set, while the advisory it emitted
+    said "outside every budgeted label, so no bar can ever fail on them". Neither
+    half was true. It was structurally always-report for the standing-gate seam,
+    and silently drop-on-collision for the config seam: a `Makefile` line spelled
+    `pytest = "python3 -m pytest tests"` produced site `Makefile:pytest`, matched
+    the runner's `pytest` label, and vanished from the report. Its two tests
+    pinned that behaviour as intended by feeding a fabricated label set.
+
+    Now: the label comes from the queue wrapper that actually carries it
+    (`command_dominance_lib.wrapper_label`, threaded through the finding's
+    `context.queue_label`), and it is compared against the BUDGETED labels. A
+    finding with no queue label carries no budget by construction -- that is a
+    different fact from "its label is not budgeted", and both are reported with
+    `basis` naming which one applies.
+
+    The command inventory is the dominance registry's, not a new scanner. That
+    bounds this arm exactly as tightly as the registry: a command nobody
+    registered as dominated is not asked about here either. Stated because
+    "every expensive command is budgeted" is precisely the over-read a green
+    result invites, and it is not what this measures.
+
+    ADVISORY, not blocking. Every entry here is a site the repo has already
+    recorded a judgement about; turning an authored inventory into a red lane
+    would make deleting the registry entry the cheapest response.
+    """
+    # No `registry_path.is_file()` pre-check here, deliberately. The dominance
+    # gate already decides "is there a registry" and reports it as `armed`, and
+    # asking the same question in two places made whichever answer came second
+    # unreachable -- the changed-line proof reported exactly that line as never
+    # executed. One owner for the question, and this reads its answer.
+    # REPO_ROOT, not `repo_root`. Third instance of the same mistake in this
+    # slice, and the acceptance test found all three: the GATE ships beside this
+    # one, while only the registry and the scanned sites belong to the analysed
+    # tree. Resolving the tool from `--repo-root` crashes on every tree that is
+    # not a charness checkout.
+    gate = load_path_module(
+        "check_command_dominance_for_universe", REPO_ROOT / "scripts" / "check_command_dominance.py"
+    )
+    dominance = gate._load_dominance_lib()
+    try:
+        report = gate.evaluate(repo_root)
+    except dominance.RegistryError:
+        # Narrowed from a bare `except Exception`, which also swallowed a missing
+        # library, an ImportError, and any AttributeError from a future refactor --
+        # and in every one of those cases this gate returned `armed: True` with an
+        # empty list and a summary claiming the direction had run. A green verdict
+        # over a crashed check is the fail-quiet shape the repo keeps recording.
+        # A malformed registry is genuinely the dominance gate's verdict to render,
+        # so that one case stays deferred; everything else now propagates.
+        return []
+    if not report.get("armed"):
+        return []
+    reported: list[dict[str, object]] = []
+    for finding in report.get("findings", []):
+        label = (finding.get("context") or {}).get("queue_label")
+        if label and label in budgeted_label_set:
+            continue
+        reported.append(
+            {
+                "site": str(finding.get("site", "")),
+                "command": finding.get("command"),
+                "rule_id": finding.get("rule_id"),
+                "exempt": finding.get("exempt", False),
+                "queue_label": label,
+                # One owner for the sentence; see `unbudgeted_basis`.
+                "basis": dominance.unbudgeted_basis(label),
+            }
+        )
+    return reported
 
 
 def evaluate(repo_root: Path) -> dict[str, object]:
@@ -134,6 +219,7 @@ def evaluate(repo_root: Path) -> dict[str, object]:
         "armed": True,
         "reason": None,
         "unknown_labels": unknown,
+        "unbudgeted_expensive_commands": unbudgeted_expensive_commands(repo_root, set(budgeted)),
         "checked": len(budgeted),
         "universe_size": len(known),
         "universe_sources": {
@@ -149,6 +235,12 @@ def evaluate(repo_root: Path) -> dict[str, object]:
 NOT_JUDGED = (
     "whether a named label ever RUNS -- a label queued only under a condition that "
     "never holds is in the universe and passes here (see #546)",
+    "whether an expensive command NOBODY REGISTERED is budgeted -- the second "
+    "direction reads the dominance registry, which is a denylist, so its silence "
+    "is not coverage",
+    "whether anything BOUNDS a reported command's runtime -- the second direction "
+    "asks only whether a budgeted LABEL names it, and a config literal can carry "
+    "no label at all, so that seam is structurally always-report",
 )
 
 
@@ -186,6 +278,23 @@ def report_payload(report: dict[str, object]) -> dict[str, object]:
         f"runtime budget universe: {report['checked']} budgeted label(s) all named "
         f"by the runner ({report['universe_size']} in the universe)."
     )
+    unbudgeted = report.get("unbudgeted_expensive_commands") or []
+    if unbudgeted:
+        # Rides the WARN marker for the same reason the dominance gate does: a
+        # passing phase log is surfaced only when it carries an attention marker,
+        # so an unmarked advisory is written to a file nobody opens.
+        # Wording tracks what the code computes, after a reviewer measured that
+        # the first version's sentence described a predicate the code did not
+        # implement. Each entry carries its own `basis`; the summary must not
+        # collapse the two into one claim.
+        no_label = sum(1 for entry in unbudgeted if not entry.get("queue_label"))
+        payload["advisory"] = (
+            f"WARN: {len(unbudgeted)} registered expensive command(s) are named by no "
+            f"budgeted LABEL ({no_label} carry no queue label at all, "
+            f"{len(unbudgeted) - no_label} carry a label with no budget entry). This is "
+            "not a claim that nothing bounds their runtime; see "
+            "`unbudgeted_expensive_commands`, where each entry states its own basis."
+        )
     return payload
 
 

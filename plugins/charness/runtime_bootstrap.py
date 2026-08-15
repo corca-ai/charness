@@ -19,6 +19,7 @@ arm_cli_timeout = _RUNTIME_BOOTSTRAP.arm_cli_timeout
 import_repo_module = _RUNTIME_BOOTSTRAP.import_repo_module
 load_path_module = _RUNTIME_BOOTSTRAP.load_path_module
 repo_root_from_script = _RUNTIME_BOOTSTRAP.repo_root_from_script
+skill_script = _RUNTIME_BOOTSTRAP.skill_script
 require_repo_local_helper = _RUNTIME_BOOTSTRAP.require_repo_local_helper
 
 __all__ = [
@@ -27,4 +28,5 @@ __all__ = [
     "load_path_module",
     "repo_root_from_script",
     "require_repo_local_helper",
+    "skill_script",
 ]

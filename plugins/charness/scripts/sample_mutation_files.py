@@ -177,6 +177,18 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_BASELINE_ABORT_MARKER,
         help="Path to write when the coverage-baseline pytest run aborts sampling.",
     )
+    parser.add_argument(
+        "--test-command",
+        default=None,
+        help=(
+            "Command for the COVERAGE PROBE only, overriding the config test-command "
+            "literal. It does not change what cosmic-ray runs per mutant: with coverage "
+            "enabled that command is built from the selected nodeids, and with "
+            "--skip-coverage it stays the config literal. This is the scoped half of "
+            "the same override the changed-line gate already takes, and it is the "
+            "remainder S6b-1 carried."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -394,6 +406,12 @@ def main() -> int:
 
     coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
     test_command = read_test_command(config_path)
+    # Two commands, deliberately not one. `coverage_test_command` is the probe
+    # this slice makes overridable; `test_command` stays the config literal
+    # because it is what cosmic-ray falls back to per mutant under
+    # --skip-coverage, and substituting the standing runner THERE is unmeasured.
+    # Collapsing them would convert a mutation pipeline on an assumption.
+    coverage_test_command = args.test_command or test_command
     coverage_enabled = (
         not args.skip_coverage and (os.environ.get("MUTATION_SAMPLE_COVERAGE") or "1") != "0"
     )
@@ -405,12 +423,12 @@ def main() -> int:
         all_eligible=all_eligible,
         coverage_enabled=coverage_enabled,
         coverage_json=coverage_json,
-        test_command=test_command,
+        test_command=coverage_test_command,
         min_file_coverage=min_file_coverage,
         baseline_abort_marker_path=baseline_abort_marker_path,
     )
     if not eligible:
-        report_no_eligible(coverage_enabled, test_command)
+        report_no_eligible(coverage_enabled, coverage_test_command)
         return 1
     statement_lines = load_file_statement_lines(repo_root, coverage_json) if coverage_enabled else {}
     changed_before_coverage = [

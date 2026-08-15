@@ -43,7 +43,7 @@ def _shell_surface(repo_root: Path, rel_path: str, surface_type: str) -> dict[st
     if not path.is_file():
         return None
     text, commands = path.read_text(encoding="utf-8"), []
-    for line in text.splitlines():
+    for line_number, line in enumerate(text.splitlines(), start=1):
         stripped = line.strip()
         if not stripped or stripped.startswith(("#", "echo ", "printf ", "if ", "elif ", "else", "fi")):
             continue
@@ -56,7 +56,11 @@ def _shell_surface(repo_root: Path, rel_path: str, surface_type: str) -> dict[st
         if not stripped or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=\S*$", stripped):
             continue
         if COMMAND_TOKEN_RE.search(stripped) or 'queue_selected "pytest"' in stripped or SCRIPT_REF_RE.search(stripped):
-            commands.append({"origin": surface_type, "snippet": stripped})
+            # `line` is additive: existing consumers read `origin`/`snippet` and
+            # are unaffected. It exists so a dominated-command finding can name
+            # WHICH line in a runner was judged -- without it an exemption keyed
+            # to the file reads as a verdict about the whole file.
+            commands.append({"origin": surface_type, "snippet": stripped, "line": line_number})
     return _surface(path, repo_root, surface_type, commands, text)
 
 
@@ -141,4 +145,4 @@ def discover_surfaces(repo_root: Path) -> list[dict[str, Any]]:
 
 
 def iter_snippets(surfaces: list[dict[str, Any]]) -> list[dict[str, str]]:
-    return [{"path": surface["path"], "origin": command["origin"], "snippet": command["snippet"]} for surface in surfaces for command in surface["commands"]]
+    return [{"path": surface["path"], "origin": command["origin"], "snippet": command["snippet"], "line": command.get("line")} for surface in surfaces for command in surface["commands"]]

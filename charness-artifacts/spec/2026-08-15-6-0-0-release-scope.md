@@ -547,6 +547,117 @@ Ordering is by dependency pressure, not by theme.
 
 - **S6b-2 — the rest of cost as a proof surface** (SC14, 15, 16, 17, 19), with
   the export detector available so the consumer half is verifiable when it ships.
+  **BUILT 2026-08-16.** One owner,
+  [command_dominance_lib](../../skills/public/quality/scripts/command_dominance_lib.py),
+  whose module docstring states the blind class BEFORE the detector and whose
+  first acceptance test is the one that fails when the mechanism measures the
+  wrong noun — the replacement's own path contains the substring `pytest`, so a
+  substring reader reports the fix as the defect. Seams: the document seam in
+  `validate_handoff_artifact.py` (SC14), a new blocking gate over config literals
+  and standing-gate surfaces (SC17), the missing direction in
+  `check_runtime_budget_universe.py` (SC15), an exported consumer inventory built
+  on the already-exported `standing_gate_discovery_lib` (SC19), and the
+  `cost-dominance` angle in the exported lineup (SC16). S6b-1's carried remainder
+  landed too: `sample_mutation_files.py` takes `--test-command` for its coverage
+  probe, wired at the adapter caller rather than left an opt-in flag.
+
+  **What the changed-line proof found, and it is the slice's most useful
+  outcome.** Run BEFORE the commit was final rather than after — the ordering the
+  previous session paid two extra commits to learn — over `0037dbcfd..HEAD` with
+  the standing runner through `--test-command`. First run: BLOCKING, 65 uncovered
+  changed lines across 7 files, closed in
+  [these tests](../../tests/quality_gates/test_s6b2_changed_line_gaps.py). The
+  structural one: the exported inventory's ENTIRE scan loop had never executed,
+  because every SC19 acceptance test drove it with a registry-less tmp repo. A
+  criterion asserting a consumer "can answer" the cost question was resting on
+  dead code while the suite and two gates were green. Further runs took it
+  to `blocking: []`. THREE of the closing findings were UNREACHABLE branches,
+  removed rather than tested, and each removal's safety argument is recorded at
+  its site — one of those arguments was itself over-stated and was corrected in
+  round 2.
+
+  **What round 1 found, and it changed the slice.** Three bounded reviewers,
+  read-only, `parent-delegated`, on window `s6b2-command-dominance-r1`; verify
+  returned `drift: []` with the one parent write declared, so no approval is
+  quarantined. Six blockers and nine majors. The two that matter most, each the
+  release's own defect class arriving inside the slice that extends it:
+
+  1. **SC15's new direction computed a different predicate than it printed.** It
+     derived a "label" from the tail of the site string — a config key, or a file
+     path — and compared it against the RUNNER UNIVERSE rather than the budgeted
+     set, while its advisory said "outside every budgeted label, so no bar can
+     ever fail on them". Structurally always-report for one seam and
+     silently-drop-on-collision for the other. Its two tests pinned the defect as
+     intended semantics by feeding a fabricated label set. Two independent
+     reviewers reached it from different angles. The label now comes from the
+     queue wrapper that actually carries it.
+  2. **`mutation_manifest_lib.py` published a command that never ran.** With the
+     sampler override wired at the CI caller, the probe runs the standing runner
+     and the manifest recorded the config literal as `coverage_command` — into a
+     CI artifact and into auto-filed regression issue bodies. The slice's own test
+     asserts the override reaches the STDERR message, with a docstring naming this
+     exact class; the durable record was missed.
+
+  Also found and fixed: a false `# pragma: no cover` naming a test that never
+  referenced the file — verbatim the defect three reviewers caught in the sibling
+  guard one slice earlier, shipped again in the slice citing the repair — plus its
+  `parents[3]` fallback printing a requirements path that does not exist; a
+  focused `pytest -k smoke` reported DOMINATED because "no positional targets" was
+  read as "everything", contradicting the function's own docstring and the
+  exported reference; the handoff seam reading the registry with the DROPPING
+  parser while its docstring promised refusal; a bare `except Exception` that
+  returned a green verdict over a crashed check; the SC15 negative test
+  re-implementing production logic in its own body and asserting on the copy; the
+  exemption's site-keying unpinned, so deleting `item.site == site` left the suite
+  green; and the exported inventory's `main()` never once run over a tree WITH
+  findings, so returning nonzero there would have passed every test.
+
+  **A FALSE QUANTITY, recorded because it is the operator's carried lesson
+  walked into inside the session it was given — and then walked into AGAIN by its
+  own correction.** FIVE surfaces said "13 of 14 discovered snippets are
+  wrapped", labelled *Measured*. It was never counted — inferred from a probe
+  showing 14 snippets and one pytest-bearing line. A round-1 reviewer counted by
+  hand and refuted it; running the discovery confirms 8 wrapped and 6 unwrapped.
+
+  The round-1 repair fixed four of the five and then wrote "Corrected everywhere"
+  into this contract. It was not: the refuted figure survived in
+  `tests/quality_gates/test_command_dominance.py`, still labelled *Measured*, on
+  the acceptance surface of the mechanism it justified. BOTH round-2 reviewers
+  found it independently. So the recorded lesson is not "re-measure" — that was
+  done — it is that a correction claiming COMPLETENESS needs the same proof as
+  the original claim. The ratio now lives in exactly one place, the test that
+  asserts it, and that assertion computes the MECHANISM's notion of wrapped
+  rather than a first-token lookalike which disagreed with the resolver.
+
+  **Owner rulings 2026-08-16.** (1) **SC16/SC19's budget claim is IMPLEMENTED,
+  not narrowed** — the exported inventory now reads the consumer's budget blocks
+  through `runtime_profile_lib.budgeted_label_union` (added there so the repo gate
+  and the consumer inventory cannot drift about what counts as budgeted) and
+  reports every discovered command no budgeted label covers. (2) **The gate ships
+  BLOCKING with loud disclosure** — `cost-dominance.md` now names both blocking
+  surfaces at the point it tells a consumer to author the registry, and S7 owes it
+  a release note. (3) **SC17 is DISCHARGED by reported-but-exempt**, recorded
+  explicitly: the gate is green-by-exemption on arrival in this repo, its one
+  measured instance is `cosmic-ray.toml`'s literal, and no later reader should
+  mistake that for a gate that bit.
+
+  Carried, not fixed, and stated rather than implied away:
+  - **A standing-gate exemption is keyed to the FILE, not the line.** Exempting
+    one dominated command in a runner exempts every present and future one in that
+    file for that rule. Deliberate — a line-keyed exemption goes stale when
+    anything above it moves — so findings carry `line` to show what was judged.
+  - **The discovery reader can report a command that never RUNS.** It is a line
+    scanner with no heredoc or reachability awareness; two `cargo install lychee`
+    lines inside `cat >&2 <<'EOF'` help blocks are among this repo's discovered
+    snippets. Added to the blind class as its sixth item and to the gate's
+    `did_not_judge`, after the paragraph claiming to state the blind class had
+    already shipped with only false-NEGATIVE items in it.
+  - **SC14 as written is wider than what shipped.** The criterion says "a
+    repo-owned document"; the rule reaches artifacts passing through the handoff
+    validator. The Acceptance Check already narrows to that validator, so this is
+    a criterion-text mismatch to reword at S7, not missing code. Its named first
+    subject was ALREADY repaired before this slice, so that clause was green on
+    arrival; the refusal is proven against a reconstructed pre-repair body.
 
 - **S6b — cost as a proof surface** (owner ruling, 2026-08-15, in this release).
 

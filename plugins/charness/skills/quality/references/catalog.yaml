@@ -65,6 +65,9 @@ references:
   - path: references/proof-path-efficiency.md
     role: on-demand
     trigger: a slow-proof fix changes a runner, wrapper, process boundary, validator route, fixture runtime, or execution policy
+  - path: references/cost-dominance.md
+    role: on-demand
+    trigger: a command is prescribed, queued, or spawned and a cheaper command already proves the same thing
   - path: references/cautilus-on-demand.md
     role: on-demand
     trigger: cautilus evaluate fixture, observation, or skill-experiment is being considered
@@ -223,6 +226,7 @@ brief:
         inventories:
           - inventory_standing_gate_verbosity.py
           - inventory_standing_test_economics.py
+          - inventory_command_dominance.py
           - inventory_structural_waste.py
           - inventory_ci_recoverable_gates.py
           - render_runtime_summary.py
@@ -230,6 +234,7 @@ brief:
           - standing-gate-verbosity.md
           - testability-and-selection.md
           - proof-path-efficiency.md
+          - cost-dominance.md
           - executable-spec-economics.md
           - ci-recoverable-gate-triage.md
       - area: agent-production-runtime

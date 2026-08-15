@@ -929,6 +929,14 @@ queue_selected "check-timing-layer-completeness" python3 scripts/check_timing_la
 # because it reads no samples -- it asks whether the runner still knows a budgeted
 # label's name, which is answerable before any gate has run.
 queue_selected "check-runtime-budget-universe" python3 scripts/check_runtime_budget_universe.py --repo-root "$REPO_ROOT"
+# Third in that family, and the one that reads COMMANDS rather than labels. The
+# two gates above ask whether a declared bar still names something real; this asks
+# whether a command a gate SPAWNS is dominated by a cheaper one this repo already
+# has. Queued rather than left as an on-demand script deliberately: the recorded
+# waste class here is a correct rule with no carrier, and the instance that
+# produced this gate cost 25 minutes inside the session that wrote the retro
+# about it.
+queue_selected "check-command-dominance" python3 scripts/check_command_dominance.py --repo-root "$REPO_ROOT"
 queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imports.py --repo-root "$REPO_ROOT" --require-git-file-listing
 # Adjacent to the line above and NOT the same question. That gate asks whether a
 # path literal survives the `skills/public/` collapse, reading the SOURCE tree.

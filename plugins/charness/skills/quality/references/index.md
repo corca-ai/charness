@@ -45,6 +45,7 @@ gates.
 - `references/mutation-testing.md` — mutation-testing workflow and sampling.
 - `references/prompt-asset-policy.md` — prompt/content inventory policy.
 - `references/proof-path-efficiency.md` — proof-preserving runner, process, and validator acceleration.
+- `references/cost-dominance.md` — dominated-command registry and the cost review angle.
 - `references/public-spec-layering.md` — public spec layering and source-guard pressure.
 - `references/quality-signal-scorecard.md` — structural cleanup scoring.
 - `references/security-overview.md` — security posture overview.

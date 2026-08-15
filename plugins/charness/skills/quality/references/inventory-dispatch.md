@@ -83,6 +83,9 @@ does not return an empty scan.
   `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py --repo-root . --summary`
 - standing test economics:
   `$SKILL_DIR/scripts/inventory_standing_test_economics.py --repo-root . --summary`
+- cost dominance -- is a command your gates prescribe or spawn dominated by a
+  cheaper one you already have (`references/cost-dominance.md`):
+  `$SKILL_DIR/scripts/inventory_command_dominance.py --repo-root . --summary`
 - executable-spec runtime and dup economics:
   `references/executable-spec-economics.md`
 - duplicate discovery, broad scanner waste, and intra-test repeated reads:

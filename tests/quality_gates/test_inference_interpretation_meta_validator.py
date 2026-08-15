@@ -260,7 +260,7 @@ def _run_main(*args: str) -> tuple[int, str, str]:
 def test_live_repo_contract_holds() -> None:
     code, stdout, stderr = _run_main("--repo-root", str(ROOT), "--require-git-file-listing")
     assert code == 0, stderr
-    assert "Validated advisory-interpretation contract across 11 inference-layer surface(s)" in stdout
+    assert "Validated advisory-interpretation contract across 12 inference-layer surface(s)" in stdout
 
 
 def test_live_registry_is_structurally_valid() -> None:
@@ -272,4 +272,4 @@ def test_live_registry_is_structurally_valid() -> None:
     assert "structural-waste" in ids
     assert "doc-duplicates" in ids
     assert "hardcoded-discovery" in ids
-    assert sum(1 for s in registry["surfaces"] if s["kind"] == "python") == 10
+    assert sum(1 for s in registry["surfaces"] if s["kind"] == "python") == 11

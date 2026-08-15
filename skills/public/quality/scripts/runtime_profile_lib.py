@@ -98,6 +98,35 @@ def profile_commands(payload: dict[str, Any], runtime_profile: str) -> dict[str,
     return {}
 
 
+def budgeted_label_union(adapter_data: dict[str, Any]) -> dict[str, list[str]]:
+    """Every budgeted label in the adapter, mapped to the blocks that budget it.
+
+    The UNION across blocks, not the selected profile, because `profile_budgets`
+    returns exactly one block per run and a label budgeted in a profile this
+    machine never selects is precisely the one a reader cannot otherwise see.
+
+    Exported rather than repo-local: a consuming repo needs the same answer to
+    ask whether its own expensive commands sit under a bar, and the alternative
+    was a second copy of this loop in the consumer inventory -- the duplicate
+    builder class this release already reconciled once. `check_runtime_budget_universe`
+    now reads this instead of its own copy.
+    """
+    found: dict[str, list[str]] = {}
+    top = adapter_data.get("runtime_budgets")
+    if isinstance(top, dict):
+        for label in top:
+            found.setdefault(str(label), []).append("runtime_budgets")
+    profiles = adapter_data.get("runtime_budget_profiles")
+    if isinstance(profiles, dict):
+        for name, config in profiles.items():
+            budgets = (config or {}).get("budgets") if isinstance(config, dict) else None
+            if not isinstance(budgets, dict):
+                continue
+            for label in budgets:
+                found.setdefault(str(label), []).append(f"runtime_budget_profiles.{name}")
+    return found
+
+
 def profile_budgets(adapter_data: dict[str, Any], runtime_profile: str) -> tuple[dict[str, int], list[str]]:
     profiles = adapter_data.get("runtime_budget_profiles")
     if isinstance(profiles, dict) and runtime_profile in profiles:

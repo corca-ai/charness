@@ -582,7 +582,8 @@ def test_validate_data_with_empty_dict_includes_mutation_testing(tmp_path: Path)
 def test_repo_quality_adapter_enables_mutation_sample_command() -> None:
     payload = load_quality_adapter(ROOT)
     assert payload["data"]["mutation_testing"]["commands"]["sample"] == (
-        "python3 scripts/sample_mutation_files.py --repo-root ."
+        "python3 scripts/sample_mutation_files.py --repo-root . "
+        "--test-command 'python3 scripts/run_standing_pytest.py --repo-root .'"
     )
 
 

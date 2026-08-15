@@ -674,6 +674,36 @@
         ]
       },
       "snapshot_sha256": "381f29b0fad2d19d7235e736d1509bfd481b9de2018a765b330a7bf4b4a2e1c3"
+    },
+    {
+      "session_id": "2026-08-16-s6b-2",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-16-s6b-2",
+        "eligible_count": 38,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "detector-blind-class-unstated",
+          "counted-limit-retry-loop",
+          "conservative-static-verdicts",
+          "agent-authored-score-role",
+          "closeout-authoring-rework",
+          "tagged-lesson-never-seeded",
+          "bar-recorded-as-prose",
+          "goal-closeout-evidence-binding",
+          "cause-named-from-one-observation",
+          "changed-line-proof-before-broad-quality"
+        ]
+      },
+      "snapshot_sha256": "9a6f370a4a2523d465954640df79e8a59c1e068c233f562049ad19cb29c6979b"
     }
   ],
   "score_events": [
@@ -923,6 +953,22 @@
       "lesson_id": "durable-lesson-ledger-first",
       "outcome": "read-but-not-applied",
       "anchor": "Declared the session at open per the handoff trigger, then operated no loop: zero score events until the user asked whether a retro had been done. Opening the session is the half the lesson says is not enough on its own."
+    },
+    {
+      "event_id": "2026-08-16-s6b2-changed-line-order",
+      "session_id": "2026-08-16-s6b-2",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran check_changed_line_mutation_coverage over 0037dbcfd..HEAD BEFORE the slice commit was final and amended four times, instead of committing and then proving. It returned 65 uncovered changed lines across 7 files on the first run; all were closed inside the one slice commit. Otherwise those closures would have become follow-up commits, which is exactly what the previous session paid twice."
+    },
+    {
+      "event_id": "2026-08-16-s6b2-blind-class-first",
+      "session_id": "2026-08-16-s6b-2",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Wrote the five-item blind class into command_dominance_lib's module docstring before writing any detector logic, and made the first acceptance test the wrong-noun test (test_naming_the_replacement_is_not_a_prescription). That test is load-bearing: the registry's replacement path contains the substring 'pytest', so a substring reader reports the fix as the defect. Otherwise I would have written the detector first and the blind class as a closing paragraph. Recorded with its limit: round-1 reviewers still found a sixth blind class the paragraph missed, the false-POSITIVE direction, so the lesson changed the action without making the result complete."
     }
   ],
   "lessons": {
@@ -1214,10 +1260,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -1,
-      "score_count": 1,
+      "score_total": 0,
+      "score_count": 2,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1424,10 +1470,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,

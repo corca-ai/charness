@@ -7,24 +7,25 @@ import re
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
+from runtime_bootstrap import (
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+    skill_script,
+)
 
 REPO_ROOT = repo_root_from_script(__file__)
 
 
 def _skill_script(repo_root: Path, name: str) -> Path:
-    candidates = (
-        repo_root / "skills" / "public" / "handoff" / "scripts" / name,
-        repo_root / "skills" / "handoff" / "scripts" / name,
-    )
-    for candidate in candidates:
-        if candidate.is_file():
-            return candidate
-    raise FileNotFoundError(f"handoff {name} not found")
+    return skill_script(repo_root, "handoff", name)
 
 
 def _resolver_path(repo_root: Path) -> Path:
     return _skill_script(repo_root, "resolve_adapter.py")
+
+
+DOMINANCE_REGISTRY_PATH = Path(".agents/command-dominance.yaml")
 
 
 _handoff_resolve_adapter = load_path_module("handoff_resolve_adapter", _resolver_path(REPO_ROOT))
@@ -294,6 +295,90 @@ def validate_subagent_blocker_reasoning(lines: list[str]) -> None:
                 )
 
 
+def _dominance_registry(repo_root: Path):
+    """The repo's dominated-command registry, or None when it has none.
+
+    ABSENCE IS NOT A FAILURE, and that is load-bearing rather than lenient: this
+    validator ships to consumers through `plugins/charness/`, and a consumer has
+    no `.agents/command-dominance.yaml`. Raising here would hand every consuming
+    repo a red handoff gate on upgrade — the stranded-consumer shape the export
+    slice before this one was built to end. A malformed registry IS refused,
+    because that is a repo that tried to arm the rule and failed.
+    """
+    registry_path = repo_root / DOMINANCE_REGISTRY_PATH
+    if not registry_path.is_file():
+        return None, None
+    # REPO_ROOT, not `repo_root`: the library ships beside this validator, while
+    # the registry belongs to the tree being validated. Mixing them makes the rule
+    # unreachable for any caller pointing at another tree.
+    dominance = load_path_module(
+        "command_dominance_lib_for_handoff",
+        skill_script(REPO_ROOT, "quality", "command_dominance_lib.py"),
+    )
+    adapter = import_repo_module(__file__, "scripts.adapter_lib")
+    # `load_yaml_file_report`, matching the dominance gate. The first version used
+    # `load_yaml_file` while this function's own docstring promised a malformed
+    # registry IS refused -- and the adapter parser DROPS what it cannot
+    # interpret, so a registry written in flow style parsed to zero rules here,
+    # `scan_document` returned nothing, and every handoff prescribing a dominated
+    # command passed while the sibling gate refused the same file loudly. Two
+    # readers of one proof surface disagreeing is the class this release already
+    # reconciled once.
+    data, uninterpreted = adapter.load_yaml_file_report(registry_path)
+    if uninterpreted:
+        raise ValidationError(
+            f"{DOMINANCE_REGISTRY_PATH} has line(s) this reader dropped, so the "
+            "dominated-command rule would run over a registry it did not fully read:\n  "
+            + "\n  ".join(adapter.uninterpreted_warnings(uninterpreted))
+        )
+    return dominance, dominance.parse_registry(data)
+
+
+def validate_no_dominated_commands(path: Path, repo_root: Path) -> None:
+    """Refuse a handoff that PRESCRIBES a command a cheaper one dominates (SC14).
+
+    The instance this exists for passed fresh-eye review three times, because it
+    was TRUE: `python3 -m pytest tests/ -q --no-header` really does re-prove the
+    suite, in ~22 minutes, and three slices paid it without asking. Review is
+    aimed at falsity; a dominated-but-true instruction needs a reader that asks
+    about cost instead.
+
+    Two honest limits, stated here rather than left for a reader to discover.
+    The registry is a DENYLIST: an unregistered slow command passes, so a green
+    handoff is not a cheap one. And only fenced blocks and inline code are read
+    (`command_dominance_lib.iter_document_commands`), so a handoff that names a
+    command in prose is invisible to this rule.
+    """
+    try:
+        dominance, registry = _dominance_registry(repo_root)
+    except FileNotFoundError:
+        # The quality skill is not installed beside this validator. Nothing to
+        # arm; the same reasoning as an absent registry.
+        return
+    except ValueError as exc:
+        # `RegistryError` subclasses ValueError. Without this the validator DIED
+        # with a traceback on a registry naming an unknown version or a duplicate
+        # rule id -- rendering no verdict at all, which is what the sibling gate's
+        # `test_the_entrypoint_renders_a_named_error_rather_than_a_traceback`
+        # exists to prevent and this seam had no counterpart for. Found by a
+        # round-2 reviewer.
+        raise ValidationError(
+            f"{DOMINANCE_REGISTRY_PATH} cannot be read as a dominance registry: {exc}"
+        ) from exc
+    if registry is None:
+        return
+    findings = dominance.scan_document(
+        path.read_text(encoding="utf-8"), registry, site=_display_path(path, repo_root)
+    )
+    blocking = [finding for finding in findings if not finding.exempt]
+    if not blocking:
+        return
+    raise ValidationError(
+        "handoff artifact prescribes a command a cheaper one dominates:\n  "
+        + "\n  ".join(dominance.finding_message(finding) for finding in blocking)
+    )
+
+
 def _display_path(path: Path, repo_root: Path) -> str:
     """Repo-relative when the artifact is inside the repo, absolute otherwise.
 
@@ -319,8 +404,14 @@ def validate_max_content_lines(lines: list[str]) -> None:
     )
 
 
-def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
+def validate_handoff_artifact(
+    path: Path, *, collect_all: bool = False, repo_root: Path | None = None
+) -> None:
     lines = read_lines(path)
+    # Defaulted rather than required: every existing caller passes a path alone,
+    # and REPO_ROOT is what they all meant. A required parameter here would be a
+    # breaking signature change for a validator that ships to consumers.
+    root = (repo_root or REPO_ROOT).resolve()
     checks = (
         lambda: validate_title(
             lines,
@@ -338,6 +429,7 @@ def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
         lambda: validate_bullet_ownership(lines),
         lambda: validate_no_regenerable_facts(path),
         lambda: validate_subagent_blocker_reasoning(lines),
+        lambda: validate_no_dominated_commands(path, root),
     )
     # collect_all surfaces every violation in one pass (the CLI default) so a
     # multi-rule draft is fixed in one edit instead of one rule per gate run --
@@ -367,7 +459,7 @@ def main() -> int:
     else:
         adapter = load_adapter(repo_root)
         artifact_path = repo_root / adapter["artifact_path"]
-    validate_handoff_artifact(artifact_path, collect_all=not args.fail_fast)
+    validate_handoff_artifact(artifact_path, collect_all=not args.fail_fast, repo_root=repo_root)
     print(f"Validated handoff artifact {_display_path(artifact_path, repo_root)}.")
     return 0
 

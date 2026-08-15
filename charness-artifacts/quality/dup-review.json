@@ -107,9 +107,23 @@
     },
     {
       "class": "intentional",
+      "id": "05fd6d8276af6887",
+      "note": "idiom-sized argparse `main()` preamble -- build parser, add `--repo-root`, resolve, call the module's own evaluator -- shared between `inventory_command_dominance` (added by S6b-2) and the unrelated `validate_inference_interpretation`. Nothing about the two verdicts is shared; only the CLI shape is, and this repo requires that shape of every gate so operators invoke them identically. A helper would couple two independently-owned entrypoints through an argument parser.",
+      "reviewed_at": "2026-08-16",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "0616e9e330a5adf2",
       "note": "The code and Markdown nose inventories independently render advisory payloads with similar bounded status/scope fields, but they are separate executable producers with different family and heading semantics. A shared renderer would couple the portable inventories and hide contract-specific evidence fields.",
       "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "068446cbb9f180bf",
+      "note": "the `_load_skill_runtime_bootstrap` ancestor-walk that every exported skill script uses to find `skill_runtime_bootstrap.py`. It CANNOT be extracted: it is the code that locates the shared loader, so a shared-loader version would need itself to run. `inventory_command_dominance` (S6b-2) joins members that were already present and are untouched by this slice; the family surfaced as new only because the added member changed its fingerprint.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {
@@ -506,6 +520,13 @@
     },
     {
       "class": "intentional",
+      "id": "223f6702f8c16d29",
+      "note": "Two-line conditional-return idiom shared with four unrelated modules (an mjs extractor, hitl report mode, the runtime summary renderer, the retro planner). Added to `command_dominance_lib.unbudgeted_basis` by the S6b-2 round-2 repair that consolidated the basis sentence into one owner -- i.e. the duplication the change REMOVED was the real one, and what the scanner now sees is idiom of the shape already accepted as 003780cc89f2ccfd. Different conditions, different strings, different subsystems.",
+      "reviewed_at": "2026-08-16",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "22afbb476b430f1a",
       "note": "portable sibling-module loaders in independently executable release and markdown-preview scripts; extracting them would add the import bootstrap dependency that these local loaders exist to avoid",
       "reviewed_at": "2026-07-11",
@@ -705,6 +726,13 @@
       "id": "2e98240a5f7205ac",
       "note": "same chunker per-stage CLI skeleton as the accepted 0bc23ea0000c6cf9 and e870767ba8b3d1ab families: parse_handoff_entries and draft_goal_from_chunk are separate pipeline executables, so their timeout/parse/try-finally lifecycle remains explicit. Their stage work, input resolution, refusal payloads, and rollback contracts differ; extracting the surrounding main would couple independent stages behind a generic runner and hide which stage owns a failure. Surfaced as a fingerprint rotation because this slice changed draft_goal_from_chunk while parse_handoff_entries stayed untouched; the repeated skeleton was pre-existing and no new shared behavior was introduced.",
       "reviewed_at": "2026-08-04",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2ee98a346ce0c54f",
+      "note": "`report_payload()` + `main()` of `check_command_dominance` and of `check_runtime_budget_universe`, ROTATED from 99c4d378f91e7347/c7a0a676e4e3a4b5 when the S6b-2 round-1 repairs rewrote both bodies (the queue-label binding, the narrowed except, the reworded advisory). Same members, same reasoning as the families it supersedes: this is the repo's gate payload+entrypoint convention -- copy the report, return early with a WARN-marked advisory when not armed, otherwise attach `did_not_judge` then `summary`/`remedy`, and exit nonzero on the blocking field. Uniform on purpose so `print_phase_output` and an operator read every gate the same way. Every string and both verdicts differ; merging would put two verdict owners in one function.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {
@@ -964,6 +992,13 @@
       "id": "3b537fee705455a7",
       "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom \u2014 intentional",
       "reviewed_at": "2026-06-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3b6faeaa556d29fc",
+      "note": "`report_payload()` + `main()` of `check_command_dominance` and `check_runtime_budget_universe`, ROTATED from 2ee98a346ce0c54f when the round-2 repairs reworded the advisory and delegated the basis sentence. Same members and same reasoning as every prior rotation of this family: the repo's gate payload+entrypoint convention, uniform on purpose so `print_phase_output` and an operator read every gate identically, with different strings and different verdicts on each side.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {
@@ -1948,6 +1983,13 @@
     },
     {
       "class": "intentional",
+      "id": "6ccc0ea238d6cdfd",
+      "note": "two early-return skip payloads inside `validate_usage_episodes.py`, both PRE-EXISTING and untouched by S6b-2 (scan rotation surfaced the family, per the #441 rotation class). They render two DIFFERENT verdicts -- `no_adapter` versus `disabled` -- with different status values, warning ids, messages, and remedies. Parameterising them would put two distinct skip-verdicts behind one owner and obscure which one fired, which is the coupling already rejected for 003780cc89f2ccfd.",
+      "reviewed_at": "2026-08-16",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "6dc2bc9c360c0ace",
       "note": "the canonical skill-runtime bootstrap shim, which this repo deliberately duplicates across 107 copies and ENFORCES byte-identical with its own gate (scripts/check_bootstrap_shim_consistency.py, CANONICAL_SHIM). Extracting it is impossible by construction: the shim is what lets a portable skill script FIND the runtime before any import is available. Surfaced by scan rotation when skills/public/release/scripts/publish_release_narrative_gate.py added copy 108; every other member is untouched (#441 rotation class)",
       "reviewed_at": "2026-07-28",
@@ -2340,6 +2382,13 @@
     },
     {
       "class": "intentional",
+      "id": "800dab800ef0c1aa",
+      "note": "The cached `load_path_module` accessor idiom (`_X_CACHE` dict + `_load_x()`), now in both `check_command_dominance` and `check_runtime_budget_universe`. Not extractable into a shared helper without reintroducing the exact bug it exists to prevent: `load_path_module` execs a FRESH module per call, so two calls yield two distinct exception classes and `except lib.SomeError` silently stops catching -- measured in this slice when an acceptance test failed with the very error it was asserting. A shared cache keyed by name would be a single global module registry, which is `sys.modules`, which is precisely what `load_path_module` deliberately does not touch. Each caller caches its own.",
+      "reviewed_at": "2026-08-16",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "804b8f9cc0c609cb",
       "note": "the repo-standard gate `main()` skeleton once more (argparse --repo-root/--json, resolve, build a report, print a human summary or the JSON payload), now across parity_harness, removed_name_consumers, and check_plugin_doc_links. Accepted repeatedly as 217bca482c08d1da / cf4daacbe7eaf226 / 606ea765fb3c8ee8 / 6a29dc4549b6f485; the cluster re-forms on every new member. A shared runner would own each tool's argument surface AND its operator-facing summary wording, coupling tools that answer unrelated questions -- and these two deliberately print DIFFERENT clean-tree sentences, which is the part a reader relies on.",
       "reviewed_at": "2026-08-04",
@@ -2532,6 +2581,13 @@
       "id": "8bcb930da2056c6a",
       "note": "The repo's standard CLI error-exit idiom -- `except <ToolError> as exc: print(f\"<tool>: {exc}\", file=sys.stderr); return 2` -- shared by scripts/mutate_and_restore.py and scripts/check_skill_surface_preflight.py. Consistency across tool entrypoints is the point: an operator learns one exit contract. A shared helper would couple two independently-owned CLIs through their error formatting for no behavioural gain.",
       "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8c1f354b250b2eaf",
+      "note": "the exported-script import preamble (`from __future__`, stdlib imports, `SimpleNamespace`/`runpy` bootstrap hook). Same reasoning as 068446cbb9f180bf and the same non-extractability: it runs before any shared module is reachable. `inventory_command_dominance` (S6b-2) is the only member this slice added.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {
@@ -2735,6 +2791,13 @@
       "id": "98b8f8037638d203",
       "note": "four-line environment-gated debug entrypoint idiom in two standalone SessionStart programs; local ownership prevents an every-session import dependency",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "99c4d378f91e7347",
+      "note": "`main()` of `check_command_dominance` (added by S6b-2) and of `check_runtime_budget_universe`: parse `--repo-root`, evaluate, `emit_yaml(report_payload(...))`, return nonzero on the blocking field. This is the repo's gate ENTRYPOINT convention, uniform on purpose so `run-quality.sh` and an operator drive every gate the same way. The two gates render different verdicts over different inputs and each owns its own exit condition; a shared runner would make one module decide when the other fails.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {
@@ -3043,6 +3106,13 @@
       "id": "af00cb7ab59ec66c",
       "note": "the issue package's sibling-loader bootstrap in issue_create.py and its untouched sibling issue_create_verify.py, each followed by a DIFFERENT `_load_local(...)` binding. The loader itself is already the extracted shared home; this migration's only change here is issue_create binding `issue_yaml_output.emit_yaml` through it, which is the extraction this session already made.",
       "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "af437810436cff16",
+      "note": "the guarded `import yaml` block a DOCUMENTED consumer entrypoint must carry -- anchor-walk to `packaging/bootstrap-requirements.txt`, then a message naming the interpreter and the pinned declaration. Shared with `gather_public_url.py`, which is where the shape was established when the S6c export slice repaired the reported bare `ModuleNotFoundError`. Not extractable by construction: the whole point is to run when the module that would hold the helper may itself be unreachable, and a guard that imports something to explain a failed import reproduces the defect.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {
@@ -3442,6 +3512,13 @@
       "id": "c71405ac5e920fb0",
       "note": "ROTATED from 23c406419969c6e2 the same day, when the round-2 repairs grew upsert_goal.py's main() and moved this block's span; same three members, same reasoning. the standard CLI-entrypoint shape `try: <lib call with kwargs> / except <Error> as exc: print(str(exc)); return 2`, shared by three unrelated commands: upsert_goal.py (ValueError from goal_artifact_lib), audit_codex_session.py (ValueError from codex_audit), and check_test_production_ratio.py (TokeiUnavailableError from tokei). Different libraries, different exception types, different follow-on code; what they share is Python's own convention for turning a library error into an operator-readable exit, not a concept. A shared helper would have to take a thunk plus an exception class -- an abstraction over control flow rather than over meaning. Verified pre-existing rather than introduced: the ratchet is CLEAN on the tree before this slice (checked by stashing), and the family surfaced only because the upsert_goal.py --fields-file work shifted that block's span and changed two kwarg expressions; the other two members are untouched. Same boy-scout span-shift class this repo measured four times on 2026-08-06.",
       "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c7a0a676e4e3a4b5",
+      "note": "`report_payload()` of `check_command_dominance` (added by S6b-2) and of `check_runtime_budget_universe`: the repo's gate PAYLOAD convention -- copy the report, return early with a WARN-marked `advisory` when not armed, otherwise attach `did_not_judge`, then `summary` plus `remedy` on the failing branch. The shape is deliberately uniform because `print_phase_output` surfaces a passing phase log only when it carries an attention marker, and because a reader must find the same fields in every gate. Every string, every field value, and both verdicts differ; merging them would put two verdict owners in one function.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {
@@ -3848,6 +3925,13 @@
       "id": "dd5b3388f83df1ab",
       "note": "The portable command helper and Markdown link gate share a narrow path-shape branch but consume different carriers and report different proof facts. The overlap is local and covered by separate focused suites.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "dd97ec699b1504a1",
+      "note": "argparse `main()` preamble -- build parser, add `--repo-root`, resolve, call the module's own evaluator, emit. ROTATED from 05fd6d8276af6887 when the S6b-2 round-1 repairs added `--quality-adapter-path` to the inventory. Shared with the unrelated `validate_inference_interpretation`; nothing about the two verdicts is shared, only the CLI shape this repo requires of every gate so operators invoke them identically.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {

@@ -427,6 +427,66 @@ def test_the_gather_guard_actually_runs_and_names_what_to_install(tmp_path: Path
     assert str(ROOT / "packaging" / "bootstrap-requirements.txt") in message
 
 
+def test_the_dominance_inventory_guard_actually_runs_and_names_what_to_install(
+    tmp_path: Path,
+) -> None:
+    """EXECUTED with PyYAML blocked, and every path it prints must exist.
+
+    Added after a bounded reviewer found the guard carrying
+    `# pragma: no cover - exercised by test_export_self_sufficiency` while THIS
+    file never referenced it — the same false-pragma defect three reviewers
+    caught in the gather guard one slice earlier, shipped again in the slice that
+    cited the repair.
+    """
+    blocker = tmp_path / "sitecustomize.py"
+    blocker.write_text(
+        "import sys\n"
+        "class _NoYaml:\n"
+        "    def find_spec(self, name, path=None, target=None):\n"
+        "        if name == 'yaml' or name.startswith('yaml.'):\n"
+        "            raise ModuleNotFoundError('No module named yaml', name='yaml')\n"
+        "        return None\n"
+        "sys.meta_path.insert(0, _NoYaml())\n",
+        encoding="utf-8",
+    )
+    env = {**os.environ, "PYTHONPATH": str(tmp_path)}
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "skills/public/quality/scripts/inventory_command_dominance.py"),
+            "--help",
+        ],
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=str(tmp_path),
+    )
+
+    assert result.returncode != 0
+    message = result.stdout + result.stderr
+    assert "PyYAML is missing" in message
+    for token in message.split():
+        candidate = token.strip("`,.")
+        if candidate.startswith("/") and ("packaging/" in candidate or candidate.endswith(".py")):
+            assert Path(candidate).exists(), f"the guard printed a path that does not exist: {candidate}"
+    assert str(ROOT / "packaging" / "bootstrap-requirements.txt") in message
+
+
+def test_the_dominance_inventory_guard_invents_no_path_when_the_contract_is_missing() -> None:
+    """No counted-hop fallback.
+
+    The first version fell back to `parents[3]`, which is `<repo>/skills` in the
+    dev tree, so a vendored install without `packaging/` was told to install from
+    a requirements file that does not exist — stranding the consumer the guard
+    exists to un-strand. The guard now says the install is incomplete instead.
+    """
+    source = (ROOT / "skills/public/quality/scripts/inventory_command_dominance.py").read_text(
+        encoding="utf-8"
+    )
+    assert "_HERE.parents[3]" not in source
+    assert "this install is" in source
+
+
 def test_the_printed_bootstrap_command_only_uses_flags_that_exist() -> None:
     """Pins the pairing directly, so the two files cannot drift apart silently."""
     guard = (ROOT / "skills/public/gather/scripts/gather_public_url.py").read_text(

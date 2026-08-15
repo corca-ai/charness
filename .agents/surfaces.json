@@ -1117,6 +1117,31 @@
         "Not every path here can move a cell: `issue_critique_observer.py` is listed because the critique floor routes through it, but the matrix's `not_measured` records that its refusal arm is unexercised. Read the artifact before assuming a green gate covered an edit.",
         "An inert cell must carry a reason that makes it deliberate, or a filed finding. Neither is a refusal."
       ]
+    },
+    {
+      "surface_id": "command-dominance-registry",
+      "description": "The registry of commands this repo has measured as dominated by a cheaper one, and the gates that read it.",
+      "source_paths": [
+        ".agents/command-dominance.yaml",
+        "scripts/check_command_dominance.py",
+        "skills/public/quality/scripts/command_dominance_lib.py",
+        "skills/public/quality/scripts/inventory_command_dominance.py"
+      ],
+      "derived_paths": [
+        "plugins/charness/skills/quality/scripts/command_dominance_lib.py",
+        "plugins/charness/skills/quality/scripts/inventory_command_dominance.py"
+      ],
+      "sync_commands": [
+        "python3 scripts/sync_root_plugin_manifests.py"
+      ],
+      "verify_commands": [
+        "python3 scripts/check_command_dominance.py --repo-root .",
+        "python3 -m pytest -q tests/quality_gates/test_command_dominance.py"
+      ],
+      "notes": [
+        "The registry is a DENYLIST of authored claims; nothing here measures a command's cost, so a green gate is not a cheap repo. The full blind class lives in command_dominance_lib.py's module docstring.",
+        "An exemption is keyed to a site and requires a reason. It changes a finding's `exempt` flag, never its presence -- an exempt site stays in the report."
+      ]
     }
   ]
 }

@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder. (source: `charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md`)
 - Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency). (source: `charness-artifacts/retro/2026-08-16-session-retro.md`)
-- Handoff item 1: remove `--json` repo-wide and make repo-owned command output unconditionally YAML. (source: `charness-artifacts/retro/2026-08-15-json-to-yaml-migration-closeout.md`)
 
 ## Repeat Traps
 
@@ -48,4 +48,5 @@
 - `charness-artifacts/retro/2026-08-15-release-scope-design.md`
 - `charness-artifacts/retro/2026-08-15-s3-lesson-loop.md`
 - `charness-artifacts/retro/2026-08-15-session-retro.md`
+- `charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md`
 - `charness-artifacts/retro/2026-08-16-session-retro.md`

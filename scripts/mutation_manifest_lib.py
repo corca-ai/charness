@@ -150,7 +150,20 @@ def build_manifest_from_state(state: dict) -> dict:
         "all_eligible_count": len(state["all_eligible"]),
         "coverage_enabled": coverage_enabled,
         "coverage_json": display_path(state["repo_root"], state["coverage_json"]),
-        "coverage_command": state["test_command"],
+        # The command the COVERAGE PROBE actually ran, not the config literal.
+        # These became two different commands when the sampler gained
+        # `--test-command`, and this line kept publishing the literal: the
+        # manifest is uploaded as a CI artifact and pasted into auto-filed
+        # regression issues, so it told an auditor the dominated serial command
+        # produced coverage that the standing runner had produced. A durable
+        # record naming a command that never ran is the exact defect class the
+        # slice that introduced the override exists to prevent. Found by a
+        # bounded reviewer; the transient stderr message had been fixed and the
+        # permanent record had not.
+        #
+        # None when no probe ran: under `--skip-coverage` neither command is an
+        # honest answer, and an omitted key is better than a plausible wrong one.
+        "coverage_command": state.get("coverage_test_command") if coverage_enabled else None,
         "test_command": state["mutation_test_command"],
         "min_file_coverage": state["min_file_coverage"] if coverage_enabled else 0.0,
         "mutation_line_coverage": mutation_line_coverage,

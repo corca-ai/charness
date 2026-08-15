@@ -317,6 +317,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-closeout-classification-parity", "check_closeout_classification_parity.py"),
     ("validate-surfaces", "validate_surfaces.py"),
     ("validate-inference-interpretation", "validate_inference_interpretation.py"),
+    ("check-command-dominance", "check_command_dominance.py"),
     ("validate-public-skill-validation", "validate_public_skill_validation.py"),
     ("validate-public-skill-dogfood", "validate_public_skill_dogfood.py"),
     ("validate-cautilus-scenarios", "validate_cautilus_scenarios.py"),

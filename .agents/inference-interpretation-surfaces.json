@@ -119,6 +119,15 @@
       "consumer_reference": "skills/public/quality/references/gate-classification.md",
       "consumer_anchor": "does the top-ranked move genuinely",
       "note": "Agent-authored `Recommended Next Quality Moves` prose ranking. No Python declaration dict exists, so it is registered as prose and checked by anchor presence (the 4 framing elements + the consumer-answer line). Out of the python leak scan by design; the declaration and consumer live in the same self-consuming doc."
+    },
+    {
+      "surface_id": "command-dominance-inventory",
+      "kind": "python",
+      "declaration_file": "skills/public/quality/scripts/inventory_command_dominance.py",
+      "declaration_symbol": "INTERPRETATION",
+      "consumer_reference": "skills/public/quality/references/cost-dominance.md",
+      "consumer_anchor": "does the cheaper replacement give the SAME evidence",
+      "note": "Dominated-command findings are an authored DENYLIST matched against discovered commands, not a measurement: nothing runs either command. The blind_spots field carries the same blind class the library docstring states, and the consumer reference holds the question the inventory cannot answer -- whether the cheaper replacement is equivalent evidence for the site in question."
     }
   ]
 }

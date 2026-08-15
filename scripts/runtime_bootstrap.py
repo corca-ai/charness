@@ -32,6 +32,23 @@ def load_path_module(module_name: str, module_path: Path) -> ModuleType:
     return module
 
 
+def skill_script(repo_root: Path, skill: str, name: str) -> Path:
+    """A script inside a skill package, in the dev tree OR in the collapsed export.
+
+    `skills/public/<skill>/scripts/` in this repo; `skills/<skill>/scripts/` once
+    exported, because the export collapses the `public` segment. Every caller that
+    reaches into another skill's scripts needs both spellings, and each one had
+    grown its own copy of this four-line search with its own error string.
+    """
+    for candidate in (
+        repo_root / "skills" / "public" / skill / "scripts" / name,
+        repo_root / "skills" / skill / "scripts" / name,
+    ):
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(f"{skill} script {name} not found under {repo_root}")
+
+
 def arm_cli_timeout(
     *,
     label: str,

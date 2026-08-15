@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-16",
-  "source_artifact_count": 515,
-  "candidate_count": 2100,
+  "source_artifact_count": 516,
+  "candidate_count": 2108,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1252,6 +1252,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a981f526c585",
+      "kind": "current_focus",
+      "lesson": "S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder.",
+      "normalized_key": "s6b 2 of the 6 0 0 release scope make a dominated command refusable",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:e7e195f80a32",
       "kind": "current_focus",
       "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency).",
@@ -1274,6 +1300,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e83334bd85be",
+      "kind": "next_improvement",
+      "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs.",
+      "normalized_key": "after adding a queued gate or a new skill reference run the repo s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs."
         }
       ]
     },
@@ -1330,6 +1382,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:aa4728fcc25e",
+      "kind": "next_improvement",
+      "lesson": "extend the inference-interpretation registry's requirement from \"a module that DECLARES an interpretation must be registered\" to \"a module that renders a verdict about other code must declare its blind class\", so the blind-class habit becomes a gate. This is the carrier two retros have asked for and nothing has built; it is now cheap because the registry, the validator, and the leak scan all exist.",
+      "normalized_key": "extend the inference interpretation registry s requirement from a module that declares an interpretation",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "extend the inference-interpretation registry's requirement from \"a module that DECLARES an interpretation must be registered\" to \"a module that renders a verdict about other code must declare its blind class\", so the blind-class habit becomes a gate. This is the carrier two retros have asked for and nothing has built; it is now cheap because the registry, the validator, and the leak scan all exist."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:4acfbce3e563",
       "kind": "next_improvement",
       "lesson": "**memory**: the fix-carries-its-class pattern now has five consecutive measured instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices rather than as a per-slice surprise, so the two-round rule reads as load-bearing rather than as ceremony.",
@@ -1352,6 +1430,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**memory**: the fix-carries-its-class pattern now has five consecutive measured instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices rather than as a per-slice surprise, so the two-round rule reads as load-bearing rather than as ceremony."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:962c44648b7c",
+      "kind": "next_improvement",
+      "lesson": "the retro planner's default `next_action` can point at another session's record that merely shares today's date, with the scaffold packet declaring `overwrite_existing_content`. Always pass `--title`. Recorded in `## Waste` above with the commit that owns the endangered artifact.",
+      "normalized_key": "the retro planner s default next action can point at another session s record",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the retro planner's default `next_action` can point at another session's record that merely shares today's date, with the scaffold packet declaring `overwrite_existing_content`. Always pass `--title`. Recorded in `## Waste` above with the commit that owns the endangered artifact."
         }
       ]
     },
@@ -1404,6 +1508,110 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b62bdac9e729",
+      "kind": "repeat_trap",
+      "lesson": "**A commit message with backticks was evaluated by the shell**, silently dropping a clause. Caught by reading the stored message back — a different channel than the one that wrote it, which is the only reason it was caught.",
+      "normalized_key": "a commit message with backticks was evaluated by the shell silently dropping a clause",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A commit message with backticks was evaluated by the shell**, silently dropping a clause. Caught by reading the stored message back — a different channel than the one that wrote it, which is the only reason it was caught."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c09cc36ee063",
+      "kind": "repeat_trap",
+      "lesson": "**Near-miss, not waste, recorded because it nearly was**: the retro planner's default `next_action` was `continue-existing-retro` pointing at `2026-08-16-session-retro.md`, with the scaffold packet declaring `write_artifact_effect: overwrite_existing_content`. That artifact belongs to the PREVIOUS session (committed in `0037dbcfd`) and merely shares today's date. Passing `--title` routed the scaffold to a new path and the prior record survived. This is the producer-scaffold class S2 of this very release exists to fix, arriving through the planner's default rather than the scaffold's write path.",
+      "normalized_key": "near miss not waste recorded because it nearly was the retro planner s default",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Near-miss, not waste, recorded because it nearly was**: the retro planner's default `next_action` was `continue-existing-retro` pointing at `2026-08-16-session-retro.md`, with the scaffold packet declaring `write_artifact_effect: overwrite_existing_content`. That artifact belongs to the PREVIOUS session (committed in `0037dbcfd`) and merely shares today's date. Passing `--title` routed the scaffold to a new path and the prior record survived. This is the producer-scaffold class S2 of this very release exists to fix, arriving through the planner's default rather than the scaffold's write path."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4baef1881de8",
+      "kind": "repeat_trap",
+      "lesson": "**`ruff` C901 complexity surfaced after the code was written**, forcing a decomposition pass on two functions. The decomposition was an improvement, so this is cheap waste, not pure loss.",
+      "normalized_key": "ruff c901 complexity surfaced after the code was written forcing a decomposition pass on",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**`ruff` C901 complexity surfaced after the code was written**, forcing a decomposition pass on two functions. The decomposition was an improvement, so this is cheap waste, not pure loss."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2a4c0cacfcc2",
+      "kind": "repeat_trap",
+      "lesson": "**Three repo completeness guards fired only at full-suite time**, not when the surface they guard was added: a queued gate needs a seeded harness stub, a timing-layer verdict, and a catalog entry for a new reference. Each cost a full suite run (~85s) to discover. They are exactly the right guards; the waste is that nothing prompts them at the moment of the edit.",
+      "normalized_key": "three repo completeness guards fired only at full suite time not when the surface",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Three repo completeness guards fired only at full-suite time**, not when the surface they guard was added: a queued gate needs a seeded harness stub, a timing-layer verdict, and a catalog entry for a new reference. Each cost a full suite run (~85s) to discover. They are exactly the right guards; the waste is that nothing prompts them at the moment of the edit."
         }
       ]
     },

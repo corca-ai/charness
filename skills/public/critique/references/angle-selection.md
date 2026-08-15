@@ -67,6 +67,23 @@ Good default angles for a non-trivial change:
 - `blast-radius`: what breaks for current users, operators, or consumers
 - `implementation integrity`: what hidden coupling or duplicate logic makes the
   plan less safe than it looks
+- `cost-dominance`: is there a cheaper path to the SAME evidence? Ask it of every
+  command this change prescribes, queues, or spawns, and of the proof the change
+  itself proposes. This angle exists because the others cannot reach it: they all
+  ask whether a claim matches the tree, and a dominated instruction is not a false
+  one. The recorded instance passed fresh-eye review three times because it was
+  TRUE — a handoff prescribed a ~22-minute whole-suite pytest run while a
+  measured, budgeted, enforced 84-second runner covering the same scope already
+  shipped in the same repo. Three slices paid the difference. What to check:
+  does a cheaper command already exist here; is the expensive command budgeted at
+  all, or does it sit outside every measured label so no bar can fail on it; and
+  if the slow path is genuinely needed at this site, is that reason written down
+  where the next reader meets the command. `inventory_command_dominance.py` in
+  the `quality` skill answers the first two mechanically for commands a repo has
+  REGISTERED: it matches discovered commands against the repo's dominated-command
+  registry and reports each one no budgeted label covers. It answers neither
+  question for a command nobody registered, which is most of them — that is the
+  angle's own work, and no tool substitutes for it.
 - `future maintainer`: what a new reader will misread, reopen, or delete
 - `doc and source-of-truth cascade`: what named docs, examples, or packaged
   mirrors become misleading after the change
