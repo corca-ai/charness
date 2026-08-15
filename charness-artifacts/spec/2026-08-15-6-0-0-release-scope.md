@@ -272,6 +272,66 @@ Ordering is by dependency pressure, not by theme.
   GRAMMAR — a different proof surface than S3 touched, and S3 was already at its
   review cap. It lands before S7 so the release does not publish a lesson-loop
   gate with a known bypass while closing the lesson-loop issues that rest on it.
+- **RESEQUENCED 2026-08-15 after S6, by owner instruction to order the remainder
+  for advantage rather than by theme.** The tail is now
+  **S6b-1 -> S6c -> S6b-2 -> S7**, and the two reorderings each buy something
+  specific:
+
+  1. **SC18 is pulled to the front as S6b-1**, alone. Reconciling the two
+     coverage-instrumentation builders is the cheapest item in the release and
+     the only one that makes every LATER slice cheaper to prove: the changed-line
+     mutation gate currently spawns serial bare pytest, which is why S6's own
+     changed-line proof is still unobtained. Landing SC18 first turns that proof
+     from a 25-minute serial run into the budgeted parallel one, and S7 needs the
+     same proof over a larger diff. Doing it last would mean paying the serial
+     cost on every slice in between.
+  2. **#634 becomes its own slice S6c, and it lands BEFORE S6b's consumer half.**
+     Not folded into S6b, because the two carry different missing-carrier classes
+     and one slice holding both would review as neither. Before S6b-2, because
+     **every "export X to consumers" action is unverifiable until the
+     export-completeness detector exists.** S6b-2's SC19 ships the universe check
+     to consumers; without S6c's detector, that ship is exactly the class S6c
+     exists to fix, and the packaging validator cannot see it — its oracle is the
+     exporter. Shipping a consumer-facing fix that reproduces the class it fixes
+     is what round 2 has caught in three slices running.
+
+  **Why S6c is release-blocking and S6b is not.** S6c is a defect in the artifact
+  being published: a new consumer installing `6.0.0` hits an unguarded
+  `import yaml` from a documented `gather` entrypoint. S6b is an internal
+  efficiency and review-quality improvement — real, but it costs this repo time
+  rather than costing consumers a broken install. If the release has to be cut
+  short, S6b-2 is the part that defers.
+
+- **S6b-1 — reconcile the coverage builders (SC18), then re-obtain S6's
+  changed-line proof.** Small and mechanical. `instrument_broad_command` accepts
+  the standing runner; `mutation_sampling_lib.coverage_run_command` refuses it.
+  One policy, then run
+  `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha <S5-tip> --head-sha HEAD`
+  and record the verdict S6 left unobtained.
+
+- **S6c — export completeness ([#634](https://github.com/corca-ai/charness/issues/634)).** Two halves, detector first
+  so the repairs are enumerated rather than remembered:
+  1. **The detector.** Generalize `check_export_safe_imports.py`'s existing
+     `_is_export_rooted` AST walker from its `skills/public`-only constant to
+     "any export-rooted literal whose first segment is not in the set
+     `export_plugin_tree` actually ships". Both halves exist in-repo and nothing
+     joins them. Add the dependency-declaration arm: an exported module importing
+     a third-party package the export declares nowhere.
+  2. **The repairs, ordered by consumer reachability** — the dependency contract
+     and the documented entrypoints first (`gather_public_url.py` is named in its
+     own SKILL.md), then the 11 cwd-relative `python3 scripts/<x>.py` instruction
+     sites (two of which land in consumer adapter config), then the 3 unguarded
+     shell gates. The measured inventory is on the issue; work from it rather
+     than re-deriving.
+
+  Known trap, recorded before the slice starts: `tests/repo_copy.py` clones
+  `packaging/` into every fixture and `test_bootstrap_runtime.py` copies the
+  contract in explicitly, so a test written inside that harness will pass against
+  the defect. The detector's own test must run against the EXPORT tree.
+
+- **S6b-2 — the rest of cost as a proof surface** (SC14, 15, 16, 17, 19), with
+  the export detector available so the consumer half is verifiable when it ships.
+
 - **S6b — cost as a proof surface** (owner ruling, 2026-08-15, in this release).
 
   **SCOPE CORRECTION, measured live on 2026-08-15 after S6 committed.** S6b as
@@ -628,19 +688,26 @@ Each criterion names the slice that owns it. Coverage is asserted in
 16. **(S6b)** A critique/review run carries a cost-dominance angle — "is there a cheaper
     path to the same evidence?" — and it is exported to consuming repos rather than
     living only in this repo's review prompts.
-17. **(S6b)** A command a GATE spawns is covered, not only one a document prescribes.
+17. **(S6b-2)** A command a GATE spawns is covered, not only one a document prescribes.
     Concretely: the bare-pytest `test-command` literal in
     [cosmic-ray.toml](../../cosmic-ray.toml), which `mutation_sampling_lib` wraps and
     `check_changed_line_mutation_coverage.py` runs, is reported. **Added 2026-08-15
     from a live recurrence** — the original SC14 registry is inert against it, because
     no document appears anywhere in that chain.
-18. **(S6b)** The repo has ONE policy on whether the standing runner may be
+18. **(S6b-1)** The repo has ONE policy on whether the standing runner may be
     instrumented under coverage. Today `mutation_coverage_producer.instrument_broad_command`
     accepts it via `is_standing_pytest_runner_command` and
     `mutation_sampling_lib.coverage_run_command` refuses it with *"use a helper script
     for other runners"*; the changed-line gate uses the refusing one. Reconciling them
     may shrink SC17 to a much smaller check, so it is sequenced first.
-19. **(S6b)** A consuming repo gets the cost DIRECTION it currently lacks, not only the
+20. **(S6c)** An exported artifact cannot depend on a repo-root path the export does not
+    ship, and an exported module cannot import a third-party package the export declares
+    nowhere. This repo's own `plugins/charness/` is the first subject, and the two
+    measured instances — `bootstrap_runtime.py` reading an unexported
+    `packaging/bootstrap-python.json`, and the unguarded `import yaml` in the documented
+    `gather_public_url.py` entrypoint — are both reported. Added 2026-08-15 from
+    [#634](https://github.com/corca-ai/charness/issues/634), a consuming-machine failure.
+19. **(S6b-2)** A consuming repo gets the cost DIRECTION it currently lacks, not only the
     budget ledger. `check_runtime_budget_universe.py` is deliberately absent from the
     installed quality skill by its own docstring's decision, so today a consumer
     inherits neither the fast runner nor the universe check — a wider consumer half
@@ -721,6 +788,14 @@ Each criterion names the slice that owns it. Coverage is asserted in
 - Verification type: integration — (SC15) a queued or prescribed command with no runtime
   budget entry is reported by the universe check. Negative: the existing budgeted-label
   direction still reports a budget naming a label that does not exist.
+- Verification type: unit + integration — (SC20) the detector reports both measured
+  instances when run against `plugins/charness/`. Negative, and it is the case that
+  decides whether the check is usable at all: a path meant to resolve in the CONSUMER's
+  repo — `.agents/<x>-adapter.yaml`, `charness-artifacts/**`, `docs/handoff.md` — is NOT
+  reported, because those are seeded or scanned at runtime and shipping filled copies
+  would overwrite consumer config. **The test must run against the exported tree, not
+  through `tests/repo_copy.py`**, which clones `packaging/` into every fixture and would
+  pass against the defect.
 - Verification type: integration — (SC17) the gate-spawned seam is exercised against
   this repo's real `cosmic-ray.toml` `test-command` literal and reports it. Negative: a
   config literal that already names the standing runner is NOT reported, so the check
@@ -750,7 +825,9 @@ Each criterion names the slice that owns it. Coverage is asserted in
 | S4 | 8, 13 | docs graph; 13 is the recorded scope extension |
 | S5 | 9 | umbrellas; the probe question bounds it |
 | S6 | 10, 11 | operating contract |
-| S6b | 14, 15, 16, 17, 18, 19 | cost as a proof surface; 17-19 added 2026-08-15 from a live recurrence |
+| S6b-1 | 18 | reconcile the coverage builders; pulled first so later proof is affordable |
+| S6c | 20 | export completeness (#634); release-blocking, detector before repairs |
+| S6b-2 | 14, 15, 16, 17, 19 | rest of cost; 17/19 need S6c's detector to ship verifiably |
 | S7 | 12 | release execution and closes |
 
 No slice may close without its criteria; no criterion is without a check above.
