@@ -38,7 +38,13 @@ def test_a_ratchet_row_with_a_non_integer_bar_refuses_the_whole_record(tmp_path:
     record = tmp_path / gate.RATCHET_RECORD_PATH
     record.parent.mkdir(parents=True, exist_ok=True)
     header = f"{gate.RATCHET_SECTION_HEADING}\n\n| Date | Bar |\n| --- | --- |\n"
-    record.write_text(header + "| 2026-08-01 | 200 |\n| 2026-08-02 | 167 |\n", encoding="utf-8")
+    # The undated row exercises the SHAPE filter beside it: rows are selected by
+    # looking like a dated bar row, so surrounding prose in the same table is
+    # skipped rather than making the record unreadable.
+    record.write_text(
+        header + "| note | see below |\n| 2026-08-01 | 200 |\n| 2026-08-02 | 167 |\n",
+        encoding="utf-8",
+    )
 
     assert gate.ratchet_rows(tmp_path) == [("2026-08-01", 200), ("2026-08-02", 167)]
 
@@ -191,13 +197,24 @@ def test_the_gate_cli_module_puts_the_repo_root_on_the_path_when_absent(monkeypa
     Only reached on DIRECT invocation, where the repo root is not already on the
     path; every test import has it there already. Executed here by importing the
     module from a stripped path, which is the direct-invocation case."""
-    monkeypatch.setattr(sys, "path", [p for p in sys.path if p != str(ROOT)])
-    for name in [n for n in list(sys.modules) if n.endswith("changed_line_gate_cli")]:
-        del sys.modules[name]
+    import importlib.util
 
-    module = import_repo_module(_ANCHOR, "scripts.changed_line_gate_cli")
+    monkeypatch.setattr(sys, "path", [p for p in sys.path if p != str(ROOT)])
+    assert str(ROOT) not in sys.path, "the direct-invocation case is a path WITHOUT the root"
+
+    # `exec_module` runs the module body itself, which is the only way to reach a
+    # top-level bootstrap line: an ordinary import from the test process finds the
+    # root already on the path and skips it. The body's own `from scripts...`
+    # import then only resolves BECAUSE line 19 ran.
+    spec = importlib.util.spec_from_file_location(
+        "changed_line_gate_cli_direct_invocation_probe",
+        ROOT / "scripts/changed_line_gate_cli.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
     assert str(module.REPO_ROOT) in sys.path
+    assert callable(module.parse_args)
 
 
 @pytest.mark.parametrize("module_name", ["scripts.worktree_doctor_checks"])
