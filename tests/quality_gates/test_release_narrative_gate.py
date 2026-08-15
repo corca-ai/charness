@@ -241,3 +241,34 @@ def test_bootstrap_resolution_refuses_a_copy_with_no_runtime_bootstrap(monkeypat
 
     with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
         GATE._load_skill_runtime_bootstrap()
+
+
+def test_known_versions_grounds_the_outgoing_version_on_both_lanes(tmp_path: Path) -> None:
+    """The lane asymmetry that made one note legal at prepare and refused at publish.
+
+    `_known_versions` reads the packaging manifest, and the manifest is bumped BEFORE
+    the resume lane preflights the notes and AFTER the execute lane does. So a rollback
+    paragraph naming the outgoing version was grounded at prepare and ungrounded at
+    publish — and that refusal lands at the one boundary whose only remedy (edit the
+    notes) puts a commit on top of the claims record and makes the resume unreachable.
+    Passing the previous version explicitly is what makes both lanes ground the same set.
+    """
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "release-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\noutput_dir: notes\npackage_id: demo\n"
+        "packaging_manifest_path: packaging/demo.json\nchecked_in_plugin_root: plugins/demo\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "packaging").mkdir()
+    # The manifest already reads the version being CUT, which is the resume-lane state.
+    (tmp_path / "packaging" / "demo.json").write_text('{"version": "6.0.0"}\n', encoding="utf-8")
+
+    without = GATE._known_versions(tmp_path, "v6.0.0")
+    assert "5.2.0" not in without, "fixture must reproduce the ungrounded state"
+
+    with_previous = GATE._known_versions(tmp_path, "v6.0.0", "5.2.0")
+    assert "5.2.0" in with_previous
+    # De-duplicated, so a tag that equals the manifest value is not grounded twice.
+    assert len(with_previous) == len(set(with_previous))
+    # And an absent previous version is not appended as a falsy entry.
+    assert "" not in GATE._known_versions(tmp_path, "v6.0.0", None)

@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-16",
   "source_artifact_count": 517,
-  "candidate_count": 2115,
+  "candidate_count": 2116,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1434,6 +1434,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:541ce40f2185",
+      "kind": "next_improvement",
+      "lesson": "give at least one reviewer the CONSUMER frame explicitly — \"what breaks for a repo that installs this\" — because a scope-shaped review answers only scope-shaped questions, and an error message a consumer cannot act on is invisible from inside the authoring repo.",
+      "normalized_key": "give at least one reviewer the consumer frame explicitly what breaks for a repo",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "give at least one reviewer the CONSUMER frame explicitly — \"what breaks for a repo that installs this\" — because a scope-shaped review answers only scope-shaped questions, and an error message a consumer cannot act on is invisible from inside the authoring repo."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:264549d0a1df",
       "kind": "next_improvement",
       "lesson": "make a slice closeout unable to record \"gates clean\" without citing the run receipt, so a claim written from memory is red rather than plausible.",
@@ -1746,10 +1772,10 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:c7d662c44949",
+      "candidate_id": "repeat_trap:188d5bb170ad",
       "kind": "repeat_trap",
-      "lesson": "**The changed-line proof still has not run**, for the fourth session running, because the gate refuses a dirty pool and I had not committed. The lesson presented at session open says to run it before the broad lane. I ran the broad lane first, again.",
-      "normalized_key": "the changed line proof still has not run for the fourth session running because",
+      "lesson": "**The changed-line proof ran last, not first**, for the fourth session running. The lesson presented at session open says to run it before the broad lane; the gate refuses a dirty pool, so it needs a commit, and I ran the broad lane first anyway. It then reported seven unproven lines across three files — every one of them a line I had added — which is exactly the cost the lesson names.",
+      "normalized_key": "the changed line proof ran last not first for the fourth session running the",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1767,7 +1793,7 @@
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**The changed-line proof still has not run**, for the fourth session running, because the gate refuses a dirty pool and I had not committed. The lesson presented at session open says to run it before the broad lane. I ran the broad lane first, again."
+          "lesson": "**The changed-line proof ran last, not first**, for the fourth session running. The lesson presented at session open says to run it before the broad lane; the gate refuses a dirty pool, so it needs a commit, and I ran the broad lane first anyway. It then reported seven unproven lines across three files — every one of them a line I had added — which is exactly the cost the lesson names."
         }
       ]
     },

@@ -480,6 +480,32 @@ def test_the_claims_carrier_still_classifies_across_the_resumes_own_artifact_com
     assert carrier["prepared"]["commit"] == "tag-sha"
 
 
+def test_the_boundary_walk_refuses_rather_than_falling_back_to_legacy_content() -> None:
+    """Exhausting the walk budget must not resolve to the state it exists to avoid.
+
+    Returning the commit it was standing on made `_is_claims_evidence` False, which
+    falls through to `release-content` -- i.e. "HEAD is not the release commit; nothing
+    to resume" after a pushed tag, which is the worst state on this path. A guard that
+    produces the state it guards against is not a guard. The sentinel cannot equal any
+    commit id, so the comparison fails by classification instead of by coincidence.
+    """
+    subject = RESUME_STATE.release_artifact_commit_subject("v1.2.3")
+    cli = _ClassifierCli(
+        revs={f"c{n}^": f"c{n + 1}" for n in range(9)},
+        subject="unused",
+        messages={f"c{n}": subject for n in range(9)},
+    )
+    # Every commit in the chain carries the generated subject and touches only generated
+    # paths, so the walk can never terminate on content -- only on its budget.
+    assert (
+        RESUME_STATE.claims_evidence_boundary(cli, Path("."), "c0", tag_name="v1.2.3")
+        == RESUME_STATE._BOUNDARY_WALK_EXHAUSTED
+    )
+    # The sentinel is not a commit id and not the empty string a failed rev-parse yields,
+    # so a reader debugging a refused resume can tell the two apart.
+    assert RESUME_STATE._BOUNDARY_WALK_EXHAUSTED not in {"", None}
+
+
 def test_a_forged_artifact_commit_subject_does_not_open_the_boundary() -> None:
     """Subject alone is copyable off `git log`; content is not.
 

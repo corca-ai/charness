@@ -589,3 +589,48 @@ def test_rules_mode_says_markdownlint_was_not_forecast_when_absent(monkeypatch: 
     rendered = _rules_text(_rules.build_rules(ROOT, "handoff"))
 
     assert "binary unavailable here" in rendered
+
+
+def test_markdownlint_resolution_walks_all_three_tiers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """#630's class, on the Python side of the mirror.
+
+    This function claimed in its own docstring to mirror `check-markdown.sh` while
+    skipping the `node_modules/.bin` tier and spelling the fallback `npm exec --` with
+    no `--no` — so on a machine without the binary on PATH it reached the npm registry,
+    from a file three planners emit as an operator command. Each tier is asserted
+    separately because the defect was that the MIDDLE one did not exist: a test that
+    only checked the last tier's flag would have passed over the missing tier.
+    """
+    local_bin = tmp_path / "node_modules" / ".bin"
+    local_bin.mkdir(parents=True)
+    local = local_bin / "markdownlint-cli2"
+    local.write_text("#!/bin/sh\n", encoding="utf-8")
+
+    # Tier 1 wins over everything, and `repo_root` is not consulted.
+    monkeypatch.setattr(_pf.shutil, "which", lambda name: f"/usr/bin/{name}")
+    assert _pf._resolve_markdownlint_cmd(tmp_path) == ["markdownlint-cli2"]
+
+    # Tier 2: no binary on PATH, but the repo has run `npm install`. npm must NOT be
+    # reached — asking it to find a file already sitting in the tree pays the whole
+    # cost for none of the benefit, which is half of what #630 reported.
+    monkeypatch.setattr(_pf.shutil, "which", lambda name: "/usr/bin/npm" if name == "npm" else None)
+    local.chmod(0o755)
+    assert _pf._resolve_markdownlint_cmd(tmp_path) == [str(local)]
+
+    # Tier 2 is skipped when the file is present but not executable, and when no
+    # repo_root is supplied at all — the second is how the sibling call site used to
+    # invoke this, which made the tier unreachable from that lane.
+    local.chmod(0o644)
+    assert _pf._resolve_markdownlint_cmd(tmp_path) == ["npm", "exec", "--no", "--", "markdownlint-cli2"]
+    assert _pf._resolve_markdownlint_cmd(None) == ["npm", "exec", "--no", "--", "markdownlint-cli2"]
+
+    # Tier 3 carries `--no`. Asserted as the exact argv rather than a substring: the
+    # sibling guard test learned that `--no` as a substring also matches `--no-progress`.
+    argv = _pf._resolve_markdownlint_cmd(tmp_path)
+    assert argv[:3] == ["npm", "exec", "--no"]
+
+    # Nothing resolves: the caller must be able to say "not forecast" rather than crash.
+    monkeypatch.setattr(_pf.shutil, "which", lambda _name: None)
+    assert _pf._resolve_markdownlint_cmd(tmp_path) is None
