@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-15",
-  "source_artifact_count": 513,
-  "candidate_count": 2089,
+  "source_artifact_count": 514,
+  "candidate_count": 2094,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1434,6 +1434,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:98ac39d4c8ea",
+      "kind": "current_focus",
+      "lesson": "S6 of the 6.0.0 release scope — worktree isolation for write-capable subagents, the monitored standing runner, the exported `link_only_lines` bar default, and [#633](https://github.com/corca-ai/charness/issues/633) — landed in one commit after two review rounds.",
+      "normalized_key": "s6 of the 6 0 0 release scope worktree isolation for write capable subagents",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+          "date": "2026-08-15",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S6 of the 6.0.0 release scope — worktree isolation for write-capable subagents, the monitored standing runner, the exported `link_only_lines` bar default, and [#633](https://github.com/corca-ai/charness/issues/633) — landed in one commit after two review rounds."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:08dca14777d4",
       "kind": "next_improvement",
       "lesson": "a bar is two decisions, its value and its permitted direction plus who may change it. Recording only the value satisfies `bar-recorded-as-prose` and still leaves the ratchet as prose, which is what round 2 measured here.",
@@ -1586,6 +1612,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "before placing any issue into a build slice, open the surface it names and confirm the defect reproduces on the current tree. An issue is a claim about the past. This is the third recorded failure of the same lesson and the second on the same issue number, so the remedy has to be a step in the work, not a thing to remember."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:62a58cb4f6aa",
+      "kind": "next_improvement",
+      "lesson": "**capability** — add a repo gate that refuses a commit whose diff removes no occurrence of text a scripted edit claimed to supersede. Cheaper first cut: a `check_claimed_replacements.py` that reads a slice's declared superseded-string list and greps for it. This is the `T` the Engelbart lens says both retros owed and neither delivered.",
+      "normalized_key": "capability add a repo gate that refuses a commit whose diff removes no occurrence",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — add a repo gate that refuses a commit whose diff removes no occurrence of text a scripted edit claimed to supersede. Cheaper first cut: a `check_claimed_replacements.py` that reads a slice's declared superseded-string list and greps for it. This is the `T` the Engelbart lens says both retros owed and neither delivered."
         }
       ]
     },
@@ -1820,6 +1872,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**memory**: a cost recorded without a direction teaches the next session to route around it. `~22 minutes … budget it per slice` was read as a constant of nature by three consecutive sessions, this one included, and the fast path was one directory away the whole time."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3de02bf27ac0",
+      "kind": "next_improvement",
+      "lesson": "**memory** — the export-completeness class is filed as [#634](https://github.com/corca-ai/charness/issues/634) with its three measured instances, so instance four is a lookup rather than a rediscovery.",
+      "normalized_key": "memory the export completeness class is filed as 634 https github com corca ai",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory** — the export-completeness class is filed as [#634](https://github.com/corca-ai/charness/issues/634) with its three measured instances, so instance four is a lookup rather than a rediscovery."
         }
       ]
     },
@@ -2106,6 +2184,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "when one configuration switch governs two mechanisms with different false-positive profiles, split the mechanism rather than shipping the switch — the noisy arm's escape hatch will disarm the quiet one."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fe496c9c526d",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — a test written to close a blocker is not accepted until the fix has been broken and the test observed FAILING. Applied twice this session, once by habit and once only after a near-miss; make it the rule, not the habit.",
+      "normalized_key": "workflow a test written to close a blocker is not accepted until the fix",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — a test written to close a blocker is not accepted until the fix has been broken and the test observed FAILING. Applied twice this session, once by habit and once only after a near-miss; make it the rule, not the habit."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:97ce3e4d7b1d",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — read `.claude/agents/<type>.md` before writing a spawn prompt that promises the agent a capability; two reviewers spent report space on a tool I told them they had and they did not.",
+      "normalized_key": "workflow read claude agents type md before writing a spawn prompt that promises the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — read `.claude/agents/<type>.md` before writing a spawn prompt that promises the agent a capability; two reviewers spent report space on a tool I told them they had and they did not."
         }
       ]
     },

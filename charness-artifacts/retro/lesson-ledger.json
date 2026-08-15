@@ -807,6 +807,14 @@
       "lesson_id": "guard-adjacent-to-action",
       "outcome": "read-but-not-applied",
       "anchor": "It was in view at session open and the handoff I then rewrote still carried a Current State entry with no owning link, command, or issue id; validate_handoff_artifact refused it with '1 entry(s) in ## Current State and ## Next Session carry no owner'. Repaired by pointing the entry at the S5 guard record. This is the second consecutive session where presentation did not make it binding."
+    },
+    {
+      "event_id": "s6-premise-check-rescoped-sc11",
+      "session_id": "2026-08-15-s6",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
+      "lesson_id": "premise-not-checked-against-source",
+      "outcome": "changed-an-action",
+      "anchor": "Presented at session open; I ran the premise check against source before writing code and it rescoped SC11. The plan read 'the monitored-phase path for long-running children' as work to build; grep showed scripts/subprocess_guard.run_monitored_phase already had three production callers, and the 2026-08-14 retro records a previous attempt at it being deleted as a near-duplicate. The action changed from writing a new module to wiring run_standing_pytest.py:467 onto the existing owner, recorded in the S6 entry of charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md. Counterfactual: without the check I would have written the duplicate module the repo had already deleted once, which is where the work would have gone otherwise."
     }
   ],
   "lessons": {
@@ -828,10 +836,10 @@
     "premise-not-checked-against-source": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-premise-not-checked-against-source",
-      "score_total": -1,
-      "score_count": 7,
+      "score_total": 0,
+      "score_count": 8,
       "outcome_counts": {
-        "changed-an-action": 1,
+        "changed-an-action": 2,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,
