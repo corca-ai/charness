@@ -82,12 +82,11 @@ alongside the breaking `## References` rule.
   green. `check_boundary_bypass_ratchet.py` already has the stronger form, and
   the handoff ceiling legitimately ROSE by operator ruling — so the ask is to
   record each bar's direction and authority, not to ratchet everything.
-- **Write-capable parallel authors still share the parent worktree.** S4 ran five
-  of them under a prompt sentence forbidding mutating git ops — prose, not
-  enforcement. Owner input is that isolation is the preferred direction, so S6
-  weighs a separate worktree per write-capable author against the hook and
-  permission-rule options. Read-only reviewers are already covered: the typed
-  `bounded-reviewer` carries no Bash.
+- **SC10 is RULED: isolation, not refusal.** Write-capable spawns get their own
+  worktree; the three refusal mechanisms were each measured and rejected, with
+  reasons in `## Owner Rulings`. S6 implements it. Until then, write-capable
+  parallel authors still share the parent tree under a prompt sentence — S4 ran
+  five that way — so spawn them isolated now rather than waiting for S6.
 - **Nothing checks whether an authored descriptor is TRUE.** The gate only checks
   a line is not bare. S4's were accepted on sampled verification by owner ruling,
   and a re-verification sweep is explicitly NOT owed — but future delegated

@@ -150,17 +150,14 @@ Ordering is by dependency pressure, not by theme.
   consumer's own bar expressible; whether a repo-calibrated threshold should ship
   as a DEFAULT is left open rather than decided inside this slice.
 - **S5 — structural umbrellas.** #586, then #584, #583, #582.
-- **S6 — operating contract.** No-mutating-git for write-capable subagents; a
-  monitored-phase path for long-running children. **Design input recorded
-  2026-08-15 (owner: "격리 잘 시키고"): worktree ISOLATION for write-capable
-  parallel authors is a fourth candidate mechanism alongside the hook, the
-  permission rule, and the typed agent definition, and it is the only one that
-  removes the shared tree rather than policing it.** S4 exercised the exposure
-  it addresses: five write-capable subagents ran concurrently in the shared
-  worktree under a prompt sentence forbidding mutating git ops — a prose rule,
-  not enforcement. The read-only side is already prevented on this host, since
-  the `bounded-reviewer` type carries no Bash at all; the write-capable side is
-  not. Also carries the exported-bar default from the ruling below. **Plus
+- **S6 — operating contract.** **Worktree ISOLATION for write-capable subagents**
+  (owner ruling 2026-08-15: "격리 잘 시키고"), replacing the retired
+  no-mutating-git framing; plus a monitored-phase path for long-running children.
+  S4 exercised the exposure this addresses: five write-capable subagents ran
+  concurrently in the shared worktree under a prompt sentence forbidding mutating
+  git ops — a prose rule, not enforcement. The read-only side is already covered
+  on this host, since the `bounded-reviewer` type carries no Bash. Also carries
+  the exported-bar default from the rulings below. **Plus
   [#633](https://github.com/corca-ai/charness/issues/633)** (owner ruling,
   2026-08-15): a disposition spelling `session_id: "none"` under any status other
   than `missing-start` parses, increments `completed_evaluation_count`, and skips
@@ -380,8 +377,12 @@ Each criterion names the slice that owns it. Coverage is asserted in
    repo is at or under that bar.
 9. **(S5)** Each umbrella has one executable guard with a recorded measurement of
    what it catches on the current tree, and a stated remainder.
-10. **(S6)** A write-capable subagent cannot run a worktree-mutating git op, while
-    permitted git ops still succeed.
+10. **(S6)** A write-capable subagent cannot reach the parent's worktree or index,
+    because it does not share them: a write-capable spawn runs in its own
+    worktree. **REWRITTEN by owner ruling 2026-08-15**, from "cannot run a
+    worktree-mutating git op ... is refused with the rule named". The refusal
+    framing is retired, not weakened by accident, and the reasons are recorded in
+    the ruling below so it is not re-litigated.
 11. **(S6)** A long-running child is monitored rather than lost to a wrapper
     timeout.
 12. **(S7)** Both #608 and #618-#627 read back `CLOSED` from the provider via
@@ -435,10 +436,17 @@ Each criterion names the slice that owns it. Coverage is asserted in
   rather than degrading to NOT-RUN.
 - Verification type: manual — (SC9) each umbrella guard's recorded measurement
   and stated remainder are checked in.
-- Verification type: integration — (SC10) a write-capable subagent attempting
-  `git stash`/`checkout`/`reset` in the shared worktree is refused with the rule
-  named, exercised through the wired spawn path rather than by direct call.
-  Negative: `git add`/`commit` by the same agent still succeed.
+- Verification type: integration + recorded probe — (SC10) `charness worktree
+  doctor` reports a prepared, separate worktree for a write-capable author, and
+  `reviewer_boundary_fingerprint verify` over a window containing such a spawn
+  returns no UNDECLARED drift in the parent tree. Negative: the same agent's
+  `git add`/`commit` inside its OWN worktree still succeed, so isolation is not
+  achieved by taking the shell away. **What cannot be automated, stated rather
+  than papered over:** the spawn itself is issued by an agent, not by a script,
+  and probe `2026-07-10-issue-430` recorded `no host-exposed automated spawn-denial
+  probe surface found`. So the spawn landing in a separate worktree is proven by a
+  RECORDED LIVE PROBE per host, on the same standing as envelope binding and
+  result delivery, never by a suite assertion.
 - Verification type: integration — (SC11) a child exceeding the wrapper timeout is
   still tracked to completion and its result retrievable.
 - Verification type: unit — (SC13) the handoff validator REFUSES a `## References`
@@ -552,6 +560,34 @@ whether SC10 is satisfiable on a given host depends on that choice.
   which is the form SC9 already requires. Rationale: #582's own body says it is
   "not one PR", and taking it whole leaves #618-#627's fixes stranded for several
   more sessions.
+
+- **RULED 2026-08-15: SC10 IS ISOLATION, NOT REFUSAL.** Write-capable subagents
+  spawn into their own worktree; the parent's tree and index become structurally
+  unreachable rather than policed. What the ruling gives up, said plainly: there
+  is no refusal message. A mutating git op SUCCEEDS — in a throwaway tree where it
+  harms nothing.
+
+  The three refusal mechanisms were measured and each fails for its own reason,
+  recorded so S6 does not re-open them. **The typed agent definition** cannot
+  satisfy the criterion at all: it works by removing Bash, so the same agent
+  cannot run the `git add`/`commit` the negative clause requires to succeed — and
+  its binding is host-dependent, with probe `2026-07-10-issue-430` recording a
+  session where the reviewer held Bash, Edit, Write, and Agent and a shell probe
+  executed. It remains correct for READ-ONLY reviewers, where "no shell at all" is
+  the stronger property, and it bound on both S4 review rounds. **A host
+  permission rule** is not charness's to ship: the setup skill, presets, and
+  profiles declare no settings or permissions surface, so it would live in
+  unversioned host-local config and reach no consuming repo, while matching git
+  command strings is evaded by `git -C`, an alias, or `sh -c`. **A git hook**
+  cannot cover the named commands — `checkout` and `stash` have no vetoing
+  pre-hook and `reset` has no hook at all, so the very operations the old
+  criterion enumerated are the ones git gives no veto for.
+
+  Isolation is also the only candidate charness already owns and exports:
+  `charness worktree prepare`/`doctor` and `.agents/worktree-adapter.yaml` ship
+  today. The detective control stays as the backstop for anything still sharing
+  the tree — `reviewer_boundary_fingerprint` snapshot/verify, which S4 ran across
+  both review windows.
 
 - **RULED 2026-08-15: the exported gate's `link_only_lines` bar defaults to 0,
   and the work lands in S6.** A consuming repo must not inherit a threshold
