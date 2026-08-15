@@ -1,8 +1,15 @@
 """Artifact and Git commit owner for release-linked issue closeout evidence."""
 from __future__ import annotations
 
+import runpy
 from pathlib import Path
 from typing import Any
+
+# The observer-path reader is SHARED, not copied, and read from the module that WRITES
+# the field: this module and `commit_post_publish_artifact` both decide whether an
+# observer record exists, and a private copy is how they came to disagree about
+# `path: None`.
+observer_path = runpy.run_path(str(Path(__file__).with_name("release_observer.py")))["observer_path"]
 
 
 def _write_and_stage(
@@ -20,8 +27,8 @@ def _write_and_stage(
         release_url=payload.get("release_url") or expected_release_url,
         issue_closeout=payload["issue_closeout"],
     )
-    observer_path = str((payload.get("release_observer") or {}).get("path", "")).strip()
-    paths = [artifact_relpath, *([observer_path] if observer_path else [])]
+    observer = observer_path(payload)
+    paths = [artifact_relpath, *([observer] if observer else [])]
     run(["git", "add", *paths], cwd=repo_root)
 
 
@@ -63,6 +70,25 @@ def commit_issue_closeout_carrier_artifact(
     paragraphs = payload.get("issue_closeout_draft_validation", {}).get("paragraphs")
     if not isinstance(paragraphs, list) or not paragraphs:
         raise SystemExit("release issue closeout carrier paragraphs are missing after preflight validation")
+    # The observer record must EXIST before this commit, because pushing this commit is
+    # what auto-closes the issues -- and `safe_write_release_observer` swallows every
+    # exception into `status: capture_error, path: None`. Without this refusal a failed
+    # observer write let the closes happen with their distinct-channel evidence missing,
+    # and then permanently blocked recovery: `_validate_carrier_evidence_tree` refuses a
+    # carrier tree that does not carry exactly one observer. So the failure mode was
+    # "close everything, record nothing, and make it unrepairable" -- silently.
+    #
+    # Refused HERE rather than at the observer writer, which is deliberately non-fatal
+    # because it also runs on lanes where a capture failure is genuinely advisory. This
+    # is the one call site where the next statement is irreversible.
+    if not observer_path(payload):
+        status = (payload.get("release_observer") or {}).get("status") or "missing"
+        raise SystemExit(
+            "release issue closeout carrier refused: the release observer record was not written "
+            f"(status: {status}), and pushing this commit is what closes "
+            "the issues. Repair the observer capture and re-run the closeout resume; a carrier "
+            "without exactly one observer record cannot be recovered by --resume either."
+        )
     preflight = payload.get("issue_closeout_preflight", {})
     payload["issue_closeout"] = {
         "status": "carrier-pending-state-verification",

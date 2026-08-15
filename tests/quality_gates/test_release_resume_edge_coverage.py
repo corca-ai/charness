@@ -43,12 +43,23 @@ class _ClaimsResumeCli:
         self.commands.append(command)
         return SimpleNamespace(returncode=0, stdout="https://example.test/v1.2.3")
 
-    def run_notes_file_preflight(self, repo_root, *, target_tag, notes_file, on_resume=False):
+    def run_notes_file_preflight(
+        self, repo_root, *, target_tag, notes_file, on_resume=False, previous_version=None
+    ):
         # Recorded, never executed against the real filesystem: the stub passes
         # `repo_root=Path(".")`, so a real preflight here would read the AUTHORING repo's
         # adapter and its drafted-notes directory against a fixture tag.
+        # `previous_version` is recorded because the resume lane is the reason it exists:
+        # the manifest is ALREADY bumped there, so without it the outgoing version is
+        # ungrounded on the one lane that publishes, and the note that passed at prepare
+        # is refused at the boundary whose only remedy locks the resume out.
         self.notes_preflights.append(
-            {"target_tag": target_tag, "notes_file": notes_file, "on_resume": on_resume}
+            {
+                "target_tag": target_tag,
+                "notes_file": notes_file,
+                "on_resume": on_resume,
+                "previous_version": previous_version,
+            }
         )
 
     @staticmethod
@@ -139,7 +150,10 @@ def _resume_claims_publication_leg(
         },
     }
     plan = {
-        "payload": {"commit_message": "Release v1.2.3"}, "tag_name": "v1.2.3", "branch": "main",
+        # `previous_version` is what the real planner carries and what the notes lint must
+        # ground on this lane; the fixture would otherwise pin the defect as intended.
+        "payload": {"commit_message": "Release v1.2.3", "previous_version": "1.2.2"},
+        "tag_name": "v1.2.3", "branch": "main",
         "backend": "github", "issue_repo": "example/demo", "release_content_paths": [], "title": "v1.2.3",
     }
     args = SimpleNamespace(execute=True, remote="origin", notes_file=notes_file, close_issue=[])
@@ -429,6 +443,94 @@ def test_the_prepared_claims_review_arms_classify_in_process() -> None:
     assert at_evidence["claims_evidence_commit"] == "r-sha"
 
 
+def test_the_claims_carrier_still_classifies_across_the_resumes_own_artifact_commit() -> None:
+    """The resume lane creates a commit the classifier could not see, and that made every
+    post-push failure on a claims-lane release unrecoverable.
+
+    `resume_publish` re-runs the full quality gate, which regenerates tracked inventory
+    under `charness-artifacts/`, and `commit_artifact_before_push` commits that churn so
+    the pre-push hook does not observe a dirty worktree. The result is `P -> R -> C ->
+    carrier`, while both post-publication claims arms required the carrier's parent (or
+    grandparent) to be R EXACTLY. Every arm fell through to `release-content`, and
+    `--resume` answered "nothing to resume" -- with the tag already on the remote and an
+    arbitrary prefix of the issue set already closed.
+
+    It stayed invisible because the end-to-end tests stub `commit_artifact_before_push`
+    to a no-op, so no test ever put the two together.
+    """
+    subject = RESUME_STATE.release_artifact_commit_subject("v1.2.3")
+
+    carrier = RESUME_STATE.resumable_state(
+        Path("."), tag_name="v1.2.3", commit_message="Release demo 1.2.3", remote="origin",
+        branch="main", backend={}, record_path=_RECORD_PATH,
+        cli=_ClassifierCli(
+            revs={"HEAD": "carrier-sha", "HEAD^": "c-sha", "c-sha^": "r-sha", "tag": "tag-sha"},
+            subject="Record release issue closeout carrier for v1.2.3",
+            messages={"HEAD": "carrier\n\nClose #44.", "HEAD^": subject, "c-sha": subject},
+            close_refs=["#44"],
+            marked=("tag-sha",),
+            parents={"tag-sha": "base-sha", "r-sha": "tag-sha"},
+            children={"tag-sha": "r-sha"},
+        ),
+    )
+    assert carrier["phase"] == "post-publication-claims-carrier"
+    # The bound boundary is still R, never C: the recovery lane must re-validate against
+    # the reviewed claims record, not against a generated inventory commit.
+    assert carrier["claims_evidence_commit"] == "r-sha"
+    assert carrier["prepared"]["commit"] == "tag-sha"
+
+
+def test_a_forged_artifact_commit_subject_does_not_open_the_boundary() -> None:
+    """Subject alone is copyable off `git log`; content is not.
+
+    `git commit --allow-empty -m "chore(release): commit v1.2.3 artifact before resume
+    push"` over staged content would otherwise be walked past, and the run would tag,
+    push, create the release and close issues over content the reviewed claims record
+    does not cover — while binding publication to that record is the boundary's whole
+    purpose. Here the commit carries the right subject and touches a path outside the
+    generated-artifact tree.
+    """
+    subject = RESUME_STATE.release_artifact_commit_subject("v1.2.3")
+    carrier = RESUME_STATE.resumable_state(
+        Path("."), tag_name="v1.2.3", commit_message="Release demo 1.2.3", remote="origin",
+        branch="main", backend={}, record_path=_RECORD_PATH,
+        cli=_ClassifierCli(
+            revs={"HEAD": "carrier-sha", "HEAD^": "c-sha", "c-sha^": "r-sha", "tag": "tag-sha"},
+            subject="Record release issue closeout carrier for v1.2.3",
+            messages={"HEAD": "carrier\n\nClose #44.", "HEAD^": subject, "c-sha": subject},
+            close_refs=["#44"],
+            marked=("tag-sha",),
+            parents={"tag-sha": "base-sha", "r-sha": "tag-sha"},
+            children={"tag-sha": "r-sha"},
+            evidence_changed=["scripts/some_source_file.py"],
+        ),
+    )
+    assert carrier["phase"] == "release-content"
+
+
+def test_an_operator_commit_between_the_claims_record_and_the_carrier_is_still_refused() -> None:
+    """The widening is exactly the release's OWN generated commit and nothing else.
+
+    A commit an operator authored in that window is the thing the direct-child rule exists
+    to catch, so it must still fall through -- otherwise this repair would have traded a
+    recoverable release for an unwatched one."""
+    carrier = RESUME_STATE.resumable_state(
+        Path("."), tag_name="v1.2.3", commit_message="Release demo 1.2.3", remote="origin",
+        branch="main", backend={}, record_path=_RECORD_PATH,
+        cli=_ClassifierCli(
+            revs={"HEAD": "carrier-sha", "HEAD^": "x-sha", "x-sha^": "r-sha", "tag": "tag-sha"},
+            subject="Record release issue closeout carrier for v1.2.3",
+            messages={"HEAD": "carrier\n\nClose #44.", "HEAD^": "docs: a stray operator edit",
+                      "x-sha": "docs: a stray operator edit"},
+            close_refs=["#44"],
+            marked=("tag-sha",),
+            parents={"tag-sha": "base-sha", "r-sha": "tag-sha"},
+            children={"tag-sha": "r-sha"},
+        ),
+    )
+    assert carrier["phase"] == "release-content"
+
+
 def test_the_artifact_commit_pathspec_covers_the_adapter_record_without_a_phantom() -> None:
     """`git add` exits 128 on a pathspec matching nothing (`git status` does not), and
     `cli.run` is check=True -- so a candidate list containing an absent path would kill a
@@ -468,6 +570,13 @@ def test_the_claims_resume_lane_runs_the_notes_file_preflight_before_publishing(
     # The resume-aware remedy arm: the generic blocker tells the operator to delete the
     # drafted notes AND COMMIT that, which strands a resume behind a third commit.
     assert all(call["on_resume"] is True for call in preflights)
+    # The OUTGOING version reaches the lint on this lane. The manifest is already bumped
+    # here, so `_known_versions` reads the version being CUT from it -- and without this
+    # argument a rollback paragraph naming the outgoing version is grounded at prepare and
+    # ungrounded at publish. That refusal lands where the only remedy (edit the notes) puts
+    # a commit on top of the claims record and makes the resume unreachable, so the
+    # asymmetry had to be closed on the lane, not left to the operator.
+    assert all(call["previous_version"] == "1.2.2" for call in preflights)
 
 
 @pytest.mark.parametrize(("release_exists", "expected_calls"), [(True, 0), (False, 2)])
@@ -607,17 +716,52 @@ def test_closeout_artifact_owner_stages_observer_and_commits_both_phases() -> No
     carrier = {
         "issue_closeout_draft_validation": {"paragraphs": ["Release v1.2.3", "Close #44."]},
         "issue_closeout_preflight": {"repo": "example/demo", "issues": [{"number": 44}]},
+        # An observer record is now a PRECONDITION of this commit, not decoration: pushing
+        # it is what auto-closes the issues. The earlier version of this fixture omitted it
+        # and so pinned the defect -- a carrier that closes eleven issues while the evidence
+        # for the close was never written.
+        "release_observer": {"path": "charness-artifacts/probe/observer.json"},
     }
     ISSUE_CLOSEOUT_ARTIFACT.commit_issue_closeout_carrier_artifact(
         Path("."), write_artifact=lambda **kwargs: writes.append(kwargs), payload=carrier,
         fresh_checkout_payload={}, artifact_relpath="charness-artifacts/release/latest.md",
         expected_release_url=None, remote="origin", branch="main", run=run,
     )
-    assert commands[0] == ["git", "add", "charness-artifacts/release/latest.md"]
+    assert commands[0] == [
+        "git", "add", "charness-artifacts/release/latest.md",
+        "charness-artifacts/probe/observer.json",
+    ]
     assert commands[1] == ["git", "commit", "-m", "Release v1.2.3", "-m", "Close #44."]
     assert carrier["issue_closeout"]["status"] == "carrier-pending-state-verification"
     assert carrier["issue_closeout_carrier_commit_sha"] == "commit-sha"
     assert len(writes) == 2
+
+
+def test_the_carrier_refuses_to_close_issues_when_the_observer_capture_failed() -> None:
+    """`safe_write_release_observer` swallows every exception into `capture_error`.
+
+    Nothing between that and this commit refused, so a failed observer write closed the
+    whole issue set with its distinct-channel evidence missing -- and then made recovery
+    impossible, because `_validate_carrier_evidence_tree` refuses a carrier tree without
+    exactly one observer record. Asserted at the point the NEXT statement is irreversible.
+    """
+    commands: list[list[str]] = []
+    payload = {
+        "tag_name": "v1.2.3",
+        "issue_closeout_draft_validation": {"paragraphs": ["Release v1.2.3", "Close #44."]},
+        "issue_closeout_preflight": {"repo": "example/demo", "issues": [{"number": 44}]},
+        "release_observer": {"status": "capture_error", "path": None},
+    }
+    with pytest.raises(SystemExit, match="release observer record was not written"):
+        ISSUE_CLOSEOUT_ARTIFACT.commit_issue_closeout_carrier_artifact(
+            Path("."), write_artifact=lambda **kwargs: None, payload=payload,
+            fresh_checkout_payload={}, artifact_relpath="charness-artifacts/release/latest.md",
+            expected_release_url=None, remote="origin", branch="main",
+            run=lambda command, *, cwd: commands.append(command),
+        )
+    # The refusal lands BEFORE any git call. A refusal after `git add`/`git commit` would
+    # leave the carrier staged for the next operator command to push by hand.
+    assert commands == []
 
 
 def test_release_content_close_refs_refuses_when_issue_verifier_is_unavailable(monkeypatch) -> None:

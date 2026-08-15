@@ -801,6 +801,51 @@ Ordering is by dependency pressure, not by theme.
   artifact as the direct child of that record, `--resume` to publish, then close
   #608 and #618-#627.
 
+  **What S7 MEASURED that the plan did not predict, recorded rather than inferred
+  from the diff.**
+
+  - **The closing set does not share one classification, and the release CLI has
+    no way to give it two.** `--close-issue-classification` applies ONE value to
+    every `--close-issue` number, and the resume path demands the exact original
+    arguments, so a second pass is not a supported lane either. `bug` for #608
+    would fabricate a root cause for work this contract's own Fixed Decision says
+    "is not build work". RULING: the set SPLITS. #618-#627 close as `bug` through
+    the release carrier; **#608 closes separately after the publish through the
+    `issue` skill as `feature`**, against the same critique artifact. SC12's
+    readback half is unchanged — all eleven still owe
+    `verify-closeout --expect-state CLOSED`.
+  - **Two gates were RED at HEAD before S7 began**, verified by running each in a
+    detached worktree at `6416e7023`: `check-python-lengths` (the S6b-2 owner at
+    619 code lines against a 360 cap) and `check-boundary-bypass-ratchet` (two
+    crossings added by S6b-2 and S6c with no baseline or exemption entry). Both
+    were reported as clean in their slices' verification lines. They block the
+    publish because `run-quality.sh --release` runs inside `--execute`, so they
+    are repaired here: the dominance owner splits into registry/carriers on a
+    concept seam with the export asserted to IMPORT the siblings, and the two
+    crossings are exempted with the reason they exist — a review found each code
+    path had never executed, so converting them in-process would restore the
+    defect. A third, `check-markdown`, was red at HEAD on markdown S6b-2's own
+    commit introduced.
+  - **Four publish-path defects, none reachable by reading the docs.** The worst:
+    the resume lane's own artifact commit sits between the claims record and the
+    closeout carrier, and the resume-state classifier required direct parentage —
+    so any post-push failure left a pushed tag, a partially closed issue set, and
+    "nothing to resume". It stayed invisible because the end-to-end tests stub
+    that commit to a no-op. All four are in the S7 critique artifact as F5-F9.
+  - **#628/#629/#630/#631 are DELIVERED and stay OPEN**, with the disposition
+    recorded here rather than left undeclared, which is what `## Non-Goals` asked
+    for. Each shipped inside a slice (#630 at S1, #628 at S2, #629 at S4, #631 at
+    S3) but none was in the owner-approved closing set, and expanding an
+    owner-approved set at execution time is not S7's call. #630 in particular
+    gained a NEW instance during S7 — an unguarded `npm exec` in
+    `check_doc_authoring_preflight.py` — so its class was not closed when its
+    named instance was.
+  - **The publish grant is explicit and session-scoped**, obtained from the
+    maintainer in the same message that requested S7 ("push, release"), covering
+    bump, tag, push, publish, and the issue closes. Recorded because
+    `## Constraints` requires a phase-scoped grant and states that a green gate is
+    not one; nothing in the sequence above supplies it.
+
 ## Fixed Decisions
 
 - **The release notes are a derived surface, generated at S7 by a generator built
@@ -1011,9 +1056,13 @@ Each criterion names the slice that owns it. Coverage is asserted in
 12. **(S7)** Both #608 and #618-#627 read back `CLOSED` from the provider via
     `verify-closeout --expect-state CLOSED`, over a complete classification
     ledger committed before the prepared release record.
-14. **(S6b)** A repo-owned document cannot prescribe a command that a registry marks
-    superseded, and the refusal names the replacement. This repo's own handoff is the
-    first subject.
+14. **(S6b)** An artifact passing through the handoff validator cannot prescribe a
+    command that a registry marks superseded, and the refusal names the replacement.
+    This repo's own handoff is the first subject. **REWORDED at S7**, from "a
+    repo-owned document", which the S6b-2 entry recorded as wider than what shipped
+    and owed this reword: the rule reaches the handoff validator's own subjects, not
+    every document in the repo. The code is unchanged; the criterion now names what it
+    does, and the release note was narrowed to match.
 15. **(S6b)** The runtime-budget universe check answers BOTH directions: a prescribed or
     queued expensive command with no budget is reported, not just a budgeted label with
     no command.

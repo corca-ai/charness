@@ -92,10 +92,18 @@ DISPOSITIONS = {
         "`record_contract_graduation_proposal.py`, which requires two distinct evidence "
         "sessions, and a displacement once the unit budget is full"
     ),
+    # `latest_source_path`, NOT `source_retro`. The digest rebuilds the displayed
+    # wording live from the NEWEST retro bullet carrying the class, so an edit at the
+    # origin retro changes nothing a reader sees whenever the two have diverged -- and
+    # they do diverge here today. That is the #624 class (an instruction the reader
+    # cannot act on) surviving inside the lesson loop, so the disposition names the
+    # path this report already prints per candidate.
     "rewrite-in-place": (
         "wrong form -- phrased in the vocabulary of its origin incident, so it fires only on "
-        "near-duplicates of that incident. Revise the wording at its source retro; the ledger "
-        "keeps the id and the accumulated scores"
+        "near-duplicates of that incident. Revise the wording at the candidate's "
+        "`latest_source_path`, which is the retro the digest rebuilds the displayed line "
+        "from; editing the origin `source_retro` changes nothing a reader sees once the two "
+        "have diverged. The ledger keeps the id and the accumulated scores"
     ),
     "strengthen-binding": (
         "form is fine, it was simply not consulted -- bind it to a step a planner emits, "

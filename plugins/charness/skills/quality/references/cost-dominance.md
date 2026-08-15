@@ -46,7 +46,7 @@ your lane. Writing the registry is what arms them, and it arms both at once:
 Neither is advisory. To see what a registry would catch BEFORE arming anything,
 draft it somewhere the gates do not read and point the inventory at it:
 
-```
+```bash
 inventory_command_dominance.py --repo-root . --registry-path .agents/command-dominance.draft.yaml
 ```
 

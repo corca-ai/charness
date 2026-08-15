@@ -18,6 +18,7 @@ a second copy would be a fixture that drifts from the gate it fixtures.
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 from .support import run_shell_script, write_executable
@@ -131,18 +132,67 @@ def test_the_npm_fallback_runs_with_no_registry_access(tmp_path: Path) -> None:
     assert argv[:4] == ["exec", "--no", "--", "markdownlint-cli2"]
 
 
-def test_the_two_sibling_gates_both_guard_npm_against_the_registry() -> None:
-    """The inconsistency #630 opened on, asserted rather than described.
+#: Both refusing spellings, as a WHOLE-FLAG pattern. `--no` is the current documented
+#: flag (check-markdown.sh); `--no-install` is the older alias check-secrets.sh still
+#: uses. Unifying them is a separate behavior change with its own proof, so either is
+#: accepted.
+#:
+#: Written as a substring pair first — `("--no ", "--no-install")` — and then `.strip()`ed
+#: at the comparison, which cancelled the trailing space that was the whole point and
+#: left a bare `--no` substring test. `npm exec -- markdownlint-cli2 --no-progress` then
+#: satisfied a guard about reaching the registry, and so did any line merely containing
+#: the characters `--no`. A bounded review found that in this repair.
+_NPM_EXEC_GUARD_RE = re.compile(r"(?<![\w-])--no(?:-install)?(?![\w-])")
 
-    Spelled as "neither file carries a bare `npm exec`" so that adding a third
-    unguarded call site to either one fails, not only reverting the two that were
-    measured."""
+#: A shell `npm exec ...`, and the argv-list spelling a Python caller uses. The second
+#: pattern is why this test exists in its current form: the previous version iterated a
+#: hardcoded pair of `.sh` filenames while its own docstring claimed to catch "a third
+#: unguarded call site". It could not see Python at all, and there WAS one --
+#: `check_doc_authoring_preflight.py` spelled the fallback `["npm", "exec", "--", ...]`
+#: with no guard, in a file three planners emit as an operator command. A guard whose
+#: reach is narrower than its docstring is the class #630 is filed under.
+_NPM_EXEC_PATTERNS = (
+    re.compile(r"npm\s+exec\b(?P<rest>.*)"),
+    re.compile(r"""["']npm["']\s*,\s*["']exec["'](?P<rest>.*)"""),
+)
+
+
+def test_no_repo_owned_source_reaches_the_npm_registry_through_exec() -> None:
+    """Every repo-owned `npm exec` call site refuses an install, in ANY language.
+
+    Scanned by DISCOVERY over `scripts/**`, not from a filename list, so a new call
+    site in a file nobody thought to name here still fails. Comments are skipped:
+    `check-markdown.sh` documents the unguarded spelling and its measured cost on
+    purpose, and refusing its own prose would teach an author to delete the reasoning.
+    """
     from .support import ROOT
 
-    for name in ("check-markdown.sh", "check-secrets.sh"):
-        text = (ROOT / "scripts" / name).read_text(encoding="utf-8")
-        for line_no, line in enumerate(text.splitlines(), start=1):
+    scanned: list[str] = []
+    for path in sorted((ROOT / "scripts").rglob("*")):
+        if not path.is_file() or path.suffix not in {".sh", ".py"}:
+            continue
+        rel = path.relative_to(ROOT).as_posix()
+        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
             stripped = line.strip()
-            if stripped.startswith("#") or "npm exec" not in stripped:
+            # `#` only. A shell `case` default arm begins `*)` and can carry a real
+            # command (`*) npm exec -- markdownlint-cli2 ;;`), so skipping `*` would
+            # hide exactly the call site this scan exists to find. Python docstring
+            # prose is instead handled by the whole-flag pattern below, which does not
+            # match a sentence describing the unguarded spelling.
+            if stripped.startswith("#"):
                 continue
-            assert "npm exec --no" in stripped, f"{name}:{line_no} reaches the registry: {stripped}"
+            for pattern in _NPM_EXEC_PATTERNS:
+                match = pattern.search(stripped)
+                if match is None:
+                    continue
+                scanned.append(f"{rel}:{line_no}")
+                rest = match.group("rest")
+                assert _NPM_EXEC_GUARD_RE.search(rest), (
+                    f"{rel}:{line_no} reaches the registry: {stripped}"
+                )
+
+    # The scan finding nothing would pass vacuously, which is how this guard would rot
+    # if `scripts/` were reorganized. The known call sites are the liveness proof.
+    assert "scripts/check-markdown.sh" in " ".join(scanned)
+    assert "scripts/check-secrets.sh" in " ".join(scanned)
+    assert "scripts/check_doc_authoring_preflight.py" in " ".join(scanned)

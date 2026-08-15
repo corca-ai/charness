@@ -238,6 +238,16 @@ def resume_post_publication_closeout(
         backend_command=cli.backend_command,
         run=cli.run,
     )
+    # The TAGGED commit, on the lane that posts the comments. This is the sibling
+    # caller of `finalize_release_payload`, and the repair that stopped HEAD being
+    # reported as the released commit was applied only to the other one -- so this
+    # recovery lane, which is exactly where an operator lands after a failed close,
+    # still told every closed issue a commit `v<tag>` does not point at. On the claims
+    # phases the classifier binds `state["prepared"]` to the TAGGED prepared record.
+    claims_phase = state.get("phase") in {
+        "post-publication-claims-carrier",
+        "post-publication-claims-final",
+    }
     cli.finalize_release_payload(
         repo_root,
         payload,
@@ -246,6 +256,7 @@ def resume_post_publication_closeout(
         release_stdout=expected_url or "",
         expected_release_url=expected_url,
         release_verified=verify.returncode == 0,
+        commit_sha=(state.get("prepared") or {}).get("commit") if claims_phase else None,
     )
     payload["issue_closeout_carrier_commit_sha"] = state["head_sha"]
     tail_state = {

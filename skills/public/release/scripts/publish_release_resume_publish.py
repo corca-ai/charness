@@ -36,7 +36,10 @@ def _assert_one_record_path(state: dict[str, Any], record_path: str) -> None:
         )
 
 
-def _notes_preflight(repo_root: Path, *, cli: Any, state: dict[str, Any], tag_name: str, notes_file) -> None:
+def _notes_preflight(
+    repo_root: Path, *, cli: Any, state: dict[str, Any], tag_name: str, notes_file,
+    previous_version: str | None = None,
+) -> None:
     """The drafted-notes refusal, on the lane that actually publishes.
 
     A floor that fires at PREPARE time does not fire at the boundary that publishes. The
@@ -56,7 +59,13 @@ def _notes_preflight(repo_root: Path, *, cli: Any, state: dict[str, Any], tag_na
     """
     if state["release_exists"]:
         return
-    cli.run_notes_file_preflight(repo_root, target_tag=tag_name, notes_file=notes_file, on_resume=True)
+    cli.run_notes_file_preflight(
+        repo_root,
+        target_tag=tag_name,
+        notes_file=notes_file,
+        on_resume=True,
+        previous_version=previous_version,
+    )
 
 
 def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_data: dict[str, Any], cli: Any,
@@ -101,7 +110,10 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     notes_file = args.notes_file.resolve() if args.notes_file else None
     # Above the dry-run return, so the planner's own dry-run packet validates the argument
     # its `repeat_original_arguments` field warns about instead of only advising it.
-    _notes_preflight(repo_root, cli=cli, state=state, tag_name=tag_name, notes_file=notes_file)
+    _notes_preflight(
+        repo_root, cli=cli, state=state, tag_name=tag_name, notes_file=notes_file,
+        previous_version=payload.get("previous_version"),
+    )
     if not args.execute:
         payload["resume"] = "dry-run: would re-validate gates, create missing refs, then publish the existing release commit"
         emit_yaml(payload)
@@ -146,7 +158,10 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # boundary is identifiable and the next resume refuses with the marker recovery text --
     # whose advice is to reset past the committed claims record. A gate must not create the
     # state it then refuses.
-    _notes_preflight(repo_root, cli=cli, state=state, tag_name=tag_name, notes_file=notes_file)
+    _notes_preflight(
+        repo_root, cli=cli, state=state, tag_name=tag_name, notes_file=notes_file,
+        previous_version=payload.get("previous_version"),
+    )
     commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name, record_path=record_path)
 
     def publish() -> tuple[str, Any]:
@@ -167,8 +182,13 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         return output, cli.verify_release_visible(repo_root, tag_name, backend, backend_command=cli.backend_command, run=cli.run)
 
     release_stdout, verified = common.timed(payload, "push_create_verify_release", publish)
+    # The TAGGED commit on the claims lane, not HEAD: `publish` tags
+    # `state["prepared"]["commit"]`, while HEAD here is the follow-on evidence commit
+    # `commit_artifact_before_push` may have just made. The non-claims lane has no such
+    # commit, so `prepared` is HEAD there and the value is unchanged.
     cli.finalize_release_payload(repo_root, payload, artifact_relpath=artifact, host_payload=host, release_stdout=release_stdout,
-                                 expected_release_url=expected_url, release_verified=verified.returncode == 0)
+                                 expected_release_url=expected_url, release_verified=verified.returncode == 0,
+                                 commit_sha=(state.get("prepared") or {}).get("commit") if claims_lane else None)
     if verified.returncode != 0:
         cli.commit_final_release_artifact(repo_root, adapter_data=adapter_data, payload=payload, host_payload=host,
                                           fresh_checkout_payload=fresh, artifact_relpath=artifact, expected_release_url=expected_url,

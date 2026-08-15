@@ -29,6 +29,7 @@ blocking commit-gate plan; a non-blocking guard test keeps it that way.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 import subprocess
@@ -144,13 +145,27 @@ def _doc_link_indices(repo_root: Path) -> tuple[Path, set[str], dict[str, str], 
 # --- per-class collectors (each reuses the owning validator, no fork) --------
 
 
-def _resolve_markdownlint_cmd() -> list[str] | None:
-    """Mirror ``check-markdown.sh``: prefer the ``markdownlint-cli2`` binary, then
-    ``npm exec``. Returns None when neither is available."""
+def _resolve_markdownlint_cmd(repo_root: Path | None = None) -> list[str] | None:
+    """Mirror ``check-markdown.sh``'s three tiers. Returns None when none resolve.
+
+    The mirror is the point, and it had drifted: this function claimed to mirror the
+    shell gate while skipping the ``node_modules/.bin`` tier and spelling the fallback
+    ``npm exec --`` with no ``--no``. #630 is filed against exactly that spelling —
+    without ``--no``, npm reaches the registry and pays the network round trip on any
+    machine where the binary is not on PATH — and this file is emitted as an operator
+    command by ``closeout_bundle_lib``, ``slice_closeout_advisories``, and
+    ``plan_handoff_run``, so the unguarded spelling was live, not dead. A docstring
+    asserting a mirror is not one; the tiers are duplicated here in the same order the
+    shell gate resolves them.
+    """
     if shutil.which("markdownlint-cli2"):
         return ["markdownlint-cli2"]
+    if repo_root is not None:
+        local = repo_root / "node_modules" / ".bin" / "markdownlint-cli2"
+        if os.access(local, os.X_OK):
+            return [str(local)]
     if shutil.which("npm"):
-        return ["npm", "exec", "--", "markdownlint-cli2"]
+        return ["npm", "exec", "--no", "--", "markdownlint-cli2"]
     return None
 
 
@@ -166,7 +181,7 @@ def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
     per-file; a hypothetical cross-file rule (e.g. link-reciprocity) would need
     this to widen to the linked set.
     """
-    cmd = _resolve_markdownlint_cmd()
+    cmd = _resolve_markdownlint_cmd(repo_root)
     if cmd is None:
         return {"available": False, "findings": []}
     proc = subprocess.run(

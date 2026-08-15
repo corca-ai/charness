@@ -27,6 +27,9 @@ OP_PLACEHOLDERS: dict[str, frozenset[str]] = {
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_ENV = "CHARNESS_RELEASE_PROGRESS_INTERVAL_SECONDS"
 _RELEASE_DELTA = runpy.run_path(str(Path(__file__).with_name("release_delta.py")))
+# Read from the module that WRITES the field, never re-spelled here: the two readers of
+# `release_observer.path` disagreed about `None` once already.
+observer_path = runpy.run_path(str(Path(__file__).with_name("release_observer.py")))["observer_path"]
 collect_release_delta = _RELEASE_DELTA["collect_release_delta"]
 path_list_sha256 = _RELEASE_DELTA["path_list_sha256"]
 _TAG_IDENTITY = runpy.run_path(str(Path(__file__).with_name("release_tag_identity.py")))
@@ -405,12 +408,12 @@ def commit_post_publish_artifact(
         release_url=payload.get("release_url") or expected_release_url,
         issue_closeout=payload.get("issue_closeout"),
     )
-    observer_path = str((payload.get("release_observer") or {}).get("path", "")).strip()
-    tracked_paths = [artifact_relpath, *([observer_path] if observer_path else [])]
+    observer = observer_path(payload)
+    tracked_paths = [artifact_relpath, *([observer] if observer else [])]
     diff_result = run_command(["git", "diff", "--quiet", "--", *tracked_paths], cwd=repo_root, check=False)
-    if diff_result.returncode == 0 and observer_path:
+    if diff_result.returncode == 0 and observer:
         untracked = run_command(
-            ["git", "ls-files", "--error-unmatch", observer_path], cwd=repo_root, check=False
+            ["git", "ls-files", "--error-unmatch", observer], cwd=repo_root, check=False
         )
         if untracked.returncode != 0:
             diff_result = untracked

@@ -1124,11 +1124,15 @@
       "source_paths": [
         ".agents/command-dominance.yaml",
         "scripts/check_command_dominance.py",
+        "skills/public/quality/scripts/command_dominance_carriers.py",
         "skills/public/quality/scripts/command_dominance_lib.py",
+        "skills/public/quality/scripts/command_dominance_registry.py",
         "skills/public/quality/scripts/inventory_command_dominance.py"
       ],
       "derived_paths": [
+        "plugins/charness/skills/quality/scripts/command_dominance_carriers.py",
         "plugins/charness/skills/quality/scripts/command_dominance_lib.py",
+        "plugins/charness/skills/quality/scripts/command_dominance_registry.py",
         "plugins/charness/skills/quality/scripts/inventory_command_dominance.py"
       ],
       "sync_commands": [

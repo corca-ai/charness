@@ -168,6 +168,24 @@ def write_release_observer(
     return {"status": installed_readback["status"], "path": str(relpath), "record": record}
 
 
+def observer_path(payload: dict[str, Any]) -> str:
+    """The observer record's repo-relative path, or `""` when there is none.
+
+    THE canonical reader, and it lives beside the WRITER because that is where the
+    `path: None` convention is decided: `safe_write_release_observer` sets it on a
+    capture error. Two callers read this field -- the post-publish artifact commit and
+    the issue-closeout carrier -- and they disagreed. `dict.get("path", "")` returns the
+    stored `None` (the default is not used) and `str(None)` is the TRUTHY string
+    `"None"`, so the old spelling staged a pathspec named `None`, which `git add`
+    refuses AFTER the release is created and pushed, and made a presence check pass for
+    the exact failure it guarded. A repair beside ONE caller left the other on the
+    defective spelling while claiming "one reader"; a bounded review found that in the
+    repair.
+    """
+    value = (payload.get("release_observer") or {}).get("path")
+    return value.strip() if isinstance(value, str) else ""
+
+
 def safe_write_release_observer(
     repo_root: Path,
     *,

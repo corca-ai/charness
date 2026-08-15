@@ -692,9 +692,16 @@ def test_sc19_and_sc16_ship_to_consumers_rather_than_living_only_here() -> None:
     plugin = ROOT / "plugins" / "charness"
     # CONTENT, not `.is_file()`. A byte-stale mirror -- a pre-slice copy without
     # the blind-class paragraph -- satisfied every earlier assertion here.
+    # The SIBLINGS are listed, not just the lib. `command_dominance_lib` loads
+    # `command_dominance_registry` and `command_dominance_carriers` by path from its own
+    # directory, so an export shipping the lib without them raises at import on the first
+    # consumer machine -- which is #634's class exactly: a dependency that was pinned in
+    # the source tree and did not travel.
     for rel in (
         "skills/quality/scripts/inventory_command_dominance.py",
         "skills/quality/scripts/command_dominance_lib.py",
+        "skills/quality/scripts/command_dominance_registry.py",
+        "skills/quality/scripts/command_dominance_carriers.py",
         "skills/quality/references/cost-dominance.md",
     ):
         source = ROOT / rel.replace("skills/", "skills/public/", 1)
@@ -705,6 +712,17 @@ def test_sc19_and_sc16_ship_to_consumers_rather_than_living_only_here() -> None:
         encoding="utf-8"
     )
     assert "cost-dominance" in angles
+    # Loaded FROM THE EXPORT, in a fresh module namespace, so "the files are present"
+    # is not mistaken for "the family imports there". The sibling loader resolves
+    # relative to `__file__`, and this is the only assertion that exercises that.
+    import importlib.util
+
+    exported = plugin / "skills" / "quality" / "scripts" / "command_dominance_lib.py"
+    spec = importlib.util.spec_from_file_location("exported_command_dominance_lib", exported)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.parse_registry({"version": module.REGISTRY_VERSION, "rules": []}).rules == ()
+    assert module.split_chunks('bash -c "a && b"') == ['bash -c "a && b"']
 
 
 # --------------------------------------------------------------------------

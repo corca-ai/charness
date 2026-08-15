@@ -246,8 +246,17 @@ def finalize_release_payload(
     release_stdout: str,
     expected_release_url: str | None,
     release_verified: bool,
+    commit_sha: str | None = None,
 ) -> None:
-    payload["commit_sha"] = run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
+    # `commit_sha` is the TAGGED commit when the caller knows it, and HEAD only as a
+    # fallback. On the claims lane those differ: the tag is created at the prepared
+    # record P, while HEAD by this point is the follow-on evidence commit the resume
+    # makes for refreshed quality inventory. This value is rendered into the durable
+    # release record, into the release-observer JSON's `target.commit`, and into the
+    # comment posted on EVERY issue this release closes -- so reading HEAD told each
+    # reporter a commit that `v6.0.0` does not point at. A silent mis-report at an
+    # irreversible boundary, which is the class this lane exists to hold.
+    payload["commit_sha"] = commit_sha or run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
     payload["artifact_path"] = artifact_relpath
     record_real_host_verdict(payload, host_payload)
     payload["public_release_verification"] = "verified" if release_verified else "failed"

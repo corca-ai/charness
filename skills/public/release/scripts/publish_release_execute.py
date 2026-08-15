@@ -88,7 +88,12 @@ def _prepare_release_attempt(
     issue_repo = plan["issue_repo"]
 
     notes_file = args.notes_file.resolve() if args.notes_file else None
-    cli.run_notes_file_preflight(repo_root, target_tag=tag_name, notes_file=notes_file)
+    cli.run_notes_file_preflight(
+        repo_root,
+        target_tag=tag_name,
+        notes_file=notes_file,
+        previous_version=plan["payload"].get("previous_version"),
+    )
 
     cli.run(cli.backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     expected_release_url = cli.expected_github_release_url(repo_root, backend, tag_name)

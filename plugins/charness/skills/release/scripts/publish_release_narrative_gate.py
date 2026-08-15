@@ -75,13 +75,23 @@ def derived_claims_required(repo_root: Path) -> bool:
     return bool(adapter["data"].get("require_derived_release_claims", True))
 
 
-def _known_versions(repo_root: Path, target_tag: str) -> tuple[str, ...]:
+def _known_versions(repo_root: Path, target_tag: str, previous_version: str | None = None) -> tuple[str, ...]:
     """Versions this note may name without grounding them.
 
     The tag being cut, plus the version currently in the packaging manifest —
     which is the version a rollback paragraph names. Reading it here rather than
     leaving it to the author is the difference between a rule that permits
     "to return to 5.2.0" and one that refuses every rollback path it is given.
+
+    ``previous_version`` exists because the manifest read is LANE-DEPENDENT and
+    that made the same note legal at prepare and illegal at publish. The execute
+    lane preflights the notes BEFORE the bump, so the manifest still reads the
+    outgoing version and a rollback paragraph naming it is grounded. The resume
+    lane runs after the bump, so the manifest reads the version being cut, the
+    outgoing version becomes ungrounded, and the note is refused at the one
+    boundary where the remedy — edit the file — lands a commit on top of the
+    claims record and locks the resume out entirely. Passing the previous version
+    explicitly makes both lanes ground the same set.
     """
     versions = [target_tag]
     adapter = load_adapter(repo_root)
@@ -93,10 +103,14 @@ def _known_versions(repo_root: Path, target_tag: str) -> tuple[str, ...]:
             current = None
         if isinstance(current, str) and current:
             versions.append(current)
-    return tuple(versions)
+    if isinstance(previous_version, str) and previous_version:
+        versions.append(previous_version)
+    return tuple(dict.fromkeys(versions))
 
 
-def notes_narrative_blockers(repo_root: Path, notes_file: Path, *, target_tag: str) -> list[str]:
+def notes_narrative_blockers(
+    repo_root: Path, notes_file: Path, *, target_tag: str, previous_version: str | None = None
+) -> list[str]:
     """Ungrounded quantities in the notes' AUTHORED prose.
 
     A separate arm from the derived block on purpose, because they fail
@@ -114,7 +128,9 @@ def notes_narrative_blockers(repo_root: Path, notes_file: Path, *, target_tag: s
     """
     if not derived_claims_required(repo_root):
         return []
-    findings = _narrative_lint.lint_file(notes_file, versions=_known_versions(repo_root, target_tag))
+    findings = _narrative_lint.lint_file(
+        notes_file, versions=_known_versions(repo_root, target_tag, previous_version)
+    )
     return _narrative_lint.finding_lines(_narrative_lint.blocking(findings))
 
 
@@ -230,7 +246,12 @@ RESUME_REMEDY = (
 
 
 def run_notes_file_preflight(
-    repo_root: Path, *, target_tag: str, notes_file: Path | None, on_resume: bool = False
+    repo_root: Path,
+    *,
+    target_tag: str,
+    notes_file: Path | None,
+    on_resume: bool = False,
+    previous_version: str | None = None,
 ) -> None:
     # The drafted-notes refusal is a directory listing with no dependency on the
     # bump, the release surface, or the pre-push gates, and `run_narrative_audit`
@@ -270,7 +291,9 @@ def run_notes_file_preflight(
     if notes_file is not None and not notes_blockers:
         claims_blockers = [
             *notes_claim_blockers(repo_root, notes_file),
-            *notes_narrative_blockers(repo_root, notes_file, target_tag=target_tag),
+            *notes_narrative_blockers(
+                repo_root, notes_file, target_tag=target_tag, previous_version=previous_version
+            ),
         ]
         notes_blockers += claims_blockers
     drafted_blockers: list[str] = []

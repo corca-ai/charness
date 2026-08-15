@@ -183,7 +183,10 @@ def _real_gate_inline_code(repo: Path) -> int:
 
 
 def _real_gate_markdownlint(repo: Path) -> int | None:
-    cmd = _pf._resolve_markdownlint_cmd()
+    # `repo` is passed so this comparison resolves the same three tiers the gate does;
+    # without it the no-drift check silently skipped its markdownlint arm on a machine
+    # whose only binary is in `node_modules/.bin`.
+    cmd = _pf._resolve_markdownlint_cmd(repo)
     if cmd is None:
         return None
     return subprocess.run(
@@ -582,7 +585,7 @@ def test_regenerable_verdict_is_none_when_nothing_is_refused(monkeypatch: pytest
 def test_rules_mode_says_markdownlint_was_not_forecast_when_absent(monkeypatch: pytest.MonkeyPatch) -> None:
     # The binary-absent arm must SAY the class was not forecast; a rules mode
     # silently omitting it would read as "no markdownlint rules apply here".
-    monkeypatch.setattr(_pf, "_resolve_markdownlint_cmd", lambda: None)
+    monkeypatch.setattr(_pf, "_resolve_markdownlint_cmd", lambda _repo_root=None: None)
     rendered = _rules_text(_rules.build_rules(ROOT, "handoff"))
 
     assert "binary unavailable here" in rendered

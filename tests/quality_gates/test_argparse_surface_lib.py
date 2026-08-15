@@ -274,3 +274,76 @@ def test_subcommand_choices_still_ignores_a_braced_group_with_spaces() -> None:
     # The member class widened to "anything argparse puts between braces", which
     # must not swallow a JSON-ish line in an epilog.
     assert _lib.subcommand_choices('epilog:\n  {"key": "value"}\n') == set()
+
+
+# A command carrier's own invocation regex, so these cases exercise the real boundary
+# classes rather than a simplified stand-in. The trailing-quote consumption below is a
+# property OF this regex, and a hand-written pattern would not reproduce it.
+_INVOCATION_RE = __import__("runpy").run_path("scripts/check_documented_command_flags.py")["INVOCATION_RE"]
+
+
+def _attribution(carrier: str) -> list[tuple[str, list[str]]]:
+    return [
+        (match.group(0), flags) for match, _tokens, flags in _lib.iter_invocation_tails(carrier, _INVOCATION_RE)
+    ]
+
+
+def test_a_quoted_script_path_is_not_a_nested_command() -> None:
+    """The repo's most common documented shape, and the one a first repair broke.
+
+    `python3 "$SKILL_DIR/scripts/x.py" --flags` quotes the PATH. The invocation regex
+    consumes the closing quote, so a rule that treats "inside quotes" as "nested" cuts
+    the tail at that quote and drops every flag. Measured when it happened: ~130
+    carriers lost their flags and the gate's probe count fell by 54 — a silent coverage
+    loss in a blocking gate, which is strictly worse than the false red being fixed.
+    """
+    carrier = 'python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . --slug <slug>'
+    assert _attribution(carrier) == [('"$SKILL_DIR/scripts/upsert_goal.py"', ["--repo-root", "--slug"])]
+
+
+def test_a_command_inside_another_commands_flag_value_keeps_its_own_flags() -> None:
+    """Both commands were wrong at once before the boundary read quotes.
+
+    The outer command lost every flag written after `--test-command`, and the inner one
+    was handed `--write-fresh-marker`, which it does not accept — a blocking false red
+    on a correct doc, which is what this repo's own handoff hit.
+    """
+    carrier = (
+        "python3 scripts/check_changed_line_mutation_coverage.py --repo-root . "
+        '--test-command "python3 scripts/run_standing_pytest.py --repo-root ." --write-fresh-marker'
+    )
+    outer, inner = _attribution(carrier)
+    assert outer[1] == ["--repo-root", "--test-command", "--write-fresh-marker"]
+    assert inner[1] == ["--repo-root"]
+
+
+def test_a_nested_command_quoted_with_the_other_quote_character_is_still_bounded() -> None:
+    """Single-inside-double is this repo's live spelling for a nested command.
+
+    `.agents/quality-adapter.yaml` writes `"... --test-command 'python3 runner.py ...'"`.
+    A single-state quote scanner ignores the inner `'` while inside `"`, so the inner
+    command inherits the OUTER span and its tail runs past its own closing quote — the
+    exact false attribution the boundary exists to stop.
+    """
+    carrier = (
+        "python3 scripts/sample_mutation_files.py "
+        "--test-command 'python3 scripts/run_standing_pytest.py' --repo-root ."
+    )
+    outer, inner = _attribution(carrier)
+    assert outer[1] == ["--test-command", "--repo-root"]
+    assert inner[1] == []
+
+
+def test_an_apostrophe_in_prose_does_not_swallow_the_rest_of_the_carrier() -> None:
+    """An unterminated quote must yield NO span rather than a runaway one.
+
+    A runaway span would silently stop checking every command after it, which fails in
+    the direction a gate must never fail.
+    """
+    carrier = "python3 scripts/doctor.py --repo-root . # don't worry about this"
+    assert _attribution(carrier) == [("python3 scripts/doctor.py", ["--repo-root"])]
+
+
+def test_an_escaped_quote_does_not_close_a_span() -> None:
+    """`.agents/surfaces.json` carries `\\"` inside JSON strings."""
+    assert _lib._quoted_spans(r'a "b \" c" d') == [(3, 9)]

@@ -202,6 +202,66 @@ def split_arguments(tail: str) -> tuple[tuple[tuple[str, str], ...], list[str]]:
     return tuple(ordered), list(dict.fromkeys(flags))
 
 
+def _quoted_spans(carrier: str) -> list[tuple[int, int]]:
+    """`(start, end)` of each quoted region, `end` being the closing quote's index.
+
+    Scanned ONCE PER QUOTE CHARACTER and unioned, not as one shell-accurate state
+    machine, because the thing that has to be right here is where a NESTED command's
+    value ends -- and this repo's live spelling for that is single-inside-double:
+
+        "python3 sample_mutation_files.py --test-command 'python3 run_standing_pytest.py'"
+
+    A single-state scanner ignores the inner `'` while inside `"`, so the inner command
+    inherits the OUTER span and its tail runs past its own closing quote, which is the
+    exact false attribution this whole boundary exists to stop. Two passes give the
+    inner region its own span, and `_enclosing_span` takes the SMALLEST match.
+
+    Backslash escapes are skipped, so `\"` inside a JSON string does not close a span.
+    An UNTERMINATED quote yields no span rather than running to end of line -- degrading
+    to the old flat behavior is a false red at worst, while a runaway span would
+    silently stop checking every command after it.
+    """
+    spans: list[tuple[int, int]] = []
+    for quote in ("\"", "'"):
+        open_at: int | None = None
+        index = 0
+        while index < len(carrier):
+            char = carrier[index]
+            if char == "\\":
+                index += 2
+                continue
+            if char == quote:
+                if open_at is None:
+                    open_at = index + 1
+                else:
+                    spans.append((open_at, index))
+                    open_at = None
+            index += 1
+    return spans
+
+
+def _enclosing_span(spans: list[tuple[int, int]], position: int) -> tuple[int, int] | None:
+    """The SMALLEST span containing `position`, so a nested region wins over its parent."""
+    enclosing = [(start, end) for start, end in spans if start <= position < end]
+    return min(enclosing, key=lambda span: span[1] - span[0]) if enclosing else None
+
+
+def _command_position(carrier: str, match: "re.Match[str]") -> int:
+    """The index of the command's own first character, skipping a consumed quote.
+
+    `INVOCATION_RE`'s boundary classes include the quote, so a quoted command's match
+    STARTS on the opening quote -- one character outside the span it is inside. Keying
+    the enclosing test on `match.start()` was therefore false for every quoted command,
+    which is the shape the test exists to catch. `match.end() - 1` is not the answer
+    either: the same regex CONSUMES the closing quote when the quoted command carries
+    no arguments, putting that index ON the closing quote, which `start <= i < end`
+    also rejects. The first character of the command itself is inside the span in both
+    shapes.
+    """
+    position = match.start()
+    return position + 1 if position < len(carrier) and carrier[position] in "\"'" else position
+
+
 def iter_invocation_tails(carrier: str, invocation_re) -> Iterator[tuple[re.Match[str], tuple[tuple[str, str], ...], list[str]]]:
     """Yield ``(match, ordered_tokens, flags)`` for each invocation in one carrier.
 
@@ -210,10 +270,60 @@ def iter_invocation_tails(carrier: str, invocation_re) -> Iterator[tuple[re.Matc
     command's arguments to the first -- a blocking false red on a correct doc,
     since `,` is not a shell operator for `split_arguments` to cut on. Cutting at
     the next match instead is the fix, and both documented-command gates need it.
+
+    QUOTE-AWARE, because "the next match" is the wrong boundary when one command is
+    the VALUE of another's flag. `check_changed_line_mutation_coverage.py ...
+    --test-command "python3 run_standing_pytest.py --repo-root ." --write-fresh-marker`
+    is one real invocation carrying another, and the flat rule got BOTH commands
+    wrong at once: the outer one lost every flag written after `--test-command`, and
+    the inner one was handed `--write-fresh-marker`, which it does not accept -- a
+    blocking false red on a correct doc, which is what this repo's own handoff hit.
+    So a nested invocation's tail stops at its closing quote, and an outer
+    invocation's tail skips past nested matches instead of ending at one.
+
+    This is the quote-blind-splitter class a bounded review already found once in the
+    command-dominance detector, surviving here in a second splitter. They stay
+    separate readers on purpose -- that one cuts a chunk, this one cuts a tail.
     """
+    spans = _quoted_spans(carrier)
     matches = list(invocation_re.finditer(carrier))
+    positions = [_command_position(carrier, match) for match in matches]
+    enclosings = [_enclosing_span(spans, position) for position in positions]
+
+    def _nested(index: int) -> tuple[int, int] | None:
+        """The span that makes match `index` a VALUE of another command, if any.
+
+        Being inside quotes is NOT enough, and assuming it was broke the repo's most
+        common documented shape at once: `python3 "$SKILL_DIR/scripts/x.py" --flags`
+        quotes the PATH, the regex consumes the closing quote, and cutting the tail at
+        that quote dropped every flag from ~130 carriers -- a silent coverage loss in a
+        blocking gate, which is worse than the false red it was fixing.
+
+        What makes a command nested is that ANOTHER command precedes it from OUTSIDE
+        the span it sits in. A quoted path has no such predecessor; a command written
+        into `--test-command "..."` always does.
+        """
+        span = enclosings[index]
+        if span is None:
+            return None
+        start, end = span
+        earlier_outside = any(not (start <= positions[j] < end) for j in range(index))
+        return span if earlier_outside else None
+
     for index, match in enumerate(matches):
-        end = matches[index + 1].start() if index + 1 < len(matches) else len(carrier)
+        nested = _nested(index)
+        if nested is not None:
+            end = nested[1]
+        else:
+            end = len(carrier)
+            for later in range(index + 1, len(matches)):
+                # A nested match is not this command's boundary: it lives inside a
+                # value this command owns, and cutting there is what dropped the
+                # outer command's remaining flags.
+                if _nested(later) is not None:
+                    continue
+                end = matches[later].start()
+                break
         tokens, flags = split_arguments(carrier[match.end() : end])
         yield match, tokens, flags
 

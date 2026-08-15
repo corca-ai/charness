@@ -226,7 +226,11 @@ def build_rules(repo_root: Path, as_surface: str | None) -> dict[str, Any]:
         "backticked_refs": collect_backtick_rules(repo_root, sample) if sample else [],
         "reference_forms": collect_reference_form_rules(),
         "inline_code": collect_inline_code_rules(),
-        "markdownlint": {"available": _preflight._resolve_markdownlint_cmd() is not None},
+        # `repo_root` is PASSED. Omitted, this lane skips the `node_modules/.bin` tier
+        # the preflight lane resolves, so on a repo whose only markdownlint lives there
+        # one command reports the class as forecast and the other as unavailable — two
+        # payloads, opposite answers about the same capability.
+        "markdownlint": {"available": _preflight._resolve_markdownlint_cmd(repo_root) is not None},
     }
 
 

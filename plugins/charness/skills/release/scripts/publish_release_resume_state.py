@@ -59,6 +59,90 @@ def claims_evidence_child(cli: Any, repo_root: Path, *, prepared_commit: str) ->
     return ""
 
 
+def release_artifact_commit_subject(tag_name: str) -> str:
+    """The exact subject `commit_artifact_before_push` writes. One spelling, one owner."""
+    return f"chore(release): commit {tag_name} artifact before resume push"
+
+
+#: How many generated artifact commits may sit between R and the carrier before this
+#: stops walking. The resume makes at most one per attempt, and a retried resume can
+#: make another, so a handful is generous; an unbounded walk would let an arbitrary
+#: history be read as "adjacent to the claims record", which is the thing the direct-
+#: parent rule exists to prevent.
+_MAX_ARTIFACT_COMMITS = 4
+
+#: Returned when the walk runs out of budget. Not a commit id, and deliberately not
+#: `""` -- an empty string is also what a failed `rev-parse` yields, and the two mean
+#: different things to a reader debugging a refused resume.
+_BOUNDARY_WALK_EXHAUSTED = "boundary-walk-exhausted"
+
+#: The only paths the resume's own artifact commit may touch. Anything else means an
+#: operator authored the commit, whatever its subject says.
+_GENERATED_ARTIFACT_PREFIXES = ("charness-artifacts/",)
+
+
+def _is_generated_artifact_commit(cli: Any, repo_root: Path, commit: str, *, tag_name: str) -> bool:
+    """Whether `commit` is one the resume itself made, by SUBJECT and by CONTENT.
+
+    Subject alone is not enough, and a bounded review showed the cost: the subject is
+    the one thing an operator can read off `git log` and copy, so
+    `git commit --allow-empty -m "chore(release): commit <tag> artifact before resume
+    push"` over staged content would have been walked past, and the run would then tag,
+    push, create the release and close issues over content the reviewed claims record
+    does not cover -- while binding publication to that record is the entire purpose of
+    the boundary. The sibling that proves the claims record itself
+    (`is_claims_evidence_commit`) checks parentage AND change set; this now matches.
+    """
+    if optional_git_out(cli, repo_root, ["show", "-s", "--format=%s", commit]) != release_artifact_commit_subject(tag_name):
+        return False
+    changed = [
+        line
+        for line in optional_git_out(
+            cli, repo_root, ["diff-tree", "--no-commit-id", "--name-only", "-r", commit]
+        ).splitlines()
+        if line.strip()
+    ]
+    # An EMPTY change set is refused too: `--allow-empty` is the cheapest way to forge
+    # this commit, and an empty diff is not evidence of a regenerated artifact.
+    return bool(changed) and all(
+        path.startswith(_GENERATED_ARTIFACT_PREFIXES) for path in changed
+    )
+
+
+def claims_evidence_boundary(cli: Any, repo_root: Path, commit: str, *, tag_name: str) -> str:
+    """`commit`, or the first ancestor of it that is not a generated artifact commit.
+
+    WHY THIS EXISTS. The resume lane re-runs the full quality gate, which REGENERATES
+    tracked inventory under `charness-artifacts/`, and `commit_artifact_before_push`
+    commits that churn so the pre-push hook does not see a dirty worktree. That commit
+    C lands between the claims record R and the closeout carrier. The classifier below
+    was written against `P -> R -> carrier` and tested with that commit stubbed out, so
+    with C present EVERY post-publication branch fell through to `release-content` and
+    `--resume` answered "HEAD is not the release commit; nothing to resume" -- after the
+    tag was already pushed. A partially-closed issue set with no recovery lane is the
+    worst state this whole path can reach, and it was reachable by the tool's own
+    routine behavior rather than by operator error.
+
+    Deliberately narrow. Only a commit whose subject is EXACTLY the generated one for
+    THIS tag is walked through, and only a few of them. Anything an operator authored,
+    anything for another tag, and anything beyond the bound stops the walk, so this
+    widens the classifier by precisely the commits the release itself creates and by
+    nothing else. The claims record's own identity is still proven by
+    `is_claims_evidence_commit`; this only decides which commit that check is asked about.
+    """
+    current = commit
+    for _ in range(_MAX_ARTIFACT_COMMITS):
+        if not current or not _is_generated_artifact_commit(cli, repo_root, current, tag_name=tag_name):
+            return current
+        current = optional_git_out(cli, repo_root, ["rev-parse", f"{current}^"])
+    # Budget exhausted while still standing on a generated commit. Returning `current`
+    # would classify as legacy `release-content`, i.e. "nothing to resume" after a
+    # pushed tag -- the worst state on this path, produced by the guard meant to avoid
+    # it. The sentinel cannot equal any commit id, so the caller's comparison fails
+    # loudly-by-classification instead of silently resolving to the wrong phase.
+    return _BOUNDARY_WALK_EXHAUSTED
+
+
 def resumable_state(
     repo_root: Path,
     *,
@@ -108,6 +192,19 @@ def resumable_state(
         if tagged_prepared
         else ""
     )
+    # Each claims arm asks the same question of a DIFFERENT commit: "walking back past
+    # the release's own generated artifact commits, is this R?" Computed once and named,
+    # rather than inline in three conditions -- three spellings of one predicate is how
+    # the arms would drift apart, and the boundary walk shells out to git per step.
+    def _is_claims_evidence(commit: str) -> bool:
+        return bool(tagged_prepared) and bool(tagged_claims_evidence) and (
+            claims_evidence_boundary(cli, repo_root, commit, tag_name=tag_name) == tagged_claims_evidence
+        )
+
+    def _bind_tagged_claims(name: str) -> tuple[str, dict[str, str] | None, str]:
+        """The three fields every claims arm sets together, so one cannot be forgotten."""
+        return name, tagged_prepared, tagged_claims_evidence
+
     if tag_sha and parent_sha == tag_sha and close_refs:
         phase = "post-publication-carrier"
     elif prepared_head and head_subject == commit_message:
@@ -115,23 +212,16 @@ def resumable_state(
         # recovery; no claims artifact can be inferred from P alone.
         phase = "prepared-claims-review"
         prepared = prepared_head
-    elif tagged_prepared and parent_sha == tagged_claims_evidence and close_refs:
-        phase = "post-publication-claims-carrier"
-        prepared = tagged_prepared
-        claims_evidence_commit = tagged_claims_evidence
+    elif _is_claims_evidence(parent_sha) and close_refs:
+        phase, prepared, claims_evidence_commit = _bind_tagged_claims("post-publication-claims-carrier")
     elif (
-        tagged_prepared
-        and grandparent_sha == tagged_claims_evidence
+        _is_claims_evidence(grandparent_sha)
         and parent_close_refs
         and head_subject == f"Record release issue closeout for {tag_name}"
     ):
-        phase = "post-publication-claims-final"
-        prepared = tagged_prepared
-        claims_evidence_commit = tagged_claims_evidence
-    elif tagged_prepared and tagged_claims_evidence == head_sha:
-        phase = "prepared-claims-review"
-        prepared = tagged_prepared
-        claims_evidence_commit = tagged_claims_evidence
+        phase, prepared, claims_evidence_commit = _bind_tagged_claims("post-publication-claims-final")
+    elif _is_claims_evidence(head_sha):
+        phase, prepared, claims_evidence_commit = _bind_tagged_claims("prepared-claims-review")
     elif (
         tag_sha
         and grandparent_sha == tag_sha

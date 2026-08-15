@@ -19,6 +19,28 @@ Examples:
 - treating a repo shape or contract as enforced when it was only documented
 - treating a present invariant as absent because no single gate, type, or doc made the invariant easy for a fresh reader to verify
 
+## The Adapter Arms
+
+`check_auto_trigger.py` reports `triggered: true` when the slice matches either
+adapter key: `auto_session_trigger_surfaces` (named surfaces) or
+`auto_session_trigger_path_globs` (changed paths). Both unset means the probe was
+never configured; see the state table below for how that differs from `[]`.
+
+## Reading The Probe
+
+`check_auto_trigger.py` answers `state` before it answers `triggered`, and only
+`state: evaluated` makes `triggered` an answer:
+
+- `state: evaluated` — the probe ran; `triggered` is its verdict.
+- `state: not-established`, exit 3, **no `triggered` key** — the adapter is
+  absent or unreadable, so nothing was determined. Decide the retro on the rules
+  above and repair the adapter the payload's `reason` names. This is not a "no".
+- `state: not-configured` with `triggered: false` — the repo declared an empty
+  probe on purpose; the surface/glob arm is off by design.
+
+A caller that polls `triggered` alone reads "could not tell" as "no", which is
+the skipped-retro path this section exists to close.
+
 Do not trigger on:
 
 - preference changes
