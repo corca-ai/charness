@@ -15,8 +15,6 @@
   the S3 findings carried forward rather than fixed.
 - [S2 retro](../charness-artifacts/retro/2026-08-15-session-retro-s2.md)
   — the measured claim that two review rounds were not one too many.
-- [S1 retro](../charness-artifacts/retro/2026-08-15-session-retro.md)
-  — the earlier slice, and the lesson-digest defect S3 inherited.
 - [Release notes](../charness-artifacts/release/2026-08-14-v6.0.0-notes.md)
   — prepared, and still **false for the tree they would ship**; S7 regenerates
   them, and the S1 gate refuses them until it does.
@@ -30,17 +28,17 @@
   lesson's origin; `render_lesson_lifecycle_review` emits runnable archive,
   resurrect, and graduation commands; the tenth presentation slot is filled
   again. Ledger schema 5 -> 6, selection policy 2 -> 3. Scope: `git show --stat 34c5f4ec1`.
-- **S3's two review rounds are both complete and both windows verified clean.**
-  Round 1 found 11 blockers, round 2 found 9 more — three of which were round-1
-  repairs carrying the class they fixed. **S3's round-2 repairs are
-  accepted-unreviewed**; the two-round cap was reached. The round record is the
-  commit body: `git show 34c5f4ec1 --no-patch --format=%B`.
+- **THREE review rounds ran** — the owner overrode the two-round cap — finding
+  11, 9, and 9 blockers. All three windows verified clean. Round 3 was
+  mutation-driven and found seven claims with no test that would fail; its
+  repairs are themselves unreviewed, which is where the loop was stopped.
+  Record: `git show 34c5f4ec1 7817ace88 --no-patch --format=%B`.
 - **Four false prose claims were written and caught in S3** — the class this
   release exists to prevent, committed inside it. Each is now stated as measured
   beside the refuted version; the S3 entry and carried-findings list in the
   [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md)
   own the detail.
-- Full suite GREEN at `34c5f4ec1`: 9440 passed, 0 failed, 21m17s. Re-prove with
+- Full suite GREEN at `7817ace88`: 9446 passed, 0 failed, 21m12s. Re-prove with
   `python3 -m pytest tests/ -q --no-header`, BACKGROUNDED, and do not edit under
   an open collection. A suite run started before a repair does not prove the tree
   after it.
@@ -59,7 +57,8 @@ Non-claims: no push, tag, version bump, publish, hosted CI, installed-consumer
 readback, or issue closure. S4-S7 have not started. `foreign-score-source` is
 currently INERT on this repo's corpus — all 12 committed score events are
 legacy-scalar and legacy is exempt by design; it arms when the first outcome
-event lands, which will be this session's own retro.
+event lands — which it now has: four encounters are recorded and the gate reads
+them clean.
 
 ## Next Session
 
@@ -80,11 +79,11 @@ event lands, which will be this session's own retro.
 
 ## Discuss
 
-- **This session should score its own lessons under the new vocabulary**, and it
-  will be the first ever to do so. Two of the presented lessons demonstrably bit:
-  `proof-surface-review-binding` (no repair was made inside either open review
-  window) and `premise-not-checked-against-source` (recurred — four false claims,
-  one transcribed forward from a spec sentence that was true when written).
+- **Three review rounds found 29 blockers.** That yield is a signal about the
+  process upstream, not just about review: four false quantities were AUTHORED
+  where S1 already built derivation for the one surface (release notes) that has
+  it. Whether that containment should cover specs, comments, and contracts is the
+  `quality` question this slice earned. See the S3 retro's Expert Counterfactuals.
 - **Caps and ratchets fired at the commit gate again, after the work was done** —
   the Python file-length cap and the boundary-bypass ratchet. Length headroom WAS
   measured up front this time (794 of 800) and then spent by a review repair
