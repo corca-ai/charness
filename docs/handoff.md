@@ -5,7 +5,8 @@
 - Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <same>`
   BEFORE any brief or reviewer spawn. Both flags are REQUIRED.
 - Then run `## Next Session` item 1 — the premise check over the next slice's scoped
-  issues — and only then invoke `impl`. S1-S6 are committed; **S6b** is next.
+  items — and only then invoke `impl`. S1-S6 are committed; **S6b-1** is next, and the
+  tail was resequenced to `S6b-1 -> S6c -> S6b-2 -> S7`.
 
 ## Continuation Capability
 
@@ -39,26 +40,38 @@
   `import yaml` unguarded (one a documented `gather` entrypoint), the packaging validator
   uses the exporter as its own oracle so it is green BY the defect's cause, and
   `check_export_safe_imports.py` already has the right AST shape with a `skills/public`-only
-  constant. Owner asked for the root-cause repair INSIDE this release; not yet scoped.
+  constant. Scoped as S6c; its SC20 negative case and the
+  [repo-copy fixture](../tests/repo_copy.py) trap are in the contract.
+- **The cost seam that recurred is code and config, not a document**:
+  [cosmic-ray.toml](../cosmic-ray.toml) holds a bare-pytest `test-command`,
+  `mutation_sampling_lib.coverage_run_command` refuses the standing runner, and its
+  sibling `mutation_coverage_producer.instrument_broad_command` accepts it. SC18 is the
+  reconcile; run `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root .`
+  only for suite SHAPE — it does not answer command dominance.
 - [#618](https://github.com/corca-ai/charness/issues/618)-[#633](https://github.com/corca-ai/charness/issues/633):
   #620, #628, #617, #626, #627, #631, #629, #633 are fixed in-repo and unreleased.
   Still no checked-in classification ledger; the closeout floor requires one.
 
 Non-claims: no push, tag, version bump, publish, hosted CI, installed-consumer readback,
-or issue closure. S6b and S7 have not started. `check-changed-line-mutation-coverage`
-over S6's paths was still running at handoff and its verdict is unread.
+or issue closure. S6b-1, S6c, S6b-2 and S7 have not started. S6's changed-line mutation
+proof is UNOBTAINED — the run was killed at 25 minutes as dominated, not completed, and
+SC18 exists so the retry is affordable.
 
 ## Next Session
 
-1. **Before S6b, confirm each scoped item still reproduces on the current tree**
+1. **Before each slice, confirm its scoped items still reproduce on the current tree**
    (`gh issue view <id>`, then run the reproduction). The standing remedy; in S3-S6 it is
    what confirmed items were live before code moved — in S6 it rescoped the largest one.
-2. **S6b**: cost as a proof surface — a superseded-command registry, the runtime-budget
-   universe check in both directions, and an exported cost-dominance review angle. Scope
-   and rationale live in `## Sequence` S6b of the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md).
-3. **Decide where [#634](https://github.com/corca-ai/charness/issues/634) lands** — the inventory makes it slice-sized
-   rather than a fold into S6b, and it names the missing check concretely. Owner decision.
-4. Then **S7** publishes and closes [#608](https://github.com/corca-ai/charness/issues/608) and
+2. **S6b-1 (SC18)** in the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md): give the two coverage builders ONE policy on the
+   standing runner, then re-obtain S6's changed-line proof, which is still unobtained
+   because that gate spawns serial bare pytest. Smallest item in the release and the one
+   that makes every later slice cheaper to prove — which is why it moved first.
+3. **S6c ([#634](https://github.com/corca-ai/charness/issues/634))**: export completeness, detector before repairs. It is
+   RELEASE-BLOCKING — a new consumer installing the prepared release hits an unguarded
+   `import yaml` from a documented entrypoint. Work from the inventory on the issue.
+4. **S6b-2** (SC14, 15, 16, 17, 19 in the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md)): the rest of cost, which needs S6c's detector first so
+   its consumer half ships verifiably rather than reproducing the class it fixes.
+5. Then **S7** publishes and closes [#608](https://github.com/corca-ai/charness/issues/608) and
    [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627);
    the classification ledger commits BEFORE the prepared release record, and S7's
    release-note obligations are listed in the contract's S7 entry.
