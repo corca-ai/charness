@@ -437,6 +437,35 @@
         ]
       },
       "snapshot_sha256": "74c7cf6ac5b6dc15268b40ea68e56f90d34511003f996e58dc58ad0a87062823"
+    },
+    {
+      "session_id": "2026-08-15-s1-release-tooling",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 2,
+        "seed": "2026-08-15-s1-release-tooling",
+        "eligible_count": 33,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 0
+        },
+        "lesson_ids": [
+          "guard-adjacent-to-action",
+          "agent-authored-score-role",
+          "artifact-contract-late-feedback",
+          "goal-closeout-evidence-binding",
+          "closeout-diagnostic-visibility",
+          "durable-lesson-ledger-first",
+          "premise-not-checked-against-source",
+          "proof-surface-review-binding",
+          "bar-recorded-as-prose"
+        ]
+      },
+      "snapshot_sha256": "08d92e6bdcc342a3b47b49a49366f05ceeeefc70fc385be93be49cfe86418e9f"
     }
   ],
   "score_events": [

@@ -53,20 +53,37 @@ def test_notes_file_preflight_names_a_notes_file_that_is_not_there(tmp_path: Pat
     assert f"public release notes file missing: {missing}" in str(excinfo.value)
 
 
+def _write_adapter(repo: Path, *, require_claim_block: bool) -> None:
+    """Seed a release adapter, choosing whether the claim arm is armed.
+
+    Written out rather than defaulted because the two arms of this preflight are
+    separate concerns and each test should exercise ONE. A pointer-arm test that
+    also has to satisfy the claim arm passes or fails for two reasons, and the
+    next author to break the claim arm would see a pointer test go red.
+
+    `require_derived_release_claims` defaults to TRUE, so passing False here is the
+    opt-out being executed, not a default being restated.
+    """
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/release\n"
+        + ("" if require_claim_block else "require_derived_release_claims: false\n"),
+        encoding="utf-8",
+    )
+
+
 def test_notes_file_preflight_passes_a_pinned_notes_file(tmp_path: Path) -> None:
+    _write_adapter(tmp_path, require_claim_block=False)
     notes = tmp_path / "notes.md"
     notes.write_text("See https://github.com/o/r/blob/v0.1.0/docs/x.md\n", encoding="utf-8")
 
     GATE.run_notes_file_preflight(tmp_path, target_tag="v0.1.0", notes_file=notes)
 
 
-def _seed_release_repo(tmp_path: Path) -> Path:
+def _seed_release_repo(tmp_path: Path, *, require_claim_block: bool = True) -> Path:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
-    (repo / ".agents" / "release-adapter.yaml").write_text(
-        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/release\n", encoding="utf-8"
-    )
+    _write_adapter(repo, require_claim_block=require_claim_block)
     return repo
 
 
@@ -92,7 +109,10 @@ def test_notes_file_preflight_refuses_generate_notes_over_a_drafted_note(tmp_pat
     pre-push quality gates; this call site is what makes it a millisecond
     refusal. It had no test at all, so deleting it from the preflight would not
     have failed anything."""
-    repo = _seed_release_repo(tmp_path)
+    # The claim arm is opted out here for the same reason as above: the remedy
+    # step at the end hands the draft over, and that draft is a pointer fixture
+    # with no derived block.
+    repo = _seed_release_repo(tmp_path, require_claim_block=False)
     drafted = repo / "charness-artifacts" / "release" / "2026-05-13-v0.1.0-notes.md"
     drafted.write_text("The operator's notes.\n", encoding="utf-8")
 

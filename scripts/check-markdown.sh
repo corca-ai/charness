@@ -76,10 +76,31 @@ run_git_listing_to_file() {
   return 1
 }
 
+# Three tiers, cheapest first, because the difference between them is the whole
+# runtime of this gate. Measured in a consumer repo on a single 907-line file
+# (#630): a direct binary invocation was instant, `npm exec --no` cost ~9.7s, and
+# `npm exec` without `--no` cost ~14.8s -- the extra ~5s being npm deciding
+# whether to fetch the package from the registry.
+#
+# So the `--no` matters twice over. It closes the registry path, which is what
+# `check-secrets.sh` has always done with `--no-install` and this file did not,
+# and it is the difference this gate can pay at commit time. The middle tier is
+# what makes the expensive tier rare: a repo that has run `npm install` has the
+# binary at `node_modules/.bin/` even when nothing put it on PATH, and reaching
+# for npm to locate a file already sitting in the tree is the cost with none of
+# the benefit.
+#
+# `--no` over `--no-install`: both refuse to install, `--no` is the documented
+# current spelling, and check-secrets.sh's `--no-install` is the older alias.
+# They are not unified here -- changing the secrets gate's invocation is a
+# separate behavior change from fixing this one's, and it belongs in its own
+# slice with its own proof.
 if command -v markdownlint-cli2 >/dev/null 2>&1; then
   MARKDOWNLINT_CMD=(markdownlint-cli2)
+elif [[ -x "$REPO_ROOT/node_modules/.bin/markdownlint-cli2" ]]; then
+  MARKDOWNLINT_CMD=("$REPO_ROOT/node_modules/.bin/markdownlint-cli2")
 elif command -v npm >/dev/null 2>&1; then
-  MARKDOWNLINT_CMD=(npm exec -- markdownlint-cli2)
+  MARKDOWNLINT_CMD=(npm exec --no -- markdownlint-cli2)
 else
   echo "markdownlint-cli2 or npm is required for markdown linting." >&2
   exit 1

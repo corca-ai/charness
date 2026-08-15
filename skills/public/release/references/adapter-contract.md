@@ -45,6 +45,7 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
 - `fresh_checkout_probes`
 - `required_release_surfaces`
 - `unpublished_release_surfaces`
+- `require_derived_release_claims`
 - `release_backend`
 
 ## Defaults
@@ -83,6 +84,21 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
   exist", naming a surface you do not publish there makes it drift, so it cannot be the
   remedy for not publishing it. Name here the generated surfaces this repo does not
   ship. Same known names.
+- `require_derived_release_claims`: `true`. Notes handed to publish via
+  `--notes-file` must carry a generated derived-claim block that agrees with the tree
+  being shipped, and their authored prose must not carry an ungrounded quantity.
+  Generate and check with
+  `python3 "$SKILL_DIR/scripts/generate_release_notes.py" --repo-root . --notes-file <notes.md> --sync|--check`.
+  **The default is `true` on purpose, and the direction is the point.** A gate armed by
+  an opt-IN line is disarmed by deleting that line with nothing red; defaulting to true
+  inverts it, so deleting the key — or the whole adapter — RE-ARMS the gate and the only
+  way to publish unguarded notes is to write the opt-out down where a reviewer sees it.
+  Setting it `false` disarms BOTH arms: the derived-block requirement and prose
+  containment. Two things it does not do: it never runs on the resume lane (the window
+  between the prepared stop and the resume is closed to worktree changes, so a refusal
+  there would have no legal remedy), and it is never reached by a `--generate-notes`
+  publish, which supplies no notes file for it to read.
+
 - **Absence is still never drift on its own.** A read-only `current_release` run never
   reddens a lane a consumer chose not to publish. What changed (D48) is that an absent
   surface named by NEITHER field makes `absence_corroboration` read `uncorroborated`,

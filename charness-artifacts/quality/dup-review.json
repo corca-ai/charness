@@ -576,6 +576,13 @@
     },
     {
       "class": "intentional",
+      "id": "275a6fdd215c480d",
+      "note": "`try: <read or parse the file> except (OSError, ...): return None` -- the read-or-None guard, 3 members. Not one function: `what_reads_this._read` returns text and catches `UnicodeDecodeError`, `release_claim_surfaces._parsed` returns an `ast.Module` and catches `SyntaxError`, and `dup_ratchet_scan` (untouched) does its own. A shared helper would be generic over both return types and both exception sets, which is more coupling than the five lines it saves. Two members joined in the S1 slice.",
+      "reviewed_at": "2026-08-15",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "275d5bdd800e9f8c",
       "note": "append-only ledger WRITE TRANSACTION shape shared by seed_lesson_transitions.py (new, #625) and record_lesson_session.py. The literally identical part is the ~10-line envelope -- acquire the path-derived writer lock, read, replay-validate the current payload, build a candidate, replay-validate the candidate, atomic-replace -- which is the safety property `every rejected request leaves the ledger bytes unchanged`. The 70-line span the detector matched is structural, not textual: the middles are different domain logic with different refusal contracts (the seeder plans transitions from the selection index and pre-checks the active budget; the session recorder builds a deterministic preview INSIDE the lock and freezes its snapshot digest). Same reasoning already accepted for record_lesson_score.py joining this family: a shared wrapper would obscure each command's refusal contract without removing domain behavior. NOT a permanent verdict -- there are now four writers of this envelope (seed/score/session/lifecycle), and extracting it into lesson_ledger_writer_lib.py is a real candidate. Deferred deliberately: those writers are proof surfaces, so migrating them is its own slice with its own two-round bounded review, not a side effect of adding the fourth.",
       "reviewed_at": "2026-08-14",
@@ -723,6 +730,13 @@
     },
     {
       "class": "intentional",
+      "id": "301806670c9f407e",
+      "note": "`_load_skill_runtime_bootstrap` -- the 5-line ancestor-walk loader every skill script must carry to resolve `skill_runtime_bootstrap.py` without importing across skill boundaries. 121 members and growing; the shape is required by the bootstrap-resolution contract and pinned by `check_skill_bootstrap_vars.py`, so a shared helper is impossible by construction (the helper would itself need bootstrapping). Surfaced as new by MEMBERSHIP ROTATION: the S1 release-notes slice added four release scripts carrying the mandated preamble (release_claim_surfaces, release_notes_claims, generate_release_notes, lint_release_narrative) and modified two that already carried it (resolve_adapter, publish_release_narrative_gate); every other member is untouched. Same rotation class as 004895e66d5b4132.",
+      "reviewed_at": "2026-08-15",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "309a387c4c61cfd6",
       "note": "critique and retro final packet reports deliberately differ: critique emits immutable reviewed-input binding while retro must not inherit it; a generic status renderer would hide that evidence boundary",
       "reviewed_at": "2026-07-19",
@@ -859,6 +873,13 @@
       "id": "37a2b32958a4424e",
       "note": "the `main(argv)` shells of check_doc_authoring_preflight.py and check_docs_graph.py: parse_args, `--repo-root`, resolve, then `emit_yaml(<own payload builder>(result))` and a status-derived exit. Their flags are disjoint and their exit vocabularies differ (docs-graph returns UNESTABLISHED_EXIT for not-run). Same two gates already accepted for their shared stdlib header as da5d49ebac3c852d.",
       "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "380f7c1101ab2ea4",
+      "note": "`try: path.relative_to(root) except ValueError: str(path)` -- the 5-line repo-relative-path fallback, 9 members across scripts/ and two skills. Idiom-sized and locally owned: each caller decides what a path OUTSIDE the root should render as, and centralising it would make that per-caller decision invisible. Rotation only: `release_claim_surfaces._rel` joined in the S1 slice; the other eight are untouched.",
+      "reviewed_at": "2026-08-15",
       "surface": "code"
     },
     {
@@ -1090,6 +1111,13 @@
       "id": "43d64c0037d4c0a6",
       "note": "standard five-line future/json/path typing import header in unrelated artifact and runtime-budget modules; not a shared behavior contract",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "43ed9d7591d5f994",
+      "note": "The per-skill adapter `validate_adapter_data` field loops (`for field in STRING_FIELDS` / `LIST_FIELDS`), shared with `skills/public/retro/scripts/resolve_adapter.py`. Deliberately per-skill: each adapter owns its own field tuples and its own post-validation rules, and the primitives they call (`optional_string`, `optional_string_list`, `optional_bool`) are ALREADY the shared layer. Surfaced as new because the S1 slice added a `BOOL_FIELDS` loop to the release resolver; the retro member is untouched.",
+      "reviewed_at": "2026-08-15",
       "surface": "code"
     },
     {
@@ -1447,6 +1475,13 @@
       "id": "57506d788714a245",
       "note": "The new nose_inventory_paths adapter validator shares the existing list-shape validation idiom with adapter_lib, but adds a scope-specific traversal/absolute-path contract. Keeping the field validator beside the other quality-adapter validators makes the owning policy explicit; extracting a generic list validator would not capture the path semantics.",
       "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "577dad2ade15c804",
+      "note": "The skill-script preamble as a block -- stdlib imports plus `_load_skill_runtime_bootstrap` plus the `SKILL_RUNTIME =` binding, 15 members. Same mandated shape as 301806670c9f407e seen at a wider window. Rotation only: `generate_release_notes.py` joined it in the S1 slice; the other members are untouched.",
+      "reviewed_at": "2026-08-15",
       "surface": "code"
     },
     {
@@ -1888,6 +1923,13 @@
       "id": "6e7a1c32d7be88d5",
       "note": "The repo-script portability header of check_github_actions.py and inventory_boundary_bypass.py, newly identical because this slice replaced each file's `import json` with the same `from yaml_output import render_yaml`. The rest is the accepted runtime_bootstrap preamble that IS the bootstrap making one file work in both the source tree and the exported plugin. Below the header the two share nothing.",
       "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6eb96fdb95f6d47d",
+      "note": "Two-line `if <value> is None: return <literal>` early return, 7 members in unrelated subsystems (adapter YAML rendering, subprocess guard, runtime summary, web-fetch routing, and `release_notes_claims._direction`). Below any extractable size; a shared helper would be longer than the duplication. Rotation only -- one member joined in the S1 slice.",
+      "reviewed_at": "2026-08-15",
       "surface": "code"
     },
     {
@@ -3358,6 +3400,13 @@
       "id": "cd1ac723f819c3e3",
       "note": "an 8-line scope-note rendering span shared by `critique_enforcement_scope` and `artifact_run_scope`. Idiom-sized and the two render different vocabularies; slice 3 rotated it by adding the worktree-included wording.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cdbac52c12160498",
+      "note": "Two-line `finding_lines` renderers in sibling release modules (`lint_release_narrative`, `release_notes_claims`) that differ by the payload key they render -- `severity` for the prose lint, `direction` for the claim audit. The two payloads are deliberately different shapes: a lint finding has a severity and no direction, a claim finding has a direction and no severity, and a shared renderer would have to accept both and pick, which is how one arm starts printing the other's vocabulary at a publish refusal. Idiom-sized; both members added by the S1 release-notes slice.",
+      "reviewed_at": "2026-08-15",
       "surface": "code"
     },
     {

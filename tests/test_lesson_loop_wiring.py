@@ -319,10 +319,20 @@ def test_router_and_gate_agree_about_the_same_declared_session(tmp_path: Path) -
     checker = load_script_module(
         "check_lesson_continuity_for_wiring", ROOT / "scripts/check_lesson_evaluation_continuity.py"
     )
-    from datetime import date
+    from datetime import date, timedelta
 
     routed = [item["session_id"] for item in records.lesson_session_routing(tmp_path)["sessions"]]
-    report = checker.build_report(tmp_path, as_of=date(2026, 8, 15))
+    # `as_of` is DERIVED from today, not pinned to a literal date. The session id
+    # says 2026-08-14, but the receipt `_declare` writes is emitted at real now,
+    # and `unclaimed_receipted_sessions` compares `emitted < as_of` exclusively.
+    # A hardcoded `date(2026, 8, 15)` therefore held only while the real UTC date
+    # was still 2026-08-14: at UTC midnight the receipt's emitted date became
+    # equal to `as_of`, the gate stopped flagging it, and this test began failing
+    # on a clean checkout with nothing changed. Measured on a HEAD worktree at
+    # 2026-08-15T00:23Z. Tomorrow is always strictly after any receipt this
+    # fixture can emit, so the comparison the test exists to pin is preserved
+    # without coupling it to a calendar day.
+    report = checker.build_report(tmp_path, as_of=date.today() + timedelta(days=1))
     flagged = sorted(
         item["session_id"] for item in report["violations"] if item["id"] == "unclaimed-emission"
     )

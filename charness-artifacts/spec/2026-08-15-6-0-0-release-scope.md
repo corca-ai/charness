@@ -342,6 +342,50 @@ The repo operating contract owns the subagent git rule; S6 must name the concret
 mechanism that refuses (hook, permission rule, or typed agent definition) because
 whether SC10 is satisfiable on a given host depends on that choice.
 
+## Deviations Awaiting Owner Ruling
+
+- **SC3's completeness-quantifier clause is implemented as ADVISORY, not as a
+  refusal.** The Fixed Decision at `## Fixed Decisions` and SC3 both say the six
+  words (`only`, `all`, `every`, `none`, `still`, `repo-wide`) are forbidden
+  outside a transclusion marker, and the acceptance check says the lint
+  "refuses" each. As built, `lint_release_narrative.py` BLOCKS on bare
+  quantities — digits and cardinal number words, which is the class the recorded
+  false sentence belongs to via `twelve` — and reports the six words as
+  `bare-completeness-word` at `severity: advisory`, which does not fail the
+  command and does not refuse a publish.
+
+  Evidence that produced the split, measured rather than argued: run against
+  this repo's own `charness-artifacts/release/2026-08-14-v6.0.0-notes.md`, the
+  refusing version produced 49 findings. Among them was
+  `"Public release visibility and installed-host readback are verified only
+  after the release has been published"` — from that note's own
+  `## Evidence limits` — and `"...can opt into the lesson lifecycle at all"`.
+  Refusing the wording that makes a note honest is a rule an author disables,
+  and the only disable available is `require_derived_release_claims: false`,
+  which also disarms the derived-block arm that has a real recorded failure
+  behind it. After the split the same note yields 8 blocking findings, every one
+  an unmarked quantity claim about the tree, and `twelve` still blocks.
+
+  A bounded round-2 reviewer ruled this a deviation to be recorded rather than a
+  defensible reading, and noted correctly that the contract had already
+  pre-empted the "you would need a prose parser" defence: the Fixed Decision
+  itself says the rule is "a regex-shaped lint with an obvious negative case,
+  not a prose parser". So this entry does not claim the contract permits the
+  split. **S1 is recorded as meeting SC3 for quantities only; the quantifier arm
+  is deviated, evidence attached, and the criterion stands unamended until the
+  owner rules.** The split is pinned by tests, so reversing it means deleting
+  them — which is why it is recorded here rather than left in an implementation
+  note.
+
+  Residual the split does NOT remove, stated because the reviewer measured it:
+  of the 8 remaining blocking findings, only one maps to a registered claim
+  surface, so the rest have no marker available and their only exits are
+  rewording or the repo-wide opt-out.
+
+- **The claim and containment arms are never reached by a `--generate-notes`
+  publish**, which supplies no notes file. SC2 and SC3 bind notes that are
+  handed over, not the publish. Belongs with the known weaknesses below.
+
 ## Critique
 
 - Interrupt Source: `lesson-presentation-compaction-2026-08-14`

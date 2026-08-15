@@ -23,6 +23,7 @@ _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(_
 optional_string = _scripts_adapter_lib_module.optional_string
 validate_adapter_version = _scripts_adapter_lib_module.validate_adapter_version
 optional_string_list = _scripts_adapter_lib_module.optional_string_list
+optional_bool = _scripts_adapter_lib_module.optional_bool
 
 STRING_FIELDS = (
     "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from",
@@ -38,6 +39,16 @@ LIST_FIELDS = (
     "cli_skill_surface_change_globs", "fresh_checkout_probes", "required_release_surfaces",
     "unpublished_release_surfaces",
 )
+#: Boolean adapter fields, each with its default in `infer_repo_defaults`.
+#:
+#: `require_derived_release_claims` defaults to TRUE, and the direction is the whole
+#: point. A gate armed by an opt-IN line is disarmed by deleting that line, with
+#: nothing red -- the `bar-recorded-as-prose` shape this repo has already paid
+#: for. Defaulting to true inverts it: deleting the line RE-ARMS the gate, so the
+#: only way to publish unguarded notes is to write the opt-out down, where a
+#: reviewer can see it.
+BOOL_FIELDS = ("require_derived_release_claims",)
+
 ARTIFACT_FILENAME = "latest.md"
 
 _release_backend_module = SKILL_RUNTIME.load_local_skill_module(__file__, "release_backend")
@@ -95,6 +106,10 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         # ship; their absence then reads as intent instead of as an unexplained pass that
         # nothing corroborates. Empty by default, and absence alone is still never drift.
         "unpublished_release_surfaces": [],
+        # Notes supplied to publish must carry a derived claim block that agrees
+        # with the tree. See BOOL_FIELDS for why the default is true rather than
+        # an opt-in.
+        "require_derived_release_claims": True,
         "release_backend": default_release_backend(),
     }
 
@@ -115,6 +130,11 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         value = optional_string_list(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
+
+    for field in BOOL_FIELDS:
+        flag = optional_bool(data.get(field), field, errors)
+        if flag is not None:
+            validated[field] = flag
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

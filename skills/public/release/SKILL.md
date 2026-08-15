@@ -54,6 +54,26 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 8. End with operator update steps, maintainer install-refresh status, real-host
    proof status when required, and explicit non-claims.
 
+### Release notes are derived, not authored
+
+Generate them from the tree being shipped, over the FINAL tree and not earlier.
+Quantities belong in derived claim markers, never in typed prose.
+
+```bash
+python3 "$SKILL_DIR/scripts/generate_release_notes.py" --repo-root . --notes-file <notes.md> --sync
+python3 "$SKILL_DIR/scripts/generate_release_notes.py" --repo-root . --notes-file <notes.md> --check --version <vX.Y.Z>
+python3 "$SKILL_DIR/scripts/lint_release_narrative.py" --notes-file <notes.md> --version <vX.Y.Z>
+```
+
+Pass `--version` to both checks, including the version being rolled back to.
+Without it a note is refused for naming its own version in its title, while the
+publish gate — which reads the version from the packaging manifest — accepts it,
+and a check stricter than the boundary teaches an author to ignore its exit code.
+
+The publish preflight re-derives and refuses notes the tree disagrees with,
+naming the surface and whether the note over- or under-claims. Repair by
+re-running `--sync`, not by editing the block.
+
 ## Invariants
 
 - Do not hand-edit generated plugin manifests when the repo has a sync helper.
