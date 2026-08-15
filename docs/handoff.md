@@ -29,9 +29,8 @@
   declared bars instead of `> 0`, `link_only_lines` among them at a ratchet the
   tests parse from a dated record; the handoff scaffold and validator now require
   a `## References` descriptor on the link's own line. Scope: `git show --stat HEAD`.
-- **The docs repair was real work, not a re-baseline**, and the bar is sized to
-  the wrapped-prose remainder the rule over-reports on. Recount with
-  `python3 scripts/check_docs_graph.py --repo-root .`.
+- **The bar is sized to the wrapped-prose remainder** the rule over-reports on;
+  recount with `python3 scripts/check_docs_graph.py --repo-root .`.
 - **Two rounds ran; round 2 found defects in round 1's repairs**, and round-2
   repairs are unreviewed at the cap. One false claim was authored and caught —
   the [S4 retro](../charness-artifacts/retro/2026-08-15-session-retro-s4.md) `## North Star
@@ -62,11 +61,12 @@ alongside the breaking `## References` rule.
 1. **Before S5, confirm each scoped issue still reproduces on the current tree**
    (`gh issue view <id>`, then run the reproduction). The standing remedy; in S3
    and S4 it is what confirmed the items were live before any code moved.
-2. **S5** of the release contract: the structural umbrellas, #586 then #584,
-   #583, #582. Decide the stopping rule BEFORE starting — the contract's probe
-   question ("land one executable guard per umbrella, measure what it catches,
-   defer the rest with the measurement attached") is that rule, and S5 is the
-   least bounded slice in the release.
+2. **S5** of the release contract: the structural umbrellas. The stopping rule is
+   RULED, not open — one executable guard per umbrella, #586 then #584 then #583
+   then #582 **narrowed to #525 alone**, everything else deferred with its
+   measurement attached. Read `## Owner Rulings` in the
+   [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md)
+   before scoping; #583 needs its rule decided before its guard.
 3. Then S6 — which also carries
    [#633](https://github.com/corca-ai/charness/issues/633) — then S7 publishes and closes
    [#608](https://github.com/corca-ai/charness/issues/608) and
@@ -82,13 +82,16 @@ alongside the breaking `## References` rule.
   green. `check_boundary_bypass_ratchet.py` already has the stronger form, and
   the handoff ceiling legitimately ROSE by operator ruling — so the ask is to
   record each bar's direction and authority, not to ratchet everything.
-- **The exported gate carries a bar calibrated on this repo's docs.** Consumers
-  get a number measured somewhere else, with neither the record nor the test that
-  governs it. The `--link-only-lines-bar` flag makes it expressible; whether
-  repo-calibrated thresholds should ship as defaults at all is the open question.
-- **Delegated authoring needs its own proof floor.** S4's descriptors were
-  written by parallel subagents over disjoint files and spot-checked, not
-  independently verified line by line; a bounded reviewer checked roughly half.
+- **Write-capable parallel authors still share the parent worktree.** S4 ran five
+  of them under a prompt sentence forbidding mutating git ops — prose, not
+  enforcement. Owner input is that isolation is the preferred direction, so S6
+  weighs a separate worktree per write-capable author against the hook and
+  permission-rule options. Read-only reviewers are already covered: the typed
+  `bounded-reviewer` carries no Bash.
+- **Nothing checks whether an authored descriptor is TRUE.** The gate only checks
+  a line is not bare. S4's were accepted on sampled verification by owner ruling,
+  and a re-verification sweep is explicitly NOT owed — but future delegated
+  authoring owes a verification step, and no surface enforces one yet.
 
 ## References
 

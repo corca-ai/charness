@@ -151,7 +151,16 @@ Ordering is by dependency pressure, not by theme.
   as a DEFAULT is left open rather than decided inside this slice.
 - **S5 — structural umbrellas.** #586, then #584, #583, #582.
 - **S6 — operating contract.** No-mutating-git for write-capable subagents; a
-  monitored-phase path for long-running children. **Plus
+  monitored-phase path for long-running children. **Design input recorded
+  2026-08-15 (owner: "격리 잘 시키고"): worktree ISOLATION for write-capable
+  parallel authors is a fourth candidate mechanism alongside the hook, the
+  permission rule, and the typed agent definition, and it is the only one that
+  removes the shared tree rather than policing it.** S4 exercised the exposure
+  it addresses: five write-capable subagents ran concurrently in the shared
+  worktree under a prompt sentence forbidding mutating git ops — a prose rule,
+  not enforcement. The read-only side is already prevented on this host, since
+  the `bounded-reviewer` type carries no Bash at all; the write-capable side is
+  not. Also carries the exported-bar default from the ruling below. **Plus
   [#633](https://github.com/corca-ai/charness/issues/633)** (owner ruling,
   2026-08-15): a disposition spelling `session_id: "none"` under any status other
   than `missing-start` parses, increments `completed_evaluation_count`, and skips
@@ -513,6 +522,44 @@ whether SC10 is satisfiable on a given host depends on that choice.
 - **The claim and containment arms are never reached by a `--generate-notes`
   publish**, which supplies no notes file. SC2 and SC3 bind notes that are
   handed over, not the publish. Belongs with the known weaknesses below.
+
+- **RULED 2026-08-15 after S4: BREAKING CHANGES ARE ALL ALLOWED, WITH NO
+  GRACE PERIOD.** Getting the behavior right outranks compatibility for this
+  major. This covers the `## References` descriptor rule (SC13) and anything S5
+  or S6 lands in the same shape. S7 still owes each one a release note — the
+  ruling removes the deprecation window, not the disclosure.
+
+- **RULED 2026-08-15 after S4: NO RETROACTIVE SWEEPS OF THIS REPO'S OWN OLDER
+  DOCS.** Correctness applies going forward; a slice does not owe a pass over
+  existing pages to bring them up to a rule it just introduced. Two consequences
+  recorded so a later reader does not read them as oversights. First, S4's
+  wrapped-prose residual under the `link_only_lines` bar stays as it is, and the
+  bar is the mechanism that keeps it from growing. Second, the descriptors S4
+  authored are accepted on SAMPLED verification — roughly half were checked
+  against their targets by a bounded reviewer, plus parent spot-checks — and a
+  full re-verification pass before publish is explicitly NOT owed. What IS owed
+  is a verification step attached to future delegated authoring, because nothing
+  in the gate checks whether a descriptor is TRUE; it only checks the line is not
+  bare. Stated as a known weakness rather than a closed one.
+
+- **RULED 2026-08-15: S5 lands ONE executable guard per umbrella, and #582 is
+  narrowed to a single member.** Order: #586 (the vocabulary-parity check its own
+  body proposes), then #584's two computations, then #583 — whose rule must be
+  decided before the guard, since #568's deletion disposition was already
+  retracted — then #582 scoped to **#525 alone**, because `docs/readme-proof.md`
+  already defines the concepts and lacks only a validator that reads it. Every
+  other member defers WITH the measurement of what its guard catches attached,
+  which is the form SC9 already requires. Rationale: #582's own body says it is
+  "not one PR", and taking it whole leaves #618-#627's fixes stranded for several
+  more sessions.
+
+- **RULED 2026-08-15: the exported gate's `link_only_lines` bar defaults to 0,
+  and the work lands in S6.** A consuming repo must not inherit a threshold
+  measured on charness's own docs tree. Implementation shape: source the bar from
+  the ratchet record in `docs/docs-graph-checks.md`, which is NOT exported, and
+  fall to 0 when the record is absent — this also removes the duplicated literal.
+  It is verdict logic on a proof surface, so it carries the two-round review, and
+  S6 is its home because S6 already touches proof surfaces.
 
 ## Critique
 
