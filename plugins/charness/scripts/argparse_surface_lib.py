@@ -290,7 +290,7 @@ def iter_invocation_tails(carrier: str, invocation_re) -> Iterator[tuple[re.Matc
     positions = [_command_position(carrier, match) for match in matches]
     enclosings = [_enclosing_span(spans, position) for position in positions]
 
-    def _nested(index: int) -> tuple[int, int] | None:
+    def _compute_nested(index: int) -> tuple[int, int] | None:
         """The span that makes match `index` a VALUE of another command, if any.
 
         Being inside quotes is NOT enough, and assuming it was broke the repo's most
@@ -310,8 +310,15 @@ def iter_invocation_tails(carrier: str, invocation_re) -> Iterator[tuple[re.Matc
         earlier_outside = any(not (start <= positions[j] < end) for j in range(index))
         return span if earlier_outside else None
 
+    # Computed ONCE per match, not per (outer, later) pair. The inner scan below asks
+    # `is this nested?` about every following match, so calling the predicate there made
+    # the pass quadratic in matches per carrier and pushed this gate's median past its
+    # runtime budget -- a real regression measured by `check-runtime-budget`, not a
+    # theoretical one, on a gate that reads ~1200 invocations.
+    nested_spans = [_compute_nested(index) for index in range(len(matches))]
+
     for index, match in enumerate(matches):
-        nested = _nested(index)
+        nested = nested_spans[index]
         if nested is not None:
             end = nested[1]
         else:
@@ -320,7 +327,7 @@ def iter_invocation_tails(carrier: str, invocation_re) -> Iterator[tuple[re.Matc
                 # A nested match is not this command's boundary: it lives inside a
                 # value this command owns, and cutting there is what dropped the
                 # outer command's remaining flags.
-                if _nested(later) is not None:
+                if nested_spans[later] is not None:
                     continue
                 end = matches[later].start()
                 break

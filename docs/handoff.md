@@ -12,9 +12,8 @@
 - [Release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md) — the owner-approved scope,
   its sequence, and the S7 entry's "What S7 MEASURED" block.
 - [S7 release critique](../charness-artifacts/critique/2026-08-16-s7-6-0-0-release-execution.md) — both rounds,
-  F1-F30 and G1-G14, plus the per-issue premise verdicts the ledger binds to.
-- [Closeout ledger](../charness-artifacts/issue/2026-08-16-6-0-0-closeout-ledger.md) — the `bug` carrier body whose
-  `Jtbd:` names five narrowed closes clause by clause.
+  F1-F30 and G1-G14, and the per-issue premise verdicts the
+  [closeout ledger](../charness-artifacts/issue/2026-08-16-6-0-0-closeout-ledger.md) binds to.
 - [S7 retro](../charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md) — the three red-at-HEAD gates, the stash that
   cost a quality run, and the review frame that missed the consumer.
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md) — the digest a session reads before work.
@@ -26,8 +25,13 @@
 - **Notes generated over the final tree and gated clean**; they need REGENERATING
   if the items below change the tree. Re-prove with
   `python3 skills/public/release/scripts/generate_release_notes.py --repo-root . --notes-file charness-artifacts/release/2026-08-16-v6.0.0-notes.md --check --version v6.0.0`.
-- **The changed-line proof over S7 is OBTAINED and closed.** Re-run
-  `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha 6416e7023 --head-sha HEAD`.
+- **The changed-line proof over S7 is OBTAINED and closed** (`--base-sha 6416e7023`).
+  But the RELEASE-scope proof is not: the quality lane bases on
+  `merge-base origin/main HEAD`, i.e. the whole unpushed range, and reports many
+  files with uncovered changed lines — nearly all of them files S7 never touched.
+  No slice ever proved the aggregate; each proved only its own base. Recount with
+  [run-quality.sh](../scripts/run-quality.sh), whose failure log names every file. This is a fourth
+  pre-existing red gate and the largest open question against publishing.
 - **Three gates were RED AT HEAD before S7 and are repaired here**; which ones and
   why is the [S7 retro](../charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md)'s
   evidence summary. Re-prove with `./scripts/run-quality.sh --release`.
@@ -35,12 +39,11 @@
   not classify its own artifact commit and so had no recovery after a pushed tag;
   each is G1-G14 in the [S7 release critique](../charness-artifacts/critique/2026-08-16-s7-6-0-0-release-execution.md).
 - **The close set is SPLIT**: #618-#627 close as `bug` through the release
-  carrier, #608 separately as `feature`. One classification per invocation. The
-  [closeout ledger](../charness-artifacts/issue/2026-08-16-6-0-0-closeout-ledger.md)
-  carries BARE `#N` refs on purpose and derives its carrier at `--execute` time.
-- Re-prove the suite with `python3 scripts/run_standing_pytest.py` (add
-  `--include-release-only`), after `python3 scripts/sync_root_plugin_manifests.py`;
-  ruff is clean only cache-free.
+  carrier, #608 separately as `feature`. One classification per invocation, and the
+  [closeout ledger](../charness-artifacts/issue/2026-08-16-6-0-0-closeout-ledger.md) carries
+  BARE `#N` refs on purpose, deriving its carrier at `--execute` time.
+- Re-prove with `python3 scripts/run_standing_pytest.py --include-release-only`
+  after `python3 scripts/sync_root_plugin_manifests.py`; ruff needs `--no-cache`.
 
 Non-claims: no push, tag, bump, publish, hosted CI, installed-consumer readback,
 or issue closure. Round-2 repairs ship accepted-unreviewed at the two-round cap.
@@ -86,9 +89,8 @@ adapter's real-host checklist.
   notes, the contract, and the publish path well. #632 came from the owner asking
   one outside-the-frame question — and it is an error I hit twice this session and
   read as my own repo's staleness, because here the files exist.
-- **A doc rewrite can break a gate whose subject is that doc.** SC14 substitutes
-  into the real `docs/handoff.md` and needs the bare backticked
-  `python3 scripts/run_standing_pytest.py` as its anchor.
+- **Editing this file can turn SC14 red**: it substitutes into the real handoff and
+  needs the bare backticked `python3 scripts/run_standing_pytest.py` as its anchor.
 - **Three consecutive slices recorded "gates clean" while three gates were red**,
   and a text-gate repair needs a blast-radius measurement — both worked through in
   the [S7 retro](../charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md).
