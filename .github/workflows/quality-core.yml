@@ -177,6 +177,13 @@ jobs:
                  "no range to analyze, leaving this to the scheduled mutation run." >&2
             exit 0
           fi
+          # --test-command, not the cosmic-ray.toml literal: that literal is bare
+          # serial pytest and this probe is the repo's longest CI child. The
+          # standing runner covers the same scope xdist-parallel. cosmic-ray still
+          # reads the literal for its per-mutant runs, which is deliberate -- a
+          # per-mutant run of the whole parallel suite would be far more expensive,
+          # not less.
           python3 scripts/check_changed_line_mutation_coverage.py --repo-root . \
             --base-sha "$CHANGED_LINE_BASE_SHA" \
+            --test-command "python3 scripts/run_standing_pytest.py --repo-root ." \
             --write-fresh-marker

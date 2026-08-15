@@ -49,7 +49,6 @@ at push time -- see ``PARTIAL_EXIT``.
 
 from __future__ import annotations
 
-import argparse
 import os
 import sys
 from pathlib import Path
@@ -58,6 +57,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts import changed_line_gate_cli as _cli  # noqa: E402
 from scripts.changed_line_run_trust import (  # noqa: E402
     INSPECTION_FAILED,
     SCOPE_MISMATCH,
@@ -126,78 +126,10 @@ __all__ = [
 ]
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Reproduce the mutation gate's blocking changed-line signal locally.")
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--base-sha", default=None, help="Base SHA; defaults to $MUTATION_BASE_SHA.")
-    parser.add_argument("--head-sha", default=None, help="Head SHA; defaults to $MUTATION_HEAD_SHA, else HEAD.")
-    parser.add_argument("--config", type=Path, default=Path("cosmic-ray.toml"))
-    parser.add_argument("--coverage-json", type=Path, default=Path("reports/mutation/test-coverage.json"))
-    parser.add_argument(
-        "--reuse-coverage",
-        action="store_true",
-        help="Reuse an existing coverage JSON instead of running the (slow) gate probe.",
-    )
-    parser.add_argument(
-        "--skip-if-no-coverage",
-        action="store_true",
-        help=(
-            "When no coverage JSON exists, skip non-blocking (exit 3: ran, established nothing) instead of "
-            "running the slow probe. The pre-push (read-only) wiring uses this so the "
-            "teeth stay cheap; the coverage source is produced by the full/closeout run "
-            "and reused here."
-        ),
-    )
-    parser.add_argument(
-        "--require-fresh-coverage",
-        action="store_true",
-        help=(
-            "Only trust a coverage JSON whose sibling marker `<coverage-json>.fingerprint` "
-            "matches the current changed-pool content fingerprint; otherwise skip "
-            "non-blocking. The pre-push wiring sets this so a STALE coverage source "
-            "(produced before the changed lines existed) cannot raise false 'uncovered "
-            "changed line' positives. The closeout producer writes the marker when it "
-            "refreshes coverage."
-        ),
-    )
-    parser.add_argument(
-        "--allow-dirty",
-        action="store_true",
-        help=(
-            "Escape hatch: proceed even when mutation-pool files have uncommitted "
-            "worktree/index changes that base..HEAD cannot see. The run then costs the "
-            "full probe and its verdict is ADVISORY ONLY — the payload records "
-            "`dirty_pool_unverified: true` plus the offending files, so a clean result "
-            "cannot be cited as changed-line proof for them."
-        ),
-    )
-    parser.add_argument(
-        "--limit-to-file",
-        action="append",
-        default=[],
-        metavar="PATH",
-        help=(
-            "Repo-relative mutation-pool path to analyze; repeatable. Narrows the "
-            "BLOCKING set to these files only. The incremental pre-push producer sets "
-            "this because its coverage was collected from a focused test subset: focused "
-            "coverage is a SUBSET of full coverage, so an unmapped file's changed lines "
-            "would read as uncovered when the full suite covers them. Every changed pool "
-            "file outside the limit is reported as `unanalyzed_changed_pool_files` and "
-            "named on stderr, so a clean verdict here can never be read as covering them."
-        ),
-    )
-    parser.add_argument(
-        "--write-fresh-marker",
-        action="store_true",
-        help=(
-            "Producer mode: after coverage exists for the analyzed range, write the "
-            "sibling `<coverage-json>.fingerprint` marker recording the changed-pool "
-            "content fingerprint so the pre-push consumer (`--require-fresh-coverage`) "
-            "can trust the coverage. Uses a plain (no dynamic_context) probe so the "
-            "coverage JSON stays small."
-        ),
-    )
-    return parser.parse_args()
+#: The argument surface lives in `changed_line_gate_cli` (S6b-1, length cap).
+#: Re-exported here because callers and four test modules bind it at THIS
+#: address, exactly like the `__all__` block above.
+parse_args = _cli.parse_args
 
 
 def _emit(report: dict) -> None:
@@ -254,8 +186,9 @@ def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) 
     blew the coverage JSON up to ~1.34 GB. Subprocess capture is retained."""
     if not args.reuse_coverage or not coverage_json.is_file():
         config = args.config if args.config.is_absolute() else repo_root / args.config
+        test_command = args.test_command or read_test_command(config)
         run_test_coverage(
-            repo_root, read_test_command(config), coverage_json,
+            repo_root, test_command, coverage_json,
             dynamic_context=not args.write_fresh_marker,
         )
     if args.write_fresh_marker:

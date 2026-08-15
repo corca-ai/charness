@@ -303,11 +303,127 @@ Ordering is by dependency pressure, not by theme.
   short, S6b-2 is the part that defers.
 
 - **S6b-1 — reconcile the coverage builders (SC18), then re-obtain S6's
-  changed-line proof.** Small and mechanical. `instrument_broad_command` accepts
-  the standing runner; `mutation_sampling_lib.coverage_run_command` refuses it.
-  One policy, then run
-  `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha <S5-tip> --head-sha HEAD`
-  and record the verdict S6 left unobtained.
+  changed-line proof. BUILT 2026-08-15.** Scoped as small and mechanical:
+  `instrument_broad_command` accepted the standing runner;
+  `mutation_sampling_lib.coverage_run_command` refused it. The policy now has ONE
+  owner, `mutation_sampling_lib.classify_instrumentable_command`, and both
+  builders decide there. The two builders still RENDER differently on purpose
+  (argv for the gate; a shell string for closeout, whose `tests/test_*.py` glob
+  must stay unquoted for bash), so what is shared is the classification, not the
+  rendering. Stated because "one policy" could otherwise be read as "one function
+  returning one string", which would be a regression.
+
+  **The split point is the classifier because a bounded reviewer measured that a
+  shared BOOLEAN was not enough.** The first repair moved acceptance into one
+  predicate and left each builder's own inline shape test in place, and the two
+  answered differently for `pytest`, `python3 -m pytest` with no arguments, and
+  `python -m pytest ...` — the predicate matched a prefix-with-trailing-space
+  while the argv builder matched tokens. The criterion's own sentence ("both
+  builders accept the same command shapes") was therefore still false after the
+  repair that claimed it, which is this release's defect class arriving inside
+  the slice that reconciles it.
+
+  **What else the plan did not name, recorded rather than left in the diff.**
+
+  1. **The helper-flag set was incomplete AND enumerated in three places.**
+     `--print-last-run` prints a record and exits — it landed in S6, after the
+     producer's tuple was written — so instrumenting it produced an EMPTY
+     coverage set that reads like a suite covering nothing. Two further problems
+     a reviewer found: argparse accepts unambiguous abbreviations, so
+     `--print-last` bypasses any enumerated set; and
+     `slice_closeout_broad_gate.py` held a THIRD hand-typed copy that this slice
+     put out of sync with the other two, which would have routed such a command
+     to a producer that now refuses it and killed the closeout with an uncaught
+     `ValueError`. All three now read one prefix rule.
+
+     **And the first repair of that last part was itself a blocker, caught by
+     round 2.** Making the executor skip the producer for an uninstrumentable
+     command let it run unmonitored instead: coverage was never produced, the
+     payload key was never set, so the consumer skipped it, no narration fired,
+     and closeout exited 0 claiming completion. That traded a loud uncaught
+     `ValueError` for a SILENT green on a proof surface — the class this slice
+     exists to retire, inside its own repair, for the third slice running.
+     Producer mode without producible coverage now BLOCKS and records a
+     `not_checked` proof, and both the block and its negative are pinned. The
+     residual is stated rather than implied away: the broad gate matches the
+     runner token anywhere while the classifier is anchored at the start, so a
+     wrapper-prefixed or quoted-path broad command is a loud refusal in producer
+     mode rather than an instrumented run.
+  2. **A wrapper prefix is refused rather than mis-rendered.**
+     `env VAR=x python3 scripts/run_standing_pytest.py` was accepted by both
+     builders and rendered into `coverage run env ...`, which execs the wrapper as
+     a Python script. The classifier is anchored at the start of the command, so
+     both refuse it with a message.
+  3. **SCOPE EXTENSION: the gate got a `--test-command` override**, because
+     reconciling the builders alone does not reach the surface the slice exists
+     for. `check_changed_line_mutation_coverage.py` reads the `test-command`
+     literal from `cosmic-ray.toml`, so with the builders reconciled and nothing
+     else changed the fast path stays unreachable from the gate that spawns the
+     dominated command. The override is opt-in and does NOT touch what cosmic-ray
+     runs per mutant — that still reads `--config` — so the dominated literal
+     survives at the default, which is deliberate: it is SC17's subject, and
+     retiring it inside this slice would delete S6b-2's first measured instance
+     before its detector exists to see it.
+
+  **Watched failing first, and RE-MEASURED twice — once after a reviewer refuted
+  the count, once after round 2 grew the file again.** Final measurement, the
+  acceptance file as it now stands run against `0b6ec9f4a` in a throwaway
+  worktree: **39 of 43 items red, 4 green.** The four green are the two
+  no-regression guards (the bare-pytest argv shape, the producer's unquoted
+  glob), `absent_override_still_reads_the_config_literal` (pre-slice the config
+  literal was the only path), and the executor block's own negative case, which
+  must pass on both trees by construction. A first draft of this entry wrote
+  "11 of 12 red; the one green is the guard" from the file's earlier state and
+  never re-measured after the file grew — a false quantity in the contract that
+  SC3 exists to stop being written, caught by a bounded reviewer rather than by
+  any gate. The lesson is the re-measure, not the number: a count written about a
+  file that is still being edited goes stale silently.
+
+  **S6b-1 review record.** Two rounds, all `parent-delegated`, read-only, typed
+  `bounded-reviewer`; both `reviewer_boundary_fingerprint verify` runs returned
+  `verdict: clean`, so no approval is quarantined. Round 1 on window
+  `s6b1-coverage-policy-r1`: three angle reviewers (implementer-misread,
+  overstated-acceptance, hidden-sequencing). Round 2 on
+  `s6b1-coverage-policy-r2`: one reviewer reading the repairs, one adversarial
+  reviewer instructed to refute SC18. Every blocker recorded above came from a
+  reviewer; none was found by the implementer or by the suite.
+
+  Round 2 found three more in the repairs themselves: the silent-green executor
+  fallback above; a second interpreter decision (the argv builder recovered the
+  caller's `/usr/bin/python3` while the string builder hardcoded `python3`, so
+  one accepted command was measured under two interpreters — the classifier now
+  returns the interpreter and both read it); and the `--print` prefix rule
+  unpinned in both directions, so widening it to `--p` would have refused this
+  repo's own documented `--pytest-target` command with the suite green.
+  Round-2 repairs and the CI wiring below are **accepted-unreviewed** at the
+  two-round cap.
+
+  **The sequencing rationale was over-stated and is corrected here.** The
+  adversarial reviewer measured that `--test-command` had ZERO automated callers,
+  so "makes every later slice cheaper to prove" was delivered only to an operator
+  typing an opt-in flag. The CI changed-line step in
+  [quality-core.yml](../../.github/workflows/quality-core.yml) now passes the
+  standing runner, which is the caller S7's own proof runs through. What is still
+  NOT reached: `sample_mutation_files.py` (below), and the pre-push focused lane,
+  which already instrumented the runner through the producer before this slice
+  and is unchanged by it.
+
+  Carried, not fixed, and each stated at its surface rather than left to be
+  discovered:
+  - **`sample_mutation_files.py` has no override.** It reaches
+    `run_test_coverage` through the same `read_test_command` chain, so the
+    scheduled mutation sampler still pays the dominated serial coverage probe
+    while the changed-line gate can now avoid it. Bounded remainder for S6b-2.
+  - **The argv and string channels are not interchangeable for a globbed
+    command.** Both builders ACCEPT `pytest -q tests/test_*.py`; the string form
+    is run through a shell and expands it, the argv form passes it literally.
+    Same acceptance, different channel, said in the argv builder's docstring.
+  - **Instrumented-runner coverage is proven at the argv level, not end to end.**
+    Nothing asserts that a `coverage run <runner>` produces coverage equivalent to
+    the serial run it replaces; what backs it is that the runner inherits the
+    environment (so `COVERAGE_PROCESS_START` reaches the xdist workers) and that
+    under-measurement is fail-LOUD in the changed-line classifier. The
+    end-to-end evidence is the re-obtained proof recorded below, not a unit test.
 
 - **S6c — export completeness ([#634](https://github.com/corca-ai/charness/issues/634)).** Two halves, detector first
   so the repairs are enumerated rather than remembered:
@@ -323,6 +439,15 @@ Ordering is by dependency pressure, not by theme.
      sites (two of which land in consumer adapter config), then the 3 unguarded
      shell gates. The measured inventory is on the issue; work from it rather
      than re-deriving.
+
+  **The issue's inventory was measured BEFORE S6b-1, so "work from it rather than
+  re-deriving" needs one amendment.** S6b-1 added two new cwd-relative
+  `python3 scripts/run_standing_pytest.py` instruction sites to exported source —
+  a refusal message and a `--help` string — and a hidden-sequencing reviewer
+  caught them as a fresh instance of the very class #634 enumerates. Both were
+  de-pathed inside S6b-1, so the count on the issue still holds; recorded because
+  the resequencing rationale assumed earlier slices add no instances, and that
+  assumption was false once.
 
   Known trap, recorded before the slice starts: `tests/repo_copy.py` clones
   `packaging/` into every fixture and `test_bootstrap_runtime.py` copies the

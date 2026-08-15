@@ -8,6 +8,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from runtime_bootstrap import import_repo_module
+
+_sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
+
 BROAD_PYTEST_LOCK_MESSAGE = (
     "broad pytest closeout requires an explicit verification lock; rerun with "
     "--verification-lock after recording that the mutation set is locked, or use "
@@ -37,12 +41,12 @@ VERIFICATION_LOCK_RECOMMENDATION = (
     "Broad pytest remains in the plan because this run declares the final verification lock."
 )
 BROAD_PYTEST_CACHE_RELATIVE = Path(".charness/closeout/broad-pytest-proof.json")
-STANDING_PYTEST_RUNNER_HELPER_FLAGS = {
-    "--print-targets",
-    "--print-expanded-targets",
-    "--print-temp-root",
-    "--print-command",
-}
+#: Bound to the coverage builders' owner (SC18) rather than enumerated here. This
+#: WAS a third hand-typed copy of the helper-flag set, and it went stale the moment
+#: `--print-last-run` shipped: this gate classified such a command as the broad
+#: suite and handed it to a producer that (after the reconcile) refuses it. Prefix
+#: matching also survives argparse abbreviation, which an enumerated set does not.
+_STANDING_RUNNER_HELPER_FLAG_PREFIX = _sampling.STANDING_RUNNER_HELPER_FLAG_PREFIX
 
 
 def is_broad_pytest_command(command: str) -> bool:
@@ -53,8 +57,9 @@ def is_broad_pytest_command(command: str) -> bool:
     if not tokens:
         return False
     if any(Path(token).name == "run_standing_pytest.py" for token in tokens):
-        token_set = set(tokens)
-        return not STANDING_PYTEST_RUNNER_HELPER_FLAGS & token_set
+        return not any(
+            token.startswith(_STANDING_RUNNER_HELPER_FLAG_PREFIX) for token in tokens
+        )
     has_pytest = "pytest" in tokens or (
         len(tokens) >= 3 and tokens[0].endswith("python3") and tokens[1:3] == ["-m", "pytest"]
     )

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import shlex
 import subprocess
+import sys
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Callable
@@ -38,12 +39,16 @@ CONSUMER_PARTIAL_EXIT = _consumer.PARTIAL_EXIT
 
 DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
 _COVERAGE_ENV_KEYS = ("COVERAGE_PROCESS_START", "COVERAGE_RCFILE", "PYTHONPATH")
-_STANDING_RUNNER_HELPER_FLAGS = (
-    "--print-targets",
-    "--print-expanded-targets",
-    "--print-temp-root",
-    "--print-command",
-)
+#: Re-export, NOT a second definition (SC18). The instrumentation policy is owned
+#: by `mutation_sampling_lib.classify_instrumentable_command` so this module and
+#: the changed-line gate cannot drift back into opposite answers. Only names this
+#: module's body or an external caller actually reads are bound here -- an unread
+#: alias is a live trap (`run_standing_pytest.py`'s own re-export block records
+#: why), and a first draft of this slice kept a helper-flag alias whose ONLY
+#: reader was the test asserting it existed.
+classify_instrumentable_command = _sampling.classify_instrumentable_command
+is_standing_pytest_runner_command = _sampling.is_standing_pytest_runner_command
+is_instrumentable_pytest_command = _sampling.is_instrumentable_pytest_command
 PRODUCE_REQUIRES_LOCK_ERROR = (
     "--produce-mutation-coverage requires --verification-lock and is incompatible "
     "with --skip-broad-pytest (the locked closeout proof anchors the coverage marker)"
@@ -64,46 +69,40 @@ EXTRA_TARGETS_FOCUSED_CONFLICT_ERROR = (
 )
 
 
-def is_standing_pytest_runner_command(command: str) -> bool:
-    try:
-        tokens = shlex.split(command)
-    except ValueError:
-        tokens = command.split()
-    token_set = set(tokens)
-    return any(Path(token).name == "run_standing_pytest.py" for token in tokens) and not (
-        token_set & set(_STANDING_RUNNER_HELPER_FLAGS)
-    )
-
-
 def instrument_broad_command(
     command: str,
     data_file: Path,
     *,
     extra_pytest_targets: list[str] | tuple[str, ...] = (),
 ) -> str:
-    """Rewrite a `pytest ...` / `python3 -m pytest ...` command to run under
-    plain `coverage run`, preserving the remaining arguments verbatim (the
-    `tests/test_*.py` glob must stay unquoted so bash still expands it)."""
-    coverage_prefix = f"python3 -m coverage run --data-file {shlex.quote(str(data_file))} -m pytest "
-    extra_suffix = (" " + shlex.join(list(extra_pytest_targets))) if extra_pytest_targets else ""
-    for pytest_prefix in ("python3 -m pytest ", "pytest "):
-        if command.startswith(pytest_prefix):
-            return coverage_prefix + command[len(pytest_prefix):] + extra_suffix
-    if is_standing_pytest_runner_command(command):
-        tokens = shlex.split(command)
-        if tokens and Path(tokens[0]).name == "python3":
-            tokens = tokens[1:]
-        for target in extra_pytest_targets:
-            tokens.extend(["--extra-pytest-target", target])
-        return (
-            f"python3 -m coverage run --data-file {shlex.quote(str(data_file))} "
-            + shlex.join(tokens)
-        )
-    raise ValueError(f"not an instrumentable pytest command: {command!r}")
+    """Rewrite an instrumentable pytest command to run under plain `coverage run`,
+    preserving the remaining arguments VERBATIM (the `tests/test_*.py` glob must
+    stay unquoted so bash still expands it -- which is why this builder does
+    string surgery on the raw remainder rather than re-joining argv).
 
-
-def is_instrumentable_pytest_command(command: str) -> bool:
-    return command.startswith(("python3 -m pytest ", "pytest ")) or is_standing_pytest_runner_command(command)
+    Accepts exactly what `mutation_sampling_lib.classify_instrumentable_command`
+    accepts; only the rendering is local. See that function for why the split is
+    at the classifier rather than at a boolean."""
+    classified = classify_instrumentable_command(command)
+    if classified is None:
+        raise ValueError(f"not an instrumentable pytest command: {command!r}")
+    kind, interpreter, remainder = classified
+    data_file_arg = shlex.quote(str(data_file))
+    # The caller's own interpreter spelling, falling back to the SAME default the
+    # argv builder uses. Previously this hardcoded `python3` while the argv builder
+    # recovered the caller's `/usr/bin/python3` and otherwise used `sys.executable`,
+    # so the two builders measured the same accepted command under two different
+    # interpreters -- measured by a round-2 reviewer, invisible to a test that
+    # compares every token except the first.
+    driver = shlex.quote(interpreter or sys.executable)
+    prefix = f"{driver} -m coverage run --data-file {data_file_arg}"
+    if kind == _sampling.PYTEST_KIND:
+        extra_suffix = (" " + shlex.join(list(extra_pytest_targets))) if extra_pytest_targets else ""
+        return f"{prefix} -m pytest" + remainder + extra_suffix
+    extra_suffix = "".join(
+        f" --extra-pytest-target {shlex.quote(target)}" for target in extra_pytest_targets
+    )
+    return f"{prefix} " + remainder + extra_suffix
 
 
 def _with_coverage_env(env: dict[str, str], command: str) -> str:

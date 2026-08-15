@@ -1,0 +1,11 @@
+{
+  "kind": "charness.lesson-session-emission-receipt",
+  "schema_version": 1,
+  "session_id": "2026-08-15-s6b1",
+  "snapshot_sha256": "381f29b0fad2d19d7235e736d1509bfd481b9de2018a765b330a7bf4b4a2e1c3",
+  "renderer_id": "charness.lesson-session-preview.text.v1",
+  "stdout_sha256": "ff4939892311752e26d93ace1c0d88cbe08330e8a1fb1915f73e45bbd649656c",
+  "stdout_byte_count": 3231,
+  "emitted_at": "2026-08-15T12:39:03.151160Z",
+  "receipt_sha256": "a1ea444129612b9e9b748249cb2e70bca107050ff10da386e88e7f9ba99c51ee"
+}

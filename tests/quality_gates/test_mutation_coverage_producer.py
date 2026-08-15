@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -25,7 +26,11 @@ def test_instrument_broad_command_rewrites_and_preserves_glob(tmp_path: Path) ->
     data_file = tmp_path / ".mutation-coverage"
     broad = "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
     out = instrument_broad_command(broad, data_file)
-    assert out.startswith("python3 -m coverage run --data-file ")
+    # The interpreter is the caller's when the command names one, else the SAME
+    # default the argv builder uses -- it was a hardcoded `python3` here until a
+    # round-2 reviewer measured the two builders driving one accepted command
+    # under two different interpreters (SC18).
+    assert out.startswith(f"{shlex.quote(sys.executable)} -m coverage run --data-file ")
     # the glob and the rest of the args survive verbatim so bash still expands them
     assert out.endswith(
         "-m pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"

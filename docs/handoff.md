@@ -5,8 +5,8 @@
 - Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <same>`
   BEFORE any brief or reviewer spawn. Both flags are REQUIRED.
 - Then run `## Next Session` item 1 — the premise check over the next slice's scoped
-  items — and only then invoke `impl`. S1-S6 are committed; **S6b-1** is next, and the
-  tail was resequenced to `S6b-1 -> S6c -> S6b-2 -> S7`.
+  items — and only then invoke `impl`. S1-S6b-1 are committed; **S6c** is next, and the
+  remaining tail is `S6c -> S6b-2 -> S7`.
 
 ## Continuation Capability
 
@@ -14,8 +14,7 @@
   its sequence, `## Owner Rulings`, each slice's review record, and the findings carried rather than fixed.
 - [S6 retro](../charness-artifacts/retro/2026-08-15-session-retro-s6.md) — the trend line
   across S5 and S6, and the sibling scan that produced the next capability.
-- [SC10 probe](../charness-artifacts/probe/2026-08-15-sc10-write-capable-worktree-isolation.json) — what this
-  host does with agent worktrees, and the six things it does NOT establish.
+- [SC10 probe](../charness-artifacts/probe/2026-08-15-sc10-write-capable-worktree-isolation.json) — agent worktrees on this host, and the six things it does NOT establish.
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md) — the digest a session reads before work.
 - [Operating contract](./conventions/operating-contract.md) — the two-round critique floor,
   the write-capable isolation rule, and the Claim Fidelity clause S6 skipped.
@@ -24,12 +23,15 @@
 
 ## Current State
 
+- **S6b-1 is committed** — one classifier for coverage instrumentation, the closeout
+  broad gate bound to it, `--test-command`, and the CI step on the standing runner; five
+  reviewers over two rounds, and round 2 found the first executor repair had traded an
+  uncaught crash for a SILENT green. Re-prove with
+  `python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py`.
 - **S6 is committed** (`git show 54654b032 --no-patch --format=%B`): worktree isolation,
   the monitored standing runner, the exported bar default, and
   [#633](https://github.com/corca-ai/charness/issues/633). Six reviewers over two rounds;
-  round 1 found two blockers that INVERTED their item's intent, round 2 two more that
-  reproduced the fixed class. Round-2 repairs and the `AGENTS.md` spawn rule ship
-  accepted-unreviewed at the cap.
+  round-2 repairs and the `AGENTS.md` spawn rule ship accepted-unreviewed at the cap.
 - Re-prove the suite with `python3 scripts/run_standing_pytest.py` — xdist-parallel,
   budgeted, blocking. Run `python3 scripts/sync_root_plugin_manifests.py` FIRST: the
   generated mirror is a repair surface, and a run begun before its re-sync burns a cycle.
@@ -42,36 +44,38 @@
   `check_export_safe_imports.py` already has the right AST shape with a `skills/public`-only
   constant. Scoped as S6c; its SC20 negative case and the
   [repo-copy fixture](../tests/repo_copy.py) trap are in the contract.
-- **The cost seam that recurred is code and config, not a document**:
-  [cosmic-ray.toml](../cosmic-ray.toml) holds a bare-pytest `test-command`,
-  `mutation_sampling_lib.coverage_run_command` refuses the standing runner, and its
-  sibling `mutation_coverage_producer.instrument_broad_command` accepts it. SC18 is the
-  reconcile; run `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root .`
+- **S6b-1 (SC18) is BUILT and reviewed over two rounds**: one classifier,
+  `mutation_sampling_lib.classify_instrumentable_command`, now decides for both
+  coverage builders and for the closeout broad gate, and
+  `check_changed_line_mutation_coverage.py --test-command` plus the CI changed-line
+  step reach the standing runner. [cosmic-ray.toml](../cosmic-ray.toml) still holds
+  its bare-pytest `test-command` on purpose — cosmic-ray runs it per mutant, and it
+  is SC17's subject in S6b-2. Run
+  `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root .`
   only for suite SHAPE — it does not answer command dominance.
 - [#618](https://github.com/corca-ai/charness/issues/618)-[#633](https://github.com/corca-ai/charness/issues/633):
   #620, #628, #617, #626, #627, #631, #629, #633 are fixed in-repo and unreleased.
   Still no checked-in classification ledger; the closeout floor requires one.
 
 Non-claims: no push, tag, version bump, publish, hosted CI, installed-consumer readback,
-or issue closure. S6b-1, S6c, S6b-2 and S7 have not started. S6's changed-line mutation
-proof is UNOBTAINED — the run was killed at 25 minutes as dominated, not completed, and
-SC18 exists so the retry is affordable.
+or issue closure. S6c, S6b-2 and S7 have not started. The CI wiring that now passes the
+standing runner to the changed-line step has NOT run on hosted CI — it is proven locally
+only.
 
 ## Next Session
 
 1. **Before each slice, confirm its scoped items still reproduce on the current tree**
    (`gh issue view <id>`, then run the reproduction). The standing remedy; in S3-S6 it is
    what confirmed items were live before code moved — in S6 it rescoped the largest one.
-2. **S6b-1 (SC18)** in the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md): give the two coverage builders ONE policy on the
-   standing runner, then re-obtain S6's changed-line proof, which is still unobtained
-   because that gate spawns serial bare pytest. Smallest item in the release and the one
-   that makes every later slice cheaper to prove — which is why it moved first.
-3. **S6c ([#634](https://github.com/corca-ai/charness/issues/634))**: export completeness, detector before repairs. It is
+2. **S6c ([#634](https://github.com/corca-ai/charness/issues/634))**: export completeness, detector before repairs. It is
    RELEASE-BLOCKING — a new consumer installing the prepared release hits an unguarded
    `import yaml` from a documented entrypoint. Work from the inventory on the issue.
-4. **S6b-2** (SC14, 15, 16, 17, 19 in the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md)): the rest of cost, which needs S6c's detector first so
+3. **S6b-2** (SC14, 15, 16, 17, 19 in the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md)): the rest of cost, which needs S6c's detector first so
    its consumer half ships verifiably rather than reproducing the class it fixes.
-5. Then **S7** publishes and closes [#608](https://github.com/corca-ai/charness/issues/608) and
+   S6b-1's carried remainder belongs here: `sample_mutation_files.py` still spawns the
+   dominated serial coverage probe, and the broad gate matches the runner token anywhere
+   while the coverage classifier is anchored at the start.
+4. Then **S7** publishes and closes [#608](https://github.com/corca-ai/charness/issues/608) and
    [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627);
    the classification ledger commits BEFORE the prepared release record, and S7's
    release-note obligations are listed in the contract's S7 entry.

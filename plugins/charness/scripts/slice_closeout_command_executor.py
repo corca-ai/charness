@@ -8,6 +8,7 @@ from typing import Callable
 from runtime_bootstrap import import_repo_module
 
 _broad_gate = import_repo_module(__file__, "scripts.slice_closeout_broad_gate")
+_sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
 
 
 def execute_command_plan(
@@ -26,7 +27,10 @@ def execute_command_plan(
     When ``broad_pytest_producer`` is set, the broad pytest command is run
     through it (instrumented for plain mutation coverage) instead of the plain
     ``run_command``, and the proof-reuse path is bypassed so the producing run
-    always executes — fresh coverage is the whole point of producer mode.
+    always executes — fresh coverage is the whole point of producer mode. A broad
+    command the coverage builders cannot instrument BLOCKS instead: producer mode
+    without coverage is a refusal, and neither an unmonitored run nor a cached
+    proof may stand in for it.
     """
     # The verification lock is the point at which generated output must stop
     # being discovered by an expensive proof run.  Snapshot only tracked git
@@ -64,6 +68,35 @@ def execute_command_plan(
             sync_state = None
 
         is_broad = _broad_gate.is_broad_pytest_command(command)
+        # "Broad" and "instrumentable" are different questions and this gate answers
+        # only the first: it matches the runner token ANYWHERE, so a wrapper prefix
+        # (`env VAR=x python3 ...`, the shape run-quality.sh itself uses) is broad
+        # while the coverage builders refuse it -- `coverage run env ...` would exec
+        # the wrapper as a script.
+        #
+        # BLOCKS rather than falling back, and the difference is the whole point.
+        # A first repair made `producing` False here and let the command run
+        # unmonitored: coverage was never produced, `produced_mutation_coverage` was
+        # never set, so the consumer skipped it, no narration fired, and closeout
+        # exited 0 claiming completion. A round-2 reviewer measured that this traded
+        # an uncaught ValueError -- loud, unmissable -- for a silent green on a proof
+        # surface, which is the class this whole slice exists to retire. Requesting
+        # producer mode and getting no proof is a refusal, and it is narrated as one.
+        if is_broad and broad_pytest_producer is not None and not (
+            _sampling.is_instrumentable_pytest_command(command)
+        ):
+            payload["status"] = "blocked"
+            payload["error"] = (
+                "--produce-mutation-coverage was requested, but the broad pytest "
+                f"command cannot be instrumented under coverage: {command!r}. "
+                + _sampling.INSTRUMENTABLE_COMMAND_REFUSAL
+            )
+            payload["mutation_coverage_changed_line_proof"] = {
+                "status": "not_checked",
+                "reason": "broad pytest command is not instrumentable under coverage",
+                "command": command,
+            }
+            return True
         producing = is_broad and broad_pytest_producer is not None
         if is_broad and not producing:
             if _maybe_reuse_or_block_broad(

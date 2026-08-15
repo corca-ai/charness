@@ -6,12 +6,12 @@ import hashlib
 import json
 import os
 import re
-import shlex
 import subprocess
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from scripts import coverage_instrumentation_policy as _policy
 from scripts.mutation_line_coverage_lib import (
     covered_statement_spans as _covered_statement_spans,
 )
@@ -38,36 +38,17 @@ def read_test_command(config_path: Path) -> str:
     return match.group(2)
 
 
-def coverage_run_command(test_command: str, data_file: Path) -> list[str]:
-    parts = shlex.split(test_command)
-    if len(parts) >= 3 and parts[0] in {"python", "python3"} and parts[1:3] == ["-m", "pytest"]:
-        return [
-            parts[0],
-            "-m",
-            "coverage",
-            "run",
-            "--data-file",
-            str(data_file),
-            "-m",
-            "pytest",
-            *parts[3:],
-        ]
-    if parts and parts[0] == "pytest":
-        return [
-            sys.executable,
-            "-m",
-            "coverage",
-            "run",
-            "--data-file",
-            str(data_file),
-            "-m",
-            "pytest",
-            *parts[1:],
-        ]
-    raise SystemExit(
-        "mutation coverage sampling supports pytest commands shaped as "
-        "`python3 -m pytest ...` or `pytest ...`; use a helper script for other runners"
-    )
+#: The instrumentation policy moved to `coverage_instrumentation_policy` when
+#: this file crossed its length cap (S6b-1). Re-exported because callers and
+#: tests -- and the producer's own identity pin -- bind these at THIS address.
+STANDING_RUNNER_HELPER_FLAG_PREFIX = _policy.STANDING_RUNNER_HELPER_FLAG_PREFIX
+PYTEST_KIND = _policy.PYTEST_KIND
+STANDING_RUNNER_KIND = _policy.STANDING_RUNNER_KIND
+INSTRUMENTABLE_COMMAND_REFUSAL = _policy.INSTRUMENTABLE_COMMAND_REFUSAL
+classify_instrumentable_command = _policy.classify_instrumentable_command
+is_standing_pytest_runner_command = _policy.is_standing_pytest_runner_command
+is_instrumentable_pytest_command = _policy.is_instrumentable_pytest_command
+coverage_run_command = _policy.coverage_run_command
 
 
 def _sitecustomize_source(*, dynamic_context: bool) -> str:
