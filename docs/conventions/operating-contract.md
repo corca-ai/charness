@@ -204,6 +204,62 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
     round-2 repair after the producer invalidates the coverage fingerprint.
   - A docs, artifact, or ordinary-code slice keeps the single-round obligation
     above.
+- **A WRITE-CAPABLE subagent gets its own worktree; a read-only one may share the
+  parent's.** Owner ruling 2026-08-15 (S6). The rule this replaces was a sentence
+  in the spawn prompt telling write-capable children not to run mutating git ops —
+  and on the S4 slice five of them ran concurrently in one shared tree under it,
+  which is the exposure, not a hypothetical. Isolation makes the parent's tree and
+  index structurally unreachable instead of policed.
+  - **What the ruling gives up, said plainly: there is no refusal message.** A
+    mutating git op SUCCEEDS — in a throwaway tree where it harms nothing. The
+    three refusal mechanisms were measured and each fails for its own reason, so
+    do not re-open them: a typed agent definition works by removing Bash, which
+    also removes the `git add`/`commit` a write-capable agent exists to run, and
+    probe `2026-07-10-issue-430` recorded a session where the envelope did not
+    bind at all; a host permission rule lives in unversioned host-local config
+    that reaches no consuming repo and is evaded by `git -C`, an alias, or
+    `sh -c`; and a git hook cannot veto the WORKTREE AND INDEX effects of the
+    named commands — `checkout` and `stash` have no vetoing pre-hook, and while
+    `reference-transaction` (git 2.28+) can abort a ref update and so reaches
+    `reset`'s HEAD move, it cannot see `git add`, a path-scoped
+    `reset -- <path>`, or `checkout` of paths, which are the index and worktree
+    writes that matter here. (An earlier draft of this bullet said `reset` "has
+    no hook at all"; a round-1 reviewer refuted it, and the correction is kept
+    beside the claim because a reader who knows about `reference-transaction`
+    would otherwise re-open the option this paragraph exists to close.)
+  - **The mechanism, named as the Boundary Ownership entry requires:**
+    `charness worktree create --path <path> --branch <branch> --prepare`, then
+    `charness worktree doctor --require-isolation` in the child's checkout. Under
+    that flag the doctor's `worktree_isolation` check FAILS in the main worktree
+    and names the create command; without it the same check reports isolation as
+    a fact and enforces nothing, because an operator working directly in the main
+    tree is doing nothing wrong and a check that failed for them unasked is one
+    they would learn to ignore. `charness worktree create` passes the flag itself,
+    so the enforcing half is part of the mechanism rather than a command an agent
+    must remember. An undecidable case — a bare repository, or a `git rev-parse`
+    that does not answer — reports UNKNOWN and fails under the flag rather than
+    certifying isolation nobody established.
+  - **What "isolated" measures, exactly:** this checkout's own `--git-dir`
+    differs from the shared `--git-common-dir`, so its index and HEAD are its
+    own. It is deliberately NOT a path comparison — a round-1 reviewer showed
+    that comparing the checkout path against the main worktree reports "isolated"
+    for a subdirectory of the main worktree, for a directory wired to the shared
+    gitdir (where `git add` writes the parent's index), and for a bare repo whose
+    directory happens to be named `.git`. The config plane stays shared either
+    way: `core.hooksPath` in a linked worktree points into the parent, so the
+    agent's commits run parent-owned hook scripts. Separate index and HEAD is the
+    claim; "the parent is unreachable" is not.
+  - **What the doctor proves and what it does not.** It proves a given checkout
+    is separate. It cannot prove the SPAWN landed there: the spawn is issued by an
+    agent, not by a script, and probe `2026-07-10-issue-430` records
+    `no host-exposed automated spawn-denial probe surface found`. So spawn
+    placement is proven by a RECORDED LIVE PROBE per host, on the same standing as
+    envelope binding and result delivery — never by a suite assertion.
+  - The detective control stays as the backstop for anything still sharing the
+    tree: `reviewer_boundary_fingerprint.py` snapshot/verify, and the read-only
+    hygiene rule in
+    [fresh-eye-subagent-review.md](../../skills/shared/references/fresh-eye-subagent-review.md)
+    remains canonical for reviewers that share it.
 - **A multi-slice goal runs a bounded GOAL-CLAIMS review at its midpoint, not only
   at closeout.** The slice rule above puts a fresh eye on every repair; nothing
   put one on the goal's own claims until the end, and a goal artifact is a verdict

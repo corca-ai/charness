@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import runpy
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -13,6 +12,7 @@ import yaml
 
 from scripts import manage_mutation_reports as reports
 from scripts import run_standing_pytest as runner
+from scripts import standing_pytest_basetemp as basetemp_lib
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -143,25 +143,25 @@ def test_basetemp_helpers_preserve_on_os_errors(
 ) -> None:
     basetemp = tmp_path / "charness-run-1"
     basetemp.mkdir()
-    original_flock = runner.fcntl.flock
+    original_flock = basetemp_lib.fcntl.flock
 
     def fail_unlock(fd: int, operation: int) -> None:
-        if operation == runner.fcntl.LOCK_UN:
+        if operation == basetemp_lib.fcntl.LOCK_UN:
             raise OSError("unlock failed")
         original_flock(fd, operation)
 
-    monkeypatch.setattr(runner.fcntl, "flock", fail_unlock)
-    assert runner._basetemp_is_active(basetemp) is False
+    monkeypatch.setattr(basetemp_lib.fcntl, "flock", fail_unlock)
+    assert basetemp_lib._basetemp_is_active(basetemp) is False
 
     original_open = Path.open
 
     def fail_lock_open(path: Path, *args: object, **kwargs: object):
-        if path == runner._basetemp_lock_path(basetemp):
+        if path == basetemp_lib._basetemp_lock_path(basetemp):
             raise OSError("open failed")
         return original_open(path, *args, **kwargs)
 
     monkeypatch.setattr(Path, "open", fail_lock_open)
-    assert runner._basetemp_is_active(basetemp) is True
+    assert basetemp_lib._basetemp_is_active(basetemp) is True
 
 
 def test_basetemp_marker_age_inventory_and_prune_tolerate_os_errors(
@@ -177,9 +177,9 @@ def test_basetemp_marker_age_inventory_and_prune_tolerate_os_errors(
         return original_write(path, *args, **kwargs)
 
     monkeypatch.setattr(Path, "write_text", fail_marker_write)
-    runner._mark_basetemp(basetemp, runner._FAILED_BASETEMP_MARKER)
-    assert not (basetemp / runner._FAILED_BASETEMP_MARKER).exists()
-    assert runner._failed_at(basetemp) == 0
+    basetemp_lib._mark_basetemp(basetemp, basetemp_lib._FAILED_BASETEMP_MARKER)
+    assert not (basetemp / basetemp_lib._FAILED_BASETEMP_MARKER).exists()
+    assert basetemp_lib._failed_at(basetemp) == 0
 
     parent = tmp_path / "pytest-of-user"
     parent.mkdir()
@@ -191,7 +191,7 @@ def test_basetemp_marker_age_inventory_and_prune_tolerate_os_errors(
         return original_iterdir(path)
 
     monkeypatch.setattr(Path, "iterdir", fail_iterdir)
-    assert runner.prune_failed_basetemps(parent, current_failed=None, keep=3) == []
+    assert basetemp_lib.prune_failed_basetemps(parent, current_failed=None, keep=3) == []
 
 
 def test_failed_basetemp_prune_skips_an_unremovable_root(
@@ -200,10 +200,14 @@ def test_failed_basetemp_prune_skips_an_unremovable_root(
     parent = tmp_path / "pytest-of-user"
     stale = parent / "charness-run-1"
     stale.mkdir(parents=True)
-    runner._mark_basetemp(stale, runner._FAILED_BASETEMP_MARKER)
-    monkeypatch.setattr(runner, "_basetemp_is_active", lambda _path: False)
-    monkeypatch.setattr(runner.shutil, "rmtree", lambda _path: (_ for _ in ()).throw(OSError("busy")))
-    assert runner.prune_failed_basetemps(parent, current_failed=None, keep=0) == []
+    basetemp_lib._mark_basetemp(stale, basetemp_lib._FAILED_BASETEMP_MARKER)
+    # Patch the OWNING module: `prune_failed_basetemps` resolves this name in
+    # `standing_pytest_basetemp`'s globals, so patching the runner's re-export
+    # bound nothing and this test passed while asserting nothing about the
+    # branch it names (round-1 finding).
+    monkeypatch.setattr(basetemp_lib, "_basetemp_is_active", lambda _path: False)
+    monkeypatch.setattr(basetemp_lib.shutil, "rmtree", lambda _path: (_ for _ in ()).throw(OSError("busy")))
+    assert basetemp_lib.prune_failed_basetemps(parent, current_failed=None, keep=0) == []
     assert stale.is_dir()
 
 
@@ -216,11 +220,15 @@ def test_successful_explicit_keep_marks_runner_owned_basetemp(
     monkeypatch.setattr(runner, "default_basetemp", lambda _repo_root: basetemp)
     monkeypatch.setattr(runner, "build_pytest_command", lambda *_args, **_kwargs: ["pytest"])
 
-    def succeed(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def succeed(command: list[str], **_kwargs: object) -> SimpleNamespace:
         basetemp.mkdir(parents=True)
-        return subprocess.CompletedProcess(command, 0)
+        return SimpleNamespace(
+            returncode=0, timed_out=False, elapsed_seconds=1.0, stdout="", stderr=""
+        )
 
-    monkeypatch.setattr(runner.subprocess, "run", succeed)
+    # Seam moved to the monitored primitive (S6/SC11); the retention behavior
+    # under test is unchanged.
+    monkeypatch.setattr(runner, "run_monitored_phase", succeed)
     result = runner.run_standing_pytest(
         SimpleNamespace(
             repo_root=repo,
@@ -231,7 +239,8 @@ def test_successful_explicit_keep_marks_runner_owned_basetemp(
             keep_basetemp=True,
             pytest_target=[],
             extra_pytest_target=[],
+            timeout_seconds=None,
         )
     )
     assert result == 0
-    assert (basetemp / runner._KEPT_BASETEMP_MARKER).is_file()
+    assert (basetemp / basetemp_lib._KEPT_BASETEMP_MARKER).is_file()

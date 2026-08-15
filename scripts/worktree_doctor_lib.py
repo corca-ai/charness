@@ -162,7 +162,7 @@ def _validate_doctor_check_entry(entry: Any, label: str, errors: list[str], seen
         errors.append(f"{label}.timeout_seconds must be an integer between 1 and 120")
 
 
-def run_doctor(repo_root: Path) -> dict[str, Any]:
+def run_doctor(repo_root: Path, *, require_isolation: bool = False) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     manifest_state = load_manifest(repo_root)
     if manifest_state.found and not manifest_state.valid:
@@ -177,7 +177,9 @@ def run_doctor(repo_root: Path) -> dict[str, Any]:
         manifest_state.data.get("doctor", {}).get("disable_canonical_checks", []) if manifest_state.data else []
     )
     disabled = {entry for entry in disabled_raw if isinstance(entry, str)}
-    canonical = run_canonical_checks(repo_root, disabled=disabled)
+    canonical = run_canonical_checks(
+        repo_root, disabled=disabled, require_isolation=require_isolation
+    )
     manifest_checks = (
         run_manifest_doctor_checks(repo_root, manifest_state.data)
         if manifest_state.found and manifest_state.valid
@@ -280,13 +282,25 @@ def _execute_prepare_command(entry: dict[str, Any], repo_root: Path) -> tuple[Co
     )
 
 
-def run_prepare(repo_root: Path, *, force: bool = False) -> dict[str, Any]:
+def run_prepare(
+    repo_root: Path, *, force: bool = False, require_isolation: bool = False
+) -> dict[str, Any]:
+    """Prepare a worktree, carrying the caller's isolation requirement THROUGH.
+
+    `require_isolation` is threaded rather than defaulted away because
+    `worktree create --prepare` replaces its own doctor payload with this
+    function's. Without it, an isolation-required FAIL computed by the caller was
+    recomputed here WITHOUT the requirement, and both the payload and the status
+    were overwritten with a pass -- on `--prepare`, which is the exact path the
+    operating contract prescribes as the mechanism. Round-2 finding: the rule was
+    enforced somewhere, but not on the path a consumer actually hits.
+    """
     repo_root = repo_root.resolve()
     manifest_state = load_manifest(repo_root)
     if not manifest_state.found or not manifest_state.valid:
         return _missing_manifest_payload(manifest_state)
 
-    pre_doctor = run_doctor(repo_root)
+    pre_doctor = run_doctor(repo_root, require_isolation=require_isolation)
     skip_when_clean = bool(manifest_state.data.get("prepare", {}).get("skip_if_doctor_passes", True))
     if pre_doctor["status"] == PASS and skip_when_clean and not force:
         return {
@@ -313,7 +327,7 @@ def run_prepare(repo_root: Path, *, force: bool = False) -> dict[str, Any]:
             failure_seen = True
             break
 
-    post_doctor = run_doctor(repo_root)
+    post_doctor = run_doctor(repo_root, require_isolation=require_isolation)
     if failure_seen:
         status = FAIL
         next_step = "A prepare command failed; fix it and re-run `charness worktree prepare`."

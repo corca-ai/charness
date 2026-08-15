@@ -120,7 +120,7 @@ def test_create_with_failing_prepare_carries_recovering_next_step(tmp_path: Path
     monkeypatch.setattr(
         lib._doctor_lib,
         "run_prepare",
-        lambda path: {"status": "fail", "next_step": None, "doctor": {"status": "fail"}},
+        lambda path, **_kwargs: {"status": "fail", "next_step": None, "doctor": {"status": "fail"}},
     )
 
     payload = lib.run_create(repo, target_path=target, branch="prep-fail", base="main", prepare=True)
@@ -230,3 +230,65 @@ def test_cli_worktree_create_json_executes_and_reports_doctor(tmp_path: Path) ->
     assert payload["created"] is True
     assert payload["doctor"]["status"] == "pass"
     assert target.exists()
+
+
+def test_create_requires_isolation_of_the_worktree_it_just_made(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """SC10's flag has to be part of the mechanism, not a command to remember.
+
+    Round 1 found `--require-isolation` had no production caller at all;
+    `worktree create` became that caller. Round 2 then found the `--prepare`
+    path -- the one the operating contract prescribes -- discarded the verdict,
+    because `run_prepare` re-ran the doctor WITHOUT the requirement and
+    overwrote both the payload and the status with the result.
+
+    So this pins the requirement on BOTH paths by recording what each doctor
+    call was actually asked.
+    """
+    repo = _make_primary(tmp_path)
+    asked: list[bool] = []
+    real_doctor = lib._doctor_lib.run_doctor
+
+    def recording_doctor(repo_root, *, require_isolation=False):
+        asked.append(require_isolation)
+        return real_doctor(repo_root, require_isolation=require_isolation)
+
+    monkeypatch.setattr(lib._doctor_lib, "run_doctor", recording_doctor)
+
+    payload = lib.run_create(
+        repo_root=repo, target_path=tmp_path / "wt", branch="slice", base=None,
+        detach=False, prepare=False, dry_run=False, force=False,
+    )
+
+    assert payload["created"] is True
+    assert asked == [True], "creation must assert isolation of the worktree it just made"
+    check = next(
+        item for item in payload["doctor"]["checks"] if item["id"] == "worktree_isolation"
+    )
+    assert check["status"] == "pass"
+
+
+def test_the_prepare_path_does_not_discard_the_isolation_requirement(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # The round-2 blocker directly: every doctor run reached through
+    # `--prepare` must carry the requirement, or the verdict that replaces the
+    # payload was computed without it.
+    repo = _make_primary(tmp_path)
+    asked: list[bool] = []
+    real_doctor = lib._doctor_lib.run_doctor
+
+    def recording_doctor(repo_root, *, require_isolation=False):
+        asked.append(require_isolation)
+        return real_doctor(repo_root, require_isolation=require_isolation)
+
+    monkeypatch.setattr(lib._doctor_lib, "run_doctor", recording_doctor)
+
+    lib.run_create(
+        repo_root=repo, target_path=tmp_path / "wt", branch="slice", base=None,
+        detach=False, prepare=True, dry_run=False, force=False,
+    )
+
+    assert asked, "no doctor run was observed"
+    assert all(asked), f"a doctor run on the --prepare path dropped the requirement: {asked}"

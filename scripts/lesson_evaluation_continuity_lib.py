@@ -12,7 +12,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from scripts.critique_enforcement_scope import observed_date
-from scripts.lesson_ledger_lib import canonical_json
+from scripts.lesson_ledger_lib import RESERVED_SESSION_ID, canonical_json
 
 ACTIVATION_DATE = date(2026, 8, 14)
 SECTION_HEADING = "## Lesson Evaluation"
@@ -27,7 +27,7 @@ BASE_DISPOSITION_KEYS = frozenset({"status", "session_id", "score_event_count"})
 MISSING_START_DISPOSITION = {
     "reason": "missing-start",
     "score_event_count": 0,
-    "session_id": "none",
+    "session_id": RESERVED_SESSION_ID,
     "status": "not-evaluated",
 }
 AGGREGATE_VIOLATION_IDS = (
@@ -67,8 +67,22 @@ def _fail(message: str) -> None:
 
 
 def validate_session_id(session_id: Any) -> str:
+    """Refuse anything a real session may not be called, INCLUDING the sentinel.
+
+    `"none"` fullmatches the pattern, so before #633 this function accepted the
+    one id that means "there was no session". Refusing it HERE rather than at
+    each caller is what makes the corollary go away: every declare-time and
+    receipt-path caller inherits the refusal, and the only legitimate speller of
+    the sentinel -- the `missing-start` branch of `_validate_disposition_value`
+    -- never reaches this function.
+    """
     if not isinstance(session_id, str) or not _SESSION_ID.fullmatch(session_id):
         _fail("session_id must be path-safe ASCII alphanumeric with internal `._-`")
+    if session_id == RESERVED_SESSION_ID:
+        _fail(
+            f"session_id `{RESERVED_SESSION_ID}` is reserved for the `missing-start` "
+            "disposition and cannot name a real session"
+        )
     return session_id
 
 
@@ -117,7 +131,8 @@ def grammar_summary() -> str:
     return (
         f"the JSON object takes exactly keys {sorted(BASE_DISPOSITION_KEYS)}, plus `reason` when "
         f"status is `not-evaluated`; status is one of {sorted(STATUSES)}; reason is one of "
-        f"{sorted(REASONS)}; `missing-start` requires session_id `none` and score_event_count 0, "
+        f"{sorted(REASONS)}; session_id `{RESERVED_SESSION_ID}` is RESERVED and legal only under "
+        "`missing-start`, which requires it together with score_event_count 0, "
         "`effect-recorded` requires score_event_count >= 1, and `no-effect` / `not-evaluated` "
         "require 0. A repo that opened no lesson session writes exactly: "
         f"`{LINE_PREFIX}{canonical_json(MISSING_START_DISPOSITION)}`"
@@ -143,9 +158,17 @@ def _validate_disposition_value(value: Any) -> dict[str, Any]:
     if status == "not-evaluated" and reason not in REASONS:
         _fail(f"not-evaluated reason must be one of {sorted(REASONS)}")
     if status == "not-evaluated" and reason == "missing-start":
-        if session_id != "none" or count != 0:
-            _fail("missing-start requires session_id `none` and score_event_count 0")
+        if session_id != RESERVED_SESSION_ID or count != 0:
+            _fail(
+                f"missing-start requires session_id `{RESERVED_SESSION_ID}` and score_event_count 0"
+            )
     else:
+        # The ONLY branch that may spell the sentinel is above. Every other
+        # status routes through `validate_session_id`, which refuses it (#633):
+        # before that refusal existed, `effect-recorded` with session_id `none`
+        # parsed, counted toward `completed_evaluation_count`, and skipped every
+        # reconciler check because the reconciler treats the sentinel as
+        # "nothing to reconcile".
         validate_session_id(session_id)
     if status == "effect-recorded" and count < 1:
         _fail("effect-recorded requires score_event_count >= 1")

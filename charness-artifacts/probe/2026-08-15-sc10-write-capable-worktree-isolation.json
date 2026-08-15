@@ -1,0 +1,33 @@
+{
+  "probe": "sc10-write-capable-subagent-worktree-isolation",
+  "criterion": "SC10",
+  "date": "2026-08-15",
+  "host": "claude-code",
+  "repo_version_at_probe": "5.2.0 shipped; 6.0.0 prepared and unpublished",
+  "question": "Does a write-capable agent on this host land in a checkout that is separate from the parent's worktree and index, and does its own git work still succeed there?",
+  "why_a_probe_and_not_a_test": "The spawn is issued by an agent, not by a script. Probe 2026-07-10-issue-430 recorded `no host-exposed automated spawn-denial probe surface found`, so spawn PLACEMENT is on the same standing as envelope binding and result delivery: proven per host by observation, never by a suite assertion. The suite proves the property of a checkout; it cannot prove where a spawn went.",
+  "observations": {
+    "host_creates_linked_worktrees_for_agents": true,
+    "observed_agent_worktrees": [
+      ".claude/worktrees/agent-a8179ddb292c7e138",
+      ".claude/worktrees/agent-ab2ba16fc6ceecc77"
+    ],
+    "git_worktree_list_confirms_linked": "both appear in `git worktree list` on their own branches (worktree-agent-<id>), each with its own HEAD distinct from the parent's",
+    "dot_git_is_a_gitdir_file": "gitdir: /home/hwidong/codes/charness/.git/worktrees/agent-a8179ddb292c7e138",
+    "doctor_verdict_in_an_agent_worktree": "pass",
+    "doctor_verdict_in_the_parent_worktree_under_require_isolation": "fail, next_step names `charness worktree create`",
+    "doctor_command": "python3 scripts/worktree_doctor.py --repo-root .claude/worktrees/agent-a8179ddb292c7e138 --require-isolation",
+    "agent_worktrees_are_gitignored": ".gitignore:52 `.claude/worktrees/`, so an agent's tree cannot reach the parent's commit through an untracked path either"
+  },
+  "verdict": "This host does place some agents in real linked git worktrees, and `charness worktree doctor --require-isolation` renders PASS against such a worktree and FAIL against the main one.",
+  "non_claims": [
+    "Does NOT establish that the agents occupying these worktrees were WRITE-CAPABLE, nor that isolation was REQUESTED rather than a host default. Both are inferences from the worktrees' existence; nothing observed here shows the spawn parameters or the agent's tool surface. An earlier draft of this record asserted `isolation-requested spawns` as if measured -- a round-1 reviewer refuted it, and the correction is kept rather than silently rewritten.",
+    "Does NOT prove the host isolates a spawn that did not ask for isolation, which is why the read-only shared-tree hygiene rule still stands for reviewers.",
+    "Does NOT prove or disprove behavior on any other host. Per-host, by construction.",
+    "Does NOT establish that this session's own reviewer spawns were isolated; it establishes that the mechanism exists and is observable on this host.",
+    "The observed worktrees were created by earlier sessions and read here as evidence; this probe did not itself spawn a write-capable agent to create one.",
+    "Does NOT discharge the SECOND half of SC10's acceptance check. That half -- `reviewer_boundary_fingerprint verify` over a window containing such a spawn returning no UNDECLARED drift -- is recorded separately in the S6 closeout, not here. A reader mapping acceptance to evidence must not read this probe as covering it.",
+    "The FAIL direction was rendered against the MAIN worktree, not against an agent worktree; `doctor_command` below records the command for the PASS direction only."
+  ],
+  "negative_case_covered_by_suite": "tests/charness_cli/test_worktree_doctor.py::test_a_linked_worktree_is_isolated_and_its_own_commits_still_succeed asserts `git add`/`commit`/`checkout -b` SUCCEED inside a linked worktree while the main worktree's HEAD, index, and working tree do not move. STATED HONESTLY after a round-1 reviewer refuted the first wording: that assertion is a property of GIT, not a regression guard on charness code -- delete the isolation check entirely and it still passes. What the test pins is the DEFINITION of isolation this repo uses; it cannot catch the failure mode the ruling names (an agent whose shell was taken away), because no suite can exercise that."
+}

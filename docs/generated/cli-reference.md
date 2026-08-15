@@ -813,8 +813,9 @@ positional arguments:
                         optional prepare.
     add                 Alias for `create`: wrap `git worktree add` with
                         readiness doctor and optional prepare.
-    doctor              Probe worktree readiness (hooksPath, lefthook shim
-                        resolution, husky directory, manifest checks).
+    doctor              Probe worktree readiness (isolation, hooksPath,
+                        lefthook shim resolution, husky directory, manifest
+                        checks).
     prepare             Run the worktree adapter's prepare commands and re-
                         validate readiness.
     audit               Survey all worktrees registered to the repository and
@@ -892,7 +893,7 @@ options:
 
 ```text
 usage: charness worktree doctor [-h] [--repo-root REPO_ROOT]
-                                [--home-root HOME_ROOT]
+                                [--require-isolation] [--home-root HOME_ROOT]
                                 [--charness-checkout CHARNESS_CHECKOUT]
 
 options:
@@ -900,6 +901,12 @@ options:
   --repo-root REPO_ROOT
                         Worktree to inspect. Defaults to the current working
                         directory.
+  --require-isolation   Fail unless this checkout is a linked worktree rather
+                        than the main one. Pass it before handing a WRITE-
+                        CAPABLE agent a checkout: without isolation that agent
+                        shares the parent's tree and index, and a stray git op
+                        lands in the parent's commit. Without the flag,
+                        isolation is reported as a fact and never enforced.
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.

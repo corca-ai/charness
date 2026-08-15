@@ -4897,7 +4897,10 @@ def cmd_session_capture_uninstall(args: argparse.Namespace) -> int:
 
 def cmd_worktree_doctor(args: argparse.Namespace) -> int:
     lib = _load_worktree_lib(args)
-    payload = lib.run_doctor(_resolve_worktree_target(args))
+    payload = lib.run_doctor(
+        _resolve_worktree_target(args),
+        require_isolation=getattr(args, "require_isolation", False),
+    )
     emit_yaml(payload)
     return 0 if payload.get("status") == lib.PASS else 1
 
@@ -5627,12 +5630,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     worktree_doctor_parser = worktree_subparsers.add_parser(
         "doctor",
-        help="Probe worktree readiness (hooksPath, lefthook shim resolution, husky directory, manifest checks).",
+        help="Probe worktree readiness (isolation, hooksPath, lefthook shim resolution, husky directory, manifest checks).",
     )
     worktree_doctor_parser.add_argument(
         "--repo-root",
         type=Path,
         help="Worktree to inspect. Defaults to the current working directory.",
+    )
+    worktree_doctor_parser.add_argument(
+        "--require-isolation",
+        action="store_true",
+        help=(
+            "Fail unless this checkout is a linked worktree rather than the main one. Pass it "
+            "before handing a WRITE-CAPABLE agent a checkout: without isolation that agent "
+            "shares the parent's tree and index, and a stray git op lands in the parent's "
+            "commit. Without the flag, isolation is reported as a fact and never enforced."
+        ),
     )
     add_worktree_lib_args(worktree_doctor_parser)
     worktree_doctor_parser.set_defaults(func=cmd_worktree_doctor)

@@ -606,11 +606,24 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # yaml_output.py is copied for the same reason: the real label reader emits its
     # payload through `from yaml_output import emit_yaml`, so a seeded repo without it
     # makes every runner test fail on an import error instead of on runner behavior.
+    # `subprocess_guard.py` joins them for the same reason and a sharper one (S6):
+    # the standing runner now spawns its pytest child through the repo's one
+    # child-process owner, so a seeded repo without it fails at import. Copied
+    # rather than stubbed BECAUSE a stub is exactly the wrong repair here -- the
+    # runner would fall back to an unmonitored child and the harness would keep
+    # passing over the untracked process tree this slice exists to fix.
     for real_name in (
         "quality_label_universe.py",
         "runtime_bootstrap.py",
         "adapter_lib.py",
         "yaml_output.py",
+        "subprocess_guard.py",
+        # The basetemp lifecycle the runner re-exports; extracted in S6 when the
+        # runner crossed its length cap. Same rule as the entries above: the
+        # runner imports it at module scope, so a seeded repo without it fails at
+        # import rather than on behavior.
+        "standing_pytest_basetemp.py",
+        "standing_pytest_run_record.py",
     ):
         shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
         (scripts_dir / real_name).chmod(0o755)

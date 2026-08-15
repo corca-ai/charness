@@ -10,6 +10,7 @@ happy path.
 """
 from __future__ import annotations
 
+import ast
 import os
 import subprocess
 from pathlib import Path
@@ -182,7 +183,7 @@ def test_islands_fail_even_with_zero_orphans(monkeypatch: pytest.MonkeyPatch) ->
 # pin rested on: most link-only lines here are hard-wrapped prose, a reflow sweep
 # is still not the remedy, and the bar's residual is exactly that population.
 def test_link_only_lines_above_the_bar_fail_the_gate(monkeypatch: pytest.MonkeyPatch) -> None:
-    over = _gate.LINK_ONLY_LINES_BAR + 1
+    over = _gate.resolve_link_only_lines_bar(ROOT) + 1
     _patch_awiki(
         monkeypatch,
         f"// lint_failed documents=42 orphans=0 islands=0 link_only_lines={over} "
@@ -211,7 +212,8 @@ def test_link_only_lines_at_the_bar_pass(monkeypatch: pytest.MonkeyPatch) -> Non
     # tree that set the bar.
     _patch_awiki(
         monkeypatch,
-        f"// lint_failed documents=42 orphans=0 islands=0 link_only_lines={_gate.LINK_ONLY_LINES_BAR} "
+        f"// lint_failed documents=42 orphans=0 islands=0 "
+        f"link_only_lines={_gate.resolve_link_only_lines_bar(ROOT)} "
         "largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000\n",
     )
     result = _gate.evaluate(ROOT)
@@ -236,8 +238,8 @@ def test_every_real_verdict_echoes_the_bars_it_judged_against(
 
     for result in (counted, absent):
         assert result["status"] == "pass"
-        assert result["bars"] == dict(_gate.METRIC_BARS)
-        assert result["bars"]["link_only_lines"] == _gate.LINK_ONLY_LINES_BAR
+        assert result["bars"] == _gate.resolve_bars(ROOT)
+        assert result["bars"]["link_only_lines"] == _gate.resolve_link_only_lines_bar(ROOT)
 
 
 def test_a_gated_metric_without_its_tables_fails_loudly() -> None:
@@ -327,18 +329,14 @@ def test_the_bar_matches_its_ratchet_record_and_never_rose() -> None:
     # three-digit literal -- the zero-work move the release contract's Fixed
     # Decision names. Raising the bar now also needs a row in the record whose
     # value the parse below refuses.
-    record = (ROOT / "docs" / "docs-graph-checks.md").read_text(encoding="utf-8")
-    section = record.split("## The `link_only_lines` ratchet record", 1)[1]
-    # BOUNDED at the next H2. Unbounded, the slice ran to EOF, so any later table
-    # in the file whose rows happen to start `| 20` would silently become the
-    # ratchet -- the test would then compare the bar against an unrelated table.
-    section = section.split("\n## ", 1)[0]
-    rows = [
-        line for line in section.splitlines()
-        if line.startswith("| 20")  # data rows only; the header and separator are not dated
-    ]
+    # S6 moved the PARSE into the gate: the gate now reads this record instead of
+    # carrying its own literal, so this test asserts properties of the rows the
+    # gate actually reads. Parsing the record a second time here would recreate
+    # exactly the drift the S6 change removes -- two readers, one of them not
+    # exported.
+    rows = _gate.ratchet_rows(ROOT)
     assert rows, "the ratchet record has no dated rows"
-    bars = [int(row.split("|")[2].strip()) for row in rows]
+    bars = [bar for _, bar in rows]
 
     # The FOUNDING row is an immutable anchor. Without it the record's history can
     # be rewritten rather than appended to: with a single row present, "never
@@ -346,13 +344,159 @@ def test_the_bar_matches_its_ratchet_record_and_never_rose() -> None:
     # edit of that row plus the literal in the gate -- two files, no test, green.
     # Anchoring row zero means a raise must APPEND, and an appended higher row is
     # what the ordering assertion below refuses.
-    assert rows[0].startswith("| 2026-08-15 |"), "the founding ratchet row was rewritten"
+    assert rows[0][0] == "2026-08-15", "the founding ratchet row was rewritten"
     assert bars[0] == 167, "the founding bar was rewritten; the ratchet records history"
 
-    assert bars[-1] == _gate.LINK_ONLY_LINES_BAR, (
-        "the gate's bar disagrees with the last row of its ratchet record"
+    assert bars[-1] == _gate.resolve_link_only_lines_bar(ROOT), (
+        "the gate's resolved bar disagrees with the last row of its ratchet record"
     )
     assert bars == sorted(bars, reverse=True), f"the ratchet record rose: {bars}"
+
+
+def _record(tmp_path: Path, body: str) -> Path:
+    (tmp_path / "docs").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "docs" / "docs-graph-checks.md").write_text(body, encoding="utf-8")
+    return tmp_path
+
+
+# S6 / owner ruling 2026-08-15. The gate is EXPORTED; the ratchet record and this
+# test file are not. So a consuming repo used to inherit charness's own measured
+# threshold with neither surface that gives it meaning. Every case below asks the
+# same question from a different direction: what does a repo that is not charness
+# get? The answer must be 0 in all of them.
+@pytest.mark.parametrize(
+    ("body", "why"),
+    [
+        (None, "no record file at all -- the ordinary consuming repo"),
+        ("# Docs graph checks\n\nNo ratchet section here.\n", "record without the section"),
+        (
+            "## The `link_only_lines` ratchet record\n\n| date | bar | why |\n| --- | --- | --- |\n",
+            "section present, no dated rows",
+        ),
+        (
+            "## The `link_only_lines` ratchet record\n\n| 2026-08-15 | not-a-number | x |\n",
+            "unparseable bar -- refuse the whole record, do not skip the row",
+        ),
+    ],
+)
+def test_a_repo_without_a_ratchet_record_inherits_the_strict_default(
+    tmp_path: Path, body: str | None, why: str
+) -> None:
+    root = _record(tmp_path, body) if body is not None else tmp_path
+
+    assert _gate.resolve_link_only_lines_bar(root) == 0, why
+    assert _gate.resolve_bars(root)["link_only_lines"] == 0, why
+
+
+# The finding that made the S6 change a net STRENGTHENING rather than a
+# weakening. The gate is exported; the ratchet record and this test file are not.
+# So sourcing the bar from a consumer-controlled file while leaving "may only
+# ever decrease" to a non-exported test would let a consuming repo append an
+# increasing row, go green, and have nothing red anywhere in the installed
+# artifact -- while the exported docstring still promised them a ratchet.
+@pytest.mark.parametrize(
+    ("rows", "why"),
+    [
+        ("| 2026-08-15 | 0 | founding |\n| 2026-08-20 | 99999 | recalibrated |\n",
+         "a raised row must refuse the whole record, not become the bar"),
+        ("| 2026-08-15 | 10 | founding |\n| 2026-08-16 | 11 | crept |\n",
+         "even a one-line creep is a raise"),
+    ],
+)
+def test_an_increasing_ratchet_record_is_refused_by_the_gate_itself(
+    tmp_path: Path, rows: str, why: str
+) -> None:
+    root = _record(tmp_path, "## The `link_only_lines` ratchet record\n\n" + rows)
+
+    assert _gate.ratchet_rows(root) == [], why
+    assert _gate.resolve_link_only_lines_bar(root) == 0, why
+
+
+def test_a_decreasing_record_with_a_repeat_is_still_accepted(tmp_path: Path) -> None:
+    # "May only ever decrease" means non-increasing: a re-affirmed bar on a later
+    # date is a legitimate record entry, and refusing it would push authors to
+    # rewrite history instead of appending to it.
+    root = _record(
+        tmp_path,
+        "## The `link_only_lines` ratchet record\n\n"
+        "| 2026-08-15 | 167 | founding |\n| 2026-08-16 | 167 | re-measured, unchanged |\n"
+        "| 2026-08-17 | 12 | repaired |\n",
+    )
+
+    assert _gate.resolve_link_only_lines_bar(root) == 12
+
+
+@pytest.mark.parametrize(
+    ("row", "why"),
+    [
+        ("2026-08-16 | 12 | repaired", "a GFM row without a leading pipe is valid markdown"),
+        ("  | 2026-08-16 | 12 | repaired |", "an indented row is valid markdown"),
+    ],
+)
+def test_a_row_the_parser_would_have_skipped_is_read_not_dropped(
+    tmp_path: Path, row: str, why: str
+) -> None:
+    # Selecting rows by the literal prefix `| 20` silently SKIPPED these shapes,
+    # which contradicted the parser's own promise to refuse the whole record
+    # rather than read a subset. The direction of the bug is what makes it
+    # matter: the skipped row here is the DECREASE, so the bar silently stayed at
+    # 167 and the ratchet's own progress was dropped on the floor.
+    root = _record(
+        tmp_path,
+        "## The `link_only_lines` ratchet record\n\n"
+        "| date | bar | why |\n| --- | --- | --- |\n"
+        "| 2026-08-15 | 167 | founding |\n" + row + "\n",
+    )
+
+    assert _gate.resolve_link_only_lines_bar(root) == 12, why
+
+
+def test_an_undecodable_record_is_not_run_rather_than_a_crash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # `UnicodeDecodeError` is a ValueError, not an OSError, so a single stray
+    # byte used to escape the parser's handler. Through `main` that was an
+    # uncaught traceback and exit 1, which the runner renders as FAIL -- the gate
+    # asserting a broken docs graph on a run where it observed nothing.
+    root = tmp_path
+    (root / "docs").mkdir()
+    (root / "docs" / "docs-graph-checks.md").write_bytes(
+        b"## The `link_only_lines` ratchet record\n\n| 2026-08-15 | 12 | \xff\xfe |\n"
+    )
+
+    assert _gate.ratchet_rows(root) == []
+    assert _gate.resolve_link_only_lines_bar(root) == 0
+    # And the CLI path renders a verdict rather than a traceback.
+    _patch_awiki(monkeypatch, _CLEAN_OUTPUT, returncode=0)
+    assert _gate.main(["--repo-root", str(root)]) in {0, _gate.UNESTABLISHED_EXIT}
+
+
+def test_a_recorded_ratchet_wins_over_the_exported_default(tmp_path: Path) -> None:
+    # And the LAST row wins, not the first: the record is history, and the bar is
+    # where that history currently stands.
+    root = _record(
+        tmp_path,
+        "## The `link_only_lines` ratchet record\n\n"
+        "| date | bar | why |\n| --- | --- | --- |\n"
+        "| 2026-08-15 | 167 | founding |\n"
+        "| 2026-08-16 | 12 | repaired |\n\n"
+        "## Something else\n\n| 2026-08-17 | 9999 | not the ratchet |\n",
+    )
+
+    assert _gate.ratchet_rows(root) == [("2026-08-15", 167), ("2026-08-16", 12)]
+    assert _gate.resolve_link_only_lines_bar(root) == 12
+
+
+def test_the_override_flag_still_beats_the_record(tmp_path: Path) -> None:
+    root = _record(
+        tmp_path,
+        "## The `link_only_lines` ratchet record\n\n| 2026-08-15 | 167 | founding |\n",
+    )
+
+    assert _gate.resolve_bars(root, 3)["link_only_lines"] == 3
+    # Negative: 0 is a real override, not "unset". A falsy-check here would make
+    # the strictest calibration a consumer can ask for silently unreachable.
+    assert _gate.resolve_bars(root, 0)["link_only_lines"] == 0
 
 
 def test_named_pages_collapses_repeats_into_a_count() -> None:
@@ -460,8 +604,9 @@ def test_a_failure_with_no_finding_block_says_the_block_was_absent(
 def test_the_bar_can_be_overridden_for_a_repo_that_calibrated_its_own(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # The built-in bar measures THIS repo's 80-column tree and travels with the
-    # exported plugin, while the ratchet record and the test enforcing it do not.
+    # Since S6 the exported default is 0 and THIS repo's bar comes from its
+    # ratchet record, which is not exported. (This comment used to say the
+    # built-in bar travels with the plugin -- the exact sentence S6 falsified.)
     # A consuming repo has to be able to say its own number -- or 0.
     _patch_awiki(
         monkeypatch,
@@ -598,9 +743,32 @@ def test_the_gate_does_not_print_a_live_link_only_count() -> None:
         "the --help docstring carries a live count; bars belong in code, measurements in comments"
     )
     # The bar is a VALUE, not a comment: a comment can be deleted with nothing red.
-    assert isinstance(_gate.LINK_ONLY_LINES_BAR, int)
-    assert _gate.METRIC_BARS["link_only_lines"] == _gate.LINK_ONLY_LINES_BAR
-    assert f"LINK_ONLY_LINES_BAR = {_gate.LINK_ONLY_LINES_BAR}" in source
+    # It is now a RESOLVED value rather than a literal (S6), so what must be a
+    # value is the exported default and the resolution itself.
+    assert isinstance(_gate.DEFAULT_LINK_ONLY_LINES_BAR, int)
+    assert _gate.METRIC_BARS["link_only_lines"] == _gate.DEFAULT_LINK_ONLY_LINES_BAR
+    assert f"DEFAULT_LINK_ONLY_LINES_BAR = {_gate.DEFAULT_LINK_ONLY_LINES_BAR}" in source
+    # The number this repo judges against must not be BOUND as a bar in the
+    # exported file. Asserted structurally, not as a substring: a raw
+    # `str(bar) not in source` grep false-fails for bars of 0, 1, 2, 3, 5, 12,
+    # 20, 120, 500 -- every one of which appears in this module as an exit code,
+    # a slice bound, a timeout, or a version. The ratchet only ever moves TOWARD
+    # those values, so that assertion would have reddened on the outcome it
+    # exists to reward, with a message that was flatly false. Round-1 finding.
+    module_constants = {
+        target.id: node.value.value
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant)
+        for target in node.targets
+        if isinstance(target, ast.Name) and isinstance(node.value.value, int)
+    }
+    assert module_constants.get("DEFAULT_LINK_ONLY_LINES_BAR") == 0, (
+        "the exported default must be 0; a consuming repo inherits no threshold "
+        "measured on charness's own docs tree"
+    )
+    assert "LINK_ONLY_LINES_BAR" not in module_constants, (
+        "the pre-S6 hard-coded bar is back as a module constant in an exported file"
+    )
 
 
 def test_the_not_run_verdict_is_rendered_and_exits_unestablished(monkeypatch: pytest.MonkeyPatch) -> None:

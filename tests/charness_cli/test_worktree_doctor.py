@@ -519,3 +519,202 @@ def test_disable_canonical_check_honored(tmp_path: Path) -> None:
     )
     payload = lib.run_doctor(repo)
     assert all(check["id"] != "lefthook_shim" for check in payload["checks"])
+
+def _git_out(*args: str, cwd: Path) -> str:
+    result = subprocess.run(
+        ["git", *args], cwd=cwd, check=True, capture_output=True, text=True
+    )
+    return result.stdout
+
+
+# --- SC10: worktree isolation for write-capable agents -----------------------
+#
+# Owner ruling 2026-08-15 retired the refusal framing. There is no refusal
+# message and a mutating git op still SUCCEEDS -- the criterion is that it can no
+# longer reach the parent's tree or index, because the agent does not share them.
+# So the positive case here is not "the op was blocked"; it is "the op landed
+# somewhere that harms nothing", and the negative case is the one that would be
+# lost if isolation were achieved by taking the shell away instead.
+
+
+def test_the_main_worktree_reports_that_it_is_not_isolated(tmp_path: Path) -> None:
+    repo = _make_git_worktree(tmp_path)
+
+    payload = lib.run_doctor(repo)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+
+    # Reported as a FACT, and skipped rather than failed: an operator working
+    # directly in the main worktree is doing nothing wrong, and a check that
+    # failed for them unasked is one they would learn to ignore.
+    assert check["status"] == "skipped"
+    assert "IS the main worktree" in check["detail"]
+    assert payload["status"] == "pass"
+
+
+def test_requiring_isolation_fails_in_the_main_worktree_and_names_the_remedy(
+    tmp_path: Path,
+) -> None:
+    repo = _make_git_worktree(tmp_path)
+
+    payload = lib.run_doctor(repo, require_isolation=True)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+
+    assert check["status"] == "fail"
+    assert payload["status"] == "fail"
+    # A verdict an agent cannot act on is a verdict it will route around.
+    assert "charness worktree create" in payload["next_step"]
+
+
+def test_a_linked_worktree_is_isolated_and_its_own_commits_still_succeed(
+    tmp_path: Path,
+) -> None:
+    """The positive case, plus the negative direction stated for what it is.
+
+    The PASS assertion is a regression guard on this repo's check. The commit
+    assertions below are NOT: they are a property of git, and they would still
+    hold with `_check_worktree_isolation` deleted. They are kept because they pin
+    the DEFINITION of isolation this repo adopted -- an agent that can still
+    commit in its own tree -- against the typed-agent mechanism the ruling
+    rejected, which achieves "the parent's index was untouched" by taking the
+    shell away. No suite can exercise that rejected mechanism, so this documents
+    the boundary rather than defending it. (Round 1 refuted the first docstring,
+    which claimed it guarded that failure mode.)
+    """
+    repo = _make_git_worktree(tmp_path)
+    linked = tmp_path / "agent-worktree"
+    _git("worktree", "add", "-b", "agent-slice", str(linked), cwd=repo)
+
+    payload = lib.run_doctor(linked, require_isolation=True)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+    assert check["status"] == "pass", check["detail"]
+    assert "its own git dir" in check["detail"]
+
+    main_head_before = _git_out("rev-parse", "HEAD", cwd=repo).strip()
+    main_status_before = _git_out("status", "--porcelain", cwd=repo)
+
+    # The agent does its write-capable work, including the exact operations the
+    # retired prose rule forbade.
+    (linked / "agent-file.txt").write_text("written by the agent\n", encoding="utf-8")
+    _git("add", "agent-file.txt", cwd=linked)
+    _git("-c", "user.email=a@b.c", "-c", "user.name=agent", "commit", "-m", "agent", cwd=linked)
+    _git("checkout", "-b", "another-branch", cwd=linked)
+
+    # It worked, in its own tree.
+    assert (linked / "agent-file.txt").exists()
+    assert _git_out("rev-parse", "HEAD", cwd=linked).strip() != main_head_before
+
+    # And the parent's tree and index never moved.
+    assert _git_out("rev-parse", "HEAD", cwd=repo).strip() == main_head_before
+    assert _git_out("status", "--porcelain", cwd=repo) == main_status_before
+    assert not (repo / "agent-file.txt").exists()
+
+
+def test_isolation_is_unknown_rather_than_confirmed_in_a_bare_repository(
+    tmp_path: Path,
+) -> None:
+    # The direction that matters: an undecidable case must never report PASS.
+    # Reading "not the main worktree" off a repo that has no main worktree would
+    # certify isolation that was never established.
+    bare = tmp_path / "bare.git"
+    subprocess.run(
+        ["git", "init", "--bare", str(bare)], check=True, capture_output=True, text=True
+    )
+
+    payload = lib.run_doctor(bare, require_isolation=True)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+
+    assert check["status"] == "fail"
+    assert "UNKNOWN" in check["detail"]
+
+
+# The false-PASS cases a round-1 reviewer found in the FIRST version of this
+# check, which decided isolation by comparing the checkout path against the main
+# worktree. Each one reported "isolated" while writing the parent's index. They
+# are parametrized together because they are one defect, not three: the old code
+# asked where the directory SITS instead of where its index IS.
+def test_configurations_that_share_the_parent_index_are_never_reported_isolated(
+    tmp_path: Path,
+) -> None:
+    repo = _make_git_worktree(tmp_path)
+
+    # 1. A subdirectory of the main worktree -- one plausible --repo-root typo.
+    (repo / "scripts").mkdir()
+    payload = lib.run_doctor(repo / "scripts", require_isolation=True)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+    assert check["status"] == "fail", "a subdirectory of the main worktree is not isolated"
+
+    # 2. The main worktree's own git dir.
+    payload = lib.run_doctor(repo / ".git", require_isolation=True)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+    assert check["status"] != "pass", "the main worktree's gitdir is not an isolated checkout"
+
+
+def test_a_bare_repo_named_dot_git_is_unknown_not_isolated(tmp_path: Path) -> None:
+    # The old check's bare-repo safety rested on the gitdir being NAMED `.git`,
+    # so a bare repo at `/srv/site/.git` -- the shape `--separate-git-dir` and
+    # `clone --bare` both produce -- passed as isolated. `--is-bare-repository`
+    # asks the question directly.
+    site = tmp_path / "site"
+    site.mkdir()
+    subprocess.run(
+        ["git", "init", "--bare", str(site / ".git")], check=True, capture_output=True, text=True
+    )
+
+    payload = lib.run_doctor(site / ".git", require_isolation=True)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+
+    assert check["status"] == "fail"
+    assert "UNKNOWN" in check["detail"]
+
+
+def test_ambient_git_dir_cannot_redirect_the_verdict(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # `git rev-parse` answers about the repository it DISCOVERS, and GIT_DIR
+    # overrides discovery. Inherited from a git hook or `git rebase --exec`, it
+    # would silently produce a verdict about a repository the caller never named.
+    repo = _make_git_worktree(tmp_path)
+    linked = tmp_path / "agent-worktree"
+    _git("worktree", "add", "-b", "ambient-probe", str(linked), cwd=repo)
+    monkeypatch.setenv("GIT_DIR", str(repo / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(repo))
+
+    payload = lib.run_doctor(linked, require_isolation=True)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+
+    assert check["status"] == "pass", "the ambient GIT_DIR displaced the named checkout"
+
+
+def test_a_linked_worktree_reports_isolation_without_the_flag_too(tmp_path: Path) -> None:
+    # The default direction: isolation is a FACT on every run, not something that
+    # only exists when someone asks for it. Only the main-worktree direction of
+    # the default was covered before.
+    repo = _make_git_worktree(tmp_path)
+    linked = tmp_path / "agent-worktree"
+    _git("worktree", "add", "-b", "fact-probe", str(linked), cwd=repo)
+
+    payload = lib.run_doctor(linked)
+    check = next(item for item in payload["checks"] if item["id"] == "worktree_isolation")
+
+    assert check["status"] == "pass"
+    assert payload["status"] == "pass"
+
+
+def test_a_repo_local_adapter_cannot_disable_the_isolation_check(tmp_path: Path) -> None:
+    """Deliberate, and pinned because nothing stated it.
+
+    The adapter lives INSIDE the agent's own worktree. If `worktree_isolation`
+    were disableable there, the checkout being audited could switch off the
+    check the parent required -- so `CANONICAL_CHECK_IDS` deliberately omits it
+    and the manifest validator refuses the id.
+    """
+    repo = _make_git_worktree(tmp_path)
+    _write_manifest(
+        repo,
+        "version: 1\ndoctor:\n  disable_canonical_checks:\n    - worktree_isolation\n",
+    )
+
+    payload = lib.run_doctor(repo)
+
+    assert payload["manifest"]["valid"] is False
+    assert any("worktree_isolation" in error for error in payload["manifest"]["errors"])

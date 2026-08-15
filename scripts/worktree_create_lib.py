@@ -113,7 +113,14 @@ def run_create(
         )
     create_action["status"] = "done"
 
-    doctor = _doctor_lib.run_doctor(target_path)
+    # `require_isolation=True` unconditionally: this function JUST created a
+    # linked worktree, so the check must pass, and asserting it here is what
+    # turns SC10's flag from something an agent has to remember to type into
+    # part of the mechanism. A round-1 reviewer found the flag had no production
+    # caller at all -- enforcement exactly as strong as the prose rule it
+    # replaced, minus the prose. If this ever fails, `git worktree add` returned
+    # something that is not an isolated checkout, which is worth a loud WARN.
+    doctor = _doctor_lib.run_doctor(target_path, require_isolation=True)
     payload: dict[str, Any] = {
         "status": PASS if doctor.get("status") == PASS else WARN,
         "repo_root": str(repo_root),
@@ -128,7 +135,12 @@ def run_create(
         "next_step": None,
     }
     if prepare:
-        prepare_payload = _doctor_lib.run_prepare(target_path)
+        # Carries the SAME requirement as the doctor call above. Without it the
+        # prepare payload -- which replaces `payload["doctor"]` and recomputes
+        # `payload["status"]` on the next two lines -- was produced by a doctor
+        # run that did not require isolation, silently erasing the verdict on the
+        # prescribed `--prepare` path.
+        prepare_payload = _doctor_lib.run_prepare(target_path, require_isolation=True)
         payload["prepare"] = prepare_payload
         payload["doctor"] = prepare_payload.get("doctor", doctor)
         if prepare_payload.get("status") == PASS:

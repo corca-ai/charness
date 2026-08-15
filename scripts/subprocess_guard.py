@@ -20,10 +20,24 @@ observable runner produced a 30-minute silence. An observable child cannot defen
 itself from a silent parent, and picking the wrong shape is invisible until
 someone is waiting.
 
-Scope note, deliberately NOT solved here: ``run_monitored_phase`` preserves
-isolated bodies, so a child that streams its own lifecycle still surfaces only
-through the parent's heartbeat until it exits. Teeing a single sequential child's
-body live is a third, distinct caller choice; no caller should assume it.
+The third caller choice, which this scope note used to defer (S6, 2026-08-15):
+``run_monitored_phase(capture=False)`` — a long phase whose child ALREADY streams
+a readable lifecycle of its own, where buffering the body is the harm rather than
+the protection. The standing pytest runner is the case that earned it: it renders
+live progress across a run measured in minutes, and capturing it would trade a
+watchable suite for a silent one. The child inherits the parent's stdout and
+stderr, so nothing interleaves it and nothing buffers it; ``PhaseOutcome.stdout``
+and ``.stderr`` are then EMPTY by construction, and a caller that needs the body
+back must not ask for this mode. Everything else the monitored shape provides —
+its own session, the whole-group kill, the heartbeat, the timeout-as-result — is
+unchanged, and those are what a caller in this mode is actually buying.
+
+This stays one primitive rather than two because the alternative was measured:
+the previous attempt at this shape began as a separate ``monitored_run.py`` whose
+capture helper near-duplicated this module's, and two owners for "how this repo
+spawns a child" is the concept-integrity failure the quality lens exists to
+catch. Teeing — capturing the body AND streaming it — remains unsolved and
+deliberately so; no caller should assume it.
 
 Both shapes report a timeout the same way: as a RESULT, not an exception. The
 caller receives ``TIMEOUT_EXIT_CODE`` and a stderr message naming the bound, so
@@ -242,6 +256,7 @@ def run_monitored_phase(
     shell: bool = False,
     executable: str | None = None,
     stream: TextIO | None = None,
+    capture: bool = True,
 ) -> PhaseOutcome:
     """Run a long phase with an isolated body and a streamed lifecycle.
 
@@ -255,6 +270,11 @@ def run_monitored_phase(
     stays observable without corrupting it.
 
     ``timeout_seconds=None`` runs unbounded, matching ``run_process``.
+
+    ``capture=False`` hands the child the parent's own stdout and stderr instead
+    of pipes. Use it only for a child that already renders its own readable
+    progress; the returned ``stdout``/``stderr`` are then empty strings, because
+    the body went straight to the terminal and this function never held it.
     """
     events = sys.stderr if stream is None else stream
     rendered = display if display is not None else render_display(command)
@@ -264,8 +284,11 @@ def run_monitored_phase(
     with subprocess.Popen(
         command,
         cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        # `None` INHERITS the parent's handles -- it does not discard the output.
+        # The distinction matters: `subprocess.DEVNULL` here would silence the one
+        # kind of child this mode exists for.
+        stdout=subprocess.PIPE if capture else None,
+        stderr=subprocess.PIPE if capture else None,
         text=True,
         env=env,
         shell=shell,

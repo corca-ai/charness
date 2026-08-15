@@ -150,7 +150,113 @@ Ordering is by dependency pressure, not by theme.
   consumer's own bar expressible; whether a repo-calibrated threshold should ship
   as a DEFAULT is left open rather than decided inside this slice.
 - **S5 — structural umbrellas.** #586, then #584, #583, #582.
-- **S6 — operating contract.** **Worktree ISOLATION for write-capable subagents**
+- **S6 — operating contract. BUILT 2026-08-15; two-round review in progress.**
+  All four items landed. What the premise check changed, and what the slice
+  measured that the plan did not predict, both recorded here rather than left in
+  the diff:
+
+  **The premise check narrowed SC11 and it was the largest correction.** The
+  plan reads "the monitored-phase path for long-running children" as work to be
+  built. It already ships: `scripts/subprocess_guard.run_monitored_phase` has
+  three production callers, and the 2026-08-14 retro records that a first draft
+  of it was a NEW `monitored_run.py` deleted for near-duplicating the existing
+  owner. What was missing was not the path but its use at the one place that
+  most needed it: `scripts/run_standing_pytest.py:467` ran the repo's LONGEST
+  child on a bare `subprocess.run` — no session, no heartbeat, no group kill —
+  which is exactly how two full-suite runs were lost to wrapper timeouts. So S6
+  wires the existing owner rather than building a second one. Had the premise
+  check not run, this slice would have shipped the duplicate the previous slice
+  already deleted once.
+
+  **A naive conversion would have been a regression, and the acceptance envelope
+  is what caught it.** `run_monitored_phase` PIPES the child's output; pytest
+  renders live progress across a multi-minute run. Swapping the call would have
+  traded a watchable suite for a silent one — the same defect the guard's own
+  docstring records the release helper committing in the other direction. The
+  module docstring had already NAMED this as the third caller choice it
+  deliberately did not solve; S6 solves it as `capture=False` on the existing
+  primitive, keeping one owner. `timeout_seconds` stays `None` by default: the
+  recorded loss was an untracked tree, not a missing bound, and a bound short
+  enough to catch a hang is short enough to kill a healthy run.
+
+  **SC11's second half is a run record, because monitoring alone does not reach
+  it.** The heartbeat proves liveness to whoever is watching. When an agent's
+  wrapper dies the transcript dies with it, so the outcome has to outlive the
+  caller: `.charness/standing-pytest/last-run.json` <!-- reproduction-source -->,
+  read back with `python3 scripts/run_standing_pytest.py --print-last-run`. The
+  path is deliberately gitignored per-run local state, not a checked-in proof
+  artifact — a record of the last run on THIS machine is not evidence about the
+  repo. Best-effort by construction — telemetry must never be why a suite fails.
+
+  **The exported-bar work grew one step past the ruling, recorded rather than
+  inferred from the diff.** The ruling said source the bar from the ratchet
+  record and fall to 0. Doing that left charness's own measured numbers (255,
+  88, 167) written in prose inside the exported gate — which a test written for
+  this slice caught, not a reviewer. The measurement narrative moved into the
+  (unexported) record and the gate keeps the METHOD. Also recorded as a cost the
+  ruling did not name: sourcing the bar removes one of the three edits a raise
+  used to need, so the ratchet is one step shallower than S4 left it. Said in
+  [docs-graph-checks.md](../../docs/docs-graph-checks.md) rather than left for a
+  reader to discover.
+
+  **What the suite caught that local tests did not.** The runner's new import
+  broke the seeded quality-runner fixture (34 failures) and failed under
+  `coverage run` from a foreign cwd (`coverage run <abspath>` puts the CWD on
+  `sys.path`, not the script's directory). Both were repaired at the seam rather
+  than by stubbing: a stub would have let the runner fall back to an unmonitored
+  child with the harness still green.
+
+  **SC10's proof is split by construction and the split is not a gap.** The
+  suite proves what a CHECKOUT is; only a live probe can prove where a SPAWN
+  went. Recorded at
+  [2026-08-15-sc10-write-capable-worktree-isolation.json](../probe/2026-08-15-sc10-write-capable-worktree-isolation.json),
+  which also states what it does NOT establish — including that the observed
+  agent worktrees came from isolation-REQUESTED spawns, so a default spawn still
+  shares the parent tree and the read-only hygiene rule still stands.
+
+  **S6 review record.** Two rounds, four angle reviewers then two, all
+  `parent-delegated` and read-only, on windows `s6-operating-contract-r1` and
+  `-r2`; both `reviewer_boundary_fingerprint verify` runs returned
+  `verdict: clean`, so no approval is quarantined. Round 1 returned two blockers,
+  each of which INVERTED its item's intent: the standing runner's new session put
+  the pytest tree outside any enclosing guard's process group (the runner is
+  normally nested, so an outer timeout would have orphaned the tree it was meant
+  to track), and `is_isolated_worktree` compared paths rather than indexes, so a
+  subdirectory of the main worktree reported "isolated" while sharing the
+  parent's index. It also found the exported docs-graph ratchet had become
+  WEAKER for consumers — monotonicity lived only in a non-exported test — and
+  that this slice's own "the bar appears nowhere in exported source" test would
+  have fired on the ratchet's success direction.
+
+  Round 2 read the repairs and found two more, both the fixed class recurring
+  inside its own fix: the #633 repair moved the counter correctly but left a test
+  docstring naming `completed_evaluation_count` beside assertions that did not
+  check it (the refuted code still passed them — measured), and the isolation
+  flag, newly given a production caller, was discarded on the `--prepare` path
+  this contract names as the mechanism. Round-2 repairs are
+  **accepted-unreviewed** at the two-round cap, and so is the write-capable-spawn
+  rule added to `AGENTS.md` under the owner ruling below, which landed after the
+  round-2 packet closed.
+
+  Carried, not fixed: `ratchet_rows` enforces monotonicity over the rows PRESENT,
+  so a consumer who rewrites the record to a single high row is accepted — the
+  founding-row anchor that stops that for charness is a test, and tests are not
+  exported. An outer SIGKILL still orphans the pytest tree by construction. Both
+  are stated at their surfaces rather than left to be discovered.
+
+  **Owner ruling 2026-08-15 (S6 closeout): SC10 CLOSES with a spawn-side rule.**
+  The checkout-level mechanism ships as built, and `AGENTS.md` gains the
+  instruction that write-capable spawns request their own worktree wherever the
+  host offers one. Recorded as an instruction, not enforcement: charness cannot
+  control host spawn placement, and the probe records what the host actually did
+  rather than what was asked. **And: the gate-enforced ratchet monotonicity
+  STAYS**, though it exceeds the literal text of the exported-bar ruling — it is
+  covered by the no-grace-period ruling, and S7 owes it a release note because a
+  consuming repo whose record rises is newly refused on upgrade.
+
+  Original scope follows.
+
+  **Worktree ISOLATION for write-capable subagents**
   (owner ruling 2026-08-15: "격리 잘 시키고"), replacing the retired
   no-mutating-git framing; plus a monitored-phase path for long-running children.
   S4 exercised the exposure this addresses: five write-capable subagents ran
@@ -205,7 +311,14 @@ Ordering is by dependency pressure, not by theme.
   equivalent or render the verdict "the command your docs prescribe is outside your
   measured universe".
 
-- **S7 — release execution.** Reword the 8 blocking quantities the S1 lint finds
+- **S7 — release execution.** Breaking changes S7 owes a release note, collected
+  here so they are not re-derived from six slices of memory: the `## References`
+  descriptor rule (S4/SC13), and from S6 the docs-graph gate's exported
+  `link_only_lines` default of 0 plus its new refusal of a ratchet record whose
+  bars rise — a consuming repo that inherited charness's 167 now inherits 0, and
+  one whose record is non-monotonic is refused on upgrade. Both are exactly the
+  "claim surface nobody thought to derive" the Known Weaknesses name.
+  Reword the 8 blocking quantities the S1 lint finds
   in the prepared notes that have no registered claim surface to move into
   (owner ruling, 2026-08-15: reword rather than expand the registry — an ad-hoc
   quantity like "three coupled edits" is not derivable in principle, and a

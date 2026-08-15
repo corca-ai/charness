@@ -160,6 +160,13 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         ([None], "unexpected"),
         ([{"session_id": "", "snapshot": {}, "snapshot_sha256": "x"}], "non-empty"),
         ([{**valid_session, "snapshot": {}}], "snapshot shape"),
+        # #633 corollary: a session actually NAMED `none` was writable and then
+        # permanently unclaimable, because `references` can never hold the
+        # sentinel. Refused where the id is minted.
+        (
+            [{**valid_session, "session_id": ledger.RESERVED_SESSION_ID}],
+            "reserved session_id",
+        ),
     ):
         with pytest.raises(ValueError, match=message):
             ledger._replay_sessions(invalid, replayed)

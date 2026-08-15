@@ -4,18 +4,63 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import fcntl
-import hashlib
 import importlib.metadata
 import importlib.util
 import os
-import re
 import shlex
 import shutil
-import subprocess
 import sys
-import time
 from pathlib import Path
+
+try:
+    from runtime_bootstrap import import_repo_module
+except ImportError:  # pragma: no cover - exercised by the coverage-producer test
+    # `coverage run <abspath>` puts the CWD on `sys.path`, not the script's own
+    # directory, and `check_changed_line_mutation_coverage` invokes this runner
+    # exactly that way from a foreign cwd. Direct invocation finds the sibling;
+    # that path does not.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from runtime_bootstrap import import_repo_module  # type: ignore[no-redef]
+
+# The repo's ONE child-process owner. Imported through the bootstrap rather than
+# `from scripts...` because this script is run directly as often as it is
+# imported, and a plain package import fails in the direct-invocation case.
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env
+run_monitored_phase = _subprocess_guard.run_monitored_phase
+
+# The basetemp lifecycle moved out whole (S6) when this file crossed its length
+# cap; `standing_pytest_basetemp` owns where a run's scratch tree lives and what
+# survives it.
+#
+# EXACTLY the names this module's own body calls, and no more. A first draft
+# re-bound six further names and justified the block by claiming
+# `check_changed_line_mutation_coverage` and the quality runner import
+# `default_basetemp` through here; a round-1 reviewer measured that neither does
+# -- both reach the runner through its CLI. Each unread alias is a live trap: it
+# looks like the seam a test should patch while nothing reads it, which is how a
+# monkeypatch ends up binding nothing and a test passes while asserting nothing.
+# Import from `standing_pytest_basetemp` directly for anything not listed here.
+# The run-record and signal halves of "outlive your caller" (S6 round 2), same
+# re-export discipline as the basetemp block below: only what this body calls.
+_survival = import_repo_module(__file__, "scripts.standing_pytest_run_record")
+RUN_RECORD_RELPATH = _survival.RUN_RECORD_RELPATH
+HEARTBEAT_INTERVAL_ENV = _survival.HEARTBEAT_INTERVAL_ENV
+run_record_path = _survival.run_record_path
+write_run_record = _survival.write_run_record
+_heartbeat_seconds = _survival._heartbeat_seconds
+_terminate_reaps_the_child = _survival._terminate_reaps_the_child
+
+_basetemp = import_repo_module(__file__, "scripts.standing_pytest_basetemp")
+_FAILED_BASETEMP_MARKER = _basetemp._FAILED_BASETEMP_MARKER
+_KEPT_BASETEMP_MARKER = _basetemp._KEPT_BASETEMP_MARKER
+default_temp_root = _basetemp.default_temp_root
+ensure_external_temp_root = _basetemp.ensure_external_temp_root
+default_basetemp = _basetemp.default_basetemp
+prune_failed_basetemps = _basetemp.prune_failed_basetemps
+_failed_basetemp_keep = _basetemp._failed_basetemp_keep
+_hold_basetemp_lock = _basetemp._hold_basetemp_lock
+_mark_basetemp = _basetemp._mark_basetemp
 
 STANDING_PYTEST_TARGETS = (
     "tests/quality_gates",
@@ -24,10 +69,6 @@ STANDING_PYTEST_TARGETS = (
     "tests/charness_cli",
 )
 DEFAULT_XDIST_WORKER_CAP = 16
-FAILED_BASETEMP_KEEP = 3
-_RUN_BASETEMP_NAME = re.compile(r"^charness-run-[0-9]+$")
-_FAILED_BASETEMP_MARKER = ".charness-failed-run"
-_KEPT_BASETEMP_MARKER = ".charness-explicitly-kept-run"
 # `--maxschedchunk` first shipped as a command-line option in pytest-xdist 3.2.0
 # (changelog #855, 2023-02-07). Below that the flag is an unknown option and pytest
 # exits 4 before collecting anything, so the floor follows the same rule as
@@ -59,156 +100,6 @@ def usable_cpu_count() -> int:
         return len(os.sched_getaffinity(0)) or 1
     except (AttributeError, OSError):
         return os.cpu_count() or 1
-
-
-def repo_tmp_key(repo_root: Path) -> str:
-    return hashlib.sha256(str(repo_root).encode()).hexdigest()[:12]
-
-
-def default_temp_root(repo_root: Path, env: dict[str, str] | None = None) -> Path:
-    env = env or os.environ
-    if env.get("PYTEST_DEBUG_TEMPROOT"):
-        return Path(env["PYTEST_DEBUG_TEMPROOT"])
-    cache_root = Path(env.get("XDG_CACHE_HOME") or Path(env.get("HOME", "/tmp")) / ".cache")
-    return cache_root / "charness" / "pytest-tmp" / repo_tmp_key(repo_root)
-
-
-def ensure_external_temp_root(repo_root: Path, temp_root: Path) -> None:
-    resolved_repo = repo_root.resolve()
-    resolved_temp = temp_root.resolve()
-    try:
-        resolved_temp.relative_to(resolved_repo)
-    except ValueError:
-        return
-    raise SystemExit(
-        "standing-pytest: pytest temp root "
-        f"{str(temp_root)!r} is inside the repo {str(repo_root)!r}; point "
-        "XDG_CACHE_HOME or PYTEST_DEBUG_TEMPROOT outside the repo"
-    )
-
-
-def default_basetemp(repo_root: Path, env: dict[str, str] | None = None) -> Path:
-    temp_root = default_temp_root(repo_root, env)
-    ensure_external_temp_root(repo_root, temp_root)
-    user = subprocess.run(
-        ["id", "-un"],
-        check=False,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() or "unknown"
-    # The leaf MUST NOT start with "pytest-". This basetemp lives under the shared
-    # PYTEST_DEBUG_TEMPROOT/pytest-of-<user> rootdir, and nested pytest runs spawned
-    # by tests inherit PYTEST_DEBUG_TEMPROOT and run pytest's numbered-dir cleanup
-    # (make_numbered_dir_with_cleanup, prefix "pytest-") over that same rootdir at
-    # process exit. pytest's explicit --basetemp branch creates this dir WITHOUT a
-    # cleanup lock file, so a "pytest-*" name would be an unlocked deletion candidate
-    # and a nested run's exit-time cleanup could rename+remove it — and every live
-    # xdist worker's popen-gw* subdir — mid-run, producing mass FileNotFoundError in
-    # tmp_path setup. A non-"pytest-" prefix is invisible to that cleanup glob.
-    return temp_root / f"pytest-of-{user}" / f"charness-run-{time.time_ns()}"
-
-
-def _failed_basetemp_keep(env: dict[str, str] | None = None) -> int:
-    env = os.environ if env is None else env
-    raw = env.get("CHARNESS_PYTEST_FAILED_BASETEMP_KEEP")
-    if raw is None:
-        return FAILED_BASETEMP_KEEP
-    try:
-        keep = int(raw)
-    except ValueError:
-        keep = 0
-    if keep >= 1:
-        return keep
-    print(
-        "standing-pytest: ignoring invalid CHARNESS_PYTEST_FAILED_BASETEMP_KEEP="
-        f"{raw!r}; expected a positive integer, using {FAILED_BASETEMP_KEEP}",
-        file=sys.stderr,
-    )
-    return FAILED_BASETEMP_KEEP
-
-
-def _basetemp_lock_path(basetemp: Path) -> Path:
-    return basetemp.parent / f".{basetemp.name}.lock"
-
-
-@contextlib.contextmanager
-def _hold_basetemp_lock(basetemp: Path):
-    """Hold a sibling-visible liveness lock for one runner-owned basetemp."""
-    lock_path = _basetemp_lock_path(basetemp)
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
-    with lock_path.open("a+", encoding="utf-8") as handle:
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-        try:
-            yield
-        finally:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-    lock_path.unlink(missing_ok=True)
-
-
-def _basetemp_is_active(basetemp: Path) -> bool:
-    lock_path = _basetemp_lock_path(basetemp)
-    try:
-        with lock_path.open("a+", encoding="utf-8") as handle:
-            try:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                return True
-            finally:
-                try:
-                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-                except OSError:
-                    pass
-    except OSError:
-        return True
-    lock_path.unlink(missing_ok=True)
-    return False
-
-
-def _mark_basetemp(basetemp: Path, marker: str) -> None:
-    try:
-        (basetemp / marker).write_text(str(time.time_ns()), encoding="utf-8")
-    except OSError:
-        pass
-
-
-def _failed_at(basetemp: Path) -> int:
-    try:
-        return (basetemp / _FAILED_BASETEMP_MARKER).stat().st_mtime_ns
-    except OSError:
-        return 0
-
-
-def prune_failed_basetemps(
-    parent: Path,
-    *,
-    current_failed: Path | None,
-    keep: int,
-) -> list[Path]:
-    """Remove old marked failures while preserving active, explicit-kept, and legacy roots."""
-    try:
-        siblings = [
-            path
-            for path in parent.iterdir()
-            if path.is_dir()
-            and _RUN_BASETEMP_NAME.fullmatch(path.name)
-            and path != current_failed
-            and (path / _FAILED_BASETEMP_MARKER).is_file()
-            and not (path / _KEPT_BASETEMP_MARKER).exists()
-        ]
-    except OSError:
-        return []
-    newest_other_count = max(0, keep - (1 if current_failed is not None else 0))
-    siblings.sort(key=_failed_at, reverse=True)
-    removed: list[Path] = []
-    for stale in siblings[newest_other_count:]:
-        if _basetemp_is_active(stale):
-            continue
-        try:
-            shutil.rmtree(stale)
-        except OSError:
-            continue
-        removed.append(stale)
-    return removed
 
 
 def choose_pytest_command(env: dict[str, str] | None = None) -> list[str]:
@@ -464,20 +355,104 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
         return 0
     lock_context = _hold_basetemp_lock(basetemp) if runner_owned_basetemp else contextlib.nullcontext()
     with lock_context:
-        result = subprocess.run(command, cwd=repo_root, env=env, check=False)
-        if result.returncode == 0 and not args.keep_basetemp:
+        write_run_record(repo_root, {"state": "running", "command": shlex.join(command)})
+        # SC11. This was a bare `subprocess.run` -- the repo's LONGEST child on a
+        # plain call with no session, no heartbeat, and no group kill, while the
+        # monitored primitive it needed already shipped and had three other
+        # callers. Two full-suite runs were lost to exactly that: an agent's
+        # wrapper timed out, the pytest process tree was never tracked, and ~20
+        # minutes went with it, twice.
+        #
+        # `capture=False` is the load-bearing argument and the reason this needed
+        # a new mode rather than a swap -- but NOT for the reason first written
+        # here. The first comment said capturing would trade a watchable suite
+        # for a silent one; round 2 measured that under `run-quality.sh`, the
+        # dominant caller, every check already runs in a subshell redirected to a
+        # log file, so there is no live progress for an operator to watch either
+        # way. The real argument: with `capture=True` the body is buffered into
+        # `PhaseOutcome.stdout`, and this runner never prints `outcome.stdout` --
+        # so the entire pytest body would be DISCARDED on failure, which is the
+        # one moment it is needed. Direct invocation additionally keeps its live
+        # progress, which is a real but secondary gain.
+        #
+        # `timeout_seconds` stays None by DEFAULT. Imposing a bound here would
+        # kill legitimate long runs, and the loss this repairs was never caused by
+        # the absence of a bound -- it was caused by an untracked tree. What the
+        # monitored shape buys unconditionally is the part that was missing: the
+        # child owns its session, so a kill reaps every xdist worker instead of
+        # orphaning them, and the heartbeat makes a live run distinguishable from
+        # a hung one.
+        #
+        # `_terminate_reaps_the_child` is what keeps that session from becoming a
+        # NEW leak, and it is not optional. This runner is usually NESTED: both
+        # `run-quality.sh` (which queues it) and the closeout/release lanes wrap
+        # their child in a bounded `run_monitored_phase` of their own. The
+        # child's own session puts it OUTSIDE the outer guard's process group, so
+        # an outer 1800s kill would take this runner down and leave a 16-worker
+        # pytest tree running unattended -- the same orphaned tree SC11 exists to
+        # prevent, arriving by a new route. A round-1 reviewer found this; the
+        # handler turns SIGTERM into an exception so the guard's own
+        # `except BaseException: _kill_tree` reaps the tree on the way out.
+        try:
+            with _terminate_reaps_the_child():
+                outcome = run_monitored_phase(
+                    command,
+                    cwd=repo_root,
+                    phase="standing-pytest",
+                    timeout_seconds=args.timeout_seconds,
+                    heartbeat_seconds=_heartbeat_seconds(),
+                    env=env,
+                    capture=False,
+                )
+        except BaseException:
+            # A record saying `running` forever is worse than no record: a later
+            # session cannot tell a live run from a corpse, which is the exact
+            # ambiguity this record exists to remove. Mark the basetemp too, or
+            # every interrupted run leaks one permanently -- `prune_failed_basetemps`
+            # only considers roots carrying the failed marker.
+            write_run_record(
+                repo_root,
+                {
+                    "state": "interrupted",
+                    "command": shlex.join(command),
+                    "returncode": None,
+                    "timed_out": False,
+                    "basetemp": str(basetemp),
+                },
+            )
+            if runner_owned_basetemp:
+                _mark_basetemp(basetemp, _FAILED_BASETEMP_MARKER)
+            raise
+        returncode = outcome.returncode
+        write_run_record(
+            repo_root,
+            {
+                "state": "timed-out" if outcome.timed_out else "finished",
+                "command": shlex.join(command),
+                "returncode": returncode,
+                "elapsed_seconds": outcome.elapsed_seconds,
+                "timed_out": outcome.timed_out,
+                # The basetemp is the run's own artifact directory, and on a
+                # failure it is KEPT. Recording it is what makes a run whose
+                # caller died still diagnosable.
+                "basetemp": str(basetemp),
+            },
+        )
+        if outcome.timed_out:
+            print(outcome.stderr.strip() or "the standing pytest run timed out", file=sys.stderr)
+        if returncode == 0 and not args.keep_basetemp:
             shutil.rmtree(basetemp, ignore_errors=True)
-        elif result.returncode == 0:
+        elif returncode == 0:
             _mark_basetemp(basetemp, _KEPT_BASETEMP_MARKER)
         elif runner_owned_basetemp:
             _mark_basetemp(basetemp, _FAILED_BASETEMP_MARKER)
         if runner_owned_basetemp:
             prune_failed_basetemps(
                 basetemp.parent,
-                current_failed=basetemp if result.returncode != 0 else None,
+                current_failed=basetemp if returncode != 0 else None,
                 keep=_failed_basetemp_keep(env),
             )
-    return result.returncode
+    return returncode
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -502,6 +477,25 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=[],
         help="Additional pytest path or nodeid appended to the standing target set.",
     )
+    parser.add_argument(
+        "--timeout-seconds",
+        type=float,
+        default=None,
+        help=(
+            "Kill the whole pytest process group after this many seconds and report the "
+            "timeout as a result. Unbounded by default: the standing suite is a legitimate "
+            "multi-minute run, and a bound short enough to catch a hang is short enough to "
+            "kill a healthy one."
+        ),
+    )
+    parser.add_argument(
+        "--print-last-run",
+        action="store_true",
+        help=(
+            "Print the record of the most recent run and exit. Reads back a run whose "
+            "caller died before it could report -- the case a wrapper timeout creates."
+        ),
+    )
     parser.add_argument("--print-targets", action="store_true")
     parser.add_argument("--print-expanded-targets", action="store_true")
     parser.add_argument("--print-temp-root", action="store_true")
@@ -511,6 +505,13 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
+    if args.print_last_run:
+        path = run_record_path(args.repo_root.resolve())
+        if not path.exists():
+            print(f"no standing-pytest run record at {path}", file=sys.stderr)
+            return 1
+        print(path.read_text(encoding="utf-8"), end="")
+        return 0
     if args.print_targets:
         print("\n".join(STANDING_PYTEST_TARGETS))
         return 0

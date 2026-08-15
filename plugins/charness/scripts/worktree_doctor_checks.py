@@ -17,45 +17,120 @@ SKIPPED = _state.SKIPPED
 tail = _state.tail
 
 
-def git_common_dir(repo_root: Path) -> Path | None:
+# `git rev-parse` answers about the repository it DISCOVERS, and these three
+# variables override that discovery. Left in place, a doctor run from inside a
+# git hook or under `git rebase --exec` would render a verdict about a repository
+# the caller never named -- silently, since the output looks identical. Scrubbed
+# for every probe here so a verdict is always about `--repo-root`.
+_GIT_DISCOVERY_ENV = ("GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE")
+
+
+def _git_env() -> dict[str, str]:
+    return {key: value for key, value in os.environ.items() if key not in _GIT_DISCOVERY_ENV}
+
+
+def _git_output(repo_root: Path, *args: str) -> str | None:
+    """One read-only git probe, discovery-scrubbed. `None` for any non-answer.
+
+    Every git question this module asks goes through here so the scrub cannot be
+    applied to some probes and not others -- `git_config_value` was missing it
+    while `rev-parse` had it, which is exactly the drift a second copy produces.
+    """
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "--git-common-dir"],
+            ["git", *args],
             cwd=repo_root,
             check=False,
             capture_output=True,
             text=True,
             timeout=5,
+            env=_git_env(),
         )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    except (FileNotFoundError, subprocess.TimeoutExpired, NotADirectoryError):
         return None
     if result.returncode != 0:
         return None
-    raw = result.stdout.strip()
-    if not raw:
+    return result.stdout.strip() or None
+
+
+def _resolved_git_path(repo_root: Path, flag: str) -> Path | None:
+    raw = _git_output(repo_root, "rev-parse", flag)
+    if raw is None:
         return None
     candidate = Path(raw)
     if not candidate.is_absolute():
-        candidate = (repo_root / candidate).resolve()
+        candidate = repo_root / candidate
+    candidate = candidate.resolve()
     return candidate if candidate.is_dir() else None
 
 
+def git_common_dir(repo_root: Path) -> Path | None:
+    return _resolved_git_path(repo_root, "--git-common-dir")
+
+
+def git_dir(repo_root: Path) -> Path | None:
+    """This CHECKOUT's own git dir. Equal to the common dir only in the main worktree."""
+    return _resolved_git_path(repo_root, "--git-dir")
+
+
+def is_bare_repository(repo_root: Path) -> bool | None:
+    raw = _git_output(repo_root, "rev-parse", "--is-bare-repository")
+    if raw is None:
+        return None
+    return raw == "true"
+
+
 def git_config_value(repo_root: Path, key: str) -> str | None:
-    try:
-        result = subprocess.run(
-            ["git", "config", "--get", key],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    return _git_output(repo_root, "config", "--get", key)
+
+
+def main_worktree(common_dir: Path | None) -> Path | None:
+    """The checkout that owns the repository, for REPORTING only.
+
+    Best-effort by design and deliberately not the discriminator: a repository
+    created with `--separate-git-dir`, or one whose git dir is simply not named
+    `.git`, has no `<common>/..` main worktree to name. `is_isolated_worktree`
+    decides isolation without this, so a `None` here costs a nicer message and
+    never a verdict.
+    """
+    if common_dir is None or common_dir.name != ".git":
         return None
-    if result.returncode != 0:
+    return common_dir.parent
+
+
+def is_isolated_worktree(repo_root: Path, common_dir: Path | None) -> bool | None:
+    """True in a linked worktree, False in the main one, None when undecidable.
+
+    THE QUESTION IS WHICH INDEX THIS CHECKOUT WRITES, not which path it sits at.
+    An earlier version of this compared `repo_root` against the parent of the
+    common dir, and a round-1 reviewer took it apart: every one of these reported
+    "isolated" while writing the parent's index --
+
+    - `--repo-root <main>/scripts`, any subdirectory of the main worktree, which
+      is one plausible CLI typo away at all times;
+    - a directory wired to the SHARED gitdir by a `.git` file or
+      `--git-dir=<main>/.git --work-tree=.`, where `git add` writes
+      `<main>/.git/index` -- precisely the corruption this check exists to stop;
+    - a bare repo whose directory is literally named `.git` (`/srv/site/.git`,
+      or a `--separate-git-dir` target), where the old safety rested on a
+      FILENAME rather than on bareness.
+
+    Git answers the real question directly: `--git-dir` is this checkout's own
+    git dir and `--git-common-dir` is the shared one, and they differ if and only
+    if this is a linked worktree. That is immune to naming, to
+    `--separate-git-dir`, to submodules, and to being pointed at a subdirectory,
+    because it asks where the index IS rather than where the directory sits.
+    """
+    if is_bare_repository(repo_root):
+        # A bare repo has no worktree or index to isolate, so "isolated" has no
+        # truth value here. Answered before the comparison because a bare repo's
+        # git dir and common dir are equal, which would otherwise read as "main
+        # worktree" -- a definite answer to a question that has none.
         return None
-    value = result.stdout.strip()
-    return value or None
+    own = git_dir(repo_root)
+    if own is None or common_dir is None:
+        return None
+    return own != common_dir
 
 
 def resolve_hooks_dir(repo_root: Path, common_dir: Path | None) -> tuple[Path | None, str]:
@@ -211,7 +286,92 @@ def _check_husky_dir(repo_root: Path, configured: str | None) -> CheckResult:
     )
 
 
-def run_canonical_checks(repo_root: Path, *, disabled: set[str]) -> list[CheckResult]:
+def _check_worktree_isolation(
+    repo_root: Path, common_dir: Path | None, *, require_isolation: bool
+) -> CheckResult:
+    """Does this checkout share the parent's worktree and index, or its own?
+
+    SC10 / owner ruling 2026-08-15. The rule this replaces was a prose sentence in
+    a spawn prompt telling write-capable subagents not to run mutating git ops,
+    which is not enforcement: five of them ran concurrently in one shared tree
+    under it. Isolation gives the agent its own index and HEAD instead of
+    policing the parent's. Said plainly, because the ruling gives something up:
+    there is no refusal message, and a mutating git op still SUCCEEDS -- in a
+    throwaway tree where it harms nothing.
+
+    What this check does NOT establish, since the PASS message used to imply it:
+    the config plane is still shared. `core.hooksPath` in a linked worktree
+    points into the parent, so the agent's commits run parent-owned hook scripts.
+    "Separate index and HEAD" is the measured property; "the parent is
+    unreachable" is not.
+
+    The fact is reported on every run; it is ENFORCED only when the caller says
+    isolation is required. A solo operator working in the main worktree is doing
+    nothing wrong, so failing there unasked would train operators to ignore this
+    check -- and a check operators ignore protects nothing. The parent spawning a
+    write-capable agent is the one who knows, and it is the one that passes
+    `--require-isolation`.
+    """
+    isolated = is_isolated_worktree(repo_root, common_dir)
+    if isolated is None:
+        return CheckResult(
+            id="worktree_isolation",
+            status=FAIL if require_isolation else SKIPPED,
+            detail=(
+                "this checkout's own git dir could not be compared against the shared one "
+                "(a bare repository, or `git rev-parse` did not answer), so whether it is "
+                "isolated is UNKNOWN -- not confirmed."
+            ),
+            next_step=(
+                "Give the write-capable agent a decidable checkout: `charness worktree "
+                "create --path <path> --branch <branch> --prepare`, then re-run here."
+            )
+            if require_isolation
+            else None,
+        )
+    if isolated:
+        main = main_worktree(common_dir)
+        where = f"; the main worktree is at {main}" if main is not None else ""
+        return CheckResult(
+            id="worktree_isolation",
+            status=PASS,
+            # States what was MEASURED -- a separate git dir, hence a separate
+            # index and HEAD -- rather than the broader "the parent is not
+            # reachable", which this check does not establish and which is not
+            # even true of the config plane: `core.hooksPath` here still points
+            # into the parent, so the agent's commits run parent-owned hooks.
+            detail=(
+                f"{repo_root} has its own git dir ({git_dir(repo_root)}), separate from the "
+                f"shared one ({common_dir}), so its index and HEAD are its own{where}."
+            ),
+        )
+    if not require_isolation:
+        return CheckResult(
+            id="worktree_isolation",
+            status=SKIPPED,
+            detail=(
+                f"{repo_root} IS the main worktree. Correct for an operator working directly; "
+                "a write-capable subagent spawned here would share this tree and index."
+            ),
+        )
+    return CheckResult(
+        id="worktree_isolation",
+        status=FAIL,
+        detail=(
+            f"isolation was required but {repo_root} is the main worktree, so a write-capable "
+            "agent here shares the parent's tree and index. A stray `git checkout`, `reset`, or "
+            "`add` lands in the commit the parent is preparing."
+        ),
+        next_step=(
+            "Create the agent its own checkout first: `charness worktree create --path "
+            "<path> --branch <branch> --prepare`, and run the write-capable work there."
+        ),
+    )
+
+
+def run_canonical_checks(
+    repo_root: Path, *, disabled: set[str], require_isolation: bool = False
+) -> list[CheckResult]:
     repo_root = repo_root.resolve()
     results: list[CheckResult] = []
     common_dir = git_common_dir(repo_root)
@@ -219,6 +379,12 @@ def run_canonical_checks(repo_root: Path, *, disabled: set[str]) -> list[CheckRe
     configured_hooks_path = git_config_value(repo_root, "core.hooksPath")
     canonical_specs = (
         ("git_common_dir", lambda: _check_git_common_dir(common_dir)),
+        (
+            "worktree_isolation",
+            lambda: _check_worktree_isolation(
+                repo_root, common_dir, require_isolation=require_isolation
+            ),
+        ),
         ("hooks_path", lambda: _check_hooks_path(configured_hooks_path, hooks_dir, hooks_source)),
         ("lefthook_shim", lambda: _check_lefthook_shim(repo_root, hooks_dir)),
         ("husky_dir", lambda: _check_husky_dir(repo_root, configured_hooks_path)),

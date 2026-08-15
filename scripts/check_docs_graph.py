@@ -12,11 +12,16 @@ gate is silent by construction:
 1. It gates on NAMED METRICS against declared BARS, not on awiki's exit code.
    awiki 0.5.0 offers no way to select rules, so its exit code bundles every rule
    it has; this gate says which metrics it judges and at what value. `orphans`
-   and `islands` are barred at 0. `link_only_lines` is barred at a RATCHET above
-   0 — a bar that may only ever decrease — because awiki evaluates that rule per
-   PHYSICAL line, so this repo's 80-column prose wrapping trips it on links that
-   do carry context in the sentence they belong to. The bar is a required value
-   below, not a comment: a comment can be deleted with nothing turning red.
+   and `islands` are barred at 0. `link_only_lines` is barred at 0 too UNLESS
+   this repo records its own ratchet, because awiki evaluates that rule per
+   PHYSICAL line and a hard-wrapped prose tree trips it on links that do carry
+   context in the sentence they belong to. Record a bar in
+   `docs/docs-graph-checks.md` under the `## The `link_only_lines` ratchet
+   record` heading: a `| date | bar | why |` table whose bars may only ever
+   DECREASE, which this gate enforces by refusing a record that rises. No record
+   means the strict default, never an inherited one — a threshold measured on
+   somebody else's docs tree is not a bar, and the number that governs this run
+   is echoed under `bars:` in the output.
 2. It reports NOT-RUN rather than passing when it could not observe. A missing
    binary and an unparseable summary line both exit UNESTABLISHED, never 0: an
    unobserved orphan count is not zero, and a parse failure against an interface
@@ -54,40 +59,50 @@ OBSERVED_EXIT_CODES = frozenset({0, 1})
 # not an edit. The residual it allows is NOT "some bare links are fine" -- it is
 # awiki's per-PHYSICAL-line evaluation over-reporting hard-wrapped prose.
 #
-# Measured 2026-08-15. ONE observer: `awiki lint -root docs -recursive` reported
-# `link_only_lines=255` -- the field this bar is compared against, not the
-# bundled finding total, which is a different number whenever another rule fires.
-# (An earlier draft of this comment called that two channels
-# agreeing -- the gate's own parse of the same stdout was counted as a second
-# one. It is the same observer read twice, which is what P4 in the design north
-# star refuses, and it was caught in review rather than by anything executable.)
-# The split below came from reading each flagged SOURCE LINE, which awiki's
-# summary does not report and cannot corroborate:
-#
-#   88 were LIST ENTRIES whose link line carried no descriptor -- 83 bare, and 5
-#   more whose descriptor had wrapped onto the following line, which reads fine
-#   to a human and still leaves a physical line that is only a link. Every one of
-#   those was repaired.
-#   167 were links that landed alone on a physical line inside ordinary wrapped
-#   prose, and they are what this bar allows.
-#
-# `docs/docs-graph-checks.md` records the measured decision that a reflow sweep
-# across the docs tree is not the way, and reflowing prose to satisfy a
-# line-based linter is churn no reader gains from.
-#
-# Both populations are scoped to what awiki FLAGGED, which is measured by
-# construction -- the split came from reading the lines it flagged. That a list
-# entry whose only link is an external URL falls outside both is INFERRED from
-# awiki modelling markdown pages inside its root, and is NOT separately
-# reproduced: reading what was flagged cannot establish what would not be.
+# HOW TO SIZE ONE, stated as the method rather than as anyone's answer. A repo
+# measures its own two populations by reading each SOURCE LINE awiki flags --
+# which its summary does not report and cannot corroborate. List entries whose
+# link line carries no descriptor are the repairable population; links that land
+# alone on a physical line inside ordinary wrapped prose are the population this
+# rule over-reports on, and the bar is sized to THAT. Both are scoped to what
+# awiki flagged: reading what was flagged cannot establish what would not be, so
+# a list entry whose only link is an external URL falls outside both.
 #
 # So the bar is not "some context-free links are tolerated". It is the size of
-# the population this rule over-reports on an 80-column tree. Recount before
-# changing it; it moves with every docs edit.
-LINK_ONLY_LINES_BAR = 167
+# the population this rule over-reports on a hard-wrapped tree. Recount before
+# changing it; it moves with every docs edit. Charness's own measurement, its
+# 08-15 recount, and the P4 correction a reviewer made to how it was described
+# live in this repo's ratchet record, not here -- a number measured on one docs
+# tree has no meaning in a file every consuming repo installs.
+#
+# WHERE THE NUMBER LIVES, and why it is not a literal here (S6, 2026-08-15).
+# It used to be a hard-coded `LINK_ONLY_LINES_BAR` on this line, in a file the
+# plugin EXPORTS -- while the ratchet record and `tests/test_docs_graph_gate.py`,
+# the ratchet record and the test that hold it to "may only decrease", are not
+# exported at all. A consuming repo therefore inherited a threshold measured on
+# charness's own 80-column docs tree, with neither of the two surfaces that give
+# it meaning, and nothing told it so. Owner ruling 2026-08-15: the exported
+# default is 0, and this repo's own bar is READ from its ratchet record.
+#
+# So the bar is now sourced, not declared. Absence falls to
+# `DEFAULT_LINK_ONLY_LINES_BAR`, which is the STRICT direction: a repo with no
+# record refuses every context-free link line rather than inheriting a foreign
+# allowance. A malformed record falls the same way, for the same reason -- the
+# failure is loud (this repo measures far above 0) rather than a quiet pass.
+RATCHET_RECORD_PATH = "docs/docs-graph-checks.md"
+RATCHET_SECTION_HEADING = "## The `link_only_lines` ratchet record"
+DEFAULT_LINK_ONLY_LINES_BAR = 0
+_RATCHET_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+# A GFM header row or its `| --- |` separator: skipped as structure rather than
+# refused as a malformed data row.
+_RATCHET_HEADER_OR_SEPARATOR = re.compile(r"^\|?[\s:|-]*\|[\s:|-]*$|^\|?\s*date\s*\|", re.IGNORECASE)
 # The metrics this gate JUDGES, each against the bar it may not exceed.
-# Everything else awiki reports is observed and echoed, never gated on.
-METRIC_BARS = {"orphans": 0, "islands": 0, "link_only_lines": LINK_ONLY_LINES_BAR}
+# `link_only_lines` carries the EXPORTED default; `resolve_bars` replaces it with
+# the repo's own recorded bar when a ratchet record is present. Kept as a plain
+# dict rather than resolved at import so that importing this module never reads
+# the filesystem, and so `GATED_METRICS` stays a constant the completeness guard
+# below can check at import time.
+METRIC_BARS = {"orphans": 0, "islands": 0, "link_only_lines": DEFAULT_LINK_ONLY_LINES_BAR}
 GATED_METRICS = tuple(METRIC_BARS)
 # awiki names the offending pages under a block whose header differs from the
 # metric name, so a failure can say WHICH page rather than only how many.
@@ -191,6 +206,89 @@ def _block_header(line: str) -> str | None:
     return line[2:].strip().split("=", 1)[0].strip() or None
 
 
+def ratchet_rows(repo_root: Path) -> list[tuple[str, int]]:
+    """The `(date, bar)` rows of this repo's ratchet record, oldest first.
+
+    ONE parser, deliberately. The record was already parsed by
+    `tests/test_docs_graph_gate.py` while the gate carried an independent
+    literal, so the two could disagree and only the test would notice -- and the
+    test is not exported, so for a consuming repo nothing noticed at all. The
+    gate reads the record now and the test asserts properties of THESE rows, so
+    the "second surface" the record exists to be is a record of history rather
+    than a duplicated number.
+
+    Returns `[]` when the record, its section, or its dated rows are absent,
+    unreadable, or NOT NON-INCREASING. Every such case falls to
+    `DEFAULT_LINK_ONLY_LINES_BAR`, which is stricter than any bar a record could
+    name -- absence cannot buy allowance.
+
+    THE MONOTONICITY CHECK IS ENFORCED HERE, not only in the test, and that is
+    the whole point of this function for a consuming repo. This gate is exported;
+    the ratchet record and `tests/test_docs_graph_gate.py` are not. A round-1
+    reviewer showed that sourcing the bar from a consumer-controlled file while
+    leaving "may only ever decrease" to a non-exported test meant a consumer
+    could append `| 2026-08-20 | 99999 |` and go green with nothing red anywhere
+    in the installed artifact -- while this module's own docstring still promised
+    them a ratchet. Enforcing it in the parser makes the change a net
+    strengthening for consumers instead of a weakening, and demotes the test to a
+    redundant second surface, which is what a second surface should be.
+    """
+    try:
+        text = (repo_root / RATCHET_RECORD_PATH).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        # `UnicodeDecodeError` is a ValueError, not an OSError, so one stray
+        # non-UTF-8 byte -- a bad merge, a mispasted smart quote -- used to
+        # escape this handler and turn a docs verdict into a crash.
+        return []
+    if RATCHET_SECTION_HEADING not in text:
+        return []
+    section = text.split(RATCHET_SECTION_HEADING, 1)[1]
+    # BOUNDED at the next H2. Unbounded this runs to EOF, so any later table in
+    # the file whose rows happen to start `| 20` would silently become part of
+    # the ratchet. The test that used to own this parse learned that in review.
+    section = section.split("\n## ", 1)[0]
+    rows: list[tuple[str, int]] = []
+    for raw in section.splitlines():
+        line = raw.strip()
+        if "|" not in line or _RATCHET_HEADER_OR_SEPARATOR.match(line):
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) < 2 or not _RATCHET_DATE.fullmatch(cells[0]):
+            continue
+        try:
+            rows.append((cells[0], int(cells[1])))
+        except ValueError:
+            # A row whose bar is not an integer makes the record unreadable as a
+            # ratchet. Refuse the WHOLE record rather than silently skipping the
+            # row: a skipped row is a missing history entry, and the monotonicity
+            # below cannot be checked against a subset. Selecting rows by SHAPE
+            # (a date-looking first cell) rather than by the literal prefix
+            # `| 20` is what makes that promise true -- the prefix silently
+            # skipped a leading-pipe-less or indented row, which is legal GFM,
+            # and dropping a row is how a recorded DECREASE goes missing and the
+            # bar silently stays high.
+            return []
+    bars = [bar for _, bar in rows]
+    if bars != sorted(bars, reverse=True):
+        return []
+    return rows
+
+
+def resolve_link_only_lines_bar(repo_root: Path) -> int:
+    """This repo's recorded bar, or the strict exported default when it has none."""
+    rows = ratchet_rows(repo_root)
+    return rows[-1][1] if rows else DEFAULT_LINK_ONLY_LINES_BAR
+
+
+def resolve_bars(repo_root: Path, override: int | None = None) -> dict[str, int]:
+    """The bars one run judges against: exported defaults, then record, then flag."""
+    bars = dict(METRIC_BARS)
+    bars["link_only_lines"] = (
+        resolve_link_only_lines_bar(repo_root) if override is None else override
+    )
+    return bars
+
+
 def named_pages(output: str, block: str) -> list[str]:
     """The pages awiki listed under `block`, so a failure says WHICH.
 
@@ -221,7 +319,11 @@ def _not_run(reason: str, **extra: object) -> dict[str, object]:
 
 
 def evaluate(
-    repo_root: Path, scan_root: str = DEFAULT_SCAN_ROOT, bars: dict[str, int] | None = None
+    repo_root: Path,
+    scan_root: str = DEFAULT_SCAN_ROOT,
+    bars: dict[str, int] | None = None,
+    *,
+    link_only_lines_bar: int | None = None,
 ) -> dict[str, object]:
     """Observe the docs graph, or say plainly that it was not observed.
 
@@ -230,7 +332,8 @@ def evaluate(
     docs graph on a run where it saw nothing -- so the whole body is guarded.
     """
     try:
-        return _evaluate(repo_root, scan_root, METRIC_BARS if bars is None else bars)
+        resolved = bars if bars is not None else resolve_bars(repo_root, link_only_lines_bar)
+        return _evaluate(repo_root, scan_root, resolved)
     except Exception as exc:  # noqa: BLE001 -- see docstring: a crash must not read as a verdict
         return _not_run(
             f"the docs-graph observation raised {type(exc).__name__}: {exc}. Nothing was "
@@ -469,19 +572,28 @@ def main(argv: list[str] | None = None) -> int:
         type=int,
         default=None,
         help=(
-            "Override the link-only-lines bar for this run. The built-in default is a "
-            "measurement of THIS repo's own 80-column docs tree, and it travels with the "
-            "exported plugin while the ratchet record and the test that enforce it do not. "
-            "A consuming repo should calibrate its own -- pass 0 to refuse every "
-            "context-free link line, or its own measured wrapped-prose count."
+            "Override the link-only-lines bar for this run. Without it the bar comes from "
+            f"the last row of this repo's `{RATCHET_RECORD_PATH}` ratchet record, and from "
+            f"{DEFAULT_LINK_ONLY_LINES_BAR} when that record is absent -- a consuming repo "
+            "inherits no threshold measured on someone else's docs tree. Calibrate by "
+            "recording your own ratchet rather than by passing this flag on every run; the "
+            "flag is a probe, and it leaves no history behind."
         ),
     )
     args = parser.parse_args(argv)
 
-    bars = dict(METRIC_BARS)
-    if args.link_only_lines_bar is not None:
-        bars["link_only_lines"] = args.link_only_lines_bar
-    result = evaluate(args.repo_root.resolve(), args.scan_root, bars)
+    # The override is passed THROUGH rather than resolved here. Resolving in
+    # `main` put a filesystem read outside every guard, so an unreadable ratchet
+    # record produced an uncaught traceback and exit 1 -- which the runner renders
+    # as FAIL, the gate asserting a broken docs graph on a run where it observed
+    # nothing. That is the precise anti-pattern `evaluate`'s docstring exists
+    # against, and the two entry points disagreed about the same input (NOT-RUN
+    # via `evaluate`, hard FAIL via `main`). Round-1 finding; keeping the
+    # resolution inside the guard restores "every path out of here is pass, fail,
+    # or not-run" as a structural property rather than a per-raiser audit.
+    result = evaluate(
+        args.repo_root.resolve(), args.scan_root, link_only_lines_bar=args.link_only_lines_bar
+    )
     emit_yaml(report(result))
     if result["status"] == "not-run":
         return UNESTABLISHED_EXIT

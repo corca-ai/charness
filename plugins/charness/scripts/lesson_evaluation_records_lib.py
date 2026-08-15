@@ -271,7 +271,11 @@ def disposition_references(
     references: dict[str, list[str]] = {}
     for path, disposition in dispositions:
         session_id = disposition["session_id"]
-        if session_id != "none":
+        # The CONSTANT, not a literal. This function's own docstring promises the
+        # router's notion of "claimed" cannot drift from the gate's, and a
+        # hardcoded `"none"` beside a reserved-sentinel constant is drift waiting
+        # to happen -- a round-1 reviewer found it during #633.
+        if session_id != ledger_lib.RESERVED_SESSION_ID:
             references.setdefault(session_id, []).append(path)
     return references
 

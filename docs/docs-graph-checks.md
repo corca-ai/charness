@@ -53,9 +53,9 @@ code. Three points, all measured:
    measurement: adopting the rule then meant adopting awiki's exit code, which
    bundles every rule it has and cannot be selected down. A named metric judged
    against a bar takes the count without the exit code, and can sit above zero
-   where the rule over-reports. The bar lives in
-   [check_docs_graph.py](../scripts/check_docs_graph.py) as a required value and
-   may only ever decrease.
+   where the rule over-reports. The bar is a required value that may only ever
+   decrease; since S6 it lives in the ratchet record below, which
+   [check_docs_graph.py](../scripts/check_docs_graph.py) reads.
 3. **The residual under that bar is the wrapping population, and the sweep
    decision still stands.** Recount rather than trusting a number here —
    `awiki lint -root docs -recursive` prints it and it moves with every docs
@@ -78,19 +78,73 @@ unobserved orphan count is not zero.
 The bar may only ever decrease. That sentence lived only in prose, which made the
 cheapest repair for a red lane "edit one three-digit literal" — the exact
 zero-work move the release contract's Fixed Decision names. This table is the
-second surface. [test_docs_graph_gate.py](../tests/test_docs_graph_gate.py)
-parses the rows below — bounded at the next `##` heading — and asserts exactly
-four things: the founding row's date and value are unchanged, `LINK_ONLY_LINES_BAR`
-in [check_docs_graph.py](../scripts/check_docs_graph.py) equals the LAST row, and
-the values never increase downward.
+second surface.
+
+**This record is now the bar's only home (S6, 2026-08-15).**
+[check_docs_graph.py](../scripts/check_docs_graph.py) READS the last row below
+rather than carrying its own literal, through `ratchet_rows`; when no record is
+present it falls to `DEFAULT_LINK_ONLY_LINES_BAR`, which is `0`. That matters
+because the gate is exported to consuming repos and this page is not: before the
+change, installing charness handed a repo a threshold measured on charness's own
+80-column docs tree, with neither this record nor the test that ratchets it, and
+nothing said so. Absence now falls to the STRICT side —
+a repo with no record refuses every context-free link line rather than inheriting
+a foreign allowance.
+
+**"May only ever decrease" is enforced by the GATE, not only by the test.**
+`ratchet_rows` refuses the whole record when its bars are not non-increasing, so
+the rule travels with the exported artifact. That is what makes this change a net
+strengthening for a consuming repo rather than a weakening: without it, sourcing
+the bar from a consumer-controlled file while leaving monotonicity to a
+non-exported test would let a consumer append an increasing row and go green with
+nothing red anywhere in what they installed. A round-1 reviewer found exactly
+that gap in the first version of this change.
+[test_docs_graph_gate.py](../tests/test_docs_graph_gate.py) then asserts against
+the rows the gate itself parses — the founding row's date and value are
+unchanged, the gate's resolved bar equals the LAST row, an increasing record is
+refused, and no bar constant is bound in the exported module besides the `0`
+default.
 
 It is a speed bump, not a proof. Stated precisely, because the first version of
 this paragraph over-claimed and a round-2 reviewer measured the gap: an author
-can still raise the bar by editing the gate, appending a row here, and editing
-the test that refuses it. What the founding-row anchor buys is that the record
-must be APPENDED to rather than rewritten, so a raise cannot be a quiet in-place
-edit of the only row present — it has to add a row the ordering assertion then
-refuses, which is a third edit in a test that says what it is protecting.
+can still raise the bar by appending a row here and editing the test that refuses
+it. Since S6 they must also get past the gate's own monotonicity refusal, so a
+raise now means editing the gate as well — the same three-surface cost as before
+the bar moved into this record, and for a consuming repo it is two surfaces where
+it used to be a regenerated literal. `--link-only-lines-bar` remains a per-run
+probe that bypasses all of it and leaves no history; that is deliberate, and it
+is why calibration means recording a row rather than passing the flag. What the
+founding-row anchor buys is that the record must be APPENDED to rather than
+rewritten, so a raise cannot be a quiet in-place edit of the only row present.
+
+### How this repo's founding bar was measured
+
+Moved here from a comment in the exported gate (S6): a number measured on one
+docs tree has no meaning in a file every consuming repo installs.
+
+Measured 2026-08-15. ONE observer: `awiki lint -root docs -recursive` reported
+`link_only_lines=255` — the field the bar is compared against, not the bundled
+finding total, which is a different number whenever another rule fires. An
+earlier draft of this description called that two channels agreeing, counting the
+gate's own parse of the same stdout as a second one. It is the same observer read
+twice, which is what P4 in the [design north star](./design-north-star.md)
+refuses, and it was caught in review rather than by anything executable.
+
+The split came from reading each flagged source line, which awiki's summary does
+not report and cannot corroborate:
+
+- 88 were list entries whose link line carried no descriptor — 83 bare, and 5
+  more whose descriptor had wrapped onto the following line, which reads fine to a
+  human and still leaves a physical line that is only a link. Every one was
+  repaired.
+- 167 were links that landed alone on a physical line inside ordinary wrapped
+  prose, and they are what the bar allows.
+
+Both populations are scoped to what awiki flagged, which is measured by
+construction. That a list entry whose only link is an external URL falls outside
+both is INFERRED from awiki modelling markdown pages inside its root, and is not
+separately reproduced: reading what was flagged cannot establish what would not
+be.
 
 | date | bar | why it moved |
 | --- | --- | --- |

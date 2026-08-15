@@ -43,6 +43,17 @@ LIFECYCLE_EVENT_KEYS = {
 # means) that this module only replays, and keeping them here is what let the
 # seeding rule and the scoring rule share a line for as long as they did.
 SESSION_EVENT_KEYS = {"session_id", "snapshot", "snapshot_sha256"}
+# The one session id no real session may take (#633). `"none"` is the SENTINEL a
+# `missing-start` disposition writes to say "this repo opened no lesson session",
+# and it also fullmatches the ordinary session-id pattern. While both readings
+# were legal the sentinel was unfalsifiable in two directions at once: a
+# disposition could claim a completed evaluation against it and skip every
+# reconciler check, and a ledger session ACTUALLY named `none` was unclaimable,
+# because no retro could ever cite it without spelling the sentinel. Reserved at
+# the lowest layer that writes a session id so both spellings are refused where
+# they are minted, not where they are read. Lives here rather than in
+# `lesson_evaluation_continuity_lib` because that module imports this one.
+RESERVED_SESSION_ID = "none"
 SNAPSHOT_KEYS = {
     "kind",
     "schema_version",
@@ -336,6 +347,12 @@ def _replay_sessions(events: list[Any], replayed: dict[str, dict[str, Any]]) -> 
         )
         if not _nonblank(session_id) or not isinstance(snapshot, dict) or not _nonblank(digest):
             _fail(f"session event {position} needs non-empty identity and snapshot")
+        if session_id == RESERVED_SESSION_ID:
+            _fail(
+                f"session event {position} takes the reserved session_id "
+                f"`{RESERVED_SESSION_ID}`, which only a `missing-start` disposition may spell; "
+                "a session recorded under it could never be claimed by a retro"
+            )
         if session_id in sessions:
             _fail(f"duplicate session_id `{session_id}`")
         if set(snapshot) != SNAPSHOT_KEYS or not _nonblank(snapshot.get("seed")):

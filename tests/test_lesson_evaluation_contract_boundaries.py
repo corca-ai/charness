@@ -99,6 +99,63 @@ def test_disposition_parser_rejects_malformed_json() -> None:
         continuity.parse_disposition(text)
 
 
+# #633. Each of these PARSED before the repair, and each then reached
+# `reconcile_records`'s unconditional sentinel skip -- so the disposition claimed
+# a completed evaluation and no check ever ran against it. Parametrized over
+# every status the sentinel could be smuggled under, not just the reported one,
+# because the issue names `effect-recorded` and `not-evaluated`/`presentation-
+# unproven` separately and a fix for one is not a fix for the other.
+@pytest.mark.parametrize(
+    "value",
+    [
+        {"status": "effect-recorded", "session_id": "none", "score_event_count": 7},
+        {"status": "no-effect", "session_id": "none", "score_event_count": 0},
+        {
+            "status": "not-evaluated",
+            "reason": "presentation-unproven",
+            "session_id": "none",
+            "score_event_count": 0,
+        },
+        {
+            "status": "not-evaluated",
+            "reason": "emission-unproven",
+            "session_id": "none",
+            "score_event_count": 0,
+        },
+    ],
+)
+def test_disposition_parser_refuses_the_reserved_session_id(value: dict[str, object]) -> None:
+    text = f"{continuity.SECTION_HEADING}\n\n{continuity.LINE_PREFIX}{json.dumps(value)}\n"
+    with pytest.raises(continuity.LessonEvaluationError, match="is reserved for the"):
+        continuity.parse_disposition(text)
+
+
+def test_missing_start_still_spells_the_reserved_session_id() -> None:
+    """The negative case: reserving the sentinel must not break its one owner.
+
+    A repair that simply banned `none` everywhere would refuse the disposition a
+    repo which opened no lesson session is REQUIRED to write, which is the shape
+    the grammar summary teaches by name.
+    """
+    text = (
+        f"{continuity.SECTION_HEADING}\n\n"
+        f"{continuity.disposition_line(dict(continuity.MISSING_START_DISPOSITION))}\n"
+    )
+    assert continuity.parse_disposition(text) == continuity.MISSING_START_DISPOSITION
+
+
+def test_declare_time_refuses_the_reserved_session_id() -> None:
+    """The #633 corollary: a real session named `none` was unclaimable forever.
+
+    `references` can never contain the sentinel, so its receipt raised
+    `unclaimed-emission` with no truthful disposition available. Refused where
+    the id is minted instead.
+    """
+    with pytest.raises(continuity.LessonEvaluationError, match="is reserved for the"):
+        continuity.validate_session_id("none")
+    assert continuity.validate_session_id("none-of-the-above") == "none-of-the-above"
+
+
 @pytest.mark.parametrize(
     ("value", "message"),
     [
@@ -261,3 +318,73 @@ def test_reconciler_rejects_contradictory_disposition_evidence(
         recurrence_sources={},
     )
     assert violation_id in {item["id"] for item in report["violations"]}
+
+
+def _reconcile(disposition: dict[str, object]) -> dict[str, object]:
+    return reconcile.reconcile_records(
+        retros=[("charness-artifacts/retro/2026-08-14-a.md", disposition)],
+        sessions={},
+        score_events=[],
+        receipts={},
+        receipt_violations=[],
+        as_of=date(2026, 8, 14),
+        recurrence_sources={},
+    )
+
+
+@pytest.mark.parametrize(
+    ("row", "counted_status", "counted_reason"),
+    [
+        ({"status": "effect-recorded", "session_id": "none", "score_event_count": 7},
+         "effect-recorded", None),
+        ({"status": "no-effect", "session_id": "none", "score_event_count": 0},
+         "no-effect", None),
+        ({"status": "not-evaluated", "reason": "presentation-unproven",
+          "session_id": "none", "score_event_count": 0},
+         "not-evaluated", "presentation-unproven"),
+        ({"status": "not-evaluated", "reason": "emission-unproven",
+          "session_id": "none", "score_event_count": 0},
+         "not-evaluated", "emission-unproven"),
+    ],
+)
+def test_reconciler_refuses_a_reserved_session_id_without_the_parser(
+    row: dict[str, object], counted_status: str, counted_reason: str | None
+) -> None:
+    """#633's second half, and the reason the grammar fix alone is not enough.
+
+    `reconcile_records` is a pure core the seeded matrix tests reach directly, so
+    a row that never went through `parse_disposition` still hits the sentinel
+    skip. Before the repair this exact row returned `ok: True` with
+    `completed_evaluation_count: 1` and zero violations -- the metric the surface
+    exists to protect, raised by a claim nothing compared to anything.
+
+    THE COUNT ASSERTIONS ARE THE POINT, and they are what round 2 found missing.
+    Round 1 caught a COMMENT claiming the metric was protected while the counter
+    still ran above the guard. The repair moved the counter -- and left this
+    docstring naming `completed_evaluation_count` beside assertions that checked
+    only `ok` and the violation id, both of which were already true of the
+    refuted version. Move the increment back and the old test still passed. That
+    is the same class one level out: a docstring narrating a protection the
+    assertions do not pin.
+    """
+    report = _reconcile(row)
+
+    assert report["ok"] is False
+    assert "reserved-session-id" in {item["id"] for item in report["violations"]}
+    # A void disposition is not counted by the status it falsely claims.
+    assert report["completed_evaluation_count"] == 0
+    assert report["status_counts"][counted_status] == 0
+    if counted_reason is not None:
+        assert report["not_evaluated_reason_counts"][counted_reason] == 0
+
+
+def test_reconciler_still_skips_the_one_disposition_entitled_to_the_sentinel() -> None:
+    report = _reconcile(dict(continuity.MISSING_START_DISPOSITION))
+
+    assert report["ok"] is True
+    assert report["violation_count"] == 0
+    assert report["completed_evaluation_count"] == 0
+    # It IS counted as the disposition it honestly is -- the exclusion above is
+    # scoped to void claims, not to the sentinel itself.
+    assert report["status_counts"]["not-evaluated"] == 1
+    assert report["not_evaluated_reason_counts"]["missing-start"] == 1

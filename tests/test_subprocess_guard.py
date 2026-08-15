@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import signal
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -19,6 +20,8 @@ from scripts.subprocess_guard import (
     run_process,
     run_processes_in_order,
 )
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_run_process_returns_timeout_completed_process(tmp_path: Path) -> None:
@@ -65,6 +68,69 @@ def test_monitored_phase_streams_lifecycle_while_isolating_the_body(tmp_path: Pa
     # isolated bodies are what keeps concurrent phases readable.
     assert "body-out" not in events
     assert "body-err" not in events
+
+
+def test_monitored_phase_can_stream_the_body_instead_of_capturing_it(tmp_path: Path) -> None:
+    """SC11's enabling half: the third caller choice the module docstring deferred.
+
+    Run through a real subprocess rather than in-process, because the property
+    under test is that the CHILD writes to the parent's OWN file descriptors --
+    `capsys` replaces `sys.stdout` at the Python level and would not see a
+    descriptor a grandchild inherited, so an in-process assertion here could pass
+    for a mode that actually discarded the output.
+    """
+    script = tmp_path / "driver.py"
+    script.write_text(
+        "import sys\n"
+        f"sys.path.insert(0, {str(ROOT)!r})\n"
+        "from scripts.subprocess_guard import run_monitored_phase\n"
+        "outcome = run_monitored_phase(\n"
+        "    [sys.executable, '-c', \"import sys; print('body' + '-out'); \"\n"
+        "     \"print('body' + '-err', file=sys.stderr)\"],\n"
+        f"    cwd={str(tmp_path)!r}, phase='streamed', timeout_seconds=30, capture=False,\n"
+        ")\n"
+        "print('RC', outcome.returncode)\n"
+        "print('CAPTURED', repr(outcome.stdout), repr(outcome.stderr))\n",
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        [sys.executable, str(script)], capture_output=True, text=True, check=False, cwd=tmp_path
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    # The body reached the operator's terminal, on the stream the child chose.
+    assert "body-out" in completed.stdout
+    assert "body-err" in completed.stderr
+    # The lifecycle is still emitted, so a silent stretch is still distinguishable
+    # from a dead one.
+    assert "RUN [streamed] " in completed.stderr
+    assert "PASS [streamed] " in completed.stderr
+    assert "RC 0" in completed.stdout
+    # And the outcome reports EMPTY bodies rather than pretending it holds them.
+    # A caller that reads `outcome.stdout` in this mode must find nothing, not a
+    # partial or stale capture.
+    assert "CAPTURED '' ''" in completed.stdout
+
+
+def test_monitored_phase_streaming_still_kills_the_whole_group_on_timeout(tmp_path: Path) -> None:
+    # The property the standing runner actually buys: an untracked xdist tree is
+    # what turned two wrapper timeouts into two lost runs. Streaming must not cost
+    # the group kill, so this is the streamed twin of the captured bound test.
+    marker = tmp_path / "grandchild-survived"
+    outcome = run_monitored_phase(
+        ["/bin/bash", "-c", f"(sleep 20; touch {marker}) & sleep 20"],
+        cwd=tmp_path,
+        phase="streamed-timeout",
+        timeout_seconds=1.0,
+        heartbeat_seconds=0.2,
+        capture=False,
+    )
+
+    assert outcome.timed_out
+    assert outcome.returncode == TIMEOUT_EXIT_CODE
+    assert outcome.elapsed_seconds < 15
+    time.sleep(2)
+    assert not marker.exists(), "a backgrounded grandchild outlived the group kill"
 
 
 def test_monitored_phase_reports_failure_status_and_returncode(tmp_path: Path, capsys) -> None:

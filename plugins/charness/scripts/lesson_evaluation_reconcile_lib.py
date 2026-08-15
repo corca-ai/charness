@@ -25,6 +25,7 @@ from scripts.lesson_evaluation_continuity_lib import (
     STATUSES,
     violation,
 )
+from scripts.lesson_ledger_lib import RESERVED_SESSION_ID
 
 
 def _reconcile_retro_row(
@@ -159,6 +160,14 @@ def unclaimed_receipted_sessions(
     )
 
 
+def _is_missing_start(disposition: dict[str, Any]) -> bool:
+    """The one disposition entitled to spell the reserved sentinel."""
+    return (
+        disposition["status"] == "not-evaluated"
+        and disposition.get("reason") == "missing-start"
+    )
+
+
 def reconcile_records(
     *,
     retros: Iterable[tuple[str, dict[str, Any]]],
@@ -183,9 +192,39 @@ def reconcile_records(
 
     for path, disposition in retro_rows:
         status = disposition["status"]
-        status_counts[status] += 1
         session_id = disposition["session_id"]
-        if session_id == "none":
+        if session_id == RESERVED_SESSION_ID and not _is_missing_start(disposition):
+            # A disposition claiming the reserved sentinel under any other status
+            # is VOID, so it is refused before it is counted. #633 names three
+            # harms -- the row "parses, increments `completed_evaluation_count`,
+            # and skips every reconciler check" -- and the first version of this
+            # repair fixed only the third: the increment sat above this guard, so
+            # an `effect-recorded` row claiming seven scores against `none` still
+            # raised the very metric the surface exists to protect, while a
+            # comment here narrated it as repaired. A round-1 reviewer caught
+            # that. Counting a void row by the status it falsely claims is how a
+            # green-looking number survives a red verdict.
+            violations.append(
+                violation(
+                    "reserved-session-id",
+                    path=path,
+                    session_id=session_id,
+                    detail=(
+                        f"status `{status}` cannot claim the reserved session_id "
+                        f"`{RESERVED_SESSION_ID}`; only `not-evaluated`/`missing-start` may"
+                    ),
+                )
+            )
+            continue
+        status_counts[status] += 1
+        if session_id == RESERVED_SESSION_ID:
+            # The one disposition entitled to the sentinel. It counts (it is a
+            # real `not-evaluated`/`missing-start` claim) and it skips
+            # reconciliation, because there is no session to reconcile against.
+            # The skip is re-derived here rather than trusted from the parser:
+            # `reconcile_records` is a PURE core that the seeded matrix tests and
+            # any future caller reach without going through `parse_disposition`,
+            # and a skip that trusts an upstream check is not a check.
             continue
         references.setdefault(session_id, []).append(path)
         violations.extend(
@@ -215,6 +254,12 @@ def reconcile_records(
     }
     not_evaluated_reasons = {reason: 0 for reason in sorted(REASONS)}
     for _, disposition in retro_rows:
+        # Same exclusion as `status_counts` above, for the same reason: a
+        # `not-evaluated`/`presentation-unproven` row claiming the reserved
+        # sentinel is void, and counting its reason would put a void claim into a
+        # published tally beside a red verdict.
+        if disposition["session_id"] == RESERVED_SESSION_ID and not _is_missing_start(disposition):
+            continue
         if disposition["status"] == "not-evaluated":
             not_evaluated_reasons[disposition["reason"]] += 1
     return {
