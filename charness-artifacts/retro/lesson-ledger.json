@@ -745,19 +745,51 @@
       "lesson_id": "guard-adjacent-to-action",
       "outcome": "read-but-not-applied",
       "anchor": "It was in view at session open and the handoff I then wrote still carried a Current State bullet with no owning link, command, or issue id -- the false-claim entry -- and validate_handoff_artifact refused it. Fixed by pointing the bullet at the release scope contract. The lesson names exactly this shape and describes the same recurrence one slice earlier, so presentation is again not the binding step."
+    },
+    {
+      "event_id": "2026-08-15-s5-closeout-diagnostic-visibility",
+      "session_id": "2026-08-15-s5",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+      "lesson_id": "closeout-diagnostic-visibility",
+      "outcome": "changed-an-action",
+      "anchor": "Every long run this session was issued backgrounded with stdout redirected to a file I then polled, so no run was lost to the 600s foreground wrapper timeout -- the ~20-minutes-twice loss this lesson records did not recur. Two runs were still discarded, but as STALE after mid-run repairs, which is a sequencing fault the lesson does not cover; without the lesson those same runs would have been foreground-issued and cut off around the halfway mark on top of being stale."
+    },
+    {
+      "event_id": "2026-08-15-s5-premise-not-checked-against-source",
+      "session_id": "2026-08-15-s5",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+      "lesson_id": "premise-not-checked-against-source",
+      "outcome": "read-but-not-applied",
+      "anchor": "The code half landed and materially changed the slice: checking each scoped issue against the tree before implementing found two of four umbrellas already fixed. Then, with the lesson in view, I asserted 'two empty-floor specs' to the user from a two-field predicate without checking it against the rule's own three-field source; the wired validator refused exactly one, which is what exposed it. Same transfer failure the lesson's own text records -- it lands on code paths and not on prose."
+    },
+    {
+      "event_id": "2026-08-15-s5-bar-recorded-as-prose",
+      "session_id": "2026-08-15-s5",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "changed-an-action",
+      "anchor": "The parity gate's subset site declares its permitted absences as a required tuple field with a runtime staleness check that reports not-run when a declared absence is no longer canonical or no longer actual, instead of the comment an earlier draft carried. Round 1 had measured the comment form as satisfiable by deleting a real ledger row with the gate still green. The same reading drove scoping S6b around cost bars that record a value with no direction."
+    },
+    {
+      "event_id": "2026-08-15-s5-guard-adjacent-to-action",
+      "session_id": "2026-08-15-s5",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+      "lesson_id": "guard-adjacent-to-action",
+      "outcome": "read-but-not-applied",
+      "anchor": "It was in view at session open and the handoff I then rewrote still carried a Current State entry with no owning link, command, or issue id; validate_handoff_artifact refused it with '1 entry(s) in ## Current State and ## Next Session carry no owner'. Repaired by pointing the entry at the S5 guard record. This is the second consecutive session where presentation did not make it binding."
     }
   ],
   "lessons": {
     "guard-adjacent-to-action": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-guard-adjacent-to-action",
-      "score_total": -1,
-      "score_count": 3,
+      "score_total": -2,
+      "score_count": 4,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 2,
+        "read-but-not-applied": 3,
         "legacy-scalar": 1
       },
       "state": "active",
@@ -766,13 +798,13 @@
     "premise-not-checked-against-source": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-premise-not-checked-against-source",
-      "score_total": 0,
-      "score_count": 6,
+      "score_total": -1,
+      "score_count": 7,
       "outcome_counts": {
         "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 1,
+        "read-but-not-applied": 2,
         "legacy-scalar": 4
       },
       "state": "active",
@@ -886,10 +918,10 @@
     "closeout-diagnostic-visibility": {
       "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
       "transition_id": "seed-closeout-diagnostic-visibility",
-      "score_total": 0,
-      "score_count": 2,
+      "score_total": 1,
+      "score_count": 3,
       "outcome_counts": {
-        "changed-an-action": 1,
+        "changed-an-action": 2,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1216,10 +1248,10 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 2,
-      "score_count": 2,
+      "score_total": 3,
+      "score_count": 3,
       "outcome_counts": {
-        "changed-an-action": 2,
+        "changed-an-action": 3,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,

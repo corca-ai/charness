@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-15",
-  "source_artifact_count": 512,
-  "candidate_count": 2085,
+  "source_artifact_count": 513,
+  "candidate_count": 2089,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1408,6 +1408,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:cc22de2781f3",
+      "kind": "current_focus",
+      "lesson": "S5 of the 6.0.0 release scope — one executable guard per structural umbrella — plus a new slice, S6b, ruled into the release when the session measured a cost defect it was not looking for.",
+      "normalized_key": "s5 of the 6 0 0 release scope one executable guard per structural umbrella",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+          "date": "2026-08-15",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S5 of the 6.0.0 release scope — one executable guard per structural umbrella — plus a new slice, S6b, ruled into the release when the session measured a cost defect it was not looking for."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:08dca14777d4",
       "kind": "next_improvement",
       "lesson": "a bar is two decisions, its value and its permitted direction plus who may change it. Recording only the value satisfies `bar-recorded-as-prose` and still leaves the ratchet as prose, which is what round 2 measured here.",
@@ -1560,6 +1586,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "before placing any issue into a build slice, open the surface it names and confirm the defect reproduces on the current tree. An issue is a claim about the past. This is the third recorded failure of the same lesson and the second on the same issue number, so the remedy has to be a step in the work, not a thing to remember."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:df244b03bf35",
+      "kind": "next_improvement",
+      "lesson": "**capability**: make the telemetry miner's issue-filing verdict bind to a carrier, borrowing the rule `validate_critique_artifacts.py` already enforces. This is the Engelbart counterfactual's changed action and the sibling scan's `fix` decision, and it is cheaper than the review angle S6b also carries.",
+      "normalized_key": "capability make the telemetry miner s issue filing verdict bind to a carrier borrowing",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: make the telemetry miner's issue-filing verdict bind to a carrier, borrowing the rule `validate_critique_artifacts.py` already enforces. This is the Engelbart counterfactual's changed action and the sibling scan's `fix` decision, and it is cheaper than the review angle S6b also carries."
         }
       ]
     },
@@ -1742,6 +1794,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "give the score outcome vocabulary its slice, so a lesson that worked can be recorded as having worked. Three lessons demonstrably held this session and the ledger can represent none of them, which biases every future selection toward lessons that fail loudly over lessons that quietly work."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:83ca1a7bc8cc",
+      "kind": "next_improvement",
+      "lesson": "**memory**: a cost recorded without a direction teaches the next session to route around it. `~22 minutes … budget it per slice` was read as a constant of nature by three consecutive sessions, this one included, and the fast path was one directory away the whole time.",
+      "normalized_key": "memory a cost recorded without a direction teaches the next session to route around",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: a cost recorded without a direction teaches the next session to route around it. `~22 minutes … budget it per slice` was read as a constant of nature by three consecutive sessions, this one included, and the fast path was one directory away the whole time."
         }
       ]
     },
@@ -2028,6 +2106,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "when one configuration switch governs two mechanisms with different false-positive profiles, split the mechanism rather than shipping the switch — the noisy arm's escape hatch will disarm the quiet one."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:63c7441eaf73",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: sequence proof AFTER review, not beside it. Two full-suite runs were killed as stale because repairs landed mid-run. Review → repair → prove is one lane, and running the last step early buys nothing when the first step reliably produces repairs — which, for three consecutive slices, it has.",
+      "normalized_key": "workflow sequence proof after review not beside it two full suite runs were killed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: sequence proof AFTER review, not beside it. Two full-suite runs were killed as stale because repairs landed mid-run. Review → repair → prove is one lane, and running the last step early buys nothing when the first step reliably produces repairs — which, for three consecutive slices, it has."
         }
       ]
     },
