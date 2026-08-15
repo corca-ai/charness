@@ -248,11 +248,15 @@ measure.
 
 ## Next Improvements
 
-- **workflow**: state a detector's blind class — "what can this mechanism NOT
-  see?" — in its module docstring BEFORE writing its acceptance, and make the
-  first acceptance test the one that fails when it measures the wrong noun. Both
-  false central claims this session were reachable from that one question, and
-  both were found by a reviewer instead.
+- **workflow**: recurrence-class: detector-blind-class-unstated — state a
+  detector's blind class ("what can this mechanism NOT see?") in its module
+  docstring BEFORE writing its acceptance, and make the first acceptance test the
+  one that fails when it measures the wrong noun. Both false central claims this
+  session were reachable from that one question, and both were found by a
+  reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag
+  produces a candidate whose class is `None`, which the selection index drops —
+  so an untagged improvement is a lesson the next session can never be shown,
+  which is the carrier gap this very retro names one section above.
 - **workflow**: run the changed-line proof BEFORE the slice commit, not after.
   Named as a recurrence above; the two follow-up commits it cost this session are
   the measurement.
@@ -264,6 +268,17 @@ measure.
   instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices
   rather than as a per-slice surprise, so the two-round rule reads as load-bearing
   rather than as ceremony.
+- **capability**: recurrence-class: tagged-lesson-never-seeded — run
+  `seed_lesson_transitions.py` at retro closeout, or make persistence run it.
+  Measured while checking whether THIS retro's lessons had persisted: they had
+  not. The tag makes a lesson *seedable*, and a separate command makes it
+  *selectable*; nobody ran the second one. Three of the four
+  tagged classes in the 2026-08-14 retro had been stranded for two days —
+  authored, committed, and invisible to every session's presentation since. All
+  four are seeded now (37 active lessons, 37 seed transitions), and
+  `detector-blind-class-unstated` draws in 8 of 8 sampled seeds. This is the
+  repo's own "correct rule, no carrier" class at the lesson loop itself, and the
+  retro that names that class walked into it.
 
 ## Persisted
 

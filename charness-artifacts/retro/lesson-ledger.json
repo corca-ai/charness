@@ -199,6 +199,36 @@
       "transition_id": "seed-coverage-claim-exceeds-the-pin",
       "lesson_id": "coverage-claim-exceeds-the-pin",
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md"
+    },
+    {
+      "sequence": 34,
+      "transition_id": "seed-detector-blind-class-unstated",
+      "lesson_id": "detector-blind-class-unstated",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md"
+    },
+    {
+      "sequence": 35,
+      "transition_id": "seed-isolated-agent-base-mismatch",
+      "lesson_id": "isolated-agent-base-mismatch",
+      "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md"
+    },
+    {
+      "sequence": 36,
+      "transition_id": "seed-positive-effect-cannot-be-cited",
+      "lesson_id": "positive-effect-cannot-be-cited",
+      "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md"
+    },
+    {
+      "sequence": 37,
+      "transition_id": "seed-superseded-line-stays-quotable",
+      "lesson_id": "superseded-line-stays-quotable",
+      "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md"
+    },
+    {
+      "sequence": 38,
+      "transition_id": "seed-tagged-lesson-never-seeded",
+      "lesson_id": "tagged-lesson-never-seeded",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md"
     }
   ],
   "session_events": [
@@ -1379,6 +1409,81 @@
     "coverage-claim-exceeds-the-pin": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-coverage-claim-exceeds-the-pin",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "detector-blind-class-unstated": {
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "transition_id": "seed-detector-blind-class-unstated",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "isolated-agent-base-mismatch": {
+      "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+      "transition_id": "seed-isolated-agent-base-mismatch",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "positive-effect-cannot-be-cited": {
+      "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+      "transition_id": "seed-positive-effect-cannot-be-cited",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "superseded-line-stays-quotable": {
+      "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
+      "transition_id": "seed-superseded-line-stays-quotable",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "tagged-lesson-never-seeded": {
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "transition_id": "seed-tagged-lesson-never-seeded",
       "score_total": 0,
       "score_count": 0,
       "outcome_counts": {

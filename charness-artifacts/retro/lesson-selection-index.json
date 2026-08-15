@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-16",
   "source_artifact_count": 515,
-  "candidate_count": 2099,
+  "candidate_count": 2100,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1278,6 +1278,32 @@
       ]
     },
     {
+      "candidate_id": "class:81e64d98af4f",
+      "kind": "next_improvement",
+      "lesson": "**capability**: — run `seed_lesson_transitions.py` at retro closeout, or make persistence run it. Measured while checking whether THIS retro's lessons had persisted: they had not. The tag makes a lesson *seedable*, and a separate command makes it *selectable*; nobody ran the second one. Three of the four tagged classes in the 2026-08-14 retro had been stranded for two days — authored, committed, and invisible to every session's presentation since. All four are seeded now (37 active lessons, 37 seed transitions), and `detector-blind-class-unstated` draws in 8 of 8 sampled seeds. This is the repo's own \"correct rule, no carrier\" class at the lesson loop itself, and the retro that names that class walked into it.",
+      "normalized_key": "capability run seed lesson transitions py at retro closeout or make persistence run it",
+      "recurrence_class": "tagged-lesson-never-seeded",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: — run `seed_lesson_transitions.py` at retro closeout, or make persistence run it. Measured while checking whether THIS retro's lessons had persisted: they had not. The tag makes a lesson *seedable*, and a separate command makes it *selectable*; nobody ran the second one. Three of the four tagged classes in the 2026-08-14 retro had been stranded for two days — authored, committed, and invisible to every session's presentation since. All four are seeded now (37 active lessons, 37 seed transitions), and `detector-blind-class-unstated` draws in 8 of 8 sampled seeds. This is the repo's own \"correct rule, no carrier\" class at the lesson loop itself, and the retro that names that class walked into it."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:027522139d42",
       "kind": "next_improvement",
       "lesson": "**capability**: the `impl`/`spec` stop gate should ask for the blind-class statement when a slice adds a detector or gate, so the convention this repo already follows in three older detectors stops depending on author habit. Tracked as `blind-class-before-build-handoff-anchor`.",
@@ -1356,11 +1382,11 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:1259cab6db33",
+      "candidate_id": "class:03d57427e02c",
       "kind": "next_improvement",
-      "lesson": "**workflow**: state a detector's blind class — \"what can this mechanism NOT see?\" — in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead.",
+      "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above.",
       "normalized_key": "workflow state a detector s blind class what can this mechanism not see in",
-      "recurrence_class": null,
+      "recurrence_class": "detector-blind-class-unstated",
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
@@ -1377,7 +1403,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**workflow**: state a detector's blind class — \"what can this mechanism NOT see?\" — in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead."
+          "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above."
         }
       ]
     },
