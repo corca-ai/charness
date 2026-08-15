@@ -305,6 +305,53 @@ Ordering is by dependency pressure, not by theme.
   not exist when this ran, and no review angle asked the cost question because
   SC16 is the angle S6b adds. The session that wrote the "correct rule, no
   carrier" retro then spent 25 minutes inside an instance of it.
+
+  **WHAT ALREADY EXISTS, re-verified against source rather than carried forward.**
+  The S6b entry below was written from a prior session's reading, so every claim
+  in it was re-checked on 2026-08-15 before widening the slice:
+
+  - **Accurate**: `check_runtime_budget_universe.py` asks budget -> universe. Its
+    own docstring says *"It asks membership, not history: is this budgeted label
+    still a name the runner knows?"* and carries an explicit
+    `WHAT THIS GATE DOES NOT DECIDE` paragraph. The one-directional reading holds.
+  - **Accurate**: all four named budget modules are exported to consumers
+    (`check_runtime_budget.py`, `runtime_budget_lib.py`, `runtime_profile_lib.py`,
+    `render_runtime_summary.py` under `skills/public/quality/scripts/`), and
+    `run_standing_pytest.py` is NOT among them — it lives in `scripts/`. So the
+    "budget without the runner" claim holds as stated.
+  - **Also true and NOT recorded before**: `check_runtime_budget_universe.py` is
+    deliberately absent from the consumer quality skill, by a decision its own
+    docstring states. So the direction that DOES exist does not reach consumers
+    either, and S6b's consumer half is wider than "ship the runner".
+
+  **The reusable machinery the prior reading missed, and it is already exported.**
+  `skills/public/quality/scripts/standing_gate_discovery_lib.py` discovers a
+  repo's standing-gate surfaces (shell runners, `package.json` scripts, lefthook,
+  make) and tokenizes the commands inside them —
+  `COMMAND_TOKEN_RE` matches `pytest` by name today. `standing_gate_verbosity_lib`
+  and `standing_test_economics_lib` already build on it. That is the
+  command-INVENTORY half of SC14/SC15, shipping to consumers, needing a policy
+  layer rather than a new scanner.
+
+  Adjacent but NOT the thing, checked so it is not mistaken for it:
+  `inventory_standing_test_economics.py` measures test-surface economics — file
+  counts, nested-CLI fan-out, temp footprint. Run on this repo it returns four
+  advisories about suite SHAPE and says nothing about whether a prescribed or
+  spawned command is dominated. It answers "is this suite expensive", never
+  "is there a cheaper path to the same evidence".
+
+  **So S6b widens to three seams, not one registry:**
+
+  1. **Prescribed** — a document naming a superseded command (the original scope,
+     `validate_handoff_artifact.py` as the carrier).
+  2. **Queued or spawned** — a command a GATE runs, reached from
+     `standing_gate_discovery_lib` plus the config literals gates read
+     (`cosmic-ray.toml`'s `test-command` is the measured instance). This seam is
+     what the recurrence proves the original scope missed.
+  3. **Builder disagreement** — two in-repo builders wrapping pytest under
+     coverage with opposite policies on the fast path. Reconciling them is
+     cheaper than detecting their divergence, and doing it first may make seam 2
+     a much smaller check.
   MEASURED during S5 and the reason this slice exists: `scripts/run_standing_pytest.py`
   runs the suite with xdist in **84s** (9403 tests) over **567 of 567** test files —
   zero uncovered — is budgeted (`pytest: 97500` on this profile) and BLOCKS via
@@ -581,6 +628,23 @@ Each criterion names the slice that owns it. Coverage is asserted in
 16. **(S6b)** A critique/review run carries a cost-dominance angle — "is there a cheaper
     path to the same evidence?" — and it is exported to consuming repos rather than
     living only in this repo's review prompts.
+17. **(S6b)** A command a GATE spawns is covered, not only one a document prescribes.
+    Concretely: the bare-pytest `test-command` literal in
+    [cosmic-ray.toml](../../cosmic-ray.toml), which `mutation_sampling_lib` wraps and
+    `check_changed_line_mutation_coverage.py` runs, is reported. **Added 2026-08-15
+    from a live recurrence** — the original SC14 registry is inert against it, because
+    no document appears anywhere in that chain.
+18. **(S6b)** The repo has ONE policy on whether the standing runner may be
+    instrumented under coverage. Today `mutation_coverage_producer.instrument_broad_command`
+    accepts it via `is_standing_pytest_runner_command` and
+    `mutation_sampling_lib.coverage_run_command` refuses it with *"use a helper script
+    for other runners"*; the changed-line gate uses the refusing one. Reconciling them
+    may shrink SC17 to a much smaller check, so it is sequenced first.
+19. **(S6b)** A consuming repo gets the cost DIRECTION it currently lacks, not only the
+    budget ledger. `check_runtime_budget_universe.py` is deliberately absent from the
+    installed quality skill by its own docstring's decision, so today a consumer
+    inherits neither the fast runner nor the universe check — a wider consumer half
+    than "export the runner", and measured rather than inferred.
 13. **(S4)** A `## References` entry in a handoff artifact cannot carry a link
     with no descriptor on the link's own physical line, and the scaffold emits a
     stub that satisfies that rule unedited. Added 2026-08-15 with the scope
@@ -657,6 +721,18 @@ Each criterion names the slice that owns it. Coverage is asserted in
 - Verification type: integration — (SC15) a queued or prescribed command with no runtime
   budget entry is reported by the universe check. Negative: the existing budgeted-label
   direction still reports a budget naming a label that does not exist.
+- Verification type: integration — (SC17) the gate-spawned seam is exercised against
+  this repo's real `cosmic-ray.toml` `test-command` literal and reports it. Negative: a
+  config literal that already names the standing runner is NOT reported, so the check
+  discriminates on dominance rather than on being a config literal at all.
+- Verification type: unit — (SC18) both coverage-instrumentation builders accept the
+  same command shapes. Negative: the shape one accepts and the other refuses today
+  (`python3 scripts/run_standing_pytest.py ...`) round-trips through both.
+- Verification type: manual + exported-surface — (SC19) a consuming repo running the
+  quality skill can answer "is my prescribed test command outside my measured
+  universe", using surfaces the export actually ships —
+  `standing_gate_discovery_lib.py` is already exported and already tokenizes `pytest`,
+  so the gap to close is the policy layer, not a new scanner.
 - Verification type: manual + exported-surface — (SC16) the cost-dominance angle appears
   in the shipped critique surface, and a consuming repo running the quality skill is told
   when its prescribed test command sits outside its own budgeted universe.
@@ -674,7 +750,7 @@ Each criterion names the slice that owns it. Coverage is asserted in
 | S4 | 8, 13 | docs graph; 13 is the recorded scope extension |
 | S5 | 9 | umbrellas; the probe question bounds it |
 | S6 | 10, 11 | operating contract |
-| S6b | 14, 15, 16 | cost as a proof surface; measured in S5 |
+| S6b | 14, 15, 16, 17, 18, 19 | cost as a proof surface; 17-19 added 2026-08-15 from a live recurrence |
 | S7 | 12 | release execution and closes |
 
 No slice may close without its criteria; no criterion is without a check above.
