@@ -207,6 +207,19 @@ Three lessons are genuinely unscored because nothing observable happened:
 - memory: when one configuration switch governs two mechanisms with different
   false-positive profiles, split the mechanism rather than shipping the switch —
   the noisy arm's escape hatch will disarm the quiet one.
+- capability: **the digest injected at session open is showing COMPLETED
+  focuses.** Verifying this retro's own persistence found that
+  `recent-lessons.md` `## Current Focus` names the `--json` removal (shipped)
+  and "design what the next release implements" (done), while this session's
+  entry was dropped: three same-date candidates competed for two slots, and
+  `scripts/recent_lessons_lib.py:351-352` records that artifact order is
+  `sorted(glob(...))` — lexicographic by filename, not chronological. All four
+  `## Next-Time Checklist` slots likewise went to older recurring lessons, so
+  the five improvements above are in `lesson-selection-index.json` and not in
+  the digest anyone reads. Same family as the SC6 gap below: the loop ranks what
+  has RECURRED above what was just learned, and both failures point the same
+  way — a session's newest and most-applicable lesson is the one least likely to
+  be shown back to it.
 - capability: **S3 now has a measured instance, not just a spec clause.** Five
   positive lesson effects were observed and could not be recorded, because
   scoring requires the citing retro to declare a `recurrence-class` for that

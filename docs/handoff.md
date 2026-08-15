@@ -33,9 +33,8 @@
   (#599), and the `check-markdown.sh` npm fallback (#630) all ship. Size and
   identity: `git log --oneline -1`; scope: `git show --stat HEAD`.
 - Full suite green at that commit. Re-prove with
-  `python3 -m pytest tests/ -q --no-header`; budget ~21 minutes and run it
-  BACKGROUNDED — two runs were invalidated this session by editing under an open
-  collection.
+  `python3 -m pytest tests/ -q --no-header`; ~21 min, run it BACKGROUNDED and do
+  not edit under an open collection.
 - Ruff is clean only cache-free. Prove with `ruff check --no-cache .`, never
   `ruff check .`.
 - **Two gates are RED and neither is from S1**, both confirmed on a throwaway
@@ -55,7 +54,7 @@
   ([#628](https://github.com/corca-ai/charness/issues/628),
   [#629](https://github.com/corca-ai/charness/issues/629),
   [#631](https://github.com/corca-ai/charness/issues/631)), four partly valid.
-  That split still has no checked-in ledger; the closeout floor requires one.
+  Still no checked-in ledger; the closeout floor requires one.
 
 Non-claims: no push, tag, version bump, publish, hosted CI, installed-consumer
 readback, or issue closure. S2-S7 have not started.
@@ -63,9 +62,8 @@ readback, or issue closure. S2-S7 have not started.
 ## Next Session
 
 1. **Before S2, confirm each scoped issue still reproduces on the current tree.**
-   This is the standing remedy, and S1 shows why: the check refuted a live
-   assumption about #599 within minutes. Use `python3 scripts/what_reads_this.py`
-   — it exists now — for the consumer half of any removal question.
+   The standing remedy; in S1 it refuted a live assumption about #599 in minutes.
+   `python3 scripts/what_reads_this.py` now answers the consumer half.
 2. **S2** of the release contract: the producer-scaffold class, fixed by
    **subject identity, not date coherence**. The contract's Fixed Decision
    records why a generalized date-coherence guard is inert against
@@ -82,6 +80,14 @@ readback, or issue closure. S2-S7 have not started.
   only advises on the six completeness words, because the refusing version
   rejected this repo's own honest-limits language. The criterion stands unamended
   and the evidence is attached; S7 cannot honestly claim SC3 until this is ruled.
+- **The digest injected at session open shows two COMPLETED focuses and drops
+  the live one**, and all four checklist slots went to older recurring lessons,
+  so this session's new improvements are in the index and not in the digest.
+  Same family as S3's SC6 — the loop weights what RECURRED over what was just
+  learned. Evidence and mechanism:
+  [S1 retro](../charness-artifacts/retro/2026-08-15-session-retro.md); compare
+  [recent lessons](../charness-artifacts/retro/recent-lessons.md) against
+  `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check`.
 - S5 (structural umbrellas) is the least bounded slice; decide its stopping rule
   before starting it, not during.
 - Whether `link_only_lines` 0 is the right bar or an honest non-zero one is.
