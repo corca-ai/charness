@@ -425,6 +425,24 @@ Ordering is by dependency pressure, not by theme.
     under-measurement is fail-LOUD in the changed-line classifier. The
     end-to-end evidence is the re-obtained proof recorded below, not a unit test.
 
+  **S6's changed-line proof is OBTAINED, and it was not clean.** Command:
+  `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha e12b41b52
+  --head-sha HEAD --test-command "python3 scripts/run_standing_pytest.py --repo-root ."
+  --write-fresh-marker`. It COMPLETED rather than being killed, which is the whole
+  point of sequencing SC18 first, and it returned BLOCKING over 21 changed pool
+  files: twelve changed lines across five files that no test executed. Three were
+  behaviour S6 wrote a paragraph about and never exercised — the ratchet record
+  refusing a non-integer bar, the standing runner REPORTING rather than swallowing
+  a signal handler it could not install, and `worktree_doctor --require-isolation`,
+  the mechanism the SC10 ruling names for handing a write-capable agent a
+  checkout, whose `main` no test had ever called. Those are the tests in
+  `tests/quality_gates/test_s6_changed_line_gaps.py`, and the re-run is now
+  `blocking: []` over the same range.
+
+  Recorded as the slice's most useful outcome, because it is the one that could
+  not be argued: S6 passed two review rounds and a full suite with those lines
+  unproven, and only the proof it could not afford to run found them.
+
 - **S6c — export completeness ([#634](https://github.com/corca-ai/charness/issues/634)).** Two halves, detector first
   so the repairs are enumerated rather than remembered:
   1. **The detector.** Generalize `check_export_safe_imports.py`'s existing

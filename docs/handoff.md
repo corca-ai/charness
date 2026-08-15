@@ -28,6 +28,10 @@
   reviewers over two rounds, and round 2 found the first executor repair had traded an
   uncaught crash for a SILENT green. Re-prove with
   `python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py`.
+- **S6's changed-line proof is OBTAINED and now clean.** It completed rather than being
+  killed, and found twelve unproven changed lines across five files before
+  [these tests](../tests/quality_gates/test_s6_changed_line_gaps.py) closed them. Re-run:
+  `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha e12b41b52 --head-sha HEAD --test-command "python3 scripts/run_standing_pytest.py --repo-root ." --write-fresh-marker`.
 - **S6 is committed** (`git show 54654b032 --no-patch --format=%B`): worktree isolation,
   the monitored standing runner, the exported bar default, and
   [#633](https://github.com/corca-ai/charness/issues/633). Six reviewers over two rounds;
@@ -44,15 +48,8 @@
   `check_export_safe_imports.py` already has the right AST shape with a `skills/public`-only
   constant. Scoped as S6c; its SC20 negative case and the
   [repo-copy fixture](../tests/repo_copy.py) trap are in the contract.
-- **S6b-1 (SC18) is BUILT and reviewed over two rounds**: one classifier,
-  `mutation_sampling_lib.classify_instrumentable_command`, now decides for both
-  coverage builders and for the closeout broad gate, and
-  `check_changed_line_mutation_coverage.py --test-command` plus the CI changed-line
-  step reach the standing runner. [cosmic-ray.toml](../cosmic-ray.toml) still holds
-  its bare-pytest `test-command` on purpose — cosmic-ray runs it per mutant, and it
-  is SC17's subject in S6b-2. Run
-  `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root .`
-  only for suite SHAPE — it does not answer command dominance.
+- [cosmic-ray.toml](../cosmic-ray.toml) still holds its bare-pytest `test-command` on
+  purpose — cosmic-ray runs it per mutant, and it is SC17's subject in S6b-2.
 - [#618](https://github.com/corca-ai/charness/issues/618)-[#633](https://github.com/corca-ai/charness/issues/633):
   #620, #628, #617, #626, #627, #631, #629, #633 are fixed in-repo and unreleased.
   Still no checked-in classification ledger; the closeout floor requires one.
