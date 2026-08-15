@@ -683,19 +683,51 @@
       "lesson_id": "guard-adjacent-to-action",
       "outcome": "read-but-not-applied",
       "anchor": "Presented at session open, then the handoff I wrote carried two ## Current State entries with no owning link, command, or issue id. validate_handoff_artifact.py refused the commit and named both lines. The lesson describes that exact shape."
+    },
+    {
+      "event_id": "2026-08-15-s4-bar-recorded-as-prose",
+      "session_id": "2026-08-15-s4",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "changed-an-action",
+      "anchor": "Wrote the docs-graph bar as LINK_ONLY_LINES_BAR plus a METRIC_BARS entry, and pinned it with a test asserting the literal appears in source, rather than stating it in the module docstring the way the pre-slice gate stated its link-only stance. Otherwise the bar would have gone into the --help docstring beside the existing prose, which is where round 1 found the ratchet half of the same claim still living and called it unenforced."
+    },
+    {
+      "event_id": "2026-08-15-s4-premise-not-checked-against-source",
+      "session_id": "2026-08-15-s4",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+      "lesson_id": "premise-not-checked-against-source",
+      "outcome": "changed-an-action",
+      "anchor": "Re-derived the finding classification from the flagged SOURCE lines instead of trusting my own first pass, which had put 88 entries in the bare-link bucket; 5 of them carried a descriptor wrapped onto the next line, giving 83+5+167. Otherwise the bar would have been sized from a split that was wrong by five and the gate would have shipped a calibration note contradicted by its own tree. The same lesson did NOT transfer to the contract sentence I copied about two independent channels, which is the shape its own text describes."
+    },
+    {
+      "event_id": "2026-08-15-s4-closeout-diagnostic-visibility",
+      "session_id": "2026-08-15-s4",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+      "lesson_id": "closeout-diagnostic-visibility",
+      "outcome": "changed-an-action",
+      "anchor": "Ran both full-suite runs backgrounded with output redirected to a file and polled the file, so neither 21-minute run was lost when the foreground wrapper would have timed out, and the first run failure list was still readable afterwards. Otherwise both runs would have been issued in the foreground under a 600s tool timeout and cut off around the halfway mark, which is the ~20-minutes-twice loss this lesson records."
+    },
+    {
+      "event_id": "2026-08-15-s4-guard-adjacent-to-action",
+      "session_id": "2026-08-15-s4",
+      "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+      "lesson_id": "guard-adjacent-to-action",
+      "outcome": "read-but-not-applied",
+      "anchor": "It was in view at session open and the handoff I then wrote still carried a Current State bullet with no owning link, command, or issue id -- the false-claim entry -- and validate_handoff_artifact refused it. Fixed by pointing the bullet at the release scope contract. The lesson names exactly this shape and describes the same recurrence one slice earlier, so presentation is again not the binding step."
     }
   ],
   "lessons": {
     "guard-adjacent-to-action": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-guard-adjacent-to-action",
-      "score_total": 0,
-      "score_count": 2,
+      "score_total": -1,
+      "score_count": 3,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 1,
+        "read-but-not-applied": 2,
         "legacy-scalar": 1
       },
       "state": "active",
@@ -704,10 +736,10 @@
     "premise-not-checked-against-source": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-premise-not-checked-against-source",
-      "score_total": -1,
-      "score_count": 5,
+      "score_total": 0,
+      "score_count": 6,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
@@ -824,10 +856,10 @@
     "closeout-diagnostic-visibility": {
       "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
       "transition_id": "seed-closeout-diagnostic-visibility",
-      "score_total": -1,
-      "score_count": 1,
+      "score_total": 0,
+      "score_count": 2,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1154,10 +1186,10 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 1,
-      "score_count": 1,
+      "score_total": 2,
+      "score_count": 2,
       "outcome_counts": {
-        "changed-an-action": 1,
+        "changed-an-action": 2,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,

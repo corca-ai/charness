@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-15",
-  "source_artifact_count": 511,
-  "candidate_count": 2081,
+  "source_artifact_count": 512,
+  "candidate_count": 2085,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1382,6 +1382,58 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0586f77336c0",
+      "kind": "current_focus",
+      "lesson": "S4 of the 6.0.0 release contract: make `check_docs_graph.py` judge named metrics against declared bars, repair this repo's own link-only-line population, and stop the handoff scaffold teaching context-free links (#629).",
+      "normalized_key": "s4 of the 6 0 0 release contract make check docs graph py judge",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+          "date": "2026-08-15",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S4 of the 6.0.0 release contract: make `check_docs_graph.py` judge named metrics against declared bars, repair this repo's own link-only-line population, and stop the handoff scaffold teaching context-free links (#629)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:08dca14777d4",
+      "kind": "next_improvement",
+      "lesson": "a bar is two decisions, its value and its permitted direction plus who may change it. Recording only the value satisfies `bar-recorded-as-prose` and still leaves the ratchet as prose, which is what round 2 measured here.",
+      "normalized_key": "a bar is two decisions its value and its permitted direction plus who may",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a bar is two decisions, its value and its permitted direction plus who may change it. Recording only the value satisfies `bar-recorded-as-prose` and still leaves the ratchet as prose, which is what round 2 measured here."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:295d88985056",
       "kind": "next_improvement",
       "lesson": "a lesson presented at session open and cited during the work still recurred twice here, so presentation and citation are not the binding step — the binding step is a check at the moment of writing.",
@@ -1616,6 +1668,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:db35a4acb428",
+      "kind": "next_improvement",
+      "lesson": "give a bar a typed provenance record the ratchet test parses — observer, command, date, field — so a corroboration claim has one observer slot per entry and \"two independent channels\" cannot be written as free prose.",
+      "normalized_key": "give a bar a typed provenance record the ratchet test parses observer command date",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "give a bar a typed provenance record the ratchet test parses — observer, command, date, field — so a corroboration claim has one observer slot per entry and \"two independent channels\" cannot be written as free prose."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a5b7d91733be",
       "kind": "next_improvement",
       "lesson": "give long-running children the reusable monitored-phase path the ledger already carries as a lesson; two suite runs were lost to an untracked wrapper timeout.",
@@ -1690,6 +1768,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**run a new judging rule over the repo's own existing artifacts before writing its tests.** The corpus is the specification; 49 findings on the 6.0.0 notes was available in minute five and arrived in hour three."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ad753df336f4",
+      "kind": "next_improvement",
+      "lesson": "run `sync_root_plugin_manifests.py` as the first step of any long verification run, not once mid-slice — the generated mirror is a repair surface, and the \"a run started before a repair does not prove the tree after it\" rule applies to it exactly as it applies to source.",
+      "normalized_key": "run sync root plugin manifests py as the first step of any long verification",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run `sync_root_plugin_manifests.py` as the first step of any long verification run, not once mid-slice — the generated mirror is a repair surface, and the \"a run started before a repair does not prove the tree after it\" rule applies to it exactly as it applies to source."
         }
       ]
     },

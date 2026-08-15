@@ -20,6 +20,8 @@
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md) — the digest a session reads before work.
 - [Docs graph checks](./docs-graph-checks.md) — what each docs tool answers, and the
   `link_only_lines` ratchet record S4 armed.
+- [S4 retro](../charness-artifacts/retro/2026-08-15-session-retro-s4.md) — the sibling scan over
+  this repo's other bars, and the stale-mirror suite loss.
 
 ## Current State
 
@@ -27,27 +29,19 @@
   declared bars instead of `> 0`, `link_only_lines` among them at a ratchet the
   tests parse from a dated record; the handoff scaffold and validator now require
   a `## References` descriptor on the link's own line. Scope: `git show --stat HEAD`.
-- **The docs repair was real work, not a re-baseline.** Every list entry in
-  `docs/` whose link line carried no descriptor was rewritten to carry one; the
-  bar is sized to the hard-wrapped-prose remainder, which is the population
-  awiki's per-physical-line rule over-reports on. Recount with
+- **The docs repair was real work, not a re-baseline**, and the bar is sized to
+  the wrapped-prose remainder the rule over-reports on. Recount with
   `python3 scripts/check_docs_graph.py --repo-root .`.
-- **Two review rounds ran, and round 2 found defects in round 1's repairs** —
-  including a ratchet whose "may only decrease" was satisfiable by two in-place
-  edits, and a `## References` rule that scanned to end of file. Round-2 repairs
-  are themselves unreviewed, which is where the cap stopped the loop.
-  Record: `git show HEAD --no-patch --format=%B`.
-- **One false claim was authored and caught in S4** — "two independent channels
-  that agreed exactly", describing the gate shelling out to `awiki` and
-  regex-reading its own stdout, which is one observer read twice. It reached
-  three surfaces before a bounded reviewer refuted it; the corrected statement
-  and what replaced it live in the
-  [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md).
+- **Two rounds ran; round 2 found defects in round 1's repairs**, and round-2
+  repairs are unreviewed at the cap. One false claim was authored and caught —
+  the [S4 retro](../charness-artifacts/retro/2026-08-15-session-retro-s4.md) `## North Star
+  Alignment` owns it. Record: `git show HEAD --no-patch --format=%B`.
 - Ruff is clean only cache-free: `ruff check --no-cache .`, never `ruff check .`.
 - Re-prove the suite with `python3 -m pytest tests/ -q --no-header`, BACKGROUNDED,
-  and do not edit under an open collection. A suite run started before a repair
-  does not prove the tree after it — in S4 a run begun before a mirror re-sync
-  reported packaging failures that the re-sync had already fixed.
+  and do not edit under an open collection. Run
+  `python3 scripts/sync_root_plugin_manifests.py` FIRST: the generated mirror is a
+  repair surface, and in S4 a run begun before its re-sync cost a full 21-minute
+  cycle to `needs_sync` failures the re-sync had already fixed.
 - The release is still PREPARED: no bump, tag, or publish. Confirm with
   `python3 skills/public/release/scripts/current_release.py --repo-root .`.
 - [#618](https://github.com/corca-ai/charness/issues/618)-[#633](https://github.com/corca-ai/charness/issues/633):
@@ -81,10 +75,13 @@ alongside the breaking `## References` rule.
 
 ## Discuss
 
-- **A ratchet is only as strong as the surface that records it.** S4's first
-  ratchet repair read as executable and was not; round 2 measured that a raise
-  needed two in-place edits and no test change. Whether this repo's other bars
-  and floors have the same shape is a `quality` question worth one sweep.
+- **Bars record a value but not a direction.** S4's sibling scan
+  ([S4 retro](../charness-artifacts/retro/2026-08-15-session-retro-s4.md)) found two:
+  `check_python_lengths.py`'s file caps and `validate_skill_ergonomics.py`'s
+  inline `max_core_lines`, both raisable by one literal edit with the suite
+  green. `check_boundary_bypass_ratchet.py` already has the stronger form, and
+  the handoff ceiling legitimately ROSE by operator ruling — so the ask is to
+  record each bar's direction and authority, not to ratchet everything.
 - **The exported gate carries a bar calibrated on this repo's docs.** Consumers
   get a number measured somewhere else, with neither the record nor the test that
   governs it. The `--link-only-lines-bar` flag makes it expressible; whether
