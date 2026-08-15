@@ -297,7 +297,10 @@ Ordering is by dependency pressure, not by theme.
 
   **Why S6c is release-blocking and S6b is not.** S6c is a defect in the artifact
   being published: a new consumer installing `6.0.0` hits an unguarded
-  `import yaml` from a documented `gather` entrypoint. S6b is an internal
+  `import yaml` from a documented `gather` entrypoint. **That specific defect is
+  what S6c fixes; the CLASS is not retired**, and the slice's own entry records
+  the score. "Release-blocking" was earned by the reported instance, not by the
+  inventory around it. S6b is an internal
   efficiency and review-quality improvement — real, but it costs this repo time
   rather than costing consumers a broken install. If the release has to be cut
   short, S6b-2 is the part that defers.
@@ -467,6 +470,76 @@ Ordering is by dependency pressure, not by theme.
   the resequencing rationale assumed earlier slices add no instances, and that
   assumption was false once.
 
+  **BUILT 2026-08-15, with a SCOPE REDUCTION that is the slice's main record.**
+  Both repairs landed: the export now ships `packaging/bootstrap-python.json`
+  and `packaging/bootstrap-requirements.txt` beside the installer that reads
+  them, so the bootstrap path is no longer dead on arrival, and the documented
+  `gather` entrypoint names the pinned declaration instead of raising a bare
+  `ModuleNotFoundError`. The detector shipped with TWO arms and only ONE of them
+  refuses.
+
+  **The path arm is ADVISORY, and the reason is measured rather than staged.**
+  It was built as a blocking ratchet over a checked-in baseline. Three bounded
+  reviewers then falsified its classification in BOTH directions at once: it
+  excused `repo_root / "packaging" / f"{name}.json"` the moment this slice
+  shipped two files into `packaging/` — the partial-shipping shape its own
+  comment says it exists to refuse — and it reported `root / "evals" / ...` in
+  maintainer tools where `root` is the repo the OPERATOR named, which is correct
+  code. Both follow from one gap: the arm cannot tell "reads its own tree" from
+  "scans whatever tree the caller passed", which is exactly the discrimination
+  `check_export_safe_imports` makes by requiring the chain to be rooted at the
+  module's own `REPO_ROOT`. A release-blocking gate over a falsified
+  classification would have made `--write-baseline` the routine response, so the
+  baseline and the flag were both deleted and the arm ships as a regenerable
+  inventory. The severity split is pinned by a test that a later slice must
+  retract by name.
+
+  **What round 1 found in the repairs themselves**, each fixed: the guard's own
+  message prescribed a `--execute` flag `bootstrap_runtime.py` does not have, so
+  the fix for a stranded consumer would have stranded them again; shipping
+  `packaging/` made the string `packaging` shadow the DISTRIBUTION in the
+  dependency arm's local-name set, blinding it to two exported modules; the
+  guard carried `# pragma: no cover - exercised by its own test` beside a test
+  that only grepped the file as text; and the gate crashed with an uncaught
+  `PackagingError` on any tree without a packaging manifest — which is every
+  consumer, since it is exported. All four came from reviewers.
+
+  **What ROUND 2 refuted, and it changed the criterion.** The dependency arm asked
+  whether the export DECLARED a package anywhere — and this slice's own repair
+  satisfied that for the entire export by shipping one requirements file, while
+  roughly 36 bare imports across 29 modules kept raising the exact reported
+  error. Declaration is not availability; a shipped requirements file installs
+  nothing. The blocking arm now asks availability on the surface a consumer is
+  TOLD to run: a documented entrypoint (named by an exported `SKILL.md`,
+  reference, or adapter) must guard a third-party import and name what to
+  install. On the current export that is 89 entrypoints and zero findings — green
+  because the one instance was repaired, and it fires on the next one, which the
+  acceptance pins by building a minimal export that has one.
+
+  Round 2 also found, each fixed: the advisory note began `ADVISORY,` with a
+  comma, which the runner's marker regex does not match, so the inventory was
+  written to a per-phase log deleted unread — the advisory bargain buying nothing;
+  `unestablished` exited 1, so an EXPORTED gate would have handed every consumer
+  a red lane while repairing a stranded-consumer defect; the guard resolved its
+  plugin root by a counted `parents[3]`, correct in the export and naming a
+  nonexistent `<repo>/skills/packaging/...` in the dev tree; the flag-pairing test
+  sliced 800 characters and never reached the only flag, so it asserted nothing;
+  and the `except Exception` around `load_manifest` reported a real packaging
+  defect as "no manifest here". Round-2 repairs ship **accepted-unreviewed** at
+  the two-round cap.
+
+  **Carried, not fixed, and stated rather than implied away.** The path arm reads
+  Python `/`-chain literals: a wholly computed path, an `os.path.join`, a bare
+  `Path("docs/x.json")` string, a markdown or YAML instruction site, and a shell
+  gate are all invisible to it. (A partly computed chain is NOT invisible — the
+  literal prefix is still read, which is how the `packaging/` mis-excusal was
+  found.) So #634's other enumerated halves — the 11 cwd-relative
+  `python3 scripts/<x>.py` instruction sites, two of them landing in consumer
+  adapter config, and the 3 unguarded shell gates — are NOT closed by this slice
+  and are not detectable by what it built. An adversarial round-2 reviewer scored
+  the slice at 2 of ~16 enumerated items. **#634 therefore STAYS OPEN**, with the
+  repairs and the inventory recorded on it; S7 does not close it.
+
   Known trap, recorded before the slice starts: `tests/repo_copy.py` clones
   `packaging/` into every fixture and `test_bootstrap_runtime.py` copies the
   contract in explicitly, so a test written inside that harness will pass against
@@ -600,6 +673,11 @@ Ordering is by dependency pressure, not by theme.
   bars rise — a consuming repo that inherited charness's 167 now inherits 0, and
   one whose record is non-monotonic is refused on upgrade. Both are exactly the
   "claim surface nobody thought to derive" the Known Weaknesses name.
+  From S6c, and it is the kind the Known Weaknesses name: **the shipped artifact
+  grew a top-level `packaging/` directory** (the bootstrap dependency contract),
+  so the bootstrap path works for a consumer for the first time — and no
+  registered claim surface derives the export's file list, so the notes generator
+  cannot find it.
   Reword the 8 blocking quantities the S1 lint finds
   in the prepared notes that have no registered claim surface to move into
   (owner ruling, 2026-08-15: reword rather than expand the registry — an ad-hoc
@@ -843,13 +921,20 @@ Each criterion names the slice that owns it. Coverage is asserted in
     `mutation_sampling_lib.coverage_run_command` refuses it with *"use a helper script
     for other runners"*; the changed-line gate uses the refusing one. Reconciling them
     may shrink SC17 to a much smaller check, so it is sequenced first.
-20. **(S6c)** An exported artifact cannot depend on a repo-root path the export does not
-    ship, and an exported module cannot import a third-party package the export declares
-    nowhere. This repo's own `plugins/charness/` is the first subject, and the two
-    measured instances — `bootstrap_runtime.py` reading an unexported
-    `packaging/bootstrap-python.json`, and the unguarded `import yaml` in the documented
-    `gather_public_url.py` entrypoint — are both reported. Added 2026-08-15 from
-    [#634](https://github.com/corca-ai/charness/issues/634), a consuming-machine failure.
+20. **(S6c)** A script the export TELLS a consumer to run cannot crash on a bare
+    `ModuleNotFoundError`: it guards the import and names what to install, or it does not
+    import a third-party package unguarded at all. Both measured instances are repaired —
+    `bootstrap_runtime.py`'s contract now ships, and the documented `gather_public_url.py`
+    entrypoint guards its import. Repo-root paths the export does not ship are ENUMERATED
+    as an advisory inventory, not refused. **REWRITTEN 2026-08-15 after two review
+    rounds**, from "an exported artifact cannot depend on a repo-root path the export does
+    not ship, and an exported module cannot import a third-party package the export
+    declares nowhere". Both halves of that sentence were falsified against the build:
+    the path half's classification was wrong in both directions, and the dependency half
+    measured DECLARATION, which this slice's own repair satisfied for the entire export by
+    shipping one requirements file while ~36 bare imports kept crashing. The criterion now
+    names what the tree does. What it no longer claims is recorded in the S6c entry, and
+    [#634](https://github.com/corca-ai/charness/issues/634) STAYS OPEN.
 19. **(S6b-2)** A consuming repo gets the cost DIRECTION it currently lacks, not only the
     budget ledger. `check_runtime_budget_universe.py` is deliberately absent from the
     installed quality skill by its own docstring's decision, so today a consumer
@@ -931,14 +1016,18 @@ Each criterion names the slice that owns it. Coverage is asserted in
 - Verification type: integration — (SC15) a queued or prescribed command with no runtime
   budget entry is reported by the universe check. Negative: the existing budgeted-label
   direction still reports a budget naming a label that does not exist.
-- Verification type: unit + integration — (SC20) the detector reports both measured
-  instances when run against `plugins/charness/`. Negative, and it is the case that
-  decides whether the check is usable at all: a path meant to resolve in the CONSUMER's
-  repo — `.agents/<x>-adapter.yaml`, `charness-artifacts/**`, `docs/handoff.md` — is NOT
-  reported, because those are seeded or scanned at runtime and shipping filled copies
-  would overwrite consumer config. **The test must run against the exported tree, not
-  through `tests/repo_copy.py`**, which clones `packaging/` into every fixture and would
-  pass against the defect.
+- Verification type: unit + integration — (SC20) a minimal export whose `SKILL.md` tells a
+  consumer to run a script with a bare `import yaml` is REFUSED, and the same export with
+  the package declared in a shipped requirements file is STILL refused — a requirements
+  file installs nothing, and asserting that is what stops the criterion being satisfied by
+  declaration. A guarded import passes; a FUNCTION-level import does not, because it only
+  defers the same crash to call time. Plus: the real guard is EXECUTED with PyYAML blocked,
+  and every path its message prints must exist. Negative, and the case that decides whether
+  the advisory inventory is usable at all: a path meant to resolve in the CONSUMER's repo —
+  `.agents/<x>-adapter.yaml`, `charness-artifacts/**`, `docs/handoff.md` — is NOT listed.
+  **The tests run against the checked-in export and hand-built minimal trees, never through
+  `tests/repo_copy.py`**, which clones `packaging/` into every fixture and would pass
+  against the defect.
 - Verification type: integration — (SC17) the gate-spawned seam is exercised against
   this repo's real `cosmic-ray.toml` `test-command` literal and reports it. Negative: a
   config literal that already names the standing runner is NOT reported, so the check

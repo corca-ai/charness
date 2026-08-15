@@ -1108,6 +1108,13 @@
     },
     {
       "class": "intentional",
+      "id": "41b264a02f5ecdb5",
+      "note": "The standalone-script import preamble (`REPO_ROOT = ...` plus the sys.path insert or import_repo_module bootstrap) that every directly-invocable script in this repo carries. It exists precisely because these files are run as scripts as often as they are imported; a shared module cannot bootstrap the path it is itself imported through.",
+      "surface": "code",
+      "reviewed_at": "2026-08-15"
+    },
+    {
+      "class": "intentional",
       "id": "421086eaf4dcd873",
       "note": "The focused changed-line producer and structured-asset validator each need a direct command entrypoint with their own scope and exit contract. Extracting the shared main skeleton would couple unrelated proof surfaces and hide which command owns an unproven result.",
       "reviewed_at": "2026-08-06",
@@ -2207,6 +2214,13 @@
     },
     {
       "class": "intentional",
+      "id": "7c84628538e21c51",
+      "note": "Same standalone-script import preamble as 41b264a02f5ecdb5, in the pair that includes changed_line_gate_cli.py -- a module split out at the length cap, which therefore needed its own bootstrap for the direct-invocation case its own test exercises.",
+      "surface": "code",
+      "reviewed_at": "2026-08-15"
+    },
+    {
+      "class": "intentional",
       "id": "7c8cb6b2a5829127",
       "note": "Five `if status == '<literal>': return [<message>]` arms in check_regenerable_facts._diagnostics. This is the RESIDUE OF THE REPAIR made in this same slice: _diagnostics used to re-test _status's seven conditions itself, so the classification was stated twice and could desynchronize on a gate whose purpose is that `checked: 0` must never read as clean. The ladder now lives once in _status; each arm's body is a distinct operator-facing message interpolating different report fields.",
       "reviewed_at": "2026-08-14",
@@ -3110,6 +3124,13 @@
     },
     {
       "class": "intentional",
+      "id": "b347b2f3eccdc8ce",
+      "note": "This repo's standard standalone-CLI shape: build an argparse parser with --repo-root, parse, run the check, emit through the one YAML emitter, map the verdict to an exit byte. Shared by five unrelated gates because it IS the convention; collapsing it into a framework would move each gate's exit-code decision -- the part that differs and matters -- away from the gate that owns it.",
+      "surface": "code",
+      "reviewed_at": "2026-08-15"
+    },
+    {
+      "class": "intentional",
       "id": "b364d71c0ccd3a87",
       "note": "Same `issue_local_import` header as 3a880c28d15655c6, matched between the new rung-1 floors module and the body-check module it loads. Same reason; the pair exists because the #591 fix split one module into two and each half keeps its own loader.",
       "reviewed_at": "2026-08-14",
@@ -3548,6 +3569,13 @@
       "note": "Backtick migration and document-link scanning intentionally retain local tokenization rules for separate command and prose contracts; importing one scanner into the other would blur the owning verdict.",
       "reviewed_at": "2026-08-06",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d07a9299e0d19480",
+      "note": "Same standalone-script import preamble as 41b264a02f5ecdb5. Paired with sample_mutation_files.py, which reaches the same modules through the same bootstrap for the same reason.",
+      "surface": "code",
+      "reviewed_at": "2026-08-15"
     },
     {
       "class": "intentional",
@@ -4104,6 +4132,13 @@
     },
     {
       "class": "intentional",
+      "id": "f0a674b6138d88ee",
+      "note": "Same standalone-CLI shape as b347b2f3eccdc8ce, paired here with the prepush focused-coverage lane. Both carry a --repo-root argparse block and a status-to-exit mapping; the mappings differ (this one adds an unestablished byte), which is exactly the part a shared helper would have to take back out.",
+      "surface": "code",
+      "reviewed_at": "2026-08-15"
+    },
+    {
+      "class": "intentional",
       "id": "f0cd50275aae0366",
       "note": "the five-line `importlib.util.spec_from_file_location` / module_from_spec / exec_module path-loader idiom, already present in five owners across achieve, issue, and repo scripts. It exists precisely BECAUSE these modules are executed directly as often as imported and the plugin export flattens the layout, so a dotted import works in one tree and not the other -- a shared loader would itself need loading by this same idiom. The premise-state CLI already collapsed its own two copies of this into one memoized helper before this classification.",
       "reviewed_at": "2026-08-10",
@@ -4150,6 +4185,13 @@
       "note": "the `print(<message>, file=sys.stderr); return <code>` refusal tail shared by nine spans across six independently-owned validators and measurement scripts. Same accepted class as 21cbc81495c292ff (a stderr-writing refusal preamble across three gates): idiom-sized, and extracting it would couple independently-owned refusal surfaces through a message formatter that obscures which gate owns the verdict. Surfaced as new because D47 slice 3 moved the empty-corpus refusal into inventory_measurement_lib.py; the other eight members are untouched.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f39cb032d5c610c8",
+      "note": "The `ast.walk` + `isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div)` idiom, in two checks that ask DIFFERENT questions of the same node type: check_export_safe_imports asks whether a chain is rooted at the module's own REPO_ROOT and names skills/public, export_self_sufficiency_lib collects the chain's literal segments and asks what the export ships. The boundary between them is stated in the latter's module docstring; sharing the walk would put one check's question inside the other's owner.",
+      "surface": "code",
+      "reviewed_at": "2026-08-15"
     },
     {
       "class": "intentional",

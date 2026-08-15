@@ -167,6 +167,32 @@ def checked_in_plugin_root(manifest: dict) -> Path:
     return Path(manifest["codex"]["repo_marketplace"]["default_source_path"].removeprefix("./"))
 
 
+#: The two files the bootstrap installer reads. Only these — the rest of
+#: `packaging/` is this repo's own release plumbing and means nothing to a
+#: consumer, and shipping a directory wholesale is how an export grows surface
+#: nobody can point at.
+BOOTSTRAP_DEPENDENCY_CONTRACT = (
+    Path("packaging") / "bootstrap-python.json",
+    Path("packaging") / "bootstrap-requirements.txt",
+)
+
+
+def export_bootstrap_dependency_contract(repo_root: Path, plugin_root: Path) -> None:
+    """Ship the dependency contract beside the installer that reads it.
+
+    `bootstrap_runtime.py` was exported without it through every release up to
+    6.0.0, so `load_contract` raised "missing bootstrap runtime contract" on the
+    first consumer machine to try that path, while dozens of exported modules
+    imported yaml/jsonschema/packaging bare with no declaration anywhere in the
+    artifact. The consuming session concluded there was no declaration to find.
+    There was; it just did not travel.
+    """
+    for relative in BOOTSTRAP_DEPENDENCY_CONTRACT:
+        source_path = repo_root / relative
+        if source_path.is_file():
+            copy_file(source_path, plugin_root / relative)
+
+
 def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> None:
     source = manifest["source"]
     readme_rel = source["readme"]
@@ -261,6 +287,8 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     skill_runtime_bootstrap_path = repo_root / "skill_runtime_bootstrap.py"
     if skill_runtime_bootstrap_path.is_file():
         copy_file(skill_runtime_bootstrap_path, plugin_root / "skill_runtime_bootstrap.py")
+
+    export_bootstrap_dependency_contract(repo_root, plugin_root)
 
     write_json(plugin_root / manifest["claude"]["manifest_path"], manifest["claude"]["manifest"])
     write_json(plugin_root / manifest["codex"]["manifest_path"], manifest["codex"]["manifest"])

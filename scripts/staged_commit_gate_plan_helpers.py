@@ -86,6 +86,11 @@ def timing_pull_gate(repo_root: Path, label: str, script: str, *args: str) -> li
 _MIRROR_PREFIXES = (
     "scripts/",
     "skills/",
+    # The bootstrap dependency contract became a mirror SOURCE when the export
+    # started shipping it beside the installer that reads it. Without this
+    # prefix, a commit that only bumps a pin in `packaging/bootstrap-*` schedules
+    # no mirror-drift gate, and the export ships stale pins until a broad run.
+    "packaging/bootstrap-",
     "profiles/",
     "presets/",
     "integrations/",

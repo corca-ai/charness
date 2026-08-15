@@ -13,6 +13,11 @@ reports/
 .charness/quality/runtime-smoothing.json
 .charness/quality/history/runtime-signals-*.jsonl
 .charness/bootstrap-python/
+# Path-anchored, so the line above does not cover a bootstrap run made INSIDE the
+# checked-in export -- which the gather guard's own message now tells a reader to
+# do. Untracked files there are listed by the packaging install-surface check and
+# would fail it as `extra:`.
+plugins/*/.charness/
 .charness/retro/
 .charness/closeout/
 .charness/tasks/

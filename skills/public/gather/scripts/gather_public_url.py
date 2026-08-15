@@ -10,7 +10,46 @@ import sys
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-import yaml
+try:
+    import yaml
+except ModuleNotFoundError as exc:
+    # This command is a DOCUMENTED consumer entrypoint (`SKILL.md` tells a
+    # consumer to run it), so it is the first place a missing dependency is met
+    # on a fresh machine -- which is exactly how this was reported: a bare
+    # `ModuleNotFoundError: No module named 'yaml'`, a search for a declaration,
+    # and the conclusion that there was none. There is one, and it is pinned; the
+    # export now ships it, and this message names it rather than leaving the
+    # reader to search.
+    # Found by ANCHOR, not by a fixed `parents[N]`. A counted hop is correct in
+    # exactly one layout: this file sits at `skills/public/gather/scripts/` in the
+    # dev tree and `skills/gather/scripts/` once exported, so `parents[3]` names
+    # `<repo>/skills` here and `<plugin>` there -- and the message would have
+    # printed two paths that do not exist, which is the same stranding this guard
+    # exists to end. Walking for the contract works in both.
+    _ANCHOR = Path("packaging") / "bootstrap-requirements.txt"
+    _HERE = Path(__file__).resolve()
+    _PLUGIN_ROOT = next(
+        (parent for parent in _HERE.parents if (parent / _ANCHOR).is_file()),
+        _HERE.parents[3],
+    )
+    _REQUIREMENTS = _PLUGIN_ROOT / _ANCHOR
+    # The FIRST remedy is the one that makes the next `python3 ...` invocation
+    # work. A round-2 reviewer measured why the ordering matters: the bootstrap
+    # runtime installs into its own launcher, so a consumer who follows it and
+    # then re-runs the documented `python3 "$SKILL_DIR/scripts/gather_public_url.py"`
+    # meets this same message again. Naming the pinned spec keeps the version
+    # constraint available either way.
+    raise SystemExit(
+        "gather cannot start: PyYAML is missing from the interpreter running this "
+        f"script (import of `{exc.name}` failed).\n"
+        f"  Install it into THIS interpreter: {sys.executable} -m pip install "
+        f"-r {_REQUIREMENTS}\n"
+        f"  The pinned versions are declared in {_REQUIREMENTS}.\n"
+        "  A repo-local runtime is also available via "
+        f"{_PLUGIN_ROOT / 'scripts' / 'bootstrap_runtime.py'} --repo-root {_PLUGIN_ROOT}, "
+        "but it installs into its own launcher rather than into this interpreter, so "
+        "re-running the documented command afterwards needs that launcher."
+    ) from exc
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SUPPORT_ACQUIRE = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "acquire_public_url.py"

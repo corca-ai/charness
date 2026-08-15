@@ -282,7 +282,7 @@ PARTIAL_EXIT=4
 # summary line, a scan that read zero documents, or an awiki exit code outside
 # its clean/findings pair -- and never when it observed a bad graph. An
 # unobserved orphan count is not zero, and this is the byte that says so.
-UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph check-closeout-classification-parity"
+UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph check-closeout-classification-parity check-export-self-sufficiency"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
@@ -930,6 +930,12 @@ queue_selected "check-timing-layer-completeness" python3 scripts/check_timing_la
 # label's name, which is answerable before any gate has run.
 queue_selected "check-runtime-budget-universe" python3 scripts/check_runtime_budget_universe.py --repo-root "$REPO_ROOT"
 queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imports.py --repo-root "$REPO_ROOT" --require-git-file-listing
+# Adjacent to the line above and NOT the same question. That gate asks whether a
+# path literal survives the `skills/public/` collapse, reading the SOURCE tree.
+# This one reads the CHECKED-IN EXPORT and asks whether it can run on a machine
+# that has only the export -- the question the packaging validator structurally
+# cannot answer, because its oracle is the exporter.
+queue_selected "check-export-self-sufficiency" python3 scripts/check_export_self_sufficiency.py --repo-root "$REPO_ROOT"
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
 queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing

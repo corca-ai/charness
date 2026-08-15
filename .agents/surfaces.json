@@ -451,7 +451,7 @@
         "for review_record in charness-artifacts/release-review/*.json; do [ -e \"$review_record\" ] && python3 -m json.tool \"$review_record\" >/dev/null || exit $?; done"
       ],
       "notes": [
-        "The release resume helper validates the record's exact prepared-commit, path, blob, version, tag, and direct-child topology before auth, tag, push, or GitHub release creation. Under charness.release.claims-review.v2 it additionally requires a declared `observer_distinctness` object (kind, concrete signal, and — for a `pass` — the review narrative committed alongside the record and bound to the prepared commit), and accepts `verdict: unproven` so a host with no distinct observer has an honest record instead of only `pass`.",
+        "The release resume helper validates the record's exact prepared-commit, path, blob, version, tag, and direct-child topology before auth, tag, push, or GitHub release creation. Under charness.release.claims-review.v2 it additionally requires a declared `observer_distinctness` object (kind, concrete signal, and \u2014 for a `pass` \u2014 the review narrative committed alongside the record and bound to the prepared commit), and accepts `verdict: unproven` so a host with no distinct observer has an honest record instead of only `pass`.",
         "This surface owns checked-in JSON syntax and changed-surface routing; it does not treat an arbitrary record as approved publication evidence outside the helper's prepared-claims-review state."
       ]
     },
@@ -505,6 +505,37 @@
       ],
       "notes": [
         "StrykerJS should exercise this JS-native surface directly; Python pytest tests remain cross-language integration smokes."
+      ]
+    },
+    {
+      "surface_id": "export-self-sufficiency",
+      "description": "Whether the checked-in plugin export can run on a machine that has only the export: shipped dependency contract, and repo-root paths exported modules read.",
+      "source_paths": [
+        "scripts/check_export_self_sufficiency.py",
+        "scripts/export_self_sufficiency_lib.py",
+        "scripts/packaging_lib.py",
+        "packaging/bootstrap-python.json",
+        "packaging/bootstrap-requirements.txt",
+        "skills/public/gather/scripts/gather_public_url.py"
+      ],
+      "derived_paths": [
+        "plugins/charness/scripts/check_export_self_sufficiency.py",
+        "plugins/charness/scripts/export_self_sufficiency_lib.py",
+        "plugins/charness/scripts/packaging_lib.py",
+        "plugins/charness/packaging/bootstrap-python.json",
+        "plugins/charness/packaging/bootstrap-requirements.txt",
+        "plugins/charness/skills/gather/scripts/gather_public_url.py"
+      ],
+      "sync_commands": [
+        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+      ],
+      "verify_commands": [
+        "python3 scripts/check_export_self_sufficiency.py --repo-root .",
+        "python3 -m pytest -q tests/quality_gates/test_export_self_sufficiency.py"
+      ],
+      "notes": [
+        "The dependency arm BLOCKS; the unshipped-path arm is ADVISORY, because round-1 review falsified its classification in both directions. `export_self_sufficiency_lib`'s module docstring states what it owes before it can refuse.",
+        "The advisory list is regenerable output, not a checked-in baseline: a ratchet over a falsified classification would have made its own escape hatch routine."
       ]
     },
     {
