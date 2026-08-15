@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency). (source: `charness-artifacts/retro/2026-08-16-session-retro.md`)
 - Handoff item 1: remove `--json` repo-wide and make repo-owned command output unconditionally YAML. (source: `charness-artifacts/retro/2026-08-15-json-to-yaml-migration-closeout.md`)
-- Handoff pickup with an explicit task: commit the verified tree, then design what the next release implements and ships from the open issues and the handoff. (source: `charness-artifacts/retro/2026-08-15-release-scope-design.md`)
 
 ## Repeat Traps
 
@@ -48,3 +48,4 @@
 - `charness-artifacts/retro/2026-08-15-release-scope-design.md`
 - `charness-artifacts/retro/2026-08-15-s3-lesson-loop.md`
 - `charness-artifacts/retro/2026-08-15-session-retro.md`
+- `charness-artifacts/retro/2026-08-16-session-retro.md`
