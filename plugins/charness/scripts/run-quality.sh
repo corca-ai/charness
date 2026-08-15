@@ -282,7 +282,7 @@ PARTIAL_EXIT=4
 # summary line, a scan that read zero documents, or an awiki exit code outside
 # its clean/findings pair -- and never when it observed a bad graph. An
 # unobserved orphan count is not zero, and this is the byte that says so.
-UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph"
+UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph check-closeout-classification-parity"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
@@ -1042,6 +1042,10 @@ queue_selected "check-test-completeness" python3 scripts/check_test_completeness
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 queue_selected "check-closeout-floor-matrix" python3 scripts/check_closeout_floor_matrix.py --repo-root "$REPO_ROOT"
+# The floor matrix holds ONE copy of the classification vocabulary (its own
+# declaration). This holds the other five, which is #586's recorded instance:
+# a disposition added to one enumeration and refused by its siblings.
+queue_selected "check-closeout-classification-parity" python3 scripts/check_closeout_classification_parity.py --repo-root "$REPO_ROOT"
 # The JSON reporter's destination lives in specdown.json, not behind -out, so an
 # unredirected run rewrites the tracked report on every gate with nothing changed
 # but its generatedAt timestamp. Run against an ephemeral config instead.

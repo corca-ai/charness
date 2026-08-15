@@ -53,6 +53,7 @@ def _load_skill_runtime_bootstrap():
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
+SKILL_ROOT = Path(__file__).resolve().parents[1]
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
@@ -70,7 +71,15 @@ def _read(path: str, kind: str, why: str, *, base: str) -> dict[str, str]:
 
 
 def _repo_evidence_read(repo_root: Path, path: str) -> dict[str, Any]:
-    """Describe optional adapter evidence without pretending directories are files."""
+    """Describe optional adapter evidence without pretending directories are files.
+
+    Availability and path KIND only. This function used to stat and disclose a
+    measurement itself; layering the shared `measure_reads` over that produced an
+    item carrying BOTH `size_bytes` and an `unavailable_reason` whenever the two
+    resolvers disagreed -- an adapter naming an evidence path outside the repo root
+    made the whole planner raise instead of planning. One measurer, at the envelope.
+    Found by a bounded round-1 reviewer of the read-measurement mandate.
+    """
     item: dict[str, Any] = _read(
         path,
         "evidence",
@@ -78,17 +87,9 @@ def _repo_evidence_read(repo_root: Path, path: str) -> dict[str, Any]:
         base="repo",
     )
     candidate = repo_root / path
-    if candidate.is_file():
-        item["available"] = True
-        item["path_kind"] = "file"
-        return ENVELOPE.disclose_read_measurement(item, size_bytes=candidate.stat().st_size)
-    if candidate.is_dir():
-        item["available"] = True
-        item["path_kind"] = "directory"
-        return item
-    item["available"] = False
-    item["path_kind"] = "missing"
-    return ENVELOPE.disclose_read_measurement(item, unavailable_reason="missing")
+    item["available"] = candidate.exists()
+    item["path_kind"] = "directory" if candidate.is_dir() else "file" if candidate.is_file() else "missing"
+    return item
 
 
 _packet = ENVELOPE.gate_packet
@@ -353,8 +354,11 @@ def build_plan(
     lesson_session = _lesson_session(repo_root, artifact)
     return ENVELOPE.build_envelope(
         schema_version="retro.run_plan.v1",
-        required_reads=_required_reads(
-            repo_root=repo_root, adapter=adapter, artifact=artifact, lens_brief=lens_brief
+        required_reads=ENVELOPE.measure_reads(
+            _required_reads(
+                repo_root=repo_root, adapter=adapter, artifact=artifact, lens_brief=lens_brief
+            ),
+            {"repo": repo_root, "skill": SKILL_ROOT},
         ),
         next_action=_next_action(artifact),
         gate_packets=_gate_packets(repo_root, adapter, scaffold),

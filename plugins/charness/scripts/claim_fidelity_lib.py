@@ -75,11 +75,30 @@ def _validate_engagement(spec_path: str, ref: str, value: object) -> tuple[str, 
     return engagement, class_tag
 
 
+def _refuse_blank_entries(spec_path: str, field: str, value: list[str]) -> None:
+    """A BLANK entry is a token that asserts nothing, and worse than an absent one.
+
+    In a fragment channel, `"".includes` is true for every transcript, so it grades
+    green unconditionally AND makes the channel count as populated -- which
+    suppresses `_validate_floor_move`. That is the cheapest way to reintroduce
+    #583's class, and it leaves nothing a reviewer can grep for. Found by a bounded
+    round-1 reviewer; hoisted out of the optional-list helper by round 2, so the
+    strict sibling cannot reintroduce the hole for the next field routed through it.
+    """
+    blank = [item for item in value if not item.strip()]
+    if blank:
+        raise ValidationError(
+            f"{spec_path}: `{field}` has blank entries {blank}; a blank entry matches every "
+            "transcript, so it is an always-true floor. Empty the channel instead of flooring on nothing."
+        )
+
+
 def _validate_string_list(spec_path: str, field: str, value: object) -> list[str]:
     if not isinstance(value, list) or not value or not all(isinstance(item, str) for item in value):
         raise ValidationError(f"{spec_path}: `{field}` must be a non-empty string list")
     if len(value) != len(set(value)):
         raise ValidationError(f"{spec_path}: `{field}` has duplicate entries")
+    _refuse_blank_entries(spec_path, field, value)
     return value
 
 
@@ -94,6 +113,7 @@ def _validate_optional_string_list(spec_path: str, field: str, value: object) ->
         raise ValidationError(f"{spec_path}: `{field}` must be a string list")
     if len(value) != len(set(value)):
         raise ValidationError(f"{spec_path}: `{field}` has duplicate entries")
+    _refuse_blank_entries(spec_path, field, value)
     return value
 
 
@@ -131,6 +151,80 @@ def _validate_scenario_id(spec_path: str, scenario_id: str, value: object) -> No
         raise ValidationError(f"{spec_path}: `scenarioId` must be `{scenario_id}`")
 
 
+FLOOR_MOVE_FIELD = "deterministicFloorMovedTo"
+
+
+def _validate_floor_move(spec_path: str, spec: dict, substance_floor: Path) -> None:
+    """An emptied deterministic floor must NAME the instrument that carries the claim.
+
+    [#583](https://github.com/corca-ai/charness/issues/583)'s class is a verification
+    surface that silently stops verifying what it claims to. Its recorded instance
+    is #568: the `pickup` / `pickup-ambiguous` arms were built to DISCRIMINATE, an
+    upstream planner change collapsed both to the same outcome, and neither arm
+    hard-fails, so nothing flagged it.
+
+    The sibling check above requires only that an outcome-assertions.json EXISTS,
+    and says so in its own docstring. Existence is satisfied by a file shared with
+    every other spec in the directory, so it binds an emptied floor to nothing in
+    particular. This binds it: name the assertion ids that replace the floor, and
+    each must resolve in that file and be a `judge` assertion -- a floor moving
+    sideways onto another deterministic check in the same file is not a move to a
+    substance instrument.
+
+    What this does NOT check, stated rather than implied: whether the named judge
+    assertion actually covers the discrimination the floor lost. It proves the
+    pointer resolves to a real substance instrument, not that the instrument is
+    sufficient. And it cannot see #568's actual accident -- two arms converging
+    while both floors stay populated. That remainder is recorded with the guard.
+    """
+    declared = spec.get(FLOOR_MOVE_FIELD)
+    remedy = (
+        f'Add `"{FLOOR_MOVE_FIELD}": {{"assertionIds": ["<id>", ...]}}` naming the '
+        f"`kind: judge` assertions in {substance_floor.name} that carry this claim now."
+    )
+    if not isinstance(declared, dict):
+        raise ValidationError(
+            f"{spec_path}: every deterministic floor channel is empty, so the claim rests on the "
+            f"sibling substance set -- but the spec does not say WHICH assertions replaced it. {remedy}"
+        )
+    # OPTIONAL-list validation, then the emptiness check below: the strict helper
+    # refuses an empty list with a shape message, which would make the branch that
+    # carries the remedy unreachable. A test found exactly that.
+    declared_file = declared.get("outcomeAssertions")
+    if declared_file is not None and declared_file != substance_floor.name:
+        # Otherwise the key is decorative: validation silently runs against the
+        # resolved sibling while a human reader trusts the declared path.
+        raise ValidationError(
+            f"{spec_path}: `{FLOOR_MOVE_FIELD}.outcomeAssertions` names `{declared_file}`, but the "
+            f"substance floor resolves to `{substance_floor.name}` beside the spec. A declared path "
+            "that is not the validated one misleads every reader of this spec."
+        )
+    ids = _validate_optional_string_list(spec_path, f"{FLOOR_MOVE_FIELD}.assertionIds", declared.get("assertionIds"))
+    if not ids:
+        raise ValidationError(f"{spec_path}: `{FLOOR_MOVE_FIELD}.assertionIds` must name at least one assertion. {remedy}")
+    payload = _load_json(substance_floor)
+    if not isinstance(payload, dict) or not isinstance(payload.get("assertions"), list):
+        raise ValidationError(f"{spec_path}: {substance_floor.name} carries no `assertions` list to move a floor onto")
+    by_id = {
+        assertion.get("id"): assertion
+        for assertion in payload["assertions"]
+        if isinstance(assertion, dict)
+    }
+    for assertion_id in ids:
+        assertion = by_id.get(assertion_id)
+        if assertion is None:
+            raise ValidationError(
+                f"{spec_path}: `{FLOOR_MOVE_FIELD}` names `{assertion_id}`, which does not exist in "
+                f"{substance_floor.name}. A floor moved onto nothing is the collapse this field exists to refuse."
+            )
+        if assertion.get("kind") != "judge":
+            raise ValidationError(
+                f"{spec_path}: `{FLOOR_MOVE_FIELD}` names `{assertion_id}`, whose kind is "
+                f"`{assertion.get('kind')}`. A deterministic floor moving onto another deterministic "
+                "check is not a move to a substance instrument."
+            )
+
+
 def _validate_floor_channel(
     repo_root: Path,
     spec_path: str,
@@ -162,6 +256,7 @@ def _validate_floor_channel(
                 "must be non-empty (the claim floor channel), OR a sibling outcome-assertions.json "
                 "substance floor must exist"
             )
+        _validate_floor_move(spec_path, spec, substance_floor)
     not_engage_always = [ref for ref in [*required, *required_opened] if ref not in engage_always]
     if not_engage_always:
         raise ValidationError(

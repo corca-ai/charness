@@ -5,6 +5,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+
 _ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -69,11 +71,11 @@ def _ref(path: str, trigger: str, role: str) -> dict[str, str]:
 def build_new_plan(repo_root: Path, target: dict[str, Any], adapter: dict[str, Any], preflight: dict[str, Any]) -> dict[str, Any]:
     return _ENVELOPE.build_envelope(
         schema_version="issue.run_plan.v1",
-        required_reads=[
+        required_reads=_ENVELOPE.measure_reads([
             _ref("references/issue-shaping.md", "before drafting the issue body", "engage-always"),
             _ref("references/issue-backend.md", "before create, labels, milestones, or backend mutation", "engage-always"),
             _ref("references/closeout-discipline.md", "before reporting the created issue", "engage-always"),
-        ],
+        ], {None: SKILL_ROOT}),
         next_action=_ENVELOPE.next_action("draft_problem_first_body_file_then_create"),
         gate_packets=[
             _preflight_gate(preflight),
@@ -114,11 +116,11 @@ def build_resolve_plan(
         next_action = _ENVELOPE.next_action("read_selected_issues_with_comments_then_classify")
     return _ENVELOPE.build_envelope(
         schema_version="issue.run_plan.v1",
-        required_reads=[
+        required_reads=_ENVELOPE.measure_reads([
             _ref("references/resolve-flow.md", "before selecting or ordering issues", "engage-always"),
             _ref("references/issue-backend.md", "before backend read, carrier validation, or close", "engage-always"),
             _ref("references/closeout-discipline.md", "before publishing or verifying a closeout carrier", "engage-always"),
-        ],
+        ], {None: SKILL_ROOT}),
         next_action=next_action,
         gate_packets=[
             _preflight_gate(preflight),

@@ -108,23 +108,14 @@ def _read(path: str, kind: str, why: str, *, base: str) -> dict[str, str]:
 
 
 def _measure_required_read(repo_root: Path, item: dict[str, Any]) -> dict[str, Any]:
-    """Resolve a handoff read only against the base its producer declared."""
-    bases = {"repo": repo_root, "skill": SKILL_ROOT}
-    base_root = bases.get(item.get("base"))
-    if base_root is None:
-        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="unknown-base")
-    try:
-        candidate = (base_root / str(item["path"])).resolve()
-        candidate.relative_to(base_root.resolve())
-        if not candidate.exists():
-            return ENVELOPE.disclose_read_measurement(item, unavailable_reason="missing")
-        if not candidate.is_file():
-            return ENVELOPE.disclose_read_measurement(item, unavailable_reason="not-a-file")
-        return ENVELOPE.disclose_read_measurement(item, size_bytes=candidate.stat().st_size)
-    except ValueError:
-        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="outside-declared-base")
-    except (OSError, RuntimeError):
-        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="stat-failed")
+    """Resolve a handoff read only against the base its producer declared.
+
+    Delegates to the shared envelope resolver. This function used to carry its own
+    copy of that logic, as did two sibling planners -- which is why the
+    read-measurement rollout stalled at "representative": every new planner owed a fresh copy, and
+    the five that skipped it emitted unpriced reads with nothing red.
+    """
+    return ENVELOPE.measure_read(item, {"repo": repo_root, "skill": SKILL_ROOT})
 
 
 def _packet(

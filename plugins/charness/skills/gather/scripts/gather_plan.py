@@ -10,6 +10,10 @@ from urllib.parse import urlparse
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SUPPORT_WEB_FETCH = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "route_public_fetch.py"
+SKILL_ROOT = SCRIPT_DIR.parent
+# gather anchors its reads at its own skill dir, and one of them deliberately
+# reaches the sibling support package, so containment is the skills container.
+READ_BASES = {None: (SKILL_ROOT, SCRIPT_DIR.parents[2])}
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(SCRIPT_DIR.parents[2] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -184,7 +188,7 @@ def build_plan(repo_root: Path, url: str, *, intent: str = "single", browser_mod
         )
     return ENVELOPE.build_envelope(
         schema_version="gather.run_plan.v1",
-        required_reads=_required_reads(route_id),
+        required_reads=ENVELOPE.measure_reads(_required_reads(route_id), READ_BASES),
         next_action=next_action,
         gate_packets=[
             ENVELOPE.gate_packet(

@@ -45,3 +45,18 @@ def test_quality_required_read_measurement_is_source_plugin_parity_and_never_zer
     assert source._measure_required_read({"path": "directory", "why": "test"})["unavailable_reason"] == "not-a-file"
     assert source._measure_required_read({"path": "../outside.md", "why": "test"})["unavailable_reason"] == "outside-declared-base"
     assert source._measure_required_read({"path": None, "why": "test"})["unavailable_reason"] == "unknown-base"
+
+
+def test_a_ref_declaring_a_base_the_quality_planner_has_no_anchor_for_is_unknown_base():
+    """Pins the LITERAL base map. The sibling assertion above reaches `unknown-base`
+    through the PATH guard, so it stayed green under the defect this pins: a map
+    built as `{ref.get("base"): SKILL_ROOT}` derives its key from the value being
+    looked up, always hits, and prices a `base: repo` ref against the SKILL root --
+    reporting `missing`, or a confident size for the wrong file. Found by round 2.
+    """
+    source = _load_plan(ROOT / "skills/public/quality/scripts/plan_quality_run.py", "quality_plan_base_probe")
+    measured = source._measure_required_read(
+        {"path": "references/quality-lenses.md", "why": "t", "base": "repo"}
+    )
+    assert measured["measurement_state"] == "unavailable"
+    assert measured["unavailable_reason"] == "unknown-base"

@@ -226,6 +226,13 @@ def test_retro_plan_promotes_adapter_evidence_with_path_status(tmp_path: Path) -
     ]
     assert evidence[0]["size_bytes"] > 0
     assert evidence[2]["unavailable_reason"] == "missing"
+    # The directory row is the ONE place `available` and the measurement disagree by
+    # design -- the path is there to open, and it is not a file to size. It was the
+    # only row with no measurement assertion, which is how the pre-repair double
+    # disclosure hid here. Round 2 named it.
+    assert evidence[1]["measurement_state"] == "unavailable"
+    assert evidence[1]["unavailable_reason"] == "not-a-file"
+    assert "size_bytes" not in evidence[1]
 
 
 def test_retro_plan_preserves_empty_adapter_evidence(tmp_path: Path) -> None:

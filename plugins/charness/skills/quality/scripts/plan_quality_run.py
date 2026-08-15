@@ -68,23 +68,17 @@ def _catalog() -> dict[str, Any]:
 
 
 def _measure_required_read(ref: dict[str, Any]) -> dict[str, Any]:
-    """Disclose a catalog read from the quality skill's explicit path base."""
-    item = dict(ref)
-    path = item.get("path")
-    if not isinstance(path, str):
-        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="unknown-base")
-    try:
-        candidate = (SKILL_ROOT / path).resolve()
-        candidate.relative_to(SKILL_ROOT.resolve())
-        if not candidate.exists():
-            return ENVELOPE.disclose_read_measurement(item, unavailable_reason="missing")
-        if not candidate.is_file():
-            return ENVELOPE.disclose_read_measurement(item, unavailable_reason="not-a-file")
-        return ENVELOPE.disclose_read_measurement(item, size_bytes=candidate.stat().st_size)
-    except ValueError:
-        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="outside-declared-base")
-    except (OSError, RuntimeError):
-        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="stat-failed")
+    """Disclose a catalog read from the quality skill's explicit path base.
+
+    Quality's catalog refs carry no `base` token -- every one is skill-relative --
+    so the shared resolver is handed that single anchor. See the sibling note in
+    `plan_handoff_run._measure_required_read` for why this is a delegation now.
+    """
+    # A LITERAL map, not `{ref.get("base"): ...}`: deriving the key from the value
+    # being looked up makes `unknown-base` structurally unreachable, so a future
+    # catalog ref carrying `base: repo` would be priced against the SKILL root and
+    # disclosed as `missing` -- or worse, as a confident size for the wrong file.
+    return ENVELOPE.measure_read(dict(ref), {None: SKILL_ROOT})
 
 
 def _skill_paths_under(repo_root: Path, parents: list[Path]) -> list[str]:

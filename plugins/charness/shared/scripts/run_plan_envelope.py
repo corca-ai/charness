@@ -119,6 +119,65 @@ def disclose_read_measurement(
     return measured
 
 
+def measure_read(item: dict[str, Any], bases: dict[str, Any]) -> dict[str, Any]:
+    """Resolve ONE read against its declared base and disclose what was measured.
+
+    The class this closes: a harness surface holding the input needed to compute a
+    fact and emitting prose instead.
+    A planner has already resolved its path bases and ``st_size`` is free, so the
+    size belongs here rather than in the consuming agent's judgment.
+
+    This lives in the ENVELOPE rather than in each planner on purpose. Three
+    planners had hand-rolled a near-identical resolver, which is why the original
+    rollout stopped at "representative": every new planner owed a fresh copy, and
+    the ones that skipped it emitted unpriced reads with nothing red. One resolver
+    at the chokepoint every planner already passes through makes the disclosure
+    the default rather than an act of diligence.
+
+    ``bases`` maps the ``base`` token a planner stamps on its reads (``repo``,
+    ``skill``, ...) to the root it resolves against. A read whose base is not in
+    the map is disclosed as ``unknown-base`` -- never silently dropped, because an
+    unmeasured read that says nothing is exactly the state this replaces.
+
+    A base may instead be a ``(anchor, containment_root)`` pair, for the real case
+    where a skill emits a path anchored at its own directory that deliberately
+    reaches a SIBLING package -- gather's ``../../support/web-fetch/...`` read.
+    Collapsing those two roots would force such a planner to either rewrite the
+    path its consumer opens or disclose ``outside-declared-base`` for a file that
+    is exactly where it should be.
+    """
+    declared = bases.get(item.get("base"))
+    if declared is None:
+        return disclose_read_measurement(item, unavailable_reason="unknown-base")
+    anchor, containment = declared if isinstance(declared, tuple) else (declared, declared)
+    path = item.get("path")
+    if not isinstance(path, str) or not path:
+        return disclose_read_measurement(item, unavailable_reason="unknown-base")
+    # The try wraps ONLY resolution and stat. `disclose_read_measurement` is called
+    # outside it on purpose: EnvelopeError subclasses ValueError, so a future
+    # validation added there would be laundered into a bogus `outside-declared-base`
+    # disclosure -- the fail-open direction this whole mandate argues against.
+    try:
+        candidate = (anchor.resolve() / path).resolve()
+        # A read escaping its own declared base is not measured as if it were
+        # inside one; the planner declared where its paths live.
+        candidate.relative_to(containment.resolve())
+        size = candidate.stat().st_size if candidate.is_file() else None
+        reason = None if size is not None else ("missing" if not candidate.exists() else "not-a-file")
+    except ValueError:
+        size, reason = None, "outside-declared-base"
+    except (OSError, RuntimeError):
+        size, reason = None, "stat-failed"
+    if reason is not None:
+        return disclose_read_measurement(item, unavailable_reason=reason)
+    return disclose_read_measurement(item, size_bytes=size)
+
+
+def measure_reads(items: list[dict[str, Any]], bases: dict[str, Any]) -> list[dict[str, Any]]:
+    """Disclose a measurement for every read in a planner's ``required_reads``."""
+    return [measure_read(item, bases) for item in items]
+
+
 def gate_packet(
     packet_id: str,
     trust_model: str,
@@ -236,7 +295,17 @@ def _validate_reads(required_reads: Any) -> None:
         has_state = "measurement_state" in item
         has_reason = "unavailable_reason" in item
         if not (has_size or has_state or has_reason):
-            continue
+            # MANDATORY as of 6.x, replacing the legacy-tolerant
+            # rollout this branch used to `continue` past. An undisclosed read is
+            # the umbrella's own defect: the planner resolved the path already, so
+            # emitting it unpriced pushes a decided fact onto the reading agent.
+            # `measure_read` above makes compliance one call, and an unmeasurable
+            # read has a typed reason rather than silence.
+            raise EnvelopeError(
+                f"required_reads[{index}] discloses no measurement; pass it through "
+                "measure_read()/disclose_read_measurement() so a size or a typed "
+                "unavailable_reason travels with the path"
+            )
         if has_size:
             if has_state or has_reason:
                 raise EnvelopeError(f"required_reads[{index}] mixes available and unavailable measurement")

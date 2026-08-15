@@ -12,13 +12,27 @@ Three keys carry the shared meaning; everything else is a per-skill extension:
 
 - `required_reads` — list of `read()` items to open before broad work. Each item
   is `{path, why}` plus optional `kind` / `base` (debug/handoff/retro),
-  `trigger` (gather/issue), `role` (issue/quality). A planner that has measured
-  a local read adds a non-negative `size_bytes`; when it cannot resolve that
-  read, it instead adds `measurement_state: unavailable` and one typed
-  `unavailable_reason` (`missing`, `not-a-file`, `outside-declared-base`,
-  `stat-failed`, or `unknown-base`). The envelope validates a supplied
-  disclosure but never guesses a path base; legacy unmeasured planner items
-  remain compatible during representative rollout.
+  `trigger` (gather/issue), `role` (issue/quality). **Every item MUST disclose a
+  measurement** — a non-negative `size_bytes`, or `measurement_state: unavailable`
+  with one typed `unavailable_reason` (`missing`, `not-a-file`,
+  `outside-declared-base`, `stat-failed`, `unknown-base`). An undisclosed read is
+  refused by `validate_envelope`. (BREAKING in 6.x: the validator
+  previously tolerated legacy unmeasured items "during representative rollout",
+  which is why five of eight planners shipped unpriced reads with nothing red.)
+
+  Compliance is ONE call — do not hand-roll a resolver, which is what stalled the
+  original rollout:
+
+  ```python
+  required_reads=ENVELOPE.measure_reads(reads, {"repo": repo_root, "skill": SKILL_ROOT})
+  ```
+
+  The `bases` map takes each read's `base` token to the root it is anchored at;
+  use the key `None` when a planner's reads carry no `base` (they are all
+  skill-relative). A base may instead be an `(anchor, containment_root)` pair for
+  a read that is anchored at the skill dir yet deliberately reaches a sibling
+  package — gather's `../../support/web-fetch/...`. The envelope still never
+  guesses a base: an unmapped token discloses `unknown-base` rather than a size.
 - `next_action` — a single `next_action()` dict, ALWAYS carrying a string
   `kind`. `command` / `instruction` / `reason` / `why` / `redirect` /
   artifact pointers ride as extensions. It is never a bare string.

@@ -26,6 +26,7 @@ def _load_skill_runtime_bootstrap():
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
+SKILL_ROOT = Path(__file__).resolve().parents[1]
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 scaffold_debug_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_debug_artifact")
@@ -318,11 +319,14 @@ def build_plan(repo_root: Path, *, subject: str | None = None) -> dict[str, Any]
         mode = "fresh-investigation"
     return ENVELOPE.build_envelope(
         schema_version="debug.run_plan.v1",
-        required_reads=_required_reads(
-            adapter=adapter,
-            artifact=artifact,
-            prior_incidents=prior_incidents,
-            continues_existing=_continues_existing_artifact(artifact, scaffold),
+        required_reads=ENVELOPE.measure_reads(
+            _required_reads(
+                adapter=adapter,
+                artifact=artifact,
+                prior_incidents=prior_incidents,
+                continues_existing=_continues_existing_artifact(artifact, scaffold),
+            ),
+            {"repo": repo_root, "skill": SKILL_ROOT},
         ),
         next_action=_next_action(repo_root, artifact, scaffold),
         gate_packets=_gate_packets(repo_root, adapter, scaffold),

@@ -59,6 +59,19 @@ DEFAULT_FIELDS: list[tuple[str, tuple[str, ...]]] = [
 ]
 
 
+def has_classification_row(classification: str) -> bool:
+    """Whether this classification has its OWN row, rather than falling through.
+
+    The fallthrough at `classification_requirements` is silent by design, so a
+    caller asking "does this classification have a row" cannot answer it by
+    comparing the returned list to DEFAULT_FIELDS: a row whose value happened to
+    equal the default would read as absent. Exposed for
+    `scripts/check_closeout_classification_parity.py`, which must distinguish the
+    two without reading the table as an attribute.
+    """
+    return classification in CLASSIFICATION_FIELDS
+
+
 def classification_requirements(classification: str) -> list[tuple[str, tuple[str, ...]]]:
     """A COPY of the row, so a caller cannot reshape a proof surface's floor."""
     return list(CLASSIFICATION_FIELDS.get(classification, DEFAULT_FIELDS))

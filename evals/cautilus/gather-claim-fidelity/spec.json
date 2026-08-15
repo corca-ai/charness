@@ -8,6 +8,15 @@
   "prompt": "/charness:gather https://docs.python.org/3/library/asyncio-task.html 페이지를 durable 지식 자산으로 수집해줘 — 나중 세션이 asyncio 태스크 스케줄링 API(create_task / gather / wait_for 타임아웃 / 취소 전파)를 다시 페치하지 않고 참조할 수 있도록, 1차 출처 식별을 지키면서.",
   "requiredCommandFragments": [],
   "requiredSummaryFragments": [],
+  "deterministicFloorMovedTo": {
+    "_comment": "The RCF doc-opens (source-priority.md + capability-contract.md) were retired to [] on 2026-07-05 under #411 because census.json classifies both INLINE and the verifying capture opened 0 of 8 docs. This field names WHERE the claim went, so an emptied floor is bound to a specific instrument rather than to the mere existence of a sibling file. #583.",
+    "outcomeAssertions": "outcome-assertions.json",
+    "assertionIds": [
+      "primary-source-fidelity",
+      "honest-access-and-capture-accounting",
+      "no-search-widening-substitution"
+    ]
+  },
   "declaredReferences": [
     "adapter-contract.md",
     "asset-refresh.md",

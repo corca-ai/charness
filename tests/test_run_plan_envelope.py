@@ -20,7 +20,13 @@ ENV = load_envelope()
 def _valid_kwargs() -> dict:
     return {
         "schema_version": "demo.run_plan.v1",
-        "required_reads": [ENV.read("references/x.md", "why", kind="reference", base="skill")],
+        # A disclosure is MANDATORY as of the #584 slice; an undisclosed read is
+        # its own test below, not the shape every other case is built on.
+        "required_reads": [
+            ENV.disclose_read_measurement(
+                ENV.read("references/x.md", "why", kind="reference", base="skill"), size_bytes=12
+            )
+        ],
         "next_action": ENV.next_action("do_thing", reason="because"),
         "gate_packets": [ENV.gate_packet("g1", "deterministic; trust failures")],
     }
@@ -96,7 +102,7 @@ def test_build_envelope_stamps_version_and_passes_extensions() -> None:
 def test_build_linear_envelope_has_no_fabricated_branches() -> None:
     envelope = ENV.build_linear_envelope(
         schema_version="linear.run_plan.v1",
-        required_reads=[ENV.read("references/a.md", "primer")],
+        required_reads=[ENV.disclose_read_measurement(ENV.read("references/a.md", "primer"), size_bytes=7)],
         next_action_kind="read_primer",
         next_action_reason="open the primer before acting",
     )
@@ -145,3 +151,55 @@ def test_validate_envelope_rejects_missing_required_key() -> None:
     del envelope["gate_packets"]
     with pytest.raises(ENV.EnvelopeError, match="gate_packets"):
         ENV.validate_envelope(envelope)
+
+
+def test_a_read_disclosing_no_measurement_is_refused() -> None:
+    """#584: the planner already resolved the path, so an unpriced read is the defect.
+
+    Before this slice the validator `continue`d past an undisclosed read, which is
+    why the original rollout stopped at three planners and five kept emitting
+    unpriced reads with nothing red.
+    """
+    kwargs = _valid_kwargs()
+    kwargs["required_reads"] = [ENV.read("references/x.md", "why")]
+    with pytest.raises(ENV.EnvelopeError, match="discloses no measurement"):
+        ENV.build_envelope(**kwargs)
+
+
+def test_measure_read_prices_a_real_file_from_its_declared_base(tmp_path) -> None:
+    target = tmp_path / "references" / "a.md"
+    target.parent.mkdir(parents=True)
+    target.write_text("hello", encoding="utf-8")
+    measured = ENV.measure_read(ENV.read("references/a.md", "why", base="skill"), {"skill": tmp_path})
+    assert measured["size_bytes"] == 5
+
+
+def test_measure_read_types_every_way_it_could_not_measure(tmp_path) -> None:
+    """An unmeasurable read carries a typed reason; silence is what #584 reports."""
+    (tmp_path / "dir").mkdir()
+    cases = {
+        "unknown-base": (ENV.read("a.md", "w", base="nowhere"), {"skill": tmp_path}),
+        "missing": (ENV.read("absent.md", "w", base="skill"), {"skill": tmp_path}),
+        "not-a-file": (ENV.read("dir", "w", base="skill"), {"skill": tmp_path}),
+        "outside-declared-base": (ENV.read("../escape.md", "w", base="skill"), {"skill": tmp_path}),
+    }
+    for expected, (item, bases) in cases.items():
+        measured = ENV.measure_read(item, bases)
+        assert measured["measurement_state"] == "unavailable"
+        assert measured["unavailable_reason"] == expected, expected
+        # Every one of these still validates, so an unmeasurable read is disclosed
+        # rather than blocking a planner that legitimately cannot stat.
+        ENV.validate_envelope({**_valid_kwargs(), "envelope_version": ENV.ENVELOPE_VERSION,
+                               "required_reads": [measured]})
+
+
+def test_a_base_may_declare_a_wider_containment_root(tmp_path) -> None:
+    """gather anchors at its own skill dir and deliberately reads a sibling package."""
+    skill = tmp_path / "public" / "gather"
+    sibling = tmp_path / "support" / "web-fetch" / "references"
+    sibling.mkdir(parents=True)
+    skill.mkdir(parents=True)
+    (sibling / "routing-table.md").write_text("route", encoding="utf-8")
+    item = ENV.read("../../support/web-fetch/references/routing-table.md", "why")
+    assert ENV.measure_read(item, {None: skill})["unavailable_reason"] == "outside-declared-base"
+    assert ENV.measure_read(item, {None: (skill, tmp_path)})["size_bytes"] == 5

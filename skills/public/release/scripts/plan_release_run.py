@@ -15,6 +15,7 @@ def _load_skill_runtime_bootstrap():
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
+SKILL_ROOT = Path(__file__).resolve().parents[1]
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _current_release = SKILL_RUNTIME.load_local_skill_module(__file__, "current_release")
@@ -262,7 +263,7 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     )
     return ENVELOPE.build_envelope(
         schema_version="release.run_plan.v1",
-        required_reads=required_reads(args, adapter),
+        required_reads=ENVELOPE.measure_reads(required_reads(args, adapter), {None: SKILL_ROOT}),
         next_action=planned_next_action,
         gate_packets=gate_packets(real_host_scope),
         repo_root=str(repo_root),

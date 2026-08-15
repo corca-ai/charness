@@ -40,6 +40,7 @@ def _scaffold_skill(
     rsf=None,
     scenario: str = "default",
     prompt: str | None = None,
+    floor_moved_to=None,
 ) -> dict:
     """Write a public skill + its references (one file per engagement key) + spec. Returns a registry entry."""
     declared = list(engagement) if declared is None else declared
@@ -65,6 +66,8 @@ def _scaffold_skill(
     }
     if not is_default:
         spec["scenarioId"] = scenario
+    if floor_moved_to is not None:
+        spec["deterministicFloorMovedTo"] = floor_moved_to
     _write(repo / "evals" / "cautilus" / f"{skill}-claim-fidelity" / filename, json.dumps(spec) + "\n")
     entry = {"skill_id": skill, "spec_path": f"evals/cautilus/{skill}-claim-fidelity/{filename}", "fan_out_fit": "no"}
     if not is_default:
@@ -194,28 +197,122 @@ def test_both_floor_channels_empty_rejected(tmp_path: Path) -> None:
         validate_registry(tmp_path)
 
 
-def test_substance_floor_only_passes_with_outcome_assertions(tmp_path: Path) -> None:
+def test_substance_floor_only_passes_when_it_names_where_the_floor_moved(tmp_path: Path) -> None:
     # A script/committing skill whose faithful run opens no doc and emits no
     # distinctive token (gather public-URL #411, setup #413) may floor on a sibling
-    # outcome-assertions.json substance set with both RCF and RSF empty.
-    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=[])
-    # A genuinely-valid substance floor (>=1 assertion); the outcome-assertions
-    # schema/non-emptiness is enforced by the sibling validate_outcome_assertions
-    # gate on the same surface, so claim_fidelity only requires the file exists.
+    # outcome-assertions.json substance set with both RCF and RSF empty -- but as of
+    # the #583 slice it must NAME the judge assertions that carry the claim, because
+    # the mere existence of a sibling file binds an emptied floor to nothing.
+    entry = _scaffold_skill(
+        tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=[],
+        floor_moved_to={"outcomeAssertions": "outcome-assertions.json", "assertionIds": ["alpha-substance"]},
+    )
     _write(
         tmp_path / "evals" / "cautilus" / "alpha-claim-fidelity" / "outcome-assertions.json",
         json.dumps({
             "evalId": "alpha",
-            "assertions": [{
-                "id": "ran-alpha", "kind": "deterministic",
-                "statement": "The run executed the skill.",
-                "check": {"type": "summary_contains", "value": "Execution of /alpha"},
-                "weight": 1,
-            }],
+            "assertions": [
+                {
+                    "id": "ran-alpha", "kind": "deterministic",
+                    "statement": "The run executed the skill.",
+                    "check": {"type": "summary_contains", "value": "Execution of /alpha"},
+                    "weight": 1,
+                },
+                {
+                    "id": "alpha-substance", "kind": "judge",
+                    "statement": "The run honored its central claim.",
+                    "weight": 1,
+                },
+            ],
         }) + "\n",
     )
     _write_registry(tmp_path, [entry])
     assert validate_registry(tmp_path)["results"][0]["skill_id"] == "alpha"
+
+
+def _substance_repo(tmp_path: Path, floor_moved_to, assertions) -> dict:
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=[], floor_moved_to=floor_moved_to)
+    _write(
+        tmp_path / "evals" / "cautilus" / "alpha-claim-fidelity" / "outcome-assertions.json",
+        json.dumps({"evalId": "alpha", "assertions": assertions}) + "\n",
+    )
+    _write_registry(tmp_path, [entry])
+    return entry
+
+
+_JUDGE = {"id": "alpha-substance", "kind": "judge", "statement": "s", "weight": 1}
+_DETERMINISTIC = {
+    "id": "ran-alpha", "kind": "deterministic", "statement": "s",
+    "check": {"type": "summary_contains", "value": "x"}, "weight": 1,
+}
+
+
+def test_an_emptied_floor_that_names_no_replacement_is_refused(tmp_path: Path) -> None:
+    """#583/#568: a floor emptied with nothing named is a collapse nobody can see."""
+    _substance_repo(tmp_path, None, [_JUDGE])
+    with pytest.raises(ValidationError, match="does not say WHICH assertions replaced it"):
+        validate_registry(tmp_path)
+
+
+def test_a_floor_moved_onto_a_nonexistent_assertion_is_refused(tmp_path: Path) -> None:
+    """Existence of the sibling FILE is what the old rule checked; this is the gap."""
+    _substance_repo(
+        tmp_path,
+        {"outcomeAssertions": "outcome-assertions.json", "assertionIds": ["no-such-assertion"]},
+        [_JUDGE],
+    )
+    with pytest.raises(ValidationError, match="does not exist in outcome-assertions.json"):
+        validate_registry(tmp_path)
+
+
+def test_a_floor_moved_sideways_onto_a_deterministic_check_is_refused(tmp_path: Path) -> None:
+    """A deterministic floor replaced by another deterministic check has not moved to substance."""
+    _substance_repo(
+        tmp_path,
+        {"outcomeAssertions": "outcome-assertions.json", "assertionIds": ["ran-alpha"]},
+        [_DETERMINISTIC, _JUDGE],
+    )
+    with pytest.raises(ValidationError, match="not a move to a substance instrument"):
+        validate_registry(tmp_path)
+
+
+def test_an_empty_assertion_id_list_is_refused(tmp_path: Path) -> None:
+    _substance_repo(
+        tmp_path, {"outcomeAssertions": "outcome-assertions.json", "assertionIds": []}, [_JUDGE]
+    )
+    with pytest.raises(ValidationError, match="must name at least one assertion"):
+        validate_registry(tmp_path)
+
+
+def test_a_populated_floor_owes_no_move_declaration(tmp_path: Path) -> None:
+    """The rule is scoped to EMPTIED floors; it must not fire on a spec that still has one."""
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=["a.md"])
+    _write_registry(tmp_path, [entry])
+    assert validate_registry(tmp_path)["results"][0]["skill_id"] == "alpha"
+
+
+def test_this_repo_has_exactly_one_emptied_floor_and_it_declares_its_move() -> None:
+    """The MEASUREMENT, pinned. A rule whose catch is unrecorded cannot be re-checked.
+
+    Measured 2026-08-15 over the 26 registered specs: exactly one has all three floor
+    channels empty. An earlier count of two came from a two-field predicate that
+    ignored `requiredOpenedReferences`; this test reads all three, which is what the
+    rule reads.
+    """
+    registry = json.loads((ROOT / "evals" / "cautilus" / "claim-fidelity-registry.json").read_text())
+    emptied = []
+    for spec_entry in registry["specs"]:
+        spec = json.loads((ROOT / spec_entry["spec_path"]).read_text())
+        channels = [
+            spec.get("requiredCommandFragments") or [],
+            spec.get("requiredOpenedReferences") or [],
+            spec.get("requiredSummaryFragments") or [],
+        ]
+        if not any(channels):
+            emptied.append(spec_entry["spec_path"])
+    assert emptied == ["evals/cautilus/gather-claim-fidelity/spec.json"], emptied
+    spec = json.loads((ROOT / emptied[0]).read_text())
+    assert spec["deterministicFloorMovedTo"]["assertionIds"]
 
 
 def test_valid_class_tags_pass(tmp_path: Path) -> None:
@@ -254,3 +351,63 @@ def test_optional_string_list_non_list_rejected() -> None:
 def test_optional_string_list_duplicate_entries_rejected() -> None:
     with pytest.raises(ValidationError, match="has duplicate entries"):
         _validate_optional_string_list("spec.json", "requiredSummaryFragments", ["dup", "dup"])
+
+
+def test_every_named_assertion_is_checked_not_only_the_first(tmp_path: Path) -> None:
+    """A `for assertion_id in ids[:1]` mutant survived every earlier test."""
+    _substance_repo(
+        tmp_path,
+        {"outcomeAssertions": "outcome-assertions.json", "assertionIds": ["alpha-substance", "ran-alpha"]},
+        [_DETERMINISTIC, _JUDGE],
+    )
+    with pytest.raises(ValidationError, match="not a move to a substance instrument"):
+        validate_registry(tmp_path)
+
+
+def test_a_nonexistent_id_after_a_good_one_is_still_caught(tmp_path: Path) -> None:
+    _substance_repo(
+        tmp_path,
+        {"outcomeAssertions": "outcome-assertions.json", "assertionIds": ["alpha-substance", "ghost"]},
+        [_JUDGE],
+    )
+    with pytest.raises(ValidationError, match="does not exist in outcome-assertions.json"):
+        validate_registry(tmp_path)
+
+
+def test_a_non_dict_floor_move_declaration_is_a_validation_error_not_a_crash(tmp_path: Path) -> None:
+    """`"deterministicFloorMovedTo": "outcome-assertions.json"` is a plausible shorthand."""
+    _substance_repo(tmp_path, "outcome-assertions.json", [_JUDGE])
+    with pytest.raises(ValidationError, match="does not say WHICH assertions replaced it"):
+        validate_registry(tmp_path)
+
+
+def test_a_declared_outcome_assertions_path_that_is_not_the_validated_one_is_refused(tmp_path: Path) -> None:
+    """Otherwise the key is decorative and a reader trusts a file nothing checked."""
+    _substance_repo(
+        tmp_path,
+        {"outcomeAssertions": "substance/other-judges.json", "assertionIds": ["alpha-substance"]},
+        [_JUDGE],
+    )
+    with pytest.raises(ValidationError, match="is not the validated one"):
+        validate_registry(tmp_path)
+
+
+def test_a_sibling_file_with_no_assertions_list_is_refused(tmp_path: Path) -> None:
+    entry = _scaffold_skill(
+        tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=[],
+        floor_moved_to={"assertionIds": ["x"]},
+    )
+    _write(tmp_path / "evals" / "cautilus" / "alpha-claim-fidelity" / "outcome-assertions.json",
+           json.dumps({"evalId": "alpha"}) + "\n")
+    _write_registry(tmp_path, [entry])
+    with pytest.raises(ValidationError, match="carries no `assertions` list"):
+        validate_registry(tmp_path)
+
+
+def test_a_blank_floor_fragment_is_refused_rather_than_counted_as_a_floor(tmp_path: Path) -> None:
+    """The cheapest #583 bypass: a blank fragment matches every transcript AND
+    counts as a populated channel, suppressing the floor-move rule entirely."""
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea()}, rcf=[], rsf=[""])
+    _write_registry(tmp_path, [entry])
+    with pytest.raises(ValidationError, match="blank entries"):
+        validate_registry(tmp_path)
