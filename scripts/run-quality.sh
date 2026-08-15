@@ -105,12 +105,15 @@ if RUN_QUALITY_UNIVERSE_YAML="$(python3 scripts/quality_label_universe.py --repo
   # `resolved: false` still degrades to the empty set the block above describes: an
   # unresolvable reader disables the assertion rather than refusing every gate.
   RUN_QUALITY_UNIVERSE_TEXT="$(
+    # No backticks in the comments below: shellcheck reads this single-quoted Python as shell
+    # and reports SC2016 for them. Plain names cost nothing and keep the gate green without a
+    # suppression that would also hide a genuine unexpanded `$VAR` here.
     printf '%s' "$RUN_QUALITY_UNIVERSE_YAML" | python3 -c '
 import json, sys
 raw = sys.stdin.read()
 try:
     # JSON first, exactly like the Python readers (charness.parse_repo_script_payload
-    # and friends): `yaml_output.render_yaml` falls back to COMPACT JSON when PyYAML is
+    # and friends): yaml_output.render_yaml falls back to COMPACT JSON when PyYAML is
     # absent, so on such an interpreter the producer emits JSON -- and requiring yaml
     # here would refuse a payload the producer wrote perfectly well, while blaming YAML.
     payload = json.loads(raw)
