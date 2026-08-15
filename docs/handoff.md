@@ -35,9 +35,11 @@
 - Ruff is clean only cache-free: `ruff check --no-cache .`, never `ruff check .`.
 - The release is still PREPARED: no bump, tag, or publish. Confirm with
   `python3 skills/public/release/scripts/current_release.py --repo-root .`.
-- [#634](https://github.com/corca-ai/charness/issues/634) is the third measured instance of one class —
-  an exported artifact depending on a repo-root file the export does not ship. Owner
-  asked for the root-cause repair INSIDE this release; it is not yet scoped into a slice.
+- [#634](https://github.com/corca-ai/charness/issues/634) holds a measured export-completeness inventory: 25 exported files
+  `import yaml` unguarded (one a documented `gather` entrypoint), the packaging validator
+  uses the exporter as its own oracle so it is green BY the defect's cause, and
+  `check_export_safe_imports.py` already has the right AST shape with a `skills/public`-only
+  constant. Owner asked for the root-cause repair INSIDE this release; not yet scoped.
 - [#618](https://github.com/corca-ai/charness/issues/618)-[#633](https://github.com/corca-ai/charness/issues/633):
   #620, #628, #617, #626, #627, #631, #629, #633 are fixed in-repo and unreleased.
   Still no checked-in classification ledger; the closeout floor requires one.
@@ -54,8 +56,8 @@ over S6's paths was still running at handoff and its verdict is unread.
 2. **S6b**: cost as a proof surface — a superseded-command registry, the runtime-budget
    universe check in both directions, and an exported cost-dominance review angle. Scope
    and rationale live in `## Sequence` S6b of the [release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md).
-3. **Decide where [#634](https://github.com/corca-ai/charness/issues/634) lands** — its own slice or folded into S6b,
-   whose consumer-facing half is the same class. Owner wants it in this release.
+3. **Decide where [#634](https://github.com/corca-ai/charness/issues/634) lands** — the inventory makes it slice-sized
+   rather than a fold into S6b, and it names the missing check concretely. Owner decision.
 4. Then **S7** publishes and closes [#608](https://github.com/corca-ai/charness/issues/608) and
    [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627);
    the classification ledger commits BEFORE the prepared release record, and S7's
