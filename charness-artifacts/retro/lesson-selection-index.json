@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-15",
-  "source_artifact_count": 509,
-  "candidate_count": 2070,
+  "source_artifact_count": 510,
+  "candidate_count": 2075,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1298,6 +1298,58 @@
       ]
     },
     {
+      "candidate_id": "current_focus:ee2c35b67402",
+      "kind": "current_focus",
+      "lesson": "S2 of the 6.0.0 release contract: the producer-scaffold class, where a scaffold resolved `write_artifact_path` onto a record belonging to a different subject than the invocation.",
+      "normalized_key": "s2 of the 6 0 0 release contract the producer scaffold class where a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+          "date": "2026-08-15",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S2 of the 6.0.0 release contract: the producer-scaffold class, where a scaffold resolved `write_artifact_path` onto a record belonging to a different subject than the invocation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d6a39cb5b7b2",
+      "kind": "next_improvement",
+      "lesson": "a repair to a proof surface must be re-read for the class it repaired, not only for the finding it closed — measured again here, on the third consecutive slice.",
+      "normalized_key": "a repair to a proof surface must be re read for the class it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a repair to a proof surface must be re-read for the class it repaired, not only for the finding it closed — measured again here, on the third consecutive slice."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e6af31fa0847",
       "kind": "next_improvement",
       "lesson": "audit date-coupled test fixtures; one already self-destructed at a UTC midnight boundary on an unchanged checkout.",
@@ -1398,6 +1450,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**do not start a full-suite run until the tree is settled.** Two ~21-minute runs were invalidated by edits landing mid-collection."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2ec91f75a921",
+      "kind": "next_improvement",
+      "lesson": "enumerate the state table for a rule before implementing it when the rule is a predicate over two or more independent channels; both rounds' blockers were uncovered cells, not wrong logic.",
+      "normalized_key": "enumerate the state table for a rule before implementing it when the rule is",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "enumerate the state table for a rule before implementing it when the rule is a predicate over two or more independent channels; both rounds' blockers were uncovered cells, not wrong logic."
         }
       ]
     },
@@ -1532,6 +1610,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:da7e7aa259a5",
+      "kind": "next_improvement",
+      "lesson": "surface remaining headroom (file length, SKILL body, core density) where the work is authored, the way the artifact scaffold surfaces `size_budget`. Four caps fired at the commit gate in one slice.",
+      "normalized_key": "surface remaining headroom file length skill body core density where the work is authored",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "surface remaining headroom (file length, SKILL body, core density) where the work is authored, the way the artifact scaffold surfaces `size_budget`. Four caps fired at the commit gate in one slice."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:54a9eca0a241",
       "kind": "next_improvement",
       "lesson": "**the digest injected at session open is showing COMPLETED focuses.** Verifying this retro's own persistence found that `recent-lessons.md` `## Current Focus` names the `--json` removal (shipped) and \"design what the next release implements\" (done), while this session's entry was dropped: three same-date candidates competed for two slots, and `scripts/recent_lessons_lib.py:351-352` records that artifact order is `sorted(glob(...))` — lexicographic by filename, not chronological. All four `## Next-Time Checklist` slots likewise went to older recurring lessons, so the five improvements above are in `lesson-selection-index.json` and not in the digest anyone reads. Same family as the SC6 gap below: the loop ranks what has RECURRED above what was just learned, and both failures point the same way — a session's newest and most-applicable lesson is the one least likely to be shown back to it.",
@@ -1554,6 +1658,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**the digest injected at session open is showing COMPLETED focuses.** Verifying this retro's own persistence found that `recent-lessons.md` `## Current Focus` names the `--json` removal (shipped) and \"design what the next release implements\" (done), while this session's entry was dropped: three same-date candidates competed for two slots, and `scripts/recent_lessons_lib.py:351-352` records that artifact order is `sorted(glob(...))` — lexicographic by filename, not chronological. All four `## Next-Time Checklist` slots likewise went to older recurring lessons, so the five improvements above are in `lesson-selection-index.json` and not in the digest anyone reads. Same family as the SC6 gap below: the loop ranks what has RECURRED above what was just learned, and both failures point the same way — a session's newest and most-applicable lesson is the one least likely to be shown back to it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:856935e24dce",
+      "kind": "next_improvement",
+      "lesson": "the lesson loop still cannot record a lesson that worked without declaring a false recurrence; this is the second session to stop at that wall and write prose instead of a score event.",
+      "normalized_key": "the lesson loop still cannot record a lesson that worked without declaring a false",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+      "latest_source_date": "2026-08-15",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-15-session-retro-s2.md",
+          "date": "2026-08-15",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the lesson loop still cannot record a lesson that worked without declaring a false recurrence; this is the second session to stop at that wall and write prose instead of a score event."
         }
       ]
     },
