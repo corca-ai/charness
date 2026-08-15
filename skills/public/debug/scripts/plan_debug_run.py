@@ -9,7 +9,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-MAX_PRIOR_INCIDENTS = 5
 ON_DEMAND_REFERENCE_READS = (
     ("references/disconfirmer-first.md", "before absence, attribution, liveness, or frequency claims"),
     ("references/named-target-verification.md", "when the diagnosis names a specific target or runtime object"),
@@ -34,6 +33,14 @@ risk_interrupt_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, 
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 declarations = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_artifact_declarations")
+# The artifact-state questions the plan is assembled FROM, in one owner.
+_state = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_artifact_state")
+_artifact_summary = _state._artifact_summary
+_prior_incidents = _state._prior_incidents
+_refusal_keys = _state._refusal_keys
+_continues_existing_artifact = _state._continues_existing_artifact
+# Re-exported because a test drives this branch directly; the owner is `_state`.
+_title_for = _state._title_for
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -56,96 +63,19 @@ def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict
 
 
 
-def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, Any]:
-    artifact_rel = str(scaffold["artifact_path"])
-    artifact_path = repo_root / artifact_rel
-    # A SIXTH derivation of the pointer rule used to live here, reimplemented from the
-    # published pointer keys rather than by resolving the symlink -- so the single-owner
-    # guard, which greps for readlink-shaped spellings, structurally could not see it. The
-    # pair below now comes from the owner, which also fixes what a bounded round found: this
-    # summary paired a pointer-derived `write_path` with `write_role` copied from the
-    # scaffold AFTER its resolved-followup swap, so in that branch it reported a finished
-    # resolved record labelled `durable_record`.
-    write_rel, write_role, _ = _scaffold_artifact_lib.current_pointer_write_path(
-        repo_root, Path(artifact_rel)
-    )
-    write_path = repo_root / write_rel
-    exists = artifact_path.is_file()
-    write_exists = write_path.is_file()
-    text = artifact_path.read_text(encoding="utf-8") if exists else ""
-    line_count = len(text.splitlines()) if exists else 0
-    # Resolution lifecycle: an existing current pointer is treated as an OPEN
-    # investigation to continue UNLESS it explicitly declares `- Resolution: resolved`.
-    # Default open (missing field) keeps same-investigation resume and legacy
-    # behavior; only an explicit `resolved` (set at closeout) makes the planner
-    # treat the pointer as a closed prior incident instead of a continuation, so a
-    # closed artifact stops hijacking a fresh bug (#debug claim-fidelity mis-fire).
-    resolution = "resolved" if (exists and (declarations.parse_field(text, "Resolution") or "").strip().lower() == "resolved") else "open"
-    if exists and scaffold.get("current_pointer_is_symlink"):
-        status = "current_pointer_target_exists"
-    elif exists:
-        status = "current_pointer_exists"
-    else:
-        status = "missing"
-    summary: dict[str, Any] = {
-        "path": artifact_rel,
-        "exists": exists,
-        "resolution": resolution,
-        "line_count": line_count,
-        "status": status,
-        "role": scaffold["artifact_role"],
-        "write_path": write_rel,
-        "write_exists": write_exists,
-        "write_role": write_role,
-        "current_pointer_symlink_target": scaffold["current_pointer_symlink_target"],
-    }
-    summary.update(declarations.risk_summary(artifact_path, risk_interrupt_lib))
-    return summary
-
-
-def _title_for(path: Path) -> str | None:
-    if not path.is_file():
-        return None
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("# "):
-            return line[2:].strip()
-    return None
-
-
-def _prior_incidents(repo_root: Path, output_dir: str, current_path: str) -> list[dict[str, Any]]:
-    directory = repo_root / output_dir
-    if not directory.is_dir():
-        return []
-    current_resolved = (repo_root / current_path).resolve()
-    candidates: list[Path] = []
-    for pattern in ("debug-*.md", "20*.md"):
-        candidates.extend(directory.glob(pattern))
-    unique = sorted(set(candidates), key=lambda path: (path.stat().st_mtime, path.name), reverse=True)
-    incidents = []
-    for path in unique:
-        if path.name == "latest.md" or path.resolve() == current_resolved:
-            continue
-        rel_path = str(path.relative_to(repo_root))
-        incidents.append(
-            {
-                "path": rel_path,
-                "title": _title_for(path),
-                "mtime": path.stat().st_mtime,
-            }
-        )
-        if len(incidents) >= MAX_PRIOR_INCIDENTS:
-            break
-    return incidents
-
-
 def _required_reads(
     *,
     adapter: dict[str, Any],
     artifact: dict[str, Any],
     prior_incidents: list[dict[str, Any]],
+    continues_existing: bool,
 ) -> list[dict[str, str]]:
     reads: list[dict[str, str]] = []
-    if artifact["exists"] and artifact["resolution"] != "resolved":
+    # `continues_existing`, not a THIRD private spelling of the same two fields. A bounded
+    # round found this branch still deciding on its own after `mode` and `next_action` were
+    # unified: the plan reported a fresh investigation while `required_reads[0]` — the surface
+    # a run opens FIRST — still named the refused record as "current debugging state".
+    if continues_existing:
         reads.append(
             _read(
                 str(artifact["path"]),
@@ -159,7 +89,7 @@ def _required_reads(
             _read(
                 "scripts/scaffold_debug_artifact.py",
                 "script",
-                "artifact is missing or resolved; scaffold a fresh investigation before recording diagnosis",
+                "artifact is missing, resolved, or another subject's; scaffold a fresh investigation before recording diagnosis",
                 base="skill",
             )
         )
@@ -168,7 +98,11 @@ def _required_reads(
                 _read(
                     str(artifact["path"]),
                     "artifact",
-                    "resolved prior incident; read if the symptom or seam is related, then scaffold a new artifact",
+                    # Not "resolved prior incident" unconditionally: this branch is also reached
+                    # when the record is OPEN and belongs to a different declared subject, and
+                    # calling that resolved states a lifecycle fact the plan did not read.
+                    "prior incident this run is not continuing; ownership unconfirmed, so read it "
+                    "if the symptom or seam is related, then scaffold a new artifact",
                     base="repo",
                 )
             )
@@ -253,7 +187,9 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
     ]
 
 
-def _artifact_next_action(kind: str, instruction: str, artifact: dict[str, Any]) -> dict[str, Any]:
+def _artifact_next_action(
+    kind: str, instruction: str, artifact: dict[str, Any], *, repo_root: Path, scaffold: dict[str, Any]
+) -> dict[str, Any]:
     """The branches that name an EXISTING artifact as the write target.
 
     These carry the write-target fact too. A bounded round found the distribution inverted
@@ -261,30 +197,48 @@ def _artifact_next_action(kind: str, instruction: str, artifact: dict[str, Any])
     artifact is absent or resolved -- almost always `create_new_file`. The
     continue-existing-artifact branch is the one whose target holds content, and it was the
     one staying silent.
+
+    The facts come from the OWNER now. They were recomputed here from `write_exists`, which is
+    `.is_file()`, while `write_target_facts` is deliberately `.exists()` -- a directory at the
+    write path made the plan say `create_new_file` where the owner says
+    `overwrite_existing_content`. Round 2 found this surviving as a seventh derivation of the
+    rule this slice's own guard exists to consolidate, invisible because the guard accepts the
+    key name as evidence of an echo.
+
+    And they carry what the producer declined: an arm that hands back an existing record's path
+    with no refusal keys reads as an ordinary write target.
     """
     return {
         "kind": kind,
         "instruction": instruction,
         "artifact_path": artifact["path"],
         "write_artifact_path": artifact["write_path"],
-        "write_artifact_effect": (
-            "overwrite_existing_content" if artifact["write_exists"] else "create_new_file"
-        ),
-        "write_artifact_target_exists": bool(artifact["write_exists"]),
+        **_scaffold_artifact_lib.write_target_facts(repo_root, str(artifact["write_path"])),
+        **_refusal_keys(scaffold),
     }
 
 
 def _scaffold_command(scaffold: dict[str, Any]) -> str:
-    del scaffold
-    return "python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root ."
+    """The command that reproduces THIS plan's write path, `--subject` included.
+
+    A bounded round found the plan handing back a bare command while its own
+    `write_artifact_path` was derived from a declared subject: running the printed command
+    produced a different file than the plan named, and the skill prose meanwhile told the
+    author to pass `--subject` to both surfaces.
+    """
+    subject = scaffold.get("invocation_subject_key")
+    suffix = f" --subject {subject}" if isinstance(subject, str) and subject else ""
+    return f"python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root .{suffix}"
 
 
-def _next_action(artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str, Any]:
+def _next_action(repo_root: Path, artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str, Any]:
     if artifact["requires_interrupt"]:
         return _artifact_next_action(
             "interrupt-to-spec",
             "read the current artifact and seam references, then hand off a named spec artifact before ordinary repair",
             artifact,
+            repo_root=repo_root,
+            scaffold=scaffold,
         )
     if artifact["exists"] and not artifact.get("risk_scope_established", True):
         action = _artifact_next_action(
@@ -293,14 +247,18 @@ def _next_action(artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str
             "an unclosed code fence), so the risk interrupt decision is unproven; repair the "
             "line -- and close any open fence above it -- then re-run this plan before ordinary repair",
             artifact,
+            repo_root=repo_root,
+            scaffold=scaffold,
         )
         action["risk_parse_error"] = artifact["risk_parse_error"]
         return action
-    if artifact["exists"] and artifact["resolution"] != "resolved":
+    if _continues_existing_artifact(artifact, scaffold):
         return _artifact_next_action(
             "continue-existing-artifact",
             "read the current artifact, preserve observed facts, then continue with the cheapest falsifier before repair",
             artifact,
+            repo_root=repo_root,
+            scaffold=scaffold,
         )
     next_action = {
         "kind": "scaffold-debug-artifact",
@@ -314,6 +272,10 @@ def _next_action(artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str
         "write_artifact_effect": scaffold["write_artifact_effect"],
         "write_artifact_target_exists": scaffold["write_artifact_target_exists"],
     }
+    # Same reason as the two keys above, one step further: a run routed OFF another
+    # investigation's open record reads as an ordinary fresh start unless the plan says what it
+    # was routed off and how to continue that one deliberately.
+    next_action.update(_refusal_keys(scaffold))
     if scaffold.get("update_current_pointer_after_write"):
         next_action["instruction"] = (
             "write the emitted template to write_artifact_path before broad search or repair, "
@@ -324,18 +286,31 @@ def _next_action(artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str
     return next_action
 
 
-def build_plan(repo_root: Path) -> dict[str, Any]:
+def build_plan(repo_root: Path, *, subject: str | None = None) -> dict[str, Any]:
     adapter = resolve_adapter.load_adapter(repo_root)
-    scaffold = scaffold_debug_artifact.payload_for(repo_root, title=None)
+    scaffold = scaffold_debug_artifact.payload_for(repo_root, title=None, subject=subject)
     scaffold_summary = {key: value for key, value in scaffold.items() if key != "template"}
     artifact = _artifact_summary(repo_root, scaffold)
     output_dir = str(adapter["data"]["output_dir"])
-    prior_incidents = _prior_incidents(repo_root, output_dir, str(artifact["write_path"]))
+    # `current_path` excludes one record from prior_incidents: the one this run is continuing.
+    # When the scaffold refused the pointer's record, this run continues nothing, so excluding
+    # it would drop the refused record out of `prior_incidents` — leaving a plan that says
+    # `fresh-investigation-with-prior-memory` with the one relevant memory removed.
+    prior_incidents = _prior_incidents(
+        repo_root,
+        output_dir,
+        str(artifact["write_path"]) if _continues_existing_artifact(artifact, scaffold) else str(scaffold["write_artifact_path"]),
+    )
+    # `continue-existing-artifact` routes the author INTO the pointer's record, so it is the
+    # consumer half of the same defect the scaffold just fixed: a producer that refuses to
+    # hand back another subject's record is undone by a planner that names it in the next
+    # line. The two risk arms below are deliberately NOT subject-scoped: an undeclared or
+    # unparseable risk interrupt blocks the repo whoever opened it.
     if artifact["requires_interrupt"]:
         mode = "risk-interrupt"
     elif artifact["exists"] and not artifact.get("risk_scope_established", True):
         mode = "repair-risk-declaration"
-    elif artifact["exists"] and artifact["resolution"] != "resolved":
+    elif _continues_existing_artifact(artifact, scaffold):
         mode = "continue-existing-artifact"
     elif prior_incidents or artifact["exists"]:
         mode = "fresh-investigation-with-prior-memory"
@@ -343,8 +318,13 @@ def build_plan(repo_root: Path) -> dict[str, Any]:
         mode = "fresh-investigation"
     return ENVELOPE.build_envelope(
         schema_version="debug.run_plan.v1",
-        required_reads=_required_reads(adapter=adapter, artifact=artifact, prior_incidents=prior_incidents),
-        next_action=_next_action(artifact, scaffold),
+        required_reads=_required_reads(
+            adapter=adapter,
+            artifact=artifact,
+            prior_incidents=prior_incidents,
+            continues_existing=_continues_existing_artifact(artifact, scaffold),
+        ),
+        next_action=_next_action(repo_root, artifact, scaffold),
         gate_packets=_gate_packets(repo_root, adapter, scaffold),
         ok=bool(adapter.get("valid")),
         repo_root=str(repo_root),
@@ -365,8 +345,15 @@ def main() -> int:
         default=Path.cwd(),
         help="Repository root to analyze; defaults to the current working directory",
     )
+    # Without this, resuming an investigation is unplannable: the planner would ask the
+    # scaffold for a path while declaring no subject, and the scaffold answers that ambiguity
+    # with a FRESH record rather than with someone else's open one.
+    parser.add_argument(
+        "--subject",
+        help="Slug of the open investigation this run continues; omit to start a new one",
+    )
     args = parser.parse_args()
-    payload = build_plan(args.repo_root.resolve())
+    payload = build_plan(args.repo_root.resolve(), subject=args.subject)
     yaml_output.emit_yaml(payload)
     return 0 if payload["ok"] else 1
 

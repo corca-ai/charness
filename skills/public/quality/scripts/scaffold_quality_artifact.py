@@ -18,6 +18,19 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
+_resolve_quality_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_quality_artifact")
+
+#: What a subject-mismatch redirect replaces on the current-pointer payload. The record
+#: resolver owns these five; everything else on the payload (template, budget, validator
+#: command) is the invocation's and must survive the swap.
+_REDIRECTED_RECORD_KEYS = (
+    "write_artifact_path",
+    "write_artifact_role",
+    "record_artifact_path",
+    "update_current_pointer_after_write",
+    "refresh_current_pointer_command",
+    "refresh_current_pointer_argv",
+)
 
 # Mirrors REQUIRED_SECTIONS in scripts/validate_quality_artifact.py. The scaffold
 # emits a skeleton that passes that validator out of the box so an author fills
@@ -196,17 +209,51 @@ def validator_command(repo_root: Path) -> str:
     return _scaffold_lib.validator_command(repo_root=repo_root, script_file=__file__, script_names=VALIDATOR_SCRIPT_NAMES)
 
 
-def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
+def invocation_subject_key(*, title: str | None, subject: str | None, date_text: str) -> str | None:
+    """WHICH review this invocation is — `quality`'s own subject key: its slug AND its date.
+
+    The date channel is this family's, and only this family's: a quality review written today
+    over yesterday's dated record destroys a finished review, while `debug` continuing
+    yesterday's open investigation in place is designed behavior. `validate_quality_artifact`
+    already refuses that disagreement AFTER the artifact is written; the same channel here
+    means the producer never hands the destructive path back in the first place.
+
+    Never `None`, unlike `debug`'s. The two families differ because their default slugs differ
+    in kind: `debug`'s `debug-review` names twenty real records with nothing to tell them
+    apart, while `quality`'s `quality-review@<today>` names exactly one thing — today's review
+    — because the date channel is always known whether or not the author declared anything.
+    An undeclared `quality` run is not ambiguous about which review it is.
+    """
+    return _scaffold_lib.compose_subject_key(_scaffold_lib.slugify(subject or default_title(title)), date_text)
+
+
+def target_subject_key(write_path: str) -> str | None:
+    """The subject of the record the path NAMES, in this family's two channels.
+
+    `None` — not a dated record — is UNKNOWN, and unknown does not write in place. The earlier
+    version reasoned that an undated `latest.md` is "a pointer whose body is a copy of the
+    record it stands for" and let the write through; that is an unproven premise about consumer
+    repos, and the repo's own history records the opposite (a `latest.md` regular file holding
+    the previous review is exactly the layout `inventory_current_pointer_layouts` enumerates as
+    `regular_current_pointer`).
+    """
+    slug, date_text = _scaffold_lib.record_subject_channels(write_path)
+    return _scaffold_lib.compose_subject_key(slug, date_text)
+
+
+def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
     adapter = load_adapter(repo_root)
     output_dir = Path(adapter["data"]["output_dir"])
-    date_text = dt.date.today().isoformat()
+    artifact_date = dt.date.today()
+    date_text = artifact_date.isoformat()
     resolved_title = default_title(title)
+    subject_key = invocation_subject_key(title=title, subject=subject, date_text=date_text)
     size_budget = (
         {"max_lines": _MAX_ARTIFACT_LINES, "guidance": SIZE_GUIDANCE}
         if _MAX_ARTIFACT_LINES is not None
         else None
     )
-    return _scaffold_lib.current_pointer_payload(
+    payload = _scaffold_lib.current_pointer_payload(
         repo_root=repo_root,
         output_dir=output_dir,
         date_text=date_text,
@@ -215,6 +262,65 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         validator_command=validator_command(repo_root),
         size_budget=size_budget,
     )
+    pointer_target_path = str(payload["write_artifact_path"])
+    pointer_target_subject = target_subject_key(pointer_target_path)
+    if _scaffold_lib.diverts_from_target(
+        repo_root,
+        write_path=pointer_target_path,
+        facts=_scaffold_lib.subject_identity_facts(
+            invocation_subject_key=subject_key,
+            target_subject_key=pointer_target_subject,
+        ),
+    ):
+        # Routed onto this review's OWN dated record, with the pointer refresh that follows
+        # the write, rather than onto the record the pointer currently names. The resolver
+        # already owns that shape for `--intent record`; rebuilding it here would be a second
+        # copy of the rule the current-pointer consolidation exists to prevent.
+        record = _resolve_quality_artifact.payload_for(
+            repo_root,
+            slug=_scaffold_lib.slugify(subject or default_title(title)),
+            intent="record",
+            artifact_date=artifact_date,
+        )
+        # The redirect target is a DATED path the resolver computes without asking whether
+        # anything is at it. Round 2 found the consequence: with a stale pointer and today's
+        # review already written, the family whose contract is "must never overwrite a finished
+        # review" routed straight onto that finished review and reported the stale pointer as
+        # the thing it had protected. A destination that already holds a record is not a
+        # destination; the author names one.
+        if (repo_root / str(record["write_artifact_path"])).exists():
+            raise SystemExit(
+                f"quality: the current pointer names `{pointer_target_path}`, which is not this "
+                f"review ({subject_key}), and this review's own record "
+                f"`{record['write_artifact_path']}` already exists. Append to that record, or "
+                f"rerun with --subject <distinct review slug>."
+            )
+        payload.update({key: record[key] for key in _REDIRECTED_RECORD_KEYS})
+        # No existence condition: `diverts_from_target` already reached this branch only for a
+        # target that holds a record OR positively names another subject, and the second case
+        # is the dangling pointer — declined, nothing there, and still worth reporting.
+        if pointer_target_path != str(payload["write_artifact_path"]):
+            payload.update(
+                _scaffold_lib.subject_refusal_facts(
+                    refused_path=pointer_target_path,
+                    refused_subject_key=pointer_target_subject,
+                    reason=str(
+                        _scaffold_lib.subject_identity_facts(
+                            invocation_subject_key=subject_key,
+                            target_subject_key=pointer_target_subject,
+                        )["write_artifact_subject_match"]
+                    ),
+                )
+            )
+        _scaffold_lib.with_write_target_facts(repo_root, payload)
+    payload.update(
+        _scaffold_lib.final_subject_facts(
+            invocation_subject_key=subject_key,
+            target_subject_key=target_subject_key(str(payload["write_artifact_path"])),
+            chosen=str(payload["write_artifact_path"]) != pointer_target_path,
+        )
+    )
+    return payload
 
 
 def main() -> int:

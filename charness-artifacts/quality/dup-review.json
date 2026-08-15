@@ -1969,6 +1969,13 @@
     },
     {
       "class": "intentional",
+      "id": "709337849370ec8d",
+      "note": "Four members, NONE of them touched by the slice that classifies them: `audit_disposition_corpus.py:68-86`, `chunked_routing_cli.py:29-47`, `issue_yaml_output.py:28-39`, `summary_output_lib.py:10-21` -- the ancestor-walk YAML loader each package must own locally because these scripts load by file path with no package context, which is the chicken-and-egg the loader itself documents. It surfaced in this working tree and not at `0f4f47b0c` with byte-identical members, so the family boundary is corpus-sensitive rather than newly written: recorded as observed, not explained.",
+      "reviewed_at": "2026-08-15",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "70d40723a850f01b",
       "note": "eval_setup.py's three `with tempfile.TemporaryDirectory(...)` inspect_repo scenarios. Each writes a DIFFERENT fixture tree and asserts a different field of the payload; the migration's entire touch is one line per block, `json.loads(result.stdout)` -> `yaml.safe_load(result.stdout)`. Parameterizing three scenarios that differ in both fixture and assertion would hide which repo state each one pins.",
       "reviewed_at": "2026-08-14",
@@ -1986,6 +1993,13 @@
       "id": "71c11aad51995f5f",
       "note": "two-line zero-count guard opening two unrelated report readers: check_regenerable_facts._status returns a status token, measure_startup_probes._format_human returns an English sentence. Same `if report[<count>] == 0: return <x>` shape, different return contracts and different owners; only the first is in this diff.",
       "reviewed_at": "2026-08-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "71ec3db563d93c6e",
+      "note": "Idiom-sized: the 11-line `invocation_subject_key` accessor with its docstring in `scaffold_handoff_artifact.py:128-138` scored against six 2-line return/assignment snippets in unrelated modules (`adapter_lib`, `issue_source_normalize_lib`, `prompt_mutant_files_lib` twice, `run_skill_efficiency_ab`, `tool_recommendation_lib`). Nothing is shared but the shape of a one-expression return.",
+      "reviewed_at": "2026-08-15",
       "surface": "code"
     },
     {
@@ -3124,6 +3138,13 @@
     },
     {
       "class": "intentional",
+      "id": "b83abf92b7edca72",
+      "note": "Idiom-sized: the 5-line `return {...}` of `scaffold_artifact_lib.subject_refusal_facts` (lines 355-359) scored against `validate_usage_episodes.py:28-32` and two SINGLE lines in `skill_ergonomics_lib.py` (233, 253). Three unrelated subsystems returning a small dict literal with different keys and different meanings; a shared constructor would couple them through a formatter.",
+      "reviewed_at": "2026-08-15",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "b84a05853c8b2d2a",
       "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants — a util module would couple them for little value; intentional",
       "reviewed_at": "2026-06-30",
@@ -3148,6 +3169,13 @@
       "id": "b99895fcd6c55dbc",
       "note": "the `findings -> render lines -> print -> exit` reporting tail, shared by check_skill_cut_safety.py, check_prose_pin.py and render_critique_section_changed_surfaces.py. Only the first is in this diff (its named-path refusal); the other two are untouched.",
       "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ba8a0440c9106e3f",
+      "note": "The subject-identity consolidation's own signature. THREE members, all in this diff: `scaffold_critique_artifact.py:221-251`, `scaffold_ideation_artifact.py:61-87`, and `scaffold_retro_artifact.py:134-160` -- each a `validator_command` delegation binding its own `VALIDATOR_SCRIPT_NAMES`, followed by a `payload_for` that calls the one owner `scaffold_artifact_lib.subject_scoped_record_payload`. The scanner is scoring three call sites of a shared helper: the shape they share is the CALL, and the arguments differ (retro passes `distinguishers`, critique passes `extra={'allowed_enums': ...}`, ideation passes neither). What this family replaced was three bespoke resolve-refuse-stamp copies; collapsing it further would mean one function deciding three families' subject policy, which is the coupling the per-family contract exists to prevent. `__file__` must be the caller's, so the validator delegation cannot move into the owner either.",
+      "reviewed_at": "2026-08-15",
       "surface": "code"
     },
     {
@@ -4233,6 +4261,13 @@
       "id": "ff43506a5871365c",
       "note": "Lesson lifecycle migration and event recording both validate a candidate ledger under the same lock, but one transforms schema and the other appends a reviewed event. The shared writer already owns locking/atomic replacement; callback extraction of the rest would obscure their different authorization semantics.",
       "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ff6636f16e3f1d28",
+      "note": "Eight 2-line members across eight unrelated modules -- the smallest unit the scanner emits -- one of which (`scaffold_retro_artifact.py`) is in this slice's diff. A shared helper for a two-line expression would couple eight subsystems through a formatter.",
+      "reviewed_at": "2026-08-15",
       "surface": "code"
     },
     {

@@ -7,8 +7,8 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 
-def _load_yaml_output():
-    """Reach the repo-level YAML emitter without importing repo machinery.
+def _load_repo_helper(module_filename: str) -> dict[str, object]:
+    """Reach a repo-level `scripts/` helper without importing repo machinery.
 
     ``scaffold_ideation_artifact.py`` loads this module by file path with no
     package context, so the seams its siblings use (``runtime_bootstrap`` /
@@ -16,23 +16,48 @@ def _load_yaml_output():
     ``test_the_owner_stays_importable_with_no_package_context`` forbids them.
     ``runpy`` over an ancestor walk is the same stdlib-only spelling
     ``chunked_routing_cli.py`` uses for the identical constraint, and it finds
-    ``scripts/yaml_output.py`` at the repo root here and at the plugin root once
-    exported.
+    ``scripts/<helper>.py`` at the repo root here and at the plugin root once
+    exported. Both helpers this module needs ship in that same directory, so the
+    walk is parameterized rather than copied per helper.
     """
     helper = next(
         (
-            ancestor / "scripts" / "yaml_output.py"
+            ancestor / "scripts" / module_filename
             for ancestor in Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "yaml_output.py").is_file()
+            if (ancestor / "scripts" / module_filename).is_file()
         ),
         None,
     )
     if helper is None:
-        raise ImportError("scripts/yaml_output.py not found")
+        raise ImportError(f"scripts/{module_filename} not found")
     return runpy.run_path(str(helper))
 
 
-emit_yaml = _load_yaml_output()["emit_yaml"]
+emit_yaml = _load_repo_helper("yaml_output.py")["emit_yaml"]
+_artifact_naming = _load_repo_helper("artifact_naming_lib.py")
+slugify = _artifact_naming["slugify"]
+
+# Re-exported, not re-implemented. The subject-identity concept lives in its own module (the
+# length gate refused one file for both, and the seam was already in the docstrings), while the
+# families keep ONE import surface: `ideation`'s scaffold has no package context and reaches
+# this module by an ancestor walk, so making six scaffolds each walk to a second file would
+# trade a cohesive split for six copies of the walk.
+_subject_identity = _load_repo_helper("artifact_subject_identity.py")
+SUBJECT_MATCH_MATCH = _subject_identity["SUBJECT_MATCH_MATCH"]
+SUBJECT_MATCH_MISMATCH = _subject_identity["SUBJECT_MATCH_MISMATCH"]
+SUBJECT_MATCH_UNKNOWN = _subject_identity["SUBJECT_MATCH_UNKNOWN"]
+SUBJECT_MATCH_UNDECLARED = _subject_identity["SUBJECT_MATCH_UNDECLARED"]
+SUBJECT_MATCH_ROUTED = _subject_identity["SUBJECT_MATCH_ROUTED"]
+SUBJECT_IDENTITY_KEYS = _subject_identity["SUBJECT_IDENTITY_KEYS"]
+SUBJECT_REFUSAL_KEYS = _subject_identity["SUBJECT_REFUSAL_KEYS"]
+record_subject_channels = _subject_identity["record_subject_channels"]
+record_subject_slug = _subject_identity["record_subject_slug"]
+compose_subject_key = _subject_identity["compose_subject_key"]
+subject_identity_facts = _subject_identity["subject_identity_facts"]
+subject_refusal_facts = _subject_identity["subject_refusal_facts"]
+writes_in_place = _subject_identity["writes_in_place"]
+diverts_from_target = _subject_identity["diverts_from_target"]
+final_subject_facts = _subject_identity["final_subject_facts"]
 
 
 def validator_command(
@@ -179,6 +204,101 @@ def write_target_facts(repo_root: Path, write_path: str) -> dict[str, object]:
     }
 
 
+def subject_scoped_record_payload(
+    repo_root: Path,
+    *,
+    output_dir: str,
+    date_text: str,
+    title: str,
+    record_slug: str,
+    template: str,
+    validator_command_for: Callable[[str], str],
+    remedy: str,
+    distinguishers: Sequence[str] = ("2", "3", "4"),
+    extra: dict[str, object] | None = None,
+) -> dict[str, object]:
+    """The whole payload for a records-only family: never write over an existing record.
+
+    `critique`, `ideation`, and `retro` derive a dated path from the invocation and then write
+    a TEMPLATE to it. So the honest rule for all three is not "refuse another subject's record"
+    but the stronger one they can actually keep: refuse ANY existing record. Two bounded
+    findings forced this. First, the path and the subject key were both derived from the
+    invocation, so `target == invocation` held by construction and the refusal arm was
+    unreachable — two default-titled critiques on one day resolved to one file and the second
+    destroyed the first while the payload reported `match`. Second, deriving the PATH from the
+    title while deriving the KEY from `--subject` produced two records for one subject and a
+    run that refused a file it had written itself a minute earlier.
+
+    `record_slug` is therefore the ONE channel: the path, the key, and the alternatives all
+    come from it, and a declared `--subject` names the record rather than fighting the title.
+    The subject facts are still stamped, because a payload's reader is owed the identity of
+    what was declined even when the policy did not need it.
+
+    `validator_command_for` is a callable, not a string: the command names the artifact path,
+    so computing it before the path is chosen points the validator at a file nothing writes.
+    """
+    write_path = f"{output_dir}/{date_text}-{record_slug}.md"
+    candidates = [write_path, *(f"{output_dir}/{date_text}-{record_slug}-{tail}.md" for tail in distinguishers)]
+    resolved = next((candidate for candidate in candidates if not (repo_root / candidate).exists()), None)
+    if resolved is None:
+        raise SystemExit(
+            f"every dated record path this scaffold derives for `{record_slug}` today already "
+            f"exists ({', '.join(candidates)}), and a scaffold writes a fresh template over "
+            f"whatever is there. {remedy}"
+        )
+    refusal = (
+        {}
+        if resolved == write_path
+        else subject_refusal_facts(
+            refused_path=write_path,
+            refused_subject_key=record_subject_slug(write_path),
+            # Records-only families route off an occupied path, not off a disagreeing subject:
+            # the filename channel cannot tell two same-slug records apart, so the honest
+            # reason is that something is there, never that it belongs to someone else.
+            reason="record-occupied",
+        )
+    )
+    return dated_record_payload(
+        repo_root,
+        write_artifact_path=resolved,
+        date_text=date_text,
+        title=title,
+        template=template,
+        validator_command=validator_command_for(resolved),
+        extra={
+            **(extra or {}),
+            **refusal,
+            **final_subject_facts(
+                invocation_subject_key=record_slug,
+                target_subject_key=record_subject_slug(resolved),
+                chosen=resolved != write_path,
+            ),
+        },
+    )
+
+
+def with_subject_identity_facts(
+    payload: dict[str, object],
+    *,
+    invocation_subject_key: str | None,
+    target_subject_key: str | None,
+) -> dict[str, object]:
+    """Stamp the subject-identity facts from the payload's FINAL `write_artifact_path`.
+
+    Same ordering rule as `with_write_target_facts`, and for the same recorded reason: a
+    producer that swaps its write target after building the payload must call this last, or
+    the facts describe a file the payload no longer names. The caller passes the target key it
+    read from that final path.
+    """
+    payload.update(
+        subject_identity_facts(
+            invocation_subject_key=invocation_subject_key,
+            target_subject_key=target_subject_key,
+        )
+    )
+    return payload
+
+
 def dated_record_payload(
     repo_root: Path,
     *,
@@ -248,6 +368,19 @@ def emit_payload_main(
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help=f"Repo root to scaffold the {artifact_label} artifact into")
     parser.add_argument("--title", help=f"Title for the scaffolded {artifact_label} artifact")
+    # The invocation's SUBJECT, which the title cannot carry: `debug --title "Debug Review"`
+    # is the default and names no investigation, so without this flag "I am continuing THIS
+    # investigation" and "I am starting a new one" are the same invocation -- #628's actual
+    # defect. Optional: every family falls back to its own derived key, so existing callers
+    # are unchanged and the fallback is what makes the ambiguous case resolve to the
+    # non-destructive answer instead of the destructive one.
+    parser.add_argument(
+        "--subject",
+        help=(
+            f"Subject key this {artifact_label} invocation is for (e.g. the slug of the record "
+            "being continued). Defaults to the family's own derived key."
+        ),
+    )
     args = parser.parse_args()
 
     # Always emit the full structured payload — the run reads the template from
@@ -255,6 +388,6 @@ def emit_payload_main(
     # size_budget as sibling fields. There is no bare rendered-template mode: a
     # single output shape removes the "forgot --json → the budget/write-path never
     # reached the run" footgun that a flag-gated structured mode invites.
-    payload = payload_for(args.repo_root.resolve(), title=args.title)
+    payload = payload_for(args.repo_root.resolve(), title=args.title, subject=args.subject)
     emit_yaml(payload)
     return 0

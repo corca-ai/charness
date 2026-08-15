@@ -114,11 +114,17 @@ def test_debug_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path
 
     payload = _scaffold_debug.payload_for(repo, title=None)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
-    assert payload["intent"] == "current"
-    assert payload["write_artifact_path"] == "charness-artifacts/debug/debug-2026-05-06-demo.md"
-    assert payload["write_artifact_role"] == "current_pointer_target"
+    # The pointer is still RESOLVED and still reported — the symlink target is named below.
+    # What changed is that an undeclared run no longer takes it as its write target: the
+    # legacy `debug-<date>-<slug>.md` name carries no readable subject, so nobody established
+    # that this open record belongs to this run, and a scaffold write there replaces it with a
+    # template. Declaring the subject is how a run says the record is its own.
     assert payload["current_pointer_symlink_target"] == "debug-2026-05-06-demo.md"
-    assert payload["update_current_pointer_after_write"] is False
+    assert payload["write_artifact_path"] != "charness-artifacts/debug/debug-2026-05-06-demo.md"
+    assert payload["write_artifact_effect"] == "create_new_file"
+    assert payload["refused_write_artifact_path"] == "charness-artifacts/debug/debug-2026-05-06-demo.md"
+    assert payload["refused_write_artifact_reason"] == "undeclared"
+    assert payload["write_artifact_subject_key"] is None or payload["write_artifact_subject_key"]
 
 
 def test_debug_scaffold_resolved_current_pointer_emits_fresh_record_contract(tmp_path: Path) -> None:

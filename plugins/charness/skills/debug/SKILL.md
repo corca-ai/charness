@@ -40,19 +40,19 @@ on-demand reads, gate packets, and next action.
 Follow the planner's `next_action`. When it says to scaffold, use the scaffold
 helper JSON as the canonical artifact contract: it carries the safe write
 target, current-pointer role, required heading/section order, the line budget
-(`size_budget`), and validator command for the installed Charness layout. Write
-the artifact to fit `size_budget.max_lines` on the first pass and heed its
-`guidance` on the overflow-prone section, instead of writing long and then
-trimming to fit against a ceiling the validator only reveals at the end. Edit the
-scaffold payload's `write_artifact_path`, not `latest.md` by habit; it resolves a
-symlinked current pointer to its actual target. The payload also says whether that
-target already holds content: `write_artifact_effect: overwrite_existing_content`
-means something is at that path — usually the investigation you are continuing, so append
-rather than replace it, though `.exists()` is also true of a directory or a
-symlink-to-existing there; `create_new_file` means nothing is at THAT path —
-among other causes a fresh repo, a resolved previous record, a dangling pointer, or
-a same-day follow-up whose pointer was never refreshed. The key reports what is on
-disk, not why, and that cause list is not exhaustive, so pair it with
+(`size_budget`), and validator command for the installed Charness layout.
+Write the artifact to fit `size_budget.max_lines` on the first pass and heed
+its `guidance` on the overflow-prone section, instead of writing long and then
+trimming against a ceiling the validator only reveals at the end. Write the
+payload's `write_artifact_path`, never `latest.md` by habit. Continuing an
+open investigation? Pass `--subject <its slug>`; without it the run is NEW, so
+the scaffold routes to a fresh record and names what it declined in
+`refused_write_artifact_path`. Only `write_artifact_subject_match: match`
+means the record there is this run's. `write_artifact_effect:
+overwrite_existing_content` means something is at that path — with `match`,
+the investigation you are continuing, so append rather than replace it;
+`create_new_file` means nothing is at THAT path. The key reports what is on
+disk, not why, and its causes are not exhaustive, so pair it with
 `write_artifact_role` and `intent` when the distinction matters.
 
 Before stopping, run the `validator_command` emitted by the scaffold helper or

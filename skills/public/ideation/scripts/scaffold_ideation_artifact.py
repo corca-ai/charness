@@ -70,17 +70,20 @@ def validator_command(repo_root: Path, write_artifact_path: str) -> str:
     )
 
 
-def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
+def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
-    write_artifact_path = f"{DEFAULT_OUTPUT_DIR}/{date_text}-{_slug(resolved_title)}.md"
-    return _scaffold_lib.dated_record_payload(
+    # `ideation`'s subject is the concept, and like `critique` its one machine-readable
+    # channel is the slug.
+    return _scaffold_lib.subject_scoped_record_payload(
         repo_root,
-        write_artifact_path=write_artifact_path,
+        output_dir=DEFAULT_OUTPUT_DIR,
         date_text=date_text,
         title=resolved_title,
+        record_slug=_slug(subject or resolved_title),
         template=render_template(title=resolved_title, date_text=date_text),
-        validator_command=validator_command(repo_root, write_artifact_path),
+        validator_command_for=lambda path: validator_command(repo_root, path),
+        remedy="Rerun scaffold_ideation_artifact.py with --title <specific concept name>.",
     )
 
 

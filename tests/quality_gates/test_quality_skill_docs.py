@@ -424,22 +424,32 @@ def test_the_step_that_instructs_intent_names_the_script_that_accepts_it() -> No
         assert owned in step, f"{owned} left the step it is documented in"
 
 
-def test_the_step_warns_that_the_scaffold_write_path_is_the_previous_record() -> None:
-    """The severity the issue understated: this is an overwrite, not a null read.
+def test_the_step_names_the_fact_that_decides_whether_the_write_path_is_safe() -> None:
+    """Re-aimed, deliberately: the producer changed under the sentence this pinned.
 
-    `scaffold_quality_artifact.py`'s `write_artifact_path` is the CURRENT pointer
-    target, which `test_quality_scaffold.py` pins to the pre-existing dated file.
-    Following "write the dated `write_artifact_path`" from the scaffold payload on
-    any day after the last review therefore writes over that review — and because
-    the path IS dated, nothing signals the mistake.
+    The old anchors (`overwrites`, `previous`, `latest.md`) bound a warning that the scaffold's
+    `write_artifact_path` IS the previous review's file. That stopped being true when the
+    scaffold started resolving by subject and routing off any record it cannot confirm is this
+    review's, so keeping the anchors would have pinned prose that is now false — the failure
+    mode this guard exists to prevent, one level up.
+
+    What replaces it is the fact an author must now read, and the two states that are NOT a
+    green light. `unknown` is the one that matters: the target carries no dated filename to
+    check, which is the `latest.md`-as-a-regular-file layout the old anchor covered.
     """
     step = _workflow_step(QUALITY_SKILL, 8)
 
-    assert "overwrites" in step
-    assert "previous" in step.lower()
-    # Both live layouts, because the warning was once symlink-only and a consumer
-    # repo whose `latest.md` is a regular file would have read it as not applying.
-    assert "latest.md" in step
+    assert "write_artifact_subject_match" in step
+    # `undeclared` is NOT required here: round 2 showed `quality`'s invocation key is never
+    # None (its date channel is always known), so a guard demanding that state would pin prose
+    # about a payload the producer cannot emit — the same defect one level up.
+    for state in ("`match`", "`unknown`", "`routed`"):
+        assert state in step, f"{state} is a state this producer can emit and an author must act on"
+    assert "refused_write_artifact_path" in step, (
+        "the payload names the record it declined; prose that omits it leaves the author "
+        "unable to find the review they expected to be writing"
+    )
+    assert "never silently replace it" in step
 
 
 def test_the_scaffold_is_never_the_thing_step_eight_says_to_write_to() -> None:
@@ -458,11 +468,13 @@ def test_the_scaffold_is_never_the_thing_step_eight_says_to_write_to() -> None:
         part for part in step.split(".") if "scaffold payload" in part
     )
     assert "Do NOT" in scaffold_clause, (
-        "the clause naming the scaffold's write path must forbid writing there, "
+        "the clause naming the scaffold's write path must forbid trusting it unconditionally, "
         f"not merely mention it: {scaffold_clause.strip()!r}"
     )
-
-    write_clause = next(part for part in step.split(".") if "write the path" in part)
-    assert "resolve_quality_artifact.py" in _workflow_step(QUALITY_SKILL, 8)[
-        : step.index(write_clause)
-    ], "the write instruction must follow the resolver that produces the path"
+    # The condition has to live in the same clause as the prohibition. Split apart, a
+    # compaction keeps the `Do NOT` and drops what lifts it — or keeps "read the match value"
+    # and drops the prohibition, which is the polarity flip this test exists for.
+    assert "write_artifact_subject_match" in scaffold_clause, (
+        f"the prohibition must name the fact that lifts it: {scaffold_clause.strip()!r}"
+    )
+    assert "only `match`" in step, "the step must say which single state permits the write"

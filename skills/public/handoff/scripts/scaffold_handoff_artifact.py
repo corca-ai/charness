@@ -125,12 +125,26 @@ def max_content_lines() -> int:
     return int(_budget.DEFAULT_MAX_CONTENT_LINES)
 
 
-def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
+def invocation_subject_key(artifact_path: str) -> str:
+    """`handoff`'s subject key: the rolling artifact itself.
+
+    Not the title, and not a slug. There is exactly ONE handoff per repo and every invocation
+    is for that same one — rewriting it in place IS the contract — so the key that makes this
+    family honest is the one that always agrees with its target. A title-derived key here
+    would refuse the repo's own handoff, whose H1 (`Charness Handoff`) has never matched the
+    default title; the subject-identity rule must not manufacture a mismatch where the family
+    has a single subject by construction.
+    """
+    return f"rolling:{artifact_path}"
+
+
+def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
     adapter = load_adapter(repo_root)
     artifact_path = str(adapter["artifact_path"])
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
-    return _scaffold_lib.with_write_target_facts(repo_root, {
+    subject_key = invocation_subject_key(artifact_path)
+    payload = _scaffold_lib.with_write_target_facts(repo_root, {
         "artifact_path": artifact_path,
         "artifact_role": "rolling",
         "write_artifact_path": artifact_path,
@@ -140,6 +154,15 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         "validator_command": validator_command(repo_root),
         "size_budget": {"max_lines": max_content_lines(), "guidance": SIZE_GUIDANCE},
     })
+    return _scaffold_lib.with_subject_identity_facts(
+        payload,
+        invocation_subject_key=subject_key,
+        # Both keys are the rolling artifact, so this family reports `match` by construction
+        # and cannot construct a mismatch — stated here rather than left to be inferred from a
+        # tautology. A `--subject` passed to `handoff` is deliberately not part of the key:
+        # there is one handoff per repo, and rewriting it in place IS the contract.
+        target_subject_key=subject_key,
+    )
 
 
 def main() -> int:

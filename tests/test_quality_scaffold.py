@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import shlex
 import subprocess
 from pathlib import Path
@@ -163,6 +164,35 @@ def test_quality_scaffold_cli_custom_title_emits_validator_passing_artifact(tmp_
 
 
 def test_quality_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path) -> None:
+    """A pointer target from TODAY is this review's own record, and is written in place.
+
+    The pointer is still followed and still reported; what changed is that following it is
+    now conditional on the target belonging to this invocation's subject.
+    """
+    repo = tmp_path / "repo"
+    _write_adapter(repo, "demo")
+    quality_dir = repo / "charness-artifacts" / "quality"
+    quality_dir.mkdir(parents=True)
+    target = quality_dir / f"{dt.date.today().isoformat()}-quality-review.md"
+    target.write_text("# Quality Review\n", encoding="utf-8")
+    (quality_dir / "latest.md").symlink_to(target.name)
+
+    payload = scaffold_payload(repo)
+    assert payload["artifact_path"] == "charness-artifacts/quality/latest.md"
+    assert payload["write_artifact_path"] == f"charness-artifacts/quality/{target.name}"
+    assert payload["write_artifact_role"] == "current_pointer_target"
+    assert payload["current_pointer_symlink_target"] == target.name
+    assert payload["write_artifact_subject_match"] == "match"
+
+
+def test_quality_scaffold_refuses_a_previous_days_finished_review(tmp_path: Path) -> None:
+    """The producer half of the destroyed-review defect the validator already refuses.
+
+    The pointer names a review dated before today, so writing today's review to it destroys a
+    finished record. The scaffold resolves onto today's own dated record instead, carries the
+    pointer refresh that follows the write, and names what it refused — the validator's rule
+    moved to the surface that hands out the path, where nothing is destroyed to detect it.
+    """
     repo = tmp_path / "repo"
     _write_adapter(repo, "demo")
     quality_dir = repo / "charness-artifacts" / "quality"
@@ -172,10 +202,12 @@ def test_quality_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Pa
     (quality_dir / "latest.md").symlink_to(target.name)
 
     payload = scaffold_payload(repo)
-    assert payload["artifact_path"] == "charness-artifacts/quality/latest.md"
-    assert payload["write_artifact_path"] == "charness-artifacts/quality/2026-05-06-quality-review.md"
-    assert payload["write_artifact_role"] == "current_pointer_target"
-    assert payload["current_pointer_symlink_target"] == "2026-05-06-quality-review.md"
+    today = dt.date.today().isoformat()
+    assert payload["write_artifact_path"] == f"charness-artifacts/quality/{today}-quality-review.md"
+    assert payload["write_artifact_effect"] == "create_new_file"
+    assert payload["update_current_pointer_after_write"] is True
+    assert payload["refused_write_artifact_path"] == "charness-artifacts/quality/2026-05-06-quality-review.md"
+    assert payload["refused_write_artifact_subject_key"] == "quality-review@2026-05-06"
 
 
 def test_exported_quality_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:

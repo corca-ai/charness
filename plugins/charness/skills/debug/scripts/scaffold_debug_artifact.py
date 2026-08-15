@@ -210,6 +210,7 @@ def _resolved_followup_record_payload(
     resolved_title: str,
     artifact_date: dt.date,
     current_pointer_target_path: str | None,
+    reuse_subject_key: str | None = None,
 ) -> dict[str, object]:
     def _record_payload_for(title_text: str) -> dict[str, object]:
         return _resolve_artifact_path.payload_for(
@@ -222,14 +223,32 @@ def _resolved_followup_record_payload(
         )
 
     current_target = current_pointer_target_path or ""
+
+    def _usable(candidate_path: str) -> bool:
+        if candidate_path == current_target:
+            return False
+        # A candidate that already holds THIS declared subject's OPEN record is the author's
+        # own investigation, not an obstacle. Without this, resuming `x` while the pointer sits
+        # on `y` routed past the real `x` record to `x-followup`.
+        #
+        # `_resolution` is not optional here, and round 2 found why: this helper is also the
+        # finished-investigation arm, where reusing a record whose own body says
+        # `- Resolution: resolved` writes a fresh template over a completed investigation --
+        # the destructive answer, arriving through the repair for the destructive answer.
+        if (
+            reuse_subject_key is not None
+            and _scaffold_artifact_lib.record_subject_slug(candidate_path) == reuse_subject_key
+            and _resolution(repo_root / candidate_path) != "resolved"
+        ):
+            return True
+        return not (repo_root / candidate_path).exists()
+
     candidate = _record_payload_for(resolved_title)
-    candidate_path = str(candidate["write_artifact_path"])
-    if candidate_path != current_target and not (repo_root / candidate_path).exists():
+    if _usable(str(candidate["write_artifact_path"])):
         return candidate
     for suffix in ("followup", "followup-2", "followup-3", "followup-4"):
         candidate = _record_payload_for(f"{resolved_title} {suffix}")
-        candidate_path = str(candidate["write_artifact_path"])
-        if candidate_path != current_target and not (repo_root / candidate_path).exists():
+        if _usable(str(candidate["write_artifact_path"])):
             return candidate
     raise SystemExit(
         "resolved current debug artifact needs a fresh dated follow-up record, but every deterministic "
@@ -237,11 +256,29 @@ def _resolved_followup_record_payload(
     )
 
 
-def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
+def invocation_subject_key(*, title: str | None, subject: str | None) -> str | None:
+    """WHICH investigation this invocation is for — `debug`'s own subject key.
+
+    `None` when the author declared neither `--subject` nor `--title`, and that is the whole
+    fix: an undeclared run is a NEW investigation, so it must not resolve onto an open record
+    whoever opened it. Falling back to the default title looked equivalent and was not — a
+    bounded round found that `slugify("Debug Review")` is `debug-review`, that this repo holds
+    twenty `<date>-debug-review.md` records, and that a brand-new undeclared run therefore
+    MATCHED an unrelated open one and reported `continue-existing-artifact`. The generic
+    default was not a key that matches no investigation; it was the most common real one.
+
+    An author continuing investigation X declares `--subject <X's slug>`.
+    """
+    declared = subject or title
+    return _scaffold_artifact_lib.slugify(declared) if declared else None
+
+
+def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
     adapter = load_adapter(repo_root)
     artifact_date = dt.date.today()
     date_text = artifact_date.isoformat()
     resolved_title = default_title(title)
+    subject_key = invocation_subject_key(title=title, subject=subject)
     size_budget = (
         {"max_lines": _MAX_ARTIFACT_LINES, "guidance": SIZE_GUIDANCE}
         if _MAX_ARTIFACT_LINES is not None
@@ -256,15 +293,39 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         adapter=adapter,
     )
     current_write_path = repo_root / str(payload["write_artifact_path"])
-    if _resolution(current_write_path) == "resolved":
+    # Two independent reasons to leave the current pointer's record alone, and they are
+    # different questions: the first asks whether that investigation is FINISHED, the
+    # second whether it is MINE. The finished-arm shipped first and answers neither half
+    # of the reported defect, because the record it would have destroyed was open.
+    current_target_path = str(payload["write_artifact_path"])
+    current_target_subject = _scaffold_artifact_lib.record_subject_slug(current_target_path)
+    # NOT "is it a mismatch" — "is it confirmed mine". An unreadable target subject (a
+    # regular-file `latest.md`, a legacy `debug-<date>-<slug>.md` name) and an undeclared
+    # invocation are both states in which nobody established that this record is this
+    # author's, and comparing against `mismatch` wrote in place for both.
+    subject_facts = _scaffold_artifact_lib.subject_identity_facts(
+        invocation_subject_key=subject_key,
+        target_subject_key=current_target_subject,
+    )
+    subject_unconfirmed = _scaffold_artifact_lib.diverts_from_target(
+        repo_root, write_path=current_target_path, facts=subject_facts
+    )
+    if _resolution(current_write_path) == "resolved" or subject_unconfirmed:
         record_payload = _resolved_followup_record_payload(
             repo_root,
             adapter=adapter,
-            resolved_title=resolved_title,
+            # The DECLARED subject names the fresh record when there is one: an author who
+            # said `--subject X` and was routed off someone else's record should land on a
+            # file named for X, not on the generic default title.
+            resolved_title=subject or resolved_title,
             artifact_date=artifact_date,
             current_pointer_target_path=payload.get("current_pointer_target_path")
             if isinstance(payload.get("current_pointer_target_path"), str)
             else None,
+            # Only when the divert was about SUBJECT. In the finished-investigation arm the
+            # whole point is a fresh record, so reusing one by name is the wrong answer even
+            # when the name matches.
+            reuse_subject_key=subject_key if subject_unconfirmed else None,
         )
         for key in (
             "intent",
@@ -277,6 +338,17 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
             "frontmatter",
         ):
             payload[key] = record_payload[key]
+        # Only when something was actually declined. `diverts_from_target` is already the
+        # at-stake test, so the remaining condition is that the payload moved off that path;
+        # the resolved-followup arm reaches this branch for a different reason.
+        if subject_unconfirmed and str(payload["write_artifact_path"]) != current_target_path:
+            payload.update(
+                _scaffold_artifact_lib.subject_refusal_facts(
+                    refused_path=current_target_path,
+                    refused_subject_key=current_target_subject,
+                    reason=str(subject_facts["write_artifact_subject_match"]),
+                )
+            )
     payload.update(
         {
             "date": date_text,
@@ -292,6 +364,13 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     # LAST, because the resolved-followup branch above replaces `write_artifact_path` through
     # a fixed key list. Facts computed before that swap describe the wrong file.
     _scaffold_artifact_lib.with_write_target_facts(repo_root, payload)
+    payload.update(
+        _scaffold_artifact_lib.final_subject_facts(
+            invocation_subject_key=subject_key,
+            target_subject_key=_scaffold_artifact_lib.record_subject_slug(str(payload["write_artifact_path"])),
+            chosen=str(payload["write_artifact_path"]) != current_target_path,
+        )
+    )
     return payload
 
 

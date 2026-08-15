@@ -58,6 +58,8 @@ yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "script
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 scaffold_retro_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_retro_artifact")
 surfaces_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.surfaces_lib")
+_state = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_artifact_state")
+_artifact_summary = _state._artifact_summary
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -172,20 +174,6 @@ def _lens_brief(work_class: str) -> dict[str, str]:
             "direct lens when a name adds nothing."
         )
     return {"work_class": work_class, "fitting_lens": fitting, "why": why}
-
-
-def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, Any]:
-    write_rel = str(scaffold["write_artifact_path"])
-    write_path = repo_root / write_rel
-    exists = write_path.is_file()
-    line_count = len(write_path.read_text(encoding="utf-8").splitlines()) if exists else 0
-    return {
-        "path": write_rel,
-        "exists": exists,
-        "line_count": line_count,
-        "status": "today_artifact_exists" if exists else "missing",
-        "role": scaffold["artifact_role"],
-    }
 
 
 def _required_reads(

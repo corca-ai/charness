@@ -150,6 +150,10 @@ _FACT_ROUTES = (
     "dated_record_payload(",
     "write_target_facts(",
     "current_pointer_payload(",
+    # The records-only shape, which resolves the path by subject and then delegates to
+    # `dated_record_payload` for the facts — one hop further from the owner than the routes
+    # above, and still the owner's code doing the stamping.
+    "subject_scoped_record_payload(",
     # A planner may ECHO the scaffold payload's fact rather than recompute it; that is the
     # correct thing for a surface that reports someone else's write target.
     '"write_artifact_effect"',
@@ -166,7 +170,16 @@ _PRODUCER_ROOTS = ("scripts", "skills/public", "skills/support", "skills/shared"
 # all, so a literal-only predicate excluded the issue's own subjects. That was the first
 # version of this guard, and a bounded round caught it.
 _KEY_LITERALS = ('"write_artifact_path":', "'write_artifact_path':", "write_artifact_path=write_artifact_path")
-_DELEGATED_PAYLOAD_CALLS = ("current_pointer_payload(", "dated_record_payload(", "with_write_target_facts(")
+_DELEGATED_PAYLOAD_CALLS = (
+    "current_pointer_payload(",
+    "dated_record_payload(",
+    "with_write_target_facts(",
+    # The subject-identity slice added a fourth delegation, and the sweep's population fell
+    # from eleven producers to eight the moment three families started routing through it.
+    # The floor below is what caught that; a sweep whose population silently shrinks reports
+    # clean over the producers it stopped seeing.
+    "subject_scoped_record_payload(",
+)
 # A payload key built by string assembly would evade any literal scan. The sibling gate
 # records this exact escape (an `f"latest.{ext}"` slipped a verbatim-filename scan), so the
 # sweep refuses rather than reporting clean over a scope it cannot see.
@@ -368,17 +381,31 @@ def test_the_quality_scaffold_payload_admits_it_would_overwrite_a_finished_revie
     assert record["write_artifact_target_exists"] is False
 
 
+#: `not a green light` was an anchor here until the producer stopped handing back the previous
+#: review's file: the sentence it protected told an agent to distrust the scaffold's own write
+#: path, and that instruction became false rather than merely stale. Its replacement anchors
+#: the fact an agent must now read instead — `write_artifact_subject_match` — plus the
+#: `unknown` state, which is the one that asserts nothing and must not read as a green light.
 _EFFECT_PROSE_ANCHORS = {
     "skills/public/quality/SKILL.md": (
         "write_artifact_effect",
-        "not a green light",
+        "write_artifact_subject_match",
+        "unknown",
         "--intent record",
+        # DIRECTIONAL, not presence-only. A bounded round pointed out that dropping
+        # `not a green light` left the quality entry with four anchors a compaction could
+        # satisfy while flipping the instruction to "trust `write_artifact_path`". These two
+        # are the polarity: what is forbidden, and the single state that lifts it.
+        "Do NOT",
+        "only `match`",
     ),
     "skills/public/debug/SKILL.md": (
         "write_artifact_effect",
         "overwrite_existing_content",
         "create_new_file",
         "not exhaustive",
+        "write_artifact_subject_match",
+        "refused_write_artifact_path",
     ),
 }
 

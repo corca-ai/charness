@@ -22,6 +22,7 @@ recurring lines now read as covered through the gate's own coverage probe.
 
 from __future__ import annotations
 
+import datetime as dt
 import importlib.util
 import inspect
 import io
@@ -176,16 +177,33 @@ def test_scaffold_current_pointer_symlink_branches(slug: str, tmp_path: Path) ->
     real.write_text("# record\n", encoding="utf-8")
     link = output_dir / "latest.md"
 
-    # Relative symlink: resolves to the target's portable repo-relative path.
+    # Relative symlink: resolves to the target's portable repo-relative path, which is what
+    # this test covers. The payload no longer WRITES there — the seeded record belongs to
+    # subject `record` and the invocation declares none, so both families route to their own
+    # record and report the pointer's target as declined. The resolution branch under test is
+    # still exercised, and `refused_write_artifact_path` is where its result now surfaces.
     os.symlink("2026-06-06-record.md", link)
     relative = module.payload_for(repo, title=None)
-    assert relative["write_artifact_role"] == "current_pointer_target"
     assert relative["current_pointer_symlink_target"] == "2026-06-06-record.md"
-    assert relative["write_artifact_path"] == real.relative_to(repo).as_posix()
+    assert relative["refused_write_artifact_path"] == real.relative_to(repo).as_posix()
+    assert relative["write_artifact_path"] != real.relative_to(repo).as_posix()
 
-    # Absolute symlink: same resolved write path via the absolute target branch.
+    # Absolute symlink: same resolved target via the absolute-target branch.
     link.unlink()
     os.symlink(str(real), link)
     absolute = module.payload_for(repo, title=None)
-    assert absolute["write_artifact_role"] == "current_pointer_target"
-    assert absolute["write_artifact_path"] == real.relative_to(repo).as_posix()
+    assert absolute["refused_write_artifact_path"] == real.relative_to(repo).as_posix()
+
+    # Declaring the seeded record's subject reaches the in-place branch, so the
+    # `current_pointer_target` role stays covered rather than becoming unreachable. Dated
+    # TODAY, because the two families key differently on purpose: `quality` adds the record
+    # date to its subject key (its recorded defect is a review written over the previous day's
+    # record), so a same-slug record from another day is correctly still not this review.
+    mine = output_dir / f"{dt.date.today().isoformat()}-record.md"
+    mine.write_text("# record\n", encoding="utf-8")
+    link.unlink()
+    os.symlink(mine.name, link)
+    owned = module.payload_for(repo, title=None, subject="record")
+    assert owned["write_artifact_role"] == "current_pointer_target"
+    assert owned["write_artifact_path"] == mine.relative_to(repo).as_posix()
+    assert owned["write_artifact_subject_match"] == "match"

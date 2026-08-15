@@ -143,23 +143,61 @@ def validator_command(repo_root: Path, write_artifact_path: str) -> str:
     )
 
 
-def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
+def _declared_session_id(repo_root: Path) -> str | None:
+    """The declared lesson session THIS retro is being written for, from the router.
+
+    The same routing helper the planner uses, so the scaffold cannot disagree with the plan
+    the author is following about which session is open. Degrades to `None` — unknown, not a
+    refusal — whenever the router cannot establish one, which is every repo with no lesson
+    evaluator configured.
+    """
+    try:
+        records = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.lesson_evaluation_records_lib")
+        sessions = records.lesson_session_routing(repo_root).get("sessions") or []
+    except Exception:
+        return None
+    session_id = sessions[0].get("session_id") if sessions and isinstance(sessions[0], dict) else None
+    return session_id if isinstance(session_id, str) else None
+
+
+def _session_suffix(session_id: str | None) -> str:
+    """A filename-safe distinguisher from the session id, with its leading date dropped.
+
+    The record is already dated, so `2026-08-15-session-retro-2026-08-15-s2.md` would carry
+    that date twice; the session's own tail is what distinguishes it from the sibling retro.
+    """
+    if session_id is None:
+        return "second"
+    return _slug(re.sub(r"^\d{4}-\d{2}-\d{2}-?", "", session_id)) or "second"
+
+
+def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
     adapter = load_adapter(repo_root)
     output_dir = str(adapter["data"]["output_dir"])
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
-    write_artifact_path = f"{output_dir}/{date_text}-{_slug(resolved_title)}.md"
-    return _scaffold_lib.dated_record_payload(
+    slug = _slug(subject or resolved_title)
+    # The lesson session NAMES the sibling record; it no longer decides whether to write over
+    # one. It cannot: a repo with no evaluator reads `None` on both sides, and the scaffold's
+    # own seeded disposition says `"session_id":"none"`, so a session-keyed comparison called
+    # two different sessions' retros the same subject in exactly the state this repo ships.
+    # The decision is the records-only rule — never write a template over an existing record —
+    # and the session is what makes the second record's filename say which one it is.
+    suffix = _session_suffix(_declared_session_id(repo_root))
+    return _scaffold_lib.subject_scoped_record_payload(
         repo_root,
-        write_artifact_path=write_artifact_path,
+        output_dir=output_dir,
         date_text=date_text,
         title=resolved_title,
+        record_slug=slug,
         template=render_template(
             title=resolved_title,
             date_text=date_text,
             artifact_sections=list(adapter["data"].get("artifact_sections", [])),
         ),
-        validator_command=validator_command(repo_root, write_artifact_path),
+        validator_command_for=lambda path: validator_command(repo_root, path),
+        remedy="Rerun scaffold_retro_artifact.py with --title <specific retro title>.",
+        distinguishers=[suffix, f"{suffix}-2", f"{suffix}-3"],
     )
 
 

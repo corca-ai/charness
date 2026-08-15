@@ -89,22 +89,22 @@ that retains existing comments.
    the payload as the artifact contract: write to fit its `size_budget.max_lines` on the first pass
    and heed `size_budget.guidance` on the judgment-heavy sections, rather than
    writing long and then trimming to fit against a ceiling the validator only
-   reveals at the end. Take the WRITE TARGET from a different script: the
-   scaffold's own `write_artifact_path` is the CURRENT POINTER, not the record to
-   write. Run `resolve_quality_artifact.py --repo-root . --intent record` for a
-   fresh review, write the path it returns as `write_artifact_path`, then run its
-   emitted `refresh_current_pointer_command` when
-   `update_current_pointer_after_write=true`; keep `--intent current` only for
-   an explicitly rolling-summary edit. Do NOT write to the scaffold payload's
-   `write_artifact_path`: it is `latest.md`, or that symlink's target — the
-   PREVIOUS review's dated file. Writing there either overwrites that review, or
-   (when the pointer dangles) files today's review under the previous review's
-   DATE; both are wrong, so the prohibition holds regardless of what
-   `write_artifact_effect` says on the scaffold payload. `create_new_file` there is
-   not a green light. Use `write_artifact_effect` on the
-   `--intent record` payload instead: `overwrite_existing_content` there means
-   today's review already exists, so append to it or pass an explicit distinct
-   `--slug`, never silently replace it. Validate once with
+   reveals at the end. The scaffold resolves the WRITE TARGET by subject: it
+   follows the current pointer only while that pointer's record is THIS review —
+   same slug, same date — and otherwise routes to this review's own dated record,
+   naming what it declined as `refused_write_artifact_path` and emitting a
+   `refresh_current_pointer_command` to run when
+   `update_current_pointer_after_write` is true. Do NOT read the scaffold payload's
+   `write_artifact_path` as safe on its own: read `write_artifact_subject_match`
+   first, because only `match` says the record at that path is THIS review's.
+   `unknown` means the target carries no dated name to check — a `latest.md` that is
+   a real file, or a first run with no pointer yet — and `routed` means the payload
+   declined the pointer's record and picked this one, naming what it declined as
+   `refused_write_artifact_path`. With `match` and `write_artifact_effect:
+   overwrite_existing_content` together, today's review already exists — append to
+   it, or pass a distinct `--subject`, and never silently replace it.
+   `resolve_quality_artifact.py --repo-root . --intent record` still names a record
+   path directly, and `--intent current` is for an explicitly rolling-summary edit. Validate once with
    `validate_quality_artifact.py` — it
    reports every remaining violation in one pass, so fix them together rather than
    iterating one error at a time.
