@@ -84,7 +84,12 @@ Ordering is by dependency pressure, not by theme.
 - **S5 — structural umbrellas.** #586, then #584, #583, #582.
 - **S6 — operating contract.** No-mutating-git for write-capable subagents; a
   monitored-phase path for long-running children.
-- **S7 — release execution.** Write the classification ledger and commit it
+- **S7 — release execution.** Reword the 8 blocking quantities the S1 lint finds
+  in the prepared notes that have no registered claim surface to move into
+  (owner ruling, 2026-08-15: reword rather than expand the registry — an ad-hoc
+  quantity like "three coupled edits" is not derivable in principle, and a
+  quantity nobody counted is the thing the mechanism exists to stop being
+  written). Then write the classification ledger and commit it
   **before** the prepared release record. Run the S1 generator over the final
   tree, gate the notes, run the release critique (which the release skill places
   before the bump), `--execute` to the prepared stop, commit the claims-review
@@ -106,13 +111,27 @@ Ordering is by dependency pressure, not by theme.
   only the omission direction and was therefore inert against its own Problem 1.
 - **The authored narrative is contained, not trusted.** The false claims lived in
   authored prose, so exempting prose from derivation exempts the exact surface
-  that failed. Quantities and completeness quantifiers — digits, `only`, `all`,
-  `every`, `none`, `still`, `repo-wide` — are forbidden in the authored narrative
-  outside a transclusion marker that pulls from the derived block. This is a
-  regex-shaped lint with an obvious negative case, not a prose parser. Building a
-  prose claim-extractor is rejected: inside a release slice it produces an inert
-  or unfalsifiable guard, and the human-reviewed claims list it would duplicate
-  already ships as the claims-review pause.
+  that failed. **Two severities, amended by owner ruling on 2026-08-15 after S1
+  measured the original clause.** A bare QUANTITY — a digit run or a cardinal
+  number word — is forbidden in the authored narrative outside a transclusion
+  marker, and BLOCKS publish. The completeness words `only`, `all`, `every`,
+  `none`, `still`, `repo-wide` are reported as ADVISORY and do not block.
+
+  What overturned the original "all six are forbidden" clause: run against this
+  repo's own `charness-artifacts/release/2026-08-14-v6.0.0-notes.md`, the
+  refusing version produced 49 findings, among them
+  *"...verified only after the release has been published"* from that note's own
+  `## Evidence limits` and *"...can opt into the lesson lifecycle at all"*. A rule
+  that refuses the wording which makes a note honest is one an operator disables,
+  and the only disable available also disarms the derived-block arm that has a
+  real recorded failure behind it. Number words stay in the BLOCKING arm because
+  the recorded false sentence spells its quantity as `twelve`, so a digit-only
+  rule would be inert against its own instance.
+
+  Still a regex-shaped lint with an obvious negative case, not a prose parser.
+  Building a prose claim-extractor is rejected: inside a release slice it produces
+  an inert or unfalsifiable guard, and the human-reviewed claims list it would
+  duplicate already ships as the claims-review pause.
 - **The producer-scaffold class is fixed by SUBJECT IDENTITY, not date
   coherence.** The class is real and has three instances, but the mechanism named
   in revision 1 was wrong twice over. It is **inert** against #628: the
@@ -240,8 +259,9 @@ Each criterion names the slice that owns it. Coverage is asserted in
    declares the surfaces it did NOT scan alongside a zero result.
 2. **(S1)** The notes gate fails a publish plan whose notes over-claim against the
    tree, and names the disagreeing surface.
-3. **(S1)** The authored narrative cannot carry a bare quantity or completeness
-   quantifier outside a transclusion marker.
+3. **(S1)** The authored narrative cannot carry a bare quantity — a digit run or
+   a cardinal number word — outside a transclusion marker. The six completeness
+   words are reported as advisory and do not block (owner ruling, 2026-08-15).
 4. **(S1)** `check-markdown.sh`'s `npm exec` fallback does not reach the registry
    (#630).
 5. **(S2)** No scaffold family resolves a write path onto another subject's
@@ -278,9 +298,11 @@ Each criterion names the slice that owns it. Coverage is asserted in
 - Verification type: integration — (SC2) the gate fails a publish plan whose
   committed notes disagree with the tree at publish time, including the case
   where the notes were correct when generated and the tree moved after.
-- Verification type: unit — (SC3) the narrative lint refuses a bare digit and each
-  listed quantifier outside a transclusion marker, and accepts the same text
-  inside one.
+- Verification type: unit — (SC3) the narrative lint REFUSES a bare digit and a
+  hyphenated compound number word outside a transclusion marker, accepts the same
+  text inside one, and reports each listed completeness word as advisory without
+  failing. Negative: an advisory alone does not refuse a publish, and the
+  honest-limits sentence from this repo's own notes passes.
 - Verification type: integration — (SC4) the markdownlint fallback runs with no
   registry access available.
 - Verification type: unit — (SC5) for every family the scaffold registry
@@ -342,17 +364,18 @@ The repo operating contract owns the subagent git rule; S6 must name the concret
 mechanism that refuses (hook, permission rule, or typed agent definition) because
 whether SC10 is satisfiable on a given host depends on that choice.
 
-## Deviations Awaiting Owner Ruling
+## Owner Rulings
 
-- **SC3's completeness-quantifier clause is implemented as ADVISORY, not as a
-  refusal.** The Fixed Decision at `## Fixed Decisions` and SC3 both say the six
-  words (`only`, `all`, `every`, `none`, `still`, `repo-wide`) are forbidden
-  outside a transclusion marker, and the acceptance check says the lint
-  "refuses" each. As built, `lint_release_narrative.py` BLOCKS on bare
-  quantities — digits and cardinal number words, which is the class the recorded
-  false sentence belongs to via `twelve` — and reports the six words as
-  `bare-completeness-word` at `severity: advisory`, which does not fail the
-  command and does not refuse a publish.
+- **SC3's completeness-quantifier clause: RULED 2026-08-15 — the two-severity
+  split is approved and the contract above is amended to match.** Bare quantities
+  block; the six completeness words are advisory. What follows is the evidence the
+  ruling rests on, kept because the original clause was owner-approved and the
+  reasoning for overturning it should not be reconstructible only from a diff.
+
+  As built, `lint_release_narrative.py` BLOCKS on bare quantities — digits and
+  cardinal number words, which is the class the recorded false sentence belongs to
+  via `twelve` — and reports the six words as `bare-completeness-word` at
+  `severity: advisory`.
 
   Evidence that produced the split, measured rather than argued: run against
   this repo's own `charness-artifacts/release/2026-08-14-v6.0.0-notes.md`, the
@@ -367,20 +390,18 @@ whether SC10 is satisfiable on a given host depends on that choice.
   an unmarked quantity claim about the tree, and `twelve` still blocks.
 
   A bounded round-2 reviewer ruled this a deviation to be recorded rather than a
-  defensible reading, and noted correctly that the contract had already
-  pre-empted the "you would need a prose parser" defence: the Fixed Decision
-  itself says the rule is "a regex-shaped lint with an obvious negative case,
-  not a prose parser". So this entry does not claim the contract permits the
-  split. **S1 is recorded as meeting SC3 for quantities only; the quantifier arm
-  is deviated, evidence attached, and the criterion stands unamended until the
-  owner rules.** The split is pinned by tests, so reversing it means deleting
-  them — which is why it is recorded here rather than left in an implementation
-  note.
+  defensible reading, and noted correctly that the implementer's "you would need
+  a prose parser" defence was already pre-empted: the Fixed Decision itself calls
+  for "a regex-shaped lint with an obvious negative case, not a prose parser".
+  The owner ruling did not adopt that defence either — it rests on the 49-finding
+  measurement, not on the parser argument. **S1 now meets SC3 as amended.**
 
-  Residual the split does NOT remove, stated because the reviewer measured it:
-  of the 8 remaining blocking findings, only one maps to a registered claim
-  surface, so the rest have no marker available and their only exits are
-  rewording or the repo-wide opt-out.
+  Residual the split does NOT remove, and the second ruling that addresses it:
+  of the 10 blocking findings on the prepared notes, only 2 map to a registered
+  claim surface (`twelve` and `five`). The other 8 are resolved at S7 by
+  REWORDING, not by expanding the registry — see the S7 entry in `## Sequence`.
+  One of the 8 is a quotation of a past wrong claim rather than an assertion
+  (`"zero failing probes"`); rewording covers it.
 
 - **The claim and containment arms are never reached by a `--generate-notes`
   publish**, which supplies no notes file. SC2 and SC3 bind notes that are

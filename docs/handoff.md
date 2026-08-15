@@ -11,8 +11,8 @@
 ## Continuation Capability
 
 - [Release scope contract](../charness-artifacts/spec/2026-08-15-6-0-0-release-scope.md)
-  — the owner-approved wide scope, its S1-S7 sequence, and the SC3 deviation that
-  is **waiting on an owner ruling** in `## Deviations Awaiting Owner Ruling`.
+  — the owner-approved wide scope, its S1-S7 sequence, and `## Owner Rulings`,
+  which now records the SC3 two-severity ruling and its evidence.
 - [S1 retro](../charness-artifacts/retro/2026-08-15-session-retro.md)
   — what S1 cost, the three repairs that carried the class they fixed, and the
   measured instance of S3's SC6 that this session produced by accident.
@@ -39,10 +39,10 @@
   `ruff check .`.
 - **Two gates are RED and neither is from S1**, both confirmed on a throwaway
   worktree at the pre-S1 HEAD: `check_dup_ratchet` hard-blocks (S1 adds no
-  family; all six of its rotations are classified in
+  family; all six rotations are classified in
   [dup-review](../charness-artifacts/quality/dup-review.json)), and `check-shell`
-  reports SC2016 in `run-quality.sh`, which S1 never touched. Somebody owns
-  these; S2 should not inherit them silently.
+  reports SC2016 in `run-quality.sh`, which S1 never touched. **Owner ruling
+  2026-08-15: S2 clears both** — see `## Next Session`.
 - The release is still PREPARED: no bump, tag, or publish. Confirm with
   `python3 skills/public/release/scripts/current_release.py --repo-root .` and
   `python3 skills/public/release/scripts/plan_release_run.py --repo-root . --part major --detail`.
@@ -69,6 +69,8 @@ readback, or issue closure. S2-S7 have not started.
    records why a generalized date-coherence guard is inert against
    [#628](https://github.com/corca-ai/charness/issues/628) and would break
    `debug`'s designed continue-in-place behavior. Read it before designing.
+   **S2 also clears the two pre-existing red gates above** (owner ruling); keep
+   them in their own commits so the S2 verdict stays readable.
 3. Then S3-S6 in order, then S7 publishes and closes
    [#608](https://github.com/corca-ai/charness/issues/608) and
    [#618](https://github.com/corca-ai/charness/issues/618)-[#627](https://github.com/corca-ai/charness/issues/627);
@@ -76,10 +78,6 @@ readback, or issue closure. S2-S7 have not started.
 
 ## Discuss
 
-- **SC3's deviation needs an owner ruling.** S1 blocks on bare quantities and
-  only advises on the six completeness words, because the refusing version
-  rejected this repo's own honest-limits language. The criterion stands unamended
-  and the evidence is attached; S7 cannot honestly claim SC3 until this is ruled.
 - **The digest injected at session open shows two COMPLETED focuses and drops
   the live one**, and all four checklist slots went to older recurring lessons,
   so this session's new improvements are in the index and not in the digest.
