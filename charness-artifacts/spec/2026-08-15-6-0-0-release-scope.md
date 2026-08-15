@@ -273,6 +273,38 @@ Ordering is by dependency pressure, not by theme.
   review cap. It lands before S7 so the release does not publish a lesson-loop
   gate with a known bypass while closing the lesson-loop issues that rest on it.
 - **S6b — cost as a proof surface** (owner ruling, 2026-08-15, in this release).
+
+  **SCOPE CORRECTION, measured live on 2026-08-15 after S6 committed.** S6b as
+  scoped catches a DOCUMENT that prescribes a dominated command. It would not
+  have caught the instance that actually recurred, which is worth stating before
+  the slice is built:
+
+  `python3 scripts/check_changed_line_mutation_coverage.py` spawns
+  `python3 -m coverage run ... -m pytest -q -m 'not release_only' tests` —
+  serial, no xdist, coverage-instrumented. Killed at 25 minutes, unfinished. The
+  chain is entirely in CODE AND CONFIG, with no document anywhere in it:
+
+  1. [cosmic-ray.toml](../../cosmic-ray.toml) line 5 holds
+     `test-command = "python3 -m pytest -q -m 'not release_only' tests"`.
+  2. `mutation_sampling_lib.coverage_run_command` wraps that literal and
+     **explicitly refuses the standing runner**: it accepts only
+     `python3 -m pytest ...` or `pytest ...` and raises
+     *"use a helper script for other runners"*.
+  3. Its sibling `mutation_coverage_producer.instrument_broad_command` DOES
+     support the runner, via `is_standing_pytest_runner_command`.
+
+  So the repo carries TWO builders for "instrument a pytest run under coverage",
+  with OPPOSITE policies on the fast path, and the changed-line gate uses the one
+  that refuses it. A superseded-command registry over documents is inert against
+  all three steps. S6b must therefore cover the queued/spawned universe —
+  commands a GATE runs — not only commands a document prescribes, which is what
+  SC15's "queued or prescribed" already gestures at and what the registry half
+  does not yet reach.
+
+  Recorded with the honest cause: S6b is RULED and NOT BUILT, so the detector did
+  not exist when this ran, and no review angle asked the cost question because
+  SC16 is the angle S6b adds. The session that wrote the "correct rule, no
+  carrier" retro then spent 25 minutes inside an instance of it.
   MEASURED during S5 and the reason this slice exists: `scripts/run_standing_pytest.py`
   runs the suite with xdist in **84s** (9403 tests) over **567 of 567** test files —
   zero uncovered — is budgeted (`pytest: 97500` on this profile) and BLOCKS via
