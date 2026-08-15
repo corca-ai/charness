@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-16",
-  "source_artifact_count": 516,
-  "candidate_count": 2108,
+  "source_artifact_count": 517,
+  "candidate_count": 2115,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1278,6 +1278,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c163310f8fc6",
+      "kind": "current_focus",
+      "lesson": "S7 of the 6.0.0 release scope: publish the release and close #608 and #618-#627.",
+      "normalized_key": "s7 of the 6 0 0 release scope publish the release and close 608",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S7 of the 6.0.0 release scope: publish the release and close #608 and #618-#627."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:e7e195f80a32",
       "kind": "current_focus",
       "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency).",
@@ -1408,6 +1434,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:264549d0a1df",
+      "kind": "next_improvement",
+      "lesson": "make a slice closeout unable to record \"gates clean\" without citing the run receipt, so a claim written from memory is red rather than plausible.",
+      "normalized_key": "make a slice closeout unable to record gates clean without citing the run receipt",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make a slice closeout unable to record \"gates clean\" without citing the run receipt, so a claim written from memory is red rather than plausible."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:025ef8bee1d5",
+      "kind": "next_improvement",
+      "lesson": "measure a text-gate repair's verdict diff over the whole corpus before accepting it; the motivating case is not the blast radius.",
+      "normalized_key": "measure a text gate repair s verdict diff over the whole corpus before accepting",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "measure a text-gate repair's verdict diff over the whole corpus before accepting it; the motivating case is not the blast radius."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:4acfbce3e563",
       "kind": "next_improvement",
       "lesson": "**memory**: the fix-carries-its-class pattern now has five consecutive measured instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices rather than as a per-slice surprise, so the two-round rule reads as load-bearing rather than as ceremony.",
@@ -1430,6 +1508,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**memory**: the fix-carries-its-class pattern now has five consecutive measured instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices rather than as a per-slice surprise, so the two-round rule reads as load-bearing rather than as ceremony."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2097550d83f5",
+      "kind": "next_improvement",
+      "lesson": "never reach for `git stash` to compare against HEAD; a detached worktree answers the same question without touching the working tree.",
+      "normalized_key": "never reach for git stash to compare against head a detached worktree answers the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "never reach for `git stash` to compare against HEAD; a detached worktree answers the same question without touching the working tree."
         }
       ]
     },
@@ -1538,6 +1642,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:2500342b0a24",
+      "kind": "repeat_trap",
+      "lesson": "**I ran `git stash -u` for no reason and stashed the entire session's uncommitted work.** It was recoverable by `git stash pop` and cost only the recovery, but it also corrupted a full quality-lane run that was executing at the time — files vanished under it, ten gates reported failures, and I nearly spent the next hour chasing artifacts of my own mistake. The command had no purpose; I typed it while reaching for a way to compare against HEAD, which a detached worktree answers without touching the working tree.",
+      "normalized_key": "i ran git stash u for no reason and stashed the entire session s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I ran `git stash -u` for no reason and stashed the entire session's uncommitted work.** It was recoverable by `git stash pop` and cost only the recovery, but it also corrupted a full quality-lane run that was executing at the time — files vanished under it, ten gates reported failures, and I nearly spent the next hour chasing artifacts of my own mistake. The command had no purpose; I typed it while reaching for a way to compare against HEAD, which a detached worktree answers without touching the working tree."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:c09cc36ee063",
       "kind": "repeat_trap",
       "lesson": "**Near-miss, not waste, recorded because it nearly was**: the retro planner's default `next_action` was `continue-existing-retro` pointing at `2026-08-16-session-retro.md`, with the scaffold packet declaring `write_artifact_effect: overwrite_existing_content`. That artifact belongs to the PREVIOUS session (committed in `0037dbcfd`) and merely shares today's date. Passing `--title` routed the scaffold to a new path and the prior record survived. This is the producer-scaffold class S2 of this very release exists to fix, arriving through the planner's default rather than the scaffold's write path.",
@@ -1564,6 +1694,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:33c8b5dc648d",
+      "kind": "repeat_trap",
+      "lesson": "Not waste, recorded because it looks like it: eight reviewers over two rounds cost most of the session's wall clock and found every defect that mattered. I found none of the round-1 blockers independently.",
+      "normalized_key": "not waste recorded because it looks like it eight reviewers over two rounds cost",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Not waste, recorded because it looks like it: eight reviewers over two rounds cost most of the session's wall clock and found every defect that mattered. I found none of the round-1 blockers independently."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:4baef1881de8",
       "kind": "repeat_trap",
       "lesson": "**`ruff` C901 complexity surfaced after the code was written**, forcing a decomposition pass on two functions. The decomposition was an improvement, so this is cheap waste, not pure loss.",
@@ -1586,6 +1742,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**`ruff` C901 complexity surfaced after the code was written**, forcing a decomposition pass on two functions. The decomposition was an improvement, so this is cheap waste, not pure loss."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c7d662c44949",
+      "kind": "repeat_trap",
+      "lesson": "**The changed-line proof still has not run**, for the fourth session running, because the gate refuses a dirty pool and I had not committed. The lesson presented at session open says to run it before the broad lane. I ran the broad lane first, again.",
+      "normalized_key": "the changed line proof still has not run for the fourth session running because",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The changed-line proof still has not run**, for the fourth session running, because the gate refuses a dirty pool and I had not committed. The lesson presented at session open says to run it before the broad lane. I ran the broad lane first, again."
         }
       ]
     },

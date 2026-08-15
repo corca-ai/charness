@@ -38,7 +38,8 @@
 - **The close set is SPLIT**: #618-#627 close as `bug` through the release carrier,
   #608 closes separately afterwards as `feature`. The release CLI applies one
   classification to every number and the eleven do not share one.
-- Re-prove the suite with `python3 scripts/run_standing_pytest.py --repo-root . --include-release-only`.
+- Re-prove the suite with `python3 scripts/run_standing_pytest.py`; add
+  `--include-release-only` for the release-marked tests.
   Run `python3 scripts/sync_root_plugin_manifests.py` FIRST; the generated mirror is a
   repair surface, and a run begun before its re-sync burns a cycle.
 - Ruff is clean only cache-free: `ruff check --no-cache .`, never `ruff check .`.
