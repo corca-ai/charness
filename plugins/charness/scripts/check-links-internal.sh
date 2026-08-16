@@ -68,7 +68,10 @@ EOF
 fi
 
 listing_dir="$(mktemp -d)"
-trap 'rm -rf "$listing_dir"' EXIT
+# `|| true` so a failed removal cannot restate this gate's verdict: `set -e` is in
+# force inside an EXIT trap, so an aborting `rm` replaces the pending status with its
+# own. Measured on run-quality.sh, where it turned a correct exit 2 into a 1.
+trap 'rm -rf "$listing_dir" || true' EXIT
 tracked_markdown_list="$listing_dir/tracked-markdown.txt"
 run_git_listing_to_file tracked-markdown "$tracked_markdown_list" \
   git ls-files -- '*.md' \

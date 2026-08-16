@@ -76,7 +76,10 @@ if command -v gitleaks >/dev/null 2>&1; then
     scan_dir="$(mktemp -d)"
     tracked_files_path="$scan_dir/tracked-files.zlist"
     existing_files_path="$scan_dir/existing-files.zlist"
-    trap 'rm -rf "$scan_dir"' EXIT
+    # `|| true` so a failed removal cannot restate this gate's verdict: `set -e` is in
+    # force inside an EXIT trap, so an aborting `rm` replaces the pending status with its
+    # own. Measured on run-quality.sh, where it turned a correct exit 2 into a 1.
+    trap 'rm -rf "$scan_dir" || true' EXIT
     run_git_listing_to_file secret-scan-files "$tracked_files_path" \
       git ls-files -z --cached --others --exclude-standard
     filter_existing_file_list "$tracked_files_path" "$existing_files_path"
@@ -110,7 +113,7 @@ if command -v npm >/dev/null 2>&1; then
     secretlint_list_dir="$(mktemp -d)"
     secretlint_list_path="$secretlint_list_dir/tracked-files.zlist"
     secretlint_existing_list_path="$secretlint_list_dir/existing-files.zlist"
-    trap 'rm -rf "$secretlint_list_dir"' EXIT
+    trap 'rm -rf "$secretlint_list_dir" || true' EXIT
     run_git_listing_to_file secretlint-files "$secretlint_list_path" \
       git ls-files -z --cached --others --exclude-standard
     filter_existing_file_list "$secretlint_list_path" "$secretlint_existing_list_path"

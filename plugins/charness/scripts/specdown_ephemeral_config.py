@@ -21,7 +21,7 @@ run finishes.
 Usage:
 
     config=$(python3 scripts/specdown_ephemeral_config.py --out-dir "$tmpdir")
-    trap 'rm -f "$config"' EXIT
+    trap 'rm -f "$config" || true' EXIT
     specdown run -config "$config" -jobs 4 -out "$tmpdir"
 """
 from __future__ import annotations

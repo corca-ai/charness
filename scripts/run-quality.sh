@@ -102,7 +102,55 @@ STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-ro
 mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
 
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
-trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
+# The VERDICT is authoritative; cleanup is best-effort.
+#
+# Measured, because a first version of this comment stated the mechanism WRONG and a
+# reviewer caught it. Bash does NOT hand the trap's status to the script:
+# `bash -c 'trap "false" EXIT; exit 2'` exits 2. What rewrote the verdict is `set -e`,
+# in force inside the EXIT trap on the ORDINARY exit path: the failing `rm` tripped
+# errexit, the trap aborted, and the shell exited with the failing command's 1 instead
+# of the pending 2. (Not unconditional -- errexit is suspended in a condition context,
+# so a trap reached from inside `flush_phase || OVERALL_RC=$?` would not abort. The fix
+# below does not depend on which path was taken.)
+# The distinction is load-bearing for anyone repairing a sibling gate from this note:
+# under the true mechanism `rm ... || true` is a complete fix, and under the false one
+# it would have been actively harmful.
+#
+# What made the `rm` fail: a run that correctly refused with exit 2 ("a queued gate
+# label the universe reader cannot see") does so from `assert_label_in_universe`, which
+# fires AFTER `queue_selected "pytest"` has forked its background subshell. That child
+# was still writing into the temp dir while the trap walked it, so `rm -rf` reported
+# `Directory not empty`. A gate runner whose cleanup can restate its verdict is the
+# class this runner exists to catch, one level up.
+#
+# `$?` is captured first, NOTHING in the body can abort the trap, and the captured
+# status is what the shell exits with. Both the removal and the warning are guarded --
+# a first repair guarded only the removal, and a reviewer pointed out the warning could
+# then abort it in turn: `./scripts/run-quality.sh | head` closes stderr's pipe, `echo`
+# dies on SIGPIPE, and errexit takes the trap out before `exit "$rc"`. The trailing
+# `|| :` is what makes the sentence above true rather than aspirational.
+#
+# The removal error is WARNED rather than discarded: it is the only signal that a gate
+# child outlived the runner, and silencing it would let undeletable `/tmp` dirs and
+# detached gate processes accumulate invisibly. `rm`'s own message is left on stderr
+# beneath the warning, because "Directory not empty", "Permission denied" and
+# "Read-only file system" need different responses and the warning names only the first.
+#
+# Cleanup deliberately does NOT `wait` on outstanding phase children: a stuck gate would
+# hang teardown forever. The cost is that the warning can fire while a child is still
+# writing, which is exactly what it says.
+#
+# One consequence, stated rather than hidden: the explicit `exit` means a signal death
+# leaves normally with 128+n instead of re-raising, so a wrapper sees the number but not
+# `WIFSIGNALED`. The verdict is unchanged; only "interrupted" vs "failed" blurs.
+# shellcheck disable=SC2317  # reached only through the EXIT trap below
+run_quality_cleanup() {
+  local rc=$?
+  rm -rf "$RUN_QUALITY_TMPDIR" ||
+    echo "run-quality: warning: could not remove $RUN_QUALITY_TMPDIR (a gate child may still be running)" >&2 || :
+  exit "$rc"
+}
+trap run_quality_cleanup EXIT
 RUN_QUALITY_RUNTIME_BATCH="$RUN_QUALITY_TMPDIR/runtime-batch.jsonl"
 : >"$RUN_QUALITY_RUNTIME_BATCH"
 
@@ -1089,7 +1137,7 @@ queue_selected "check-closeout-classification-parity" python3 scripts/check_clos
 # The JSON reporter's destination lives in specdown.json, not behind -out, so an
 # unredirected run rewrites the tracked report on every gate with nothing changed
 # but its generatedAt timestamp. Run against an ephemeral config instead.
-queue_selected "specdown" bash -c "command -v specdown >/dev/null || { echo \"specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown for current readiness.\"; exit 1; }; specdown_config=\$(python3 \"$REPO_ROOT/scripts/specdown_ephemeral_config.py\" --repo-root \"$REPO_ROOT\" --out-dir \"$RUN_QUALITY_TMPDIR/specdown-report\") || exit 1; trap 'rm -f \"\$specdown_config\"' EXIT; specdown run -config \"\$specdown_config\" -jobs 4 -out \"$RUN_QUALITY_TMPDIR/specdown-report\""
+queue_selected "specdown" bash -c "command -v specdown >/dev/null || { echo \"specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown for current readiness.\"; exit 1; }; specdown_config=\$(python3 \"$REPO_ROOT/scripts/specdown_ephemeral_config.py\" --repo-root \"$REPO_ROOT\" --out-dir \"$RUN_QUALITY_TMPDIR/specdown-report\") || exit 1; trap 'rm -f \"\$specdown_config\" || true' EXIT; specdown run -config \"\$specdown_config\" -jobs 4 -out \"$RUN_QUALITY_TMPDIR/specdown-report\""
 queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
 queue_selected "doc-duplicates" python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root "$REPO_ROOT" --require-nose --json-out "$RUN_QUALITY_TMPDIR/doc-duplicates.json"
 

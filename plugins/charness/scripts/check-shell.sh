@@ -42,7 +42,10 @@ if ! command -v shellcheck >/dev/null 2>&1; then
 fi
 
 listing_dir="$(mktemp -d)"
-trap 'rm -rf "$listing_dir"' EXIT
+# `|| true` so a failed removal cannot restate this gate's verdict: `set -e` is in
+# force inside an EXIT trap, so an aborting `rm` replaces the pending status with its
+# own. Measured on run-quality.sh, where it turned a correct exit 2 into a 1.
+trap 'rm -rf "$listing_dir" || true' EXIT
 listing_path="$listing_dir/shell-files.txt"
 listing_stderr_path="$listing_dir/shell-files.stderr"
 

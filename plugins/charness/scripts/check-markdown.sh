@@ -94,13 +94,23 @@ markdownlint_pid=""
 # Invoked through the EXIT trap below; ShellCheck cannot follow that indirect call.
 # shellcheck disable=SC2317
 cleanup() {
+  # The VERDICT is authoritative; cleanup is best-effort. `set -e` is in force in an
+  # EXIT trap on the ordinary exit path, so a bare `rm -rf` that fails aborts the trap
+  # and the gate exits with the `rm`'s status instead of its own verdict. This is the
+  # worst instance of that shape in the repo rather than a theoretical one: the two
+  # `kill`s above are sent to children that are writing into `$listing_dir`, so racing
+  # the removal against a still-flushing child is the DESIGNED teardown order, and the
+  # result would be `FAIL check-markdown` on a clean tree.
+  local rc=$?
   if [[ -n "$inline_code_pid" ]]; then
     kill "$inline_code_pid" 2>/dev/null || true
   fi
   if [[ -n "$markdownlint_pid" ]]; then
     kill "$markdownlint_pid" 2>/dev/null || true
   fi
-  rm -rf "$listing_dir"
+  rm -rf "$listing_dir" ||
+    echo "check-markdown: warning: could not remove $listing_dir" >&2 || :
+  exit "$rc"
 }
 trap cleanup EXIT
 tracked_markdown_list="$listing_dir/tracked-markdown.txt"

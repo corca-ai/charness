@@ -40,7 +40,10 @@ EOF
 fi
 
 tmp_links="$(mktemp)"
-trap 'rm -f "$tmp_links"' EXIT
+# `|| true` so a failed removal cannot restate this gate's verdict: `set -e` is in
+# force inside an EXIT trap, so an aborting `rm` replaces the pending status with its
+# own. Measured on run-quality.sh, where it turned a correct exit 2 into a 1.
+trap 'rm -f "$tmp_links" || true' EXIT
 
 python3 scripts/list_external_links.py --repo-root "$REPO_ROOT" >"$tmp_links"
 
