@@ -3,9 +3,12 @@ Classification: bug
 Jtbd: a maintainer or consuming repo can run the gates, bootstrap the lesson
 lifecycle, and read a repo-owned instruction that does what it says — without
 first discovering that the fix exists only in an unreleased tree. For every issue
-here the repair landed in-repo and was stranded behind the publish. For five of
+here the repair landed in-repo and was stranded behind the publish. For four of
 the ten the repair is NARROWER than the issue's title or its stated expected
-behavior, and each of those closes on what shipped rather than on the class:
+behavior, and each of those closes on what shipped rather than on the class.
+#618 was a fifth until its residual was repaired between preparation and publish;
+it is kept in the list below because this ledger's own claim about it CHANGED, and
+a reader of a close comment deserves to see which way:
 
 - **#618** — the rooting defect is fixed and the gate stopped measuring a narrower
   tree. The residual this ledger first recorded as unfixed — a reference pointing
