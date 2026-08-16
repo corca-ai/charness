@@ -649,3 +649,41 @@ def test_an_invalid_manifest_SCHEMA_is_refused_rather_than_crashing(tmp_path: Pa
     assert payload["status"] == "invalid_adapter"
     assert payload["executed"] is False
     assert payload["errors"], "the refusal must carry the schema fault, not an empty list"
+
+
+def test_the_prose_pin_advisory_renders_its_findings_instead_of_crashing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The advisory's ONE reachable line is the one that used to raise.
+
+    It called the renderer the 2026-08-14 `--json` removal deleted, so it raised
+    `AttributeError` on exactly the runs that had a finding and stayed silent on the
+    runs that had nothing to say -- a check reachable only when it fires is a check
+    that never fires. This drives it to a real finding and reads the rendered payload.
+    """
+    import subprocess
+
+    from scripts.slice_closeout_advisories import advise_prose_pin
+
+    repo = tmp_path / "repo"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "docs").mkdir()
+    doc = repo / "docs" / "pinned.md"
+    doc.write_text("# Pinned\n\nA sentence a test asserts verbatim.\n", encoding="utf-8")
+    (repo / "tests" / "test_pin.py").write_text(
+        'def test_pin():\n    assert "A sentence a test asserts verbatim." in open("docs/pinned.md").read()\n',
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@e", "-c", "user.name=t", "commit", "-qm", "seed"],
+        cwd=repo, check=True, capture_output=True,
+    )
+    doc.write_text("# Pinned\n\nA sentence a test asserts verbatim, now edited.\n", encoding="utf-8")
+
+    advise_prose_pin(repo, ["docs/pinned.md"])
+
+    rendered = capsys.readouterr().err
+    assert "prose-pin" in rendered, rendered
+    assert "docs/pinned.md" in rendered, rendered

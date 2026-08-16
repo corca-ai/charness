@@ -8,6 +8,8 @@ import yaml
 from scripts import lesson_command_citation, recent_lessons_lib
 from tests.dsl import Repo, run_at
 
+ROOT_PATH = Path(__file__).resolve().parents[2]
+
 RETRO = Repo().adapter(
     "retro",
     {
@@ -423,3 +425,47 @@ def test_the_checked_in_export_is_not_treated_as_a_competing_source_tree() -> No
     export = Path(__file__).resolve().parents[2] / "plugins" / "charness"
     assert (export / "scripts" / lesson_command_citation.INDEX_SCRIPT_NAME).is_file()
     assert not lesson_command_citation.repo_carries_index_builder(export)
+
+
+def _citation_in_a_bare_tree(tmp_path: Path):
+    """`lesson_command_citation` loaded from a tree carrying neither script.
+
+    `script_tree_root()` is derived from `__file__`, so the only way to reach the
+    "neither tree has it" arm is to run a copy that genuinely has no siblings.
+    """
+    import importlib.util
+
+    tree = tmp_path / "vendored" / "scripts"
+    tree.mkdir(parents=True)
+    target = tree / "lesson_command_citation.py"
+    target.write_bytes((ROOT_PATH / "scripts" / "lesson_command_citation.py").read_bytes())
+    spec = importlib.util.spec_from_file_location("bare_lesson_command_citation", target)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_a_tree_carrying_neither_script_names_a_shape_not_a_dead_path(tmp_path: Path) -> None:
+    """When no tree has the script, cite the SHAPE rather than a path that resolves nowhere.
+
+    A reader who is handed a nonexistent concrete path cannot tell "I mistyped it"
+    from "this file does not ship here", which is the confusion the whole repair
+    exists to end. The placeholder is a bare token on purpose: `<...>` in a shell is
+    a redirection, so a bracketed one turns "file not found" into a different, wronger
+    error when the operator pastes the command.
+    """
+    module = _citation_in_a_bare_tree(tmp_path)
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+
+    index = module.index_build_command(consumer, "--write")
+    digest = module.refresh_digest_command(consumer)
+
+    for command in (index, digest):
+        assert command.startswith(f"python3 {module.PLUGIN_DIR_TOKEN}/"), command
+        assert "<" not in command and ">" not in command, command
+        assert f"--repo-root {consumer}" in command, command
+    assert index.endswith("--write")
+    assert module.INDEX_SCRIPT_RELATIVE.as_posix() in index
+    assert "skills/retro/scripts/refresh_recent_lessons.py" in digest
