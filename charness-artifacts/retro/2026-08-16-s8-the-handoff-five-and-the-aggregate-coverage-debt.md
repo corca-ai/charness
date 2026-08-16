@@ -47,6 +47,16 @@ Second: I iterated the Python length cap one refactor at a time — 481, then 53
 the counted-limit-as-retry-loop trap this repo already records, walked into while the
 lesson naming it was in view at session open.
 
+Second-and-a-half, and the largest single irreversible cost: pushing the range closed
+#626. A commit message from an earlier session contained the sentence "because S7
+closes\n#626/#627/#631 on the strength of that gate" — narrative describing a future
+release — and GitHub read `closes #626` as a directive. Only #626 bound, because the `/`
+separator stops the link, and a scan of all sixty messages found no other. The repo's
+guard inspects a staged `charness-artifacts/issue/*.md` for `Closes #N`; it cannot see a
+keyword inside a sentence. The issue was in the intended close set, so the STATE is what
+was wanted; what is missing is the closeout body that should have carried it, and the
+owner has ruled against reopening.
+
 Third, and cheap but repeated: two tests written for this slice asserted a GLOBAL
 interpreter property (`find_spec("scripts") is None`, `pytest.raises(ImportError)`
 around a package import) to prove a LOCAL layout fact. Both passed in isolation and
@@ -66,6 +76,13 @@ discover.
   out of DISCOVERY — a worse failure than the prefix/suffix decomposition it replaced.
 - **Six disjoint-writer agents for the coverage debt, one file each.** No conflicts, and
   four of the six returned production findings I would not have looked for.
+- **Stopping the publish at `unproven` rather than running a fourth claims round.**
+  Three rounds each found a NEW real false claim in the body that would be posted
+  verbatim as ten irreversible close comments — round 2 found that round 1's repair left
+  a sibling sentence stale, and round 3 found that round 2's repair introduced a false
+  attribution. A surface that keeps producing findings is telling you about the surface.
+  A fourth round would have been reviewing until it passes, which is the shape round 1's
+  own finding was made of.
 - **Relevelling two runtime bars rather than chasing a regression.** Both were drawn at
   roughly 1.0x of observed rather than the repo's documented 1.4x, so ordinary
   contention was enough to trip them with nothing changed in either gate.
@@ -120,6 +137,17 @@ Lesson evaluation: {"score_event_count":5,"session_id":"2026-08-16-s8-debt","sta
   DISCOVER and MATCH, one engine must do both. `fnmatch` and `Path.glob` disagree about
   `*` crossing `/` and about `**/`, in opposite directions, so two readers of one
   pattern is a defect even when each reader is individually reasonable.
+- workflow: recurrence-class: prose-claim-without-a-reader — an artifact whose PROSE
+  carries verification-grade claims (counts, per-issue residual ownership, which prior
+  finding recorded what) has no executable reader, so its errors are found only by
+  whoever reads it next. Three independent claims-review rounds each found a NEW real
+  defect in one such body; the fix is to shrink the claim surface or derive it from the
+  structured findings it cites, never to add a fourth reviewer.
+- capability: recurrence-class: keyword-in-prose-is-a-directive — a host parses text a
+  human wrote as narrative. `S7 closes\n#626/#627/#631`, written to DESCRIBE a future
+  release, closed #626 the moment the commit was pushed. Before pushing, scan the range's
+  messages for the host's own keyword grammar; a guard that only inspects a staged
+  carrier file cannot see a keyword in a sentence.
 
 ## Persisted
 

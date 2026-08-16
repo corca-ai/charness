@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-16",
   "source_artifact_count": 518,
-  "candidate_count": 2120,
+  "candidate_count": 2122,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1356,6 +1356,32 @@
       ]
     },
     {
+      "candidate_id": "class:724ef068d175",
+      "kind": "next_improvement",
+      "lesson": "a host parses text a human wrote as narrative. `S7 closes\\n#626/#627/#631`, written to DESCRIBE a future release, closed #626 the moment the commit was pushed. Before pushing, scan the range's messages for the host's own keyword grammar; a guard that only inspects a staged carrier file cannot see a keyword in a sentence.",
+      "normalized_key": "a host parses text a human wrote as narrative s7 closes n 626 627",
+      "recurrence_class": "keyword-in-prose-is-a-directive",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a host parses text a human wrote as narrative. `S7 closes\\n#626/#627/#631`, written to DESCRIBE a future release, closed #626 the moment the commit was pushed. Before pushing, scan the range's messages for the host's own keyword grammar; a guard that only inspects a staged carrier file cannot see a keyword in a sentence."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:f2985d3eb38f",
       "kind": "next_improvement",
       "lesson": "a test proving a LOCAL layout fact must assert what the module under test bound, never a global interpreter property. Where the arm taken is not observable from the module, force it with a `meta_path` finder rather than by filtering `sys.path`.",
@@ -1404,6 +1430,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:7a4296fb47a3",
+      "kind": "next_improvement",
+      "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer.",
+      "normalized_key": "an artifact whose prose carries verification grade claims counts per issue residual ownership which",
+      "recurrence_class": "prose-claim-without-a-reader",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer."
         }
       ]
     },
