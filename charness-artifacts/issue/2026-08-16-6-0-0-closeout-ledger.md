@@ -67,9 +67,12 @@ direction — #626's says the archive disposition is absent, and running
 because a first draft of this paragraph claimed all ten: #622 and #624 have no
 fresh reproduction in this slice, and their verdicts rest on the earlier cohort
 review plus the repairs this slice made to their surfaces. The durable records are
-`charness-artifacts/debug/2026-08-14-issue-cohort-618-624-causal-analysis.md` (the
-cohort's causal analysis, whose `## Observed Facts` is the direct evidence for the
-#619 and #622 root-cause clauses above),
+`charness-artifacts/debug/2026-08-14-issue-cohort-618-624-causal-analysis.md` (a
+#619 debug record despite its cohort filename, whose `## Observed Facts` is the direct
+evidence for the #619 root-cause clause above and for NOTHING else here -- it does not
+mention #624 at all, and reaches #622 only through a sibling-search line; #622's
+recorded findings are F3/F4 of the 2026-08-14 cohort closeout and F10 of the execution
+critique below),
 `charness-artifacts/critique/2026-08-16-s7-6-0-0-release-execution.md` (this
 release's execution critique, carrying the per-issue premise verdicts as F23-F27
 and F27b-F27d), and
