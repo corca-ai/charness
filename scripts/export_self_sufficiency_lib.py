@@ -286,62 +286,37 @@ GENERATED_FILE_MARKER = "generated_file: true"
 #: this class returns. Matched by EXACT relative path, not suffix: `endswith` would
 #: silently exempt any future nested path ending in one of these strings.
 INSTRUCTION_EXEMPT_PATHS = {
-    "skills/critique/adapter.example.yaml": (
-        "EXECUTED: `command:` is run via subprocess by critique_packet_lib; "
-        "`<plugin-dir>/` is never substituted and would break it"
-    ),
     "skills/critique/references/adapter-contract.md": (
-        "EXECUTED: documents the same `command:` value and must show the runnable spelling"
+        "EXECUTED: documents the critique adapter's `command:` value, which "
+        "critique_packet_lib runs through subprocess; the doc must show the runnable "
+        "spelling or a consumer copies a broken one"
     ),
     "skills/critique/references/prepare-packet.md": (
-        "EXECUTED: names the producer for the same `command:` field"
-    ),
-    "skills/retro/adapter.example.yaml": (
-        "EXECUTED: same `command:` field, same subprocess path"
+        "EXECUTED: names the producer for that same `command:` field"
     ),
     "skills/retro/references/adapter-contract.md": (
-        "EXECUTED: documents the retro adapter's `command:` value"
+        "EXECUTED: documents the retro adapter's `command:` value, same executor"
     ),
-    "integrations/tools/agent-browser.json": (
-        "EXECUTED: `healthcheck.commands` is run by control_plane_lib.run_check, so "
-        "`<plugin-dir>/` would break the probe. The sibling `failure_hint` in the same "
-        "file is only DISPLAYED and would be safe to rewrite -- exempting per-file "
-        "trades that repair for not breaking the executed line beside it"
+    "skills/release/references/adapter-contract.md": (
+        "EXECUTED: documents `sync_command`, which resolve_adapter.EXECUTED_COMMAND_FIELDS "
+        "names as one of the release adapter's two RUN fields. Consumer-REPLACEABLE and "
+        "executed are independent; this is the executed one"
+    ),
+    "skills/quality/references/cost-dominance.md": (
+        "CONSUMER-OWNED: the `replacement:` key is a value a repo author fills in with "
+        "THEIR fast runner. Residual, tracked not banked: a consumer copying the schema "
+        "example verbatim reproduces the #634 shape, and the example carries no warning"
     ),
     "integrations/tools/README.md": (
         "MAINTAINER-FACING: authoring rules for charness's own integration manifests, "
         "which a consumer does not write; the named probe runs in this repo"
     ),
-    "skills/quality/references/cost-dominance.md": (
-        "CONSUMER-OWNED: the `replacement:` key is a value a repo author fills in with "
-        "THEIR fast runner. A consumer copying the schema example verbatim would "
-        "reproduce the #634 shape; the example is not annotated to warn them"
-    ),
-    "skills/quality/scripts/command_dominance_lib.py": (
-        "CONSUMER-OWNED, and inert for the block: prose explaining why the bare-pytest "
-        "rule does not fire on charness's own replacement string; changing it would "
-        "falsify the explanation. Already module-prose by location"
-    ),
-    "skills/release/adapter.example.yaml": (
-        "CONSUMER-OWNED: `sync_command` is the consumer's own sync command; resolve_adapter already "
-        "warns when inferred defaults name THIS repo's scripts"
-    ),
-    "skills/release/references/adapter-contract.md": (
-        "CONSUMER-OWNED: documents the `sync_command` key whose value is consumer-owned, same as above"
-    ),
-    "skills/release/scripts/init_adapter.py": (
-        "CONSUMER-OWNED, inert for the block: seeds the consumer-owned `sync_command` default; carried by the same warning"
-    ),
-    "skills/release/scripts/resolve_adapter.py": (
-        "CONSUMER-OWNED, inert for the block: infer_repo_defaults, which EXECUTED_WARNING_MARKER already reports to the reader"
-    ),
-    "skills/issue/scripts/fixtures/slack-thread-source-preservation.json": (
-        "INERT for the block: fixture prose inside a test payload; never read as an instruction"
-    ),
 }
 
 
-def repo_root_instruction_findings(export_root: Path) -> list[dict[str, object]]:
+def repo_root_instruction_findings(
+    export_root: Path, *, apply_exemptions: bool = True
+) -> list[dict[str, object]]:
     """Exported docs telling a consumer to run `python3 scripts/<name>.py`.
 
     The sibling of the path arm, asked about PROSE rather than code. The path arm
@@ -367,13 +342,16 @@ def repo_root_instruction_findings(export_root: Path) -> list[dict[str, object]]
         if path.suffix not in (*_ENTRYPOINT_DOC_SUFFIXES, ".py") or not path.is_file():
             continue
         relative = path.relative_to(export_root).as_posix()
-        if relative in INSTRUCTION_EXEMPT_PATHS:
+        if apply_exemptions and relative in INSTRUCTION_EXEMPT_PATHS:
             continue
         try:
             text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        is_generated = GENERATED_FILE_MARKER in text
+        # Header region only: the marker appears mid-file in docs ABOUT generated
+        # files, and in this module as a constant value. Whole-file matching let
+        # such a file exempt its own real instructions.
+        is_generated = GENERATED_FILE_MARKER in "\n".join(text.splitlines()[:10])
         for lineno, line in enumerate(text.splitlines(), start=1):
             if is_generated and GENERATED_HEADER_FIELD_RE.match(line):
                 continue
@@ -393,23 +371,29 @@ def repo_root_instruction_findings(export_root: Path) -> list[dict[str, object]]
 
 
 def _instruction_site_class(relative: str) -> str:
-    """`consumer-doc` for a skill doc or adapter example a consumer READS and follows;
-    `module-prose` for a docstring or help string inside an exported module.
+    """`consumer-doc` for PROSE a consumer reads and types; `module-prose` for
+    everything else, which is advisory inventory.
 
-    The split exists because the first run of this arm returned 87 sites and the
-    difference between them is the whole question. A `references/*.md` line telling a
-    consumer to type a command is the reported failure shape. A `sync_root_plugin_manifests.py`
-    docstring naming its own invocation is a maintainer tool describing itself, and
-    rewriting it to `<plugin-dir>/` would make the in-repo instruction wrong to fix an
-    instruction nobody follows. Only the first class is repaired; the second is inventory.
+    Only `.md` outside a `scripts/` directory is consumer-doc, and the narrowing is
+    the whole lesson of this arm's first two builds. A `.yaml`/`.json` file holds
+    VALUES, and a value under `command:`, `commands:`, `sync_command:` or
+    `quality_command:` is RUN by an executor -- `critique_packet_lib._run_command`
+    shells `command:`, `control_plane_lib.run_shell` runs `checks.*.commands`, and
+    `resolve_adapter.EXECUTED_COMMAND_FIELDS` names `sync_command`/`quality_command`
+    as the release adapter's two RUN fields. `<plugin-dir>/` is a DOC placeholder no
+    runtime substitutes, so prescribing it into any of those converts a working
+    command into `can't open file`. Build one rewrote five such values; build two
+    reverted them but left the classifier able to BLOCK on the next one, with the
+    remedy still prescribing the break. Config cannot reach the blocking arm now.
 
-    This is a DECLARATION about file location, not a measurement of who reads the file.
-    A consumer-facing instruction inside a module docstring is classed `module-prose`
-    and will be under-reported.
+    Blind class: a consumer instruction living in a `.yaml` comment or a JSON
+    `description` is real and is under-reported here. That is the deliberate side to
+    err on -- a missed advisory entry costs an inventory line, a wrong block costs a
+    broken command.
     """
-    if relative.endswith(".py") or "/scripts/" in relative:
-        return "module-prose"
-    return "consumer-doc"
+    if relative.endswith(".md") and "/scripts/" not in relative:
+        return "consumer-doc"
+    return "module-prose"
 
 
 def _guarded_import_lines(tree: ast.AST) -> set[int]:

@@ -619,13 +619,13 @@ def test_a_skill_doc_is_consumer_doc_and_a_module_docstring_is_module_prose(tmp_
 
 
 def test_a_script_under_a_skills_scripts_dir_is_module_prose_not_consumer_doc(tmp_path: Path) -> None:
-    """`skills/` alone does not make a file consumer-facing -- `skills/x/scripts/y.py` is
-    a module. Without the `/scripts/` clause the split would call every skill-owned
-    module a consumer doc and block on its docstrings."""
+    """A `.md` under a `scripts/` directory is module documentation, not consumer prose.
+    This is the case the `/scripts/` clause exists for; a `.py` there is already caught
+    by the suffix test, so without a non-.py fixture the clause would be uncovered."""
     export_root = _instruction_export(
         tmp_path,
-        doc_relative="skills/demo/scripts/helper.py",
-        body='"""Run `python3 scripts/render_thing.py`."""\n',
+        doc_relative="skills/demo/scripts/NOTES.md",
+        body="Run `python3 scripts/render_thing.py`\n",
     )
 
     assert [f["site_class"] for f in _lib.repo_root_instruction_findings(export_root)] == [
@@ -646,8 +646,8 @@ def test_a_consumer_doc_instruction_makes_the_gate_FAIL(tmp_path: Path) -> None:
 
 
 def test_the_real_export_has_no_consumer_doc_repo_root_instructions() -> None:
-    """The bar this slice set at the count it already holds. Twelve consumer-doc sites
-    were rewritten to `<plugin-dir>/`; this refuses the thirteenth."""
+    """The bar this slice set at the count it already holds. Seven consumer-doc sites
+    were rewritten to `<plugin-dir>/` and kept; this refuses the eighth."""
     findings = _lib.repo_root_instruction_findings(ROOT / "plugins" / "charness")
 
     assert [f for f in findings if f["site_class"] == "consumer-doc"] == []
@@ -745,24 +745,50 @@ def test_an_exempt_path_is_matched_exactly_and_not_by_suffix(tmp_path: Path) -> 
 
 
 def test_every_exemption_is_still_LOAD_BEARING() -> None:
-    """An exemption whose site no longer contains a matching string is dead, and a dead
-    entry is how the list becomes a place to silence findings. Asserts each one is doing
-    work, not merely that it is spelled correctly.
+    """An exemption whose site no longer contains a reportable instruction is dead, and
+    a dead entry is how the list becomes a place to silence findings.
+
+    Drives the PRODUCTION finder with exemptions off rather than re-implementing its
+    skip conditions. The first version re-implemented two of the three and omitted the
+    shipped-script check, so an exemption for an unshipped script read as live.
     """
     export_root = ROOT / "plugins" / "charness"
-    for relative in _lib.INSTRUCTION_EXEMPT_PATHS:
-        path = export_root / relative
-        assert path.exists(), relative
-        text = path.read_text(encoding="utf-8")
-        matched = [
-            line
-            for line in text.splitlines()
-            if _lib.REPO_ROOT_SCRIPT_INSTRUCTION_RE.search(line)
-            and not (
-                _lib.GENERATED_FILE_MARKER in text and _lib.GENERATED_HEADER_FIELD_RE.match(line)
-            )
-        ]
-        assert matched, f"{relative} is exempted but contains no repo-root instruction"
+    reported = {
+        finding["doc"]
+        for finding in _lib.repo_root_instruction_findings(export_root, apply_exemptions=False)
+    }
+
+    for relative, reason in _lib.INSTRUCTION_EXEMPT_PATHS.items():
+        assert (export_root / relative).exists(), relative
+        assert reason.strip(), relative
+        assert relative in reported, f"{relative} is exempted but nothing there is reportable"
+
+
+def test_the_real_finder_still_emits_consumer_doc_on_the_real_tree() -> None:
+    """The gate-teeth tests monkeypatch the finder, so they would pass even if the real
+    one returned [] for every input. Nothing else asserted the real finder can still
+    produce the class that blocks. With exemptions off, the exempt consumer-facing .md
+    sites are exactly that shape.
+    """
+    findings = _lib.repo_root_instruction_findings(
+        ROOT / "plugins" / "charness", apply_exemptions=False
+    )
+
+    assert [f for f in findings if f["site_class"] == "consumer-doc"]
+
+
+def test_an_executed_config_value_can_never_reach_the_blocking_arm() -> None:
+    """The class that broke five commands, pinned. `command:`/`commands:`/`sync_command:`
+    live in .yaml and .json, and their values are RUN. If any of those file shapes can be
+    classed consumer-doc, the remedy prescribes `<plugin-dir>/` into an executed field.
+    """
+    for relative in (
+        "skills/critique/adapter.example.yaml",
+        "skills/release/adapter.example.yaml",
+        "integrations/tools/agent-browser.json",
+        "skills/quality/references/catalog.yaml",
+    ):
+        assert _lib._instruction_site_class(relative) == "module-prose", relative
 
 
 def test_a_sync_command_key_outside_a_generated_header_is_still_a_finding(tmp_path: Path) -> None:

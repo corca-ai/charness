@@ -58,13 +58,14 @@ PATH_ADVISORY_NOTE = (
     "from, never as a count of defects."
 )
 #: The consumer-doc instruction arm BLOCKS while the module-prose half stays
-#: advisory, and the split is measured rather than staged: the twelve consumer-doc
-#: sites were repaired to `<plugin-dir>/` in the same slice that added this arm, so
-#: the bar is set at the count it already holds. That is the difference from the
+#: advisory, and the split is measured rather than staged: seven consumer-doc
+#: sites were repaired to `<plugin-dir>/` in the same slice that added this arm (12
+#: rewritten, 5 reverted once review showed they were EXECUTED values), so the bar is
+#: set at the count it already holds. That is the difference from the
 #: path arm, which stayed advisory because its classification was falsified in both
 #: directions and never reached zero.
 CONSUMER_DOC_INSTRUCTION_REMEDY = (
-    "an exported skill doc or adapter example tells a consumer to run `python3 scripts/X`, "
+    "an exported consumer-facing .md tells a consumer to run `python3 scripts/X`, "
     "which on their machine is THEIR repo root and not the plugin. Rewrite it as "
     "`python3 <plugin-dir>/scripts/X` -- check_plugin_dir_references.py owns that placeholder "
     "and will verify the target ships."
