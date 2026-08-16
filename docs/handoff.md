@@ -4,8 +4,9 @@
 
 - Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <same>`
   BEFORE any brief or reviewer spawn. Both flags are REQUIRED.
-- Then run `## Next Session` item 1. Item 1 of the previous handoff is DONE and its
-  three commits are unpushed; the release decision is still the open question.
+- Then run `## Next Session` item 1. The prepared major release IS PUBLISHED and the
+  cohort's ten issues are closed, so the release question that governed the last two
+  handoffs is settled. Read the tag with `git describe --tags --abbrev=0`.
 
 ## Continuation Capability
 
@@ -19,41 +20,41 @@
 
 ## Current State
 
-- **The close-keyword pre-push guard exists and blocks.**
-  [prepush_close_keyword_guard.py](../scripts/prepush_close_keyword_guard.py) applies the
-  commit-msg closeout floor to every close keyword in a push range, reading STORED
-  messages. Re-prove over the commit that closed #626 (find it with
-  `git log --format='%H %s' --grep='S7 closes' -i origin/main`): the guard refuses it,
-  and the other 19 close-keyword commits in the last 400 pass.
-- **The root cause of the #626 close is repaired.** The carrier stripped `^\s*#` lines as
-  git comments — right for an editor message, wrong for the `-m`/`-F` message actually
-  stored — so it scanned text the repo never held. The repair is
-  `_close_keyword_scan_text` in the carrier [check_issue_closeout_commit_msg.py](../scripts/check_issue_closeout_commit_msg.py).
-- **The changed-line proof is CLEAN for this range**, not `partial`: re-prove it with
-  the focused producer [prepush_focused_changed_line_coverage.py](../scripts/prepush_focused_changed_line_coverage.py).
+- **The prepared major release is PUBLISHED**, not a draft or prerelease. Read the tag
+  with `git describe --tags --abbrev=0`, then re-prove the published state with
+  `gh release view "$(git describe --tags --abbrev=0)" --repo corca-ai/charness`.
+- **The ten cohort issues are closed, one close per issue, each body about only itself.**
+  #618-#625 and #627 were closed by `close-with-comment`; #626 was already closed by
+  accident and received its missing body as a comment under the owner's do-not-reopen
+  ruling. The posted bodies are checked in as `charness-artifacts/issue/2026-08-16-issue-*.md`.
+- **The close-keyword pre-push guard blocks**, which is why this range's pushes could not
+  close anything by accident. Re-prove with the guard
+  [prepush_close_keyword_guard.py](../scripts/prepush_close_keyword_guard.py) over the
+  commit that closed #626 (find it with `git log --grep='S7 closes' -i origin/main`).
+- **A gate's cleanup can no longer restate its verdict.** `set -e` inside an EXIT trap let
+  a failed `rm` rewrite a gate's exit code; swept across the shell gates and pinned by the
+  regression file [test_quality_runner_exit_status.py](../tests/quality_gates/test_quality_runner_exit_status.py).
 - Re-prove the suite with `python3 scripts/run_standing_pytest.py --include-release-only`
   after `python3 scripts/sync_root_plugin_manifests.py`; ruff needs `--no-cache`.
 
-Non-claims: the release is still PREPARED, not published — no push, tag, bump, publish,
-hosted CI, installed-consumer readback, or issue closure has run. This range's three
-commits are LOCAL. Round-2 repairs and the coverage tests after them ship at the
-two-round cap, unreviewed. NO consuming repo has run this tree.
+Non-claims: the release's real-host checklist has NOT been run — no `charness update`, no
+installed-vs-repo readback, no `nose` tool-doctor pass. Two should-fix findings in the
+published notes ship unrepaired and are named in the release-review artifact. No consuming
+repo has run this tree.
 
 ## Next Session
 
-1. **Do not run a fourth claims round on the same body.** The publish is STOPPED at
-   `unproven`. The stop, its three rounds, and what each round CONFIRMED are recorded in
-   [the claims review](../charness-artifacts/release-review/2026-08-16-v6.0.0-claims-review.md), which
-   is worth reading before deciding anything about the release. Each round found
-   a NEW real defect, including one INTRODUCED by the previous round's repair, so the
-   finding is about the body rather than the reviewers. Two exits, in order of
-   preference: split the close into batches so no aggregate count sentence exists, or
-   derive the per-issue claims from the critique's structured `F` findings, which
-   already carry the issue number the prose keeps mis-attributing.
-2. **Close the issues this range resolves**, through whichever exit item 1 picks.
-   #632, #528 and #618 are resolved; #634 and #546 are NARROWED and must not be
-   closed. #626 needs its missing closeout body added as a COMMENT — owner ruled do
-   NOT reopen. Map each requested outcome to executed proof before claiming closable.
+1. **Run the release's real-host checklist.** It is the one proof the release shipped
+   without:
+   `charness update` on this machine, then `charness doctor` and a cited-check == repo
+   spot check, so the installed plugin is not skewed from the repo. The full list is in
+   the published record [latest.md](../charness-artifacts/release/latest.md).
+2. **Two should-fix claims ship unrepaired in the published notes**, recorded rather than
+   quietly fixed. Both are named in
+   the [prepared claims review](../charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.md):
+   a sentence pointing at "module docstrings" for a caveat that lives in a function
+   docstring, and an undisclosed exit-0-judged-nothing path on malformed pre-push stdin.
+   Fix both in the tree; the notes are published and are not where to start.
 3. **[#634](https://github.com/corca-ai/charness/issues/634) residual.** Only the
    shell-gate half landed. The cwd-relative instruction sites are UNREPAIRED and the
    detector for them was reverted: it pushed a documentation placeholder into four
@@ -65,27 +66,31 @@ two-round cap, unreviewed. NO consuming repo has run this tree.
    it was already built, measured defective and reverted.
 5. **The unshipped-path arm in [export_self_sufficiency_lib.py](../scripts/export_self_sufficiency_lib.py)**
    counts AST literal nodes, so a subpath written as one literal escapes it.
-6. **The canonical close-keyword scanner still misses `GH-N` and issue-URL forms.**
-   The new guard widened DETECTION for itself only; every other consumer of the
-   canonical scanner [iter_close_keyword_refs](../skills/public/issue/scripts/issue_verify_closeout_body.py)
+6. **The canonical close-keyword scanner still misses `GH-N` and issue-URL forms.** The new
+   guard widened DETECTION for itself only; every other consumer of the shared scanner
+   function [iter_close_keyword_refs](../skills/public/issue/scripts/issue_verify_closeout_body.py)
    still cannot see them. Widening the shared one touches many surfaces.
+7. **Residuals disclosed inside the closed issues, now unowned**: #623's consuming repos
+   still read a literal `<authoring-repo>` placeholder; #625's seeder is not re-prompted
+   after a cold start and its file mode differs from its sibling's; #626's graduated
+   lessons stay `active` against the budget. Each is stated in that issue's close comment.
 
 ## Discuss
 
-- **Round 2 earned its cost for the third slice running, and this time inside my own
-  repair.** The new maintainer arming check counted a MENTION as an invocation and
-  tested `|| true` against the wrong line of a two-line command — verbatim the class the
-  SIBLING arming check's own round 2 had already removed. Re-deriving a judgment instead
-  of calling the module's existing parser re-created it.
-- **The gate that would have caught #626 already existed and reported `not_applicable`.**
-  Replaying it on the stored body is what found the cause. A floor that MODELS what
-  another tool will do is a floor that can be silently wrong about it.
-- **Editing this file can turn SC14 red**: it substitutes into the real handoff and
-  needs the bare backticked `python3 scripts/run_standing_pytest.py` as its anchor.
-- **`keyword-in-prose-is-a-directive` recurred as its own repair.** It was SEEDED but
-  not presented at S8 close; this session consumed it from this file alone.
-- **I piped a gate through `tail` and it masked a ruff failure** until the commit hook
-  caught it — the rule is in CLAUDE.md and I broke it inside the session that added a gate.
+- **Every review round this session found a defect in the previous round's repair.** At
+  five boundaries: the guard, the gate runner, the release notes, the closeout bodies, and
+  twice inside one sentence. The two-round cap is a floor, and the class it catches is the
+  fix that carries what it fixed.
+- **A reviewer caught an edit I reported making and had not made.** A `replace()` with no
+  assert silently did nothing and I described the result as repaired. Scripted edits to a
+  claim surface should assert their anchor and read back.
+- **Splitting the aggregate close body did not split the habit.** The first per-issue draft
+  still inherited a cross-issue uniqueness sentence verbatim from the ledger it replaced,
+  plus a comparative that was factually wrong about a sibling issue.
+- **The gates refused three pushes and four release attempts, and every refusal was real**:
+  a docs ratchet, a runtime budget, a false claim in prose, and ungrounded quantities.
+- **Editing this file can turn SC14 red**: it substitutes into the real handoff and needs
+  the bare backticked `python3 scripts/run_standing_pytest.py` as its anchor.
 
 ## References
 
