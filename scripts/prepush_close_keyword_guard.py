@@ -78,9 +78,10 @@ Not claimed:
 Exit codes:
   0  no close-keyword refs in the range, or every one clears the closeout floor
   1  a commit in the range close-keywords an issue with no valid closeout carrier
-  2  the range could not be read, or the guard crashed, so it judged nothing.
-     Deliberately distinct from 1: an unusable run must never be readable as
-     either a pass or a verdict.
+  2  the range could not be read, the pre-push stdin carried a line git could not
+     have written, or the guard crashed -- so it judged nothing, or judged less
+     than the push. Deliberately distinct from 1: an unusable run must never be
+     readable as either a pass or a verdict.
 """
 from __future__ import annotations
 
@@ -158,6 +159,9 @@ def evaluate(repo_root: Path, push_refs: list[dict[str, str]], repo: str, remote
         "ok": not refused,
         "status": "refused" if refused else ("verified" if findings else "not_applicable"),
         "commits_scanned": len(seen),
+        # Always 0 on the CLI path -- `main` refuses a nonzero count as a no-verdict
+        # before reaching here. Kept so both payloads carry the field, and because a
+        # direct `evaluate` caller can still hand over refs that dropped lines.
         "dropped_stdin_lines": max((int(ref.get("dropped_lines") or 0) for ref in push_refs), default=0),
         "coverage_notes": notes,
         "close_keyword_commits": findings,
@@ -373,6 +377,32 @@ def main(argv: list[str] | None = None) -> int:
 
     push_refs = _push_refs_from_args(args)
     if push_refs is None:
+        return NO_VERDICT_EXIT
+    dropped = max((int(ref.get("dropped_lines") or 0) for ref in push_refs), default=0)
+    if dropped:
+        # Fail-closed on an unreadable stdin LINE, not only on an unreadable range.
+        # git emits four fields per ref and ref names cannot contain spaces, so a
+        # dropped line means a wrapper fed this something else -- and the ref it named
+        # is unrecoverable. Judging the lines that did parse and exiting 0 would report
+        # a clean scan over a push this guard only partly read; when nothing parsed it
+        # reported a clean scan over a push it did not read at all.
+        reason = (
+            f"{dropped} pre-push stdin line(s) were not the "
+            "`<local-ref> <local-sha> <remote-ref> <remote-sha>` grammar git emits, so the "
+            "refs they named could not be read and the commits they would land were not "
+            "judged. Re-check the intended range explicitly: "
+            "`python3 scripts/prepush_close_keyword_guard.py --repo-root . --range <base>..<head>`."
+        )
+        print(f"charness pre-push close-keyword guard: {reason}", file=sys.stderr)
+        emit_yaml(
+            {
+                "ok": False,
+                "status": "no-verdict",
+                "reason": reason,
+                "commits_scanned": 0,
+                "dropped_stdin_lines": dropped,
+            }
+        )
         return NO_VERDICT_EXIT
     if not push_refs:
         emit_yaml({"ok": True, "status": "no-refs", "commits_scanned": 0, "close_keyword_commits": []})

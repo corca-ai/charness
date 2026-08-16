@@ -739,14 +739,50 @@ def test_cli_passes_a_real_verdict_through_unchanged(repo: Path) -> None:
     assert GUARD.cli(["--repo-root", str(repo), "--range", f"{base}..{head}"]) == 1
 
 
-def test_a_malformed_only_stdin_scans_nothing_and_says_so(repo: Path) -> None:
+def test_the_scan_module_docstring_names_the_stale_clone_caveat() -> None:
+    """The published release record sends readers to this MODULE docstring for it.
+
+    It was reachable only from ``range_commits``'s function docstring, so the pointer
+    was true about the repo and false about where a reader would look. Pinned as a
+    value rather than left as prose: a caveat deleted from the module docstring turns
+    a published sentence into a false one with nothing red.
+    """
+    module_doc = SCAN.__doc__ or ""
+    assert "STALE CLONE" in module_doc
+    assert "remote-tracking refs" in module_doc
+
+
+def test_a_malformed_only_stdin_is_a_no_verdict_not_a_pass(repo: Path) -> None:
     code, payload = _run("--repo-root", str(repo), stdin="garbage\nmore garbage\n")
 
-    # The sentinel ref with an empty sha must be skipped, not fed to `git rev-list`,
-    # and the drop count is what stops `commits_scanned: 0` reading as coverage.
-    assert code == 0
+    # Exit 0 here was the guard reporting a clean scan over a push it never read: the
+    # sentinel ref carries no sha, every ref is skipped, and `commits_scanned: 0` is
+    # indistinguishable from "this push lands nothing". A judged-nothing run owes the
+    # no-verdict code, which is the same contract a `RangeUnreadable` gets.
+    assert code == GUARD.NO_VERDICT_EXIT
+    assert payload["status"] == "no-verdict"
     assert payload["commits_scanned"] == 0
     assert payload["dropped_stdin_lines"] == 2
+
+
+def test_a_partly_malformed_stdin_is_a_no_verdict_even_though_a_ref_parsed(
+    repo: Path,
+) -> None:
+    """The dropped line names a ref nothing can recover, so the parsed one is not the push."""
+    base = _git(repo, "rev-parse", "HEAD")
+    head = _commit(repo, "docs: an innocent commit\n", "work.txt")
+
+    code, payload = _run(
+        "--repo-root",
+        str(repo),
+        stdin=f"garbage\nrefs/heads/main {head} refs/heads/main {base}\n",
+    )
+
+    # Judging only the readable ref and exiting 0 would report coverage of a push whose
+    # other ref could carry an unfloored close keyword.
+    assert code == GUARD.NO_VERDICT_EXIT
+    assert payload["status"] == "no-verdict"
+    assert payload["dropped_stdin_lines"] == 1
 
 
 def test_a_git_timeout_is_a_no_verdict_not_a_pass(repo: Path, monkeypatch) -> None:

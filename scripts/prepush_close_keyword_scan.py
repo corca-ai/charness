@@ -12,6 +12,22 @@ That boundary is worth keeping. Every function here can be checked against git's
 GitHub's documented behavior alone; nothing here needs to know what a closeout ledger
 is. A future widening of the close-keyword grammar belongs in this file and can be
 reviewed without re-reading the floor.
+
+Not claimed by this reader:
+  - STALE CLONE. ``range_commits`` bounds a ref CREATION with the local
+    remote-tracking refs, which an unfetched or unpruned clone can overstate: commits
+    the target remote has never seen are then excluded and never judged. That
+    direction is a MISS, not a false refusal, and it is the same staleness every
+    other consumer of ``origin/main`` in this repo already carries. Restated here
+    because the release record sends readers to this module docstring for it, and a
+    caveat reachable only from one function's docstring is a caveat most readers
+    never reach.
+  - The unbounded-creation scan is CAPPED at ``MAX_UNBOUNDED_CREATION_SCAN`` and the
+    cap is reported through ``notes``; commits past it are not read.
+  - ``parse_push_stdin`` DROPS a line that is not four whitespace-separated fields
+    and only COUNTS it. It cannot say what ref that line named, so the count is a
+    coverage hole, not a diagnosis; the guard next door turns a nonzero count into a
+    no-verdict exit rather than judging the remainder as if it were the push.
 """
 from __future__ import annotations
 
@@ -76,9 +92,12 @@ def parse_push_stdin(text: str) -> list[dict[str, str]]:
 
     Lines that are not four whitespace-separated fields are dropped and COUNTED, and
     the count is reported. git itself always emits four fields and ref names cannot
-    contain spaces, so a dropped line means some wrapper fed this something else --
-    at which point "scanned nothing, exit 0" needs to be visible rather than inferred
-    from a `commits_scanned: 0` a reader has no reason to question.
+    contain spaces, so a dropped line means some wrapper fed this something else.
+    This reader renders no verdict about that: it reports the count, and the guard
+    treats any nonzero count as a NO-VERDICT rather than judging the lines it could
+    read as if they were the whole push. A dropped line names a ref nothing here can
+    recover, so the commits it would have landed are unjudged -- and an unjudged
+    commit reported through a zero exit is the false green this floor exists to stop.
     """
     refs: list[dict[str, str]] = []
     dropped = 0
