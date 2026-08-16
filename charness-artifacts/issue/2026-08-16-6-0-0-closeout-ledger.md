@@ -38,7 +38,7 @@ a reader of a close comment deserves to see which way:
   disposition addressed to a human, so the title's second clause remains literally
   true.
 
-Three further residuals, disclosed rather than repaired: #621's seeder is not
+Three further residuals, disclosed rather than repaired: #625's seeder is not
 re-prompted after a cold start and its file mode differs from its sibling's, and
 #623 leaves a consuming repo reading a literal `<authoring-repo>` placeholder in
 the scaffold's North Star section.
@@ -76,9 +76,11 @@ and F27b-F27d), and
 `charness-artifacts/critique/2026-08-14-issue-618-628-closeout.md` (the earlier
 cohort closeout review, whose F10 and F11 first recorded two of the narrowings
 carried forward here, and whose F13 recorded the #618 residual this slice
-REPAIRED rather than carried; the other two — #626's compaction section and
-#627's rewrite half — were first recorded in that review's cohort-B failure
-angle, not in its F10-F13 range).
+REPAIRED rather than carried; #627's rewrite half was first recorded in that
+review's cohort-B failure angle, and #626's post-graduation compaction section
+was NOT — that angle records #626's resurrection slot, which this slice
+delivered, and the compaction remainder was first recorded as F25 of this
+release's own execution critique).
 
 Siblings: decision — the transferable class is "a repo-owned surface renders a
 verdict about a thing it cannot observe", and it was scanned across the gate,
@@ -115,8 +117,8 @@ an enumeration whose false negatives are real.
 AI-provenance: authored by Claude (Opus 5) operating the charness `release` and
 `issue` skills, under a maintainer's explicit session grant to publish and close.
 Every verdict cited here was produced by executing the named command in this
-worktree; the premise verdicts for eight of the ten were produced by bounded
-read-only reviewer agents that ran each issue's own reproduction, and #622 and
+worktree; the premise verdicts for eight of the ten were produced by read-only
+premise reviewer agents that ran each issue's own reproduction, and #622 and
 #624 rest on the earlier cohort review as stated above.
 
 Critique #618 #619 #620 #621 #622 #623 #624 #625 #626 #627: charness-artifacts/critique/2026-08-16-s7-6-0-0-release-execution.md
