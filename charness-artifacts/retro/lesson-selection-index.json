@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-16",
-  "source_artifact_count": 519,
-  "candidate_count": 2123,
+  "source_artifact_count": 521,
+  "candidate_count": 2129,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -328,6 +328,98 @@
       ]
     },
     {
+      "candidate_id": "class:c62a2a11117a",
+      "kind": "repeat_trap",
+      "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading.",
+      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
+      "recurrence_class": "changed-line-proof-before-broad-quality",
+      "source_count": 4,
+      "independent_source_count": 4,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A changed-line proof that proved nothing**. Ran the focused coverage gate on an uncommitted tree, following the lesson's \"before the broad lane\" ordering. It returned `status: unestablished — mutation-pool files have uncommitted changes that base..HEAD cannot see`. ~90s spent, nothing established, re-run after the commit. The lesson names the ordering and not the precondition that the tool reads `base..HEAD`, so following it as written produces an unusable run. `strong` — the output is recorded."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: — commit the slice FIRST, then run the changed-line proof, then repair inside the same slice. The gate reads `base..HEAD` and returns `unestablished` on a dirty pool, so \"before the commit\" is unrunnable. Amends the ordering the lesson currently states."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:7f8e23a21261",
+      "kind": "repeat_trap",
+      "lesson": "**The handoff was drafted, then validated**. `validate_handoff_artifact.py` refused it for a transcribed as-of count (`300 commits`), costing a read-edit-revalidate cycle. The lesson in view at session open says to run the authoring preflight BEFORE drafting the final packet. `strong`.",
+      "normalized_key": "closeout authoring rework the initial goal and packet used bare internal references and wrapped",
+      "recurrence_class": "closeout-authoring-rework",
+      "source_count": 3,
+      "independent_source_count": 3,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.36,
+      "selection_weight": 1.72,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "closeout-authoring-rework: the initial goal and packet used bare internal references and wrapped inline code. The authoring preflight caught these before the slice closeout, so the cost was small but the same gate should be run before drafting the final packet."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The handoff was drafted, then validated**. `validate_handoff_artifact.py` refused it for a transcribed as-of count (`300 commits`), costing a read-edit-revalidate cycle. The lesson in view at session open says to run the authoring preflight BEFORE drafting the final packet. `strong`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: — run the owning validator on a truth surface BEFORE drafting its final text, not after. Three separate sessions have now paid a read-edit-revalidate cycle on `docs/handoff.md` alone."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:d277d984eaae",
       "kind": "next_improvement",
       "lesson": "**capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule.",
@@ -412,11 +504,11 @@
       ]
     },
     {
-      "candidate_id": "class:c62a2a11117a",
-      "kind": "repeat_trap",
-      "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading.",
-      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
-      "recurrence_class": "changed-line-proof-before-broad-quality",
+      "candidate_id": "class:03d57427e02c",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above.",
+      "normalized_key": "workflow when a slice adds or changes a detector write one adversarial input that",
+      "recurrence_class": "detector-blind-class-unstated",
       "source_count": 2,
       "independent_source_count": 2,
       "generator_authored": 0,
@@ -428,20 +520,54 @@
       "selection_weight": 1.24,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+          "lesson": "**workflow**: — when a slice adds or changes a detector, write ONE adversarial input that the blind class says must not be judged and that the current acceptance would pass, before the acceptance is finished. The docstring half landed twice this session and caught nothing; the acceptance half is the whole lesson. This is the same class the prior retro seeded, re-observed rather than re-worded."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
           "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:4c4782f6f5dd",
+      "kind": "repeat_trap",
+      "lesson": "**Two commits to cover one three-branch function**. `_repo_root_for` has two refusal arms and one success return. The first changed-line pass named the success return; I covered it; the second pass named `return None` at the second guard, because the ad-hoc path exercised the first guard and hid it. Enumerating the branches while writing the function would have cost one test, not two commits. `strong`.",
+      "normalized_key": "two commits to cover one three branch function repo root for has two refusal",
+      "recurrence_class": "branch-hidden-by-earlier-guard",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading."
+          "lesson": "**Two commits to cover one three-branch function**. `_repo_root_for` has two refusal arms and one success return. The first changed-line pass named the success return; I covered it; the second pass named `return None` at the second guard, because the ad-hoc path exercised the first guard and hid it. Enumerating the branches while writing the function would have cost one test, not two commits. `strong`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: — when a function has more than one refusal arm, write one test per arm at authoring time. A changed-line gate names one uncovered line per pass, so N hidden branches cost N round-trips."
         }
       ]
     },
@@ -510,108 +636,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:490052814d4a",
-      "kind": "repeat_trap",
-      "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention.",
-      "normalized_key": "runtime budget contention the first diagnosis treated a noisy aggregate sample as if the",
-      "recurrence_class": "runtime-budget-contention",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 5,
-      "recency_weight": 0.9259,
-      "alpha": 0.24,
-      "selection_weight": 1.1481,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:d16dd802152d",
-      "kind": "repeat_trap",
-      "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one.",
-      "normalized_key": "stale current pointer at closeout the first packet was more current than docs handoff",
-      "recurrence_class": "stale-current-pointer-at-closeout",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 5,
-      "recency_weight": 0.9259,
-      "alpha": 0.24,
-      "selection_weight": 1.1481,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:299cb49409e3",
-      "kind": "repeat_trap",
-      "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later.",
-      "normalized_key": "the deletion sweep grepped the identifier and missed the english domain language contract returned",
-      "recurrence_class": "removal-consumer-grep-incomplete",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 5,
-      "recency_weight": 0.9259,
-      "alpha": 0.24,
-      "selection_weight": 1.1481,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow** — a removal sweep greps the identifier AND the capability's name in prose. The identifier grep returned clean while shipped consumer text still configured the deleted knob."
         }
       ]
     }
@@ -930,6 +954,98 @@
       ]
     },
     {
+      "candidate_id": "class:c62a2a11117a",
+      "kind": "repeat_trap",
+      "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading.",
+      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
+      "recurrence_class": "changed-line-proof-before-broad-quality",
+      "source_count": 4,
+      "independent_source_count": 4,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A changed-line proof that proved nothing**. Ran the focused coverage gate on an uncommitted tree, following the lesson's \"before the broad lane\" ordering. It returned `status: unestablished — mutation-pool files have uncommitted changes that base..HEAD cannot see`. ~90s spent, nothing established, re-run after the commit. The lesson names the ordering and not the precondition that the tool reads `base..HEAD`, so following it as written produces an unusable run. `strong` — the output is recorded."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: — commit the slice FIRST, then run the changed-line proof, then repair inside the same slice. The gate reads `base..HEAD` and returns `unestablished` on a dirty pool, so \"before the commit\" is unrunnable. Amends the ordering the lesson currently states."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:7f8e23a21261",
+      "kind": "repeat_trap",
+      "lesson": "**The handoff was drafted, then validated**. `validate_handoff_artifact.py` refused it for a transcribed as-of count (`300 commits`), costing a read-edit-revalidate cycle. The lesson in view at session open says to run the authoring preflight BEFORE drafting the final packet. `strong`.",
+      "normalized_key": "closeout authoring rework the initial goal and packet used bare internal references and wrapped",
+      "recurrence_class": "closeout-authoring-rework",
+      "source_count": 3,
+      "independent_source_count": 3,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.36,
+      "selection_weight": 1.72,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "closeout-authoring-rework: the initial goal and packet used bare internal references and wrapped inline code. The authoring preflight caught these before the slice closeout, so the cost was small but the same gate should be run before drafting the final packet."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The handoff was drafted, then validated**. `validate_handoff_artifact.py` refused it for a transcribed as-of count (`300 commits`), costing a read-edit-revalidate cycle. The lesson in view at session open says to run the authoring preflight BEFORE drafting the final packet. `strong`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: — run the owning validator on a truth surface BEFORE drafting its final text, not after. Three separate sessions have now paid a read-edit-revalidate cycle on `docs/handoff.md` alone."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:d277d984eaae",
       "kind": "next_improvement",
       "lesson": "**capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule.",
@@ -1014,11 +1130,11 @@
       ]
     },
     {
-      "candidate_id": "class:c62a2a11117a",
-      "kind": "repeat_trap",
-      "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading.",
-      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
-      "recurrence_class": "changed-line-proof-before-broad-quality",
+      "candidate_id": "class:03d57427e02c",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above.",
+      "normalized_key": "workflow when a slice adds or changes a detector write one adversarial input that",
+      "recurrence_class": "detector-blind-class-unstated",
       "source_count": 2,
       "independent_source_count": 2,
       "generator_authored": 0,
@@ -1030,20 +1146,54 @@
       "selection_weight": 1.24,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+          "lesson": "**workflow**: — when a slice adds or changes a detector, write ONE adversarial input that the blind class says must not be judged and that the current acceptance would pass, before the acceptance is finished. The docstring half landed twice this session and caught nothing; the acceptance half is the whole lesson. This is the same class the prior retro seeded, re-observed rather than re-worded."
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
           "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:4c4782f6f5dd",
+      "kind": "repeat_trap",
+      "lesson": "**Two commits to cover one three-branch function**. `_repo_root_for` has two refusal arms and one success return. The first changed-line pass named the success return; I covered it; the second pass named `return None` at the second guard, because the ad-hoc path exercised the first guard and hid it. Enumerating the branches while writing the function would have cost one test, not two commits. `strong`.",
+      "normalized_key": "two commits to cover one three branch function repo root for has two refusal",
+      "recurrence_class": "branch-hidden-by-earlier-guard",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading."
+          "lesson": "**Two commits to cover one three-branch function**. `_repo_root_for` has two refusal arms and one success return. The first changed-line pass named the success return; I covered it; the second pass named `return None` at the second guard, because the ad-hoc path exercised the first guard and hid it. Enumerating the branches while writing the function would have cost one test, not two commits. `strong`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: — when a function has more than one refusal arm, write one test per arm at authoring time. A changed-line gate names one uncovered line per pass, so N hidden branches cost N round-trips."
         }
       ]
     },
@@ -1248,6 +1398,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command recording no basis. Triggering instance(s): 6 of 20 locators changed in a day, five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7ea13d0a36d5",
+      "kind": "current_focus",
+      "lesson": "Autonomous continuation of `docs/handoff.md` `## Next Session` from item 2 onward, after the operator asked which items remained once the real-host checklist was set aside.",
+      "normalized_key": "autonomous continuation of docs handoff md next session from item 2 onward after the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Autonomous continuation of `docs/handoff.md` `## Next Session` from item 2 onward, after the operator asked which items remained once the real-host checklist was set aside."
         }
       ]
     },
@@ -1482,6 +1658,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "before editing any config value, establish whether it is READ by a reader or RUN by an executor. A documentation placeholder in a read field is correct and in an executed field is a shell redirection, and the two are indistinguishable by looking at the value."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a3224900bb6f",
+      "kind": "next_improvement",
+      "lesson": "**capability**: `command_script_target`'s `None` means both \"not judged\" and \"cannot be a path\", and a caller turns one of them into a hard refusal. Make the distinction part of the return value rather than of the docstring.",
+      "normalized_key": "capability command script target s none means both not judged and cannot be a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: `command_script_target`'s `None` means both \"not judged\" and \"cannot be a path\", and a caller turns one of them into a hard refusal. Make the distinction part of the return value rather than of the docstring."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5b19a0587cdb",
+      "kind": "next_improvement",
+      "lesson": "**capability**: give `prove`'s stop gate the blind-class QUESTION for detector-touching slices — \"name one input your acceptance would pass that your blind class says it must not judge\". A question, not a gate (P5). This is the prior retro's `blind-class-before-build-handoff-anchor` item, now with a measured second instance behind it.",
+      "normalized_key": "capability give prove s stop gate the blind class question for detector touching slices",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: give `prove`'s stop gate the blind-class QUESTION for detector-touching slices — \"name one input your acceptance would pass that your blind class says it must not judge\". A question, not a gate (P5). This is the prior retro's `blind-class-before-build-handoff-anchor` item, now with a measured second instance behind it."
         }
       ]
     },
@@ -1772,32 +2000,6 @@
       ]
     },
     {
-      "candidate_id": "class:03d57427e02c",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above.",
-      "normalized_key": "workflow state a detector s blind class what can this mechanism not see in",
-      "recurrence_class": "detector-blind-class-unstated",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:b62bdac9e729",
       "kind": "repeat_trap",
       "lesson": "**A commit message with backticks was evaluated by the shell**, silently dropping a clause. Caught by reading the stored message back — a different channel than the one that wrote it, which is the only reason it was caught.",
@@ -1820,6 +2022,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**A commit message with backticks was evaluated by the shell**, silently dropping a clause. Caught by reading the stored message back — a different channel than the one that wrote it, which is the only reason it was caught."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:39a9aec230aa",
+      "kind": "repeat_trap",
+      "lesson": "**Gate-baseline runtime, unflagged debt.** Telemetry: the broad pytest lane peaks at 475.46s across 16 recorded occurrences, and `run_standing_pytest --mode read-only` at 208.32s across 13. This session's own runs were faster (~80s each, 5 runs) but the standing peak is the debt and it belongs to the gate implementation, not to any session that pays it. Routing: unchanged from the prior retro's `monitored-execution` line; not re-filed here. Not waste, recorded because it reads like it: five reviewer rounds cost substantial wall clock and produced every blocker that mattered, including two I introduced myself. The commit-msg refusal is the gate working.",
+      "normalized_key": "gate baseline runtime unflagged debt telemetry the broad pytest lane peaks at 475 46s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Gate-baseline runtime, unflagged debt.** Telemetry: the broad pytest lane peaks at 475.46s across 16 recorded occurrences, and `run_standing_pytest --mode read-only` at 208.32s across 13. This session's own runs were faster (~80s each, 5 runs) but the standing peak is the debt and it belongs to the gate implementation, not to any session that pays it. Routing: unchanged from the prior retro's `monitored-execution` line; not re-filed here. Not waste, recorded because it reads like it: five reviewer rounds cost substantial wall clock and produced every blocker that mattered, including two I introduced myself. The commit-msg refusal is the gate working."
         }
       ]
     },
@@ -1950,6 +2178,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The changed-line proof ran last, not first**, for the fourth session running. The lesson presented at session open says to run it before the broad lane; the gate refuses a dirty pool, so it needs a commit, and I ran the broad lane first anyway. It then reported seven unproven lines across three files — every one of them a line I had added — which is exactly the cost the lesson names."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:807e80a26a45",
+      "kind": "repeat_trap",
+      "lesson": "**The dup ratchet hard-blocked twice, both times after the code was written.** The advisory post-edit hook warned at each edit and I continued; the block landed at commit time and each resolution needed an authored `intentional` entry. Both entries are defensible, so this is sequencing cost, not rework — but it is sequencing cost the advisory already offered to prevent. `moderate` — whether checking mid-slice would have changed either outcome is judgment.",
+      "normalized_key": "the dup ratchet hard blocked twice both times after the code was written the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The dup ratchet hard-blocked twice, both times after the code was written.** The advisory post-edit hook warned at each edit and I continued; the block landed at commit time and each resolution needed an authored `intentional` entry. Both entries are defensible, so this is sequencing cost, not rework — but it is sequencing cost the advisory already offered to prevent. `moderate` — whether checking mid-slice would have changed either outcome is judgment."
         }
       ]
     },
@@ -10714,32 +10968,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "verify the reviewer boundary the MOMENT the reviewer returns, before any parent write. Missed once this run, costing that window its proof."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:7f8e23a21261",
-      "kind": "repeat_trap",
-      "lesson": "closeout-authoring-rework: the initial goal and packet used bare internal references and wrapped inline code. The authoring preflight caught these before the slice closeout, so the cost was small but the same gate should be run before drafting the final packet.",
-      "normalized_key": "closeout authoring rework the initial goal and packet used bare internal references and wrapped",
-      "recurrence_class": "closeout-authoring-rework",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
-      "latest_source_date": "2026-08-06",
-      "age_days": 10,
-      "recency_weight": 0.8572,
-      "alpha": 0.12,
-      "selection_weight": 0.8572,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "closeout-authoring-rework: the initial goal and packet used bare internal references and wrapped inline code. The authoring preflight caught these before the slice closeout, so the cost was small but the same gate should be run before drafting the final packet."
         }
       ]
     },

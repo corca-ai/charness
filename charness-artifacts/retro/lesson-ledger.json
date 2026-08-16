@@ -1183,6 +1183,46 @@
       "lesson_id": "cause-named-from-one-observation",
       "outcome": "pushed-a-wrong-action",
       "anchor": "Called test_a_gate_label_the_universe_reader_cannot_see_refuses_the_run a flake after one passing re-run, having named a coverage-slowdown cause from a single failing observation."
+    },
+    {
+      "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "pushed-a-wrong-action",
+      "anchor": "Ran prepush_focused_changed_line_coverage.py --refuse-unestablished on an uncommitted tree, following the lesson ordering \"before the broad lane\". It returned status: unestablished (\"mutation-pool files have uncommitted changes that base..HEAD cannot see\") — ~90s that established nothing, re-run after commit b52e7153f. The gate reads base..HEAD, so the lesson as stated names an ordering that cannot run."
+    },
+    {
+      "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-detector-blind-class-unstated",
+      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "read-but-not-applied",
+      "anchor": "In view at the decision and only half-landed, twice. I stated the blind class in command_script_target's docstring BEFORE its acceptance, then wrote an acceptance enumerating only branches the implementation explicitly takes; a bounded reviewer: it \"would stay green through finding 1 and cannot detect the very failure mode the docstring claims immunity from\". Same shape in the widened scanner: a case-insensitive launcher, a case-sensitive extractor, and a matrix using only the casing I had written. The unapplied half is the acceptance-that-fails-on-the-wrong-noun."
+    },
+    {
+      "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-executed-vs-read-field",
+      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "lesson_id": "executed-vs-read-field",
+      "outcome": "changed-an-action",
+      "anchor": "Changed the release-adapter slice from repairing executed fields to CHECKING them: _executed_command_warnings only appends strings and bump_version only raises; no adapter value is written (149af1123). Otherwise: the handoff framed item 3 as repairing the cwd-relative sites and the reverted prior attempt had normalized four EXECUTED command fields, so I would have rewritten the sync_command default — a value bump_version shells out to — reproducing the exact defect that got that attempt reverted."
+    },
+    {
+      "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-bar-recorded-as-prose",
+      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "changed-an-action",
+      "anchor": "Pinned two claims as required VALUES instead of prose: test_the_scan_module_docstring_names_the_stale_clone_caveat (b52e7153f) and the NORTH_STAR_DOC equality assertion across the retro scaffold and validator (446a60362). Otherwise: I would have written the stale-clone caveat into the module docstring and moved on, and a later deletion would have turned a PUBLISHED v6.0.0 release sentence false with nothing red — the exact deletable-comment shape the lesson names."
+    },
+    {
+      "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-closeout-authoring-rework",
+      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "lesson_id": "closeout-authoring-rework",
+      "outcome": "not-consulted",
+      "anchor": "Never revisited at the moment the class came up: I drafted docs/handoff.md in full and ran validate_handoff_artifact.py afterward, which refused it for a transcribed as-of count (\"300 commits\"), costing a read-edit-revalidate cycle before 6ce9fa3e8. The lesson says run the authoring preflight BEFORE drafting the final packet."
     }
   ],
   "lessons": {
@@ -1339,11 +1379,11 @@
     "closeout-authoring-rework": {
       "source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
       "transition_id": "seed-closeout-authoring-rework",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": -1,
+      "score_count": 1,
       "outcome_counts": {
         "changed-an-action": 0,
-        "not-consulted": 0,
+        "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
@@ -1474,12 +1514,12 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -2,
-      "score_count": 4,
+      "score_total": -3,
+      "score_count": 5,
       "outcome_counts": {
         "changed-an-action": 1,
         "not-consulted": 1,
-        "pushed-a-wrong-action": 0,
+        "pushed-a-wrong-action": 1,
         "read-but-not-applied": 2,
         "legacy-scalar": 0
       },
@@ -1654,10 +1694,10 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 3,
-      "score_count": 3,
+      "score_total": 4,
+      "score_count": 4,
       "outcome_counts": {
-        "changed-an-action": 3,
+        "changed-an-action": 4,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1684,13 +1724,13 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 3,
-      "score_count": 3,
+      "score_total": 2,
+      "score_count": 4,
       "outcome_counts": {
         "changed-an-action": 3,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1759,10 +1799,10 @@
     "executed-vs-read-field": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "transition_id": "seed-executed-vs-read-field",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
