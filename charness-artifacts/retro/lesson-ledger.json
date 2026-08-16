@@ -1253,6 +1253,46 @@
       "lesson_id": "closeout-authoring-rework",
       "outcome": "not-consulted",
       "anchor": "Never revisited at the moment the class came up: I drafted docs/handoff.md in full and ran validate_handoff_artifact.py afterward, which refused it for a transcribed as-of count (\"300 commits\"), costing a read-edit-revalidate cycle before 6ce9fa3e8. The lesson says run the authoring preflight BEFORE drafting the final packet."
+    },
+    {
+      "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-executed-vs-read-field",
+      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "lesson_id": "executed-vs-read-field",
+      "outcome": "read-but-not-applied",
+      "anchor": "Presented at session open and named again in docs/handoff.md:38 via EXECUTED_COMMAND_FIELDS. I still ran a blanket regex that rewrote five executed adapter `command:` values to `<plugin-dir>/`, which critique_packet_lib runs through subprocess.run(shlex.split()) with no substitution, and then mislabelled sync_command CONSUMER-OWNED in the exemption list. Two separate violations of the same lesson in one slice; both found by reviewers, not by me."
+    },
+    {
+      "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-evidence-channel-identity",
+      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "lesson_id": "evidence-channel-identity",
+      "outcome": "read-but-not-applied",
+      "anchor": "I read .agents/release-adapter.yaml with PyYAML and reported that item 2 parsed as a dict, calling it a repo defect. The repo's own reader is scripts/adapter_lib.load_yaml, which returns a string; no repo consumer PyYAML-loads that file. I used a channel the identifier does not belong to and reported its output as a fact about the repo."
+    },
+    {
+      "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-detector-blind-class-unstated",
+      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Wrote the blind class into repo_root_instruction_findings' docstring and into _instruction_site_class BEFORE the acceptance tests, and made the first acceptance test the wrong-noun test (same script, same doc, two spellings, only the repo-root one a finding). The later classifier inversion was argued from that stated blind class rather than rediscovered."
+    },
+    {
+      "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-bar-recorded-as-prose",
+      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "changed-an-action",
+      "anchor": "integrations/tools/README.md's rule that doctor_policy: advisory requires a degraded path was prose nothing enforced. I converted it into test_advisory_doctor_policy_requires_a_declared_degraded_mode plus two nose pins, all shown red by targeted mutation, rather than recording the finding in the probe artifact and moving on, which is where the work was heading when the refutation was first measured."
+    },
+    {
+      "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "I committed each slice and then ran prepush_focused_changed_line_coverage.py --refuse-unestablished over base..HEAD, instead of running it on the dirty pool where it reads nothing, and got blocking: [] with no follow-up commits — where last session the same proof cost two extra commits."
     }
   ],
   "lessons": {
@@ -1544,10 +1584,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -3,
-      "score_count": 5,
+      "score_total": -2,
+      "score_count": 6,
       "outcome_counts": {
-        "changed-an-action": 1,
+        "changed-an-action": 2,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 2,
@@ -1574,13 +1614,13 @@
     "evidence-channel-identity": {
       "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
       "transition_id": "seed-evidence-channel-identity",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": -1,
+      "score_count": 1,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1724,10 +1764,10 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 4,
-      "score_count": 4,
+      "score_total": 5,
+      "score_count": 5,
       "outcome_counts": {
-        "changed-an-action": 4,
+        "changed-an-action": 5,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1754,10 +1794,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 2,
-      "score_count": 4,
+      "score_total": 3,
+      "score_count": 5,
       "outcome_counts": {
-        "changed-an-action": 3,
+        "changed-an-action": 4,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
@@ -1829,13 +1869,13 @@
     "executed-vs-read-field": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "transition_id": "seed-executed-vs-read-field",
-      "score_total": 1,
-      "score_count": 1,
+      "score_total": 0,
+      "score_count": 2,
       "outcome_counts": {
         "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 0
       },
       "state": "active",

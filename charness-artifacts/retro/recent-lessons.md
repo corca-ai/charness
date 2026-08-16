@@ -3,7 +3,7 @@
 ## Current Focus
 
 - Autonomous continuation of `docs/handoff.md` `## Next Session` from item 2 onward, after the operator asked which items remained once the real-host checklist was set aside. (source: `charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md`)
-- S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder. (source: `charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md`)
+- Handoff pickup. (source: `charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md`)
 
 ## Repeat Traps
 
@@ -46,6 +46,6 @@
 - `charness-artifacts/retro/2026-08-15-release-scope-design.md`
 - `charness-artifacts/retro/2026-08-15-s3-lesson-loop.md`
 - `charness-artifacts/retro/2026-08-15-session-retro.md`
-- `charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md`
 - `charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md`
+- `charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md`
 - `charness-artifacts/retro/2026-08-16-session-retro.md`

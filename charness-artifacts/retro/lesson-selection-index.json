@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-16",
-  "source_artifact_count": 521,
-  "candidate_count": 2129,
+  "source_artifact_count": 522,
+  "candidate_count": 2133,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1428,6 +1428,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a3f676841d02",
+      "kind": "current_focus",
+      "lesson": "Handoff pickup.",
+      "normalized_key": "handoff pickup",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Handoff pickup."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:a981f526c585",
       "kind": "current_focus",
       "lesson": "S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder.",
@@ -1528,6 +1554,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3ee8f08588f6",
+      "kind": "next_improvement",
+      "lesson": "**A bulk rewrite of command-shaped strings owes a written executor check before the edit** — name what runs each matched field, or do not run the sweep. Two of five review rounds this session trace to one blanket regex; the pre-mortem is a grep, the alternative was a broken template.",
+      "normalized_key": "a bulk rewrite of command shaped strings owes a written executor check before the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**A bulk rewrite of command-shaped strings owes a written executor check before the edit** — name what runs each matched field, or do not run the sweep. Two of five review rounds this session trace to one blanket regex; the pre-mortem is a grep, the alternative was a broken template."
         }
       ]
     },
@@ -1766,6 +1818,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:c0af04057288",
+      "kind": "next_improvement",
+      "lesson": "**Declare executed adapter fields the way release already does.** `EXECUTED_COMMAND_FIELDS` exists for release and nothing equivalent covers critique/retro `command:` or `integrations/tools/*.json` `checks.*.commands`. Without it, the only defense is classifying by file type, which under-reports by design. Handoff anchor `executed-field-declaration`.",
+      "normalized_key": "declare executed adapter fields the way release already does executed command fields exists for",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**Declare executed adapter fields the way release already does.** `EXECUTED_COMMAND_FIELDS` exists for release and nothing equivalent covers critique/retro `command:` or `integrations/tools/*.json` `checks.*.commands`. Without it, the only defense is classifying by file type, which under-reports by design. Handoff anchor `executed-field-declaration`."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:aa4728fcc25e",
       "kind": "next_improvement",
       "lesson": "extend the inference-interpretation registry's requirement from \"a module that DECLARES an interpretation must be registered\" to \"a module that renders a verdict about other code must declare its blind class\", so the blind-class habit becomes a gate. This is the carrier two retros have asked for and nothing has built; it is now cheap because the registry, the validator, and the leak scan all exist.",
@@ -1918,6 +1996,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "never reach for `git stash` to compare against HEAD; a detached worktree answers the same question without touching the working tree."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5411be9703e4",
+      "kind": "next_improvement",
+      "lesson": "**The fix-carries-its-class rate is now measured at 5/5 across five rounds and three slices**, on top of the prior session's flat trend. This is the evidence the open `## Discuss` question needs: a proof-surface slice plausibly owes review until a round comes back clean, not two rounds. Recorded here rather than changed unilaterally, because raising the cap is a contract change.",
+      "normalized_key": "the fix carries its class rate is now measured at 5 5 across five",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**The fix-carries-its-class rate is now measured at 5/5 across five rounds and three slices**, on top of the prior session's flat trend. This is the evidence the open `## Discuss` question needs: a proof-surface slice plausibly owes review until a round comes back clean, not two rounds. Recorded here rather than changed unilaterally, because raising the cap is a contract change."
         }
       ]
     },
