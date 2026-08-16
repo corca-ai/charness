@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-16",
-  "source_artifact_count": 517,
-  "candidate_count": 2116,
+  "source_artifact_count": 518,
+  "candidate_count": 2120,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1304,6 +1304,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:f8afed4b6f9e",
+      "kind": "current_focus",
+      "lesson": "The handoff named five items blocking the deferred 6.0.0 publish, and the owner asked for all outstanding debt to be paid before pushing 51 commits.",
+      "normalized_key": "the handoff named five items blocking the deferred 6 0 0 publish and the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The handoff named five items blocking the deferred 6.0.0 publish, and the owner asked for all outstanding debt to be paid before pushing 51 commits."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:e7e195f80a32",
       "kind": "current_focus",
       "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency).",
@@ -1330,6 +1356,32 @@
       ]
     },
     {
+      "candidate_id": "class:f2985d3eb38f",
+      "kind": "next_improvement",
+      "lesson": "a test proving a LOCAL layout fact must assert what the module under test bound, never a global interpreter property. Where the arm taken is not observable from the module, force it with a `meta_path` finder rather than by filtering `sys.path`.",
+      "normalized_key": "a test proving a local layout fact must assert what the module under test",
+      "recurrence_class": "global-probe-for-local-fact",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a test proving a LOCAL layout fact must assert what the module under test bound, never a global interpreter property. Where the arm taken is not observable from the module, force it with a `meta_path` finder rather than by filtering `sys.path`."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e83334bd85be",
       "kind": "next_improvement",
       "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs.",
@@ -1352,6 +1404,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:9b0cfdf68d38",
+      "kind": "next_improvement",
+      "lesson": "before editing any config value, establish whether it is READ by a reader or RUN by an executor. A documentation placeholder in a read field is correct and in an executed field is a shell redirection, and the two are indistinguishable by looking at the value.",
+      "normalized_key": "before editing any config value establish whether it is read by a reader or",
+      "recurrence_class": "executed-vs-read-field",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "before editing any config value, establish whether it is READ by a reader or RUN by an executor. A documentation placeholder in a read field is correct and in an executed field is a shell redirection, and the two are indistinguishable by looking at the value."
         }
       ]
     },
@@ -1586,6 +1664,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "the retro planner's default `next_action` can point at another session's record that merely shares today's date, with the scaffold packet declaring `overwrite_existing_content`. Always pass `--title`. Recorded in `## Waste` above with the commit that owns the endangered artifact."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:b54c4ce6698e",
+      "kind": "next_improvement",
+      "lesson": "when a pattern is used to both DISCOVER and MATCH, one engine must do both. `fnmatch` and `Path.glob` disagree about `*` crossing `/` and about `**/`, in opposite directions, so two readers of one pattern is a defect even when each reader is individually reasonable.",
+      "normalized_key": "when a pattern is used to both discover and match one engine must do",
+      "recurrence_class": "one-engine-per-pattern",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when a pattern is used to both DISCOVER and MATCH, one engine must do both. `fnmatch` and `Path.glob` disagree about `*` crossing `/` and about `**/`, in opposite directions, so two readers of one pattern is a defect even when each reader is individually reasonable."
         }
       ]
     },

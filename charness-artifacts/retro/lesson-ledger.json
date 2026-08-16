@@ -229,6 +229,24 @@
       "transition_id": "seed-tagged-lesson-never-seeded",
       "lesson_id": "tagged-lesson-never-seeded",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md"
+    },
+    {
+      "sequence": 39,
+      "transition_id": "seed-executed-vs-read-field",
+      "lesson_id": "executed-vs-read-field",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md"
+    },
+    {
+      "sequence": 40,
+      "transition_id": "seed-global-probe-for-local-fact",
+      "lesson_id": "global-probe-for-local-fact",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md"
+    },
+    {
+      "sequence": 41,
+      "transition_id": "seed-one-engine-per-pattern",
+      "lesson_id": "one-engine-per-pattern",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md"
     }
   ],
   "session_events": [
@@ -1053,6 +1071,46 @@
       "lesson_id": "agent-authored-score-role",
       "outcome": "changed-an-action",
       "anchor": "Counterfactual: I would have asked the owner whether to record any score and recorded none, as in prior sessions. Instead these three events were authored from cited observed actions in this session before asking."
+    },
+    {
+      "event_id": "s8-counted-limit",
+      "session_id": "2026-08-16-s8-debt",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "lesson_id": "counted-limit-retry-loop",
+      "outcome": "read-but-not-applied",
+      "anchor": "Iterated the 480-line Python cap one refactor at a time: 481, then 530, then 378 after an extraction that made it worse, then a move to runtime_visibility_lib. The lesson was in the session-open list."
+    },
+    {
+      "event_id": "s8-changed-line-order",
+      "session_id": "2026-08-16-s8-debt",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "read-but-not-applied",
+      "anchor": "Ran ./scripts/run-quality.sh --release before the changed-line proof, so the 69-file/244-line aggregate surfaced from a broad-lane failure log rather than from the focused proof the lesson names."
+    },
+    {
+      "event_id": "s8-detector-blind",
+      "session_id": "2026-08-16-s8-debt",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Wrote a WHAT THIS ARM CANNOT SEE block into inventory_skill_script_references.py before its acceptance rather than after, which is what made the reverted arm's scope reviewable at all; without it the reviewer would have had to derive the blind class from the regex."
+    },
+    {
+      "event_id": "s8-coverage-claim",
+      "session_id": "2026-08-16-s8-debt",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "lesson_id": "coverage-claim-exceeds-the-pin",
+      "outcome": "read-but-not-applied",
+      "anchor": "Added a labels_key pointer to runtime_visibility_lib claiming a key that bounded_list renames in the summary payload, so the claim exceeded what the surface carried; round 2 found it."
+    },
+    {
+      "event_id": "s8-one-observation",
+      "session_id": "2026-08-16-s8-debt",
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "lesson_id": "cause-named-from-one-observation",
+      "outcome": "pushed-a-wrong-action",
+      "anchor": "Called test_a_gate_label_the_universe_reader_cannot_see_refuses_the_run a flake after one passing re-run, having named a coverage-slowdown cause from a single failing observation."
     }
   ],
   "lessons": {
@@ -1269,13 +1327,13 @@
     "counted-limit-retry-loop": {
       "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
       "transition_id": "seed-counted-limit-retry-loop",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": -1,
+      "score_count": 1,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1329,12 +1387,12 @@
     "cause-named-from-one-observation": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-cause-named-from-one-observation",
-      "score_total": 1,
-      "score_count": 1,
+      "score_total": 0,
+      "score_count": 2,
       "outcome_counts": {
         "changed-an-action": 1,
         "not-consulted": 0,
-        "pushed-a-wrong-action": 0,
+        "pushed-a-wrong-action": 1,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
@@ -1344,13 +1402,13 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -1,
-      "score_count": 3,
+      "score_total": -2,
+      "score_count": 4,
       "outcome_counts": {
         "changed-an-action": 1,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 1,
+        "read-but-not-applied": 2,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1539,13 +1597,13 @@
     "coverage-claim-exceeds-the-pin": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-coverage-claim-exceeds-the-pin",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": -1,
+      "score_count": 1,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1554,10 +1612,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 2,
-      "score_count": 2,
+      "score_total": 3,
+      "score_count": 3,
       "outcome_counts": {
-        "changed-an-action": 2,
+        "changed-an-action": 3,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1614,6 +1672,51 @@
     "tagged-lesson-never-seeded": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-tagged-lesson-never-seeded",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "executed-vs-read-field": {
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "transition_id": "seed-executed-vs-read-field",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "global-probe-for-local-fact": {
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "transition_id": "seed-global-probe-for-local-fact",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "one-engine-per-pattern": {
+      "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "transition_id": "seed-one-engine-per-pattern",
       "score_total": 0,
       "score_count": 0,
       "outcome_counts": {
