@@ -389,9 +389,16 @@ def main(argv: list[str] | None = None) -> int:
     return 0 if result["ok"] else 1
 
 
-if __name__ == "__main__":
+def cli(argv: list[str] | None = None) -> int:
+    """``main`` with the crash-to-exit-2 mapping the hook needs.
+
+    A function rather than the body of the ``__main__`` guard so it can be executed
+    in-process by a test. Left inline, the mapping's own lines were unreachable from
+    every in-process run and only a subprocess could touch them -- which is how a
+    blocking hook's last-resort branch ends up unproven.
+    """
     try:
-        raise SystemExit(main())
+        return main(argv)
     except SystemExit:
         raise
     except Exception as exc:  # noqa: BLE001 -- a blocking hook must not report a crash as a verdict
@@ -400,4 +407,8 @@ if __name__ == "__main__":
         # close-keywords an issue with no carrier" and answered by rewording an
         # innocent message.
         print(f"charness pre-push close-keyword guard crashed: {exc!r}", file=sys.stderr)
-        raise SystemExit(NO_VERDICT_EXIT) from exc
+        return NO_VERDICT_EXIT
+
+
+if __name__ == "__main__":
+    raise SystemExit(cli())

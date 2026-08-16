@@ -22,6 +22,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.closeout_authorization_world import CROSSWALK_REL, PROTECTED, build_protected_world
 from tests.quality_gates.support import ROOT
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -704,3 +705,124 @@ def test_the_creation_cap_is_reported_not_silent(repo: Path, monkeypatch) -> Non
     # one way this payload could claim coverage it does not have.
     assert payload["commits_scanned"] == 2
     assert any("capped at 2 commits" in note for note in payload["coverage_notes"])
+
+
+# --- the arms the changed-line proof found unproven --------------------------------
+
+
+def test_the_crash_mapping_is_reachable_in_process(repo: Path, capsys) -> None:
+    """`cli` maps a crash to exit 2 without a subprocess.
+
+    Left inline in the `__main__` guard, these lines were unreachable from every
+    in-process run, so the branch a blocking hook falls back to was proven only by a
+    subprocess that coverage never watched.
+    """
+    def explode(*_args, **_kwargs):
+        raise RuntimeError("the issue skill is missing")
+
+    original = GUARD.evaluate
+    GUARD.evaluate = explode
+    try:
+        code = GUARD.cli(["--repo-root", str(repo), "--range", "HEAD~1..HEAD"])
+    finally:
+        GUARD.evaluate = original
+
+    assert code == GUARD.NO_VERDICT_EXIT
+    assert "crashed" in capsys.readouterr().err
+
+
+def test_cli_passes_a_real_verdict_through_unchanged(repo: Path) -> None:
+    base = _git(repo, "rev-parse", "HEAD")
+    head = _commit(repo, BODY_626, "work.txt")
+
+    # The crash mapping must not swallow a genuine refusal into `no-verdict`.
+    assert GUARD.cli(["--repo-root", str(repo), "--range", f"{base}..{head}"]) == 1
+
+
+def test_a_malformed_only_stdin_scans_nothing_and_says_so(repo: Path) -> None:
+    code, payload = _run("--repo-root", str(repo), stdin="garbage\nmore garbage\n")
+
+    # The sentinel ref with an empty sha must be skipped, not fed to `git rev-list`,
+    # and the drop count is what stops `commits_scanned: 0` reading as coverage.
+    assert code == 0
+    assert payload["commits_scanned"] == 0
+    assert payload["dropped_stdin_lines"] == 2
+
+
+def test_a_git_timeout_is_a_no_verdict_not_a_pass(repo: Path, monkeypatch) -> None:
+    def timeout(*_args, **_kwargs):
+        raise subprocess.TimeoutExpired(cmd="git rev-list", timeout=SCAN.GIT_TIMEOUT_SECONDS)
+
+    monkeypatch.setattr(SCAN.subprocess, "run", timeout)
+    with pytest.raises(SCAN.RangeUnreadable) as excinfo:
+        SCAN.range_commits(repo, "HEAD", "HEAD~1")
+
+    # Fail-closed: a git call that never answered must not degrade to an empty range,
+    # which the guard would report as a clean scan.
+    assert "timed out" in str(excinfo.value)
+
+
+def test_the_hook_mode_import_fallback_binds(monkeypatch) -> None:
+    """The `except ModuleNotFoundError` arm, forced rather than assumed.
+
+    In a git hook `scripts/` is `sys.path[0]` and `scripts.<mod>` is not importable,
+    so the guard falls back to flat imports. That arm is invisible from a test process
+    where the package form resolves. Filtering `sys.path` would not force it either --
+    the modules are already in `sys.modules`. A `meta_path` finder that refuses the
+    package spelling is what actually selects the arm.
+    """
+    import importlib.util
+    import sys
+
+    class RefuseScriptsPackage:
+        def find_spec(self, name, path=None, target=None):
+            if name.startswith("scripts."):
+                raise ModuleNotFoundError(f"No module named {name!r}")
+            return None
+
+    finder = RefuseScriptsPackage()
+    monkeypatch.setattr(sys, "meta_path", [finder, *sys.meta_path])
+    for name in [n for n in list(sys.modules) if n.startswith("scripts.")]:
+        monkeypatch.delitem(sys.modules, name, raising=False)
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+
+    spec = importlib.util.spec_from_file_location(
+        "prepush_close_keyword_guard_hook_mode", ROOT / "scripts" / "prepush_close_keyword_guard.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    # The names the fallback binds are the ones the guard cannot run without.
+    assert module.close_targets("fix: closes #7\n", SCANNER) == [(None, 7)]
+    assert module.emit_yaml is not None
+
+
+def test_a_protected_target_is_refused_by_authorization_before_any_ledger(
+    repo: Path,
+) -> None:
+    """The branch that made omitting authorization a false green.
+
+    A commit close-keywording a crosswalk-protected issue WITH a complete ledger
+    cleared the guard while the commit-msg carrier would have refused it -- reachable
+    through every escape this guard exists for (`--no-verify`, cherry-pick, a merge of
+    branch whose hooks never ran).
+    """
+    build_protected_world(repo)
+    base = _git(repo, "rev-parse", "HEAD")
+    head = _commit(
+        repo,
+        BODY_VALID_CLOSEOUT.replace("#42", f"#{PROTECTED[0]}"),
+        "work.txt",
+        extra={rel: (repo / rel).read_text(encoding="utf-8")
+               for rel in [CROSSWALK_REL] if (repo / rel).is_file()},
+    )
+
+    code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
+
+    assert code == 1
+    finding = payload["close_keyword_commits"][0]
+    # Refused by AUTHORIZATION, not by the ledger floor: the ledger is complete here,
+    # which is exactly why the missing check could not be caught by a ledger test.
+    assert finding["refused_by"] == "closeout_authorization"
+    assert finding["closeout_authorization"]["authorized"] is False
+    assert finding["reports"] == []
