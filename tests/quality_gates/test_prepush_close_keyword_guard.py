@@ -475,6 +475,17 @@ def test_close_targets_covers_the_spellings_github_closes_on(body: str, expected
         ("fix: see GH-700\n", []),
         ("fix: closes HIGH-700\n", []),
         ("fix: closes https://github.com/corca-ai/charness/pull/700\n", []),
+        # The CASE axis, unpinned until a review round found it. The launch pattern is
+        # case-insensitive and the ref extractor was not, so `gh-700` launched and then
+        # extracted nothing: the scanner classified a span as a close and reported no
+        # target for it. Unreachable while `#` -- which has no case -- was the only ref
+        # literal, and reachable the moment `GH-`/`github.com` arrived on one side only.
+        ("fix: closes gh-700\n", [(None, 700)]),
+        ("fix: CLOSES Gh-700\n", [(None, 700)]),
+        ("fix: closes https://GitHub.com/corca-ai/charness/issues/700\n",
+         [("corca-ai/charness", 700)]),
+        ("fix: closes HTTPS://GITHUB.COM/corca-ai/charness/ISSUES/700\n",
+         [("corca-ai/charness", 700)]),
     ],
 )
 def test_the_canonical_scanner_itself_sees_every_spelling(body: str, expected: list) -> None:

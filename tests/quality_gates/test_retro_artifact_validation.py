@@ -17,6 +17,7 @@ from scripts import init_lesson_ledger
 from scripts import lesson_evaluation_continuity_lib as continuity
 from scripts import validate_retro_artifact as retro_validator
 from tests.quality_gates.support import ROOT, run_script
+from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
 _SCAFFOLD_REL = "skills/public/retro/scripts/scaffold_retro_artifact.py"
@@ -160,17 +161,44 @@ def test_disposition_refusals_name_the_grammar_they_demand(tmp_path: Path) -> No
         assert continuity.canonical_json(continuity.MISSING_START_DISPOSITION) in message
 
 
-def test_north_star_reference_uses_the_portable_authoring_repo_spelling() -> None:
-    """A bare `docs/design-north-star.md` names a file no consuming repo has."""
+def test_north_star_reference_resolves_per_repo_and_never_writes_a_placeholder(
+    tmp_path: Path,
+) -> None:
+    """SUPERSEDES the `<authoring-repo>/` pin, and the reversal is the point.
+
+    The old rule was right that a bare `docs/design-north-star.md` names a file no
+    consuming repo has. It was wrong about the remedy: `<authoring-repo>/` is
+    charness's INTERNAL vocabulary for "resolves in my tree, not yours", so a consuming
+    author reads it as a path and looks for a directory that does not exist. Both
+    surfaces now resolve against the repo they are talking about -- the scaffold that
+    seeds the section, and the refusal message the author hits when they fail -- and
+    neither writes a placeholder in either branch.
+    """
     import scripts.validate_retro_artifact as validator
 
-    assert validator.NORTH_STAR_REFERENCE == "<authoring-repo>/docs/design-north-star.md"
-    assert (
-        "<authoring-repo>/docs/design-north-star.md"
-        in (ROOT / "skills/public/retro/scripts/scaffold_retro_artifact.py").read_text(
-            encoding="utf-8"
-        )
+    assert "<authoring-repo>" not in validator.north_star_reference(None)
+    assert "<authoring-repo>" not in validator.north_star_reference(tmp_path)
+
+    owning = tmp_path / "owning"
+    (owning / "docs").mkdir(parents=True)
+    (owning / validator.NORTH_STAR_DOC).write_text("# North Star\n", encoding="utf-8")
+    assert validator.NORTH_STAR_DOC in validator.north_star_reference(owning)
+    assert validator.NORTH_STAR_DOC not in validator.north_star_reference(tmp_path)
+
+    # The two surfaces cannot share code: the scaffold is a PORTABLE skill script and the
+    # validator is a repo-root one, so importing across would make an exported module
+    # depend on a file the export does not ship. Agreement is pinned as a value instead,
+    # which is the honest mechanism at a boundary that cannot be crossed.
+    scaffold = load_script_module(
+        "scaffold_retro_artifact_for_north_star_agreement",
+        ROOT / "skills/public/retro/scripts/scaffold_retro_artifact.py",
     )
+    assert scaffold.NORTH_STAR_DOC == validator.NORTH_STAR_DOC
+
+    # The scaffold half is pinned on its RENDERED OUTPUT in tests/test_retro_scaffold.py,
+    # not on its source text: the source legitimately names the discarded spelling in a
+    # docstring explaining why it was discarded, and a source-substring assertion here
+    # would measure the wrong noun and forbid the explanation.
 
 
 def test_scaffold_drops_adapter_sections_that_collide_with_a_heading_it_owns() -> None:

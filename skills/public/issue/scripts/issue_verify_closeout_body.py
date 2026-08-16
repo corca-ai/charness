@@ -32,16 +32,25 @@ _CLOSING_KEYWORD_LAUNCH_RE = re.compile(
     _CLOSING_KEYWORD_VERB
     + rf"(?P<refs>{_CLOSING_KEYWORD_REF}(?:\s*,\s*{_CLOSING_KEYWORD_REF})*)"
 )
+# IGNORECASE, matching the launch pattern's leading `(?i)`. Without it the two halves
+# DISAGREE: `closes gh-700` launches, then extracts nothing, and the function returns an
+# empty list for a span it just classified as a close. That state was unreachable while
+# the only ref literal was `#`, which has no case, and the widening introduced three
+# cased literals (`GH-`, `github.com`, `www.`) on one side of the pair only.
 _CLOSING_KEYWORD_REF_RE = re.compile(
     rf"(?:https?://(?:www\.)?github\.com/(?P<url_repo>{_CLOSING_KEYWORD_SLUG})/issues/(?P<url_number>\d+)"
     rf"|GH-(?P<gh_number>\d+)"
-    rf"|(?P<repo>{_CLOSING_KEYWORD_SLUG})?\#(?P<number>\d+))"
+    rf"|(?P<repo>{_CLOSING_KEYWORD_SLUG})?\#(?P<number>\d+))",
+    re.IGNORECASE,
 )
 
 
 def iter_close_keyword_refs(text: str) -> list[tuple[str | None, int]]:
     """Every ``(repo_or_None, issue_number)`` a GitHub close keyword references
-    in ``text``. This is the single canonical close-keyword scanner; the
+    in ``text``. This is the canonical close-keyword scanner for every BLOCKING
+    surface -- one advisory reader, ``scripts/slice_closeout_commit_advisories.py``,
+    keeps a narrower private grammar and is named here so "canonical" is not read as
+    "the only one"; the
     commit-msg checker (``scripts/check_issue_closeout_commit_msg.py``) reuses
     it through the loaded ``issue_verify_closeout`` module rather than keeping
     a second copy, so the two surfaces cannot drift.

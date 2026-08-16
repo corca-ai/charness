@@ -4570,6 +4570,13 @@
       "note": "The `for node in ast.walk(tree)` + `isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div)` filter, reached independently by two arms that answer DIFFERENT questions about the same node type: `check_export_safe_imports._probes_both_layouts` asks whether a module is aware of the `skills/public` collapse (a whole-file property, tolerant by design), and `export_self_sufficiency_lib.unshipped_path_findings` asks which repo-root entry a path chain names and whether the export ships it (per-site, and it de-duplicates nested chains, which the other must not). Sharing the walk would couple two verdicts that are deliberately allowed to disagree, and the shared helper would need both callers' filters passed in -- more coupling than the four idiom lines it removes. The family is reported as new only because a comment added to the unshipped-path arm moved its block; both walks predate this change.",
       "reviewed_at": "2026-08-16",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1b30d5e7b35df5e8",
+      "note": "`scaffold_retro_artifact._north_star_prompt` and `validate_retro_artifact.north_star_reference` deliberately mirror one branch shape (`repo_root is not None and (repo_root / NORTH_STAR_DOC).is_file()`) because they must AGREE: a review round found them stating opposite conclusions about the same spelling, with the discarded `<authoring-repo>/` placeholder surviving on the refusal message a consuming author reads when they FAIL. They cannot share the code that would enforce agreement: the scaffold is a PORTABLE skill script and the validator is a repo-root one, so importing across would make an exported module depend on a file the export does not ship -- the exact class #634 tracks. Agreement is pinned as a VALUE instead, by test_north_star_reference_resolves_per_repo_and_never_writes_a_placeholder asserting the two NORTH_STAR_DOC constants are equal and neither surface emits a placeholder in either branch. Their emitted strings differ; only the resolution branch is shared in shape.",
+      "reviewed_at": "2026-08-16",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

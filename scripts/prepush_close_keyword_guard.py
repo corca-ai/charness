@@ -237,10 +237,13 @@ def _judge(
 
     Follows ``check_issue_closeout_commit_msg.evaluate`` -- artifacts, pause carve-out,
     covered numbers, bare numbers, authorization, then one ``verify_closeout`` per
-    carrier -- with the commit's TREE standing in for the index. Two deliberate
-    differences, both stated rather than mirrored: ``close_targets`` is wider, and a
-    close KEYWORD is required (see below), so the artifact-only trigger the carrier
-    has does not exist here. A consequence of the second is that ``_pause_briefs`` is
+    carrier -- with the commit's TREE standing in for the index. ONE deliberate
+    difference now, stated rather than mirrored: a close KEYWORD is required (see
+    below), so the artifact-only trigger the carrier has does not exist here.
+    ``close_targets`` used to be the second difference and is not any more -- the
+    canonical scanner was widened to the same three spellings, so the union it takes
+    is a no-op for every input and is kept only so a future narrowing there cannot
+    silently narrow this surface. A consequence of the second is that ``_pause_briefs`` is
     always empty: an artifact only reaches the partition when the message
     close-keywords one of its numbers, which is exactly the overlap that ends the
     pause exemption. It is returned and named rather than dropped silently.

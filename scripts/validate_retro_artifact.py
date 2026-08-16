@@ -81,7 +81,14 @@ NORTH_STAR_HEADING = "North Star Alignment"
 # against the wrong doc. The floor is presence-only, so what it actually demands
 # is that SOME governing design standard was consulted -- the message now says
 # that instead of naming one repo's path as if it were universal.
-NORTH_STAR_REFERENCE = "<authoring-repo>/docs/design-north-star.md"
+#: SUPERSEDED spelling, kept only as the thing this constant is not. The scaffold that
+#: seeds the section stopped writing `<authoring-repo>/...` into a consuming repo's own
+#: artifact, because that is charness's INTERNAL vocabulary for "resolves in my tree,
+#: not yours" and a consuming author reads it as a path to a directory that does not
+#: exist. The refusal message is the surface that author hits when they FAIL, which is
+#: when a readable path matters most -- so it must not keep the spelling the scaffold
+#: just removed. Resolved per-repo below instead.
+NORTH_STAR_DOC = "docs/design-north-star.md"
 LESSON_LEDGER_FILENAME = "lesson-ledger.json"
 LESSON_LEDGER_BOOTSTRAP_SCRIPT = "init_lesson_ledger.py"
 _PERSISTED_LINE = re.compile(r"^Persisted:\s+(yes|no):\s+\S.+$")
@@ -288,7 +295,38 @@ def validate_persisted_form(lines: list[str], observed_date: date | None) -> Non
         )
 
 
-def validate_north_star_alignment(lines: list[str], observed_date: date | None) -> None:
+def _repo_root_for(path: Path) -> Path | None:
+    """The repo root a retro artifact at ``<root>/charness-artifacts/retro/x.md`` implies.
+
+    ``None`` when the path is not in that layout -- a test fixture, an ad-hoc file --
+    because guessing a root there would name a design doc that has nothing to do with
+    the artifact being validated.
+    """
+    resolved = path.resolve()
+    if len(resolved.parents) < 3 or resolved.parent.name != "retro":
+        return None
+    if resolved.parents[1].name != "charness-artifacts":
+        return None
+    return resolved.parents[2]
+
+
+def north_star_reference(repo_root: Path | None) -> str:
+    """How the refusal message names the governing design standard, per repo.
+
+    Mirrors the scaffold's `_north_star_prompt`: name the real file when the repo
+    being validated has one, and otherwise describe what to go find with no
+    placeholder at all. The two surfaces disagreed for one commit -- the scaffold
+    dropped `<authoring-repo>/` while the refusal kept it -- which put the discarded
+    spelling on the surface a consuming author reads when they fail.
+    """
+    if repo_root is not None and (repo_root / NORTH_STAR_DOC).is_file():
+        return f"`{NORTH_STAR_DOC}` in this repo"
+    return "whatever this repo names as its own (design principles, invariants)"
+
+
+def validate_north_star_alignment(
+    lines: list[str], observed_date: date | None, repo_root: Path | None = None
+) -> None:
     """Fail a retro that never asked what the north star says about this work.
 
     The design standard is the repo's governing frame, so a retrospective that
@@ -312,8 +350,8 @@ def validate_north_star_alignment(lines: list[str], observed_date: date | None) 
     if not substantive:
         raise ValidationError(
             f"retro artifact has no `## {NORTH_STAR_HEADING}` section with content; every retro "
-            f"consults its governing design standard ({NORTH_STAR_REFERENCE} in the authoring "
-            "repo; a consuming repo names its own equivalent) and records what it found — which "
+            f"consults its governing design standard ({north_star_reference(repo_root)}) "
+            "and records what it found — which "
             "facets held, which were mis-applied, and any failure signature the run walked into. "
             "Prose in the skill was not enough: two consecutive retros shipped without it."
         )
@@ -480,7 +518,11 @@ def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
         lambda: validate_recurrence_lineage(lines, observed_date),
         lambda: validate_persisted_form(lines, observed_date),
         lambda: validate_recurrence_class_slugs(lines),
-        lambda: validate_north_star_alignment(lines, observed_date),
+        # Repo root derived from the artifact's OWN location rather than from this
+        # script's, because the two differ exactly where it matters: an exported copy
+        # validating a consuming repo's retro would otherwise resolve `REPO_ROOT` to the
+        # plugin tree and name charness's design doc at a consumer.
+        lambda: validate_north_star_alignment(lines, observed_date, _repo_root_for(path)),
         lambda: validate_lesson_evaluation_disposition(path, lines, observed_date),
     )
     # collect_all surfaces every violation in one pass (the CLI default) so a

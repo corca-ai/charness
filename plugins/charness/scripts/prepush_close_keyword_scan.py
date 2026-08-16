@@ -43,10 +43,11 @@ ZERO_SHA = "0" * 40
 GIT_TIMEOUT_SECONDS = 30
 NO_VERDICT_EXIT = 2
 
-# The close verbs, spelled exactly as the canonical scanner spells them, then the two
-# ref forms that scanner cannot see. `GH-123` and the full issue URL are GitHub close
-# spellings; a body using either closes an issue that `iter_close_keyword_refs`
-# reports nothing about.
+# The close verbs and the three ref forms GitHub closes on, spelled exactly as the
+# canonical scanner now spells them. `GH-123` and the full issue URL were once visible
+# ONLY here, so a body using either closed an issue that `iter_close_keyword_refs`
+# reported nothing about; that gap is closed at the source and this copy is now a
+# REDUNDANT second reader, not the only one that can see them.
 _VERB = r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)"
 _SLUG = r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
 _REF = (
@@ -56,10 +57,14 @@ _REF = (
 # out of the list grammar left `Closes GH-10, GH-11` reporting only 10 -- under-fire
 # on the one surface whose job is to be at least as wide as GitHub.
 _LAUNCH_RE = re.compile(_VERB + rf"(?P<refs>{_REF}(?:\s*,\s*{_REF})*)")
+# IGNORECASE, matching `_LAUNCH_RE`'s leading `(?i)`. A launch that classifies a span as
+# a close and then extracts nothing from it is the one shape a two-regex scanner can
+# reach and a one-regex one cannot; `closes gh-700` was exactly that.
 _REF_RE = re.compile(
     rf"(?:https?://(?:www\.)?github\.com/(?P<url_repo>{_SLUG})/issues/(?P<url_number>\d+)"
     rf"|GH-(?P<gh_number>\d+)"
-    rf"|(?P<repo>{_SLUG})?\#(?P<number>\d+))"
+    rf"|(?P<repo>{_SLUG})?\#(?P<number>\d+))",
+    re.IGNORECASE,
 )
 # A ref-creation push with no remote-tracking refs to bound it (a URL push, or a
 # remote never fetched) has no honest upper bound, and an unbounded scan of a long
@@ -240,10 +245,12 @@ def close_targets(body: str, iter_refs: Any) -> list[tuple[str | None, int]]:
     authorization exists to catch. Callers filter for the floor; nobody filters for
     authorization.
 
-    Two grammars unioned: the canonical scanner's, plus this file's extended launch
-    regex covering ``GH-N`` and full issue URLs (and the comma-list form for all of
-    them). The union keeps any future widening of the canonical scanner flowing
-    through rather than being shadowed by the local copy.
+    Two grammars unioned, and they are currently IDENTICAL: the canonical scanner has
+    been widened to the ``GH-N`` and issue-URL spellings this file's launch regex was
+    written for, so the union is a no-op for every input today. Kept anyway, and the
+    reason is the direction of failure -- a future NARROWING of the shared scanner
+    would silently narrow the one surface whose job is to model GitHub rather than
+    this repo's convention, and a redundant reader costs a set union.
     """
     found: set[tuple[str | None, int]] = set(iter_refs(body))
     for launch in _LAUNCH_RE.finditer(body):
