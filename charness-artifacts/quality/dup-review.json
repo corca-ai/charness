@@ -142,13 +142,6 @@
     },
     {
       "class": "intentional",
-      "id": "08c504ccfbab8be1",
-      "note": "Four whole-function spans inside the ONE reference sample skills/public/quality/references/coverage_floor_inventory.py (anchored_gate_pattern, collect_exemptions, operational_ref_sources, classify_unfloored_files). The shared mass is docstring and comment prose in a file whose entire purpose is to be READ and adapted by a consuming repo -- each block explains a different measured defect (the prefix/suffix decomposition, the declared-absent sub-key KeyError, the empty-operational-side false red, the warn-band split) and the code they surround shares no logic. Collapsing four explanations into one helper is exactly the wrong move for a teaching sample: it would remove the per-function reasoning a consumer adapts against. Surfaced as new because this slice rewrote the pattern anchoring and the sub-key handling.",
-      "reviewed_at": "2026-08-16",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
       "id": "08fb1dd459a76b42",
       "note": "paired advisory inventory reporting contract with materially different parser and status semantics; callback-heavy extraction would couple independently executable quality tools",
       "reviewed_at": "2026-07-11",
@@ -2557,6 +2550,13 @@
     },
     {
       "class": "intentional",
+      "id": "866ace4a126f4bbd",
+      "note": "The glob-to-regex translator in skills/public/quality/references/coverage_floor_inventory.py and scripts/what_reads_this.py. Same algorithm and the same recorded reason for rejecting fnmatch (its `*` crosses `/`), independently arrived at -- which is the ratchet doing its job. Not extractable: the first is a REFERENCE SAMPLE a consuming repo copies wholesale, and a sample that only runs when a charness-internal helper is importable is not a sample. The reference's docstring now names what_reads_this.py as the sibling so a reader finds the other copy. (Id rotated when the docstring cross-reference was added.)",
+      "reviewed_at": "2026-08-16",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "877915bb773ce4a3",
       "note": "stdlib/type import overlap between closeout broad-gate and critique packet modules; the modules own unrelated behavior and share no extractable contract",
       "reviewed_at": "2026-07-19",
@@ -4072,6 +4072,13 @@
       "id": "e1546a949d6f123c",
       "note": "five-line stdlib import block (re, sys, datetime, pathlib, typing) that record_quality_runtime.py and skills/public/achieve/scripts/goal_artifact_timebox.py now share because the recorder gained `import sys` to report malformed batch lines on stderr; identical stdlib imports in two unrelated scripts are not extractable duplication, and the nose advisory names per-script import preamble as its own blind spot",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e1dc97a0f6ec1aa7",
+      "note": "Rotation of 08c504ccfbab8be1 after the round-2 repairs rewrote this file. Four whole-function spans inside the ONE reference sample skills/public/quality/references/coverage_floor_inventory.py. The shared mass is docstring and comment prose in a file whose entire purpose is to be READ and adapted by a consuming repo -- each block explains a different measured defect (the prefix/suffix decomposition, the declared-absent sub-key KeyError, the empty-operational-side false red, the warn-band split) and the code they surround shares no logic. Collapsing four explanations into one helper is exactly the wrong move for a teaching sample: it removes the per-function reasoning a consumer adapts against.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {

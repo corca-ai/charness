@@ -386,7 +386,16 @@ runtime_budget_profiles:
       # run (11741) — it would have gone red on its own, weeks later, with nothing
       # regressed. This gate is queued conditionally, so its window turns over
       # slowly and the false red would have landed far from its cause.
-      check-coverage: 16500
+      #
+      # 2026-08-16: 16500 -> 25500, and this is the SAME defect recurring at the same
+      # bar. The recent median crossed by 0.3% (16557 vs 16500) with a 14810-18083
+      # window, i.e. the bar was again drawn 1.0x of observed rather than 1.4x, so
+      # ordinary contention was enough to trip it. Nothing in the slice touches
+      # `check_coverage.py`. Redrawn at 1.4x the worst recent run (18083 * 1.4 =
+      # 25316, rounded to 25500) so the next relevel is forced by a real regression
+      # rather than by jitter, and matched to `check-documented-command-flags` above,
+      # which drifted the same way in the same run.
+      check-coverage: 25500
       # (contended) was 6000; post-change max 8146
       doc-duplicates: 11500
       # (contended) was 8000; post-change max 12098

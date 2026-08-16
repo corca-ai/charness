@@ -320,19 +320,38 @@ def test_the_web_fetch_yaml_renderer_loads_from_the_real_tree() -> None:
 # --- closeout_refusal_lib: the flat exported layout has no `scripts` package ---
 
 
+class _BlockScriptsPackage:
+    """A meta-path finder that makes `scripts.*` unimportable, deterministically.
+
+    Filtering `sys.path` is not enough: whether `scripts` is reachable depends on what
+    other tests have already imported and on how the runner was invoked, so the same
+    test took the try arm in one run and the fallback arm in another. A finder that
+    refuses the name outright does not depend on any of that.
+    """
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "scripts" or fullname.startswith("scripts."):
+            raise ModuleNotFoundError(f"No module named {fullname!r}")
+        return None
+
+
 def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Imported without the `scripts` package, the refusal shape must be unchanged.
 
-    The exported plugin ships these helpers flat, side by side, with no package
-    root — so the package-qualified import fails there. If the sibling fallback
-    were broken, every refusal in the issue capture/freeze/crosswalk lane would
-    become an ImportError at the moment it needed to say no.
+    The exported plugin ships these helpers flat, side by side, with no package root --
+    so the package-qualified import fails there. If the sibling fallback were broken,
+    every refusal in the issue capture/freeze/crosswalk lane would become an
+    ImportError at the moment it needed to say no.
+
+    The arm taken is NOT observable from the loaded module: the repo's bootstrap
+    aliases `scripts.yaml_output` and `yaml_output` to one module object, so
+    `emit_yaml.__module__` reads the same either way. What makes this test pin the
+    fallback is the finder below, which guarantees the try arm raises.
     """
-    monkeypatch.setattr(sys, "path", [str(ROOT / "scripts")] + [
-        entry for entry in sys.path if Path(entry or ".").resolve() != ROOT
-    ])
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    monkeypatch.setattr(sys, "meta_path", [_BlockScriptsPackage()] + sys.meta_path)
     for name in [
         n for n in list(sys.modules) if n in ("scripts", "yaml_output") or n.startswith("scripts.")
     ]:
@@ -345,12 +364,6 @@ def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
     flat = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(flat)
 
-    # Resolved as a bare sibling module, i.e. through the fallback rather than the
-    # package-qualified import. This asserts what THIS module did, not a global
-    # interpreter property: `find_spec("scripts") is None` passed in isolation and
-    # failed in the full suite, because whether some other test has left the repo root
-    # reachable is not a fact about the layout under test.
-    assert flat.emit_yaml.__module__ == "yaml_output"
     exit_code = flat.emit_refusal("issue-freeze", flat.RefusalError("stale_freeze", "the freeze is stale"))
     captured = capsys.readouterr()
 

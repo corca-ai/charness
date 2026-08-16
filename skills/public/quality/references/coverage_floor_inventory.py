@@ -160,6 +160,12 @@ def _glob_to_regex(pattern: str) -> re.Pattern[str]:
 
     One engine, used by both discovery and the meta-check, is the whole point: two
     readers of one pattern is what the previous prefix/suffix decomposition was.
+
+    This repo already owns the same translator in `scripts/what_reads_this.py`, with
+    the same recorded reason for rejecting `fnmatch`. It is duplicated here rather
+    than imported because this file is a REFERENCE SAMPLE a consuming repo copies
+    wholesale: a sample that only runs when a charness-internal helper is importable
+    is not a sample. The duplication is classified in the duplicate ratchet.
     """
     out: list[str] = []
     index = 0
