@@ -29,10 +29,13 @@
 - **`<plugin-dir>/` is a DOC placeholder no runtime substitutes**, as its owner
   [check_plugin_dir_references.py](../scripts/check_plugin_dir_references.py) states. Never
   put it in a field an executor runs. Only release declares its RUN fields; critique/retro
-  `command:` and `integrations/tools/*.json` `checks.*.commands` do not — follow-up 4.
+  `command:` and `integrations/tools/*.json` `checks.*.commands` do not — follow-up 3.
 - **The export instruction arm blocks on consumer `.md` and inventories the rest.** Re-measure
   with `python3 scripts/check_export_self_sufficiency.py --repo-root .`; expect
   `consumer_doc_repo_root_instructions: []` and ~79 advisory module-prose entries.
+- **The installed-vs-repo skew is CLOSED**, which only the push could do: the managed
+  checkout at `~/.agents/src/charness` fast-forwards from origin and nothing else moves it.
+  Re-check with `diff -rq ~/.agents/src/charness/plugins/charness plugins/charness`.
 - Re-prove with `python3 scripts/run_standing_pytest.py` after
   `python3 scripts/sync_root_plugin_manifests.py`, then
   `python3 -m ruff check --no-cache scripts skills tests`.
@@ -41,24 +44,19 @@
 
 ## Next Session
 
-1. **Close the installed-vs-repo skew, which a push has now made closable.** Run
-   `charness update`, then re-check with
-   `diff -rq ~/.agents/src/charness/plugins/charness plugins/charness`. Before the push it
-   could not close: the managed checkout only fast-forwards from origin. The host-visible
-   roots `~/.codex/plugins/charness` and `~/.grok/plugins/charness` are separate objects.
-2. **Give `prove`'s stop gate the blind-class question** for detector-touching slices — a
+1. **Give `prove`'s stop gate the blind-class question** for detector-touching slices — a
    question, not a gate. Two measured instances stand behind it, recorded in the
    session retro: [2026-08-16 retro](../charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md).
-3. **Follow-up `export-instruction-spellings`.** The new arm matches ONE spelling. Live misses
+2. **Follow-up `export-instruction-spellings`.** The new arm matches ONE spelling. Live misses
    include the dot-slash and `bash`-prefixed forms in the quality skill's
    [catalog](../skills/public/quality/references/catalog.yaml); `.sh` and `.mjs` are unscanned.
-4. **Follow-up `executed-field-declaration`.** Declare executed adapter fields the way
+3. **Follow-up `executed-field-declaration`.** Declare executed adapter fields the way
    [resolve_adapter.py](../skills/public/release/scripts/resolve_adapter.py) already does
    with `EXECUTED_COMMAND_FIELDS`, so a classifier can key on the FIELD, not the file type.
-5. **[#546](https://github.com/corca-ai/charness/issues/546) residual** — separating
+4. **[#546](https://github.com/corca-ai/charness/issues/546) residual** — separating
    "legitimately conditional" from "abandoned behind an opt-in" still needs an
    adapter-declared expectation; a prior repair was measured defective and reverted.
-6. **Unowned residuals** — the seeder cold-start re-prompt and file mode in
+5. **Unowned residuals** — the seeder cold-start re-prompt and file mode in
    [#625](https://github.com/corca-ai/charness/issues/625), graduated lessons held `active`
    against the budget in [#626](https://github.com/corca-ai/charness/issues/626), and the
    deferred Sibling Search item where
