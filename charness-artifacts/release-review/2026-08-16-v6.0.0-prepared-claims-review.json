@@ -1,0 +1,16 @@
+{
+  "schema_version": "charness.release.claims-review.v2",
+  "prepared_commit": "1214f66ea052167592d9441b91bdf8bbe76e91ce",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "4e85e1207adf6f3b5b8a6df0cfd63e8c2a035c6d17181630b05132929b9732bb",
+  "target_version": "6.0.0",
+  "tag_name": "v6.0.0",
+  "verdict": "pass",
+  "preparer_context": "parent session operating the charness release skill; authored the notes entries under review and ran publish_release --execute to the prepared stage",
+  "reviewer_context": "three bounded read-only reviewer subagent contexts (Read/Grep/Glob only; no Bash, Edit, Write or Agent), each spawned fresh against the prepared record and none given the preparer's verdict",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "Each round ran as a separately spawned bounded-reviewer subagent whose envelope exposed only Read, Grep and Glob; each independently reported that Bash, Edit, Write and Agent were absent, and each returned findings the preparer had not written. Round 1 returned unproven on a false claim the preparer authored, and rounds 2 and 3 each found further defects in the preparer's repairs, which a same-agent reread of the preparer's own prose could not have produced.",
+    "review_artifact": "charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.md"
+  }
+}
