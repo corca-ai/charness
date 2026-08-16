@@ -43,19 +43,34 @@ layout against the instruction text; NO consuming repo has run this tree.
 
 ## Next Session
 
-1. **Close the issues this range resolves.** #632, #528 and #618 are resolved here;
+0. **#626 was closed by an accident of the push, and needs an owner decision.**
+   A commit message in the pushed range carried the prose "S7 closes\n#626/#627/#631",
+   and GitHub read `closes #626` as a directive, so pushing it closed the issue with
+   no closeout comment from this cohort. Only #626; the `/` separator meant #627 and
+   #631 did not bind, and a scan of all sixty pushed messages found no other close
+   directive. Reopening requires an explicit grant. The repo's guard covers a
+   `Closes #N` inside a staged `charness-artifacts/issue/*.md`, not a close keyword
+   in PROSE describing what a future release will do.
+1. **The prepared publish is STOPPED at `unproven`.** The stop, its three rounds and
+   what each found are in [the claims review](../charness-artifacts/release-review/2026-08-16-v6.0.0-claims-review.md),
+   which also records what the rounds CONFIRMED so the stop is not read as a verdict
+   on the whole release. Three rounds each found NEW false claims in the ten-issue
+   close body. Do not
+   publish on a fourth round without deciding that the ledger prose is trustworthy;
+   the rounds' own evidence is that it was not.
+2. **Close the issues this range resolves.** #632, #528 and #618 are resolved here;
    #634 and #546 are NARROWED and must not be closed. Map each requested outcome to
    executed proof before claiming closable.
-2. **[#634](https://github.com/corca-ai/charness/issues/634) residual.** Only the
+3. **[#634](https://github.com/corca-ai/charness/issues/634) residual.** Only the
    shell-gate half landed. The cwd-relative instruction sites are UNREPAIRED and the
    detector for them was reverted: it pushed a documentation placeholder into four
    EXECUTED command fields and refused correct consumer prose. Any retry must first
    separate fields that are READ from fields that are RUN.
-3. **[#546](https://github.com/corca-ai/charness/issues/546) residual.** The count is
+4. **[#546](https://github.com/corca-ai/charness/issues/546) residual.** The count is
    first-class now; separating "legitimately conditional" from "abandoned behind an
    opt-in" still needs an adapter-declared expectation, and a sample-history repair for
    it was already built, measured defective and reverted.
-4. **The unshipped-path arm in [export_self_sufficiency_lib.py](../scripts/export_self_sufficiency_lib.py)**
+5. **The unshipped-path arm in [export_self_sufficiency_lib.py](../scripts/export_self_sufficiency_lib.py)**
    counts AST literal nodes, so a subpath written as one literal escapes it.
 
 ## Discuss
