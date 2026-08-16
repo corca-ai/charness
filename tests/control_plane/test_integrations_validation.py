@@ -326,21 +326,59 @@ def test_advisory_doctor_policy_requires_a_declared_degraded_mode() -> None:
         if manifest.get("doctor_policy") != "advisory":
             continue
         assert "degraded" in manifest.get("access_modes", []), (
-            f"{path.name} declares doctor_policy: advisory without a `degraded` access mode; "
-            "integrations/tools/README.md permits advisory only where a degraded path exists"
+            f"{path.name} declares doctor_policy: advisory without a `degraded` access mode. "
+            "integrations/tools/README.md conditions advisory on the CONSUMING WORKFLOW having a "
+            "degraded path; a declared `degraded` access mode is this check's proxy for that, not "
+            "the README rule itself. If this tool's consumer really degrades, say so in access_modes"
         )
 
 
 def test_nose_stays_blocking_because_it_has_no_degraded_path() -> None:
-    """Pins the two values that make a missing `nose` report `blocking-install-needed`
-    (scripts/doctor_lib.py:237). The v6.0.0 `real_host_checklist` asserted
-    `advisory-install-needed` for this exact case; that expectation was unreachable at
-    the tag and is now corrected in `.agents/release-adapter.yaml`.
+    """Pins the two nose values, and then OBSERVES the verdict they produce rather than
+    trusting that the ladder still reads them. A first version of this test asserted only
+    the manifest fields, which left the disposition ladder free to be widened with the
+    test still green -- and the ladder is the surface this test's name is about.
+
+    The v6.0.0 `real_host_checklist` asserted `advisory-install-needed` for this case;
+    that expectation was unreachable at the tag and is corrected in the release adapter.
     """
     manifest = json.loads((ROOT / "integrations" / "tools" / "nose.json").read_text(encoding="utf-8"))
 
     assert manifest["doctor_policy"] == "required"
     assert "degraded" not in manifest["access_modes"]
+
+    assert manifest["lifecycle"]["install"]["mode"] == "script"
+
+
+def test_script_install_required_policy_tool_missing_is_blocking_exit_one(tmp_path: Path) -> None:
+    """The verdict half of the test above: drive the real doctor over a seeded tool
+    carrying nose's two decisive values (`mode: script`, `doctor_policy: required`) and
+    observe `blocking-install-needed` with exit 1.
+
+    Mirror of `test_doctor_missing_advisory_script_tool_is_exit_zero`, which pins the
+    advisory arm of the same ladder. Widening the ladder so a required/script tool goes
+    advisory turns this red; a manifest-only assertion could not.
+    """
+    repo = seed_control_plane_repo(tmp_path)
+    manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["lifecycle"]["install"]["mode"] = "script"
+    manifest["lifecycle"]["install"]["commands"] = ["./install-demo-tool"]
+    manifest["doctor_policy"] = "required"
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (repo / "bin" / "demo-tool").unlink()
+
+    doctor = run_loaded_script_main(
+        "doctor.py",
+        doctor_module,
+        "--repo-root",
+        str(repo),
+        "--skip-release-probe",
+    )
+    assert doctor.returncode == 1, doctor.stdout
+    doctor_payload = yaml.safe_load(doctor.stdout)
+    assert doctor_payload[0]["doctor_status"] == "missing"
+    assert doctor_payload[0]["doctor_disposition"] == "blocking-install-needed"
 
 
 def test_release_checklist_does_not_demand_an_advisory_disposition_for_nose() -> None:
@@ -357,6 +395,27 @@ def test_release_checklist_does_not_demand_an_advisory_disposition_for_nose() ->
     assert len(nose_doctor_items) == 1, nose_doctor_items
     assert "advisory-install-needed" not in nose_doctor_items[0]
     assert "blocking-install-needed" in nose_doctor_items[0]
+
+
+def test_release_checklist_entries_are_strings_under_standard_yaml() -> None:
+    """The grep test above reads raw TEXT, so it cannot see the defect that actually
+    shipped in v6.0.0: an unquoted item containing `doctor_disposition: <value>` parses
+    into a MAPPING, not a string. It did not fail to parse -- `real_host_checklist[1]`
+    was silently a dict to any standard-YAML reader, while every consumer
+    (`check_real_host_proof.py`, `publish_release_cli.py`) forwards the entries as text.
+
+    Blind class: this pins the type under PyYAML. The repo's own `adapter_lib.load_yaml`
+    is a different parser and returned a string even for the broken form, so this test
+    cannot detect a divergence that only that parser would introduce.
+    """
+    adapter = yaml.safe_load((ROOT / ".agents" / "release-adapter.yaml").read_text(encoding="utf-8"))
+
+    checklist = adapter["real_host_checklist"]
+    non_strings = [(index, item) for index, item in enumerate(checklist) if not isinstance(item, str)]
+    assert non_strings == [], (
+        f"real_host_checklist entries must be strings under standard YAML; got {non_strings}. "
+        "An entry containing `: ` needs quoting or it parses as a mapping"
+    )
 
 
 def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch) -> None:

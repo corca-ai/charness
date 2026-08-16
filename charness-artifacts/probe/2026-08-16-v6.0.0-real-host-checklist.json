@@ -1,127 +1,75 @@
 {
-  "schema_version": "charness.real_host_checklist.v3",
-  "observed_at": "2026-08-16T10:14:42+00:00",
-  "revised_at": "2026-08-16T10:41:00+00:00",
-  "revision_history": {
-    "v1": "Initial record of the seven checklist executions.",
-    "v2": "Repaired three round-1 blockers: an over-general `charness update` correction, an `executed`/`confirmed` verdict on a re-run whose install never happened, and a `not-observable` disposition hiding a checklist expectation the code contradicts.",
-    "v3": "Repaired two round-2 blockers introduced BY the v2 repair. B1: v2 marked CLI outputs `value_kind: verbatim` when they were author-selected extracts — de-nested, reordered, and in one case cross-contaminated (`binary_path`/`resolved_path` were attributed to `charness tool doctor` but come from `charness tool install --detail`; confirmed absent from the doctor transcript). Every command has now been RE-RUN with raw stdout captured to `2026-08-16-v6.0.0-real-host-checklist-transcripts/`, and no value claims to be verbatim. B2: item 2's `status` was `executed` though its precondition was unmet exactly as item 5's was."
-  },
-  "target": {
-    "version": "6.0.0",
-    "tag": "v6.0.0",
-    "tag_commit": "1214f66ea052167592d9441b91bdf8bbe76e91ce",
-    "repo_head": "fe8ee663fba864c40e76b99862748fde9e78ff2c",
-    "origin_main": "44eb0e6e84c1770990d47a32b236dc84f1b61721",
-    "surface_caveat": "`origin/main` (44eb0e6e8) is AHEAD of tag v6.0.0 (1214f66e). The installed surfaces exercised below are post-release main, not the published v6.0.0 tree. Nothing here re-verifies the published tag.",
-    "adapter": ".agents/release-adapter.yaml real_host_checklist"
-  },
-  "purpose": "Execute the v6.0.0 real-host checklist items recorded as unexecuted in docs/handoff.md Next Session item 1: the cited-check == repo spot check, and all six `nose` steps.",
   "evidence_convention": {
+    "cwd": "Each command carries the tree it ran against, because items 2-6 measure the installed release surface and item 7 measures the unpushed dev tree.",
+    "transcript_caveat": "Transcripts were captured on a RE-RUN after the original executions, not during them. Host state was unchanged in between except that `charness update` had already run. `charness update` itself was NOT re-run (it mutates), so item 1's first command has no transcript and its value is an extract from the original session output only.",
     "transcript_dir": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/",
     "value_kind": "Every `commands[]` entry carries `value_kind: extract` plus a `transcript` filename. `extract` means the `value` string is an author-selected excerpt and is NOT byte-identical to stdout; the named transcript file holds the raw output and is the re-checkable artifact. No value in this file claims to be verbatim.",
-    "why_no_verbatim": "A round-2 reviewer showed v2's `verbatim` markers were false: the CLI renders through `yaml.safe_dump(sort_keys=False)` over projectors that always emit `event`/`response_level`/`detail_available` first (charness:3800-3804, 3727-3731), and no recorded value contained them. The marker's only purpose is telling a reader what is re-checkable, so a false marker is worse than no marker.",
-    "cwd": "Each command carries the tree it ran against, because items 2-6 measure the installed release surface and item 7 measures the unpushed dev tree.",
-    "transcript_caveat": "Transcripts were captured on a RE-RUN after the original executions, not during them. Host state was unchanged in between except that `charness update` had already run. `charness update` itself was NOT re-run (it mutates), so item 1's first command has no transcript and its value is an extract from the original session output only."
-  },
-  "surfaces": {
-    "measured": {
-      "managed_source_checkout": {
-        "path": "/home/hwidong/.agents/src/charness",
-        "git_head": "44eb0e6e8",
-        "sync_mode": "git pull --ff-only from origin; `ensure_checkout` (charness:1119-1147) never writes tracked content, and a bare `charness update` resolves here (charness:123-124, 847-853)",
-        "note": "This is the path `.agents/release-adapter.yaml:66` names and the path the spot check diffed."
-      },
-      "codex_plugin_root": {
-        "path": "/home/hwidong/.codex/plugins/charness",
-        "sync_mode": "exported by `install_surface` from the passed repo_root (charness:2251-2275); default root at charness:127-128"
-      },
-      "grok_plugin_root": {
-        "path": "/home/hwidong/.grok/plugins/charness",
-        "sync_mode": "same export path; default root at charness:131-132"
-      }
-    },
-    "not_measured": [
-      "the Codex plugin CACHE (`default_codex_cache_root`, charness:143-144) — docs/development.md:48-51 says the versioned cache path is what the host actually loads",
-      "the Claude wrapper (`claude_wrapper_path`)",
-      "the installed CLI binary (`cli_path`, charness:2291-2293)"
-    ],
-    "local_sync_route": {
-      "command": "charness update --repo-root . --no-pull --skip-cli-install",
-      "mechanism": "an explicit `--repo-root` makes `resolve_repo_root` return `managed=False` (charness:847-849), which clears `allow_pull=managed_checkout and not args.no_pull` (charness:4045); `install_surface` then exports from that repo_root into the plugin roots (charness:2251-2275). `--skip-cli-install` satisfies the managed-CLI contract (charness:1111-1112).",
-      "documented_at": "docs/development.md:12-24 — 'it updates the host-visible plugin surface from the working tree'",
-      "citation_correction": "v2 cited charness:1141 as the CLI 'naming' this route. That line is inside a CharnessError raised only when a managed checkout has DIVERGED (charness:1136-1144); it is an error path, not general guidance. The route's real documentation is docs/development.md.",
-      "precondition": "not literally 'any' repo_root: `install_surface` first runs `scripts/validate_packaging.py` and `scripts/sync_root_plugin_manifests.py` against that root (charness:2261-2262), either of which can refuse before export."
-    }
+    "why_no_verbatim": "A round-2 reviewer showed v2's `verbatim` markers were false: the CLI renders through `yaml.safe_dump(sort_keys=False)` over projectors that always emit `event`/`response_level`/`detail_available` first (charness:3800-3804, 3727-3731), and no recorded value contained them. The marker's only purpose is telling a reader what is re-checkable, so a false marker is worse than no marker."
   },
   "items": [
     {
-      "id": "install-refresh-and-spot-check",
+      "benign_residue": "`skills/init-repo/scripts` in the installed surfaces is an EMPTY leftover directory from the pushed rename commit 50b990839 (init-repo -> setup). Git does not track empty directories, so the installed clone reports a clean worktree and this is not version drift.",
       "checklist_text": "On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root .`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.",
-      "status": "executed",
-      "verdict": "not-equal",
-      "spot_check_method": "The adapter's phrase `cited-check == repo-gate spot check` is not defined in the adapter. Read here as: compare the gate-bearing files the installed surface would execute against the repo's, and attribute any difference. Discharged with recursive `diff` plus `git diff --name-only origin/main..HEAD`. Method stated because the reading is the author's, not the adapter's.",
       "commands": [
         {
           "command": "charness update",
           "cwd": "/home/hwidong/codes/charness",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": null,
           "transcript_absent_because": "mutating; not re-run to capture stdout. This is the one command whose recording requirement the adapter states explicitly and which this file satisfies only with an extract.",
-          "value": "checkout.pulled: true; codex_cache_refresh.status: refreshed (reason: plugin-install-succeeded); codex and claude host guidance both `installed`; grok `unavailable`; next_action.kind: restart"
+          "value": "checkout.pulled: true; codex_cache_refresh.status: refreshed (reason: plugin-install-succeeded); codex and claude host guidance both `installed`; grok `unavailable`; next_action.kind: restart",
+          "value_kind": "extract"
         },
         {
           "command": "charness doctor",
           "cwd": "/home/hwidong/codes/charness",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "02-charness-doctor.txt",
-          "value": "managed_checkout: true; target_repo_root: /home/hwidong/codes/charness; checkout_version: 6.0.0; checkout_git_head: 44eb0e6e8; codex_source_cache_drift: false; repo_onboarding.status: ready"
+          "value": "managed_checkout: true; target_repo_root: /home/hwidong/codes/charness; checkout_version: 6.0.0; checkout_git_head: 44eb0e6e8; codex_source_cache_drift: false; repo_onboarding.status: ready",
+          "value_kind": "extract"
         },
         {
           "command": "diff -q ~/.agents/src/charness/plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py skills/public/retro/scripts/scaffold_retro_artifact.py",
+          "comparison_kind": "installed EXPORT vs repo SOURCE — NOT like-for-like with the two recursive diffs below, which are export-vs-export. Its exit 1 is only attributable to version skew if the export is byte-identity with source, which this file does not establish. Recorded because docs/handoff.md:30 names it as the recheck command, not as an independent third drift observation.",
           "cwd": "/home/hwidong/codes/charness",
           "returncode": 1,
-          "value_kind": "extract",
           "transcript": null,
-          "comparison_kind": "installed EXPORT vs repo SOURCE — NOT like-for-like with the two recursive diffs below, which are export-vs-export. Its exit 1 is only attributable to version skew if the export is byte-identity with source, which this file does not establish. Recorded because docs/handoff.md:30 names it as the recheck command, not as an independent third drift observation.",
-          "value": "files differ"
+          "value": "files differ",
+          "value_kind": "extract"
         },
         {
           "command": "diff -rq ~/.agents/src/charness/plugins/charness plugins/charness",
           "cwd": "/home/hwidong/codes/charness",
           "returncode": 1,
-          "value_kind": "extract",
           "transcript": "01-installed-vs-repo-spot-check.txt",
-          "value": "9 tracked files differ; remaining output lines are repo-local __pycache__ dirs and one empty stale directory"
+          "value": "9 tracked files differ; remaining output lines are repo-local __pycache__ dirs and one empty stale directory",
+          "value_kind": "extract"
         },
         {
           "command": "diff -rq ~/.codex/plugins/charness plugins/charness",
           "cwd": "/home/hwidong/codes/charness",
           "returncode": 1,
-          "value_kind": "extract",
           "transcript": "01-installed-vs-repo-spot-check.txt",
-          "value": "the SAME 9 tracked files differ"
+          "value": "the SAME 9 tracked files differ",
+          "value_kind": "extract"
         },
         {
           "command": "diff -rq ~/.grok/plugins/charness plugins/charness",
           "cwd": "/home/hwidong/codes/charness",
           "returncode": 1,
-          "value_kind": "extract",
           "transcript": "10-grok-surface.txt",
-          "value": "the SAME 9 tracked files differ"
+          "value": "the SAME 9 tracked files differ",
+          "value_kind": "extract"
         },
         {
           "command": "git diff --name-only origin/main..HEAD -- plugins/charness",
           "cwd": "/home/hwidong/codes/charness",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "01-installed-vs-repo-spot-check.txt",
-          "value": "exactly the same 9 paths reported by the three recursive diffs"
+          "value": "exactly the same 9 paths reported by the three recursive diffs",
+          "value_kind": "extract"
         }
       ],
-      "finding": "The three MEASURED installed surfaces are behind this tree by the same 9 paths, fully attributed to the 9 unpushed commits. Three further surfaces that the same install path writes were NOT measured — see `surfaces.not_measured`; the Codex plugin cache is the notable one, since docs/development.md:48-51 says it is what the host actually loads. The remedy DIFFERS per surface, and v1 collapsed them: the managed source checkout is pull-only, so THAT comparison — the one the adapter names — cannot be closed without a push; the plugin roots have a documented local-tree route (`surfaces.local_sync_route`) which was NOT run, because it would make the host surfaces execute unpushed, partly accepted-unreviewed code. That is the operator's call and is coupled to the pending push grant.",
       "corrects": "docs/handoff.md:29-31 says `Item 1's charness update is what closes it`. For the managed source checkout that is false — `charness update` ran clean and the skew remains. For the plugin roots a local-sync route exists but requires the explicit dogfood flags, not a bare `charness update`.",
       "drifted_paths": [
         "plugins/charness/scripts/export_self_sufficiency_lib.py",
@@ -134,123 +82,127 @@
         "plugins/charness/skills/release/scripts/resolve_adapter.py",
         "plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py"
       ],
-      "benign_residue": "`skills/init-repo/scripts` in the installed surfaces is an EMPTY leftover directory from the pushed rename commit 50b990839 (init-repo -> setup). Git does not track empty directories, so the installed clone reports a clean worktree and this is not version drift."
+      "finding": "The three MEASURED installed surfaces are behind this tree by the same 9 paths, fully attributed to the 9 unpushed commits. Three further surfaces that the same install path writes were NOT measured — see `surfaces.not_measured`; the Codex plugin cache is the notable one, since docs/development.md:48-51 says it is what the host actually loads. The remedy DIFFERS per surface, and v1 collapsed them: the managed source checkout is pull-only, so THAT comparison — the one the adapter names — cannot be closed without a push; the plugin roots have a documented local-tree route (`surfaces.local_sync_route`) which was NOT run, because it would make the host surfaces execute unpushed, partly accepted-unreviewed code. That is the operator's call and is coupled to the pending push grant.",
+      "id": "install-refresh-and-spot-check",
+      "spot_check_method": "The adapter's phrase `cited-check == repo-gate spot check` is not defined in the adapter. Read here as: compare the gate-bearing files the installed surface would execute against the repo's, and attribute any difference. Discharged with recursive `diff` plus `git diff --name-only origin/main..HEAD`. Method stated because the reading is the author's, not the adapter's.",
+      "status": "executed",
+      "verdict": "not-equal"
     },
     {
-      "id": "nose-doctor-before-install",
       "checklist_text": "Run `charness tool doctor nose --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.",
-      "status": "executed-precondition-unmet",
-      "verdict": "REFUTED",
-      "precondition_note": "The checklist says `before installing nose`. `nose` was already installed for this entire session, so the literal pre-install state was never occupied. A PATH-scoped stand-in was SUBSTITUTED to reach the missing arm. Graded the same way item 5's unmet precondition is graded; v2 inconsistently graded this one plain `executed`.",
       "commands": [
         {
           "command": "charness tool doctor nose --no-write-locks",
           "cwd": "/home/hwidong/codes/charness (resolved repo_root: /home/hwidong/.agents/src/charness)",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "03-tool-doctor-nose-present.txt",
-          "value": "results.nose.doctor.doctor_status: ok; doctor_disposition: ready; observed_version: 0.20.0"
+          "value": "results.nose.doctor.doctor_status: ok; doctor_disposition: ready; observed_version: 0.20.0",
+          "value_kind": "extract"
         },
         {
           "command": "env PATH=/usr/bin:/bin $(command -v charness) tool doctor nose --no-write-locks",
           "cwd": "/home/hwidong/codes/charness (resolved repo_root: /home/hwidong/.agents/src/charness)",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "04-tool-doctor-nose-pathscoped-missing.txt",
-          "value": "summary.status_counts: {missing: 1}; results.nose.doctor.doctor_status: missing; doctor_disposition: blocking-install-needed"
+          "value": "summary.status_counts: {missing: 1}; results.nose.doctor.doctor_status: missing; doctor_disposition: blocking-install-needed",
+          "value_kind": "extract"
         }
       ],
-      "finding": "This checklist expectation is FALSE, and the refutation is executed rather than inferred. PATH-scoping reproduces the missing arm without uninstalling anything, and the observed disposition is `blocking-install-needed` — precisely what the checklist says must not occur. Mechanism, stated with the step v2 omitted: scripts/doctor_lib.py runs a `doctor_status` ladder FIRST (lines 220-231), in which a missing support sync would win and route to `blocking-support-sync-needed` (line 240). That branch is unreachable for `nose` specifically because it declares no `support_skill_source`, so `inspect_support_sync` returns `not-tracked` (scripts/support_sync_lib.py:59-67) — corroborated by item 6's own `skipped` result. With that branch excluded, the disposition ladder reaches line 238 `advisory-install-needed` only if `install_route.mode == 'manual'` OR `doctor_policy == 'advisory'` (condition at line 237); integrations/tools/nose.json declares `doctor_policy: required` (:77) with `mode: script` (:16), so the assignment at line 242 `blocking-install-needed` is what remains. `blocking-failure` (line 244) requires a successful detect and is not reachable here.",
-      "tag_time_check": "`git show v6.0.0:integrations/tools/nose.json` reports the same `doctor_policy: required` and `mode: script`, so this was already true at tag time and is not post-release drift. Executed by the parent; no transcript captured for this one command.",
       "disposition": "RESOLVED after this record was first written: the checklist text was the defective surface and has been corrected. `integrations/tools/README.md` permits `doctor_policy: advisory` ONLY where the consuming workflow has an explicit degraded path; `nose` declares `access_modes: [binary]` and its own `degradation.when_missing` says doc near-duplicate review has NO fallback, so `required` is correct and relaxing it was not available. The `checklist_text` above is preserved as the text these seven items were EXECUTED against, not as current adapter content.",
-      "follow_up_defect_not_repaired": "Item 3's adapter text names plain `--dry-run`, which at the summary response level prints neither the installer command nor the release metadata it asks to confirm. That item is still not executable as literally specified; left unrepaired to keep this slice scoped, and named here so it is not lost."
+      "finding": "This checklist expectation is FALSE, and the refutation is executed rather than inferred. PATH-scoping reproduces the missing arm without uninstalling anything, and the observed disposition is `blocking-install-needed` — precisely what the checklist says must not occur. Mechanism, stated with the step v2 omitted: scripts/doctor_lib.py runs a `doctor_status` ladder FIRST (lines 220-231), in which a missing support sync would win and route to `blocking-support-sync-needed` (line 240). That branch is unreachable for `nose` specifically because it declares no `support_skill_source`, so `inspect_support_sync` returns `not-tracked` (scripts/support_sync_lib.py:59-67) — corroborated by item 6's own `skipped` result. With that branch excluded, the disposition ladder reaches line 238 `advisory-install-needed` only if `install_route.mode == 'manual'` OR `doctor_policy == 'advisory'` (condition at line 237); integrations/tools/nose.json declares `doctor_policy: required` (:77) with `mode: script` (:16), so the assignment at line 242 `blocking-install-needed` is what remains. `blocking-failure` (line 244) requires a successful detect and is not reachable here.",
+      "follow_up_defect_not_repaired": "Item 3's adapter text names plain `--dry-run`, which at the summary response level prints neither the installer command nor the release metadata it asks to confirm. That item is still not executable as literally specified; left unrepaired to keep this slice scoped, and named here so it is not lost.",
+      "id": "nose-doctor-before-install",
+      "precondition_note": "The checklist says `before installing nose`. `nose` was already installed for this entire session, so the literal pre-install state was never occupied. A PATH-scoped stand-in was SUBSTITUTED to reach the missing arm. Graded the same way item 5's unmet precondition is graded; v2 inconsistently graded this one plain `executed`.",
+      "status": "executed-precondition-unmet",
+      "tag_time_check": "`git show v6.0.0:integrations/tools/nose.json` reports the same `doctor_policy: required` and `mode: script`, so this was already true at tag time and is not post-release drift. Executed by the parent; no transcript captured for this one command.",
+      "verdict": "REFUTED"
     },
     {
-      "id": "nose-install-dry-run",
       "checklist_text": "Run `charness tool install nose --dry-run` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.",
-      "status": "executed-with-substituted-command",
-      "verdict": "confirmed",
       "commands": [
         {
           "command": "charness tool install nose --dry-run --detail",
           "cwd": "/home/hwidong/codes/charness (resolved repo_root: /home/hwidong/.agents/src/charness)",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "05-tool-install-nose-dryrun-detail.txt",
-          "value": "install.mode: script; install.commands includes a curl of https://github.com/corca-ai/nose/releases/latest/download/nose-cli-installer.sh piped to sh; latest_release.api_url https://api.github.com/repos/corca-ai/nose/releases/latest resolving to html_url .../tag/v0.20.0"
+          "value": "install.mode: script; install.commands includes a curl of https://github.com/corca-ai/nose/releases/latest/download/nose-cli-installer.sh piped to sh; latest_release.api_url https://api.github.com/repos/corca-ai/nose/releases/latest resolving to html_url .../tag/v0.20.0",
+          "value_kind": "extract"
         }
       ],
       "finding": "Both halves confirmed from the captured transcript. The checklist's `v0.4.0 or newer` floor is stale relative to the observed latest v0.20.0; the floor is satisfied, not violated.",
-      "method_deviation": "`--detail` was added to the adapter's plain `--dry-run`. The summary response level prints neither the installer command nor the release metadata, so the plain form cannot discharge this item as written — the adapter item is not executable as literally specified. v2 disclosed the deviation but still graded `status: executed`; corrected here."
+      "id": "nose-install-dry-run",
+      "method_deviation": "`--detail` was added to the adapter's plain `--dry-run`. The summary response level prints neither the installer command nor the release metadata, so the plain form cannot discharge this item as written — the adapter item is not executable as literally specified. v2 disclosed the deviation but still graded `status: executed`; corrected here.",
+      "status": "executed-with-substituted-command",
+      "verdict": "confirmed"
     },
     {
-      "id": "nose-install-and-version",
       "checklist_text": "Install `nose` through the manifest-supported path (`charness tool install nose`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.",
-      "status": "partially-executed",
-      "verdict": "version-confirmed-install-path-unexecuted",
       "commands": [
         {
           "command": "nose --version",
           "cwd": "/home/hwidong/codes/charness",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "06-nose-version.txt",
-          "value": "nose 0.20.0"
+          "value": "nose 0.20.0",
+          "value_kind": "extract"
         }
       ],
-      "finding": "The binary is present at /home/hwidong/.cargo/bin/nose at the latest upstream version, so the version half is confirmed. NONE of the three manifest-supported install paths was executed. Per path: `charness tool install nose` resolves to `mode: script` and therefore runs the same upstream curl installer (item 3's transcript), so it is not a distinct route on this host; the upstream release installer writes to its own prefix and would leave a second `nose` competing on PATH with the existing cargo one; `brew` is not the provisioning route on this machine. The existing binary was provisioned outside the manifest path, so the manifest install route remains unproven here for v6.0.0."
+      "finding": "The binary is present at /home/hwidong/.cargo/bin/nose at the latest upstream version, so the version half is confirmed. NONE of the three manifest-supported install paths was executed. Per path: `charness tool install nose` resolves to `mode: script` and therefore runs the same upstream curl installer (item 3's transcript), so it is not a distinct route on this host; the upstream release installer writes to its own prefix and would leave a second `nose` competing on PATH with the existing cargo one; `brew` is not the provisioning route on this machine. The existing binary was provisioned outside the manifest path, so the manifest install route remains unproven here for v6.0.0.",
+      "id": "nose-install-and-version",
+      "status": "partially-executed",
+      "verdict": "version-confirmed-install-path-unexecuted"
     },
     {
-      "id": "nose-doctor-after-install",
       "checklist_text": "Re-run `charness tool doctor nose --no-write-locks` and confirm the binary is detected on PATH.",
-      "status": "executed-precondition-unmet",
-      "verdict": "not-an-after-install-observation",
       "commands": [
         {
           "command": "charness tool doctor nose --no-write-locks",
           "cwd": "/home/hwidong/codes/charness (resolved repo_root: /home/hwidong/.agents/src/charness)",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "03-tool-doctor-nose-present.txt",
-          "value": "results.nose.doctor.doctor_status: ok; doctor_disposition: ready; observed_version: 0.20.0"
+          "value": "results.nose.doctor.doctor_status: ok; doctor_disposition: ready; observed_version: 0.20.0",
+          "value_kind": "extract"
         }
       ],
       "finding": "This item asks for a RE-RUN after an install, and the install (item 4) did not happen. This run is indistinguishable in host state from the item-2 run of the same command — the two now correctly cite the SAME transcript, because they are the same observation. It establishes that a pre-existing binary is detected and establishes NOTHING about the install path's effect on PATH.",
-      "v2_defect_corrected": "v2 recorded `binary_path`/`resolved_path` for this command. Those keys are not in the doctor projection (fixed key set at charness:3632) and are absent from transcript 03; they were cross-contaminated from the `charness tool install --dry-run --detail` output. The strongest evidence in v2 for this item was attributed to the wrong command."
+      "id": "nose-doctor-after-install",
+      "status": "executed-precondition-unmet",
+      "v2_defect_corrected": "v2 recorded `binary_path`/`resolved_path` for this command. Those keys are not in the doctor projection (fixed key set at charness:3632) and are absent from transcript 03; they were cross-contaminated from the `charness tool install --dry-run --detail` output. The strongest evidence in v2 for this item was attributed to the wrong command.",
+      "verdict": "not-an-after-install-observation"
     },
     {
-      "id": "nose-sync-support",
       "checklist_text": "Run `charness tool sync-support nose` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.",
-      "status": "executed",
-      "verdict": "confirmed",
       "commands": [
         {
           "command": "charness tool sync-support nose",
           "cwd": "/home/hwidong/codes/charness (resolved repo_root: /home/hwidong/.agents/src/charness)",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "07-tool-sync-support-nose.txt",
-          "value": "summary.status_counts: {skipped: 1}; results.nose.support.status: skipped"
+          "value": "summary.status_counts: {skipped: 1}; results.nose.support.status: skipped",
+          "value_kind": "extract"
         }
       ],
-      "finding": "No materialized support skill requirement, as the checklist expects for an integration-only validation binary. The semantic carrier is scripts/sync_support.py:36-42, which returns `status: skipped` with `reason: integration has no support_skill_source`. That reason is NOT printed at the summary response level and so is a code read, not an observation."
+      "finding": "No materialized support skill requirement, as the checklist expects for an integration-only validation binary. The semantic carrier is scripts/sync_support.py:36-42, which returns `status: skipped` with `reason: integration has no support_skill_source`. That reason is NOT printed at the summary response level and so is a code read, not an observation.",
+      "id": "nose-sync-support",
+      "status": "executed",
+      "verdict": "confirmed"
     },
     {
-      "id": "nose-clone-inventory",
       "checklist_text": "Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --detail` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.",
-      "status": "executed",
-      "verdict": "confirmed-advisory",
       "commands": [
         {
           "command": "python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --detail",
           "cwd": "/home/hwidong/codes/charness (the unpushed dev tree, NOT the installed surface the preceding items measured)",
           "returncode": 0,
-          "value_kind": "extract",
           "transcript": "08-inventory-nose-clones.txt",
-          "value": "status: findings; advisory: true; family_count: 9; total_dup_lines: 1115; tool_version: 0.20.0; version_skew: null; cli_exit_code: 0; plus an `interpretation` block and a `notes` list"
+          "value": "status: findings; advisory: true; family_count: 9; total_dup_lines: 1115; tool_version: 0.20.0; version_skew: null; cli_exit_code: 0; plus an `interpretation` block and a `notes` list",
+          "value_kind": "extract"
         }
       ],
-      "finding": "Findings are advisory refactoring candidates, not standing quality failures: the emitter sets `advisory: true`, exits 0, and its `notes` list — present in the transcript — forbids treating total_dup_lines as a reduction target or a cross-scanner-version trend."
+      "finding": "Findings are advisory refactoring candidates, not standing quality failures: the emitter sets `advisory: true`, exits 0, and its `notes` list — present in the transcript — forbids treating total_dup_lines as a reduction target or a cross-scanner-version trend.",
+      "id": "nose-clone-inventory",
+      "status": "executed",
+      "verdict": "confirmed-advisory"
     }
   ],
   "non_claims": [
@@ -260,19 +212,70 @@
     "The item-1 correction is scoped to the MANAGED SOURCE CHECKOUT. It does not claim the plugin roots are unclosable without a push — those have a documented local-sync route which was deliberately not run.",
     "Three surfaces the same install path writes were NOT measured (Codex plugin cache, Claude wrapper, installed CLI binary). `surfaces.measured` is three of at least six.",
     "Nothing here establishes that a push WOULD close the managed-checkout skew; that is an inference from path attribution plus the pull-only sync mode, not an executed proof.",
-    "Item 2's missing-`nose` state was PATH-SIMULATED, not actually absent. The refutation establishes that a missing `nose` reports `blocking-install-needed` on THIS host at THIS commit; it does not decide whether the adapter checklist or the doctor policy should change.",
+    "Item 2's missing-`nose` state was PATH-SIMULATED, not actually absent. The refutation establishes that a missing `nose` reports `blocking-install-needed` on THIS host at THIS commit. The choice between surfaces was made LATER, outside this record, and is noted in item 2's `disposition`; this probe did not establish it.",
     "Item 3 ran a SUBSTITUTED command (`--detail` added); the adapter's literal `--dry-run` does not print what the item asks to confirm.",
     "The manifest-supported nose install path is unexecuted; only the dry-run plan and the pre-existing binary's version were observed. The item-5 detection is therefore not an after-install observation.",
     "Item 1's third command compares an installed EXPORT against repo SOURCE, unlike the export-vs-export recursive diffs; it is not an independent drift observation.",
     "Items 2-6 resolved repo_root to the managed checkout ~/.agents/src/charness (at origin/main); item 7 ran against the unpushed dev tree. This is not one uniform host surface.",
     "The `cited-check == repo-gate spot check` reading in item 1 is the author's; the adapter does not define the phrase.",
-    "`review_provenance` below is author-asserted narration, not captured evidence; its command results carry no transcript."
+    "`review_provenance` below is author-asserted narration, not captured evidence; its command results carry no transcript.",
+    "`charness doctor` returns 0 regardless of external-tool state, so no transcript here shows a blocking exit from it. Transcript 04 shows exit 1 from `charness tool doctor`, which is a different command."
   ],
+  "observed_at": "2026-08-16T10:14:42+00:00",
+  "purpose": "Execute the v6.0.0 real-host checklist items recorded as unexecuted in docs/handoff.md Next Session item 1: the cited-check == repo spot check, and all six `nose` steps.",
   "review_provenance": {
+    "author_recheck": "The parent re-verified each blocker against source before revising. This is the SAME observer that authored the artifact and is therefore not a distinct-observer confirmation under docs/design-north-star.md P4; v2 wrongly called it `independent`.",
+    "boundary_integrity": "reviewer_boundary_fingerprint.py verify reported `drift: []` and `head_moved: false` for both windows (w-20260816T101522Z-986535, w-20260816T102224Z-996178).",
     "round_1": "Bounded fresh-eye reviewer, read-only envelope bound (no Bash/Edit/Write/Agent). Returned 3 BLOCKER, 5 SHOULD-FIX, 5 NOTE against v1.",
     "round_2": "Bounded fresh-eye reviewer reading the v2 REPAIR. Returned 2 BLOCKER, 7 SHOULD-FIX, 6 NOTE — including that the repair's own `verbatim` markers were false, which is the round-1 blocker class relocated to a new key. Round 2 confirmed all seven `checklist_text` values are now exact adapter quotes.",
-    "boundary_integrity": "reviewer_boundary_fingerprint.py verify reported `drift: []` and `head_moved: false` for both windows (w-20260816T101522Z-986535, w-20260816T102224Z-996178).",
-    "author_recheck": "The parent re-verified each blocker against source before revising. This is the SAME observer that authored the artifact and is therefore not a distinct-observer confirmation under docs/design-north-star.md P4; v2 wrongly called it `independent`.",
     "round_cap": "The operating contract caps bounded review at two rounds for a proof surface. These v3 repairs are round-2 repairs and are therefore ACCEPTED-UNREVIEWED: no fresh eye has read this version."
+  },
+  "revised_at": "2026-08-16T11:12:00+00:00",
+  "revision_history": {
+    "v1": "Initial record of the seven checklist executions.",
+    "v2": "Repaired three round-1 blockers: an over-general `charness update` correction, an `executed`/`confirmed` verdict on a re-run whose install never happened, and a `not-observable` disposition hiding a checklist expectation the code contradicts.",
+    "v3": "Repaired two round-2 blockers introduced BY the v2 repair. B1: v2 marked CLI outputs `value_kind: verbatim` when they were author-selected extracts — de-nested, reordered, and in one case cross-contaminated (`binary_path`/`resolved_path` were attributed to `charness tool doctor` but come from `charness tool install --detail`; confirmed absent from the doctor transcript). Every command has now been RE-RUN with raw stdout captured to `2026-08-16-v6.0.0-real-host-checklist-transcripts/`, and no value claims to be verbatim. B2: item 2's `status` was `executed` though its precondition was unmet exactly as item 5's was.",
+    "v4": "Records the operator decision that item 2's checklist TEXT was the defective surface, and cites transcript 09. v3 was edited in place with the resolution note while still stamped v3, which would have let a reader think the round-2 reviewer had read it; a round-3 reviewer caught that. It also caught that v3's checklist_text repair reintroduced the very class it fixed -- the adapter text asserted `charness doctor` exits 1 for a missing nose, and `cmd_doctor` returns 0 unconditionally (charness:4189-4217), refuted by transcript 02 in this same directory."
+  },
+  "schema_version": "charness.real_host_checklist.v4",
+  "surfaces": {
+    "local_sync_route": {
+      "citation_correction": "v2 cited charness:1141 as the CLI 'naming' this route. That line is inside a CharnessError raised only when a managed checkout has DIVERGED (charness:1136-1144); it is an error path, not general guidance. The route's real documentation is docs/development.md.",
+      "command": "charness update --repo-root . --no-pull --skip-cli-install",
+      "documented_at": "docs/development.md:12-24 — 'it updates the host-visible plugin surface from the working tree'",
+      "mechanism": "an explicit `--repo-root` makes `resolve_repo_root` return `managed=False` (charness:847-849), which clears `allow_pull=managed_checkout and not args.no_pull` (charness:4045); `install_surface` then exports from that repo_root into the plugin roots (charness:2251-2275). `--skip-cli-install` satisfies the managed-CLI contract (charness:1111-1112).",
+      "precondition": "not literally 'any' repo_root: `install_surface` first runs `scripts/validate_packaging.py` and `scripts/sync_root_plugin_manifests.py` against that root (charness:2261-2262), either of which can refuse before export."
+    },
+    "measured": {
+      "codex_plugin_root": {
+        "path": "/home/hwidong/.codex/plugins/charness",
+        "sync_mode": "exported by `install_surface` from the passed repo_root (charness:2251-2275); default root at charness:127-128"
+      },
+      "grok_plugin_root": {
+        "path": "/home/hwidong/.grok/plugins/charness",
+        "sync_mode": "same export path; default root at charness:131-132"
+      },
+      "managed_source_checkout": {
+        "git_head": "44eb0e6e8",
+        "note": "This is the path `.agents/release-adapter.yaml:66` names and the path the spot check diffed.",
+        "path": "/home/hwidong/.agents/src/charness",
+        "sync_mode": "git pull --ff-only from origin; `ensure_checkout` (charness:1119-1147) never writes tracked content, and a bare `charness update` resolves here (charness:123-124, 847-853)"
+      }
+    },
+    "not_measured": [
+      "the Codex plugin CACHE (`default_codex_cache_root`, charness:143-144) — docs/development.md:48-51 says the versioned cache path is what the host actually loads",
+      "the Claude wrapper (`claude_wrapper_path`)",
+      "the installed CLI binary (`cli_path`, charness:2291-2293)"
+    ],
+    "transcript": "09-unmeasured-surfaces.txt"
+  },
+  "target": {
+    "adapter": ".agents/release-adapter.yaml real_host_checklist",
+    "origin_main": "44eb0e6e84c1770990d47a32b236dc84f1b61721",
+    "repo_head": "fe8ee663fba864c40e76b99862748fde9e78ff2c",
+    "surface_caveat": "`origin/main` (44eb0e6e8) is AHEAD of tag v6.0.0 (1214f66e). The installed surfaces exercised below are post-release main, not the published v6.0.0 tree. Nothing here re-verifies the published tag.",
+    "tag": "v6.0.0",
+    "tag_commit": "1214f66ea052167592d9441b91bdf8bbe76e91ce",
+    "version": "6.0.0"
   }
 }

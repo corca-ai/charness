@@ -648,11 +648,13 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "for path in charness-artifacts/probe/*-transcripts/*.txt; do head -n 1 \"$path\" | grep -q '^\\$ ' || { echo \"$path: first line must record the command as '$ <cmd>'\"; exit 1; }; grep -q '^\\[exit=' \"$path\" || { echo \"$path: no '[exit=N]' marker; a transcript with no return code is not evidence\"; exit 1; }; done"
+        "for path in charness-artifacts/probe/*-transcripts/*.txt; do [ -e \"$path\" ] || continue; head -n 1 \"$path\" | grep -q '^\\$ ' || { echo \"$path: first line must record the command as '$ <cmd>'\"; exit 1; }; cmds=$(grep -c '^\\$ ' \"$path\"); exits=$(grep -c '^\\[exit=' \"$path\"); [ \"$cmds\" = \"$exits\" ] || { echo \"$path: $cmds command line(s) but $exits '[exit=N]' marker(s); every recorded command needs its return code\"; exit 1; }; done"
       ],
       "notes": [
         "A probe JSON marks its values as author extracts; these transcripts are what makes that honest, so the check pins the two things an extract cannot supply: which command ran, and what it returned.",
-        "The check reads SHAPE, not truth. It cannot tell whether a transcript was captured from the command it names, or captured at the time the probe claims."
+        "The glob guard uses `|| continue`, matching audit-evidence-attachments. Without it, pruning the last transcript makes the unmatched glob expand literally, and the check fails naming a path that does not exist -- a wrong diagnostic, not a clean pass.",
+        "Marker COUNT is compared against command count, not merely presence: a multi-command transcript with some return codes deleted would otherwise pass on a single surviving marker.",
+        "The check reads SHAPE, not truth. It cannot tell whether a transcript was captured from the command it names, or captured at the time the probe claims, and it does not bind a transcript to any probe JSON in either direction -- an orphan transcript no probe cites still passes."
       ]
     },
     {
