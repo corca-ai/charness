@@ -185,6 +185,10 @@ def test_north_star_reference_resolves_per_repo_and_never_writes_a_placeholder(
     canonical.write_text("# x\n", encoding="utf-8")
     assert validator._repo_root_for(canonical) == (tmp_path / "some-consumer").resolve()
     assert validator._repo_root_for(tmp_path / "loose.md") is None
+    # A `retro/` parent is not enough: only the full `charness-artifacts/retro/` layout
+    # says which tree the artifact belongs to. Asserted separately because the two
+    # refusals are separate branches and the first one hides the second.
+    assert validator._repo_root_for(tmp_path / "notes" / "retro" / "x.md") is None
 
     assert "<authoring-repo>" not in validator.north_star_reference(None)
     assert "<authoring-repo>" not in validator.north_star_reference(tmp_path)
