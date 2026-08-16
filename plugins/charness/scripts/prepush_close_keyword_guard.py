@@ -39,12 +39,15 @@ review: classification from the message alone defaults to ``bug``, so an
 artifact-carried ``question`` close was refused with a demand for root-cause and
 prevention claims that the disposition exists to refuse.
 
-DETECTION is deliberately WIDER than the carrier's. ``close_targets`` adds the
-``GH-123`` and full-issue-URL spellings GitHub also closes on and the canonical
-``iter_close_keyword_refs`` does not match. Widening the shared scanner would
-change every surface that consumes it; widening here errs toward refusal on the
-one surface whose job is to model GitHub rather than to model this repo's
-convention. The shared-scanner gap is real and is NOT fixed by this file.
+DETECTION was once WIDER than the carrier's, and is now the same grammar reached
+twice. ``close_targets`` adds the ``GH-123`` and full-issue-URL spellings GitHub
+also closes on; the canonical ``iter_close_keyword_refs`` did not match them, which
+left every OTHER consumer of that function blind to a close it would fire. The
+canonical scanner has since been widened to the same three spellings, so the gap
+this paragraph used to disclaim is closed at the source. The local copy is kept
+deliberately as REDUNDANCY rather than as the sole detector: ``close_targets``
+unions both, so a future narrowing of the shared scanner cannot silently narrow the
+one surface whose job is to model GitHub rather than this repo's convention.
 
 Calibration, and what it does and does not establish. Command:
 ``python3 scripts/prepush_close_keyword_guard.py --repo-root . --range <sha>~1..<sha>``

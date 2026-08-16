@@ -17,12 +17,26 @@ _strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
 _ledger_counts = _load_local("issue_closeout_ledger_counts")
 _consolidated = _load_local("issue_consolidated_closeout")
 
-_CLOSING_KEYWORD_LAUNCH_RE = re.compile(
-    r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)"
-    r"(?P<refs>(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#\d+"
-    r"(?:\s*,\s*(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#\d+)*)"
+_CLOSING_KEYWORD_VERB = r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)"
+_CLOSING_KEYWORD_SLUG = r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
+# THREE spellings GitHub closes on, not one. `#N` was the only form this scanner saw;
+# `GH-N` and the full issue URL closed issues that every consumer of this function --
+# the commit-msg carrier, `verify_closeout`, the release closeout message -- reported
+# nothing about. The pre-push guard carried a private wider copy for exactly this gap;
+# widening here is what closes it for the other surfaces.
+_CLOSING_KEYWORD_REF = (
+    rf"(?:(?:{_CLOSING_KEYWORD_SLUG})?\#\d+|GH-\d+"
+    rf"|https?://(?:www\.)?github\.com/{_CLOSING_KEYWORD_SLUG}/issues/\d+)"
 )
-_CLOSING_KEYWORD_REF_RE = re.compile(r"(?:(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+))?#(?P<number>\d+)")
+_CLOSING_KEYWORD_LAUNCH_RE = re.compile(
+    _CLOSING_KEYWORD_VERB
+    + rf"(?P<refs>{_CLOSING_KEYWORD_REF}(?:\s*,\s*{_CLOSING_KEYWORD_REF})*)"
+)
+_CLOSING_KEYWORD_REF_RE = re.compile(
+    rf"(?:https?://(?:www\.)?github\.com/(?P<url_repo>{_CLOSING_KEYWORD_SLUG})/issues/(?P<url_number>\d+)"
+    rf"|GH-(?P<gh_number>\d+)"
+    rf"|(?P<repo>{_CLOSING_KEYWORD_SLUG})?\#(?P<number>\d+))"
+)
 
 
 def iter_close_keyword_refs(text: str) -> list[tuple[str | None, int]]:
@@ -33,14 +47,30 @@ def iter_close_keyword_refs(text: str) -> list[tuple[str | None, int]]:
     a second copy, so the two surfaces cannot drift.
 
     Covers the plain form (``Closes #10``), GitHub's documented colon form
-    (``Closes: #10``), and the single-keyword comma-list form GitHub also
-    recognizes (``Closes #10, #11, #12``) so a bundled reference is not missed
-    just because the keyword was not repeated per issue.
+    (``Closes: #10``), the single-keyword comma-list form GitHub also recognizes
+    (``Closes #10, #11, #12``) so a bundled reference is not missed just because
+    the keyword was not repeated per issue, and -- since the widening this
+    docstring's previous version disclaimed -- the ``GH-<n>`` spelling and the
+    full issue-URL spelling (the host, owner/repo, and issue path GitHub itself
+    links, as built by the module-level pattern above), each in the plain and
+    comma-list positions.
+
+    Not claimed: this models GitHub's close grammar from its documentation, not
+    from a measured probe of GitHub's parser. A form GitHub closes on and the
+    documentation does not describe is still invisible here, and would be
+    invisible identically to every consumer -- which is the property that made
+    keeping a second private copy in the pre-push guard worth removing as the
+    SOLE detector, not worth removing as a redundant one.
     """
     refs: list[tuple[str | None, int]] = []
     for launch in _CLOSING_KEYWORD_LAUNCH_RE.finditer(text):
         for ref in _CLOSING_KEYWORD_REF_RE.finditer(launch.group("refs")):
-            refs.append((ref.group("repo"), int(ref.group("number"))))
+            if ref.group("url_number"):
+                refs.append((ref.group("url_repo"), int(ref.group("url_number"))))
+            elif ref.group("gh_number"):
+                refs.append((None, int(ref.group("gh_number"))))
+            else:
+                refs.append((ref.group("repo"), int(ref.group("number"))))
     return refs
 _HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<name>.+?)\s*$")
 _FIELD_RE = re.compile(r"^\s*(?:[-*]\s*)?(?P<name>[A-Za-z][A-Za-z -]{1,40}):\s*(?P<value>.*)$")

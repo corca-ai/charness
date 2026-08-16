@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import re
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -62,6 +63,9 @@ EXECUTED_COMMAND_FIELDS = ("sync_command", "quality_command")
 #: The stable substring every executed-command warning carries, so `load_adapter` can
 #: tell whether validation already emitted them without knowing which loader exit ran.
 EXECUTED_WARNING_MARKER = "is EXECUTED and names"
+#: The only candidate shape `command_script_target` will answer for. An allowlist, so a
+#: character it has never seen is a silent no-judgement instead of a false refusal.
+_PLAIN_PATH_RE = re.compile(r"(?:\./)?[A-Za-z0-9._/-]+")
 
 
 def command_script_target(command: str) -> str | None:
@@ -74,21 +78,24 @@ def command_script_target(command: str) -> str | None:
     "the command is fine".
 
     NOT JUDGED, and each of these is a missed warning rather than a wrong one: a
-    pipeline or ``&&`` chain, a ``cd`` prefix, an env assignment prefix
-    (``FOO=1 python3 ...``), any interpreter spelled other than ``python3``
-    (``python``, ``python3.11``, ``bash``, ``node``, ``uv run``), an interpreter
-    option before the path (``python3 -u ...``), ``-m`` module form, an absolute
-    path, a path built from a variable, a bare relative path with no ``./``, and a
-    candidate carrying a shell metacharacter -- a quote, ``~``, a glob, or a
-    backslash -- whose real target only the shell knows.
+    pipeline, chain, redirect or grouping in ANY spelling, spaced or not; a ``cd``
+    prefix; an env assignment prefix (``FOO=1 python3 ...``); any interpreter
+    spelled other than ``python3`` (``python``, ``python3.11``, ``bash``, ``node``,
+    ``uv run``); an interpreter option before the path (``python3 -u ...``); the
+    ``-m`` module form; an absolute path; a path built from a variable; a bare
+    relative path with no ``./``; a parent-relative path (``../x/y.py``); and any
+    candidate carrying a character outside ``[A-Za-z0-9._/-]`` -- a quote, ``~``, a
+    glob or glob class, a brace expansion, a backslash -- whose real target only
+    the shell knows.
 
     The narrowness is deliberate and is the point of the READ/RUN field split. These
     fields are EXECUTED, so a recognizer that guessed wrong would refuse a command
     that works -- the failure mode that got the previous attempt at this class
-    reverted. A review round found three such guesses in this function's first
-    version (``python3 "scripts/a b.py"``, ``python3 ~/tools/sync.py``,
-    ``python3 scripts/*/sync.py``), each of which turned a working release into a
-    hard refusal; the metacharacter rejection below is what they cost.
+    reverted. Two review rounds found such guesses: first quoted, tilde and glob
+    candidates, then -- in the blacklist written to stop those -- ``;``, ``|``,
+    ``&``, redirects, brace expansion and glob classes, every one of them a hard
+    refusal of a working release. The allowlist below is what that cost, and it is
+    the shape a blacklist could not have: it cannot go stale.
     """
     parts = command.split()
     if not parts:
@@ -101,10 +108,14 @@ def command_script_target(command: str) -> str | None:
         return None
     if candidate.startswith("-") or candidate.startswith("/"):
         return None
-    # A candidate the SHELL would rewrite is a candidate this cannot read. Answering a
-    # literal path for `"scripts/a` or `~/tools/sync.py` is not a near miss: it is a
-    # path that does not exist, and the caller turns "does not exist" into a refusal.
-    if any(character in candidate for character in "$\"'~*?\\`"):
+    # An ALLOWLIST, not a blacklist of shell metacharacters. `command.split()` splits on
+    # whitespace only, so any unspaced operator stays glued to the token: `scripts/x.py;`,
+    # `scripts/x.py|tee`, `scripts/x.py&&python3`, `scripts/x{a,b}.py`, `scripts/x[0-9].py`
+    # are all candidates the shell rewrites and this cannot. A blacklist missed every one
+    # of those and turned each into a hard refusal of a working release -- and could never
+    # be proven complete, since it goes stale as shells add syntax. Inverted, an unlisted
+    # character is a silent None: a missed warning, which is the harmless direction.
+    if not _PLAIN_PATH_RE.fullmatch(candidate):
         return None
     if ".." in Path(candidate).parts:
         return None
@@ -133,15 +144,21 @@ def _executed_command_warnings(
         target = command_script_target(validated[field])
         if target is None or (repo_root / target).exists():
             continue
-        # `field not in data`, not `data.get(field) is None`: a field present with a
-        # non-string value is rejected by `optional_string`, leaving the INFERRED value
-        # in `validated` -- but the consumer did write the key, so calling it inferred
-        # would send them looking for a default they overrode.
-        origin = (
-            "set in the release adapter"
-            if field in data
-            else "the inferred default, which names this authoring repo's own tooling"
-        )
+        # Three origins, not two. A key present with an UNUSABLE value (a number, or a
+        # bare `sync_command:` with nothing after it) is dropped by `optional_string`, so
+        # `validated[field]` is this repo's inferred default while `field in data` is
+        # true. Reported as either extreme, the operator is told their adapter set a path
+        # their adapter does not contain -- and the bare-key spelling raises no error at
+        # all, so nothing else would correct them.
+        if field not in data:
+            origin = "the inferred default, which names this authoring repo's own tooling"
+        elif data[field] == validated[field]:
+            origin = "set in the release adapter"
+        else:
+            origin = (
+                "the key is present in the release adapter but its value was not usable, "
+                "so the inferred default is in force"
+            )
         warnings.append(
             f"{field} {EXECUTED_WARNING_MARKER} {target!r}, which does not exist under "
             f"{repo_root} ({origin}); set {field} to a command this repo can run"

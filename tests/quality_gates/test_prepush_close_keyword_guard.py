@@ -462,9 +462,32 @@ SCANNER = load_script_module(
     ],
 )
 def test_close_targets_covers_the_spellings_github_closes_on(body: str, expected: list) -> None:
-    # `GH-N` and the full issue URL are GitHub close spellings the canonical scanner
-    # does not match, so a body using either scanned clean while closing an issue.
     assert SCAN.close_targets(body, SCANNER) == expected
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ("fix: closes GH-700\n", [(None, 700)]),
+        ("fix: closes https://github.com/corca-ai/charness/issues/700\n", [("corca-ai/charness", 700)]),
+        ("fix: closes GH-700, GH-701\n", [(None, 700), (None, 701)]),
+        ("fix: closes #700\n", [(None, 700)]),
+        ("fix: see GH-700\n", []),
+        ("fix: closes HIGH-700\n", []),
+        ("fix: closes https://github.com/corca-ai/charness/pull/700\n", []),
+    ],
+)
+def test_the_canonical_scanner_itself_sees_every_spelling(body: str, expected: list) -> None:
+    """The SHARED function, not the pre-push guard's private union over it.
+
+    `GH-N` and the full issue URL were GitHub close spellings only the guard matched,
+    so the commit-msg carrier, `verify_closeout`, and the release closeout message all
+    scanned a body clean while GitHub closed an issue on it. Asserted directly against
+    `iter_close_keyword_refs` because `close_targets` unions the guard's own copy over
+    it -- reading the widening through that union would pass with the shared scanner
+    still narrow, which is exactly the blindness under repair.
+    """
+    assert SCANNER(body) == expected
 
 
 def test_local_numbers_is_what_narrows_to_this_repo() -> None:

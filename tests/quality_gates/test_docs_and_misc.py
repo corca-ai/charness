@@ -142,7 +142,10 @@ def test_release_bump_version_refuses_a_missing_sync_command_before_mutating(
     )
 
     assert result.returncode != 0
-    assert "sync_command" in result.stderr
+    # A string only the PREFLIGHT emits. `sync_command` alone also appears in `run_sync`'s
+    # own failure message, so with the preflight deleted this assertion would still pass
+    # and only the unchanged-manifest one below would be red.
+    assert "Nothing was bumped" in result.stderr
     assert (repo / "packaging" / "demo.json").read_text(encoding="utf-8") == manifest_text
 
 
@@ -197,6 +200,17 @@ def test_release_adapter_does_not_judge_a_command_shape_it_cannot_read() -> None
         "python3 scripts/*/sync.py",
         "python3 scripts/sync?.py",
         "python3 scripts\\sync.py",
+        # Round 2 found each of these in the BLACKLIST written to stop the three above:
+        # `split()` breaks on whitespace only, so an unspaced operator stays glued to the
+        # candidate and the blacklist never saw it. Each was a hard refusal of a working
+        # command. They are why the rule is an allowlist.
+        "python3 scripts/sync.py; python3 scripts/mirror.py",
+        "python3 scripts/sync.py&&python3 scripts/mirror.py",
+        "python3 scripts/sync.py|tee sync.log",
+        "python3 scripts/sync.py>sync.log",
+        "python3 scripts/sync.py&",
+        "python3 scripts/sync_{claude,codex}.py",
+        "python3 scripts/sync[0-9].py",
         # Missed detections, named so the docstring's list is testable in both directions.
         "python3 -u scripts/sync.py",
         "FOO=1 python3 scripts/sync.py",

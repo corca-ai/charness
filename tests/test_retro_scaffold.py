@@ -172,3 +172,32 @@ def test_retro_scaffold_appends_only_adapter_declared_sections() -> None:
 
     assert "## Repo Evaluator" in template
     assert "Repo evaluation: TODO exact repo-owned form" in template
+
+
+def test_the_north_star_prompt_never_writes_an_authoring_placeholder(tmp_path: Path) -> None:
+    """A consuming repo used to read a literal `<authoring-repo>` in its own retro.
+
+    That spelling is charness's INTERNAL convention for "resolves in my tree, not
+    yours". A consuming author reads it as a path and looks for a directory that does
+    not exist. Both arms asserted, because naming the real file is only correct for a
+    repo that has one -- resolving it unconditionally would trade one wrong path for
+    another.
+    """
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+    consumer_template = SCAFFOLD_MODULE.render_template(
+        title="Session Retro", date_text="2026-08-16", repo_root=consumer
+    )
+
+    assert "<authoring-repo>" not in consumer_template
+    assert SCAFFOLD_MODULE.NORTH_STAR_DOC not in consumer_template
+    assert "governing design standard" in consumer_template
+
+    (consumer / "docs").mkdir()
+    (consumer / SCAFFOLD_MODULE.NORTH_STAR_DOC).write_text("# North Star\n", encoding="utf-8")
+    owning_template = SCAFFOLD_MODULE.render_template(
+        title="Session Retro", date_text="2026-08-16", repo_root=consumer
+    )
+
+    assert f"`{SCAFFOLD_MODULE.NORTH_STAR_DOC}`" in owning_template
+    assert "<authoring-repo>" not in owning_template

@@ -66,7 +66,40 @@ def _sections_without_owned_headings(artifact_sections: list[str], owned: frozen
     return kept
 
 
-def render_template(*, title: str, date_text: str, artifact_sections: list[str] | None = None) -> str:
+#: Where charness keeps its own governing design standard. Named as a repo-relative
+#: path because that is what it is IN THE REPO THAT HAS IT; the scaffold below only
+#: writes it when this repo is the one being scaffolded.
+NORTH_STAR_DOC = "docs/design-north-star.md"
+
+
+def _north_star_prompt(repo_root: Path | None) -> str:
+    """The North Star TODO line, resolved against the repo being scaffolded.
+
+    This is a READ field -- prose a human reads in their own retro artifact -- and it
+    used to carry the literal `<authoring-repo>/docs/design-north-star.md`. That
+    spelling is charness's INTERNAL authoring vocabulary for "resolves in my tree, not
+    yours"; a consuming author reads it as a path, looks for a directory named
+    `<authoring-repo>`, and finds nothing. A placeholder in a read field is legitimate
+    only when its reader knows the convention, and this reader does not.
+
+    So: name the real file when the repo scaffolded actually has one, and otherwise say
+    what to go find, with no placeholder at all.
+    """
+    if repo_root is not None and (repo_root / NORTH_STAR_DOC).is_file():
+        return f"TODO read this repo's governing design standard — `{NORTH_STAR_DOC}` —"
+    return (
+        "TODO read this repo's governing design standard — whatever it names as its own "
+        "(design principles, invariants, an architecture decision record) —"
+    )
+
+
+def render_template(
+    *,
+    title: str,
+    date_text: str,
+    artifact_sections: list[str] | None = None,
+    repo_root: Path | None = None,
+) -> str:
     lines = [f"# {title}", f"Date: {date_text}", ""]
     lines.extend(["## Context", "", "TODO what happened and why this retro.", ""])
     lines.extend(["## Evidence Summary", "", "- TODO concrete evidence (paths, line counts, command output).", ""])
@@ -79,11 +112,9 @@ def render_template(*, title: str, date_text: str, artifact_sections: list[str] 
         [
             "## North Star Alignment",
             "",
-            "TODO read this repo's governing design standard —"
-            " `<authoring-repo>/docs/design-north-star.md`",
-            "in the authoring repo, or whatever this repo names as its own (design principles,",
-            "invariants) — and record what it says about THIS work: which facets held, which",
-            "were mis-applied, and any named failure signature the run walked into. Reviewing",
+            _north_star_prompt(repo_root),
+            "and record what it says about THIS work: which facets held, which were",
+            "mis-applied, and any named failure signature the run walked into. Reviewing",
             "the work only against itself has no frame.",
             "",
         ]
@@ -194,6 +225,7 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
             title=resolved_title,
             date_text=date_text,
             artifact_sections=list(adapter["data"].get("artifact_sections", [])),
+            repo_root=repo_root,
         ),
         validator_command_for=lambda path: validator_command(repo_root, path),
         remedy="Rerun scaffold_retro_artifact.py with --title <specific retro title>.",

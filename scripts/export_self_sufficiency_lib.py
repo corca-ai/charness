@@ -209,7 +209,13 @@ def unshipped_path_findings(
                 # a computed leaf is judged on the literal prefix it does name.
                 if (export_root / relative).exists():
                     continue
-                if len(segments) < 2:
+                # PATH depth, not AST-node count. `len(segments)` counts chain links, so
+                # the same target escaped or was reported depending only on how it was
+                # SPELLED: `root / "packaging" / "bootstrap-python.json"` is two links and
+                # was judged, while `root / "packaging/bootstrap-python.json"` is one link
+                # naming the same absent file and was skipped -- and the one-link spelling
+                # is how the defect that opened this class was actually written.
+                if len([part for part in relative.split("/") if part]) < 2:
                     continue
             findings.append(
                 {

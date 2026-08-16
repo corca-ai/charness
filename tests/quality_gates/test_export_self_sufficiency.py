@@ -244,6 +244,48 @@ def test_a_shipped_directory_does_not_excuse_an_unshipped_path_inside_it(
     assert [finding["literal"] for finding in findings] == ["packaging/charness.json"]
 
 
+def test_a_subpath_written_as_one_literal_does_not_escape(tmp_path: Path) -> None:
+    """The same absent target, spelled with one `/` operator instead of two.
+
+    The depth guard used to count CHAIN LINKS, so `Path(".") / "packaging/charness.json"`
+    was one link and skipped while `Path(".") / "packaging" / "charness.json"` was two
+    and reported -- the verdict turned on spelling rather than on what the path names,
+    and the one-link spelling is how the defect that opened this class was written.
+    """
+    export_root = _minimal_export(
+        tmp_path,
+        source='from pathlib import Path\np = Path(".") / "packaging/charness.json"\n',
+        requirements="PyYAML>=6\n",
+    )
+
+    findings = _lib.unshipped_path_findings(
+        export_root, repo_root_entries={"packaging", "scripts"}
+    )
+
+    assert [finding["literal"] for finding in findings] == ["packaging/charness.json"]
+
+
+def test_a_bare_shipped_directory_reference_is_still_not_reported(tmp_path: Path) -> None:
+    """Naming a shipped directory claims nothing about a file inside it.
+
+    Honest about what this pins: a depth-1 literal whose head IS shipped is excluded one
+    branch earlier, by the `(export_root / relative).exists()` test -- `relative` is the
+    head, and a shipped head exists by construction. So the depth rule is unreachable for
+    this input, which is also why widening it from chain links to path segments could not
+    change this case. Kept as the boundary the widening must not cross, not as a mutant
+    kill for it.
+    """
+    export_root = _minimal_export(
+        tmp_path,
+        source='from pathlib import Path\np = Path(".") / "packaging"\n',
+        requirements="PyYAML>=6\n",
+    )
+
+    assert (
+        _lib.unshipped_path_findings(export_root, repo_root_entries={"packaging", "scripts"}) == []
+    )
+
+
 def test_a_shipped_path_that_exists_is_not_reported(tmp_path: Path) -> None:
     export_root = _minimal_export(
         tmp_path,

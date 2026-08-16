@@ -64,9 +64,11 @@ version, because that command runs after the manifest is written and a failure t
 would leave a bumped manifest with an unsynced plugin mirror.
 
 The reader is narrow on purpose: it resolves only `python3 <relative-path>` and
-`./<relative-path>`, and stays silent on any other shape — a pipeline, an env prefix,
-a different interpreter, a quoted or globbed path. Silence means it did not judge, not
-that the command is fine. Set both fields to commands YOUR repo can run.
+`./<relative-path>` where the path uses `[A-Za-z0-9._/-]` and nothing else. Every other
+shape is silent — a pipeline or chain in any spelling, a redirect, an env prefix, a
+different interpreter, an interpreter option, a quoted, tilde, globbed or
+brace-expanded path. Silence means it did not judge, not that the command is fine. Set
+both fields to commands YOUR repo can run.
 
 ## Defaults
 

@@ -149,14 +149,19 @@ def test_a_path_naming_an_unshipped_repo_root_entry_is_reported(tmp_path: Path) 
     assert [(f["segment"], f["literal"]) for f in findings] == [("packaging", "packaging/bootstrap.json")]
 
 
-def test_a_single_literal_is_one_segment_even_when_it_spells_a_subpath(tmp_path: Path) -> None:
-    """A chain naming only ONE literal under a SHIPPED root is not reported.
+def test_a_single_literal_spelling_a_subpath_is_reported_like_the_two_literal_one(
+    tmp_path: Path,
+) -> None:
+    """Both spellings of the same absent target are reported. DECIDED, having been
+    pinned as an open boundary by the previous version of this test.
 
-    The guard is a segment count, so `'packaging/gone.json'` written as a single
-    literal counts as one segment and is skipped, while the same path written as
-    two literals is measured against the export tree and reported. This pins the
-    boundary as it stands: a change to the guard must decide this case
-    deliberately rather than move it by accident.
+    The guard used to count AST chain LINKS, so `'packaging/gone.json'` written as one
+    literal was skipped while `'packaging' / 'gone.json'` was reported -- the verdict
+    turned on how the path was typed rather than on what it names, and the one-link
+    spelling is how the omission that opened this class was actually written. It now
+    counts PATH segments, so the two spellings agree. What the depth rule still buys is
+    below it: a depth-1 literal under a shipped root claims nothing about a file inside
+    that root.
     """
     export_root = tmp_path / "export"
     (export_root / "packaging").mkdir(parents=True)
@@ -168,7 +173,7 @@ def test_a_single_literal_is_one_segment_even_when_it_spells_a_subpath(tmp_path:
     one_literal = EXPORT_LIB.unshipped_path_findings(
         export_root, repo_root_entries={"packaging"}, relative_to=export_root
     )
-    assert one_literal == []
+    assert [f["literal"] for f in one_literal] == ["packaging/gone.json"]
 
     (export_root / "one.py").write_text(
         "from pathlib import Path\nP = Path('.') / 'packaging' / 'gone.json'\n", encoding="utf-8"
@@ -177,6 +182,18 @@ def test_a_single_literal_is_one_segment_even_when_it_spells_a_subpath(tmp_path:
         export_root, repo_root_entries={"packaging"}, relative_to=export_root
     )
     assert [f["literal"] for f in two_literals] == ["packaging/gone.json"]
+
+    # The depth rule's remaining job: naming the shipped root itself is not a claim
+    # about anything inside it, at either spelling.
+    (export_root / "one.py").write_text(
+        "from pathlib import Path\nP = Path('.') / 'packaging'\n", encoding="utf-8"
+    )
+    assert (
+        EXPORT_LIB.unshipped_path_findings(
+            export_root, repo_root_entries={"packaging"}, relative_to=export_root
+        )
+        == []
+    )
 
 
 def test_only_docs_and_adapters_declare_a_documented_entrypoint(tmp_path: Path) -> None:
