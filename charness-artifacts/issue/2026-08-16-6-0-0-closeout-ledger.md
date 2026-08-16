@@ -74,8 +74,9 @@ cohort's causal analysis, whose `## Observed Facts` is the direct evidence for t
 release's execution critique, carrying the per-issue premise verdicts as F23-F27
 and F27b-F27d), and
 `charness-artifacts/critique/2026-08-14-issue-618-628-closeout.md` (the earlier
-cohort closeout review, whose F10, F11 and F13 first recorded three of the
-narrowings carried forward here; the other two — #626's compaction section and
+cohort closeout review, whose F10 and F11 first recorded two of the narrowings
+carried forward here, and whose F13 recorded the #618 residual this slice
+REPAIRED rather than carried; the other two — #626's compaction section and
 #627's rewrite half — were first recorded in that review's cohort-B failure
 angle, not in its F10-F13 range).
 
