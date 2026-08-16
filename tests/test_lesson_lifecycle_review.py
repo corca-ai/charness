@@ -12,6 +12,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import runpy
 import sys
 from pathlib import Path
 
@@ -412,6 +413,36 @@ def test_the_cli_refuses_an_unreadable_ledger_nonzero(tmp_path: Path) -> None:
 
     assert command.returncode == 1
     assert command.stdout == ""
+
+
+@pytest.mark.parametrize("readable", [True, False])
+def test_the_main_guard_itself_turns_a_render_refusal_into_exit_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys, readable: bool
+) -> None:
+    """The guard, not `main()`, is what an operator's `python3 ...` actually runs.
+
+    The test above drives `main()` and TELLS the runner which exception counts as a
+    refusal, so it proves the exit code the guard is supposed to produce without ever
+    executing the guard that produces it -- the translation could be deleted and both
+    that test and the render tests would stay green. `runpy` under `__main__` runs the
+    real five lines: the success arm's `raise SystemExit(main())` and the except arm's
+    stderr line plus `SystemExit(1)`.
+    """
+    if readable:
+        _repo(tmp_path, score_events=[_anchored_quiet_score()])
+    monkeypatch.setattr(sys, "argv", ["render_lesson_lifecycle_review.py", "--repo-root", str(tmp_path)])
+
+    with pytest.raises(SystemExit) as raised:
+        runpy.run_path(str(ROOT / "scripts/render_lesson_lifecycle_review.py"), run_name="__main__")
+
+    captured = capsys.readouterr()
+    if readable:
+        assert raised.value.code == 0
+        assert yaml.safe_load(captured.out)["lesson_count"] == 2
+    else:
+        assert raised.value.code == 1
+        assert captured.out == "", "a refusal must not emit a partial review payload"
+        assert "lesson-ledger.json" in captured.err
 
 
 def test_the_quality_skill_claims_the_lifecycle_and_forbids_ranking_on_recurrence() -> None:

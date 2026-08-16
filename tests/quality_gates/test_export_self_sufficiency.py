@@ -268,12 +268,12 @@ def test_a_subpath_written_as_one_literal_does_not_escape(tmp_path: Path) -> Non
 def test_a_bare_shipped_directory_reference_is_still_not_reported(tmp_path: Path) -> None:
     """Naming a shipped directory claims nothing about a file inside it.
 
-    Honest about what this pins: a depth-1 literal whose head IS shipped is excluded one
-    branch earlier, by the `(export_root / relative).exists()` test -- `relative` is the
-    head, and a shipped head exists by construction. So the depth rule is unreachable for
-    this input, which is also why widening it from chain links to path segments could not
-    change this case. Kept as the boundary the widening must not cross, not as a mutant
-    kill for it.
+    This input now reaches the DEPTH rule, which is the rule that decides it. It did not
+    before: `.exists()` was tested first, and a depth-1 `relative` whose head is shipped
+    IS the head, so it existed by construction and the depth guard was unreachable for
+    every input it was written for -- a line no test could measure, under a test named
+    after it. The two guards both `continue`, so reordering them cannot change a verdict;
+    it only decides which one is reachable.
     """
     export_root = _minimal_export(
         tmp_path,

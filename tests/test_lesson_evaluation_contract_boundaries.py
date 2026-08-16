@@ -237,6 +237,31 @@ def test_validate_receipt_rejects_invalid_contract_fields(
         )
 
 
+@pytest.mark.parametrize("shape", ["dropped-key", "added-key", "not-a-mapping"])
+def test_validate_receipt_requires_the_exact_key_set(tmp_path: Path, shape: str) -> None:
+    """EXACT, in both directions, and before any field is read.
+
+    A dropped key would otherwise reach the per-field checks as `None` and be reported as
+    a malformed digest -- a message pointing at the wrong defect. An ADDED key is the one
+    that matters for the digest: `receipt_sha256` is computed over `_RECEIPT_BODY_KEYS`
+    only, so an unrecognized field rides along inside a receipt whose own hash still
+    verifies. This is the check that stops a receipt from carrying anything the hash does
+    not cover.
+    """
+    receipt: object = _receipt()
+    if shape == "dropped-key":
+        receipt.pop("renderer_id")
+    elif shape == "added-key":
+        receipt["note"] = "extra"
+    else:
+        receipt = ["not", "a", "mapping"]
+
+    with pytest.raises(continuity.LessonEvaluationError, match="receipt requires exactly keys"):
+        continuity.validate_receipt(
+            receipt, sessions={"s-1": {"snapshot_sha256": "a" * 64}}, output_dir=tmp_path
+        )
+
+
 def test_validate_receipt_rejects_unknown_session(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="unknown session"):
         continuity.validate_receipt(_receipt(), sessions={}, output_dir=tmp_path)

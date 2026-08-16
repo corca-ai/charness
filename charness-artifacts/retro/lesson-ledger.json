@@ -884,6 +884,36 @@
         ]
       },
       "snapshot_sha256": "e2d77814034aa4ac023818a67ed07c185d89d1fb0180e272e994d27a33dfdee3"
+    },
+    {
+      "session_id": "2026-08-17-autonomous-improve",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-17-autonomous-improve",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "graduation-is-proposal",
+          "conservative-static-verdicts",
+          "green-test-is-not-covered-line",
+          "bar-recorded-as-prose",
+          "closeout-authoring-rework",
+          "detector-blind-class-unstated",
+          "changed-line-proof-before-broad-quality",
+          "global-probe-for-local-fact",
+          "goal-closeout-evidence-binding",
+          "agent-authored-score-role"
+        ]
+      },
+      "snapshot_sha256": "d9c37a655b322e7db793b5b9052c2963ddffe0255c5d8f11df9d2fe50abcf2e5"
     }
   ],
   "score_events": [

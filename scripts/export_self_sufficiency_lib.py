@@ -201,6 +201,22 @@ def unshipped_path_findings(
             if relative.startswith(COLLAPSE_PREFIXES_OWNED_BY_EXPORT_SAFE_IMPORTS):
                 continue
             if head in shipped:
+                # PATH depth, not AST-node count. `len(segments)` counts chain links, so
+                # the same target escaped or was reported depending only on how it was
+                # SPELLED: `root / "packaging" / "bootstrap-python.json"` is two links and
+                # was judged, while `root / "packaging/bootstrap-python.json"` is one link
+                # naming the same absent file and was skipped -- and the one-link spelling
+                # is how the defect that opened this class was actually written.
+                #
+                # FIRST of the two guards, deliberately. Both `continue`, so the order
+                # cannot change a verdict -- but it decides which one is REACHABLE. A
+                # depth-1 `relative` under a shipped head IS the head, so it exists by
+                # construction and the `.exists()` test below used to swallow every input
+                # this guard is written for: the line was unreachable, and a test named
+                # after it passed one branch early. Ordering it first makes the bare
+                # shipped-directory case exercise the rule that actually decides it.
+                if len([part for part in relative.split("/") if part]) < 2:
+                    continue
                 # A SHIPPED first segment is not enough. Shipping two files out of
                 # `packaging/` makes the directory present while every other path
                 # under it is still absent, and a first-segment rule would call
@@ -208,14 +224,6 @@ def unshipped_path_findings(
                 # Only a fully literal chain proves the exact target; a chain with
                 # a computed leaf is judged on the literal prefix it does name.
                 if (export_root / relative).exists():
-                    continue
-                # PATH depth, not AST-node count. `len(segments)` counts chain links, so
-                # the same target escaped or was reported depending only on how it was
-                # SPELLED: `root / "packaging" / "bootstrap-python.json"` is two links and
-                # was judged, while `root / "packaging/bootstrap-python.json"` is one link
-                # naming the same absent file and was skipped -- and the one-link spelling
-                # is how the defect that opened this class was actually written.
-                if len([part for part in relative.split("/") if part]) < 2:
                     continue
             findings.append(
                 {

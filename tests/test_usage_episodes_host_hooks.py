@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 import subprocess
 import sys
@@ -9,6 +10,8 @@ import host_hook_install_lib as lib
 import host_hook_session_routing as routing
 import pytest
 import yaml
+
+from tests.script_main import load_script_module
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -420,6 +423,37 @@ def test_session_start_script_writes_session_when_enabled(fake_repo: Path, fake_
     assert record["model"] == "test-model"
     assert "transcript_path" not in record
     assert "last_assistant_message" not in record
+
+
+def test_session_start_main_parses_its_own_flags_and_stays_silent_in_process(
+    fake_repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`main` itself, in-process, because every other test here spawns it.
+
+    A hook IS a subprocess in production, so those tests are right about the surface --
+    but a spawned interpreter is invisible to in-process coverage, so `main`'s own body
+    (the flag surface the installed hook command depends on, and the exit contract) was
+    measured by nothing. The two flags are asserted through their EFFECT rather than by
+    reading `argparse`: `--host` reaches the written record, and `--cwd` is what makes
+    adapter discovery land in the fixture instead of the authoring repo.
+    """
+    _write_adapter(fake_repo, "version: 1\nenabled: true\n")
+    script = load_script_module(
+        "usage_episode_session_start_in_process",
+        REPO_ROOT / "scripts" / "usage_episode_session_start.py",
+    )
+    payload = {"hook_event_name": "SessionStart", "cwd": str(fake_repo), "model": "in-process"}
+    monkeypatch.setattr(script.sys, "stdin", io.StringIO(json.dumps(payload)))
+
+    assert script.main(["--host", "grok", "--cwd", str(fake_repo)]) == 0, (
+        "a hook must never propagate a nonzero exit; the host treats it as a failed session start"
+    )
+
+    sessions_dir = fake_repo / ".charness" / "usage-episodes" / "sessions"
+    session_id = (sessions_dir / "current").read_text(encoding="utf-8").strip()
+    record = json.loads((sessions_dir / session_id / "start.json").read_text(encoding="utf-8"))
+    assert record["host"] == "grok"
+    assert record["model"] == "in-process"
 
 
 def test_session_start_script_no_adapter_exits_silent(fake_repo: Path) -> None:

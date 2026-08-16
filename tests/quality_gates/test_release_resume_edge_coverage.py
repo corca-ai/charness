@@ -34,10 +34,12 @@ RESUME_STATE = _load("publish_release_resume_state")
 
 class _ClaimsResumeCli:
     def __init__(self, commands: list[list[str]], *, notes_preflights: list[dict] | None = None,
-                 allow_create: bool = False):
+                 allow_create: bool = False, verify_returncode: int = 0):
         self.commands = commands
         self.notes_preflights = notes_preflights if notes_preflights is not None else []
         self.allow_create = allow_create
+        self.verify_returncode = verify_returncode
+        self.final_artifact_commits: list[dict] = []
 
     def run(self, command, *, cwd, check=True):
         self.commands.append(command)
@@ -90,13 +92,28 @@ class _ClaimsResumeCli:
     def build_retro_trigger_evaluation(*_args, **_kwargs):
         return {"required": False}
 
-    @staticmethod
-    def verify_release_visible(*_args, **_kwargs):
-        return SimpleNamespace(returncode=0)
+    def verify_release_visible(self, *_args, **_kwargs):
+        return SimpleNamespace(
+            returncode=self.verify_returncode, args=["gh", "release", "view", "v1.2.3"],
+            stdout="", stderr="release not found",
+        )
 
     @staticmethod
     def finalize_release_payload(*_args, **_kwargs):
         return None
+
+    def commit_final_release_artifact(self, *_args, **kwargs):
+        self.final_artifact_commits.append(kwargs)
+
+    @staticmethod
+    def fail_after_post_create_verification(_payload, *, verification_result):
+        # The real one renders `payload` keys that `finalize_release_payload` fills in;
+        # that stub is a no-op here, so the stub asserts only the contract this harness
+        # can honestly hold: it raises, and it raises with the verification exit code.
+        raise SystemExit(
+            "release post-create verification failed after external mutation\n"
+            f"exit_code: {verification_result.returncode}"
+        )
 
     def create_release(self, *_args, **_kwargs):
         if not self.allow_create:
@@ -129,6 +146,7 @@ _RECORD_PATH = "charness-artifacts/release/latest.md"
 def _resume_claims_publication_leg(
     *, remote_branch_sha: str, tag_remote: bool, release_exists: bool = True,
     notes_file=None, notes_preflights: list[dict] | None = None,
+    verify_returncode: int = 0, cli_out: list | None = None,
 ) -> tuple[list[list[str]], list[str]]:
     commands: list[list[str]] = []
     committed: list[str] = []
@@ -157,9 +175,13 @@ def _resume_claims_publication_leg(
         "backend": "github", "issue_repo": "example/demo", "release_content_paths": [], "title": "v1.2.3",
     }
     args = SimpleNamespace(execute=True, remote="origin", notes_file=notes_file, close_issue=[])
+    cli = _ClaimsResumeCli(commands, notes_preflights=notes_preflights, allow_create=not release_exists,
+                           verify_returncode=verify_returncode)
+    if cli_out is not None:
+        cli_out.append(cli)
     RESUME_PUBLISH.resume_publish(
         Path("."), args=args, plan=plan, adapter_data=_ADAPTER,
-        cli=_ClaimsResumeCli(commands, notes_preflights=notes_preflights, allow_create=not release_exists),
+        cli=cli,
         state=state,
         resumable_state=lambda *_args, **_kwargs: state, assert_resumable=lambda *_args, **_kwargs: None,
         common=_ClaimsResumeCommon(), resume_closeout=SimpleNamespace(),
@@ -167,6 +189,31 @@ def _resume_claims_publication_leg(
         release_record_path=CLAIMS.release_record_path,
     )
     return commands, committed
+
+
+def test_a_failed_post_create_verification_commits_the_artifact_before_it_refuses() -> None:
+    """The order is the whole point of the arm, and nothing measured it.
+
+    Verification runs AFTER the tag and the GitHub release exist, so a failure here is
+    already past the irreversible boundary. Refusing without first committing the release
+    artifact would leave the operator with a published release and no local record of what
+    was published -- the one artifact the recovery path reads. So the arm commits, THEN
+    raises. Asserting only the raise would pass against an implementation that dropped the
+    commit, which is why the commit is asserted first and by count.
+    """
+    clis: list = []
+
+    with pytest.raises(SystemExit, match="post-create verification failed after external mutation"):
+        _resume_claims_publication_leg(
+            remote_branch_sha="claims-evidence", tag_remote=True,
+            verify_returncode=1, cli_out=clis,
+        )
+
+    assert len(clis[0].final_artifact_commits) == 1, (
+        "the failure arm must persist the release artifact before refusing; the tag and "
+        "the release already exist by the time verification runs"
+    )
+    assert clis[0].final_artifact_commits[0]["has_issue_closeout"] is False
 
 
 def test_resume_closeout_requires_original_irreversible_inputs() -> None:

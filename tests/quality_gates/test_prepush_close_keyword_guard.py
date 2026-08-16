@@ -188,6 +188,32 @@ def test_a_ref_deletion_lands_no_commits_and_scans_none(repo: Path) -> None:
     assert SCAN.range_commits(repo, ZERO, head) == []
 
 
+def test_a_ref_with_no_local_sha_is_skipped_without_resolving_a_range(repo: Path) -> None:
+    """`evaluate` is exported and ships to consuming repos, so a hook shim calling it
+    directly is a real caller -- and neither reader this repo owns can produce this shape.
+    `parse_push_stdin` always fills four fields, and `--range` refuses an empty side, so
+    the guard is reachable only from that direct caller. Skipping is the correct verdict:
+    an empty local sha names no commit, and passing it to `range_commits` would make git
+    resolve `""..<sha>`, whose failure this floor reports as a NO-VERDICT over the whole
+    push -- a false stop manufactured out of a ref there was nothing to judge.
+    """
+    head = _git(repo, "rev-parse", "HEAD")
+    refs = [
+        {"local_ref": "", "local_sha": "", "remote_ref": "refs/heads/main", "remote_sha": head},
+        {"local_ref": "refs/heads/main", "local_sha": head, "remote_ref": "refs/heads/main",
+         "remote_sha": head},
+    ]
+
+    payload = GUARD.evaluate(repo, refs, "corca-ai/charness", "origin")
+
+    assert payload["ok"] is True
+    assert payload["status"] == "not_applicable"
+    assert payload["commits_scanned"] == 0, (
+        "the empty-sha ref contributes no commits, and the second ref is already at the "
+        "remote; a nonzero count here would mean the skip resolved a range anyway"
+    )
+
+
 def test_a_new_ref_is_bounded_by_what_origin_already_has(repo: Path, tmp_path: Path) -> None:
     origin = tmp_path.parent / "origin.git"
     _git(repo, "init", "--bare", str(origin))

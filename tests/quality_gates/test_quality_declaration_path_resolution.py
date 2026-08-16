@@ -14,6 +14,28 @@ LIFECYCLE = _load_script_module(
     ROOT / "skills/public/quality/scripts/quality_declaration_lifecycle.py",
 )
 LIFECYCLE_PATH = ROOT / "skills/public/quality/scripts/quality_declaration_lifecycle.py"
+APPLICABILITY = _load_script_module(
+    "quality_catalog_gate_applicability_under_test",
+    ROOT / "skills/public/quality/scripts/quality_catalog_gate_applicability.py",
+)
+
+
+def test_an_unparseable_command_is_kept_rather_than_declared_unavailable(tmp_path: Path) -> None:
+    """A command `shlex` cannot split names no path this check can judge.
+
+    The direction of the fallback is the decision: `_catalog_gate_path` returns `None`, so
+    the gate stays APPLICABLE. Reporting it unavailable instead would let one unbalanced
+    quote in a catalog entry silently retire a gate that a shell may still run, which is
+    the failure this whole module is a guard against -- an unenforceable bar reading as
+    protection. Kept-and-visible is the recoverable half of that trade.
+    """
+    gate = {"id": "unbalanced", "command": './run-quality.sh --mode "full', "run_when": "repo-native command"}
+
+    applicable, unavailable = APPLICABILITY.applicable_catalog_gates(tmp_path, {}, [gate])
+
+    assert unavailable == []
+    assert applicable == [gate]
+    assert APPLICABILITY._catalog_gate_path('./x "unterminated') is None
 
 
 def _declared_paths(repo: Path, *declarations: str) -> list[dict[str, object]]:

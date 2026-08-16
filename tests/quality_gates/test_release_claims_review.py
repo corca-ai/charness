@@ -22,6 +22,14 @@ from .release_publish_fixtures import (
 from .release_script_loading import load_release_script
 
 CLAIMS_REVIEW = load_release_script("publish_release_claims_review", suffix="topology")
+CLI = load_release_script("publish_release_cli", suffix="topology")
+_RECORD = "charness-artifacts/release/latest.md"
+
+
+def _unreachable_run(*_args, **_kwargs):
+    raise AssertionError("the missing-artifact refusal must precede every git read")
+
+
 # The prepare-path precondition lives with the prepare process it protects.
 EXECUTE = load_release_script("publish_release_execute", suffix="claims_stop")
 PREFLIGHT = load_release_script("publish_release_preflight", suffix="claims_stop")
@@ -389,6 +397,38 @@ def test_publish_cli_refuses_claims_artifact_without_resume(tmp_path: Path) -> N
 
     assert result.returncode != 0
     assert "only valid with --resume --publish-current" in result.stderr
+
+
+def test_the_same_refusal_fires_in_process_where_coverage_can_see_it(monkeypatch, tmp_path: Path) -> None:
+    """The subprocess test above proves the OPERATOR-visible behaviour and nothing else.
+
+    A refusal reached only through a spawned binary is invisible to in-process coverage,
+    so the mutation lane drops the line and the guard reads as unproven -- which is what
+    it did. Same guard, driven in-process: the refusal precedes every adapter read and
+    every git call in `main`, so it needs no repo at all.
+    """
+    monkeypatch.setattr(sys, "argv", [
+        "publish_release.py", "--repo-root", str(tmp_path), "--part", "patch",
+        "--claims-review-artifact", "charness-artifacts/release-review/review.json",
+    ])
+
+    with pytest.raises(SystemExit, match="only valid with --resume --publish-current"):
+        CLI.main()
+
+
+def test_validate_claims_review_refuses_a_prepared_stop_with_no_artifact(tmp_path: Path) -> None:
+    """The prepared stop's own precondition, and the first thing the floor checks.
+
+    Without it the resume reaches a claims phase carrying no record, and every later
+    binding check has nothing to bind against -- the floor would pass by having nothing
+    to refuse, which is the fall-through shape this whole module exists to close.
+    """
+    with pytest.raises(SystemExit, match="prepared claims-review state requires --claims-review-artifact"):
+        CLAIMS_REVIEW.validate_claims_review(
+            tmp_path, prepared={"commit": "abc", "path": _RECORD, "sha256": "0" * 64},
+            evidence_commit="def", artifact_path=None, target_version="1.2.3",
+            tag_name="v1.2.3", run=_unreachable_run,
+        )
 
 
 @pytest.mark.release_only
