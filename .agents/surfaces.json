@@ -106,15 +106,15 @@
     },
     {
       "surface_id": "handoff-machine-readers",
-      "description": "docs/handoff.md is a rotating human document that is ALSO a machine-read source: the publish-state ledger declares it as a source locator, and the retro-memory gate requires its recent-lessons reference.",
+      "description": "docs/handoff.md is a rotating human document that is ALSO a machine-read source: the retro-memory gate requires its recent-lessons reference, and the artifact-surface preflight requires its H2 sections and a References link.",
       "source_paths": [
         "docs/handoff.md"
       ],
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/publish_state_ledger.py --repo-root .",
-        "python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py"
+        "python3 scripts/validate_handoff_artifact.py --repo-root .",
+        "python3 -m pytest -q tests/quality_gates/test_retro_memory.py"
       ],
       "notes": [
         "This exists because `repo-markdown` already matched docs/handoff.md and reported green: its verify commands are link, markdown-lint, and secret checks, none of which read the claim block. A handoff rewrite at `0659d5a0` therefore shipped clean while leaving the publish-state ledger group and the retro-memory gate red for six commits.",
