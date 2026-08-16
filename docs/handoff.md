@@ -27,11 +27,10 @@
   and the other 19 close-keyword commits in the last 400 pass.
 - **The root cause of the #626 close is repaired.** The carrier stripped `^\s*#` lines as
   git comments — right for an editor message, wrong for the `-m`/`-F` message actually
-  stored — so it scanned text the repo never held. See
-  [check_issue_closeout_commit_msg.py](../scripts/check_issue_closeout_commit_msg.py)
-  `_close_keyword_scan_text`.
-- **The changed-line proof is CLEAN for this range**, not `partial`: run
-  [prepush_focused_changed_line_coverage.py](../scripts/prepush_focused_changed_line_coverage.py).
+  stored — so it scanned text the repo never held. The repair is
+  `_close_keyword_scan_text` in the carrier [check_issue_closeout_commit_msg.py](../scripts/check_issue_closeout_commit_msg.py).
+- **The changed-line proof is CLEAN for this range**, not `partial`: re-prove it with
+  the focused producer [prepush_focused_changed_line_coverage.py](../scripts/prepush_focused_changed_line_coverage.py).
 - Re-prove the suite with `python3 scripts/run_standing_pytest.py --include-release-only`
   after `python3 scripts/sync_root_plugin_manifests.py`; ruff needs `--no-cache`.
 
@@ -67,8 +66,8 @@ two-round cap, unreviewed. NO consuming repo has run this tree.
 5. **The unshipped-path arm in [export_self_sufficiency_lib.py](../scripts/export_self_sufficiency_lib.py)**
    counts AST literal nodes, so a subpath written as one literal escapes it.
 6. **The canonical close-keyword scanner still misses `GH-N` and issue-URL forms.**
-   The new guard widened DETECTION for itself only; every other consumer of
-   [iter_close_keyword_refs](../skills/public/issue/scripts/issue_verify_closeout_body.py)
+   The new guard widened DETECTION for itself only; every other consumer of the
+   canonical scanner [iter_close_keyword_refs](../skills/public/issue/scripts/issue_verify_closeout_body.py)
    still cannot see them. Widening the shared one touches many surfaces.
 
 ## Discuss
