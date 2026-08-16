@@ -826,3 +826,12 @@ def test_a_protected_target_is_refused_by_authorization_before_any_ledger(
     assert finding["refused_by"] == "closeout_authorization"
     assert finding["closeout_authorization"]["authorized"] is False
     assert finding["reports"] == []
+
+
+def test_cli_lets_argparse_exit_through(repo: Path) -> None:
+    # argparse raises SystemExit(2) for a bad flag. The crash mapping must re-raise it
+    # rather than converting it into a payload-less return, or a usage error would be
+    # indistinguishable from a git failure.
+    with pytest.raises(SystemExit) as excinfo:
+        GUARD.cli(["--repo-root", str(repo), "--not-a-flag"])
+    assert excinfo.value.code == 2

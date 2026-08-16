@@ -410,5 +410,5 @@ def cli(argv: list[str] | None = None) -> int:
         return NO_VERDICT_EXIT
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - CLI entrypoint, `cli()` is tested
     raise SystemExit(cli())
