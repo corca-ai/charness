@@ -427,45 +427,53 @@ def test_the_checked_in_export_is_not_treated_as_a_competing_source_tree() -> No
     assert not lesson_command_citation.repo_carries_index_builder(export)
 
 
-def _citation_in_a_bare_tree(tmp_path: Path):
-    """`lesson_command_citation` loaded from a tree carrying neither script.
-
-    `script_tree_root()` is derived from `__file__`, so the only way to reach the
-    "neither tree has it" arm is to run a copy that genuinely has no siblings.
-    """
-    import importlib.util
-
-    tree = tmp_path / "vendored" / "scripts"
-    tree.mkdir(parents=True)
-    target = tree / "lesson_command_citation.py"
-    target.write_bytes((ROOT_PATH / "scripts" / "lesson_command_citation.py").read_bytes())
-    spec = importlib.util.spec_from_file_location("bare_lesson_command_citation", target)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def test_a_tree_carrying_neither_script_names_a_shape_not_a_dead_path(tmp_path: Path) -> None:
+def test_a_tree_carrying_neither_script_names_a_shape_not_a_dead_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """When no tree has the script, cite the SHAPE rather than a path that resolves nowhere.
 
-    A reader who is handed a nonexistent concrete path cannot tell "I mistyped it"
-    from "this file does not ship here", which is the confusion the whole repair
-    exists to end. The placeholder is a bare token on purpose: `<...>` in a shell is
-    a redirection, so a bracketed one turns "file not found" into a different, wronger
-    error when the operator pastes the command.
+    A reader handed a nonexistent concrete path cannot tell "I mistyped it" from "this
+    file does not ship here", which is the confusion the whole repair exists to end.
+    The placeholder is a bare token on purpose: `<...>` in a shell is a redirection, so
+    a bracketed one turns "file not found" into a different, wronger error when the
+    operator pastes the command.
+
+    `__file__` is repointed rather than the module copied to a bare tree: a copy is a
+    different file, so coverage attributes the exercised branch to the copy and the
+    real module's arm stays unproven. `script_tree_root()` reads the module global at
+    call time, so this reaches the same code.
     """
-    module = _citation_in_a_bare_tree(tmp_path)
+    bare = tmp_path / "vendored" / "scripts"
+    bare.mkdir(parents=True)
+    monkeypatch.setattr(
+        lesson_command_citation, "__file__", str(bare / "lesson_command_citation.py")
+    )
     consumer = tmp_path / "consumer"
     consumer.mkdir()
 
-    index = module.index_build_command(consumer, "--write")
-    digest = module.refresh_digest_command(consumer)
+    index = lesson_command_citation.index_build_command(consumer, "--write")
+    digest = lesson_command_citation.refresh_digest_command(consumer)
 
+    token = lesson_command_citation.PLUGIN_DIR_TOKEN
     for command in (index, digest):
-        assert command.startswith(f"python3 {module.PLUGIN_DIR_TOKEN}/"), command
+        assert command.startswith(f"python3 {token}/"), command
         assert "<" not in command and ">" not in command, command
         assert f"--repo-root {consumer}" in command, command
     assert index.endswith("--write")
-    assert module.INDEX_SCRIPT_RELATIVE.as_posix() in index
+    assert lesson_command_citation.INDEX_SCRIPT_RELATIVE.as_posix() in index
     assert "skills/retro/scripts/refresh_recent_lessons.py" in digest
+
+
+def test_the_reader_s_own_tree_is_cited_relatively(tmp_path: Path) -> None:
+    """The other half of the absolute/relative rule, over the real repo root.
+
+    A relative spelling is correct exactly when the reader's cwd IS the tree the script
+    lives in; anywhere else it hands back a command that runs THIS checkout's script
+    against a different repo.
+    """
+    command = lesson_command_citation.index_build_command(ROOT_PATH, "--check")
+
+    assert command.startswith(
+        f"python3 {lesson_command_citation.INDEX_SCRIPT_RELATIVE.as_posix()} "
+    ), command
+    assert command.endswith("--check")
