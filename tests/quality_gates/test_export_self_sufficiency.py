@@ -804,3 +804,19 @@ def test_a_sync_command_key_outside_a_generated_header_is_still_a_finding(tmp_pa
     assert [f["script"] for f in _lib.repo_root_instruction_findings(export_root)] == [
         "render_thing.py"
     ]
+
+
+def test_an_undecodable_file_is_skipped_rather_than_crashing_the_arm(tmp_path: Path) -> None:
+    """A scanned suffix does not guarantee decodable text -- a `.json` fixture holding
+    binary, or a `.md` written in another encoding, would otherwise take the whole gate
+    down with a UnicodeDecodeError instead of reporting the rest of the export."""
+    export_root = _instruction_export(
+        tmp_path,
+        doc_relative="skills/demo/references/how.md",
+        body="Run `python3 scripts/render_thing.py`\n",
+    )
+    (export_root / "skills" / "demo" / "references" / "blob.json").write_bytes(b"\xff\xfe\x00binary")
+
+    findings = _lib.repo_root_instruction_findings(export_root)
+
+    assert [f["doc"] for f in findings] == ["skills/demo/references/how.md"]
