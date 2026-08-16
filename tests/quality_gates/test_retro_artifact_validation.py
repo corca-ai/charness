@@ -176,6 +176,16 @@ def test_north_star_reference_resolves_per_repo_and_never_writes_a_placeholder(
     """
     import scripts.validate_retro_artifact as validator
 
+    # The root is derived from the ARTIFACT's location, not from this script's: an
+    # exported copy validating a consuming repo's retro would otherwise resolve against
+    # the plugin tree and name charness's design doc at a consumer. Both arms, because
+    # `None` is what stops an ad-hoc path from being handed an unrelated repo's root.
+    canonical = tmp_path / "some-consumer" / "charness-artifacts" / "retro" / "2026-08-16-x.md"
+    canonical.parent.mkdir(parents=True)
+    canonical.write_text("# x\n", encoding="utf-8")
+    assert validator._repo_root_for(canonical) == (tmp_path / "some-consumer").resolve()
+    assert validator._repo_root_for(tmp_path / "loose.md") is None
+
     assert "<authoring-repo>" not in validator.north_star_reference(None)
     assert "<authoring-repo>" not in validator.north_star_reference(tmp_path)
 
