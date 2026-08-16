@@ -1,0 +1,25 @@
+$ charness tool sync-support nose
+event: tool-sync-support
+response_level: summary
+detail_available: true
+repo_root: /home/hwidong/.agents/src/charness
+managed_checkout: true
+tool_ids:
+- nose
+summary:
+  tool_count: 1
+  status_counts:
+    skipped: 1
+results:
+  nose:
+    support:
+      status: skipped
+    doctor:
+      doctor_status: ok
+      doctor_disposition: ready
+      observed_version: 0.20.0
+      healthcheck:
+        status: not-configured
+    next_step: '`nose` is ready. Latest upstream release: `v0.20.0`. https://github.com/corca-ai/nose/releases/tag/v0.20.0'
+    status: skipped
+[exit=0]

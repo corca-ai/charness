@@ -1,0 +1,431 @@
+$ python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --detail
+status: findings
+advisory: true
+repo_root: /home/hwidong/codes/charness
+paths:
+- scripts
+- skills/public
+- skills/support
+requested_paths:
+- scripts
+- skills/public
+- skills/support
+scanned_paths:
+- scripts
+- skills/public
+- skills/support
+missing_paths: []
+scope_status: scanned
+scope:
+  paths:
+  - scripts
+  - skills/public
+  - skills/support
+  requested_paths:
+  - scripts
+  - skills/public
+  - skills/support
+  scanned_paths:
+  - scripts
+  - skills/public
+  - skills/support
+  missing_paths: []
+  scope_status: scanned
+excludes: []
+ignore_file: null
+baseline: charness-artifacts/quality/nose-baseline.json
+ranking:
+  total_families: 705
+  shown_families: 20
+command: /home/hwidong/.cargo/bin/nose query --root scripts --root skills/public --root
+  skills/support all top=20 sort=extractability --mode syntax,semantic,near --min-size
+  24 --format json
+exit_code: 0
+tool_version: 0.20.0
+version_skew: null
+family_count: 9
+total_dup_lines: 1115
+families:
+- family_id: e42aaa93f0f0f461
+  family_fingerprint: 577dad2ade15c804
+  value: 692.1486865801012
+  members: 15
+  files: 15
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 224
+  shared_lines: 14
+  params: 1
+  sample_locations:
+  - file: skills/public/announcement/scripts/preflight_sources.py
+    start_line: 4
+    end_line: 18
+    name: null
+    kind: null
+  - file: skills/public/handoff/scripts/parse_handoff_entries.py
+    start_line: 18
+    end_line: 32
+    name: null
+    kind: null
+  - file: skills/public/handoff/scripts/prepare_chunk_packet.py
+    start_line: 8
+    end_line: 22
+    name: null
+    kind: null
+  - file: skills/public/handoff/scripts/prepare_ranker_packet.py
+    start_line: 18
+    end_line: 32
+    name: null
+    kind: null
+  - file: skills/public/handoff/scripts/propose_merges.py
+    start_line: 18
+    end_line: 32
+    name: null
+    kind: null
+  - file: skills/public/hitl/scripts/check_chunk_contract.py
+    start_line: 4
+    end_line: 18
+    name: null
+    kind: null
+- family_id: 2eecd8d165671d4f
+  family_fingerprint: 82da48042ad2fed6
+  value: 150.6798829994959
+  members: 14
+  files: 14
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 84
+  shared_lines: 5
+  params: 1
+  sample_locations:
+  - file: scripts/check_doc_links.py
+    start_line: 586
+    end_line: 591
+    name: null
+    kind: null
+  - file: scripts/check_plugin_import_smoke.py
+    start_line: 65
+    end_line: 70
+    name: null
+    kind: null
+  - file: scripts/check_spec_evidence_durability.py
+    start_line: 211
+    end_line: 216
+    name: null
+    kind: null
+  - file: scripts/check_supply_chain_online.py
+    start_line: 111
+    end_line: 116
+    name: null
+    kind: null
+  - file: scripts/eval_cautilus_scenarios.py
+    start_line: 139
+    end_line: 144
+    name: null
+    kind: null
+  - file: scripts/install_machine_local.py
+    start_line: 198
+    end_line: 203
+    name: null
+    kind: null
+- family_id: 0e81848ea5340dba
+  family_fingerprint: 8f1789aa22d7b4f5
+  value: 143.4888
+  members: 8
+  files: 8
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 48
+  shared_lines: 5
+  params: 1
+  sample_locations:
+  - file: scripts/build_debug_seam_risk_index.py
+    start_line: 195
+    end_line: 200
+    name: null
+    kind: null
+  - file: scripts/check_export_safe_imports.py
+    start_line: 265
+    end_line: 270
+    name: null
+    kind: null
+  - file: scripts/check_plugin_dir_references.py
+    start_line: 221
+    end_line: 226
+    name: null
+    kind: null
+  - file: scripts/eval_support_sync_contracts.py
+    start_line: 59
+    end_line: 64
+    name: null
+    kind: null
+  - file: scripts/export_plugin.py
+    start_line: 82
+    end_line: 87
+    name: null
+    kind: null
+  - file: scripts/validate_presets.py
+    start_line: 159
+    end_line: 164
+    name: null
+    kind: null
+- family_id: 1b99045a6dc259e3
+  family_fingerprint: e1f68b22b81247de
+  value: 165.34216265799003
+  members: 28
+  files: 28
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 168
+  shared_lines: 5
+  params: 1
+  sample_locations:
+  - file: scripts/apply_contract_transition.py
+    start_line: 137
+    end_line: 142
+    name: null
+    kind: null
+  - file: scripts/check_changed_surfaces.py
+    start_line: 40
+    end_line: 45
+    name: null
+    kind: null
+  - file: scripts/check_command_docs.py
+    start_line: 196
+    end_line: 201
+    name: null
+    kind: null
+  - file: scripts/check_contract_register.py
+    start_line: 36
+    end_line: 41
+    name: null
+    kind: null
+  - file: scripts/check_lesson_ledger.py
+    start_line: 35
+    end_line: 40
+    name: null
+    kind: null
+  - file: scripts/check_staged_mirror_drift.py
+    start_line: 93
+    end_line: 98
+    name: null
+    kind: null
+- family_id: 62250c02724ac144
+  family_fingerprint: 4fd72d849bcabdff
+  value: 304.08152764730136
+  members: 31
+  files: 31
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 279
+  shared_lines: 8
+  params: 1
+  sample_locations:
+  - file: scripts/bootstrap_runtime.py
+    start_line: 312
+    end_line: 320
+    name: null
+    kind: null
+  - file: scripts/check_coverage.py
+    start_line: 461
+    end_line: 469
+    name: null
+    kind: null
+  - file: scripts/check_doc_links.py
+    start_line: 583
+    end_line: 591
+    name: null
+    kind: null
+  - file: scripts/check_export_safe_imports.py
+    start_line: 262
+    end_line: 270
+    name: null
+    kind: null
+  - file: scripts/check_plugin_dir_references.py
+    start_line: 218
+    end_line: 226
+    name: null
+    kind: null
+  - file: scripts/check_plugin_doc_links.py
+    start_line: 199
+    end_line: 207
+    name: null
+    kind: null
+- family_id: 351697b0f95648de
+  family_fingerprint: ff525dc15b6ecef1
+  value: 123.20000000000002
+  members: 5
+  files: 5
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 70
+  shared_lines: 13
+  params: 1
+  sample_locations:
+  - file: scripts/apply_contract_transition.py
+    start_line: 4
+    end_line: 17
+    name: null
+    kind: null
+  - file: scripts/record_lesson_lifecycle.py
+    start_line: 4
+    end_line: 17
+    name: null
+    kind: null
+  - file: scripts/record_lesson_score.py
+    start_line: 4
+    end_line: 17
+    name: null
+    kind: null
+  - file: scripts/record_lesson_session.py
+    start_line: 4
+    end_line: 17
+    name: null
+    kind: null
+  - file: scripts/seed_lesson_transitions.py
+    start_line: 38
+    end_line: 51
+    name: null
+    kind: null
+- family_id: 8cdfece5c8afd064
+  family_fingerprint: 61ea67ffed153fd3
+  value: 122.59698693926408
+  members: 9
+  files: 9
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 57
+  shared_lines: 4
+  params: 1
+  sample_locations:
+  - file: scripts/validate_public_skill_validation.py
+    start_line: 64
+    end_line: 72
+    name: null
+    kind: null
+  - file: scripts/build_retro_lesson_selection_index.py
+    start_line: 108
+    end_line: 113
+    name: null
+    kind: null
+  - file: scripts/check_plugin_doc_links.py
+    start_line: 202
+    end_line: 207
+    name: null
+    kind: null
+  - file: scripts/check_skill_contracts.py
+    start_line: 374
+    end_line: 379
+    name: null
+    kind: null
+  - file: scripts/check_supply_chain.py
+    start_line: 34
+    end_line: 39
+    name: null
+    kind: null
+  - file: scripts/validate_cautilus_scenarios.py
+    start_line: 32
+    end_line: 37
+    name: null
+    kind: null
+- family_id: 590ccba55524f9a1
+  family_fingerprint: 709337849370ec8d
+  value: 133.569
+  members: 4
+  files: 4
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 62
+  shared_lines: 9
+  params: 2
+  sample_locations:
+  - file: skills/public/achieve/scripts/audit_disposition_corpus.py
+    start_line: 68
+    end_line: 86
+    name: _load_yaml_output
+    kind: null
+  - file: skills/public/handoff/scripts/chunked_routing_cli.py
+    start_line: 29
+    end_line: 47
+    name: _load_yaml_output
+    kind: null
+  - file: skills/public/issue/scripts/issue_yaml_output.py
+    start_line: 28
+    end_line: 39
+    name: _load_yaml_output
+    kind: null
+  - file: skills/public/quality/scripts/summary_output_lib.py
+    start_line: 10
+    end_line: 21
+    name: _load_yaml_output
+    kind: null
+- family_id: 1aaadfc779f173bf
+  family_fingerprint: 41b264a02f5ecdb5
+  value: 195.3
+  members: 16
+  files: 16
+  modules: null
+  languages: 1
+  mean_score: null
+  dup_lines: 123
+  shared_lines: 7
+  params: 1
+  sample_locations:
+  - file: scripts/check_boundary_bypass_ratchet.py
+    start_line: 7
+    end_line: 14
+    name: null
+    kind: null
+  - file: scripts/check_python_lengths.py
+    start_line: 10
+    end_line: 17
+    name: null
+    kind: null
+  - file: scripts/check_standalone_imports.py
+    start_line: 61
+    end_line: 68
+    name: null
+    kind: null
+  - file: scripts/check_supply_chain_online.py
+    start_line: 9
+    end_line: 16
+    name: null
+    kind: null
+  - file: scripts/eval_cautilus_scenarios.py
+    start_line: 9
+    end_line: 16
+    name: null
+    kind: null
+  - file: scripts/export_plugin.py
+    start_line: 8
+    end_line: 15
+    name: null
+    kind: null
+stderr: ''
+interpretation:
+  measures: lexical clone families (near-duplicate code spans) at/above the scan threshold
+  proxy_for: refactorable duplication debt that a shared helper could remove
+  blind_spots: intentional per-skill-package boilerplate (e.g. resolve_adapter.py
+    copied for portability) counts as duplication and inflates the line total; lexical,
+    so it misses semantic duplication and over-counts deliberate copies
+  interpretation_question: which of these families are intentional/portability boilerplate
+    versus genuinely extractable debt for THIS repo?
+notes:
+- nose findings are refactoring candidates, not standing quality failures.
+- Review only extractable non-bootstrap families before changing code; do not chase
+  every reported family.
+- Map each reviewed family to a structural response (machine-owned consistency for
+  intentional duplication, owned extraction, generated-surface ownership, or design
+  review) per the quality inventory-dispatch reference.
+- Never treat total_dup_lines as a reduction target or a cross-scanner-version trend;
+  re-baseline per scanner version.
+cli_exit_code: 0
+[exit=0]

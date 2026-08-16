@@ -1,0 +1,8 @@
+# surfaces install_surface writes, per charness:127-144 and 2291-2293
+-- /home/hwidong/.codex/plugins/charness: present
+-- /home/hwidong/.grok/plugins/charness: present
+-- /home/hwidong/.agents/src/charness: present
+
+$ ls -d ~/.codex/plugins/charness* ~/.grok/plugins/charness* 2>&1
+/home/hwidong/.codex/plugins/charness
+/home/hwidong/.grok/plugins/charness

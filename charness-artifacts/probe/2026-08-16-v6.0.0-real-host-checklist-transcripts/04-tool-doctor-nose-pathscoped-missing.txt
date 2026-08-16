@@ -1,0 +1,24 @@
+$ env PATH=/usr/bin:/bin charness tool doctor nose --no-write-locks
+event: tool-doctor
+response_level: summary
+detail_available: true
+repo_root: /home/hwidong/.agents/src/charness
+managed_checkout: true
+tool_ids:
+- nose
+summary:
+  tool_count: 1
+  status_counts:
+    missing: 1
+results:
+  nose:
+    doctor:
+      doctor_status: missing
+      doctor_disposition: blocking-install-needed
+    next_step: 'Install nose >=0.17.0; the quality `doc-duplicates` phase fails closed
+      without it (run `charness tool doctor nose`). Preferred arbitrary-machine path
+      is the upstream release installer, which downloads a prebuilt binary. Install
+      docs: https://github.com/corca-ai/nose#install Docs: https://github.com/corca-ai/nose
+      Latest upstream release: `v0.20.0`. https://github.com/corca-ai/nose/releases/tag/v0.20.0'
+    status: missing
+[exit=1]

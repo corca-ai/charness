@@ -1,0 +1,3 @@
+$ nose --version
+nose 0.20.0
+[exit=0]
