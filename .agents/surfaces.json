@@ -640,6 +640,22 @@
       ]
     },
     {
+      "surface_id": "probe-command-transcripts",
+      "description": "Raw stdout/stderr transcripts committed under a charness-artifacts/probe/<probe-name>-transcripts/ directory, holding the re-checkable output that the sibling probe JSON only excerpts. Scoped to .txt under a *-transcripts/ directory so it cannot silently absorb another attachment extension, matching the audit-evidence-attachments rule.",
+      "source_paths": [
+        "charness-artifacts/probe/*-transcripts/*.txt"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for path in charness-artifacts/probe/*-transcripts/*.txt; do head -n 1 \"$path\" | grep -q '^\\$ ' || { echo \"$path: first line must record the command as '$ <cmd>'\"; exit 1; }; grep -q '^\\[exit=' \"$path\" || { echo \"$path: no '[exit=N]' marker; a transcript with no return code is not evidence\"; exit 1; }; done"
+      ],
+      "notes": [
+        "A probe JSON marks its values as author extracts; these transcripts are what makes that honest, so the check pins the two things an extract cannot supply: which command ran, and what it returned.",
+        "The check reads SHAPE, not truth. It cannot tell whether a transcript was captured from the command it names, or captured at the time the probe claims."
+      ]
+    },
+    {
       "surface_id": "audit-evidence-attachments",
       "description": "Preserved diffs (*.patch) committed under charness-artifacts/audit/ alongside the audit or spec artifact that cites them. The audit's own *.md prose is covered by repo-markdown; this surface owns only the .patch extension repo-markdown cannot match. Scoped to .patch on purpose: another attachment extension under the same directory should get its own content check rather than inherit a diff parser, so it still trips unmatched_surface_path until someone decides what verifies it.",
       "source_paths": [

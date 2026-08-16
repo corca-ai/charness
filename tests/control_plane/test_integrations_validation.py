@@ -311,6 +311,54 @@ def test_defuddle_manifest_missing_binary_is_advisory() -> None:
     assert "degraded" in manifest["access_modes"]
 
 
+def test_advisory_doctor_policy_requires_a_declared_degraded_mode() -> None:
+    """`integrations/tools/README.md` allows `doctor_policy: advisory` ONLY when the
+    consuming workflow has an explicit degraded path. That rule lived as prose, and a
+    v6.0.0 release-checklist item asserted the opposite for `nose` -- which declares no
+    degraded mode -- so nothing was red while the checklist demanded an unreachable
+    disposition. Executable here so the pairing cannot drift again.
+
+    Blind class: this reads DECLARED manifest fields. It cannot see whether a tool's
+    real consumer actually degrades, only whether the manifest claims a degraded mode.
+    """
+    for path in sorted((ROOT / "integrations" / "tools").glob("*.json")):
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        if manifest.get("doctor_policy") != "advisory":
+            continue
+        assert "degraded" in manifest.get("access_modes", []), (
+            f"{path.name} declares doctor_policy: advisory without a `degraded` access mode; "
+            "integrations/tools/README.md permits advisory only where a degraded path exists"
+        )
+
+
+def test_nose_stays_blocking_because_it_has_no_degraded_path() -> None:
+    """Pins the two values that make a missing `nose` report `blocking-install-needed`
+    (scripts/doctor_lib.py:237). The v6.0.0 `real_host_checklist` asserted
+    `advisory-install-needed` for this exact case; that expectation was unreachable at
+    the tag and is now corrected in `.agents/release-adapter.yaml`.
+    """
+    manifest = json.loads((ROOT / "integrations" / "tools" / "nose.json").read_text(encoding="utf-8"))
+
+    assert manifest["doctor_policy"] == "required"
+    assert "degraded" not in manifest["access_modes"]
+
+
+def test_release_checklist_does_not_demand_an_advisory_disposition_for_nose() -> None:
+    """The release adapter's `nose` doctor item is a claim about a disposition the code
+    computes. Prose drift between the two is exactly what shipped in v6.0.0.
+    """
+    adapter = (ROOT / ".agents" / "release-adapter.yaml").read_text(encoding="utf-8")
+    nose_doctor_items = [
+        line
+        for line in adapter.splitlines()
+        if "charness tool doctor nose" in line and "before installing" in line
+    ]
+
+    assert len(nose_doctor_items) == 1, nose_doctor_items
+    assert "advisory-install-needed" not in nose_doctor_items[0]
+    assert "blocking-install-needed" in nose_doctor_items[0]
+
+
 def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch) -> None:
     repo = seed_control_plane_repo(tmp_path)
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")

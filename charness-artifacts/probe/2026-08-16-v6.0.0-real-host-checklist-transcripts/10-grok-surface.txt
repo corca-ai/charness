@@ -1,15 +1,28 @@
-$ diff -rq ~/.grok/plugins/charness plugins/charness | grep -v __pycache__
+$ diff -rq ~/.grok/plugins/charness plugins/charness
+Only in plugins/charness: __pycache__
 Files /home/hwidong/.grok/plugins/charness/scripts/export_self_sufficiency_lib.py and plugins/charness/scripts/export_self_sufficiency_lib.py differ
 Files /home/hwidong/.grok/plugins/charness/scripts/prepush_close_keyword_guard.py and plugins/charness/scripts/prepush_close_keyword_guard.py differ
 Files /home/hwidong/.grok/plugins/charness/scripts/prepush_close_keyword_scan.py and plugins/charness/scripts/prepush_close_keyword_scan.py differ
+Only in plugins/charness/scripts: __pycache__
 Files /home/hwidong/.grok/plugins/charness/scripts/validate_retro_artifact.py and plugins/charness/scripts/validate_retro_artifact.py differ
+Only in plugins/charness/shared/scripts: __pycache__
+Only in plugins/charness/skills/critique/scripts: __pycache__
+Only in plugins/charness/skills/debug/scripts: __pycache__
+Only in plugins/charness/skills/gather/scripts: __pycache__
+Only in plugins/charness/skills/handoff/scripts: __pycache__
 Only in /home/hwidong/.grok/plugins/charness/skills: init-repo
 Files /home/hwidong/.grok/plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py and plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py differ
+Only in plugins/charness/skills/issue/scripts: __pycache__
+Only in plugins/charness/skills/quality/scripts: __pycache__
 Files /home/hwidong/.grok/plugins/charness/skills/release/references/adapter-contract.md and plugins/charness/skills/release/references/adapter-contract.md differ
 Files /home/hwidong/.grok/plugins/charness/skills/release/scripts/bump_version.py and plugins/charness/skills/release/scripts/bump_version.py differ
+Only in plugins/charness/skills/release/scripts: __pycache__
 Files /home/hwidong/.grok/plugins/charness/skills/release/scripts/resolve_adapter.py and plugins/charness/skills/release/scripts/resolve_adapter.py differ
+Only in plugins/charness/skills/retro/scripts: __pycache__
 Files /home/hwidong/.grok/plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py and plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py differ
+Only in plugins/charness/skills/setup/scripts: __pycache__
 Only in /home/hwidong/.grok/plugins/charness/support: agent-browser
 Only in /home/hwidong/.grok/plugins/charness/support: cautilus
 Only in /home/hwidong/.grok/plugins/charness/support: specdown
-[diff-completed]
+Only in plugins/charness/support/web-fetch/scripts: __pycache__
+[exit=1]
