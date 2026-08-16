@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -168,3 +169,38 @@ def test_release_auto_retro_does_not_declare_the_session_retro_done() -> None:
         assert owed in text.lower()
     # The scope it DOES cover stays stated, so the artifact is still evidence.
     assert "checked-in-plugin-export" in text
+
+
+def test_the_generated_artifact_passes_the_repo_s_own_retro_validator(tmp_path: Path) -> None:
+    """Run the VALIDATOR over the template's output, not a grep for remembered sections.
+
+    This template has now lost a required section twice — `## North Star Alignment`
+    once and `## Lesson Evaluation` once — and each time the failure landed the same
+    way: the release helper wrote an artifact, the release's own quality gate refused
+    it, and the publish rolled back. A test that greps for the sections someone
+    thought of cannot catch the third one, because the whole defect is a section
+    nobody thought of. Asking the owning validator can.
+    """
+    import subprocess
+    import sys
+
+    from .support import ROOT
+
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / ".agents").mkdir()
+    shutil.copy2(
+        ROOT / "charness-artifacts" / "retro" / "lesson-ledger.json",
+        repo / "charness-artifacts" / "retro" / "lesson-ledger.json",
+    )
+    shutil.copy2(ROOT / ".agents" / "retro-adapter.yaml", repo / ".agents" / "retro-adapter.yaml")
+    relative = "charness-artifacts/retro/2026-08-16-v9-9-9-release-auto-retro.md"
+    (repo / relative).write_text(_trigger_markdown(), encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "validate_retro_artifact.py"),
+         "--repo-root", str(repo), "--paths", relative],
+        capture_output=True, text=True, check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr

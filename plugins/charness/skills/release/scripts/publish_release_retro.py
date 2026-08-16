@@ -128,6 +128,26 @@ def _retro_trigger_markdown(
         "- P4 (an irreversible boundary is confirmed by a different observer AND channel) is the facet this release path is built around: the helper's own exit code is not the release verdict, and tag push, workflow completion and helper green are each explicitly non-terminal per `references/publication-boundary.md`.",
         "- SCOPE, stated rather than implied: this is a RELEASE-DELTA retro written by a helper. It can see which surfaces the delta touched; it cannot see the session's reasoning, its rework, or which facets that session mis-applied. A north-star reading of the WORK belongs in the session retro this artifact's Next Improvements line asks for -- treating this section as that reading would be the failure signature it is meant to catch.",
         "",
+        # SECOND section this template lost to a floor it never learned about; the
+        # comment above records the first. The lesson-evaluation floor activated for
+        # retros dated on or after 2026-08-14, this helper kept emitting an artifact
+        # without the section, and the release's own quality gate then refused the
+        # artifact the release had just written -- rolling the publish back.
+        #
+        # `missing-start` is not a placeholder here, it is the TRUE disposition: a
+        # helper-written release-delta artifact opens no lesson session, presents no
+        # lesson list, and can score nothing. Writing anything else would claim an
+        # evaluation nobody performed. The session retro this artifact's Next
+        # Improvements line asks for is where a real disposition belongs.
+        #
+        # `test_the_generated_artifact_passes_the_repo_s_own_retro_validator` is what
+        # makes a third loss impossible to ship silently: it runs the validator over
+        # this template's output instead of grepping for the sections someone
+        # remembered.
+        "## Lesson Evaluation",
+        "",
+        'Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}',
+        "",
         "## Persisted",
         "",
         f"Persisted: yes: {artifact_path}",

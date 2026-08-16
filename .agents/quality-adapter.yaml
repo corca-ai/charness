@@ -191,7 +191,8 @@ runtime_budget_profiles:
       # The 2.5s limit was set in May; a 5s bar replaced it because the release
       # gate observed a 4404ms peak. That 5s bar predates the barrier removal.
       # (contended) was 5000; post-change max 6980
-      check-spec-evidence-durability: 10000
+      # was 10000 against a 10070 worst recent run (0.99x)
+      check-spec-evidence-durability: 14000
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 500
       # NOT a contention casualty: post-change max is 1081 and the old 1200 bar was
@@ -397,9 +398,25 @@ runtime_budget_profiles:
       # which drifted the same way in the same run.
       check-coverage: 25500
       # (contended) was 6000; post-change max 8146
-      doc-duplicates: 11500
+      # was 11500 against a 12599 worst recent run (0.91x)
+      doc-duplicates: 17500
       # (contended) was 8000; post-change max 12098
-      check-markdown: 17000
+      # 2026-08-16 CLASS relevel, not four separate ones. Five bars tripped in a single
+      # day of repeated full-lane runs -- check-documented-command-flags, check-coverage,
+      # validate-inventory-consumption-declaration, check-secrets and check-markdown --
+      # with nothing changed in any of those gates. Relevelling them one at a time is
+      # the counted-limit retry loop this repo already records, so the whole population
+      # was measured at once: every per-gate bar whose ratio to its own worst recent run
+      # was under the 1.4x this block's convention already states. Four remained and are
+      # redrawn here from their current windows.
+      #
+      # `pytest` is DELIBERATELY excluded at 0.86x. The 2026-07-26 note above moves the
+      # teeth to where the maintainer feels time, and pytest is one of the two bars that
+      # got them; loosening it to satisfy a uniform ratio would undo the one decision
+      # that block records making on purpose. The aggregates are excluded for the same
+      # reason.
+      # was 17000 against an 18372 worst recent run (0.93x)
+      check-markdown: 25500
       # (contended) was 6000; post-change max 11639. 2026-08-07 relevel to 19500:
       # measured max 17669ms had grown past the 16500 bar.
       #
@@ -425,7 +442,8 @@ runtime_budget_profiles:
       # day with four full-lane runs in it.
       check-secrets: 28500
       # (contended) was 2000; post-change max 2089
-      run-evals: 3000
+      # was 3000 against a 3037 worst recent run (0.99x)
+      run-evals: 4250
       # (contended) was 5000; post-change max 6269
       specdown: 9000
       validate-cautilus-call-provenance: 500
@@ -453,7 +471,8 @@ runtime_budget_profiles:
       # inside `pytest`, and trip nothing. Same 1.4x-of-worst-recent convention as the
       # relevel above, and all three windows are n=20 entirely post-barrier-removal, so
       # these are contended numbers without needing the `(contended)` caveat.
-      check-export-safe-imports: 12000
+      # was 12000 against an 11050 worst recent run (1.09x); same class relevel
+      check-export-safe-imports: 15500
       check-plugin-import-smoke: 9000
       # 2026-08-16 relevel, 9000 -> 25500. RED AT HEAD before this session and not
       # caused by it: nothing in the slice touches `check_documented_command_flags.py`,
