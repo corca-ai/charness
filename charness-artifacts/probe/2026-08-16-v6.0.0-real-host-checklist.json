@@ -100,9 +100,9 @@
           "value_kind": "extract"
         },
         {
-          "command": "env PATH=/usr/bin:/bin $(command -v charness) tool doctor nose --no-write-locks",
+          "command": "env PATH=/usr/bin:/bin /home/hwidong/.local/bin/charness tool doctor nose --no-write-locks",
           "cwd": "/home/hwidong/codes/charness (resolved repo_root: /home/hwidong/.agents/src/charness)",
-          "returncode": 0,
+          "returncode": 1,
           "transcript": "04-tool-doctor-nose-pathscoped-missing.txt",
           "value": "summary.status_counts: {missing: 1}; results.nose.doctor.doctor_status: missing; doctor_disposition: blocking-install-needed",
           "value_kind": "extract"
@@ -227,17 +227,20 @@
     "author_recheck": "The parent re-verified each blocker against source before revising. This is the SAME observer that authored the artifact and is therefore not a distinct-observer confirmation under docs/design-north-star.md P4; v2 wrongly called it `independent`.",
     "boundary_integrity": "reviewer_boundary_fingerprint.py verify reported `drift: []` and `head_moved: false` for both windows (w-20260816T101522Z-986535, w-20260816T102224Z-996178).",
     "round_1": "Bounded fresh-eye reviewer, read-only envelope bound (no Bash/Edit/Write/Agent). Returned 3 BLOCKER, 5 SHOULD-FIX, 5 NOTE against v1.",
-    "round_2": "Bounded fresh-eye reviewer reading the v2 REPAIR. Returned 2 BLOCKER, 7 SHOULD-FIX, 6 NOTE — including that the repair's own `verbatim` markers were false, which is the round-1 blocker class relocated to a new key. Round 2 confirmed all seven `checklist_text` values are now exact adapter quotes.",
-    "round_cap": "The operating contract caps bounded review at two rounds for a proof surface. These v3 repairs are round-2 repairs and are therefore ACCEPTED-UNREVIEWED: no fresh eye has read this version."
+    "round_2": "Bounded fresh-eye reviewer reading the v2 REPAIR. Returned 2 BLOCKER, 7 SHOULD-FIX, 6 NOTE -- including that the repair's own `verbatim` markers were false, which is the round-1 blocker class relocated to a new key. At that revision all seven `checklist_text` values were exact adapter quotes; item 2's is now DELIBERATELY the retired v6.0.0 text, per its `disposition`.",
+    "round_3": "Bounded fresh-eye reviewer reading the v3 repair and commit 2fb559ec2. Found that the repaired checklist text asserted `charness doctor` exits 1, which cmd_doctor (charness:4189-4217) never does -- the same class the repair removed. Also found the unguarded transcript glob and two half-tests.",
+    "round_4": "Bounded fresh-eye reviewer reading commit fd74de413. Confirmed all four factual claims in the repaired adapter item are true at this commit, and found B1 above plus provenance contradictions. Its blind spots: it had no shell, so it could not diff against the pre-image or run the suite.",
+    "round_cap": "The operating contract caps bounded review at two rounds per slice. Four rounds ran across two slices: rounds 1-2 on the probe record, rounds 3-4 on the checklist repair. The v5 corrections above are round-4 repairs and are ACCEPTED-UNREVIEWED: no fresh eye has read this version."
   },
-  "revised_at": "2026-08-16T11:12:00+00:00",
+  "revised_at": "2026-08-16T11:24:00+00:00",
   "revision_history": {
     "v1": "Initial record of the seven checklist executions.",
     "v2": "Repaired three round-1 blockers: an over-general `charness update` correction, an `executed`/`confirmed` verdict on a re-run whose install never happened, and a `not-observable` disposition hiding a checklist expectation the code contradicts.",
     "v3": "Repaired two round-2 blockers introduced BY the v2 repair. B1: v2 marked CLI outputs `value_kind: verbatim` when they were author-selected extracts — de-nested, reordered, and in one case cross-contaminated (`binary_path`/`resolved_path` were attributed to `charness tool doctor` but come from `charness tool install --detail`; confirmed absent from the doctor transcript). Every command has now been RE-RUN with raw stdout captured to `2026-08-16-v6.0.0-real-host-checklist-transcripts/`, and no value claims to be verbatim. B2: item 2's `status` was `executed` though its precondition was unmet exactly as item 5's was.",
-    "v4": "Records the operator decision that item 2's checklist TEXT was the defective surface, and cites transcript 09. v3 was edited in place with the resolution note while still stamped v3, which would have let a reader think the round-2 reviewer had read it; a round-3 reviewer caught that. It also caught that v3's checklist_text repair reintroduced the very class it fixed -- the adapter text asserted `charness doctor` exits 1 for a missing nose, and `cmd_doctor` returns 0 unconditionally (charness:4189-4217), refuted by transcript 02 in this same directory."
+    "v4": "Records the operator decision that item 2's checklist TEXT was the defective surface, The item-2 resolution rests on transcript 04 (the observed refutation); transcript 09 is a surface inventory cited only by `surfaces.transcript`. v3 was edited in place with the resolution note while still stamped v3, which would have let a reader think the round-2 reviewer had read it; a round-3 reviewer caught that. It also caught that v3's checklist_text repair reintroduced the very class it fixed -- the adapter text asserted `charness doctor` exits 1 for a missing nose, and `cmd_doctor` returns 0 unconditionally (charness:4189-4217), refuted by transcript 02 in this same directory.",
+    "v5": "Round-2-on-the-repairs review. B1: this file recorded `returncode: 0` for the PATH-scoped `charness tool doctor` run whose own transcript ends `[exit=1]` and whose exit 1 the repaired adapter item now cites -- the one machine-readable field that was false, and false in the direction that would refute the repair. Corrected to 1. Transcript 04's header also named a bare `charness`, which cannot resolve under the PATH it sets; re-captured with the absolute path so the header is the command that ran and re-running it reproduces exit 1. Provenance keys corrected: a round_3 entry now exists, round_cap no longer claims no fresh eye read v3, and v4's citation of transcript 09 is replaced by the transcripts the item-2 resolution actually rests on (04, and 02 for the falsified `charness doctor` claim)."
   },
-  "schema_version": "charness.real_host_checklist.v4",
+  "schema_version": "charness.real_host_checklist.v5",
   "surfaces": {
     "local_sync_route": {
       "citation_correction": "v2 cited charness:1141 as the CLI 'naming' this route. That line is inside a CharnessError raised only when a managed checkout has DIVERGED (charness:1136-1144); it is an error path, not general guidance. The route's real documentation is docs/development.md.",

@@ -1,4 +1,4 @@
-$ env PATH=/usr/bin:/bin charness tool doctor nose --no-write-locks
+$ env PATH=/usr/bin:/bin /home/hwidong/.local/bin/charness tool doctor nose --no-write-locks
 event: tool-doctor
 response_level: summary
 detail_available: true

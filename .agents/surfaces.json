@@ -653,7 +653,7 @@
       "notes": [
         "A probe JSON marks its values as author extracts; these transcripts are what makes that honest, so the check pins the two things an extract cannot supply: which command ran, and what it returned.",
         "The glob guard uses `|| continue`, matching audit-evidence-attachments. Without it, pruning the last transcript makes the unmatched glob expand literally, and the check fails naming a path that does not exist -- a wrong diagnostic, not a clean pass.",
-        "Marker COUNT is compared against command count, not merely presence: a multi-command transcript with some return codes deleted would otherwise pass on a single surviving marker.",
+        "Marker COUNT is compared against command count, not merely presence: a multi-command transcript with some return codes deleted would otherwise pass on a single surviving marker. Both counts are grep over column-0 anchors and cannot separate framing from recorded OUTPUT, so they are forgeable in both directions -- a command whose output contains a line starting `[exit=` (e.g. `tail -n 1` of another transcript) rebalances the counts and hides a missing return code, and output containing a line starting `$ ` fails a transcript that is fine. Nothing checks pairing or order either: `$ a`, `$ b`, `[exit=0]`, `[exit=0]` passes.",
         "The check reads SHAPE, not truth. It cannot tell whether a transcript was captured from the command it names, or captured at the time the probe claims, and it does not bind a transcript to any probe JSON in either direction -- an orphan transcript no probe cites still passes."
       ]
     },

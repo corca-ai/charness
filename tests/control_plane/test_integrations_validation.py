@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+import scripts.adapter_lib as adapter_lib
 import scripts.doctor as doctor_module
 import scripts.install_tools as install_tools_module
 import scripts.validate_integrations as validate_integrations_module
@@ -334,10 +335,10 @@ def test_advisory_doctor_policy_requires_a_declared_degraded_mode() -> None:
 
 
 def test_nose_stays_blocking_because_it_has_no_degraded_path() -> None:
-    """Pins the two nose values, and then OBSERVES the verdict they produce rather than
-    trusting that the ladder still reads them. A first version of this test asserted only
-    the manifest fields, which left the disposition ladder free to be widened with the
-    test still green -- and the ladder is the surface this test's name is about.
+    """Pins the three nose manifest values that decide its disposition. This test does
+    NOT observe the verdict -- that is
+    `test_script_install_required_policy_tool_missing_is_blocking_exit_one` below, and
+    the two only together cover what this one's name suggests alone.
 
     The v6.0.0 `real_host_checklist` asserted `advisory-install-needed` for this case;
     that expectation was unreachable at the tag and is corrected in the release adapter.
@@ -350,7 +351,9 @@ def test_nose_stays_blocking_because_it_has_no_degraded_path() -> None:
     assert manifest["lifecycle"]["install"]["mode"] == "script"
 
 
-def test_script_install_required_policy_tool_missing_is_blocking_exit_one(tmp_path: Path) -> None:
+def test_script_install_required_policy_tool_missing_is_blocking_exit_one(
+    tmp_path: Path, monkeypatch
+) -> None:
     """The verdict half of the test above: drive the real doctor over a seeded tool
     carrying nose's two decisive values (`mode: script`, `doctor_policy: required`) and
     observe `blocking-install-needed` with exit 1.
@@ -358,7 +361,19 @@ def test_script_install_required_policy_tool_missing_is_blocking_exit_one(tmp_pa
     Mirror of `test_doctor_missing_advisory_script_tool_is_exit_zero`, which pins the
     advisory arm of the same ladder. Widening the ladder so a required/script tool goes
     advisory turns this red; a manifest-only assertion could not.
+
+    The fallback-manifest env var is REQUIRED for the exit-code half to mean anything:
+    without it `_load_manifests_merged` folds this repo's real manifests into the tmp
+    repo, and `doctor.py` returns 1 if ANY result blocks -- so on a host missing `nose`
+    or `agent-browser` the assertion would pass on an unrelated tool.
+
+    Fidelity limit: the seeded demo-tool declares a `support_skill_source` and a
+    `degraded` access mode, neither of which nose has. It escapes the support-missing
+    branch only because the seeded repo has no prior lock, where nose escapes it by
+    declaring no support source at all. The ladder arm reached is the same; the route to
+    it is not.
     """
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     repo = seed_control_plane_repo(tmp_path)
     manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -404,18 +419,28 @@ def test_release_checklist_entries_are_strings_under_standard_yaml() -> None:
     was silently a dict to any standard-YAML reader, while every consumer
     (`check_real_host_proof.py`, `publish_release_cli.py`) forwards the entries as text.
 
-    Blind class: this pins the type under PyYAML. The repo's own `adapter_lib.load_yaml`
-    is a different parser and returned a string even for the broken form, so this test
-    cannot detect a divergence that only that parser would introduce.
+    Both parsers are asserted, because neither alone covers the class. PRODUCTION reads
+    this adapter through `scripts/adapter_lib.py:load_yaml`, not PyYAML, and the two
+    disagree: `adapter_lib` only makes a list item a mapping when the text before the
+    first `": "` has no space, so the v6.0.0 broken entry was a dict under PyYAML and a
+    string in production. An entry like `- doctor_disposition: X` would be a dict in
+    BOTH. The `uninterpreted` sink is asserted empty as well -- that is the signal
+    `adapter_lib` gives for a line it could not read, and a type check alone misses it.
     """
-    adapter = yaml.safe_load((ROOT / ".agents" / "release-adapter.yaml").read_text(encoding="utf-8"))
+    text = (ROOT / ".agents" / "release-adapter.yaml").read_text(encoding="utf-8")
 
-    checklist = adapter["real_host_checklist"]
-    non_strings = [(index, item) for index, item in enumerate(checklist) if not isinstance(item, str)]
+    pyyaml_checklist = yaml.safe_load(text)["real_host_checklist"]
+    non_strings = [(index, item) for index, item in enumerate(pyyaml_checklist) if not isinstance(item, str)]
     assert non_strings == [], (
         f"real_host_checklist entries must be strings under standard YAML; got {non_strings}. "
         "An entry containing `: ` needs quoting or it parses as a mapping"
     )
+
+    parsed, uninterpreted = adapter_lib.load_yaml_report(text)
+    production_checklist = parsed["real_host_checklist"]
+    assert all(isinstance(item, str) for item in production_checklist), production_checklist
+    assert uninterpreted == [], uninterpreted
+    assert production_checklist == pyyaml_checklist, "the repo's parser and standard YAML disagree"
 
 
 def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch) -> None:
