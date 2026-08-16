@@ -324,7 +324,7 @@ fails), two traps waste time and produce false proof:
   proves only the **score/survivor** path. This false-proof class recurred
   after its prose-only lesson, so the rule is now gate-shaped: before citing a
   CI mutation run as changed-line proof, run
-  `python3 scripts/check_mutation_run_proof.py --claim changed-line --run-id <id>`
+  `python3 <plugin-dir>/scripts/check_mutation_run_proof.py --claim changed-line --run-id <id>`
   (or pass explicit `--event`/`--base-sha`/`--sample-manifest` facts); it
   refuses the claim deterministically when the run's trigger cannot evaluate
   it. A changed-line-blocker fix is confirmed by the **next scheduled run**, or

@@ -9,7 +9,7 @@ The repeated trap is calling `cautilus evaluate fixture` against the legacy rout
 Before invoking `cautilus evaluate fixture`, `cautilus evaluate observation`, or `cautilus evaluate skill-experiment`, consult the proof planner:
 
 ```bash
-python3 scripts/plan_cautilus_proof.py --repo-root . --detail
+python3 <plugin-dir>/scripts/plan_cautilus_proof.py --repo-root . --detail
 ```
 
 Interpret the output as follows:
@@ -25,7 +25,7 @@ Routine review wording — "run quality", "validate this", "verify the prompt ch
 The repo-local entrypoint for cautilus invocations is `<plugin-dir>/scripts/run_cautilus_eval.py`. The wrapper enforces the planner consult contract and refuses with exit code 2 when the gate is unsatisfied. Call it instead of bare `cautilus evaluate fixture/observation/skill-experiment`:
 
 ```bash
-python3 scripts/run_cautilus_eval.py --mode fixture --justification-log <path-to-failing-log> -- <extra cautilus args>
+python3 <plugin-dir>/scripts/run_cautilus_eval.py --mode fixture --justification-log <path-to-failing-log> -- <extra cautilus args>
 ```
 
 Valid `--mode` values: `fixture` (forwards to `cautilus evaluate fixture`), `observation` (forwards to `cautilus evaluate observation`), and `skill-experiment` (forwards to `cautilus evaluate skill-experiment`, the subagent-spawning skill-clone evaluator).

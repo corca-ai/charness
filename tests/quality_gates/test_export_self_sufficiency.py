@@ -546,3 +546,118 @@ def test_the_printed_bootstrap_command_only_uses_flags_that_exist() -> None:
     assert flags, "the pairing test matched no flags; its slice is wrong, not the code"
     for flag in flags:
         assert f'"{flag}"' in bootstrap, f"{flag} is not a bootstrap_runtime.py flag"
+
+
+# --- repo-root instruction arm (#634 doc half) --------------------------------
+
+
+def _instruction_export(tmp_path: Path, *, doc_relative: str, body: str) -> Path:
+    """An export shipping `scripts/render_thing.py` and one doc that mentions it."""
+    export_root = tmp_path / "plugins" / "charness"
+    (export_root / "scripts").mkdir(parents=True)
+    (export_root / "scripts" / "render_thing.py").write_text("x = 1\n", encoding="utf-8")
+    doc = export_root / doc_relative
+    doc.parent.mkdir(parents=True, exist_ok=True)
+    doc.write_text(body, encoding="utf-8")
+    return export_root
+
+
+def test_the_arm_measures_the_INSTRUCTION_and_not_merely_the_script_name(tmp_path: Path) -> None:
+    """The wrong-noun test, written first.
+
+    The defect is a doc telling a consumer to run a REPO-ROOT path. A detector that
+    merely noticed `render_thing.py` being named would fire on the already-correct
+    `<plugin-dir>/` spelling too, reporting the fix as the defect -- the exact failure
+    the dominance reader documents for its own replacement string. Same script, same
+    doc, two spellings: only one is a finding.
+    """
+    broken = _instruction_export(
+        tmp_path / "broken",
+        doc_relative="skills/demo/references/how.md",
+        body="Run `python3 scripts/render_thing.py --repo-root .`\n",
+    )
+    fixed = _instruction_export(
+        tmp_path / "fixed",
+        doc_relative="skills/demo/references/how.md",
+        body="Run `python3 <plugin-dir>/scripts/render_thing.py --repo-root .`\n",
+    )
+
+    assert [f["script"] for f in _lib.repo_root_instruction_findings(broken)] == ["render_thing.py"]
+    assert _lib.repo_root_instruction_findings(fixed) == []
+
+
+def test_an_instruction_naming_an_unshipped_script_is_not_this_arms_business(tmp_path: Path) -> None:
+    """A consumer-owned command that happens to live under `scripts/` is not a delivery
+    bug: there is nothing in the export it should have pointed at instead."""
+    export_root = _instruction_export(
+        tmp_path,
+        doc_relative="skills/demo/references/how.md",
+        body="Set it to `python3 scripts/your_own_runner.py`\n",
+    )
+
+    assert _lib.repo_root_instruction_findings(export_root) == []
+
+
+def test_a_skill_doc_is_consumer_doc_and_a_module_docstring_is_module_prose(tmp_path: Path) -> None:
+    """The split that decides what blocks. A `references/*.md` line is followed by a
+    consumer; a docstring inside an exported module usually describes a maintainer
+    tool's own in-repo invocation, where the rewrite would make it wrong.
+    """
+    doc = _instruction_export(
+        tmp_path / "doc",
+        doc_relative="skills/demo/references/how.md",
+        body="Run `python3 scripts/render_thing.py`\n",
+    )
+    module = _instruction_export(
+        tmp_path / "module",
+        doc_relative="scripts/other_tool.py",
+        body='"""Run `python3 scripts/render_thing.py` from the repo root."""\n',
+    )
+
+    assert [f["site_class"] for f in _lib.repo_root_instruction_findings(doc)] == ["consumer-doc"]
+    assert [f["site_class"] for f in _lib.repo_root_instruction_findings(module)] == ["module-prose"]
+
+
+def test_a_script_under_a_skills_scripts_dir_is_module_prose_not_consumer_doc(tmp_path: Path) -> None:
+    """`skills/` alone does not make a file consumer-facing -- `skills/x/scripts/y.py` is
+    a module. Without the `/scripts/` clause the split would call every skill-owned
+    module a consumer doc and block on its docstrings."""
+    export_root = _instruction_export(
+        tmp_path,
+        doc_relative="skills/demo/scripts/helper.py",
+        body='"""Run `python3 scripts/render_thing.py`."""\n',
+    )
+
+    assert [f["site_class"] for f in _lib.repo_root_instruction_findings(export_root)] == [
+        "module-prose"
+    ]
+
+
+def test_a_consumer_doc_instruction_makes_the_gate_FAIL(tmp_path: Path) -> None:
+    export_root = _instruction_export(
+        tmp_path,
+        doc_relative="skills/demo/references/how.md",
+        body="Run `python3 scripts/render_thing.py`\n",
+    )
+
+    findings = _lib.repo_root_instruction_findings(export_root)
+    assert [f["site_class"] for f in findings] == ["consumer-doc"]
+    assert findings[0]["remedy"] == "python3 <plugin-dir>/scripts/render_thing.py"
+
+
+def test_the_real_export_has_no_consumer_doc_repo_root_instructions() -> None:
+    """The bar this slice set at the count it already holds. Twelve consumer-doc sites
+    were rewritten to `<plugin-dir>/`; this refuses the thirteenth."""
+    findings = _lib.repo_root_instruction_findings(ROOT / "plugins" / "charness")
+
+    assert [f for f in findings if f["site_class"] == "consumer-doc"] == []
+
+
+def test_every_instruction_exemption_names_a_live_site_and_a_reason() -> None:
+    """An exemption whose file no longer exists is a rule nobody can re-derive, and the
+    list is the only thing standing between this arm and the classification failure the
+    path arm was refuted on."""
+    export_root = ROOT / "plugins" / "charness"
+    for suffix, reason in _lib.INSTRUCTION_EXEMPT_SUFFIXES.items():
+        assert (export_root / suffix).exists(), suffix
+        assert reason.strip(), suffix

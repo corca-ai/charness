@@ -57,6 +57,26 @@ PATH_ADVISORY_NOTE = (
     "contains both real delivery bugs and correct code. Read it as an inventory to work "
     "from, never as a count of defects."
 )
+#: The consumer-doc instruction arm BLOCKS while the module-prose half stays
+#: advisory, and the split is measured rather than staged: the twelve consumer-doc
+#: sites were repaired to `<plugin-dir>/` in the same slice that added this arm, so
+#: the bar is set at the count it already holds. That is the difference from the
+#: path arm, which stayed advisory because its classification was falsified in both
+#: directions and never reached zero.
+CONSUMER_DOC_INSTRUCTION_REMEDY = (
+    "an exported skill doc or adapter example tells a consumer to run `python3 scripts/X`, "
+    "which on their machine is THEIR repo root and not the plugin. Rewrite it as "
+    "`python3 <plugin-dir>/scripts/X` -- check_plugin_dir_references.py owns that placeholder "
+    "and will verify the target ships."
+)
+MODULE_PROSE_INSTRUCTION_NOTE = (
+    "ADVISORY: not a verdict. Each entry is a `python3 scripts/X` string inside an exported "
+    "MODULE's docstring or help text. Some are maintainer tools describing their own in-repo "
+    "invocation, where rewriting to `<plugin-dir>/` would make the correct instruction wrong; "
+    "others are consumer guidance that happens to live in a docstring. This arm cannot tell "
+    "them apart -- the split is by file location, a declaration and not a measurement. Read it "
+    "as an inventory to work from, never as a count of defects."
+)
 UNGUARDED_ENTRYPOINT_REMEDY = (
     "A script an exported SKILL.md/reference/adapter tells a consumer to RUN imports a "
     "third-party package unguarded, so that consumer meets it as a bare "
@@ -109,8 +129,16 @@ def run_check(repo_root: Path, *, package_id: str = DEFAULT_PACKAGE_ID) -> dict:
         export_root, relative_to=repo_root
     )
 
+    instruction_findings = _lib.repo_root_instruction_findings(export_root)
+    consumer_doc_instructions = [
+        finding for finding in instruction_findings if finding["site_class"] == "consumer-doc"
+    ]
+    module_prose_instructions = [
+        finding for finding in instruction_findings if finding["site_class"] == "module-prose"
+    ]
+
     payload: dict[str, object] = {
-        "status": "fail" if entrypoint_findings else "pass",
+        "status": "fail" if entrypoint_findings or consumer_doc_instructions else "pass",
         "export_root": _packaging.checked_in_plugin_root(manifest).as_posix(),
         "scanned_python_files": len(list(export_root.rglob("*.py"))),
         "documented_entrypoint_count": len(_lib.documented_entrypoint_names(export_root)),
@@ -120,9 +148,17 @@ def run_check(repo_root: Path, *, package_id: str = DEFAULT_PACKAGE_ID) -> dict:
         "advisory_path_note": PATH_ADVISORY_NOTE,
         "advisory_undeclared_dependencies": dependency_findings,
         "advisory_dependency_note": DEPENDENCY_INVENTORY_NOTE,
+        "consumer_doc_repo_root_instructions": consumer_doc_instructions,
+        "advisory_module_prose_repo_root_instructions": module_prose_instructions,
+        "advisory_module_prose_note": MODULE_PROSE_INSTRUCTION_NOTE,
     }
+    remedies: list[str] = []
     if entrypoint_findings:
-        payload["remedy"] = [UNGUARDED_ENTRYPOINT_REMEDY]
+        remedies.append(UNGUARDED_ENTRYPOINT_REMEDY)
+    if consumer_doc_instructions:
+        remedies.append(CONSUMER_DOC_INSTRUCTION_REMEDY)
+    if remedies:
+        payload["remedy"] = remedies
     return payload
 
 

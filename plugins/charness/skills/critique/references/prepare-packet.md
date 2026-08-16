@@ -221,7 +221,7 @@ serves as the contract reference example:
   when provided, list each changed path and the surfaces (from
   `<repo-root>/.agents/surfaces.json`) that own or derive from it.
   Producer:
-  `python3 scripts/render_critique_section_changed_surfaces.py`.
+  `python3 <plugin-dir>/scripts/render_critique_section_changed_surfaces.py`.
 
 Consumers add more sections in their own `<repo-root>/.agents/critique-adapter.yaml`.
 

@@ -252,6 +252,112 @@ def documented_entrypoint_names(export_root: Path) -> set[str]:
     return names
 
 
+#: A doc/adapter site spelling a command as `python3 scripts/<name>.py`. On a
+#: consumer machine `scripts/` is the CONSUMER's repo root, not the plugin, so
+#: the instruction resolves to the wrong tree -- or to nothing -- even though the
+#: script ships. `<plugin-dir>/scripts/<name>.py` is the spelling that resolves
+#: in both trees (`check_plugin_dir_references.py` owns that placeholder).
+REPO_ROOT_SCRIPT_INSTRUCTION_RE = re.compile(r"python3 scripts/([a-z0-9_]+\.(?:py|sh))")
+
+#: Sites where `python3 scripts/...` is a CONFIG VALUE a consumer replaces with
+#: their own command, not an instruction to run charness's copy. Each entry
+#: carries why, because an unexplained allowlist is how this class returns.
+INSTRUCTION_EXEMPT_SUFFIXES = {
+    "skills/quality/references/cost-dominance.md": (
+        "the `replacement:` key is the value a repo author fills in with THEIR fast "
+        "runner; charness's own is shown as the worked example"
+    ),
+    "skills/quality/scripts/command_dominance_lib.py": (
+        "prose explaining why the bare-pytest rule does not fire on charness's own "
+        "replacement string; changing it would falsify the explanation"
+    ),
+    "skills/release/adapter.example.yaml": (
+        "`sync_command` is the consumer's own sync command; resolve_adapter already "
+        "warns when inferred defaults name THIS repo's scripts"
+    ),
+    "skills/release/references/adapter-contract.md": (
+        "documents the `sync_command` key whose value is consumer-owned, same as above"
+    ),
+    "skills/release/scripts/init_adapter.py": (
+        "seeds the consumer-owned `sync_command` default; carried by the same warning"
+    ),
+    "skills/release/scripts/resolve_adapter.py": (
+        "infer_repo_defaults, which EXECUTED_WARNING_MARKER already reports to the reader"
+    ),
+    "skills/issue/scripts/fixtures/slack-thread-source-preservation.json": (
+        "fixture prose inside a test payload; never read as an instruction"
+    ),
+}
+
+
+def repo_root_instruction_findings(export_root: Path) -> list[dict[str, object]]:
+    """Exported docs telling a consumer to run `python3 scripts/<name>.py`.
+
+    The sibling of the path arm, asked about PROSE rather than code. The path arm
+    reads Python literals; this reads what a consumer is told to type. Both come
+    from #634's class -- an exported artifact naming a repo-root location the
+    consumer does not have -- but nothing in the AST arm can see a markdown line.
+
+    Reported only when the named script SHIPS in the export: an unshipped name is
+    either the path arm's business or a genuine consumer-owned command, and
+    claiming both here would rebuild the falsified classification the path arm
+    already paid for.
+
+    Blind class, stated because the first two builds of the sibling arms were
+    refuted on exactly this: it matches ONE spelling (`python3 scripts/X`). A doc
+    saying `run scripts/X.py`, or building the path across a line break, or using
+    `./scripts/X.py`, is invisible to it. It also cannot tell an instruction from
+    a config value -- that distinction is carried by INSTRUCTION_EXEMPT_SUFFIXES,
+    which is a declaration, not a measurement.
+    """
+    findings: list[dict[str, object]] = []
+    shipped = {path.name for path in (export_root / "scripts").glob("*") if path.is_file()}
+    for path in sorted(export_root.rglob("*")):
+        if path.suffix not in (*_ENTRYPOINT_DOC_SUFFIXES, ".py") or not path.is_file():
+            continue
+        relative = path.relative_to(export_root).as_posix()
+        if any(relative.endswith(suffix) for suffix in INSTRUCTION_EXEMPT_SUFFIXES):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            for name in REPO_ROOT_SCRIPT_INSTRUCTION_RE.findall(line):
+                if name not in shipped:
+                    continue
+                findings.append(
+                    {
+                        "doc": relative,
+                        "line": lineno,
+                        "script": name,
+                        "site_class": _instruction_site_class(relative),
+                        "remedy": f"python3 <plugin-dir>/scripts/{name}",
+                    }
+                )
+    return findings
+
+
+def _instruction_site_class(relative: str) -> str:
+    """`consumer-doc` for a skill doc or adapter example a consumer READS and follows;
+    `module-prose` for a docstring or help string inside an exported module.
+
+    The split exists because the first run of this arm returned 87 sites and the
+    difference between them is the whole question. A `references/*.md` line telling a
+    consumer to type a command is the reported failure shape. A `sync_root_plugin_manifests.py`
+    docstring naming its own invocation is a maintainer tool describing itself, and
+    rewriting it to `<plugin-dir>/` would make the in-repo instruction wrong to fix an
+    instruction nobody follows. Only the first class is repaired; the second is inventory.
+
+    This is a DECLARATION about file location, not a measurement of who reads the file.
+    A consumer-facing instruction inside a module docstring is classed `module-prose`
+    and will be under-reported.
+    """
+    if relative.startswith("skills/") and "/scripts/" not in relative:
+        return "consumer-doc"
+    return "module-prose"
+
+
 def _guarded_import_lines(tree: ast.AST) -> set[int]:
     """Line numbers of imports inside a `try`, which is the form that CAN name a
     remedy. A function-level import is NOT included: it only DEFERS the
