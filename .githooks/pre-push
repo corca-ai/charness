@@ -4,6 +4,26 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
+# stdin is read ONCE, here, and replayed to every consumer below. Two consumers now
+# want it (the close-keyword guard and the diff classifier) and a git hook's stdin is
+# a pipe: whichever ran first would drain it and the second would silently see an
+# empty range. An empty range is indistinguishable from "nothing to check" at both,
+# so the failure mode is a guard that passes by reading nothing.
+push_stdin="$(cat)"
+
+# The IRREVERSIBLE check runs first, before any expensive lane. A close keyword in a
+# pushed commit message closes a GitHub issue the moment it lands on the default
+# branch, and pushing again does not undo it (#626 was closed exactly this way by
+# prose describing a future release). Everything else this hook checks is recoverable
+# by another commit; this is not, so it is not worth spending 10 minutes of quality
+# lane before finding out.
+echo "charness pre-push: scanning the push range for GitHub close keywords"
+# `$1` is the remote git is pushing to. It is forwarded because the guard bounds a
+# ref CREATION by what that remote already has: hard-coding `origin` would exclude
+# the wrong commits on any push to a second remote, and skip the ones under review.
+printf '%s\n' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py \
+  --repo-root "$REPO_ROOT" --remote "${1:-origin}"
+
 echo "charness pre-push: syncing checked-in plugin surface"
 python3 scripts/sync_root_plugin_manifests.py --repo-root "$REPO_ROOT" >/dev/null
 
@@ -31,6 +51,10 @@ classify_input=""
 saw_ref=0
 saw_new_or_delete=0
 while read -r _local_ref local_sha _remote_ref remote_sha; do
+  # A here-string always yields one line, so an empty stdin arrives as a blank line
+  # with empty shas. Left unguarded that sets saw_ref=1 and runs `git diff ..` on an
+  # empty range, which fails under `set -e` and aborts the push over nothing.
+  [[ -z "$local_sha" || -z "$remote_sha" ]] && continue
   saw_ref=1
   if [[ "$local_sha" == "$zero" || "$remote_sha" == "$zero" ]]; then
     # New ref creation (no remote-sha to diff against) or ref deletion;
@@ -42,7 +66,7 @@ while read -r _local_ref local_sha _remote_ref remote_sha; do
     classify_input+=$'\n'
   fi
   classify_input+=$(git diff --name-only "${remote_sha}..${local_sha}")
-done
+done <<< "$push_stdin"
 
 force_full="${CHARNESS_FORCE_FULL_GATE:-0}"
 if [[ "$saw_new_or_delete" == "1" || "$saw_ref" == "0" || "$force_full" == "1" ]]; then

@@ -459,3 +459,74 @@ def test_pre_push_arming_var_is_the_one_the_runner_actually_reads() -> None:
     body = runner.split(guard, 1)[1].split("fi", 1)[0]
     assert "--refuse-unestablished" in body, body
 
+
+
+# --- the close-keyword guard's arming, one lane over ------------------------------
+
+
+CLOSE_GUARD_INVOCATION = (
+    'printf \'%s\\n\' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py \\\n'
+    '  --repo-root "$REPO_ROOT" --remote "${1:-origin}"'
+)
+
+
+def _guard_hook(tmp_path: Path, invocation: str) -> Path:
+    hook = tmp_path / "pre-push"
+    hook.write_text(
+        PRE_PUSH_HOOK_TEXT.replace(CLOSE_GUARD_INVOCATION, invocation), encoding="utf-8"
+    )
+    return hook
+
+
+def test_close_keyword_guard_arming_accepts_the_real_hook(tmp_path: Path) -> None:
+    module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
+    hook = tmp_path / "pre-push"
+    hook.write_text(PRE_PUSH_HOOK_TEXT, encoding="utf-8")
+    module.check_close_keyword_guard_arming(hook, ".githooks/pre-push")  # must not raise
+    assert CLOSE_GUARD_INVOCATION in PRE_PUSH_HOOK_TEXT, (
+        "the substitution the disarm cases below rely on no longer matches the real "
+        "hook, so every one of them would be checking an unmodified file and passing "
+        "vacuously"
+    )
+
+
+@pytest.mark.parametrize(
+    ("invocation", "expected"),
+    [
+        # A MENTION is not an invocation. The first version of this check matched the
+        # basename anywhere on a physical line, so this passed while no commit in any
+        # push range was ever scanned.
+        (
+            'echo "run python3 scripts/prepush_close_keyword_guard.py yourself"',
+            "no longer runs",
+        ),
+        # The invocation spans two physical lines and only the first carries the
+        # basename, so a suffix test on that line missed a swallow on the second.
+        (
+            'printf \'%s\\n\' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py \\\n'
+            '  --repo-root "$REPO_ROOT" || true',
+            "discards its verdict",
+        ),
+        (
+            'printf \'%s\\n\' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py '
+            '--repo-root "$REPO_ROOT" &',
+            "discards its verdict",
+        ),
+        # Commented out entirely.
+        ('# python3 scripts/prepush_close_keyword_guard.py --repo-root "$REPO_ROOT"', "no longer runs"),
+        # Deleted outright.
+        ("true", "no longer runs"),
+        # A form the gate cannot classify is refused, not skipped: a reference it
+        # cannot read is a lane it cannot prove is armed.
+        ('$GUARD --repo-root "$REPO_ROOT" # prepush_close_keyword_guard.py', "cannot classify"),
+    ],
+)
+def test_close_keyword_guard_arming_refuses_each_disarm(
+    tmp_path: Path, invocation: str, expected: str
+) -> None:
+    module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
+    with pytest.raises(module.ValidationError) as excinfo:
+        module.check_close_keyword_guard_arming(
+            _guard_hook(tmp_path, invocation), ".githooks/pre-push"
+        )
+    assert expected in str(excinfo.value)

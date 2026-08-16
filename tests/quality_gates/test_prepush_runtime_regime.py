@@ -56,6 +56,20 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
     for name in ("sync_root_plugin_manifests.py", "validate_current_pointer_freshness.py"):
         (repo / "scripts" / name).write_text("#!/usr/bin/env python3\n", encoding="utf-8")
 
+    # The close-keyword guard is stubbed to RECORD ITS STDIN rather than to do
+    # nothing. It and the diff classifier are two consumers of a git hook's stdin,
+    # which is a pipe: whichever read first would drain it, and the second would see
+    # an empty range and report "nothing to check". Both failure directions are
+    # silent, so what this fixture pins is that BOTH consumers got the range -- the
+    # guard's own verdicts live in `test_prepush_close_keyword_guard.py`, which needs
+    # a real repo the classification fixture deliberately is not.
+    (repo / "scripts" / "prepush_close_keyword_guard.py").write_text(
+        "#!/usr/bin/env python3\n"
+        "import os, sys\n"
+        "open(os.environ['GUARD_STDIN_LOG'], 'w').write(sys.stdin.read())\n",
+        encoding="utf-8",
+    )
+
     # The stub records the ENVIRONMENT the hook handed the runner, which is the
     # fact under test, plus argv so the read-only mode stays visible.
     (repo / "scripts" / "run-quality.sh").write_text(
@@ -86,6 +100,7 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
 def _run_hook(repo: Path, base_sha: str, head_sha: str, log: Path) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ)
     env["QUALITY_INVOCATION_LOG"] = str(log)
+    env["GUARD_STDIN_LOG"] = str(log.with_name("guard-stdin.txt"))
     env.pop("CHARNESS_RUNTIME_REGIME", None)
     env.pop("CHARNESS_QUALITY_LABELS", None)
     env.pop("CHARNESS_FORCE_FULL_GATE", None)
@@ -149,3 +164,31 @@ def test_a_full_gate_push_leaves_the_regime_empty(prepush_repo: Path, tmp_path: 
     payload = json.loads(log.read_text(encoding="utf-8"))
     assert payload["labels"] == "", "a code push must run the full queue, unfiltered"
     assert payload["regime"] == ""
+
+
+def test_both_stdin_consumers_receive_the_push_range(prepush_repo: Path, tmp_path: Path) -> None:
+    """The close-keyword guard and the diff classifier both get the range.
+
+    A git hook's stdin is a pipe read once. Before the guard existed the classifier
+    read it directly; adding a second consumer in front of it would have drained it,
+    and the classifier would have seen no refs, taken its `saw_ref == 0` branch, and
+    forced the full gate on every push -- a silent regime regression this file's other
+    two tests would still have passed, because both drive the docs/code branch through
+    file contents rather than through stdin. Reading stdin once and replaying it is
+    what makes both true at the same time, and this is the assertion that holds it.
+    """
+    base = _git(prepush_repo, "rev-parse", "HEAD")
+    (prepush_repo / "docs" / "note.md").write_text("# note\n", encoding="utf-8")
+    _git(prepush_repo, "add", "-A")
+    _git(prepush_repo, "commit", "-m", "docs only")
+    head = _git(prepush_repo, "rev-parse", "HEAD")
+
+    log = tmp_path / "invocation.json"
+    result = _run_hook(prepush_repo, base, head, log)
+    assert result.returncode == 0, result.stderr
+
+    guard_stdin = log.with_name("guard-stdin.txt").read_text(encoding="utf-8")
+    assert guard_stdin.split() == ["refs/heads/main", head, "refs/heads/main", base]
+    # And the classifier downstream of it still saw the same range: `docs-only` is
+    # reachable only through the ref pair, so this asserts the replay, not a default.
+    assert json.loads(log.read_text(encoding="utf-8"))["regime"] == "docs-only"

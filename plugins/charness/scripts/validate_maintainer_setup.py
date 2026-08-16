@@ -14,6 +14,16 @@ from pathlib import Path
 # stops them drifting apart silently.
 PRE_PUSH_ARMING_VAR = "CHARNESS_PRE_PUSH"
 QUALITY_RUNNER_BASENAME = "run-quality.sh"
+CLOSE_KEYWORD_GUARD_BASENAME = "prepush_close_keyword_guard.py"
+# The guard as a command word, mirroring QUALITY_RUNNER_RE below. The interpreter is
+# required: `scripts/prepush_close_keyword_guard.py` alone would also match the string
+# inside an `echo`, which is the mention-counted-as-invocation hole this replaced.
+CLOSE_KEYWORD_GUARD_RE = re.compile(
+    r"""^(?:python3?|/usr/bin/env\s+python3?)\s+
+        (?:"?\$\{?REPO_ROOT\}?"?/|\./)?
+        scripts/prepush_close_keyword_guard\.py(?=\s|$)""",
+    re.VERBOSE,
+)
 # The runner as a command word. `$REPO_ROOT/` shapes are accepted because the
 # hook already computes and `cd`s to `REPO_ROOT`, so writing the invocation that
 # way is a refactor a maintainer would plausibly make.
@@ -329,6 +339,86 @@ def check_pre_push_arming(hook_path: Path, rel_path: str) -> None:
             "push-time changed-line refusal cannot run. If the runner moved, update "
             "this gate with it rather than leaving the lane unenforced."
         )
+    check_close_keyword_guard_arming(hook_path, rel_path)
+
+
+def check_close_keyword_guard_arming(hook_path: Path, rel_path: str) -> None:
+    """Refuse a pre-push hook that no longer runs the close-keyword guard.
+
+    Same reasoning as the arming check above, one lane over: deleting the guard's
+    line leaves this gate green and the push console green, and the loss is an
+    irreversible GitHub close rather than an unproven line. It is checked HERE
+    rather than left to the hook's own tests because those exercise the guard
+    through a stub -- they prove the wiring carries stdin, not that the wiring is
+    still present in the shipped hook.
+
+    Presence and verdict-reachability only. Whether the guard is CORRECT is
+    `tests/quality_gates/test_prepush_close_keyword_guard.py`'s job; what cannot
+    be delegated there is that the hook still calls it.
+
+    It runs through the SAME `_logical_lines`/`_split_commands`/`NOT_A_COMMAND_RE`
+    machinery the runner check uses, and that is the whole content of this
+    function's round-2 repair. The first version matched raw physical lines for
+    the basename, which passed on `echo "run prepush_close_keyword_guard.py
+    yourself"`, on a heredoc advice block naming it, and on a trailing comment --
+    and its `|| true` detection tested the suffix of the basename's line, which is
+    the FIRST of the invocation's two continued lines, so appending `|| true` to
+    the second one disarmed the guard behind a green check. Both are the class the
+    runner check's own round 2 already removed one lane over; re-deriving the
+    judgment instead of calling it re-created them.
+    """
+    invocations, unclear, swallowed = close_keyword_guard_invocations(
+        hook_path.read_text(encoding="utf-8")
+    )
+    if unclear:
+        raise ValidationError(
+            f"`{rel_path}` references `{CLOSE_KEYWORD_GUARD_BASENAME}` in a form this "
+            f"gate cannot classify: {', '.join(repr(chunk) for chunk in unclear)}. That "
+            "is refused rather than skipped, because a reference the gate cannot read "
+            "is a lane it cannot prove is armed."
+        )
+    if swallowed:
+        raise ValidationError(
+            f"`{rel_path}` runs the close-keyword guard but discards its verdict: "
+            f"{', '.join(repr(chunk) for chunk in swallowed)}. A refusal that cannot "
+            "stop the push is not a floor."
+        )
+    if not invocations:
+        raise ValidationError(
+            f"`{rel_path}` no longer runs `scripts/{CLOSE_KEYWORD_GUARD_BASENAME}`, so a "
+            "commit whose message close-keywords a GitHub issue can land unfloored and "
+            "close it. That act is not undoable by pushing again. If the guard moved, "
+            "update this gate with it rather than leaving the boundary unguarded."
+        )
+
+
+def close_keyword_guard_invocations(hook_text: str) -> tuple[list[str], list[str], list[str]]:
+    """Classify close-keyword-guard references into (invoked, unclear, swallowed).
+
+    The guard is the last command of a pipeline in the shipped hook
+    (``printf ... | python3 scripts/prepush_close_keyword_guard.py ...``), so the
+    separator that FOLLOWS its chunk is empty and its exit status is the
+    pipeline's. A `|` after it would not be.
+    """
+    invoked: list[str] = []
+    unclear: list[str] = []
+    swallowed: list[str] = []
+    for line in _logical_lines(hook_text):
+        if not line or line.startswith("#") or CLOSE_KEYWORD_GUARD_BASENAME not in line:
+            continue
+        for chunk, separator in _split_commands(line):
+            if CLOSE_KEYWORD_GUARD_BASENAME not in chunk:
+                continue
+            command, _assignments = _strip_modifiers_and_env(chunk)
+            if NOT_A_COMMAND_RE.match(command):
+                continue
+            if not CLOSE_KEYWORD_GUARD_RE.match(command):
+                unclear.append(chunk)
+            elif separator in VERDICT_SWALLOWING_SEPARATORS:
+                swallowed.append(f"{chunk} {separator}".strip())
+            else:
+                invoked.append(chunk)
+    return invoked, unclear, swallowed
 
 
 def run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:

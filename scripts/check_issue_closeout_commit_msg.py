@@ -90,11 +90,60 @@ def _strip_commit_comments(body: str) -> str:
     return "\n".join(line for line in body.splitlines() if not _COMMENT_LINE_RE.match(line)).strip() + "\n"
 
 
-def _bare_close_keyword_numbers(
-    sanitized_body: str, covered: set[int], iter_refs: Any, current_repo: str
-) -> list[int]:
-    """Issue numbers the commit message itself close-keywords, minus numbers
-    already covered by a staged closeout artifact.
+def _close_keyword_scan_text(raw_body: str, sanitized_body: str) -> str:
+    """The text close keywords are DETECTED in: the raw body and the sanitized body
+    both, never the sanitized one alone.
+
+    `_strip_commit_comments` models git's editor-mode cleanup, which drops every
+    `^\\s*#` line. That model is right for a message typed in an editor and wrong
+    for `-m`/`-F`, where git's default cleanup is `whitespace` and comment lines
+    are stored verbatim. The gap is not theoretical: a commit body wrapped as
+
+        ... because S7 closes
+        #626/#627/#631 on the strength of that gate.
+
+    put its refs on a line beginning with `#`. Stripping made the keyword vanish,
+    this carrier reported `not_applicable`, and GitHub read the stored message and
+    closed #626 -- an irreversible act with no floor anywhere.
+
+    Scanning both is deliberately asymmetric, and the asymmetry follows the cost.
+    Over-detection costs the author one reword or one ledger; under-detection costs
+    an issue close that pushing again cannot undo. The added false-positive surface
+    is git's own comment block (`# On branch main`, `#\tmodified: <path>`), which
+    carries no `close/fix/resolve` verb immediately before a `#N`.
+
+    Only DETECTION reads this text. The carrier body handed to `verify_closeout`
+    stays the sanitized one, so a real editor comment can never satisfy a floor --
+    it can only trigger one.
+    """
+    return raw_body + "\n" + sanitized_body
+
+
+def partition_closeout_carriers(
+    artifacts: list[dict[str, Any]], message_refs: set[int], close_numbers: set[int]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[int]]:
+    """Split closeout artifacts into live carriers and pause-exempt briefs, and name
+    the numbers left with no artifact carrier.
+
+    Shared with the pre-push guard rather than reimplemented there. The pause
+    carve-out and the covered-number subtraction decide WHICH floor each close target
+    gets, so two copies would be two answers to that question, and the surface that
+    drifted would fail open at an irreversible boundary. ``message_refs`` is the
+    unfiltered mention set the pause overlap is tested against; ``close_numbers`` is
+    the repo-filtered set the bare floor applies to.
+    """
+    pause_briefs = [
+        artifact
+        for artifact in artifacts
+        if artifact["pause_brief"] and not (set(artifact["numbers"]) & message_refs)
+    ]
+    live = [artifact for artifact in artifacts if artifact not in pause_briefs]
+    covered = {number for artifact in live for number in artifact["numbers"]}
+    return live, pause_briefs, sorted(number for number in close_numbers if number not in covered)
+
+
+def _close_keyword_numbers(scan_text: str, iter_refs: Any, current_repo: str) -> set[int]:
+    """Issue numbers in THIS repo that the commit message itself close-keywords.
 
     GitHub auto-closes on a close keyword landing on the default branch
     regardless of whether any ``charness-artifacts/issue/*.md`` was staged.
@@ -105,9 +154,11 @@ def _bare_close_keyword_numbers(
     colon, and single-keyword comma-list close-keyword forms) so this module
     keeps no second copy of the close-keyword regex.
 
-    Scans the raw ``sanitized_body`` (commit comments already removed, exactly as
-    git strips them from the stored message) and deliberately does NOT strip code
-    fences: GitHub parses the raw commit-message text for close keywords and
+    Scans ``_close_keyword_scan_text`` -- the raw body AND the comment-stripped one,
+    because git's editor-mode comment stripping is a model of the stored message and
+    that model was wrong for a ``-m`` commit (see that function; it cost #626). It
+    deliberately does NOT strip code
+    fences either: GitHub parses the raw commit-message text for close keywords and
     treats backticks as literal characters, so a fenced ``Fixes #123`` still
     auto-closes #123. Stripping fences here reported ``not_applicable`` while
     GitHub closed the issue with no floor anywhere — the exact escape this floor
@@ -121,20 +172,38 @@ def _bare_close_keyword_numbers(
     which would auto-close a local issue the author never meant to touch. A floor whose
     remedy causes the harm it guards against is worse than no floor on that path.
     """
-    found = {
+    return {
         number
-        for repo, number in iter_refs(sanitized_body)
+        for repo, number in iter_refs(scan_text)
         if repo is None or repo.lower() == current_repo.lower()
     }
-    return sorted(number for number in found if number not in covered)
 
 
-def _issue_closeout_artifacts(repo_root: Path, iter_refs: Any, strip_code_fences: Any) -> list[dict[str, Any]]:
+def _issue_closeout_artifacts(
+    repo_root: Path,
+    iter_refs: Any,
+    strip_code_fences: Any,
+    *,
+    list_paths: Any = None,
+    read_file: Any = None,
+) -> list[dict[str, Any]]:
+    """Closeout artifacts and the classification each declares.
+
+    ``list_paths``/``read_file`` default to the git INDEX, which is what a commit-msg
+    hook has. They are injectable so the pre-push guard can run this same parse over a
+    COMMIT's tree: without that, the guard would re-derive classification from the
+    message alone, default to ``bug`` for an artifact-carried ``question`` close, and
+    demand root-cause/prevention claims the disposition exists to refuse -- the defect
+    already recorded at ``_CLASSIFICATION_RE`` above, re-introduced one surface over.
+    A second copy of this parse would have drifted the same way.
+    """
+    list_paths = list_paths or _staged_paths
+    read_file = read_file or _staged_file
     artifacts: list[dict[str, Any]] = []
-    for path in _staged_paths(repo_root):
+    for path in list_paths(repo_root):
         if not (path.startswith("charness-artifacts/issue/") and path.endswith(".md")):
             continue
-        body = "\n".join(strip_code_fences(_staged_file(repo_root, path)))
+        body = "\n".join(strip_code_fences(read_file(repo_root, path)))
         qualified = sorted({(repo, number) for repo, number in iter_refs(body)}, key=lambda item: (item[0] or "", item[1]))
         numbers = sorted({number for _repo, number in qualified})
         if not numbers:
@@ -293,21 +362,17 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
     commit_msg_file = commit_msg_file.resolve()
     raw_body = commit_msg_file.read_text(encoding="utf-8")
     sanitized_body = _strip_commit_comments(raw_body)
-    message_qualified = {(repo, number) for repo, number in iter_refs(sanitized_body)}
+    scan_text = _close_keyword_scan_text(raw_body, sanitized_body)
+    message_qualified = {(repo, number) for repo, number in iter_refs(scan_text)}
     message_refs = {number for _repo, number in message_qualified}
     # Pause carve-out (#444): a pausing resolution brief is persisted state, not
     # a closeout carrier — at pause time no honest critique/behavior ledger can
     # exist. The brief stays exempt only while the commit message close-keywords
     # none of its issue numbers; a `Close #N` overlap restores the full floor.
-    pause_briefs = [
-        artifact
-        for artifact in artifacts
-        if artifact["pause_brief"] and not (set(artifact["numbers"]) & message_refs)
-    ]
-    artifacts = [artifact for artifact in artifacts if artifact not in pause_briefs]
-    covered = {number for artifact in artifacts for number in artifact["numbers"]}
     # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
-    bare_numbers = _bare_close_keyword_numbers(sanitized_body, covered, iter_refs, repo)
+    artifacts, pause_briefs, bare_numbers = partition_closeout_carriers(
+        artifacts, message_refs, _close_keyword_numbers(scan_text, iter_refs, repo)
+    )
     pause_reports = _pause_brief_reports(pause_briefs, issue_verify_closeout)
     for artifact in artifacts + pause_briefs:
         artifact.pop("body", None)
@@ -379,6 +444,22 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
         "artifacts": artifacts,
         "pause_briefs": pause_briefs,
         "bare_close_numbers": bare_numbers,
+        # Numbers this commit close-keywords in text the LEDGER floors cannot see.
+        # Detection reads the raw body (git stores `#`-leading lines verbatim under
+        # `-m`/`-F`); `_missing_close_keywords` reads the sanitized body with code
+        # fences stripped. BOTH channels produce a number GitHub will act on and the
+        # ledger will report missing, and neither can ever be cleared by adding a
+        # ledger. Covering only the `#`-line half left the fenced half with exactly
+        # the unfollowable remedy this field exists to end.
+        "unsatisfiable_close_numbers": sorted(
+            _close_keyword_numbers(scan_text, iter_refs, repo)
+            - {
+                number
+                for _repo, number in iter_refs(
+                    "\n".join(issue_verify_closeout.strip_code_fences(sanitized_body))
+                )
+            }
+        ),
         "reports": reports,
         "review_advisory": _exemption_advisories(
             reports, issue_verify_closeout.review_advisory_for_classification
@@ -440,6 +521,20 @@ _LEDGER_FIELD_NOTE = (
 )
 
 
+# Without this the refusal is unactionable, not merely terse: the author sees
+# `missing_close_keywords: [700]` on a message that visibly says `closes #700` and the
+# printed remedy ("Put the close keywords and closeout ledger in the commit body") is
+# already satisfied. Only rewording ends that, and only this sentence says so.
+_UNSATISFIABLE_CLOSE_NOTE = (
+    "At least one `missing_close_keywords` number appears in this message ONLY where "
+    "the ledger parse cannot see it -- on a line beginning with `#` (dropped as a git "
+    "comment) or inside a code fence (stripped before the ledger is read). GitHub acts "
+    "on both, so no ledger you add will clear this. Move the reference into ordinary "
+    "prose, off the start of its line and outside any fence (e.g. `... closes issue "
+    "#700.`), then retry."
+)
+
+
 def report_payload(report: dict[str, Any]) -> dict[str, Any]:
     """Fold the remediation prose into the payload the gate emits."""
     payload = dict(report)
@@ -460,6 +555,9 @@ def report_payload(report: dict[str, Any]) -> dict[str, Any]:
     payload["remediation"] = [_PAUSE_REMEDIATION] if pause_only else list(_FAILURE_REMEDIATION)
     if any(item.get("missing_fields") for item in failing):
         payload["ledger_field_note"] = _LEDGER_FIELD_NOTE
+    unsatisfiable = set(report.get("unsatisfiable_close_numbers") or [])
+    if unsatisfiable & {n for item in failing for n in (item.get("missing_close_keywords") or [])}:
+        payload["unsatisfiable_close_note"] = _UNSATISFIABLE_CLOSE_NOTE
     if any(
         (item.get("hotl_dispositions") or {}).get("undispositioned") for item in failing
     ):

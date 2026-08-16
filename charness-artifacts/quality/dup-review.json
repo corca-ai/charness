@@ -4195,6 +4195,13 @@
     },
     {
       "class": "intentional",
+      "id": "e8f18989a9c87341",
+      "note": "the subprocess.run(git, ...) probe shape shared by scripts/worktree_doctor_checks.py (_git_output, untouched) and scripts/prepush_close_keyword_guard.py (_git, added). The shape is the same and the CONTRACT is opposite, which is the reason not to merge them: the doctor's probe answers None for every non-answer because a missing git fact is a SKIPPED check there, while the guard must raise RangeUnreadable because a git failure that degraded to 'no commits' would render the guard's pass on an unread range -- the exact false-green class the guard exists to stop at an irreversible boundary. The doctor also carries a GIT_DIR/GIT_WORK_TREE discovery scrub the guard must NOT have: the guard is invoked from inside a git hook and asks about the repository git itself resolved. A shared helper would have to be parameterized on both, and the parameter that flips error handling is precisely the one a future edit gets wrong silently.",
+      "reviewed_at": "2026-08-16",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "e96978ef70d5371a",
       "note": "proof-semantics and critique adapter modules import overlapping shared adapter primitives but own independent schemas; using either as the other's import facade would add a cross-domain dependency rather than remove behavior duplication",
       "reviewed_at": "2026-08-09",
