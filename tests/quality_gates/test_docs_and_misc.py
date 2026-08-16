@@ -5,6 +5,9 @@ from pathlib import Path
 
 import yaml
 
+from tests.script_main import run_loaded_script_main
+
+from .release_script_loading import load_release_script
 from .support import ROOT, run_script
 
 
@@ -116,6 +119,91 @@ def test_release_bump_version_rejects_malformed_set_version_without_mutating_man
 
     assert result.returncode != 0
     assert (repo / "packaging" / "demo.json").read_text(encoding="utf-8") == manifest_text
+
+
+def test_release_bump_version_refuses_a_missing_sync_command_before_mutating(
+    tmp_path: Path,
+) -> None:
+    """`sync_command` is RUN, and it runs AFTER the version is written.
+
+    The inferred default names THIS authoring repo's `scripts/sync_root_plugin_manifests.py`,
+    so a consuming repo that never wrote a release adapter inherits a command that cannot
+    exist in its tree. Checked after the write, the bump lands and the sync does not: a
+    bumped `packaging/` manifest with an unsynced plugin mirror, repairable only by hand.
+    """
+    repo, manifest_text = _write_release_repo(tmp_path, with_sync=False)
+    bump_version = load_release_script("bump_version")
+
+    # In-process rather than through `run_script`: the refusal is a `SystemExit` from
+    # `main`, and a new subprocess call site here mints a boundary-bypass candidate the
+    # ratchet refuses -- for a boundary this assertion does not need.
+    result = run_loaded_script_main(
+        "bump_version.py", bump_version, "--repo-root", str(repo), "--part", "patch"
+    )
+
+    assert result.returncode != 0
+    assert "sync_command" in result.stderr
+    assert (repo / "packaging" / "demo.json").read_text(encoding="utf-8") == manifest_text
+
+
+def test_release_adapter_warns_when_an_executed_command_names_a_missing_script(
+    tmp_path: Path,
+) -> None:
+    repo, _ = _write_release_repo(tmp_path, with_sync=False)
+
+    resolve_adapter = load_release_script("resolve_adapter")
+
+    warnings = " ".join(resolve_adapter.load_adapter(repo)["warnings"])
+    # Both EXECUTED fields are unresolvable in this fixture: no `scripts/` at all.
+    assert "sync_command" in warnings
+    assert "quality_command" in warnings
+    assert "set in the release adapter" in warnings
+
+    # With no adapter file at all, the same two commands arrive from `infer_repo_defaults`
+    # -- the shipped-default case, which is a charness defect rather than a consumer typo,
+    # and the warning has to say which one it is.
+    (repo / ".agents" / "release-adapter.yaml").unlink()
+    inferred = resolve_adapter.load_adapter(repo)
+    assert "inferred default" in " ".join(inferred["warnings"])
+    # Exactly one warning per executed field: the loader has three exits and two of them
+    # skip validation, so the re-derivation in `load_adapter` must not double-append.
+    assert sum(resolve_adapter.EXECUTED_WARNING_MARKER in w for w in inferred["warnings"]) == 2
+
+
+def test_release_adapter_does_not_judge_a_command_shape_it_cannot_read() -> None:
+    """`None` means NOT JUDGED. A recognizer that guessed here would refuse working commands."""
+    target = load_release_script("resolve_adapter").command_script_target
+
+    assert target("python3 scripts/sync_root_plugin_manifests.py --repo-root .") == (
+        "scripts/sync_root_plugin_manifests.py"
+    )
+    assert target("./scripts/run-quality.sh") == "scripts/run-quality.sh"
+    for unreadable in (
+        "",
+        "make sync",
+        "python3 -m charness.sync",
+        "python3 $TOOLS/sync.py",
+        "/usr/local/bin/sync.py",
+        "npm run sync && python3 scripts/sync.py",
+        "python3 ../outside/sync.py",
+        # A review round found each of these mis-recognized: the recognizer answered a
+        # literal that no shell would resolve, and the caller turns "does not exist" into
+        # a hard refusal of a release that would have worked. These are the adversarial
+        # half of the blind class -- the cases where guessing costs a false refusal, not
+        # the cases the implementation obviously branches on.
+        'python3 "scripts/a b.py"',
+        "python3 'scripts/sync.py'",
+        "python3 ~/tools/sync.py",
+        "python3 scripts/*/sync.py",
+        "python3 scripts/sync?.py",
+        "python3 scripts\\sync.py",
+        # Missed detections, named so the docstring's list is testable in both directions.
+        "python3 -u scripts/sync.py",
+        "FOO=1 python3 scripts/sync.py",
+        "python3.11 scripts/sync.py",
+        "cd sub && python3 scripts/sync.py",
+    ):
+        assert target(unreadable) is None, unreadable
 
 
 def test_release_bump_version_applies_valid_set_version_and_runs_sync(tmp_path: Path) -> None:

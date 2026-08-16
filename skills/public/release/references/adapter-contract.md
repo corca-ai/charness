@@ -48,6 +48,26 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
 - `require_derived_release_claims`
 - `release_backend`
 
+## Executed fields
+
+`sync_command` and `quality_command` are RUN by a subprocess; every other field in
+this contract is READ. That split is why their defaults below are the one place a
+placeholder would be wrong: a documentation placeholder in a read field is correct
+and in an executed field is a broken command.
+
+Both defaults name the AUTHORING repo's own tooling, so a consuming repo that never
+wrote a release adapter inherits commands that cannot exist in its tree. Adapter
+resolution warns when it can read the script path out of either value and that path
+is missing, naming the field and whether the value was inferred or set. `bump_version`
+goes further and REFUSES on a missing `sync_command` target before it writes the
+version, because that command runs after the manifest is written and a failure there
+would leave a bumped manifest with an unsynced plugin mirror.
+
+The reader is narrow on purpose: it resolves only `python3 <relative-path>` and
+`./<relative-path>`, and stays silent on any other shape — a pipeline, an env prefix,
+a different interpreter, a quoted or globbed path. Silence means it did not judge, not
+that the command is fine. Set both fields to commands YOUR repo can run.
+
 ## Defaults
 
 - `language`: `en`

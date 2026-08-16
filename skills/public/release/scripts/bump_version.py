@@ -24,6 +24,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+command_script_target = _resolve_adapter_module.command_script_target
 _yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 emit_yaml = _yaml_output_module.emit_yaml
 
@@ -99,6 +100,22 @@ def main() -> None:
     manifest_path = repo_root / data["packaging_manifest_path"]
     if not manifest_path.is_file():
         raise SystemExit(f"Packaging manifest not found: {manifest_path}")
+
+    # BEFORE the manifest is written. `sync_command` is an EXECUTED field whose
+    # inferred default names this authoring repo's own `scripts/`, so a consuming repo
+    # that never wrote a release adapter inherits a command that cannot run. Checked
+    # after the write, the bump would land and the sync would not: a version bumped in
+    # `packaging/` with an unsynced plugin mirror, repaired only by hand. The recognizer
+    # answers `None` for any command shape it cannot read, and `None` is not a refusal.
+    sync_target = command_script_target(data["sync_command"])
+    if sync_target is not None and not (repo_root / sync_target).exists():
+        raise SystemExit(
+            f"sync_command names {sync_target!r}, which does not exist under {repo_root}.\n"
+            f"Nothing was bumped. `sync_command` is RUN after the version is written, so a "
+            f"missing script would leave a bumped manifest with an unsynced plugin mirror.\n"
+            f"Set `sync_command` in this repo's release adapter to the command that "
+            f"regenerates its checked-in plugin surface."
+        )
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     current_version = manifest["version"]

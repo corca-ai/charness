@@ -72,16 +72,35 @@ Not claimed:
     ``gh`` readback inside ``verify_closeout``. That reach is the shared floor's,
     not this file's, and is unchanged by moving it to push time.
   - A ref CREATION to a remote with no local tracking refs cannot be bounded, so
-    it is CAPPED at ``MAX_UNBOUNDED_CREATION_SCAN`` commits and the cap is
-    reported. Commits past it are not judged. That is a stated gap, not coverage.
+    it is CAPPED at ``MAX_UNBOUNDED_CREATION_SCAN`` commits and the cap is reported
+    in ``coverage_notes`` (only because ``evaluate`` passes the list ``range_commits``
+    needs -- see that function's own non-claim). Commits past it are not judged.
+    That is a stated gap, not coverage.
 
 Exit codes:
-  0  no close-keyword refs in the range, or every one clears the closeout floor
+  0  every commit the guard READ is clean: no close-keyword refs, or every one
+     clears the closeout floor. NOT a claim that the whole push was read. Three
+     exit-0 shapes judge less than the push, and only the first is visible in the
+     payload: the unbounded-creation CAP names its truncation in ``coverage_notes``;
+     a STALE remote-tracking ref silently excludes commits the target remote has
+     never seen (the scan module's own non-claim, reported nowhere); and
+     ``status: no-refs`` means no ref lines arrived at all, which this cannot tell
+     apart from a wrapper that drained the hook's stdin before calling it. An empty
+     ``coverage_notes`` is therefore not a statement that the whole push was judged.
   1  a commit in the range close-keywords an issue with no valid closeout carrier
   2  the range could not be read, the pre-push stdin carried a line git could not
-     have written, or the guard crashed -- so it judged nothing, or judged less
-     than the push. Deliberately distinct from 1: an unusable run must never be
-     readable as either a pass or a verdict.
+     have written, the run was handed no push at all on a terminal, or the guard
+     crashed -- so it judged nothing. Deliberately distinct from 1: an unusable run
+     must never be readable as either a pass or a verdict.
+
+Why a truncated or stale range is exit 0 while a malformed stdin line is exit 2, when
+all three leave part of a push unjudged: refusing the first two would refuse every URL
+push of a long branch and every push from an unpruned clone, which is how a push-time
+gate gets uninstalled -- and both are properties of the range this guard inherits from
+every other consumer of ``origin/main`` here. A dropped stdin line is different in kind:
+it names a ref nothing can recover, so there is not even a statement to make about what
+went unjudged. That asymmetry is a DECISION, not a property, and the three exit-0 holes
+above are disclosed rather than closed.
 """
 from __future__ import annotations
 
@@ -122,9 +141,39 @@ except ModuleNotFoundError:  # git-hook execution: `scripts/` is sys.path[0], no
     from yaml_output import emit_yaml
 
 NO_VERDICT_EXIT = 2
+#: Why a dropped pre-push stdin line is a no-verdict rather than a scan of what parsed.
+#: One string, used by the exported ``evaluate`` and printed by the CLI, so the library
+#: caller and the hook operator are told the same thing.
+STDIN_DROP_REASON = (
+    "{dropped} pre-push stdin line(s) were not the "
+    "`<local-ref> <local-sha> <remote-ref> <remote-sha>` grammar git emits, so the refs "
+    "they named could not be read and the commits they would land were not judged. "
+    "Re-check the intended range explicitly: `python3 scripts/prepush_close_keyword_guard.py "
+    "--repo-root . --range <base>..<head>`."
+)
 # Re-exported so the CLI's `--range` help and the hook read one name. `MAX_...` is
 # imported for the docstring's cap claim to resolve to a real value here.
 __all__ = ["MAX_UNBOUNDED_CREATION_SCAN", "evaluate", "main", "report_payload"]
+
+
+def no_verdict_payload(reason: str, *, dropped: int = 0) -> dict[str, Any]:
+    """ONE shape for every no-verdict, so a consumer reading one reads them all.
+
+    Three conditions produce a no-verdict -- a dropped stdin line, an unreadable range,
+    and a run handed no push on a terminal -- and they used to emit three different key
+    sets. A log parser reading ``commits_scanned`` off the documented shape then raised
+    ``KeyError`` on the other two, which is a crash where the payload's whole purpose is
+    to be legible when the guard could not judge.
+    """
+    return {
+        "ok": False,
+        "status": "no-verdict",
+        "reason": reason,
+        "commits_scanned": 0,
+        "dropped_stdin_lines": dropped,
+        "coverage_notes": [],
+        "close_keyword_commits": [],
+    }
 
 
 def _load_sibling(module_name: str):
@@ -134,7 +183,18 @@ def _load_sibling(module_name: str):
 
 
 def evaluate(repo_root: Path, push_refs: list[dict[str, str]], repo: str, remote: str) -> dict[str, Any]:
-    """Apply the carrier's floor to every close-keyword commit in the range."""
+    """Apply the carrier's floor to every close-keyword commit in the range.
+
+    Fail-closed on a dropped stdin line HERE, not only in ``main``. This function is
+    exported (``__all__``) and ships to consuming repos, so a consumer hook shim that
+    calls it directly and branches on ``ok`` is a real caller -- and leaving the
+    decision in ``main`` would hand that shim the exact false green this floor exists
+    to stop: ``ok: true`` over a push whose refs were never read.
+    """
+    dropped = max((int(ref.get("dropped_lines") or 0) for ref in push_refs), default=0)
+    if dropped:
+        return no_verdict_payload(STDIN_DROP_REASON.format(dropped=dropped), dropped=dropped)
+
     checker = _load_sibling("check_issue_closeout_commit_msg")
     issue_verify_closeout = checker._load_issue_verify_closeout()
 
@@ -159,10 +219,9 @@ def evaluate(repo_root: Path, push_refs: list[dict[str, str]], repo: str, remote
         "ok": not refused,
         "status": "refused" if refused else ("verified" if findings else "not_applicable"),
         "commits_scanned": len(seen),
-        # Always 0 on the CLI path -- `main` refuses a nonzero count as a no-verdict
-        # before reaching here. Kept so both payloads carry the field, and because a
-        # direct `evaluate` caller can still hand over refs that dropped lines.
-        "dropped_stdin_lines": max((int(ref.get("dropped_lines") or 0) for ref in push_refs), default=0),
+        # Always 0 here: a nonzero count returned the no-verdict payload above. Kept so
+        # both payloads carry the field and a consumer reading one shape reads both.
+        "dropped_stdin_lines": dropped,
         "coverage_notes": notes,
         "close_keyword_commits": findings,
     }
@@ -325,26 +384,54 @@ _REFUSAL_REMEDIATION = (
 
 
 def report_payload(result: dict[str, Any]) -> dict[str, Any]:
+    """Attach the refusal text to a REFUSAL, keyed on the status rather than on ``ok``.
+
+    ``ok: False`` has meant two things since ``evaluate`` learned to fail closed on a
+    dropped stdin line, and this function is exported beside it. Keyed on ``not ok``,
+    a consumer shim printing ``report_payload(evaluate(...))`` told an operator that a
+    commit close-keywords an issue without a carrier, and to rebase and reword it --
+    a remedy for a commit that does not exist, over a run that judged nothing.
+    """
     payload = dict(result)
-    if not result["ok"]:
+    if result["status"] == "refused":
         payload["summary"] = _REFUSAL_SUMMARY
         payload["remediation"] = _REFUSAL_REMEDIATION
     return payload
 
 
-def _push_refs_from_args(args: argparse.Namespace) -> list[dict[str, str]] | None:
+def _push_refs_from_args(
+    args: argparse.Namespace,
+) -> tuple[list[dict[str, str]] | None, str]:
+    """``(refs, "")`` or ``(None, reason)``. The reason is carried, not printed here,
+    so every no-verdict leaves the same payload shape through one exit in ``main``."""
     if not args.ranges:
-        return parse_push_stdin(sys.stdin.read() if not sys.stdin.isatty() else "")
+        if sys.stdin.isatty():
+            # No `--range` and no piped stdin: this invocation was handed NO push to
+            # judge. Substituting an empty read here used to produce `status: no-refs`
+            # and exit 0, which is a manufactured pass -- a maintainer running the guard
+            # bare in a terminal reads "ok: true" as "the range is clean". git's hook
+            # always pipes, so nothing legitimate reaches this branch.
+            return None, (
+                "no push range. Pipe git's pre-push stdin, or pass "
+                "`--range <base>..<head>`; a bare interactive run judges nothing and "
+                "will not report a pass."
+            )
+        return parse_push_stdin(sys.stdin.read()), ""
     push_refs = []
     for spec in args.ranges:
         remote_sha, _, local_sha = spec.partition("..")
         if not remote_sha or not local_sha:
-            print(f"charness pre-push: unparseable --range {spec!r}", file=sys.stderr)
-            return None
+            return None, f"unparseable --range {spec!r}"
         push_refs.append(
             {"local_ref": "", "local_sha": local_sha, "remote_ref": "", "remote_sha": remote_sha}
         )
-    return push_refs
+    return push_refs, ""
+
+
+def _emit_no_verdict(reason: str) -> int:
+    print(f"charness pre-push close-keyword guard: {reason}", file=sys.stderr)
+    emit_yaml(no_verdict_payload(reason))
+    return NO_VERDICT_EXIT
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -375,44 +462,35 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
 
-    push_refs = _push_refs_from_args(args)
+    push_refs, refusal = _push_refs_from_args(args)
     if push_refs is None:
-        return NO_VERDICT_EXIT
-    dropped = max((int(ref.get("dropped_lines") or 0) for ref in push_refs), default=0)
-    if dropped:
-        # Fail-closed on an unreadable stdin LINE, not only on an unreadable range.
-        # git emits four fields per ref and ref names cannot contain spaces, so a
-        # dropped line means a wrapper fed this something else -- and the ref it named
-        # is unrecoverable. Judging the lines that did parse and exiting 0 would report
-        # a clean scan over a push this guard only partly read; when nothing parsed it
-        # reported a clean scan over a push it did not read at all.
-        reason = (
-            f"{dropped} pre-push stdin line(s) were not the "
-            "`<local-ref> <local-sha> <remote-ref> <remote-sha>` grammar git emits, so the "
-            "refs they named could not be read and the commits they would land were not "
-            "judged. Re-check the intended range explicitly: "
-            "`python3 scripts/prepush_close_keyword_guard.py --repo-root . --range <base>..<head>`."
-        )
-        print(f"charness pre-push close-keyword guard: {reason}", file=sys.stderr)
-        emit_yaml(
-            {
-                "ok": False,
-                "status": "no-verdict",
-                "reason": reason,
-                "commits_scanned": 0,
-                "dropped_stdin_lines": dropped,
-            }
-        )
-        return NO_VERDICT_EXIT
+        return _emit_no_verdict(refusal)
     if not push_refs:
+        # Exit 0, and said out loud. NO ref lines arrived, which this cannot tell apart
+        # from a wrapper that read the hook's stdin before calling the guard and handed
+        # over a drained pipe -- the hazard `.githooks/pre-push` works around by reading
+        # once and replaying. Refusing here would refuse every genuinely empty push, so
+        # the ambiguity is disclosed on stderr rather than resolved by guessing.
+        print(
+            "charness pre-push close-keyword guard: no ref lines on stdin. Nothing was "
+            "judged. If a wrapper read this hook's stdin first, the guard saw a drained "
+            "pipe rather than an empty push -- read stdin ONCE and replay it.",
+            file=sys.stderr,
+        )
         emit_yaml({"ok": True, "status": "no-refs", "commits_scanned": 0, "close_keyword_commits": []})
         return 0
 
     try:
         result = evaluate(repo_root, push_refs, args.repo, args.remote)
     except RangeUnreadable as exc:
-        print(f"charness pre-push close-keyword guard: {exc}", file=sys.stderr)
-        emit_yaml({"ok": False, "status": "no-verdict", "reason": str(exc)})
+        return _emit_no_verdict(str(exc))
+
+    # `evaluate` owns the fail-closed decision so a consumer calling it directly gets
+    # it too; this maps its one no-verdict status onto the documented exit code rather
+    # than re-deriving the condition, which would let the two answers drift.
+    if result["status"] == "no-verdict":
+        print(f"charness pre-push close-keyword guard: {result['reason']}", file=sys.stderr)
+        emit_yaml(result)
         return NO_VERDICT_EXIT
 
     emit_yaml(report_payload(result))

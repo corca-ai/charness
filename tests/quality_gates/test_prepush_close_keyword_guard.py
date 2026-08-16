@@ -750,6 +750,15 @@ def test_the_scan_module_docstring_names_the_stale_clone_caveat() -> None:
     module_doc = SCAN.__doc__ or ""
     assert "STALE CLONE" in module_doc
     assert "remote-tracking refs" in module_doc
+    # The published sentence says "named ONLY in the latter", so re-stating the caveat in
+    # the guard's own `Not claimed:` list would make it false with nothing red. Scoped to
+    # that LIST, not to the whole guard docstring: the exit-code block must be free to
+    # disclose the stale-range coverage hole, which is a statement about what exit 0
+    # means rather than a second home for the caveat. A review round found the
+    # whole-docstring form both under-specific and blocking that disclosure.
+    guard_doc = GUARD.__doc__ or ""
+    not_claimed = guard_doc.split("Not claimed:", 1)[1].split("Exit codes:", 1)[0]
+    assert "stale" not in not_claimed.lower()
 
 
 def test_a_malformed_only_stdin_is_a_no_verdict_not_a_pass(repo: Path) -> None:
@@ -783,6 +792,56 @@ def test_a_partly_malformed_stdin_is_a_no_verdict_even_though_a_ref_parsed(
     assert code == GUARD.NO_VERDICT_EXIT
     assert payload["status"] == "no-verdict"
     assert payload["dropped_stdin_lines"] == 1
+
+
+def test_evaluate_itself_fails_closed_on_a_dropped_line(repo: Path) -> None:
+    """The decision lives in the EXPORTED function, not only in the CLI.
+
+    `evaluate` ships to consuming repos in `__all__`. A consumer hook shim that calls
+    it and branches on `ok` would otherwise keep the exact pre-repair false green --
+    `ok: true` over a push whose refs were never read -- while this repo's own suite
+    stayed green, because the repo only ever exercises the CLI.
+    """
+    refs = SCAN.parse_push_stdin("garbage\nmore garbage\n")
+    result = GUARD.evaluate(repo, refs, "corca-ai/charness", "origin")
+
+    assert result["ok"] is False
+    assert result["status"] == "no-verdict"
+    assert result["dropped_stdin_lines"] == 2
+
+
+def test_report_payload_does_not_dress_a_no_verdict_as_a_refusal() -> None:
+    """`ok: False` means two things now, and the refusal remedy fits only one of them.
+
+    Keyed on `not ok`, a consumer shim printing `report_payload(evaluate(...))` told an
+    operator to rebase and reword a commit that close-keywords an issue -- over a run
+    that judged nothing and named no commit.
+    """
+    payload = GUARD.report_payload(GUARD.no_verdict_payload("stdin was unreadable"))
+
+    assert "summary" not in payload
+    assert "remediation" not in payload
+
+
+def test_every_no_verdict_payload_carries_the_same_keys(repo: Path) -> None:
+    """Three conditions produce a no-verdict; a reader of one must not KeyError on another."""
+    expected = set(GUARD.no_verdict_payload("x"))
+
+    _, dropped = _run("--repo-root", str(repo), stdin="garbage\nmore garbage\n")
+    _, unparseable_range = _run("--repo-root", str(repo), "--range", "not-a-range")
+
+    assert set(dropped) == expected
+    assert set(unparseable_range) == expected
+
+
+def test_a_bare_interactive_run_is_a_no_verdict_rather_than_no_refs(
+    repo: Path, monkeypatch
+) -> None:
+    """No `--range` and a tty on stdin means this run was handed no push at all."""
+    monkeypatch.setattr(GUARD.sys.stdin, "isatty", lambda: True)
+
+    # `status: no-refs` + exit 0 here was a pass manufactured out of missing input.
+    assert GUARD.main(["--repo-root", str(repo)]) == GUARD.NO_VERDICT_EXIT
 
 
 def test_a_git_timeout_is_a_no_verdict_not_a_pass(repo: Path, monkeypatch) -> None:

@@ -51,6 +51,103 @@ BOOL_FIELDS = ("require_derived_release_claims",)
 
 ARTIFACT_FILENAME = "latest.md"
 
+#: The two adapter fields whose value is RUN by a subprocess rather than read by a
+#: human: `bump_version.run_sync` shells out to `sync_command`, and the release lane
+#: shells out to `quality_command`. Their `infer_repo_defaults` values name THIS
+#: authoring repo's own tooling, so a consumer who never wrote a release adapter
+#: inherits a command that cannot exist in their tree. Naming them here is what keeps
+#: the check below on executed fields only -- a documentation placeholder is correct
+#: in a field a reader reads and is a broken command in one an executor runs.
+EXECUTED_COMMAND_FIELDS = ("sync_command", "quality_command")
+#: The stable substring every executed-command warning carries, so `load_adapter` can
+#: tell whether validation already emitted them without knowing which loader exit ran.
+EXECUTED_WARNING_MARKER = "is EXECUTED and names"
+
+
+def command_script_target(command: str) -> str | None:
+    """The repo-relative script path a command STRING would execute, or ``None``.
+
+    Blind class, stated before the acceptance rather than after it: this reads a
+    string, not a shell. It recognizes exactly the two shapes this repo's own
+    defaults use -- ``python3 <relative-path>`` and ``./<relative-path>`` -- and
+    answers ``None`` for everything else. ``None`` means THIS DID NOT JUDGE, never
+    "the command is fine".
+
+    NOT JUDGED, and each of these is a missed warning rather than a wrong one: a
+    pipeline or ``&&`` chain, a ``cd`` prefix, an env assignment prefix
+    (``FOO=1 python3 ...``), any interpreter spelled other than ``python3``
+    (``python``, ``python3.11``, ``bash``, ``node``, ``uv run``), an interpreter
+    option before the path (``python3 -u ...``), ``-m`` module form, an absolute
+    path, a path built from a variable, a bare relative path with no ``./``, and a
+    candidate carrying a shell metacharacter -- a quote, ``~``, a glob, or a
+    backslash -- whose real target only the shell knows.
+
+    The narrowness is deliberate and is the point of the READ/RUN field split. These
+    fields are EXECUTED, so a recognizer that guessed wrong would refuse a command
+    that works -- the failure mode that got the previous attempt at this class
+    reverted. A review round found three such guesses in this function's first
+    version (``python3 "scripts/a b.py"``, ``python3 ~/tools/sync.py``,
+    ``python3 scripts/*/sync.py``), each of which turned a working release into a
+    hard refusal; the metacharacter rejection below is what they cost.
+    """
+    parts = command.split()
+    if not parts:
+        return None
+    if parts[0] == "python3" and len(parts) >= 2:
+        candidate = parts[1]
+    elif parts[0].startswith("./"):
+        candidate = parts[0]
+    else:
+        return None
+    if candidate.startswith("-") or candidate.startswith("/"):
+        return None
+    # A candidate the SHELL would rewrite is a candidate this cannot read. Answering a
+    # literal path for `"scripts/a` or `~/tools/sync.py` is not a near miss: it is a
+    # path that does not exist, and the caller turns "does not exist" into a refusal.
+    if any(character in candidate for character in "$\"'~*?\\`"):
+        return None
+    if ".." in Path(candidate).parts:
+        return None
+    return candidate.removeprefix("./")
+
+
+def _executed_command_warnings(
+    data: dict[str, Any], validated: dict[str, Any], repo_root: Path
+) -> list[str]:
+    """One warning per EXECUTED command field naming a script this repo does not have.
+
+    A warning rather than an error: the command may legitimately be resolvable at run
+    time in a way this recognizer cannot see (a `PATH` lookup, a generated script), and
+    refusing adapter resolution over a string parse would make the release lane
+    unusable for a shape nobody predicted.
+
+    The teeth are at `bump_version`, and they cover `sync_command` ONLY -- that is the
+    one whose executor mutates the packaging manifest BEFORE running it, so a missing
+    script there leaves half-applied state. `quality_command` runs in
+    `publish_release_common` where a failure aborts before anything is published, so it
+    is warned about and not preflighted. Stated because "the teeth are at bump_version"
+    reads as covering both members of the tuple and does not.
+    """
+    warnings: list[str] = []
+    for field in EXECUTED_COMMAND_FIELDS:
+        target = command_script_target(validated[field])
+        if target is None or (repo_root / target).exists():
+            continue
+        # `field not in data`, not `data.get(field) is None`: a field present with a
+        # non-string value is rejected by `optional_string`, leaving the INFERRED value
+        # in `validated` -- but the consumer did write the key, so calling it inferred
+        # would send them looking for a default they overrode.
+        origin = (
+            "set in the release adapter"
+            if field in data
+            else "the inferred default, which names this authoring repo's own tooling"
+        )
+        warnings.append(
+            f"{field} {EXECUTED_WARNING_MARKER} {target!r}, which does not exist under "
+            f"{repo_root} ({origin}); set {field} to a command this repo can run"
+        )
+    return warnings
+
 _release_backend_module = SKILL_RUNTIME.load_local_skill_module(__file__, "release_backend")
 default_release_backend = _release_backend_module.default_release_backend
 _parse_release_backend = _release_backend_module.parse_release_backend
@@ -146,6 +243,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         errors.append("requested_review_policy must be 'warn-if-unconfigured' or 'advisory-only'")
 
     validated["release_backend"] = _parse_release_backend(data.get("release_backend"), errors, warnings)
+    warnings.extend(_executed_command_warnings(data, validated, repo_root))
 
     return validated, errors, warnings
 
@@ -155,6 +253,25 @@ def find_adapter(repo_root: Path) -> Path | None:
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:
+    payload = _load_adapter_contract(repo_root)
+    # TWO of `load_adapter_contract`'s three exits skip `validate_adapter_data`, and both
+    # hand back `infer_repo_defaults` -- commands naming THIS repo's `scripts/`. One is
+    # the no-adapter path (the case that matters most: a consuming repo that never wrote
+    # a release adapter). The other is an adapter the YAML parser refused outright, which
+    # returns `found=True` with errors; its reader is still shown foreign commands, so it
+    # gets the warning too. The parsed-and-valid path is covered inside validation and
+    # must not be double-appended here.
+    #
+    # Idempotent by construction rather than by knowing which exit ran: re-deriving the
+    # same check over `payload["data"]` adds nothing when validation already covered it,
+    # and the marker test stops the one case that would DUPLICATE -- a parsed adapter
+    # whose validation already emitted these warnings with a different origin clause.
+    if not any(EXECUTED_WARNING_MARKER in warning for warning in payload["warnings"]):
+        payload["warnings"].extend(_executed_command_warnings({}, payload["data"], repo_root))
+    return payload
+
+
+def _load_adapter_contract(repo_root: Path) -> dict[str, Any]:
     return load_adapter_contract(
         repo_root,
         skill_id="release",

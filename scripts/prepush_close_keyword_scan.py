@@ -22,8 +22,11 @@ Not claimed by this reader:
     because the release record sends readers to this module docstring for it, and a
     caveat reachable only from one function's docstring is a caveat most readers
     never reach.
-  - The unbounded-creation scan is CAPPED at ``MAX_UNBOUNDED_CREATION_SCAN`` and the
-    cap is reported through ``notes``; commits past it are not read.
+  - The unbounded-creation scan is CAPPED at ``MAX_UNBOUNDED_CREATION_SCAN``; commits
+    past it are not read. The cap is reported through ``notes`` ONLY when the caller
+    supplies a list -- ``range_commits``'s ``notes`` parameter defaults to ``None``,
+    and a caller who leaves it there gets a silent truncation. ``evaluate`` always
+    passes one; a direct library caller must.
   - ``parse_push_stdin`` DROPS a line that is not four whitespace-separated fields
     and only COUNTS it. It cannot say what ref that line named, so the count is a
     coverage hole, not a diagnosis; the guard next door turns a nonzero count into a
