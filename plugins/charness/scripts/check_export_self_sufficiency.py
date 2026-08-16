@@ -70,12 +70,13 @@ CONSUMER_DOC_INSTRUCTION_REMEDY = (
     "and will verify the target ships."
 )
 MODULE_PROSE_INSTRUCTION_NOTE = (
-    "ADVISORY: not a verdict. Each entry is a `python3 scripts/X` string inside an exported "
-    "MODULE's docstring or help text. Some are maintainer tools describing their own in-repo "
-    "invocation, where rewriting to `<plugin-dir>/` would make the correct instruction wrong; "
-    "others are consumer guidance that happens to live in a docstring. This arm cannot tell "
-    "them apart -- the split is by file location, a declaration and not a measurement. Read it "
-    "as an inventory to work from, never as a count of defects."
+    "ADVISORY: not a verdict. Each entry is a `python3 scripts/X` string in an exported .py "
+    "file or under a `scripts/` directory. Many are maintainer tools describing their own "
+    "in-repo invocation, where rewriting to `<plugin-dir>/` would make the correct instruction "
+    "wrong; others are consumer guidance that happens to live in a docstring, and an EXECUTED "
+    "command string is indistinguishable from either. This arm cannot tell them apart -- the "
+    "split is by file location, a declaration and not a measurement. Read it as an inventory "
+    "to work from, never as a count of defects."
 )
 UNGUARDED_ENTRYPOINT_REMEDY = (
     "A script an exported SKILL.md/reference/adapter tells a consumer to RUN imports a "

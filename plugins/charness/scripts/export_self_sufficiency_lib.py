@@ -259,33 +259,84 @@ def documented_entrypoint_names(export_root: Path) -> set[str]:
 #: in both trees (`check_plugin_dir_references.py` owns that placeholder).
 REPO_ROOT_SCRIPT_INSTRUCTION_RE = re.compile(r"python3 scripts/([a-z0-9_]+\.(?:py|sh))")
 
-#: Sites where `python3 scripts/...` is a CONFIG VALUE a consumer replaces with
-#: their own command, not an instruction to run charness's copy. Each entry
-#: carries why, because an unexplained allowlist is how this class returns.
-INSTRUCTION_EXEMPT_SUFFIXES = {
+#: A generated file's header names the generator that produced it. That is
+#: PROVENANCE for whoever regenerates it in THIS repo -- a maintainer action --
+#: not an instruction a consumer follows, and rewriting it would make the header
+#: unable to describe its own regeneration. Skipped by field name rather than by
+#: per-file exemption, because every generated file in the export carries it.
+#:
+#: Applied ONLY to files that declare `generated_file: true`. `sync_command` is
+#: also a live adapter CONFIG key -- `skills/release/adapter.example.yaml:10` --
+#: so matching the field name everywhere silently exempted a real finding and the
+#: load-bearing test caught it one edit later.
+GENERATED_HEADER_FIELD_RE = re.compile(r"^\s*(?:generator|sync_command):")
+GENERATED_FILE_MARKER = "generated_file: true"
+
+#: Sites where `python3 scripts/...` is a CONFIG VALUE, not an instruction to type.
+#: Two different reasons live here and the difference matters:
+#:
+#: 1. CONSUMER-OWNED values a consumer replaces with their own command.
+#: 2. EXECUTED values run by `subprocess.run(shlex.split(command))`. `<plugin-dir>/`
+#:    is a DOC placeholder that no runtime substitutes -- `check_plugin_dir_references`
+#:    says so in its own docstring -- so applying the remedy to an executed field
+#:    converts a working command into `can't open file`. The first build of this arm
+#:    did exactly that to five render-critique sites before a reviewer caught it.
+#:
+#: Each entry carries which reason applies, because an unexplained allowlist is how
+#: this class returns. Matched by EXACT relative path, not suffix: `endswith` would
+#: silently exempt any future nested path ending in one of these strings.
+INSTRUCTION_EXEMPT_PATHS = {
+    "skills/critique/adapter.example.yaml": (
+        "EXECUTED: `command:` is run via subprocess by critique_packet_lib; "
+        "`<plugin-dir>/` is never substituted and would break it"
+    ),
+    "skills/critique/references/adapter-contract.md": (
+        "EXECUTED: documents the same `command:` value and must show the runnable spelling"
+    ),
+    "skills/critique/references/prepare-packet.md": (
+        "EXECUTED: names the producer for the same `command:` field"
+    ),
+    "skills/retro/adapter.example.yaml": (
+        "EXECUTED: same `command:` field, same subprocess path"
+    ),
+    "skills/retro/references/adapter-contract.md": (
+        "EXECUTED: documents the retro adapter's `command:` value"
+    ),
+    "integrations/tools/agent-browser.json": (
+        "EXECUTED: `healthcheck.commands` is run by control_plane_lib.run_check, so "
+        "`<plugin-dir>/` would break the probe. The sibling `failure_hint` in the same "
+        "file is only DISPLAYED and would be safe to rewrite -- exempting per-file "
+        "trades that repair for not breaking the executed line beside it"
+    ),
+    "integrations/tools/README.md": (
+        "MAINTAINER-FACING: authoring rules for charness's own integration manifests, "
+        "which a consumer does not write; the named probe runs in this repo"
+    ),
     "skills/quality/references/cost-dominance.md": (
-        "the `replacement:` key is the value a repo author fills in with THEIR fast "
-        "runner; charness's own is shown as the worked example"
+        "CONSUMER-OWNED: the `replacement:` key is a value a repo author fills in with "
+        "THEIR fast runner. A consumer copying the schema example verbatim would "
+        "reproduce the #634 shape; the example is not annotated to warn them"
     ),
     "skills/quality/scripts/command_dominance_lib.py": (
-        "prose explaining why the bare-pytest rule does not fire on charness's own "
-        "replacement string; changing it would falsify the explanation"
+        "CONSUMER-OWNED, and inert for the block: prose explaining why the bare-pytest "
+        "rule does not fire on charness's own replacement string; changing it would "
+        "falsify the explanation. Already module-prose by location"
     ),
     "skills/release/adapter.example.yaml": (
-        "`sync_command` is the consumer's own sync command; resolve_adapter already "
+        "CONSUMER-OWNED: `sync_command` is the consumer's own sync command; resolve_adapter already "
         "warns when inferred defaults name THIS repo's scripts"
     ),
     "skills/release/references/adapter-contract.md": (
-        "documents the `sync_command` key whose value is consumer-owned, same as above"
+        "CONSUMER-OWNED: documents the `sync_command` key whose value is consumer-owned, same as above"
     ),
     "skills/release/scripts/init_adapter.py": (
-        "seeds the consumer-owned `sync_command` default; carried by the same warning"
+        "CONSUMER-OWNED, inert for the block: seeds the consumer-owned `sync_command` default; carried by the same warning"
     ),
     "skills/release/scripts/resolve_adapter.py": (
-        "infer_repo_defaults, which EXECUTED_WARNING_MARKER already reports to the reader"
+        "CONSUMER-OWNED, inert for the block: infer_repo_defaults, which EXECUTED_WARNING_MARKER already reports to the reader"
     ),
     "skills/issue/scripts/fixtures/slack-thread-source-preservation.json": (
-        "fixture prose inside a test payload; never read as an instruction"
+        "INERT for the block: fixture prose inside a test payload; never read as an instruction"
     ),
 }
 
@@ -307,7 +358,7 @@ def repo_root_instruction_findings(export_root: Path) -> list[dict[str, object]]
     refuted on exactly this: it matches ONE spelling (`python3 scripts/X`). A doc
     saying `run scripts/X.py`, or building the path across a line break, or using
     `./scripts/X.py`, is invisible to it. It also cannot tell an instruction from
-    a config value -- that distinction is carried by INSTRUCTION_EXEMPT_SUFFIXES,
+    a config value -- that distinction is carried by INSTRUCTION_EXEMPT_PATHS,
     which is a declaration, not a measurement.
     """
     findings: list[dict[str, object]] = []
@@ -316,13 +367,16 @@ def repo_root_instruction_findings(export_root: Path) -> list[dict[str, object]]
         if path.suffix not in (*_ENTRYPOINT_DOC_SUFFIXES, ".py") or not path.is_file():
             continue
         relative = path.relative_to(export_root).as_posix()
-        if any(relative.endswith(suffix) for suffix in INSTRUCTION_EXEMPT_SUFFIXES):
+        if relative in INSTRUCTION_EXEMPT_PATHS:
             continue
         try:
             text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
+        is_generated = GENERATED_FILE_MARKER in text
         for lineno, line in enumerate(text.splitlines(), start=1):
+            if is_generated and GENERATED_HEADER_FIELD_RE.match(line):
+                continue
             for name in REPO_ROOT_SCRIPT_INSTRUCTION_RE.findall(line):
                 if name not in shipped:
                     continue
@@ -353,9 +407,9 @@ def _instruction_site_class(relative: str) -> str:
     A consumer-facing instruction inside a module docstring is classed `module-prose`
     and will be under-reported.
     """
-    if relative.startswith("skills/") and "/scripts/" not in relative:
-        return "consumer-doc"
-    return "module-prose"
+    if relative.endswith(".py") or "/scripts/" in relative:
+        return "module-prose"
+    return "consumer-doc"
 
 
 def _guarded_import_lines(tree: ast.AST) -> set[int]:

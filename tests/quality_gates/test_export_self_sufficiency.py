@@ -653,11 +653,128 @@ def test_the_real_export_has_no_consumer_doc_repo_root_instructions() -> None:
     assert [f for f in findings if f["site_class"] == "consumer-doc"] == []
 
 
-def test_every_instruction_exemption_names_a_live_site_and_a_reason() -> None:
-    """An exemption whose file no longer exists is a rule nobody can re-derive, and the
-    list is the only thing standing between this arm and the classification failure the
-    path arm was refuted on."""
+def test_a_consumer_doc_instruction_FAILS_THE_GATE(monkeypatch, tmp_path: Path) -> None:
+    """The teeth, asserted through `run_check`. The classification tests above all pass
+    with `or consumer_doc_instructions` deleted from the status line -- they read the
+    lib, never the verdict. This is the mutant that kills.
+    """
+    monkeypatch.setattr(
+        _gate._lib,
+        "repo_root_instruction_findings",
+        lambda export_root: [
+            {
+                "doc": "skills/demo/references/how.md",
+                "line": 1,
+                "script": "thing.py",
+                "site_class": "consumer-doc",
+                "remedy": "python3 <plugin-dir>/scripts/thing.py",
+            }
+        ],
+    )
+    payload = _gate.run_check(ROOT)
+
+    assert payload["status"] == "fail"
+    assert payload["consumer_doc_repo_root_instructions"]
+    assert _gate.CONSUMER_DOC_INSTRUCTION_REMEDY in payload["remedy"]
+
+
+def test_module_prose_instructions_alone_do_NOT_fail_the_gate(monkeypatch) -> None:
+    """The other side of the split: the 70-entry inventory must not block, or the
+    advisory bargain silently becomes a release gate."""
+    monkeypatch.setattr(
+        _gate._lib,
+        "repo_root_instruction_findings",
+        lambda export_root: [
+            {
+                "doc": "scripts/tool.py",
+                "line": 1,
+                "script": "thing.py",
+                "site_class": "module-prose",
+                "remedy": "python3 <plugin-dir>/scripts/thing.py",
+            }
+        ],
+    )
+    payload = _gate.run_check(ROOT)
+
+    assert payload["status"] == "pass"
+    assert payload["advisory_module_prose_repo_root_instructions"]
+    assert _gate.MODULE_PROSE_INSTRUCTION_NOTE == payload["advisory_module_prose_note"]
+
+
+def test_the_instruction_arm_is_still_looking_at_something() -> None:
+    """Guards the zero. `test_the_real_export_has_no_consumer_doc_repo_root_instructions`
+    passes if the regex stops matching, if the classifier stops emitting `consumer-doc`,
+    or if the shipped-script set comes back empty -- three ways for a switched-off
+    detector to read as a clean tree. A nonzero module-prose count rules out all three.
+    """
+    findings = _lib.repo_root_instruction_findings(ROOT / "plugins" / "charness")
+
+    assert [f for f in findings if f["site_class"] == "module-prose"]
+
+
+def test_a_generated_file_header_is_not_read_as_an_instruction(tmp_path: Path) -> None:
+    """Every generated file in the export names its own generator. That is provenance
+    for a maintainer regenerating it here, and the first build of this arm reported two
+    such lines in the plugin README as consumer defects."""
+    export_root = _instruction_export(
+        tmp_path,
+        doc_relative="skills/demo/references/gen.md",
+        body=(
+            "<!--\ngenerated_file: true\n"
+            "generator: python3 scripts/render_thing.py --repo-root .\n"
+            "sync_command: python3 scripts/render_thing.py --repo-root .\n-->\n"
+        ),
+    )
+
+    assert _lib.repo_root_instruction_findings(export_root) == []
+
+
+def test_an_exempt_path_is_matched_exactly_and_not_by_suffix(tmp_path: Path) -> None:
+    """`endswith` would exempt any future nested path ending in an exempt string --
+    a vendored or re-rooted copy inherits an exemption nobody granted it."""
+    exempt = next(iter(_lib.INSTRUCTION_EXEMPT_PATHS))
+    export_root = _instruction_export(
+        tmp_path,
+        doc_relative=f"vendor/{exempt}",
+        body="Run `python3 scripts/render_thing.py`\n",
+    )
+
+    assert [f["doc"] for f in _lib.repo_root_instruction_findings(export_root)] == [
+        f"vendor/{exempt}"
+    ]
+
+
+def test_every_exemption_is_still_LOAD_BEARING() -> None:
+    """An exemption whose site no longer contains a matching string is dead, and a dead
+    entry is how the list becomes a place to silence findings. Asserts each one is doing
+    work, not merely that it is spelled correctly.
+    """
     export_root = ROOT / "plugins" / "charness"
-    for suffix, reason in _lib.INSTRUCTION_EXEMPT_SUFFIXES.items():
-        assert (export_root / suffix).exists(), suffix
-        assert reason.strip(), suffix
+    for relative in _lib.INSTRUCTION_EXEMPT_PATHS:
+        path = export_root / relative
+        assert path.exists(), relative
+        text = path.read_text(encoding="utf-8")
+        matched = [
+            line
+            for line in text.splitlines()
+            if _lib.REPO_ROOT_SCRIPT_INSTRUCTION_RE.search(line)
+            and not (
+                _lib.GENERATED_FILE_MARKER in text and _lib.GENERATED_HEADER_FIELD_RE.match(line)
+            )
+        ]
+        assert matched, f"{relative} is exempted but contains no repo-root instruction"
+
+
+def test_a_sync_command_key_outside_a_generated_header_is_still_a_finding(tmp_path: Path) -> None:
+    """`sync_command:` is a generated-header field AND a live adapter config key. Keying
+    the skip on the field name alone exempted `skills/release/adapter.example.yaml`'s
+    real one; the marker scopes it back to files that declare themselves generated."""
+    export_root = _instruction_export(
+        tmp_path,
+        doc_relative="skills/demo/adapter.example.yaml",
+        body="sync_command: python3 scripts/render_thing.py --repo-root .\n",
+    )
+
+    assert [f["script"] for f in _lib.repo_root_instruction_findings(export_root)] == [
+        "render_thing.py"
+    ]
