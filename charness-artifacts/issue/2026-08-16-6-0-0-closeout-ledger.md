@@ -8,9 +8,12 @@ the ten the repair is NARROWER than the issue's title or its stated expected
 behavior, and each of those closes on what shipped rather than on the class:
 
 - **#618** — the rooting defect is fixed and the gate stopped measuring a narrower
-  tree. NOT fixed: `skills/public/setup/references/default-surfaces.md` still
-  points consuming repos at an exported `check-links-internal.sh` that refuses
-  when run inside a consumer repo.
+  tree. The residual this ledger first recorded as unfixed — a reference pointing
+  consuming repos at an exported `check-links-internal.sh` that refuses inside a
+  consumer repo — is now repaired too: the reference names the runnable half and
+  the environment variable that retargets the other, and the refusal text names
+  the reader's own repo root rather than the charness checkout. This entry is the
+  one narrowing in the cohort that CLOSED between preparation and publish.
 - **#619** — both reported instances are repaired and `charness init` runs clean.
   NOT closed as a class: the carrier scan covers markdown, `.agents/` configs and
   Python argv, while shell scripts and workflow `run:` steps are unscanned, so a
