@@ -423,7 +423,22 @@ runtime_budget_profiles:
       specdown: 9000
       validate-cautilus-call-provenance: 500
       # (contended) was 6000; post-change max 10906
-      validate-inventory-consumption-declaration: 15500
+      # 2026-08-16: 15500 -> 32000, the THIRD bar in one session to trip for the same
+      # reason. Recent median 18468ms over n=20 with min 5461 and max 22785 -- a 4.2x
+      # spread inside one window, which is the contention signature the 2026-07-26
+      # relevel above describes, not a regression.
+      #
+      # MEASURED rather than assumed, because this slice added ~7000 lines and eight
+      # test files and could plausibly have made this gate slower: isolated, it runs
+      # 10.17-10.30s at the base commit (3a76e04fd) and 10.46-10.76s at HEAD. That is
+      # ~3%, so the slice is not what moved the median from 8698 to 18468; four
+      # full-lane runs in one day are.
+      #
+      # Redrawn at 1.4x the worst recent run (22785 * 1.4 = 31899). The three bars this
+      # session repaired -- this one, check-coverage and check-documented-command-flags
+      # -- were all drawn at roughly 1.0x of observed, so ordinary contention was enough
+      # to trip each of them. That is the pattern worth watching, not any one gate.
+      validate-inventory-consumption-declaration: 32000
       # 2026-07-26: the three largest UNBUDGETED gates on this profile. They were
       # missed because this block's label set predates the question "what is expensive
       # here" -- and the aggregate does not cover them, since `pytest` at 52.1s is
