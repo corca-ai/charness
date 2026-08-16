@@ -79,10 +79,13 @@ def _iter_scan_files(repo_root: Path, *, include_mirrors: bool, require_git: boo
     candidates = tracked if from_git else [path for path in repo_root.rglob("*") if path.is_file()]
     files: list[Path] = []
     for path in candidates:
-        try:
-            rel = path.relative_to(repo_root).as_posix()
-        except ValueError:
-            continue
+        # No `relative_to` guard. Both candidate sources are built FROM `repo_root` --
+        # `git_list_repo_files` returns `repo_root / rel` and the fallback is
+        # `repo_root.rglob("*")` -- and `pathlib` joins textually, so the prefix always
+        # holds, including for a root spelled with `..`, a relative root, or a symlink.
+        # The guard was a branch no input could reach: a line the changed-line gate can
+        # never see covered, and one a reader can only mistake for a real case.
+        rel = path.relative_to(repo_root).as_posix()
         if any(part in _SKIP_DIR_NAMES for part in PurePosixPath(rel).parts):
             continue
         if not include_mirrors and rel.startswith(_MIRROR_PREFIXES):

@@ -35,6 +35,26 @@ Interpretation:
   promotion candidates.
 - `floor_drift_lock_pp` is a promotion hint, not proof by itself. Use it to
   recommend raising stale floors after real improvements land.
+- `gate_script_pattern` is anchored two ways. A bare filename glob
+  (`"*-quality-gate.sh"`) is resolved under `scripts/`. A pattern containing a
+  path separator is repo-root-relative, so a repo whose stop gate is
+  `<repo-root>/.githooks/pre-commit` or `<repo-root>/scripts/check_coverage.py`
+  names it directly. The
+  meta-check that reconciles discovered gates against lefthook and CI derives
+  its own scope from the same pattern, so moving the anchor moves both halves
+  together.
+
+Sub-keys that name a surface the repo does not have — `lefthook_path` when
+there is no lefthook, `ci_workflow_glob` when there are no workflows — must be
+declared absent rather than deleted. Deleting a line changes the file and not
+the resolved policy, because the merge refills every missing sub-key from the
+defaults. Declare the dotted path instead:
+
+```yaml
+deliberately_absent:
+  coverage_floor_policy.lefthook_path: this repo has no lefthook
+  coverage_floor_policy.ci_workflow_glob: this repo runs no CI workflows
+```
 
 Reference implementations live next to this document:
 

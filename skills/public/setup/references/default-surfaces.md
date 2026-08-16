@@ -133,9 +133,14 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   instead of sitting alone as inline code. Concepts stay natural: a bare
   `SKILL.md` whose basename resolves to many tracked files is still allowed,
   because the linter treats multi-match basenames as conceptual references.
-  See `<plugin-dir>/scripts/check_doc_links.py`,
-  and `<plugin-dir>/scripts/check-links-internal.sh>` for the shipped reference
-  implementation.
+  `<plugin-dir>/scripts/check_doc_links.py --repo-root <repo-root>` is the
+  shipped implementation of the convention and runs against the reader's own
+  repo. The lychee wrapper `<plugin-dir>/scripts/check-links-internal.sh` does
+  NOT: it derives its root from its own location, so from an installed copy it
+  either refuses outright or lints the plugin's markdown instead of the
+  consuming repo's. Point it at the reader's repo with
+  `CHARNESS_REPO_ROOT=<repo-root>`, or read it as a reference and give the repo
+  its own lychee gate.
 
 Use `$SKILL_DIR/scripts/render_skill_routing.py` to render the block. Keep it short and
 bootstrap-heavy. On a mature repo whose `<repo-root>/AGENTS.md` lacks it, propose

@@ -202,6 +202,10 @@ def build_report(repo_root: Path, *, runtime_profile: str | None, top_runtime_co
         "stale_runtime_hotspots": report.get("stale_runtime_hotspots", []),
         "runtime_visibility_findings": report.get("runtime_visibility_findings", []),
         "missing_samples": report.get("missing_samples", []),
+        # The reviewer-facing surface is the stated final consumer of the runtime
+        # advisories, and it carried every per-label list while never carrying the
+        # one number the count exists to make legible.
+        "unenforceable_budgets": report.get("unenforceable_budgets", {}),
         "commands_source": report.get("commands_source", "none"),
         "timing_log": report.get("timing_log", {}),
         "markdown_lines": lines,
@@ -232,6 +236,7 @@ def summarize(report: dict[str, object], *, sample_limit: int = 5) -> dict[str, 
         "missing_sample_count": len(report["missing_samples"]),
         "missing_samples_sample": report["missing_samples"][:sample_limit],
         "missing_samples_truncated": len(report["missing_samples"]) > sample_limit,
+        "unenforceable_budgets": report.get("unenforceable_budgets", {}),
     }
 
 

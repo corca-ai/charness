@@ -718,6 +718,9 @@ def test_install_update_self_validation_delegates_to_parallel_runner(tmp_path: P
     source = Path(__file__).resolve().parents[2] / "scripts" / "self-validate-install-update.sh"
     script = scripts / source.name
     shutil.copy2(source, script)
+    # The gate sources the shared export-copy guard; without it the run dies on a
+    # missing file rather than on the delegation this test is about.
+    shutil.copy2(source.parent / "exported-copy-guard.sh", scripts / "exported-copy-guard.sh")
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     capture = tmp_path / "args.txt"

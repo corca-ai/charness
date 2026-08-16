@@ -8,7 +8,11 @@ from typing import Any, Callable
 from runtime_budget_sizing_lib import suggested_bar_ms
 from runtime_profile_lib import profile_budgets, profile_commands, selected_runtime_profile
 from runtime_timing_log_lib import evaluate_timing_log
-from runtime_visibility_lib import runtime_visibility_findings
+from runtime_visibility_lib import (
+    UNENFORCEABLE_BUDGET_ADVISORY_REASON,
+    runtime_visibility_findings,
+    unenforceable_budgets,
+)
 
 SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
 SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"
@@ -314,6 +318,7 @@ def evaluate(
             },
         },
         "missing_samples": missing_samples,
+        "unenforceable_budgets": unenforceable_budgets(missing_samples, len(budgets)),
         "runtime_hotspots": runtime_hotspots,
         "stale_runtime_hotspots": stale_runtime_hotspots,
         "runtime_visibility_findings": runtime_visibility_findings(adapter_data, budgets),
@@ -380,6 +385,17 @@ def format_human(report: dict[str, Any]) -> str:
         )
     if not report["budgets_configured"]:
         lines.append("No runtime_budgets configured in adapter; nothing to check.")
+    # ONE aggregate line, above the per-label WARNs rather than among them. The per-label
+    # lines already existed and were the whole problem: N of them read as N small
+    # notices, and nothing ever said N. Suppressed at zero, so it never becomes a line
+    # readers learn to skip.
+    unenforceable = report.get("unenforceable_budgets") or {}
+    if unenforceable.get("count"):
+        lines.append(
+            f"UNENFORCEABLE {unenforceable['count']} of {unenforceable['budgets_configured']} "
+            f"budgeted label(s) have no sample in profile `{report['runtime_profile']}` and "
+            f"cannot fail on this machine; advisory: {UNENFORCEABLE_BUDGET_ADVISORY_REASON}"
+        )
     for entry in report["checked"]:
         if entry["status"] == "no-sample":
             lines.append(f"WARN  {entry['label']}: no sample yet (budget {entry['budget_ms']}ms)")

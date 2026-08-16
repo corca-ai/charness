@@ -23,7 +23,6 @@ except ImportError:  # pragma: no cover - exercised on POSIX hosts
     msvcrt = None
 
 import jsonschema
-import yaml
 from usage_episode_feedback import (
     FEEDBACK_SIGNALS,
     SOURCE_KINDS,
@@ -216,7 +215,14 @@ def main() -> int:
     try:
         schema_root = _schema_root(repo_root)
         adapter, adapter_error = load_validated_adapter(adapter_path, schema_root)
-    except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
+    except jsonschema.SchemaError as exc:
+        # `SchemaError`, not the four this used to name. `load_validated_adapter` catches
+        # `OSError`/`ValueError`/`YAMLError`/`ValidationError` itself and returns them as
+        # `adapter_error`, handled two lines below -- so this arm was dead for every
+        # exception it declared, while the one that actually escapes was in neither
+        # handler and crashed the command with a traceback. `SchemaError` fires when
+        # `integrations/usage-episodes/manifest.schema.json` is itself invalid, which is a
+        # repo-configuration fault and exactly the `invalid_adapter` refusal this is for.
         emit_yaml({"status": "invalid_adapter", "executed": False, "errors": [str(exc)]})
         return 2
     if adapter is None:

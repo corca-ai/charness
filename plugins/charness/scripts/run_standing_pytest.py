@@ -67,6 +67,14 @@ STANDING_PYTEST_TARGETS = (
     "tests/control_plane",
     "tests/test_*.py",
     "tests/charness_cli",
+    # `tests/test_*.py` is a FLAT glob: it does not reach a subdirectory. A suite added
+    # under `tests/<dir>/` and not named here runs under a bare `pytest` and is invisible
+    # to the standing command -- and the mutation-coverage producer instruments THIS
+    # command, so such a suite contributes no coverage to the changed-line gate while
+    # looking green locally. That is the shape that lets a whole directory of tests exist
+    # and prove nothing; `check_test_completeness.py` reports the gap, and this is the
+    # line that closes it.
+    "tests/coverage_debt",
 )
 DEFAULT_XDIST_WORKER_CAP = 16
 # `--maxschedchunk` first shipped as a command-line option in pytest-xdist 3.2.0

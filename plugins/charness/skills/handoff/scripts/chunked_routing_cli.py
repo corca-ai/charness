@@ -71,6 +71,53 @@ def add_input_argument(
     )
 
 
+def _refuse_non_payload(payload: Any, *, stage: str, source: str, expects: str) -> Any:
+    """The structural refusals both parse paths must pass, not just the YAML one.
+
+    A prefix denylist only ever fixes the contaminant someone already noticed. Empty
+    stdin (the normal shape when an upstream stage exits 2 and writes nothing) parses to
+    None, and any stray line parses to a scalar; both then reached `payload.get(...)`
+    and died with an `AttributeError: 'NoneType' object has no attribute 'get'` -- the
+    exact opposite of the "structured error on stderr + exit 2 naming the stage" this
+    module's docstring promises.
+
+    A stage REFUSAL is not a stage payload either. `_fail` and `stage_refusal` both emit
+    a valid YAML mapping, so redirecting a failing stage's stderr into the next stage
+    hands it something that parses perfectly and carries none of the fields it reads.
+    """
+    if payload is None or not isinstance(payload, (dict, list)):
+        _fail(
+            stage=stage,
+            source=source,
+            expects=expects,
+            reason=(
+                "input is empty" if payload is None
+                else f"input parsed as a bare {type(payload).__name__}, not a payload"
+            ),
+            hint=(
+                "an upstream stage that refused writes nothing to stdout; check its "
+                "exit code rather than piping its (empty) output onward"
+            ),
+        )
+    # Refusing this is what keeps a failed pipeline from producing a plausible EMPTY
+    # result instead of an error.
+    if isinstance(payload, dict) and payload.get("ok") is False and "stage" in payload:
+        _fail(
+            stage=stage,
+            source=source,
+            expects=expects,
+            reason=(
+                f"input is a refusal payload from stage `{payload.get('stage')}`, "
+                "not a stage payload"
+            ),
+            hint=(
+                "the upstream stage refused; its stderr was captured as this stage's "
+                "input. Fix the upstream failure rather than forwarding its refusal"
+            ),
+        )
+    return payload
+
+
 def read_pipeline_json(input_arg: str, *, stage: str, expects: str) -> Any:
     """Read and parse the stage payload from ``input_arg`` ('-' = stdin), failing loudly.
 
@@ -96,7 +143,13 @@ def read_pipeline_json(input_arg: str, *, stage: str, expects: str) -> Any:
         raw = path.read_text(encoding="utf-8")
         source = str(path)
     try:
-        return json.loads(raw)
+        # NOT `return`. Returning here jumped the structural refusal below, so a bare
+        # JSON scalar -- `41`, or a quoted stray line -- was handed to the calling stage
+        # as an `int`/`str` and died at `payload.get(...)` with the AttributeError
+        # traceback that guard exists to replace. The identical content in YAML form was
+        # refused correctly, so one input had two verdicts depending on which parser
+        # happened to accept it first.
+        return _refuse_non_payload(json.loads(raw), stage=stage, source=source, expects=expects)
     except json.JSONDecodeError as exc:
         # Bound to a local, because Python unbinds the `except` name at block exit
         # and the YAML fallback below still has to name why JSON was rejected.
@@ -143,47 +196,7 @@ def read_pipeline_json(input_arg: str, *, stage: str, expects: str) -> Any:
                 "into this input; check the previous stage's invocation"
             ),
         )
-    # Structural refusal, because a prefix denylist only ever fixes the contaminant
-    # someone already noticed. Empty stdin (the normal shape when an upstream stage
-    # exits 2 and writes nothing) parses to None, and any stray line parses to a
-    # scalar; both then reached `payload.get(...)` and died with an
-    # `AttributeError: 'NoneType' object has no attribute 'get'` traceback -- the exact
-    # opposite of the "structured error on stderr + exit 2 naming the stage" this
-    # module's docstring promises.
-    if payload is None or not isinstance(payload, (dict, list)):
-        _fail(
-            stage=stage,
-            source=source,
-            expects=expects,
-            reason=(
-                "input is empty" if payload is None
-                else f"input parsed as a bare {type(payload).__name__}, not a payload"
-            ),
-            hint=(
-                "an upstream stage that refused writes nothing to stdout; check its "
-                "exit code rather than piping its (empty) output onward"
-            ),
-        )
-    # A stage REFUSAL is not a stage payload. `_fail` and `stage_refusal` both emit a
-    # valid YAML mapping now, so redirecting a failing stage's stderr into the next
-    # stage hands it something that parses perfectly and carries none of the fields it
-    # reads. Refusing it here is what keeps a failed pipeline from producing a
-    # plausible EMPTY result instead of an error.
-    if isinstance(payload, dict) and payload.get("ok") is False and "stage" in payload:
-        _fail(
-            stage=stage,
-            source=source,
-            expects=expects,
-            reason=(
-                f"input is a refusal payload from stage `{payload.get('stage')}`, "
-                "not a stage payload"
-            ),
-            hint=(
-                "the upstream stage refused; its stderr was captured as this stage's "
-                "input. Fix the upstream failure rather than forwarding its refusal"
-            ),
-        )
-    return payload
+    return _refuse_non_payload(payload, stage=stage, source=source, expects=expects)
 
 
 def entries_from_pipeline_payload(payload: Any, chunked_routing_lib: Any) -> Any:

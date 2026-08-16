@@ -592,6 +592,11 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
 
     shutil.copy2(ROOT / "scripts" / "run-quality.sh", scripts_dir / "run-quality.sh")
     (scripts_dir / "run-quality.sh").chmod(0o755)
+    # The runner SOURCES this, so a seeded repo without it fails at line 8 with a
+    # missing-file error rather than on runner behavior -- the same "copied rather
+    # than stubbed" rule as the Python modules below, for the same reason: a stub
+    # would disable the export-copy refusal in every runner test.
+    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
     shutil.copy2(ROOT / "scripts" / "proof_receipt.py", scripts_dir / "proof_receipt.py")
     (scripts_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(
@@ -653,6 +658,11 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     seed_quality_shell_stubs(scripts_dir)
     seed_quality_bin_stubs(bin_dir)
     seed_quality_python_binary_stub(bin_dir)
+    # A git repo, not a bare directory. `run-quality.sh` now refuses when its own root
+    # is not the git toplevel, and a bare tmp dir inherits whatever repository happens
+    # to enclose the pytest temp root -- a dotfiles-tracked $HOME is the common case, and
+    # it would red every runner test with a message about the export copy.
+    init_git_repo(repo)
     return repo, {"PATH": f"{bin_dir}:/usr/bin:/bin"}
 
 

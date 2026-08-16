@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# package-root != git-root. The full rule, and why `git rev-parse --show-toplevel` alone is not
-# the fix, is written out in scripts/check-markdown.sh; keep the two guards in step.
+# package-root != git-root. The rule and its one implementation live in
+# scripts/exported-copy-guard.sh; this gate's own measured consequence is below.
 #
 # This copy's failure was worse than #618's because it was GREEN. The whole population comes
 # from `find` against the cwd, so the mirrored copy at `plugins/charness/scripts/` found no
@@ -13,30 +13,28 @@ set -euo pipefail
 # wrong. `REPO_ROOT_VERIFIED` below exists so the empty-population exit can tell "we know this
 # root and discovery came back empty" (a broken discovery list) from "we could not confirm the
 # root" (the pre-existing, deliberately tolerant behavior).
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT_VERIFIED=0
-if [[ -n "${CHARNESS_REPO_ROOT:-}" ]]; then
-  REPO_ROOT="$(cd "$CHARNESS_REPO_ROOT" && pwd)"
-  REPO_ROOT_VERIFIED=1
-else
-  git_toplevel="$(git -C "$REPO_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"
-  if [[ -n "$git_toplevel" ]]; then
-    if [[ "$(cd "$git_toplevel" && pwd -P)" != "$(cd "$REPO_ROOT" && pwd -P)" ]]; then
-      {
-        echo "check-shell: refusing to run from an exported copy."
-        echo "  script root:  $REPO_ROOT"
-        echo "  git toplevel: $git_toplevel"
-        echo "This gate discovers shell files by walking its own root, so a package root that is"
-        echo "not the git root lints a narrower tree and still exits 0 (issue #618 class)."
-        echo "Run scripts/check-shell.sh from the charness source checkout, or set"
-        echo "CHARNESS_REPO_ROOT to that checkout."
-      } >&2
-      exit 1
-    fi
-    REPO_ROOT_VERIFIED=1
-  fi
+GATE_NAME="check-shell"
+GATE_CONSEQUENCE="This gate discovers shell files by walking its own root, so a package root that is
+not the git root lints a narrower tree and still exits 0."
+# Builtin-only, no `dirname`: this is the FIRST thing every gate does, and a run with
+# an empty PATH (a real fixture shape) would otherwise die on a missing external
+# command before the gate could report anything of its own. The existence check is
+# what keeps a relocated or symlinked copy refusing BY NAME instead of dying on a
+# bash "No such file or directory". (A bare name from PATH is fine: execvp resolves
+# it to an absolute path before bash runs, so BASH_SOURCE[0] carries a directory.)
+CHARNESS_GATE_DIR="${BASH_SOURCE[0]%/*}"
+if [[ "$CHARNESS_GATE_DIR" == "${BASH_SOURCE[0]}" ]]; then CHARNESS_GATE_DIR="."; fi
+if [[ ! -f "$CHARNESS_GATE_DIR/exported-copy-guard.sh" ]]; then
+  echo "check-shell: cannot locate exported-copy-guard.sh beside this script" >&2
+  echo "  looked in: $CHARNESS_GATE_DIR" >&2
+  echo "The guard must sit beside this script. A copy relocated on its own, or a symlink" >&2
+  echo "whose own directory has no guard, reaches this." >&2
+  exit 2
 fi
-cd "$REPO_ROOT"
+GATE_ACCEPTS_REPO_ROOT_HATCH=1
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=scripts/exported-copy-guard.sh
+source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 
 if ! command -v shellcheck >/dev/null 2>&1; then
   echo "shellcheck unavailable; skipping shell lint." >&2
@@ -80,7 +78,10 @@ if [ "${#sh_files[@]}" -eq 0 ]; then
   # result cannot mean "no shell files": this script is itself `scripts/check-shell.sh`, so the
   # discovery list found nothing where it must find at least itself. Reporting 0 there would be
   # the same false green the root guard above was added to close.
-  if [ "$REPO_ROOT_VERIFIED" -eq 1 ]; then
+  # VERIFIED means git compared and agreed; ASSERTED means the operator named the root.
+  # Both are "a root we know"; only one of them is a comparison, and reading just the
+  # first left an unpacked non-git export at a named root back on the tolerant exit 0.
+  if [ "$REPO_ROOT_VERIFIED" -eq 1 ] || [ "${REPO_ROOT_ASSERTED:-0}" -eq 1 ]; then
     echo "check-shell: no shell files discovered under $REPO_ROOT." >&2
     echo "The discovery list cannot see this script itself; it is wrong, not the tree." >&2
     exit 1

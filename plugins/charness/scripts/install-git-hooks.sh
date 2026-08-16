@@ -20,7 +20,7 @@ done
 HOOKS_DIR="$TARGET_REPO/.githooks"
 SOURCE_HOOKS_DIR="$SOURCE_ROOT/.githooks"
 
-# package-root != git-root. The full rule is written out in scripts/check-markdown.sh. Here it
+# package-root != git-root. The full rule is written out in scripts/exported-copy-guard.sh. Here it
 # is not a measurement bug but a DESTRUCTIVE one, because `git config` is repo-scoped and not
 # directory-scoped.
 #

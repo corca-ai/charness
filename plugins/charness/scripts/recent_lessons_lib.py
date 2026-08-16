@@ -9,9 +9,19 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+# The one home for "what do I tell THIS reader to run". Every refusal below cites a
+# command, and a cited path that does not exist in the reader's tree is the defect
+# these messages were repaired for -- see that module's docstring.
+from scripts.lesson_command_citation import (
+    index_build_command,
+    refresh_digest_command,
+    stale_index_message,
+)
+
 DATE_IN_NAME = re.compile(r"(\d{4}-\d{2}-\d{2})")
 DATE_LINE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
 LESSON_INDEX_FILENAME = "lesson-selection-index.json"
+
 # Re-derived 2026-07-27 against the live corpus, from the measured failure that a
 # concept holding 7+ rows across 6 dates (2026-05-30 .. 07-26, a 57-day span) never
 # won a digest slot. The old pair (alpha 0.35, half-life 14) could not express
@@ -476,41 +486,24 @@ def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
     payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     index_path = lesson_selection_index_path(output_dir)
     expected = lesson_selection_index_text(payload)
+    write_command = index_build_command(repo_root, "--write")
     if not index_path.is_file():
         raise FileNotFoundError(
             f"missing retro lesson selection index `{index_path.relative_to(repo_root)}`; "
-            "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`"
+            f"run `{write_command}`"
         )
     if index_path.read_text(encoding="utf-8") != expected:
-        # Order matters. This message used to lead with `--write`, and a real
-        # investigation followed it: `--write` produced identical bytes (the
-        # index was correct for THIS repo's code), so the operator concluded the
-        # failure was elsewhere and spent a full gate cycle on the quality suite.
-        # The discriminator has to come first, because when a foreign copy wrote
-        # the index, `--write` through that same copy is a loop, not a fix.
-        raise ValueError(
-            f"retro lesson selection index `{index_path.relative_to(repo_root)}` "
-            "does not match what this repo's own code produces.\n"
-            "FIRST, check who wrote it: if you ran a charness helper from an "
-            "installed/exported copy (`~/.agents/...`, `$SKILL_DIR`, "
-            "`plugins/charness/...`) against this repo, that copy's schema is the "
-            "cause. Re-run from this repo's own copy; running `--write` through "
-            "the foreign copy overwrites the fix and re-triggers this failure.\n"
-            "Otherwise the index is genuinely stale: run "
-            "`python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write` "
-            "from this repo root. If that produces no diff, you are in the first "
-            "case, not this one."
-        )
+        raise ValueError(stale_index_message(str(index_path.relative_to(repo_root)), repo_root))
     expected_digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     if not summary_path.is_file():
         raise FileNotFoundError(
             f"missing recent lessons digest `{summary_path.relative_to(repo_root)}`; "
-            "run `python3 skills/public/retro/scripts/refresh_recent_lessons.py --repo-root .`"
+            f"run `{refresh_digest_command(repo_root)}`"
         )
     if summary_path.read_text(encoding="utf-8") != expected_digest.summary_text:
         raise ValueError(
             f"recent lessons digest `{summary_path.relative_to(repo_root)}` is stale relative to the lesson selection index; "
-            "run `python3 skills/public/retro/scripts/refresh_recent_lessons.py --repo-root .`"
+            f"run `{refresh_digest_command(repo_root)}`"
         )
 
 

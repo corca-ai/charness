@@ -492,6 +492,10 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
     quality_repo = tmp_path / "quality-consumer"
     (quality_repo / "scripts").mkdir(parents=True)
     shutil.copy2(ROOT / "scripts" / "run-quality.sh", quality_repo / "scripts" / "run-quality.sh")
+    shutil.copy2(
+        ROOT / "scripts" / "exported-copy-guard.sh",
+        quality_repo / "scripts" / "exported-copy-guard.sh",
+    )
     quality_state = quality_repo / ".charness" / "mutation-recovery"
     quality_state.mkdir(parents=True)
 

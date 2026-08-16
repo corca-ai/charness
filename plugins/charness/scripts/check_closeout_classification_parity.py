@@ -378,9 +378,11 @@ def evaluate(repo_root: Path, *, assume: tuple[str, ...] = ()) -> dict[str, Any]
             ),
             "sites": [],
         }
+    # No emptiness re-check here. The guard above already returned for an empty
+    # `canonical`, and concatenating cannot empty a non-empty tuple -- so the duplicate
+    # was a branch no input could reach, which is a line the changed-line coverage gate
+    # can never see covered and a reader can only mistake for a real case.
     canonical = canonical + tuple(assume)
-    if not canonical:
-        return {"status": "not-run", "reason": f"{CANONICAL_REL}:{CANONICAL_ATTR} is empty", "sites": []}
 
     sites = [_judge_site(site, repo_root, canonical, assume) for site in SITES]
 

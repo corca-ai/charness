@@ -734,6 +734,36 @@
         ]
       },
       "snapshot_sha256": "f276c678deb414a8c03a2f893d8b354193956ebb3d0aac9247e8c327b58a195d"
+    },
+    {
+      "session_id": "2026-08-16-s8-debt",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-16-s8-debt",
+        "eligible_count": 38,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "tagged-lesson-never-seeded",
+          "changed-line-proof-before-broad-quality",
+          "coverage-claim-exceeds-the-pin",
+          "bar-recorded-as-prose",
+          "agent-authored-score-role",
+          "closeout-authoring-rework",
+          "cause-named-from-one-observation",
+          "detector-blind-class-unstated",
+          "counted-limit-retry-loop",
+          "conservative-static-verdicts"
+        ]
+      },
+      "snapshot_sha256": "86105f5427b17df9a5bf37c90985eadaaf817bc8b4d03455257b421aacc16fb1"
     }
   ],
   "score_events": [

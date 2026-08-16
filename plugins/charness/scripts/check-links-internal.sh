@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# package-root != git-root. scripts/check-markdown.sh carries the canonical statement of this
-# rule and the reasoning; this is the same guard with this gate's own consequence.
+# package-root != git-root. scripts/exported-copy-guard.sh carries the rule, the reasoning and
+# the one implementation; what follows is this gate's own consequence.
 #
 # Measured from the generated mirror BEFORE this guard: exit 0, "97 Total / 78 OK / 0 Errors".
 # A clean green over the wrong tree. Two things go wrong at once there: the
@@ -10,26 +10,29 @@ set -euo pipefail
 # NOTHING and the gate lints the mirror it is supposed to skip; and `--root-dir` then resolves
 # every repo-relative link against the package root instead of the git root. Note this gate was
 # predicted to "fail loud" from the mirror and does not -- it passes. Issue #618.
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [[ -n "${CHARNESS_REPO_ROOT:-}" ]]; then
-  REPO_ROOT="$(cd "$CHARNESS_REPO_ROOT" && pwd)"
-else
-  git_toplevel="$(git -C "$REPO_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"
-  if [[ -n "$git_toplevel" && "$(cd "$git_toplevel" && pwd -P)" != "$(cd "$REPO_ROOT" && pwd -P)" ]]; then
-    {
-      echo "check-links-internal: refusing to run from an exported copy."
-      echo "  script root:  $REPO_ROOT"
-      echo "  git toplevel: $git_toplevel"
-      echo "This gate excludes plugins/** with a cwd-relative pathspec and resolves"
-      echo "repo-relative links against its root, so a package root that is not the git root"
-      echo "reports a clean pass over the mirror it should have skipped (issue #618)."
-      echo "Run scripts/check-links-internal.sh from the charness source checkout, or set"
-      echo "CHARNESS_REPO_ROOT to that checkout."
-    } >&2
-    exit 1
-  fi
+GATE_NAME="check-links-internal"
+GATE_CONSEQUENCE="This gate excludes plugins/** with a cwd-relative pathspec and resolves
+repo-relative links against its root, so a package root that is not the git root
+reports a clean pass over the mirror it should have skipped."
+# Builtin-only, no `dirname`: this is the FIRST thing every gate does, and a run with
+# an empty PATH (a real fixture shape) would otherwise die on a missing external
+# command before the gate could report anything of its own. The existence check is
+# what keeps a relocated or symlinked copy refusing BY NAME instead of dying on a
+# bash "No such file or directory". (A bare name from PATH is fine: execvp resolves
+# it to an absolute path before bash runs, so BASH_SOURCE[0] carries a directory.)
+CHARNESS_GATE_DIR="${BASH_SOURCE[0]%/*}"
+if [[ "$CHARNESS_GATE_DIR" == "${BASH_SOURCE[0]}" ]]; then CHARNESS_GATE_DIR="."; fi
+if [[ ! -f "$CHARNESS_GATE_DIR/exported-copy-guard.sh" ]]; then
+  echo "check-links-internal: cannot locate exported-copy-guard.sh beside this script" >&2
+  echo "  looked in: $CHARNESS_GATE_DIR" >&2
+  echo "The guard must sit beside this script. A copy relocated on its own, or a symlink" >&2
+  echo "whose own directory has no guard, reaches this." >&2
+  exit 2
 fi
-cd "$REPO_ROOT"
+GATE_ACCEPTS_REPO_ROOT_HATCH=1
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=scripts/exported-copy-guard.sh
+source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 
 run_git_listing_to_file() {
   local context="$1"

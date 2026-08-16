@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import yaml
 
+from scripts import lesson_command_citation, recent_lessons_lib
 from tests.dsl import Repo, run_at
 
 RETRO = Repo().adapter(
@@ -318,3 +320,106 @@ def test_hand_authored_lesson_outranks_boilerplate_at_equal_weight(tmp_path: Pat
     improvements = [item for item in index["candidates"] if item["kind"] == "next_improvement"]
     assert improvements[0]["lesson"] == "Human observation.", [item["lesson"] for item in improvements]
     assert improvements[0]["selection_weight"] == improvements[1]["selection_weight"]
+
+
+def _staleable_repo(tmp_path: Path, *, name: str) -> Path:
+    repo = RETRO.file(
+        *artifact(
+            "2026-04-15-new.md",
+            retro_artifact(
+                "2026-04-15",
+                waste="Manual summary refresh was easy to forget.",
+                improvement="Refresh recent lessons through the persistence helper.",
+            ),
+        )
+    ).build(tmp_path, name=name)
+    run_at(repo, BUILD_INDEX, "--write").ok()
+    (repo / "charness-artifacts" / "retro" / "lesson-selection-index.json").write_text("{}\n", encoding="utf-8")
+    return repo
+
+
+def _stale_index_message(repo: Path) -> str:
+    with pytest.raises(ValueError) as excinfo:
+        recent_lessons_lib.check_lesson_selection_index(
+            repo_root=repo,
+            output_dir=repo / "charness-artifacts" / "retro",
+            summary_path=repo / "charness-artifacts" / "retro" / "recent-lessons.md",
+        )
+    return str(excinfo.value)
+
+
+def test_stale_index_refusal_names_a_command_a_consuming_repo_can_actually_run(tmp_path: Path) -> None:
+    """#632: the refusal named `scripts/…` and `skills/public/retro/…` unconditionally.
+
+    A consuming repo has neither, so the only way forward was the installed copy the
+    message's own first paragraph warned against. Here the cited command must resolve
+    to a file that exists, and the foreign-copy warning must be gone: with no repo-local
+    builder there is no competing copy, so that hypothesis cannot be true.
+    """
+    repo = _staleable_repo(tmp_path, name="consumer")
+    assert not (repo / "scripts").exists()
+
+    message = _stale_index_message(repo)
+
+    cited = [word for word in message.split() if word.endswith("build_retro_lesson_selection_index.py")]
+    assert cited, message
+    assert Path(cited[0]).is_file(), message
+    assert "carries no" in message
+    assert "FIRST, check who wrote it" not in message
+
+
+def test_stale_index_refusal_keeps_the_foreign_copy_warning_for_a_repo_that_owns_the_builder(
+    tmp_path: Path,
+) -> None:
+    """The warning is load-bearing where it CAN be true, and only there.
+
+    A repo with its own builder is the source-tree case the warning was written for:
+    an installed copy writing an older schema is a live hypothesis, and `--write`
+    through that copy is a loop rather than a fix.
+    """
+    repo = _staleable_repo(tmp_path, name="source-like")
+    builder = repo / "scripts" / "build_retro_lesson_selection_index.py"
+    builder.parent.mkdir(parents=True, exist_ok=True)
+    builder.write_text("# stand-in for this repo's own builder\n", encoding="utf-8")
+    # BOTH conditions, matching `helper_provenance_lib.is_charness_source_tree`. The
+    # checked-in `plugins/charness/` export owns the builder and carries no packaging
+    # manifest, so a file test alone printed this warning for a target the provenance
+    # guard treats as a plain consuming repo.
+    marker = repo / "packaging" / "charness.json"
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text('{"package_id": "charness"}\n', encoding="utf-8")
+
+    message = _stale_index_message(repo)
+
+    assert "FIRST, check who wrote it" in message
+    # The TARGET repo's own builder, spelled absolutely because the operator's cwd is
+    # not that tree: a relative `scripts/...` beside an absolute `--repo-root` would
+    # run THIS checkout's builder against a different one.
+    assert f"python3 {repo}/scripts/{lesson_command_citation.INDEX_SCRIPT_NAME} --repo-root {repo} --write" in message
+
+
+def test_digest_refusal_resolves_the_refresh_script_against_a_tree_that_has_it(tmp_path: Path) -> None:
+    """The second failure in #632: `skills/public/retro/` exists in neither tree there.
+
+    The export flattens it to `skills/retro/`, so the hard-coded source spelling was
+    wrong relative to BOTH the consuming repo and the installed plugin.
+    """
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+    command = lesson_command_citation.refresh_digest_command(consumer)
+    cited = [word for word in command.split() if word.endswith("refresh_recent_lessons.py")]
+    assert cited and Path(cited[0]).is_file(), command
+
+
+def test_the_checked_in_export_is_not_treated_as_a_competing_source_tree() -> None:
+    """`plugins/charness/` owns the builder and is NOT a source tree.
+
+    Keying the foreign-copy warning on the builder's presence alone made this target
+    take the source-tree branch, whose remedy is "run this repo's own copy" -- i.e.
+    run the exported builder against the export, the one action the repo's shell gates
+    refuse outright. The provenance guard calls this target `consuming-repo`; this
+    discriminator has to agree with it.
+    """
+    export = Path(__file__).resolve().parents[2] / "plugins" / "charness"
+    assert (export / "scripts" / lesson_command_citation.INDEX_SCRIPT_NAME).is_file()
+    assert not lesson_command_citation.repo_carries_index_builder(export)

@@ -28,6 +28,7 @@ from pathlib import Path
 from .support import ROOT, run_shell_script, write_executable
 
 MIRROR_RELATIVE = Path("plugins") / "charness"
+GUARD_SCRIPT = "exported-copy-guard.sh"
 
 TRACKED_MARKDOWN_ARGV = [
     "ls-files",
@@ -52,8 +53,12 @@ def _install_script(repo: Path, script_name: str) -> tuple[Path, Path]:
     mirror = repo / MIRROR_RELATIVE / "scripts" / script_name
     source.parent.mkdir(parents=True, exist_ok=True)
     mirror.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "scripts" / script_name, source)
-    shutil.copy2(ROOT / "scripts" / script_name, mirror)
+    # The guard travels with every gate that sources it, in BOTH copies. Shipping it to
+    # only one side would make these tests measure "the guard file is missing" instead of
+    # "the guard refused", which is a different green.
+    for name in (script_name, GUARD_SCRIPT):
+        shutil.copy2(ROOT / "scripts" / name, source.parent / name)
+        shutil.copy2(ROOT / "scripts" / name, mirror.parent / name)
     return source, mirror
 
 
@@ -303,3 +308,189 @@ def test_install_git_hooks_refuses_a_target_that_is_not_a_repository(tmp_path: P
     assert result.returncode == 1
     assert "install-git-hooks: refusing to configure hooks for a non-repository." in result.stderr
     assert not (source_tree / ".githooks").exists()
+
+
+# Every repo-root shell gate that measures or drives work from its own root. Membership is
+# the detector: adding a tenth gate without the guard fails here rather than shipping a
+# copy that measures the export. `install-git-hooks.sh` is deliberately absent -- it takes
+# an explicit `--repo-root` and refuses a non-repository on its own terms, so it owns no
+# `CHARNESS_REPO_ROOT` hatch to share.
+GUARDED_GATES = (
+    "check-links-external.sh",
+    "check-links-internal.sh",
+    "check-markdown.sh",
+    "check-python-lint.sh",
+    "check-secrets.sh",
+    "check-shell.sh",
+    "run-quality.sh",
+    "self-validate-install-update.sh",
+)
+
+
+def test_every_repo_root_shell_gate_sources_the_one_guard() -> None:
+    """The rule had six hand-copied homes and three gates that never got one.
+
+    `check-python-lint.sh`, `run-quality.sh` and `self-validate-install-update.sh` each
+    carried a COMMENT saying they cannot run from the export, and no code that said so to
+    the operator -- so from the mirror they died naming absent directories rather than the
+    reason those directories are absent, and `run-quality.sh` would have driven the whole
+    standing lane against the plugin tree. A retyped rule has whatever coverage the last
+    author remembered; this asks one question of the whole class.
+    """
+    missing = []
+    for name in GUARDED_GATES:
+        text = (ROOT / "scripts" / name).read_text(encoding="utf-8")
+        if GUARD_SCRIPT not in text or 'GATE_NAME="' not in text:
+            missing.append(name)
+    assert not missing, f"repo-root shell gates not sourcing {GUARD_SCRIPT}: {missing}"
+
+
+def test_no_repo_root_shell_gate_still_carries_a_hand_copied_guard() -> None:
+    """One home, or the drift this consolidation removed comes straight back.
+
+    A gate that re-inlines the `git rev-parse --show-toplevel` comparison is a second
+    implementation of the rule, and the next fix lands in only one of them.
+    """
+    inlined = []
+    for name in GUARDED_GATES:
+        # CODE lines only. A gate may — and check-markdown.sh does — name the rejected
+        # `git rev-parse --show-toplevel` approach in a comment while carrying none of it.
+        code = [
+            line
+            for line in (ROOT / "scripts" / name).read_text(encoding="utf-8").splitlines()
+            if not line.lstrip().startswith("#")
+        ]
+        if any("rev-parse --show-toplevel" in line for line in code):
+            inlined.append(name)
+    assert not inlined, f"gates carrying their own copy of the root guard: {inlined}"
+
+
+def test_the_three_newly_guarded_gates_refuse_from_the_generated_mirror(tmp_path: Path) -> None:
+    """The gates the class inventory named as uncovered, proven one at a time.
+
+    `run-quality.sh` is the widest blast radius of the three: unguarded, the exported copy
+    self-locates to `plugins/charness/` and drives ~85 gates against the plugin tree.
+    """
+    for name, gate in (
+        ("check-python-lint.sh", "check-python-lint"),
+        ("run-quality.sh", "run-quality"),
+        ("self-validate-install-update.sh", "self-validate-install-update"),
+    ):
+        case_root = tmp_path / name
+        case_root.mkdir()
+        repo, _source, mirror = _charness_shaped_repo(case_root, name)
+
+        result = run_shell_script(mirror, cwd=repo, env={**os.environ})
+
+        assert result.returncode == 1, (name, result.stdout, result.stderr)
+        assert f"{gate}: refusing to run from an exported copy." in result.stderr, name
+        assert "CHARNESS_REPO_ROOT" in result.stderr, name
+
+
+def test_the_guard_refuses_a_caller_that_forgot_to_name_itself(tmp_path: Path) -> None:
+    """A gate sourcing the guard without `GATE_NAME` would emit `: refusing to run`.
+
+    Anonymous refusals are how an operator ends up unable to tell which gate stopped, so
+    the miswiring fails at the guard instead of producing one.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / GUARD_SCRIPT, repo / "scripts" / GUARD_SCRIPT)
+    caller = repo / "scripts" / "nameless.sh"
+    caller.write_text(
+        '#!/usr/bin/env bash\nset -euo pipefail\n'
+        'source "$(dirname "${BASH_SOURCE[0]}")/exported-copy-guard.sh"\n',
+        encoding="utf-8",
+    )
+
+    result = run_shell_script(caller, cwd=repo, env={**os.environ})
+
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "sourced without GATE_NAME" in result.stderr
+
+
+def test_the_repo_root_hatch_refuses_a_driver_only_on_DISAGREEMENT(tmp_path: Path) -> None:
+    """A remedy a gate cannot honor is worse than no remedy -- but presence is not misuse.
+
+    `run-quality.sh`, `check-python-lint.sh` and `self-validate-install-update.sh` each
+    run a fixed path list belonging to the charness source checkout, so RETARGETING
+    their root only moves where they fail. Refusing on the variable's mere PRESENCE,
+    though, reds a run whose asserted root, derived root and git toplevel all agree --
+    and an operator who exports it in a shell profile then gets a red on `--help`,
+    indistinguishable from a gate failure. Status 2, not 1: a receipt has to tell
+    caller misuse from a verdict.
+    """
+    (tmp_path / "driver").mkdir()
+    (tmp_path / "agree").mkdir()
+    repo, source, mirror = _charness_shaped_repo(tmp_path / "driver", "run-quality.sh")
+
+    retargeted = run_shell_script(
+        mirror, cwd=repo, env={**os.environ, "CHARNESS_REPO_ROOT": str(repo)}
+    )
+    assert retargeted.returncode == 2, retargeted.stdout + retargeted.stderr
+    assert "does not accept one" in retargeted.stderr
+
+    # Same tree: not misuse, so the guard steps aside and the gate runs its own course.
+    agreeing, agree_source, _ = _charness_shaped_repo(tmp_path / "agree", "run-quality.sh")
+    proceeded = run_shell_script(
+        agree_source, cwd=agreeing, env={**os.environ, "CHARNESS_REPO_ROOT": str(agreeing)}
+    )
+    assert "does not accept one" not in proceeded.stderr
+    assert "refusing to run from an exported copy" not in proceeded.stderr
+
+
+def test_an_absent_repo_root_hatch_refuses_by_name(tmp_path: Path) -> None:
+    """A typo'd `CHARNESS_REPO_ROOT` used to die on a bare `cd:` error with no gate name.
+
+    It is the one input path the operator typed by hand, and it was missing the
+    refuse-by-name property the prelude exists to protect.
+    """
+    repo, source, _mirror = _charness_shaped_repo(tmp_path, "check-markdown.sh")
+
+    result = run_shell_script(
+        source, cwd=repo, env={**os.environ, "CHARNESS_REPO_ROOT": str(tmp_path / "nope")}
+    )
+
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "check-markdown: CHARNESS_REPO_ROOT does not name a directory." in result.stderr
+
+
+def test_an_asserted_root_is_compared_the_same_way_a_derived_one_is(tmp_path: Path) -> None:
+    """The hatch was the one input path with zero cross-checking.
+
+    `CHARNESS_REPO_ROOT=$PWD/plugins/charness` used to be accepted in silence and marked
+    verified, which reproduces the original narrowed-population defect with the flag
+    asserting the opposite. Agreement is the rule; it does not stop applying because a
+    human typed the root instead of the script deriving it.
+    """
+    repo, source, _mirror = _charness_shaped_repo(tmp_path, "check-markdown.sh")
+    bin_dir, log = _argv_logging_bin(tmp_path, "markdownlint-cli2")
+
+    result = run_shell_script(
+        source,
+        cwd=repo,
+        env=_env(bin_dir, log, CHARNESS_REPO_ROOT=str(repo / MIRROR_RELATIVE)),
+    )
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "check-markdown: refusing to run from an exported copy." in result.stderr
+    assert "asserted root" in result.stderr
+    assert not log.exists()
+
+
+def test_a_gate_that_cannot_find_the_guard_refuses_by_name(tmp_path: Path) -> None:
+    """Sourcing must not trade a gate-named refusal for a bash missing-file error.
+
+    A relocated or symlinked copy reaches this: `BASH_SOURCE[0]` names a directory the
+    guard does not sit in, and without the existence check the run died with
+    `./exported-copy-guard.sh: No such file or directory` and no gate name at all.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    relocated = repo / "check-shell.sh"
+    shutil.copy2(ROOT / "scripts" / "check-shell.sh", relocated)
+
+    result = run_shell_script(relocated, cwd=repo, env={**os.environ})
+
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "check-shell: cannot locate exported-copy-guard.sh beside this script" in result.stderr

@@ -142,6 +142,13 @@
     },
     {
       "class": "intentional",
+      "id": "08c504ccfbab8be1",
+      "note": "Four whole-function spans inside the ONE reference sample skills/public/quality/references/coverage_floor_inventory.py (anchored_gate_pattern, collect_exemptions, operational_ref_sources, classify_unfloored_files). The shared mass is docstring and comment prose in a file whose entire purpose is to be READ and adapted by a consuming repo -- each block explains a different measured defect (the prefix/suffix decomposition, the declared-absent sub-key KeyError, the empty-operational-side false red, the warn-band split) and the code they surround shares no logic. Collapsing four explanations into one helper is exactly the wrong move for a teaching sample: it would remove the per-function reasoning a consumer adapts against. Surfaced as new because this slice rewrote the pattern anchoring and the sub-key handling.",
+      "reviewed_at": "2026-08-16",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "08fb1dd459a76b42",
       "note": "paired advisory inventory reporting contract with materially different parser and status semantics; callback-heavy extraction would couple independently executable quality tools",
       "reviewed_at": "2026-07-11",
@@ -243,6 +250,13 @@
       "id": "0df7f8c7a6119974",
       "note": "the repo-root sys.path bootstrap preamble every scripts/*.py carries -- `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `if str(REPO_ROOT) not in sys.path` guard, and the `# noqa: E402` imports that must follow it. Four members now, two of them added by the D40 lane (changed_line_run_trust.py, prepush_focused_changed_line_coverage.py). Extracting it is impossible by construction: a shared helper could only be imported AFTER sys.path already contained the repo root, which is exactly what the preamble establishes. Same standing class as the resolve_adapter.py portability copies.",
       "reviewed_at": "2026-07-29",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0dfa6aac1b4cecc2",
+      "note": "scripts/lesson_command_citation.script_tree_root and scripts/session_start_lesson_context._script_tree_root: a three-line `Path(__file__).resolve().parent.parent` self-location with the same one-line docstring. session_start_lesson_context is stdlib-only BY CONTRACT (its own docstring: it runs inside a host SessionStart path in every session on the machine, and an import of the repo-module stack is what takes the routing directive down with it), so importing the shared owner is the one thing it may not do -- and the arrow may not point the other way either, because the citation module is imported by recent_lessons_lib. The same file already carries a deliberate copy of `_SESSION_ID` for this reason, pinned equal by a test rather than imported.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {
@@ -2133,6 +2147,13 @@
       "id": "74217a4b69c47386",
       "note": "the hand-rolled importlib `_load_lib()` prologue plus argparse block shared by scripts/check_prescribed_skill_executed.py:17-43 and scripts/classify_push_diff.py:26-50. Both are standalone entrypoints that must run from a consuming repo's checkout without the runtime_bootstrap import path, which is exactly why they load their lib by explicit spec instead of importing a shared helper; extracting the helper would reintroduce the import dependency the boilerplate exists to avoid. The argparse half is per-command surface, not duplication. Portability boilerplate, same class as the copied resolve_adapter.py.",
       "reviewed_at": "2026-07-31",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "74471a8d413b1002",
+      "note": "The `REFRESH_SCRIPT_RELATIVE` two-spelling constant in scripts/lesson_command_citation.py and scripts/session_start_lesson_context.py. Same stdlib-only contract as 0dfa6aac1b4cecc2: the hook module may not import a repo module to know that the source tree spells it `skills/public/retro/` and the export flattens it to `skills/retro/`. Both copies must stay correct, and the cost of them disagreeing is exactly the defect this slice repaired -- an instruction naming a path the reader's tree does not contain.",
+      "reviewed_at": "2026-08-16",
       "surface": "code"
     },
     {

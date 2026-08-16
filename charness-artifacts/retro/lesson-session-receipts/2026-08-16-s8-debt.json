@@ -1,0 +1,11 @@
+{
+  "kind": "charness.lesson-session-emission-receipt",
+  "schema_version": 1,
+  "session_id": "2026-08-16-s8-debt",
+  "snapshot_sha256": "86105f5427b17df9a5bf37c90985eadaaf817bc8b4d03455257b421aacc16fb1",
+  "renderer_id": "charness.lesson-session-preview.text.v1",
+  "stdout_sha256": "fd912cf4f9e8eb2fbb0ae56dc45a7132ddaa24dfecfdd4acbb20478fe8d601ed",
+  "stdout_byte_count": 4066,
+  "emitted_at": "2026-08-15T23:34:55.632411Z",
+  "receipt_sha256": "4d0df4d25ed76a45f4c7dba052a111a35d26a5281ef0656afbdbb9792703e201"
+}

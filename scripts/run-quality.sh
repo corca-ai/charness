@@ -1,8 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO_ROOT"
+# The consumer-facing entry point in `skills/public/quality/references/catalog.yaml` is
+# `./scripts/run-quality.sh`, conditioned on "repo exposes this repo-native command" --
+# i.e. the CONSUMER's own script, never this exported copy. Without a guard the exported
+# copy self-locates to `plugins/charness/` and drives ~85 gates against the plugin tree,
+# which is the widest-blast-radius instance of the class the other gates already refuse.
+GATE_NAME="run-quality"
+GATE_CONSEQUENCE="This runner drives every gate from its own root, so a package root that is not the git
+root would run the whole standing lane against the exported plugin tree instead of the
+repository under test."
+# Builtin-only, no `dirname`: this is the FIRST thing every gate does, and a run with
+# an empty PATH (a real fixture shape) would otherwise die on a missing external
+# command before the gate could report anything of its own. The existence check is
+# what keeps a relocated or symlinked copy refusing BY NAME instead of dying on a
+# bash "No such file or directory". (A bare name from PATH is fine: execvp resolves
+# it to an absolute path before bash runs, so BASH_SOURCE[0] carries a directory.)
+CHARNESS_GATE_DIR="${BASH_SOURCE[0]%/*}"
+if [[ "$CHARNESS_GATE_DIR" == "${BASH_SOURCE[0]}" ]]; then CHARNESS_GATE_DIR="."; fi
+if [[ ! -f "$CHARNESS_GATE_DIR/exported-copy-guard.sh" ]]; then
+  echo "run-quality: cannot locate exported-copy-guard.sh beside this script" >&2
+  echo "  looked in: $CHARNESS_GATE_DIR" >&2
+  echo "The guard must sit beside this script. A copy relocated on its own, or a symlink" >&2
+  echo "whose own directory has no guard, reaches this." >&2
+  exit 2
+fi
+GATE_ACCEPTS_REPO_ROOT_HATCH=0
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=scripts/exported-copy-guard.sh
+source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 
 RUN_QUALITY_REVIEW=0
 RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"

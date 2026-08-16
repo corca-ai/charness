@@ -23,6 +23,10 @@ def _copy_script(repo: Path, script_name: str) -> Path:
     scripts_dir.mkdir(parents=True, exist_ok=True)
     script_path = scripts_dir / script_name
     shutil.copy2(ROOT / "scripts" / script_name, script_path)
+    # Every repo-root gate sources the one export-copy guard, so it travels with each
+    # copied script. Omitting it makes these tests fail on a missing file rather than
+    # on the discovery and listing behavior they are about.
+    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
     return script_path
 
 
@@ -312,7 +316,7 @@ def test_check_shell_treats_missing_githooks_as_optional(tmp_path: Path) -> None
 
     assert result.returncode == 0, result.stderr
     args = output_path.read_text(encoding="utf-8").splitlines()
-    assert args == ["-x", "scripts/check-shell.sh"]
+    assert args == ["-x", "scripts/check-shell.sh", "scripts/exported-copy-guard.sh"]
 
 
 def test_check_shell_discovers_nested_test_fixtures(tmp_path: Path) -> None:
@@ -339,6 +343,7 @@ def test_check_shell_discovers_nested_test_fixtures(tmp_path: Path) -> None:
     assert output_path.read_text(encoding="utf-8").splitlines() == [
         "-x",
         "scripts/check-shell.sh",
+        "scripts/exported-copy-guard.sh",
         "tests/fixtures/fake-tool.sh",
     ]
 
@@ -348,6 +353,7 @@ def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
     scripts_dir = repo / "scripts"
     scripts_dir.mkdir(parents=True)
     shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
+    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
     shutil.copy2(ROOT / ".gitleaks.toml", repo / ".gitleaks.toml")
 
     bin_dir = repo / "bin"
@@ -372,6 +378,7 @@ def test_check_secrets_falls_back_to_secretlint_via_npm(tmp_path: Path) -> None:
     scripts_dir = repo / "scripts"
     scripts_dir.mkdir(parents=True)
     shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
+    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
     shutil.copy2(ROOT / ".secretlintrc.json", repo / ".secretlintrc.json")
     shutil.copy2(ROOT / ".secretlintignore", repo / ".secretlintignore")
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")

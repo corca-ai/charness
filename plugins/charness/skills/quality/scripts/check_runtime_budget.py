@@ -48,6 +48,13 @@ def summarize(report: dict) -> dict:
         "runtime_visibility_findings",
     ):
         summary.update(bounded_list(report, key))
+    # First-class in the SUMMARY, not only in --detail: "how many committed bars are
+    # unenforceable on this machine" is a triage question, and triage output is what a
+    # reviewer reads. The label list rides the SAME `bounded_list` every other list in
+    # this summary uses -- it already emits a count alongside the truncated sample, so
+    # bounding it loses nothing the dict below does not also carry.
+    summary.update(bounded_list(report, "missing_samples"))
+    summary["unenforceable_budgets"] = report.get("unenforceable_budgets", {})
     summary["advisory_contracts"] = report.get("advisory_contracts", {})
     return summary
 

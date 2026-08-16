@@ -16,15 +16,37 @@
 #
 # So: change the path list HERE and nowhere else. Callers invoke this script by name.
 #
-# Not runnable from the plugin export. The exported copy self-locates to
-# `plugins/charness/`, which has no `charness/`, `tests/`, or `skills/shared/scripts`, so
-# it would die on absent paths. That is true of the exported `run-quality.sh` too and is
-# not a regression -- noted because the header above calls this the single home for the
-# invocation, and the export is a tree where it cannot run.
+# Not runnable from the plugin export, and now it SAYS so. The exported copy self-locates
+# to `plugins/charness/`, which has no `charness/`, `tests/`, or `skills/shared/scripts`,
+# so it dies on absent paths -- loud, but naming missing directories rather than the
+# reason they are missing. This comment claimed the condition was "noted"; noting it in a
+# comment is not telling the operator, and the same was true of `run-quality.sh` and
+# `self-validate-install-update.sh`. All three now share the guard the other five carry.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO_ROOT"
+GATE_NAME="check-python-lint"
+GATE_CONSEQUENCE="This gate lints a fixed path list rooted at its own root, and the export has no
+charness/, tests/ or skills/shared/scripts, so from a package root that is not the git
+root it reports absent directories instead of the reason they are absent."
+# Builtin-only, no `dirname`: this is the FIRST thing every gate does, and a run with
+# an empty PATH (a real fixture shape) would otherwise die on a missing external
+# command before the gate could report anything of its own. The existence check is
+# what keeps a relocated or symlinked copy refusing BY NAME instead of dying on a
+# bash "No such file or directory". (A bare name from PATH is fine: execvp resolves
+# it to an absolute path before bash runs, so BASH_SOURCE[0] carries a directory.)
+CHARNESS_GATE_DIR="${BASH_SOURCE[0]%/*}"
+if [[ "$CHARNESS_GATE_DIR" == "${BASH_SOURCE[0]}" ]]; then CHARNESS_GATE_DIR="."; fi
+if [[ ! -f "$CHARNESS_GATE_DIR/exported-copy-guard.sh" ]]; then
+  echo "check-python-lint: cannot locate exported-copy-guard.sh beside this script" >&2
+  echo "  looked in: $CHARNESS_GATE_DIR" >&2
+  echo "The guard must sit beside this script. A copy relocated on its own, or a symlink" >&2
+  echo "whose own directory has no guard, reaches this." >&2
+  exit 2
+fi
+GATE_ACCEPTS_REPO_ROOT_HATCH=0
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=scripts/exported-copy-guard.sh
+source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 
 # Hard failure, not the `check-shell.sh` skip. ruff is a pinned, installed dependency
 # (`integrations/tools/ruff.json` records the lint phase cannot honestly complete
