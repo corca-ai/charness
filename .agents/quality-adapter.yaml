@@ -416,7 +416,14 @@ runtime_budget_profiles:
       # comes from the check running concurrently with ~85 sibling gates, so no
       # uncontended sample can exist for it, and the bar necessarily encodes contention
       # rather than the check's own cost. See #543.
-      check-secrets: 19500
+      #
+      # 2026-08-16: 19500 -> 28500, the FOURTH bar this session to trip on the same
+      # cause. Recent median 19618 over n=20, range 16881-20511, redrawn at 1.4x the
+      # worst recent run (20511 * 1.4 = 28715, rounded down to 28500). The comment
+      # above already says no uncontended sample can exist for this gate, which is
+      # exactly why 19500 -- sitting 1.0x of an observed max -- could not survive a
+      # day with four full-lane runs in it.
+      check-secrets: 28500
       # (contended) was 2000; post-change max 2089
       run-evals: 3000
       # (contended) was 5000; post-change max 6269

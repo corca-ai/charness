@@ -516,6 +516,15 @@ def test_the_t_signal_cli_prints_a_classification_and_exits_zero_without_git(tmp
 # --------------------------------------------------------------------------
 
 
+class _BlockScriptsPackage:
+    """Makes `scripts.*` unimportable for the duration of one test, deterministically."""
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "scripts" or fullname.startswith("scripts."):
+            raise ModuleNotFoundError(f"No module named {fullname!r}")
+        return None
+
+
 def test_the_rca_recorder_loads_when_run_as_a_plain_script(monkeypatch: pytest.MonkeyPatch) -> None:
     """`python3 scripts/record_rca_event.py` puts `scripts/` on the path, not the repo root.
 
@@ -524,9 +533,14 @@ def test_the_rca_recorder_loads_when_run_as_a_plain_script(monkeypatch: pytest.M
     fallback that bound one name and dropped another would import cleanly and then
     fail on the first receipt it tried to render, so all three are asserted.
     """
+    # A meta-path finder, not a `sys.path` filter. Filtering the path leaves whether
+    # `scripts` is reachable dependent on what other tests have already imported, so
+    # this test took the try arm in one run and the fallback in another -- and the
+    # fallback arm it exists to cover was not reliably exercised at all. A finder that
+    # refuses the name outright does not depend on any of that.
+    monkeypatch.setattr(sys, "meta_path", [_BlockScriptsPackage()] + sys.meta_path)
     for name in [name for name in sys.modules if name == "scripts" or name.startswith("scripts.")]:
         monkeypatch.delitem(sys.modules, name)
-    monkeypatch.setattr(sys, "path", [entry for entry in sys.path if Path(entry or ".").resolve() != ROOT])
     monkeypatch.syspath_prepend(str(ROOT / "scripts"))
 
     before = set(sys.modules)
