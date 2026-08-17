@@ -450,3 +450,24 @@ def test_critique_artifact_arg_refuses_a_missing_then_an_untracked_artifact(tmp_
         )
         == relpath
     )
+
+
+def test_critique_artifact_arg_refuses_a_symlink_that_escapes_the_repo(tmp_path: Path) -> None:
+    """The normalization check cannot see this one: the path has no `..` and is not
+    absolute, so only RESOLVING it shows that it leaves the repo. A critique artifact
+    read from outside the tree is evidence nothing in the release can vouch for."""
+    repo = tmp_path / "repo"
+    outside = tmp_path / "outside"
+    outside.mkdir(parents=True)
+    (outside / "x.md").write_text("# elsewhere\n", encoding="utf-8")
+    (repo / "charness-artifacts").mkdir(parents=True)
+    (repo / "charness-artifacts" / "critique").symlink_to(outside, target_is_directory=True)
+
+    with pytest.raises(SystemExit) as exc:
+        _arg_guards().validate_critique_artifact_arg(
+            repo,
+            "charness-artifacts/critique/x.md",
+            run_command=lambda *_a, **_k: _FakeCompleted(returncode=0),
+        )
+
+    assert "must stay inside the repo root" in str(exc.value)

@@ -601,3 +601,19 @@ def test_no_resolver_in_either_root_yields_no_resolver_path(
         output_dir_lib.retro_artifact_prefix(tmp_path / "also-nowhere")
         == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
     )
+
+
+def test_a_blank_output_dir_is_left_alone_rather_than_canonicalised(tmp_path: Path) -> None:
+    """Nothing to canonicalise and nothing to refuse: a blank value is already handled
+    by the callers' own emptiness guards, and rewriting it here would invent a
+    directory the repo never declared."""
+    resolve_adapter = load_script_module(
+        "retro_resolve_adapter_blank", ROOT / "skills/public/retro/scripts/resolve_adapter.py"
+    )
+    validated = {"output_dir": "   "}
+    errors: list[str] = []
+
+    resolve_adapter.canonicalize_output_dir(validated, errors)
+
+    assert validated["output_dir"] == "   "
+    assert errors == []
