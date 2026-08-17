@@ -412,6 +412,22 @@ def _selected_artifacts(args, repo_root: Path, output_dir: Path) -> list[Path] |
     return scoped or None
 
 
+def _owned_prefix(repo_root: Path) -> str | None:
+    """The artifact directory this validator owns, from the adapter.
+
+    A callable, not a constant, because debug is the one family whose output directory
+    is adapter-declared -- and the value is needed AFTER `--repo-root` is parsed. Returns
+    None when the adapter cannot be read: owning nothing restores the previous behavior,
+    and inventing a prefix would refuse named paths against a directory this repo never
+    declared. The adapter failure itself is reported by `_debug_artifacts`.
+    """
+    try:
+        output_dir = load_adapter(repo_root)["data"]["output_dir"]
+    except Exception:  # noqa: BLE001 -- any unreadable adapter means "owns nothing"
+        return None
+    return f"{Path(output_dir).as_posix().rstrip('/')}/"
+
+
 def _debug_artifacts(run) -> list[Path] | None:
     """Resolve the batch through debug's own adapter, not changed-path discovery.
 
@@ -446,6 +462,21 @@ def main() -> int:
         default_repo_root=REPO_ROOT,
         all_help="Validate every checked-in debug artifact.",
         artifact_label="debug artifact",
+        # Without an owned prefix, `unresolvable_named_paths` owns nothing and the
+        # named-path refusal cannot fire: `--paths <a path that does not exist>` printed
+        # "No debug artifacts in scope." and exited 0, having validated nothing. That was
+        # harmless while every emitted command was unscoped, and became a silent pass the
+        # moment the planner and scaffold started naming the artifact being authored --
+        # run the emitted gate before writing the file, or after writing it somewhere
+        # else, and it went green. `retro`, `ideation` and `critique` all declare theirs;
+        # debug is the family that had scoping without the refusal that makes it safe.
+        #
+        # Resolved from the adapter rather than a constant because debug is the one
+        # family whose output directory is adapter-declared. A repo with no readable
+        # adapter yields None, which restores the previous own-nothing behavior -- the
+        # adapter failure is reported by `_debug_artifacts`, and inventing a prefix here
+        # would refuse paths against a directory this repo never declared.
+        owned_prefix=_owned_prefix,
         artifacts_fn=_debug_artifacts,
         validate_factory=lambda run: (
             lambda artifact: validate_debug_artifact(artifact, collect_all=run.collect_all)

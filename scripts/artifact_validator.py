@@ -376,7 +376,7 @@ def run_changed_artifact_validator(
     extra_args: Callable[..., None] | None = None,
     no_scope_message: str | None = None,
     per_artifact_success: bool = False,
-    owned_prefix: str | None = None,
+    owned_prefix: str | Callable[[Path], str | None] | None = None,
     error_cls: type[Exception] = ValidationError,
     on_complete: Callable[[ChangedArtifactRun, Sequence[Path]], None] | None = None,
 ) -> int:
@@ -441,7 +441,14 @@ def run_changed_artifact_validator(
         print(no_scope_message or f"No {artifact_label}s in scope.")
         return 0
     if run.explicit_paths and not artifacts:
-        unresolvable = unresolvable_named_paths(repo_root, list(args.paths or []), owned_prefix=owned_prefix)
+        # A CALLABLE is accepted for the one family whose artifact directory is
+        # adapter-declared rather than constant (debug): a constant cannot express it,
+        # and the value is not knowable until `--repo-root` is parsed. Omitting the
+        # prefix costs the refusal below entirely, which is a silent pass -- not a
+        # missing nicety -- for any validator whose emitted command NAMES a path. A
+        # resolver returning None owns nothing, which is the previous behavior.
+        resolved_prefix = owned_prefix(repo_root) if callable(owned_prefix) else owned_prefix
+        unresolvable = unresolvable_named_paths(repo_root, list(args.paths or []), owned_prefix=resolved_prefix)
         if unresolvable:
             # A DISCOVERED empty set is legitimate (this commit touched no artifact
             # of this family) and stays the cheap no-op below. A named path that

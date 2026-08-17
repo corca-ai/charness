@@ -759,3 +759,60 @@ def test_a_scoped_run_isolates_a_fresh_artifact_from_legacy_corpus_debt(tmp_path
     )
     assert scoped_broken.returncode == 1
     assert "2026-08-17-debug-review.md" in scoped_broken.stdout + scoped_broken.stderr
+
+
+def test_a_named_debug_path_that_resolves_to_nothing_refuses_instead_of_passing(tmp_path: Path) -> None:
+    """Scoping without an owned prefix is a silent pass, which is worse than no scoping.
+
+    `unresolvable_named_paths` owns nothing unless the validator declares a prefix, and
+    debug declared none -- so `--paths <path that does not exist>` printed "No debug
+    artifacts in scope." and exited 0 having validated nothing. Harmless while every
+    emitted command was unscoped; a silent green the moment the planner and scaffold
+    started NAMING the artifact being authored, because running the emitted gate before
+    writing the file (or after writing it elsewhere) is the ordinary case, not an exotic
+    one. `retro`, `ideation` and `critique` all declare theirs.
+    """
+    repo = seed_repo(tmp_path, valid_current_artifact())
+
+    missing = run_script(
+        "scripts/validate_debug_artifact.py",
+        "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-08-17-never-written.md",
+    )
+    assert missing.returncode == 1
+    assert "resolve to nothing" in missing.stdout + missing.stderr
+
+    # The two no-ops the refusal must NOT swallow, both load-bearing because `--paths` is
+    # fed by tools passing a slice of the changed set.
+    unowned = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--paths", "docs/handoff.md"
+    )
+    assert unowned.returncode == 0, unowned.stdout + unowned.stderr
+
+    real = run_script(
+        "scripts/validate_debug_artifact.py",
+        "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/latest.md",
+    )
+    assert real.returncode == 0, real.stdout + real.stderr
+
+
+def test_the_owned_prefix_comes_from_the_adapter_not_a_literal(tmp_path: Path) -> None:
+    # Debug is the one family whose output directory is adapter-declared, so a constant
+    # prefix would refuse correct paths in any repo that declares a different directory.
+    # This repo declares one, and the refusal must key on THAT.
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "artifacts" / "debugs").mkdir(parents=True)
+    (repo / ".agents" / "debug-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\nlanguage: en\noutput_dir: artifacts/debugs\n", encoding="utf-8"
+    )
+    (repo / "artifacts" / "debugs" / "latest.md").write_text(valid_current_artifact(), encoding="utf-8")
+
+    missing = run_script(
+        "scripts/validate_debug_artifact.py",
+        "--repo-root", str(repo),
+        "--paths", "artifacts/debugs/2026-08-17-never-written.md",
+    )
+    assert missing.returncode == 1, missing.stdout + missing.stderr
+    assert "resolve to nothing" in missing.stdout + missing.stderr
