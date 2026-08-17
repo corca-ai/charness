@@ -298,24 +298,31 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
             write_artifact_effect=scaffold["write_artifact_effect"],
             validator_command=scaffold["validator_command"],
         ),
-        # NOT scoped, deliberately, and this is a REVERSAL of a scoping change made in
-        # this same release. `validate_retro_artifact` keys both its candidate filter and
-        # its owned prefix on the literal `charness-artifacts/retro/`, while the path this
-        # packet would name comes from the adapter's `output_dir` -- a required, free-form
-        # consumer key. For a consumer who declares a different directory the two disagree,
-        # and the scoped command printed "Validated 0 retro artifact(s)." and exited 0:
-        # a schema gate reporting green having opened nothing. Measured, not theorised.
+        # Scoped, for the reason the sibling scaffold above already scopes its own
+        # command: unscoped, a corpus validator's exit code mixes THIS artifact's verdict
+        # with legacy-schema debt in unrelated older records, and the operator cannot tell
+        # which one made it red. `--all` stays the audit mode, and the broad gate and CI
+        # already run it.
         #
-        # The debug sibling could be scoped safely because its validator resolves the
-        # owned prefix from the adapter. Giving retro the same resolver means introducing
-        # adapter loading into a validator that has none, which is a verdict-surface
-        # change owing its own proof and review rounds -- not a release-eve edit. Until
-        # then the unscoped corpus command is the honest one: it always judges something.
+        # This scoping was landed once, REVERSED on release eve, and is restored here only
+        # because its precondition now holds. It was reversed because
+        # `validate_retro_artifact` keyed its candidate filter and its owned prefix on the
+        # literal `charness-artifacts/retro/` while the path named below comes from the
+        # adapter's `output_dir`: where a consumer declared a different directory the two
+        # disagreed, and the scoped command printed "Validated 0 retro artifact(s)." and
+        # exited 0 -- a schema gate reporting green having opened nothing. That validator
+        # now resolves its prefix through retro's own adapter, which is what makes the two
+        # halves name one directory. Re-reversing this packet is not the repair if that
+        # ever regresses; the validator's resolver is.
         _packet(
             "retro-artifact-shape",
-            "deterministic Sibling Search follow-up grammar gate; trust section/format failures",
-            run_when="after the retro artifact is written; this validates the checked-in corpus",
-            **_relative_script_command(repo_root, "scripts/validate_retro_artifact.py", "--repo-root", "."),
+            "deterministic Sibling Search follow-up grammar gate for the artifact this run writes;"
+            " trust section/format failures",
+            run_when="after the retro artifact is written; this validates that artifact",
+            **_relative_script_command(
+                repo_root, "scripts/validate_retro_artifact.py",
+                "--repo-root", ".", "--paths", scaffold["write_artifact_path"],
+            ),
         ),
         _packet(
             "auto-session-trigger",

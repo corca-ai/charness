@@ -415,23 +415,21 @@ def test_retired_weekly_keys_pass_through_without_error(tmp_path: Path) -> None:
     adapter_packet = next(p for p in payload["gate_packets"] if p["id"] == "adapter-readiness")
     assert adapter_packet["errors"] == []
     assert adapter_packet["status"] == "pass"
-def test_the_retro_shape_packet_stays_unscoped_until_its_validator_is_adapter_aware(
+def test_the_retro_shape_packet_is_scoped_to_the_artifact_this_run_writes(
     tmp_path: Path,
 ) -> None:
-    """Scoping this packet was tried in-release and REVERSED, and the reversal is the contract.
+    """Scoping this packet was landed, REVERSED on release eve, and is now restored.
 
-    `validate_retro_artifact` keys its candidate filter and its owned prefix on the
-    literal `charness-artifacts/retro/`, while the path this packet would name comes from
-    the adapter's `output_dir` -- a required, free-form consumer key. When they disagree,
-    the scoped command printed "Validated 0 retro artifact(s)." and exited 0: a schema
-    gate reporting green having opened nothing, which is the exact class the debug
-    sibling's scoping slice existed to close.
+    The reversal's reason was real: `validate_retro_artifact` keyed its candidate filter
+    and its owned prefix on the literal `charness-artifacts/retro/`, while the path this
+    packet names comes from the adapter's `output_dir`. Where a consumer declared a
+    different directory the two disagreed, and the scoped command printed "Validated 0
+    retro artifact(s)." and exited 0 -- a schema gate reporting green having opened
+    nothing. That validator now resolves its prefix through retro's own adapter.
 
-    The debug sibling scopes safely because its validator resolves the prefix from the
-    adapter. Retro's validator loads no adapter at all, so giving it one is a
-    verdict-surface change owing its own proof. Until that lands, unscoped is the honest
-    command: it always judges something. Asserted as a REFUSAL so re-adding `--paths`
-    without the resolver fails here rather than shipping the silent pass again.
+    Asserted against the scaffold's OWN `write_artifact_path`, never a literal: a gate
+    pointed at a file nothing writes is the failure this scoping can produce, and a
+    literal here could not see it.
     """
     repo = tmp_path / "repo"
     write_adapter(repo)
@@ -439,11 +437,6 @@ def test_the_retro_shape_packet_stays_unscoped_until_its_validator_is_adapter_aw
     payload = run_plan(repo)
 
     shape = next(p for p in payload["gate_packets"] if p["id"] == "retro-artifact-shape")
-    assert "--paths" not in shape["command"], (
-        "retro's shape packet is scoped again; `validate_retro_artifact` still keys on a "
-        "hardcoded prefix, so an adapter-declared output_dir validates nothing and exits 0"
-    )
-    assert shape["command"].endswith("--repo-root .")
-    # The ordering hint the refusal-prone scoped form would have needed, kept because the
-    # corpus form still must not run before the artifact exists to be judged.
+    scaffold = next(p for p in payload["gate_packets"] if p["id"] == "retro-artifact-scaffold")
+    assert f'--paths {scaffold["write_artifact_path"]}' in shape["command"]
     assert "after the retro artifact is written" in shape["run_when"]

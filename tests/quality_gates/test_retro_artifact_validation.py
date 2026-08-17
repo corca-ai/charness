@@ -318,3 +318,83 @@ def test_date_activated_rules_announce_every_dated_retro_floor(tmp_path: Path) -
         validator.RECURRENCE_LINEAGE_RULE_DATE.isoformat()
     )
     assert rules["persisted-form"]["rule_date"] == validator.PERSISTED_FORM_RULE_DATE.isoformat()
+
+
+_STUB_RESOLVER = '''
+def load_adapter(repo_root):
+    return {"valid": True, "data": {"output_dir": "artifacts/retros"}}
+'''
+
+
+def _repo_with_retro_output_dir(tmp_path: Path, output_dir: str) -> Path:
+    """A repo whose retro adapter declares ``output_dir``, resolved the real way.
+
+    The stub is written at the path `_retro_resolver_path` actually searches, not
+    monkeypatched over it: the fact under test is which directory THIS module binds
+    from a repo's own declaration, and patching the lookup would prove only that the
+    patched value is used.
+    """
+    repo = tmp_path / "consumer"
+    resolver = repo / "skills" / "public" / "retro" / "scripts" / "resolve_adapter.py"
+    resolver.parent.mkdir(parents=True)
+    resolver.write_text(_STUB_RESOLVER.replace("artifacts/retros", output_dir), encoding="utf-8")
+    (repo / output_dir).mkdir(parents=True)
+    return repo
+
+
+def test_retro_prefix_follows_the_repos_declared_output_dir(tmp_path: Path) -> None:
+    repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
+
+    assert retro_validator.retro_artifact_prefix(repo) == "artifacts/retros/"
+
+
+def test_retro_prefix_falls_back_when_the_repo_declares_nothing(tmp_path: Path) -> None:
+    """Not `None` and not `""`: the first cannot glob and the second owns every path."""
+    assert (
+        retro_validator.retro_artifact_prefix(tmp_path / "bare")
+        == retro_validator.DEFAULT_RETRO_ARTIFACT_PREFIX
+    )
+
+
+def test_named_retro_paths_are_not_silently_dropped_under_a_custom_output_dir(
+    tmp_path: Path,
+) -> None:
+    """The reported defect: a `--paths`-scoped run over a consumer's own retro
+    reported `Validated 0 retro artifact(s).` and exited 0, because the candidate
+    filter keyed on this repo's literal prefix rather than that repo's declared one.
+    Zero-validated-and-clean over an artifact the caller NAMED is a fail-quiet, not
+    an empty scope."""
+    repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
+    artifact = repo / "artifacts" / "retros" / "2026-08-17-demo.md"
+    artifact.write_text(_ACTIVATED_RETRO, encoding="utf-8")
+
+    named = retro_validator.candidate_paths(
+        repo, ["artifacts/retros/2026-08-17-demo.md"], all_artifacts=False
+    )
+    swept = retro_validator.candidate_paths(repo, [], all_artifacts=True)
+
+    assert named == [artifact]
+    assert swept == [artifact]
+
+
+def test_a_named_missing_retro_is_refused_under_a_custom_output_dir(tmp_path: Path) -> None:
+    """`unresolvable_named_paths` refuses a named path the validator OWNS but cannot
+    resolve. Bound to a constant, `owned_prefix` owned a directory the consumer never
+    writes to, so a caller naming a nonexistent retro there got a clean exit.
+
+    End-to-end through the script rather than an assertion about its source: the fact
+    under test is that the runner receives a repo-resolved prefix, and reading the
+    argument back out of the file would prove only that the line is written.
+    """
+    repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
+
+    result = run_script(
+        str(ROOT / "scripts" / "validate_retro_artifact.py"),
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "artifacts/retros/2026-08-17-never-written.md",
+    )
+
+    assert result.returncode != 0, result.stdout
+    assert "2026-08-17-never-written.md" in (result.stdout + result.stderr)

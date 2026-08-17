@@ -1122,6 +1122,13 @@
     },
     {
       "class": "intentional",
+      "id": "404a059ceac38dfa",
+      "note": "structural parallel between two SKILL planners' gate-packet lists (plan_retro_run and plan_debug_run): adapter-readiness, then the family's scaffold packet, then its artifact-shape packet scoped to the write path. Surfaced as new because restoring retro's `--paths` scoping realigned it with the debug sibling it had been reversed away from -- the alignment IS the repair, so removing the resemblance would undo it. Not extractable: the shared part (`gate_packet`) is already shared through the run envelope, and everything the detector matched is per-skill literals -- packet ids, validator script names, the verdict-trust description, and retro's own load-bearing comment about why its scoping was reversed once. A builder parameterised by those strings would hide each skill's contract behind an argument list, and skills must ship standalone (check_standalone_imports), so neither planner may import the other.",
+      "reviewed_at": "2026-08-17",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "4065d6cc832fb1ff",
       "note": "the first guard of the new `verdict()` functions in quality/check_changed_line_coverage.py and validate_skill_ergonomics.py -- `if report.get('adapter_errors'): return {'verdict': 'adapter-invalid', ...}`. The migration turned each gate's deleted human renderer into a payload fragment, and the shared word `adapter-invalid` is a deliberate cross-gate vocabulary. The detail strings differ and so does every remaining branch; only two `verdict()` functions exist repo-wide, so there is no convention to centralize yet.",
       "reviewed_at": "2026-08-14",
@@ -3204,6 +3211,13 @@
       "id": "b11ff4a796c94b97",
       "note": "Top-level direct-script bootstrap/import headers are portability plumbing. They cannot be factored before the import path they establish exists, and keeping them local makes each standalone executable's dependencies readable.",
       "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b14f443c53de5180",
+      "note": "identical `from runtime_bootstrap import (...)` block in validate_handoff_artifact and validate_retro_artifact: the same four names (import_repo_module, load_path_module, repo_root_from_script, skill_script), one per line because the single-line form is 101 chars against a 100 limit. Same class as 0190e3e0f4206b43. Surfaced as new because the retro validator gained `skill_script` when its owned prefix became adapter-derived -- i.e. by REPLACING its own copy of that four-line layout search with the shared owner, which is the opposite of new duplication. The only available 'fix' is to stop importing a name the file uses.",
+      "reviewed_at": "2026-08-17",
       "surface": "code"
     },
     {

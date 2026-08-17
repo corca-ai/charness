@@ -21,6 +21,12 @@ _sections = import_repo_module(__file__, "scripts.markdown_sections")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 _lesson_evaluation = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
 _lesson_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
+# Where this repo keeps its retros, resolved from its own adapter rather than from a
+# literal written here. Re-exported so `plan_retro_run` and `seed_retro_memory` -- which
+# load THIS module -- keep one import site.
+_output_dir = import_repo_module(__file__, "scripts.retro_output_dir_lib")
+DEFAULT_RETRO_ARTIFACT_PREFIX = _output_dir.DEFAULT_RETRO_ARTIFACT_PREFIX
+retro_artifact_prefix = _output_dir.retro_artifact_prefix
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
 git_changed_paths = _scripts_artifact_validator_module.git_changed_paths
@@ -95,7 +101,6 @@ _PERSISTED_LINE = re.compile(r"^Persisted:\s+(yes|no):\s+\S.+$")
 RETRO_PREPARE_PACKET_KIND = "charness.retro_prepare_packet"
 RETRO_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Retro Prepare Packet(?:\s+—\s+\S.*)?$")
 
-RETRO_ARTIFACT_PREFIX = "charness-artifacts/retro/"
 GENERATED_DIGEST = "recent-lessons.md"
 SIBLING_BOUNDARY_HEADINGS = (
     "## Context",
@@ -117,22 +122,23 @@ def changed_paths(repo_root: Path) -> list[str]:
     return git_changed_paths(repo_root, artifact_label="retro")
 
 
-def _is_session_artifact(relpath: str) -> bool:
-    if not relpath.startswith(RETRO_ARTIFACT_PREFIX) or not relpath.endswith(".md"):
+def _is_session_artifact(relpath: str, prefix: str) -> bool:
+    if not relpath.startswith(prefix) or not relpath.endswith(".md"):
         return False
-    tail = relpath[len(RETRO_ARTIFACT_PREFIX) :]
+    tail = relpath[len(prefix) :]
     if "/" in tail:  # skip history/ and other nested archives
         return False
     return tail != GENERATED_DIGEST
 
 
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
+    prefix = retro_artifact_prefix(repo_root)
     if all_artifacts:
         return [
             path
             for path in sorted(
                 path
-                for path in (repo_root / RETRO_ARTIFACT_PREFIX).glob("*.md")
+                for path in (repo_root / prefix).glob("*.md")
                 if path.name != GENERATED_DIGEST
             )
             if not file_is_prepare_packet_markdown_kind(
@@ -143,7 +149,7 @@ def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -
         ]
     candidates: list[Path] = []
     for relpath in paths:
-        if _is_session_artifact(relpath):
+        if _is_session_artifact(relpath, prefix):
             path = repo_root / relpath
             if not file_is_prepare_packet_markdown_kind(
                 path,
@@ -381,7 +387,7 @@ def lesson_evaluator_declared(path: Path) -> bool:
     that switches ITSELF off on an unrecognized layout is a floor that silently
     never fires — the exact escape shape the sibling floors' fail-closed
     grandfathering guards. Every real run resolves the directory, because
-    `candidate_paths` only ever yields paths under `RETRO_ARTIFACT_PREFIX`.
+    `candidate_paths` only ever yields paths under `retro_artifact_prefix`.
     """
     directory = path.parent
     if directory.name != "retro" or directory.parent.name != "charness-artifacts":
@@ -421,7 +427,8 @@ def date_activated_rules(repo_root: Path) -> list[dict[str, object]]:
     now announces the same thing from these constants, so the announcement cannot
     drift from the rule it announces.
     """
-    ledger = repo_root / RETRO_ARTIFACT_PREFIX / LESSON_LEDGER_FILENAME
+    prefix = retro_artifact_prefix(repo_root)
+    ledger = repo_root / prefix / LESSON_LEDGER_FILENAME
     declared = ledger.is_file()
     return [
         {
@@ -432,7 +439,7 @@ def date_activated_rules(repo_root: Path) -> list[dict[str, object]]:
                 f"inside `{_lesson_evaluation.SECTION_HEADING}`"
             ),
             "conditional_on": (
-                f"this repo declaring a lesson evaluator ({RETRO_ARTIFACT_PREFIX}{LESSON_LEDGER_FILENAME})"
+                f"this repo declaring a lesson evaluator ({prefix}{LESSON_LEDGER_FILENAME})"
             ),
             "evaluator_declared": declared,
             "enforced_here": declared,
@@ -488,18 +495,19 @@ def report_enforcement_scope(run, artifacts) -> None:
     until tripped, and a disposition duty a repo could not tell it had opted out
     of. Reporting only; it changes no verdict and no exit code.
     """
-    ledger = run.repo_root / RETRO_ARTIFACT_PREFIX / LESSON_LEDGER_FILENAME
+    prefix = retro_artifact_prefix(run.repo_root)
+    ledger = run.repo_root / prefix / LESSON_LEDGER_FILENAME
     declared = ledger.is_file()
     activation = _lesson_evaluation.ACTIVATION_DATE.isoformat()
     if declared:
         print(
             f"Lesson evaluation floor: enforced for retros dated >= {activation} "
-            f"(evaluator declared at {RETRO_ARTIFACT_PREFIX}{LESSON_LEDGER_FILENAME})."
+            f"(evaluator declared at {prefix}{LESSON_LEDGER_FILENAME})."
         )
         return
     print(
         f"Lesson evaluation floor: inert — this repo declares no lesson evaluator "
-        f"({RETRO_ARTIFACT_PREFIX}{LESSON_LEDGER_FILENAME} absent), so no retro owes a disposition. "
+        f"({prefix}{LESSON_LEDGER_FILENAME} absent), so no retro owes a disposition. "
         f"Opt in with `{lesson_ledger_bootstrap_command(run.repo_root)}`; the floor then applies "
         f"from {activation}."
     )
@@ -547,7 +555,10 @@ def main() -> int:
         fail_fast_help=(
             "Stop at the first rule violation instead of reporting every violation in one pass."
         ),
-        owned_prefix=RETRO_ARTIFACT_PREFIX,
+        # A CALLABLE, resolved after `--repo-root` is parsed: the prefix this
+        # validator owns is the one the repo being validated declares, not the one
+        # this file was written in.
+        owned_prefix=retro_artifact_prefix,
         on_complete=report_enforcement_scope,
     )
 
