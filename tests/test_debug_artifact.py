@@ -787,3 +787,57 @@ def test_risk_and_resolution_enum_deviations_join_the_same_report(tmp_path: Path
     assert "`Risk Class: none` cannot be combined with other values" in message
     assert "`Generalization Pressure` must be `none`, `monitor`, or `factor-now` (found `later`)" in message
     assert "`Resolution` must be `open` or `resolved` (found `parked`)" in message
+
+
+def test_marker_problems_from_both_interrupt_blocks_merge_into_one_report(tmp_path: Path) -> None:
+    """A missing seam marker and a missing interrupt marker report TOGETHER (#636):
+    the first block's raise no longer hides the second block's problems."""
+    import pytest
+
+    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact()
+        .replace("- Seam: none\n", "")
+        .replace("- Next Step: impl\n", ""),
+    )
+    artifact = repo / "charness-artifacts" / "debug" / "latest.md"
+    with pytest.raises(ValidationError) as excinfo:
+        validate_debug_artifact(artifact, collect_all=True, current_pointer=artifact)
+    message = str(excinfo.value)
+    assert "missing required line `- Seam: ...`" in message
+    assert "missing required line `- Next Step: ...`" in message
+
+
+def test_an_empty_risk_class_list_is_reported_when_all_markers_extract(tmp_path: Path) -> None:
+    """`- Risk Class: ,` extracts (non-empty raw value) but parses to zero classes."""
+    import pytest
+
+    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact().replace("- Risk Class: none\n", "- Risk Class: ,\n"),
+    )
+    artifact = repo / "charness-artifacts" / "debug" / "latest.md"
+    with pytest.raises(ValidationError) as excinfo:
+        validate_debug_artifact(artifact, collect_all=True, current_pointer=artifact)
+    assert "`Risk Class` must list at least one value" in str(excinfo.value)
+
+
+def test_extract_prefixed_values_reports_an_empty_value_beside_its_siblings() -> None:
+    """The empty-value arm joins the collected report rather than racing it.
+
+    Driven directly because both artifact-level callers strip section lines, so a
+    trailing-space empty value cannot survive to this function through them.
+    """
+    import pytest
+
+    from scripts.validate_debug_artifact import ValidationError, extract_prefixed_values
+
+    with pytest.raises(ValidationError) as excinfo:
+        extract_prefixed_values(["- Seam: ", "- Risk Class: none"], ("- Seam: ", "- Interrupt ID: "))
+    message = str(excinfo.value)
+    assert "`- Seam: ...` must not be empty" in message
+    assert "missing required line `- Interrupt ID: ...`" in message
