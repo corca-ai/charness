@@ -873,40 +873,135 @@ def test_the_same_bytes_get_the_same_verdict_under_either_name(tmp_path: Path) -
     assert legacy.returncode == 0, legacy.stdout + legacy.stderr
 
 
-def test_an_adapter_that_cannot_vouch_for_itself_owns_nothing(tmp_path: Path) -> None:
-    """Both adapter-derived resolvers degrade together, and only when the adapter says so.
+def test_an_adapter_typo_does_not_silently_disarm_the_refusal(tmp_path: Path) -> None:
+    """The regression the first repair shipped, pinned so it cannot come back.
 
-    `load_adapter` does not raise on a malformed file, so a try/except would never fire:
-    an invalid `version` still returns a payload. Keying on `valid` is what stops a
-    garbage prefix from silently disabling the named-path refusal -- which would
-    reintroduce the silent pass through the back door. A MISSING adapter is not a
-    failure; it resolves to the documented default, a real directory this validator owns.
+    Keying the resolvers on the adapter's `valid` flag looked conservative and was not.
+    Debug's `validate_adapter_data` still populates a perfectly good `output_dir` when
+    the adapter is invalid for an UNRELATED reason, so `version: 9` made both resolvers
+    return None -- which turned the named-path refusal back off and left every artifact
+    on the legacy ruleset, with nothing printed, because nothing on this path inspects
+    `valid`. A refusal a one-line typo can disable is the class this slice exists to
+    close. Both resolvers now read the same `output_dir` the batch resolver reads.
     """
     import importlib.util
 
     spec = importlib.util.spec_from_file_location(
-        "validate_debug_artifact_degraded", ROOT / "scripts" / "validate_debug_artifact.py"
+        "validate_debug_artifact_adapter_typo", ROOT / "scripts" / "validate_debug_artifact.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    def seed(name: str, body: str) -> Path:
-        repo = tmp_path / name
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    (repo / ".agents" / "debug-adapter.yaml").write_text(
+        "version: 9\nrepo: demo\nlanguage: en\noutput_dir: charness-artifacts/debug\n",
+        encoding="utf-8",
+    )
+    assert module.load_adapter(repo)["valid"] is False, "premise: this adapter is invalid"
+    assert module._owned_prefix(repo) == "charness-artifacts/debug/"
+    assert module._current_pointer(repo) is not None
+
+    # End to end, which is where the regression was invisible: the refusal still fires.
+    missing = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-08-17-never-written.md",
+    )
+    assert missing.returncode == 1, missing.stdout + missing.stderr
+    assert "resolve to nothing" in missing.stdout + missing.stderr
+
+
+def test_a_blank_declared_output_dir_owns_nothing(tmp_path: Path) -> None:
+    # The guard that IS real. An adapter declaring `output_dir: ""` validates clean, and
+    # an empty prefix would make EVERY named path look owned -- the refusal would fire on
+    # paths belonging to no debug family at all and break ordinary commits, which is the
+    # opposite failure from the one the prefix exists to prevent.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "validate_debug_artifact_blank_dir", ROOT / "scripts" / "validate_debug_artifact.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    for index, declared in enumerate(('""', '"   "')):
+        repo = tmp_path / f"repo{index}"
         (repo / ".agents").mkdir(parents=True)
-        (repo / ".agents" / "debug-adapter.yaml").write_text(body, encoding="utf-8")
-        return repo
+        (repo / ".agents" / "debug-adapter.yaml").write_text(
+            f"version: 1\nrepo: demo\nlanguage: en\noutput_dir: {declared}\n", encoding="utf-8"
+        )
+        assert module.load_adapter(repo)["valid"] is True, "premise: the adapter accepts this"
+        assert module._owned_prefix(repo) is None, f"{declared} must own nothing"
+        assert module._current_pointer(repo) is None
 
-    invalid = seed("invalid", "version: 9\nrepo: demo\nlanguage: en\n")
-    assert module._owned_prefix(invalid) is None
-    assert module._current_pointer(invalid) is None
 
-    # A missing adapter is the documented default, NOT a degradation.
-    absent = tmp_path / "absent"
-    absent.mkdir()
-    assert module._owned_prefix(absent) == "charness-artifacts/debug/"
-    assert module._current_pointer(absent) is not None
+def test_a_copy_layout_pointer_gets_the_same_verdict_as_its_record(tmp_path: Path) -> None:
+    """The layout the first role-keyed repair still left broken.
 
-    # A valid adapter is honoured as declared -- the property a constant prefix breaks.
-    declared = seed("declared", "version: 1\nrepo: demo\nlanguage: en\noutput_dir: artifacts/debugs\n")
-    assert module._owned_prefix(declared) == "artifacts/debugs/"
-    assert module._current_pointer(declared) == declared / "artifacts/debugs" / "latest.md"
+    `refresh_current_pointer` resolves `auto` to a symlink where the filesystem allows it
+    and to a byte COPY otherwise, so a regular-file pointer is a first-class layout. A
+    role test that bailed on `not is_symlink()` left the original two-verdicts-for-one-
+    file defect verbatim for every repo on the copy path -- and for a hard link, which is
+    the same shape. Bytes are the only identity a copy has.
+    """
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    debug_dir = repo / "charness-artifacts" / "debug"
+    body = _strict_only_violation(valid_current_artifact())
+    record = debug_dir / "2026-08-17-debug-review.md"
+    record.write_text(body, encoding="utf-8")
+    # A COPY, not a symlink -- the pointer is a regular file with identical bytes.
+    (debug_dir / "latest.md").write_text(body, encoding="utf-8")
+    assert not (debug_dir / "latest.md").is_symlink(), "premise: the copy layout"
+
+    by_pointer = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/latest.md",
+    )
+    by_record = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    )
+    assert by_pointer.returncode == 1, by_pointer.stdout + by_pointer.stderr
+    assert by_record.returncode == by_pointer.returncode, (
+        "copy-layout pointer and its record were judged differently:\n"
+        f"pointer rc={by_pointer.returncode} record rc={by_record.returncode}\n"
+        f"record output: {by_record.stdout + by_record.stderr}"
+    )
+
+    # A record whose bytes DIFFER from the pointer stays legacy: the copy arm keys on
+    # identity, not on living in the same directory.
+    other = debug_dir / "2026-01-02-unrelated.md"
+    other.write_text(_strict_only_violation(valid_current_artifact()) + "\nextra\n", encoding="utf-8")
+    unrelated = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-01-02-unrelated.md",
+    )
+    assert unrelated.returncode == 0, unrelated.stdout + unrelated.stderr
+
+
+def test_a_looping_current_pointer_renders_a_verdict_instead_of_crashing(tmp_path: Path) -> None:
+    """`Path.resolve()` raises RuntimeError on a symlink loop, not OSError.
+
+    CPython catches the ELOOP `OSError` and re-raises `RuntimeError("Symlink loop from
+    ...")`, so the obvious `except OSError` lets a looping `latest.md` crash the
+    validator with a traceback instead of rendering a verdict -- on a surface whose whole
+    job is to render one. Found by probing the repair rather than by reading it.
+    """
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    debug_dir = repo / "charness-artifacts" / "debug"
+    record = debug_dir / "2026-08-17-debug-review.md"
+    record.write_text(valid_current_artifact(), encoding="utf-8")
+    (debug_dir / "latest.md").unlink()
+    (debug_dir / "latest.md").symlink_to("loop-b.md")
+    (debug_dir / "loop-b.md").symlink_to("latest.md")
+
+    result = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    )
+    assert "Traceback" not in result.stderr, result.stderr
+    assert "RuntimeError" not in result.stderr, result.stderr
+    # The loop makes the role unprovable, so the record is judged as what it looks like:
+    # a dated record. Unprovable-therefore-legacy is the honest arm here -- the strict
+    # schema is claimed by the pointer, and the pointer is unreadable.
+    assert result.returncode == 0, result.stdout + result.stderr
+

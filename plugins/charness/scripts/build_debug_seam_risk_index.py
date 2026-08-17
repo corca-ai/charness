@@ -73,9 +73,24 @@ def build_index(repo_root: Path) -> dict[str, Any]:
     risk_class_counts: dict[str, int] = {}
     generalization_pressure_counts: dict[str, int] = {}
 
-    artifact_paths = sorted(
-        path for path in output_dir.glob("*.md") if path.name != "seam-risk-index.md"
-    )
+    # Deduplicated by resolved identity, and the pointer's name wins. Where `latest.md`
+    # is a symlink the glob yields it AND its target, so ONE interrupt was indexed twice
+    # -- once with `is_current_pointer: true`, once `false` -- and double-counted in
+    # `risk_class_counts`, `generalization_pressure_counts` and `indexed_artifact_count`.
+    # This is a reporting surface, so the cost was a silently inflated tally rather than a
+    # wrong verdict, but it is the same one-file-two-roles class the validator's role test
+    # closes, and a reader cannot see the inflation from the output.
+    _by_identity: dict[Path, Path] = {}
+    for path in sorted(output_dir.glob("*.md")):
+        if path.name == "seam-risk-index.md":
+            continue
+        key = path.resolve() if path.exists() else path
+        existing = _by_identity.get(key)
+        # The pointer's name is the role-bearing one: keeping it is what lets the single
+        # surviving entry still report `is_current_pointer: true`.
+        if existing is None or (existing.name != "latest.md" and path.name == "latest.md"):
+            _by_identity[key] = path
+    artifact_paths = sorted(_by_identity.values())
     for artifact_path in artifact_paths:
         interrupt = parse_debug_interrupt(artifact_path)
         rel_path = _relative(repo_root, artifact_path)

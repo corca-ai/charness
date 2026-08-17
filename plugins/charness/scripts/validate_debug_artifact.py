@@ -24,6 +24,11 @@ def _resolver_path(repo_root: Path) -> Path:
 _debug_resolve_adapter = load_path_module("debug_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _debug_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+# The #548 SINGLE OWNER of what a current pointer resolves to. Imported rather than
+# re-derived: five private copies of this rule were consolidated into it precisely
+# because nothing forced them to agree, and the role test below is where a seventh
+# would have gone.
+_scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
 run_changed_artifact_validator = _scripts_artifact_validator_module.run_changed_artifact_validator
@@ -338,32 +343,71 @@ def validate_dated_seam_risk_enums(lines: list[str]) -> None:
         )
 
 
-def is_current_artifact(path: Path, current_pointer: Path | None = None) -> bool:
-    """Does the CURRENT (strict) schema govern this file, or the legacy dated one?
+def _same_resolved_path(left: Path, right: Path) -> bool:
+    """Do these two names designate one file, with a symlink loop answered rather than raised.
 
-    Keyed on ROLE, not on filename. The filename test alone gave the same bytes two
-    different verdicts depending on which name reached them: where `latest.md` is a
-    symlink, `--paths <the pointer>` ran the strict checks and `--paths <its target>`
-    ran only the legacy ones. That was invisible while every emitted command was
-    unscoped -- the corpus glob yields `latest.md` too, so the strict checks always ran
-    on the current content under SOME name. Scoping the emitted command to the artifact
-    being authored removed that other name, so an artifact the scaffold writes in the
-    current shape (its template carries `## Invariant Proof`, `## Sibling Search`,
-    `## Seam Risk`, `## Interrupt Decision`) was judged by the legacy rules, and a
-    missing `disconfirmer:` or `cross-file:` marker passed. Nothing caught it because
-    no test pinned WHICH ruleset a scoped run selects.
-
-    Blind class: this reads the pointer as it stands NOW. A run that validates a record
-    before the pointer is refreshed onto it sees a legacy record and says so -- correct
-    for what is on disk, and the reason the scaffold's own emitted command names the
-    pointer as well as the record.
+    RuntimeError is not redundant alongside OSError: CPython's `Path.resolve()` catches
+    the ELOOP `OSError` and re-raises `RuntimeError("Symlink loop from ...")`. An
+    `except OSError` alone therefore lets a looping pointer crash this validator with a
+    traceback instead of rendering a verdict -- on a surface whose whole job is to render
+    one. Measured on a two-link loop, not inferred from the docs.
     """
-    if path.name == "latest.md":
+    try:
+        return left.resolve() == right.resolve()
+    except (OSError, RuntimeError):
+        return False
+
+
+def is_current_artifact(path: Path, current_pointer: Path | None = None) -> bool:
+    """Does the CURRENT (strict) schema govern this file, or the legacy dated one?"""
+    # Keyed on ROLE, not on filename. The filename test alone gave the same bytes two
+    # different verdicts depending on which name reached them: `--paths <the pointer>` ran
+    # the strict checks and `--paths <what the pointer designates>` ran only the legacy
+    # ones. That was invisible while every emitted command was unscoped -- the corpus glob
+    # yields the pointer too, so the strict checks always ran on the current content under
+    # SOME name. Scoping the emitted command to the artifact being authored removed that
+    # other name, so an artifact the scaffold writes in the current shape was judged by the
+    # legacy rules and a missing `disconfirmer:` or `cross-file:` marker passed.
+    #
+    # BOTH supported pointer layouts are covered, and the first repair covered only one.
+    # `refresh_current_pointer.py` resolves `auto` to a symlink where the filesystem allows
+    # it and to a byte COPY otherwise, so a regular-file pointer is a first-class layout,
+    # not a degenerate case -- and a repair that bailed on `not is_symlink()` left the
+    # original defect verbatim for every repo on the copy path (and for a hard link, which
+    # is the same shape). The symlink arm delegates to `current_pointer_state`, the #548
+    # single owner of what a pointer resolves to, rather than re-deriving it here for a
+    # seventh time; the copy arm compares bytes, which is the only identity a copy has.
+    #
+    # Blind class: this reads the pointer as it stands NOW. A run that validates a record
+    # before the pointer is refreshed onto it sees a legacy record and says so -- correct
+    # for what is on disk. On the copy layout it also cannot distinguish "this record IS
+    # the current artifact" from "this record happens to be byte-identical to it"; both get
+    # the strict schema, which is the safe direction and, for identical bytes, the same
+    # verdict either way.
+    if current_pointer is None:
+        return path.name == "latest.md"
+    if _same_resolved_path(path, current_pointer):
         return True
-    if current_pointer is None or not current_pointer.is_symlink():
+    try:
+        state = _scaffold_artifact_lib.current_pointer_state(
+            current_pointer.parent, Path(current_pointer.name)
+        )
+    except (OSError, RuntimeError):
+        # The #548 owner resolves the target through `portable_path`, so a LOOPING
+        # pointer raises out of it. Guarded here rather than in the owner: that function
+        # has five callers and hardening it is a change to their behavior too, which
+        # belongs in its own slice with its own proof. Recorded so the next reader knows
+        # this guard is standing in for a gap upstream, not decorating an impossible case.
+        return False
+    if state["current_pointer_is_symlink"]:
+        # Already answered by the identity check above; a symlink that did not match is
+        # pointing somewhere else, and reading its target's bytes would make an unrelated
+        # copy look current.
+        return False
+    if not current_pointer.is_file():
         return False
     try:
-        return current_pointer.resolve() == path.resolve()
+        return current_pointer.read_bytes() == path.read_bytes()
     except OSError:
         return False
 
@@ -433,7 +477,16 @@ def _selected_artifacts(args, repo_root: Path, output_dir: Path) -> list[Path] |
     gained by flipping the default and a lot of working callers would break.
     """
     if args.all or args.paths is None:
-        return sorted(output_dir.glob("*.md"))
+        # Deduplicated by resolved identity. With a symlinked pointer the glob yields the
+        # pointer AND its target, and now that both take the same (strict) branch a
+        # violation was reported TWICE -- with identical text and identical labels, since
+        # the reporter resolves the path, so the pointer's own name never appeared. One
+        # file, one entry; the pointer's name is kept because it is the role-bearing one.
+        seen: dict[Path, Path] = {}
+        for candidate in sorted(output_dir.glob("*.md")):
+            key = candidate.resolve() if candidate.exists() else candidate
+            seen.setdefault(key, candidate)
+        return sorted(seen.values())
     prefix = f"{output_dir.relative_to(repo_root).as_posix()}/"
     scoped = [
         repo_root / rel
@@ -445,23 +498,30 @@ def _selected_artifacts(args, repo_root: Path, output_dir: Path) -> list[Path] |
 
 
 def _adapter_output_dir(repo_root: Path) -> str | None:
-    """The adapter-declared output directory, or None when the adapter does not vouch for it.
-
-    Keyed on the adapter's own `valid`, not on a try/except: `load_adapter` does not raise
-    on a malformed file, it returns a payload. An unclosed YAML sequence parses to the
-    STRING `[unclosed`, which as an owned prefix matches no real path -- so the named-path
-    refusal would silently never fire, which is the failure mode the prefix exists to
-    prevent, reintroduced through the back door. `valid: False` is the adapter saying it
-    cannot vouch for its own contents, and owning nothing there restores the pre-scoping
-    behavior rather than refusing paths against a directory nobody declared.
-
-    A MISSING adapter is not a failure: it resolves to the documented default, which is a
-    real directory this validator legitimately owns.
-    """
-    adapter = load_adapter(repo_root)
-    if not adapter.get("valid"):
-        return None
-    output_dir = adapter.get("data", {}).get("output_dir")
+    """The output directory, read exactly as `_debug_artifacts` reads it."""
+    # Deliberately NOT keyed on the adapter's `valid` flag, which the first repair tried
+    # and which was a net regression. Two reasons, both measured against the real resolver:
+    #
+    # * It does not catch what it was written for. `output_dir: [unclosed` parses to the
+    # plain STRING `[unclosed` with no errors -- `valid: True` -- so the garbage prefix
+    # passed the check anyway. What actually stops that run is `_debug_artifacts`
+    # refusing a directory that does not exist, which fired before any of this.
+    # * In the direction it DID bite, it disarmed the repair it was part of. Debug's
+    # `validate_adapter_data` still populates a perfectly good `output_dir` when the
+    # adapter is invalid for an unrelated reason (`version: 9`, a bad `repo` type), so a
+    # one-line adapter typo made this return None -- which silently turned the
+    # named-path refusal back off AND left every artifact on the legacy ruleset, with
+    # nothing printed, because `_debug_artifacts` never inspects `valid` either. A
+    # refusal disabled by a typo is the exact class this whole slice exists to close.
+    #
+    # Reading the same value `_debug_artifacts` uses is what keeps the two paths from
+    # disagreeing about one adapter. The blank guard below stays, because that one is real.
+    output_dir = load_adapter(repo_root).get("data", {}).get("output_dir")
+    # An adapter declaring `output_dir: ""` (or whitespace) validates clean, and an empty
+    # prefix would make EVERY named path look owned -- the refusal would then fire on
+    # paths belonging to no debug family at all, breaking ordinary commits. That is the
+    # opposite failure from the one the prefix exists to prevent, so it is guarded here
+    # rather than left to the directory check.
     if not isinstance(output_dir, str) or not output_dir.strip():
         return None
     return output_dir
@@ -513,6 +573,20 @@ def _debug_artifacts(run) -> list[Path] | None:
     return artifacts
 
 
+def _validate_factory(run):
+    """Bind the per-RUN state once, not once per artifact.
+
+    `_current_pointer` reads and parses the adapter, and inlining it in the inner lambda
+    ran that find-read-parse-validate cycle for every artifact in the corpus -- ~150
+    times on a full sweep, on the repo's own commit-boundary latency budget. It is
+    per-run state; the outer factory is where per-run state belongs.
+    """
+    current_pointer = _current_pointer(run.repo_root)
+    return lambda artifact: validate_debug_artifact(
+        artifact, collect_all=run.collect_all, current_pointer=current_pointer
+    )
+
+
 def _exit_not_a_violation(message: str) -> None:
     print(message, file=sys.stderr)
     raise SystemExit(1)
@@ -539,11 +613,7 @@ def main() -> int:
         # would refuse paths against a directory this repo never declared.
         owned_prefix=_owned_prefix,
         artifacts_fn=_debug_artifacts,
-        validate_factory=lambda run: (
-            lambda artifact: validate_debug_artifact(
-                artifact, collect_all=run.collect_all, current_pointer=_current_pointer(run.repo_root)
-            )
-        ),
+        validate_factory=_validate_factory,
         no_scope_message="No debug artifacts in scope.",
         per_artifact_success=True,
         fail_fast_help=(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import re
 import shutil
 import subprocess
@@ -626,6 +627,12 @@ def test_the_dependency_walk_survives_a_source_it_cannot_read(tmp_path: Path) ->
     `is_file()` arm covers absence; this covers present-but-unreadable, which is the one
     a permissions-restricted checkout hits.
     """
+    if os.geteuid() == 0:
+        # chmod does not stop root, so the walk would read the file, complete normally,
+        # and both asserts below would pass with the repair reverted -- a green test
+        # proving nothing. Root is the default in most CI containers, so this skip is
+        # the difference between a guard and a decoration.
+        pytest.skip("running as root: chmod cannot make a file unreadable")
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     for rel in _AUTHORING_PREFLIGHT.PREFLIGHT_ROOTS:

@@ -175,3 +175,31 @@ def test_build_debug_seam_risk_index_check_rejects_stale_index(tmp_path: Path, m
     assert result.returncode == 1
     assert "debug seam-risk index" in result.stderr
     assert "--write" in result.stderr
+
+
+def test_a_symlinked_pointer_indexes_one_interrupt_not_two(tmp_path: Path, monkeypatch, capsys) -> None:
+    """One file reached by two names was counted twice, inflating every tally.
+
+    Where `latest.md` is a symlink -- the ordinary layout -- the glob yields the pointer
+    AND its target, so a single interrupt produced two entries (`is_current_pointer`
+    true and false) and was double-counted in `risk_class_counts`,
+    `generalization_pressure_counts` and `indexed_artifact_count`. A reader cannot see
+    that inflation from the output, which is what makes it worth a test rather than a
+    note: this is a reporting surface, so the failure is a confidently wrong number.
+    """
+    repo = seed_repo(tmp_path, ("2026-04-22-host-seam.md", debug_artifact()))
+    debug_dir = repo / "charness-artifacts" / "debug"
+    (debug_dir / "latest.md").symlink_to("2026-04-22-host-seam.md")
+
+    result = run_debug_seam_risk_index(monkeypatch, capsys, "--repo-root", str(repo), "--write")
+    assert result.returncode == 0, result.stderr
+    index = json.loads((debug_dir / "seam-risk-index.json").read_text(encoding="utf-8"))
+
+    assert index["indexed_artifact_count"] == 1
+    assert len(index["entries"]) == 1
+    assert index["risk_class_counts"] == {"external-seam": 1}
+    assert index["generalization_pressure_counts"] == {"factor-now": 1}
+    # The POINTER's name survives, because it is the role-bearing one: dropping it in
+    # favour of the target would leave the index with no current-pointer entry at all.
+    assert index["entries"][0]["artifact_path"] == "charness-artifacts/debug/latest.md"
+    assert index["entries"][0]["is_current_pointer"] is True
