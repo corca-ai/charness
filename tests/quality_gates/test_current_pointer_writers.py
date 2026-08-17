@@ -256,6 +256,36 @@ def test_release_record_reports_the_executed_preflight_commands(tmp_path: Path) 
     assert "  - executed: `pytest tests/quality_gates/test_release_real_host.py -q`" in text
 
 
+def test_release_record_names_the_preflight_command_that_failed(tmp_path: Path) -> None:
+    """A failed preflight aborts the publish, but the record it already wrote is what
+    a reader inspects afterwards; it has to name which command failed and what had
+    run before it, not just that the section exists."""
+    text = _release_record(
+        tmp_path / "repo",
+        release_adapter_preflight_payload={
+            "status": "required",
+            "previous_ref": "refs/tags/v0.1.0",
+            "adapter_paths": [".agents/release-adapter.yaml"],
+            "changed_fields": ["real_host_checklist"],
+            "commands": [["pytest", "a", "-q"], ["pytest", "b", "-q"]],
+            "execution": {
+                "status": "failed",
+                "executed_commands": ["pytest a -q"],
+                "failed_command": "pytest b -q",
+            },
+        },
+    )
+
+    assert "- Previous release ref: `refs/tags/v0.1.0`" in text
+    assert "- Adapter paths in release delta:" in text
+    assert "  - `.agents/release-adapter.yaml`" in text
+    assert "- Changed adapter fields:" in text
+    assert "  - `real_host_checklist`" in text
+    assert "Focused preflight execution: `failed`." in text
+    assert "  - executed: `pytest a -q`" in text
+    assert "  - failed: `pytest b -q`" in text
+
+
 def test_capability_catalog_noops_when_canonical_inventory_unchanged(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     inventory = {

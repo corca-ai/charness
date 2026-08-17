@@ -236,6 +236,23 @@ def test_release_adapter_preflight_records_what_it_executed(tmp_path: Path) -> N
     ]
 
 
+def test_bump_rationale_refuses_a_forged_release_state_sentinel() -> None:
+    """The value is rendered verbatim into the record, and other surfaces prove
+    release state by substring-matching it. Refused at argument time, before any
+    mutation -- unlike a heading, a sentinel cannot be demoted without changing what
+    the operator wrote about release state."""
+    preflight = _load_release_module("publish_release_preflight")
+    claims = _load_release_module("publish_release_claims_review")
+
+    assert preflight.validate_bump_rationale_arg(None) is None
+    assert preflight.validate_bump_rationale_arg("patch: a validator repair") == "patch: a validator repair"
+
+    with pytest.raises(SystemExit) as exc:
+        preflight.validate_bump_rationale_arg(f"patch <!-- {claims.MARKER} -->")
+
+    assert "--bump-rationale" in str(exc.value)
+
+
 def test_release_adapter_preflight_records_that_nothing_was_required(tmp_path: Path) -> None:
     preflight = _load_release_module("publish_release_preflight")
     payload = {"status": "not_required", "reason": "adapter unchanged", "commands": []}
