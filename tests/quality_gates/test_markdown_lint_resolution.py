@@ -17,6 +17,7 @@ a second copy would be a fixture that drifts from the gate it fixtures.
 """
 from __future__ import annotations
 
+import ast
 import os
 import re
 from pathlib import Path
@@ -157,6 +158,38 @@ _NPM_EXEC_PATTERNS = (
 )
 
 
+def _docstring_line_numbers(text: str) -> frozenset[int]:
+    """Line numbers occupied by module/class/function docstrings.
+
+    Parsed rather than pattern-matched, and deliberately NARROWER than "every string
+    literal": an argv call site is `["npm", "exec", "--no", ...]`, whose lines carry
+    string constants too, and skipping those would hide the very call sites this scan
+    exists to find. Only docstrings -- prose that cannot execute -- are excluded.
+
+    A file that does not parse contributes nothing here, so its prose is scanned as
+    before; that is the conservative direction (a false blocker on unparseable Python,
+    which a repo-owned script is not).
+    """
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return frozenset()
+    lines: set[int] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        body = getattr(node, "body", None)
+        if not body:
+            continue
+        first = body[0]
+        if not (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)):
+            continue
+        if not isinstance(first.value.value, str):
+            continue
+        lines.update(range(first.lineno, (first.end_lineno or first.lineno) + 1))
+    return frozenset(lines)
+
+
 def test_no_repo_owned_source_reaches_the_npm_registry_through_exec() -> None:
     """Every repo-owned `npm exec` call site refuses an install, in ANY language.
 
@@ -172,14 +205,23 @@ def test_no_repo_owned_source_reaches_the_npm_registry_through_exec() -> None:
         if not path.is_file() or path.suffix not in {".sh", ".py"}:
             continue
         rel = path.relative_to(ROOT).as_posix()
-        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        text = path.read_text(encoding="utf-8")
+        prose_lines = _docstring_line_numbers(text) if path.suffix == ".py" else frozenset()
+        for line_no, line in enumerate(text.splitlines(), start=1):
             stripped = line.strip()
             # `#` only. A shell `case` default arm begins `*)` and can carry a real
             # command (`*) npm exec -- markdownlint-cli2 ;;`), so skipping `*` would
-            # hide exactly the call site this scan exists to find. Python docstring
-            # prose is instead handled by the whole-flag pattern below, which does not
-            # match a sentence describing the unguarded spelling.
+            # hide exactly the call site this scan exists to find.
             if stripped.startswith("#"):
+                continue
+            # Docstring prose is skipped STRUCTURALLY, by parsing. The retired version
+            # claimed the whole-flag pattern handled it; it did not. `markdownlint_probe`
+            # documents the unguarded `npm exec --` spelling in prose, and that sentence
+            # matched -- passing the guard only because a later `--no` happened to land
+            # on the same physical line. Two consequences, both bad: reflowing the
+            # sentence would have gone red on pure prose, and the liveness anchor below
+            # could be satisfied by a file whose real call site had been deleted.
+            if line_no in prose_lines:
                 continue
             for pattern in _NPM_EXEC_PATTERNS:
                 match = pattern.search(stripped)
@@ -196,7 +238,8 @@ def test_no_repo_owned_source_reaches_the_npm_registry_through_exec() -> None:
     assert "scripts/check-markdown.sh" in " ".join(scanned)
     assert "scripts/check-secrets.sh" in " ".join(scanned)
     # The Python call site moved out of check_doc_authoring_preflight.py into its own
-    # engine-adapter module when that file hit its length cap. This anchor is doing
-    # exactly its job by failing on that move: it is what proves the scan still reaches
-    # the Python lane after `scripts/` is reorganized, which is the rot it guards.
+    # engine-adapter module when that file hit its length cap. With docstrings excluded
+    # above, this anchor now means what it says: an EXECUTABLE npm-exec line exists in
+    # the Python lane. Deleting the real tier while leaving the prose that describes it
+    # fails here, which is the rot this anchor guards.
     assert "scripts/markdownlint_probe.py" in " ".join(scanned)

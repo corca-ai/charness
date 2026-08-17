@@ -92,6 +92,32 @@ def markdownlint_engine_ran(stdout: str, stderr: str, *, found_violations: bool 
     )
 
 
+def parse_markdownlint_findings(stdout: str, stderr: str, rel: str) -> list[dict[str, Any]]:
+    """Violations the engine reported for ``rel``, from either stream.
+
+    Extracted so callers that need the same "did it run" answer -- notably the no-drift
+    test helper -- derive ``found_violations`` from the SAME parse production uses. When
+    the helper spelled its own weaker check, a banner-suppressed consumer config made
+    production report a correct forecast while the helper called it unmeasured.
+    """
+    findings: list[dict[str, Any]] = []
+    for stream in (stderr, stdout):
+        for line in stream.splitlines():
+            match = _MARKDOWNLINT_LINE_RE.match(line.strip())
+            if not match or match.group("file") != rel:
+                continue
+            findings.append(
+                {
+                    "line": int(match.group("line")),
+                    "col": int(match.group("col")) if match.group("col") else None,
+                    "rule": match.group("rule"),
+                    "name": match.group("name"),
+                    "desc": match.group("desc").strip(),
+                }
+            )
+    return findings
+
+
 def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
     """Run markdownlint-cli2 on the single target file, parsing its findings.
 
@@ -114,21 +140,7 @@ def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
         capture_output=True,
         text=True,
     )
-    findings: list[dict[str, Any]] = []
-    for stream in (proc.stderr, proc.stdout):
-        for line in stream.splitlines():
-            match = _MARKDOWNLINT_LINE_RE.match(line.strip())
-            if not match or match.group("file") != rel:
-                continue
-            findings.append(
-                {
-                    "line": int(match.group("line")),
-                    "col": int(match.group("col")) if match.group("col") else None,
-                    "rule": match.group("rule"),
-                    "name": match.group("name"),
-                    "desc": match.group("desc").strip(),
-                }
-            )
+    findings = parse_markdownlint_findings(proc.stdout, proc.stderr, rel)
     # Parse BEFORE deciding whether the engine ran: parsed violations are as strong a
     # proof of a run as the banner, and guarding the parse instead would discard real
     # findings from a banner-suppressed (`noBanner`) consumer repo -- turning a correct

@@ -197,21 +197,37 @@ def _real_gate_inline_code(repo: Path) -> int:
     )
 
 
-#: Set in every CI job that runs this suite AFTER putting `node_modules/.bin` on PATH.
-#: Without it, a machine with no reachable markdownlint engine takes the unforecast
-#: branch of every markdownlint arm below and reports PASS -- red tests quietly turned
-#: vacuous, which is a worse outcome than the failure this suite was repaired from.
-#: Where it is set, a skipped arm is a hard failure instead.
+#: Strict by DEFAULT; a machine opts out. The first spelling had this backwards -- the
+#: flag was opt-IN and set only in two CI jobs, so every local run and the pre-push gate
+#: skipped all three markdownlint arms and reported green. That inverts this repo's own
+#: rule one layer up ("unforecast, never falsely clean"): the test default became
+#: vacuous-never-red on exactly the machines a maintainer watches.
 REQUIRE_MARKDOWNLINT_ENV = "CHARNESS_REQUIRE_MARKDOWNLINT"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _repo_node_bin_on_path() -> None:
+    """Make the engine reachable from a fixture repo, instead of demanding a global install.
+
+    The fixture repos live under `tmp_path`, so the preflight's `node_modules/.bin` tier
+    resolves against the FIXTURE root and structurally cannot hit -- which is why these
+    arms went unmeasured everywhere except a host with a global markdownlint-cli2. This
+    repo already installs one via `npm ci`; putting its bin dir on PATH is what turns the
+    PATH tier into a hit and lets the arms actually run wherever the repo is set up.
+    """
+    local_bin = ROOT / "node_modules" / ".bin"
+    if (local_bin / "markdownlint-cli2").exists():
+        os.environ["PATH"] = f"{local_bin}{os.pathsep}{os.environ['PATH']}"
 
 
 def _refuse_or_note_unrun_markdownlint() -> None:
     reason = (
-        "markdownlint-cli2 did not run here, so this arm proved nothing. Put "
-        "node_modules/.bin on PATH (npm ci) or install markdownlint-cli2."
+        "markdownlint-cli2 did not run here, so this arm proved nothing. Run `npm ci` "
+        "in the repo, or install markdownlint-cli2 on PATH. To accept an unmeasured "
+        f"markdownlint class, set {REQUIRE_MARKDOWNLINT_ENV}=0."
     )
-    if os.environ.get(REQUIRE_MARKDOWNLINT_ENV) == "1":
-        pytest.fail(f"{REQUIRE_MARKDOWNLINT_ENV}=1 but {reason}")
+    if os.environ.get(REQUIRE_MARKDOWNLINT_ENV, "1") != "0":
+        pytest.fail(reason)
     pytest.skip(reason)
 
 
@@ -231,7 +247,12 @@ def _real_gate_markdownlint(repo: Path) -> int | None:
     # reached them (`1240348b7`): the fixture repos live under `tmp_path`, so only the
     # `npm exec --no` tier resolves there, and it refuses instead of linting. `None`
     # means unmeasured, which is what the callers already skip on.
-    if not _pf.markdownlint_engine_ran(proc.stdout, proc.stderr):
+    # `found_violations` is passed here for the same reason production passes it: on a
+    # consumer config that suppresses the banner, omitting it reports a real run as
+    # unmeasured, and with the strict default that turns a CORRECT forecast into a hard
+    # failure. The helper and the code under test must agree on what "ran" means.
+    findings = _mlp.parse_markdownlint_findings(proc.stdout, proc.stderr, "docs/handoff.md")
+    if not _pf.markdownlint_engine_ran(proc.stdout, proc.stderr, found_violations=bool(findings)):
         return None
     return proc.returncode
 
@@ -653,13 +674,13 @@ def test_markdownlint_resolution_walks_all_three_tiers(
     local.write_text("#!/bin/sh\n", encoding="utf-8")
 
     # Tier 1 wins over everything, and `repo_root` is not consulted.
-    monkeypatch.setattr(_mlp.shutil, "which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(_mlp, "shutil", SimpleNamespace(which=lambda name: f"/usr/bin/{name}"))
     assert _pf._resolve_markdownlint_cmd(tmp_path) == ["markdownlint-cli2"]
 
     # Tier 2: no binary on PATH, but the repo has run `npm install`. npm must NOT be
     # reached — asking it to find a file already sitting in the tree pays the whole
     # cost for none of the benefit, which is half of what #630 reported.
-    monkeypatch.setattr(_mlp.shutil, "which", lambda name: "/usr/bin/npm" if name == "npm" else None)
+    monkeypatch.setattr(_mlp, "shutil", SimpleNamespace(which=lambda name: "/usr/bin/npm" if name == "npm" else None))
     local.chmod(0o755)
     assert _pf._resolve_markdownlint_cmd(tmp_path) == [str(local)]
 
@@ -676,7 +697,7 @@ def test_markdownlint_resolution_walks_all_three_tiers(
     assert argv[:3] == ["npm", "exec", "--no"]
 
     # Nothing resolves: the caller must be able to say "not forecast" rather than crash.
-    monkeypatch.setattr(_mlp.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(_mlp, "shutil", SimpleNamespace(which=lambda _name: None))
     assert _pf._resolve_markdownlint_cmd(tmp_path) is None
 
 
@@ -701,6 +722,14 @@ def test_a_resolved_engine_that_never_ran_is_reported_unavailable_not_clean(
     # the latter is process-wide, so `build_report` below would also intercept the
     # `git ls-files` that collect_doc_links reaches through repo_file_listing, and the
     # second half of this test would be proving something other than it claims.
+    # The resolver is pinned too, not just subprocess: collect_markdownlint reaches
+    # resolve_markdownlint_cmd FIRST, so on a host with neither markdownlint-cli2 nor npm
+    # it would take the nothing-resolved branch and this test would fail for a reason that
+    # has nothing to do with what it asserts.
+    monkeypatch.setattr(
+        _mlp, "resolve_markdownlint_cmd",
+        lambda _repo_root=None: ["npm", "exec", "--no", "--", "markdownlint-cli2"],
+    )
     monkeypatch.setattr(
         _mlp, "subprocess", SimpleNamespace(run=lambda *_a, **_k: refusal)
     )
@@ -744,6 +773,37 @@ def test_no_engine_at_all_reports_unforecast_and_names_the_right_remedy(
     assert "resolved as" not in warning
 
 
+def test_a_broken_adapter_marks_its_two_classes_unforecast_instead_of_clean(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The completeness hole `unforecast_classes` was added with, and had.
+
+    `_handoff_rel` swallows any adapter load failure and returns None, which is right for
+    a repo with NO handoff surface and wrong for one whose adapter is malformed: the
+    length-cap and regenerable-fact classes both resolve their surface through it, so a
+    YAML typo rendered both as "measured, nothing found", `blocked` stayed False, the
+    command exited 0 and closeout_bundle_lib recorded a passed gate. A field named
+    `unforecast_classes` that reported `[]` on that report was a completeness claim this
+    surface had not earned -- worse than no field, because a reader trusts `[]`.
+    """
+    repo = _seed_repo(tmp_path, _BROKEN_FIXTURE)
+
+    def refuse(_repo_root):
+        raise ValueError("adapter is malformed")
+
+    monkeypatch.setattr(_pf._handoff, "load_adapter", refuse)
+    report = _pf.build_report(repo, "docs/handoff.md", None)
+
+    payload = report.to_dict()
+    assert "length" in payload["unforecast_classes"]
+    assert "regenerable_facts" in payload["unforecast_classes"]
+    assert any("adapter" in w for w in report.warnings)
+    # The classes really did collapse -- this is the silence being reported, not an
+    # unrelated flag: the length surface resolved to nothing despite a breaching fixture.
+    assert report.length["surface"] is None
+    assert report.length["over"] is False
+
+
 def test_violations_without_a_banner_are_kept_not_discarded(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -759,6 +819,9 @@ def test_violations_without_a_banner_are_kept_not_discarded(
         args=[], returncode=1, stdout="",
         stderr="docs/handoff.md:4:1 error MD004/ul-style Unordered list style "
                "[Expected: asterisk; Actual: dash]\n",
+    )
+    monkeypatch.setattr(
+        _mlp, "resolve_markdownlint_cmd", lambda _repo_root=None: ["markdownlint-cli2"]
     )
     monkeypatch.setattr(
         _mlp, "subprocess", SimpleNamespace(run=lambda *_a, **_k: no_banner)

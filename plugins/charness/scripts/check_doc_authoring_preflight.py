@@ -93,6 +93,23 @@ def _handoff_rel(repo_root: Path) -> str | None:
     return Path(rel).as_posix() if rel else None
 
 
+def adapter_load_failed(repo_root: Path) -> bool:
+    """Did the handoff adapter exist but refuse to load?
+
+    `_handoff_rel` swallows the failure and returns None, which is right for its callers
+    -- no adapter means no capped surface -- but it makes a MALFORMED adapter
+    indistinguishable from an absent one. That silence feeds both `_length_surfaces` and
+    `collect_regenerable_facts`, so a YAML typo turns two rule classes into
+    "measured, nothing found" and the command exits 0 with an empty report. `absent` and
+    `broken` are separated here so `unforecast_classes` can name the second.
+    """
+    try:
+        _handoff.load_adapter(repo_root)
+    except Exception:  # noqa: BLE001 -- the point IS that any load failure counts
+        return True
+    return False
+
+
 def _length_surfaces(repo_root: Path) -> tuple[LengthSurface, ...]:
     handoff_rel = _handoff_rel(repo_root)
     surfaces: list[LengthSurface] = []
@@ -279,6 +296,13 @@ class Report:
     regenerable_facts: list[dict[str, Any]]
     length: dict[str, Any]
     warnings: list[str] = field(default_factory=list)
+    #: Classes whose collector could not measure at all, set by `build_report`. A field
+    #: rather than a purely derived value BECAUSE the causes are heterogeneous: an engine
+    #: that did not run, and an adapter that would not load. The first spelling derived
+    #: the whole list from the markdownlint key alone, which made `[]` read as
+    #: "everything was measured" on a report where two other classes had silently
+    #: collapsed -- a completeness claim this surface had not earned.
+    unforecast: tuple[str, ...] = ()
 
     @property
     def blocked(self) -> bool:
@@ -300,10 +324,19 @@ class Report:
         records "passed" from that returncode, so an unmeasured class was indistinguishable
         from a clean one in the durable artifact. The exit code is deliberately NOT changed
         (it would turn every machine without a local markdownlint into a failing closeout);
-        what changes is that the payload now says so in a field, not only in prose inside a
+        what changes is that the payload says so in a field, not only in prose inside a
         truncated stdout blob.
+
+        Known-incomplete, stated rather than implied: a markdownlint run whose findings a
+        consumer's `outputFormatters` redirected reports `available: True` having measured
+        nothing (see `markdownlint_probe.markdownlint_engine_ran`), and this list cannot
+        see it. `[]` means "no class reported itself unmeasured", not "everything was
+        measured" — the strongest claim the collectors actually support.
         """
-        return [] if self.markdownlint["available"] else ["markdownlint"]
+        unforecast = list(self.unforecast)
+        if not self.markdownlint["available"]:
+            unforecast.append("markdownlint")
+        return sorted(set(unforecast))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -352,12 +385,26 @@ def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Repo
                 "markdownlint-cli2 (and npm) unavailable: the markdownlint rule class was "
                 "not forecast; the markdown gate still runs it at commit time."
             )
+    unforecast: list[str] = []
+    if adapter_load_failed(repo_root):
+        # The length cap and the regenerable-fact classes BOTH resolve their surface
+        # through the handoff adapter, and `_handoff_rel` swallows a load failure. Left
+        # silent, a YAML typo renders both as "measured, nothing found" and the command
+        # exits 0 -- the durable artifact then records a passed closeout for two classes
+        # that never ran.
+        unforecast.extend(("length", "regenerable_facts"))
+        warnings.append(
+            "the handoff adapter exists but did not load, so the length-cap and "
+            "regenerable-fact classes were not forecast (they resolve their surface "
+            "through it); fix the adapter to get those two classes back."
+        )
     return Report(
         target=rel,
         markdownlint=markdownlint,
         wrapped_inline_code=collect_wrapped_inline_code(doc),
         doc_links=collect_doc_links(repo_root, doc),
         regenerable_facts=collect_regenerable_facts(repo_root, doc, rel, as_surface),
+        unforecast=tuple(unforecast),
         length=collect_length(repo_root, doc, rel, as_surface),
         warnings=warnings,
     )

@@ -4584,6 +4584,13 @@
       "note": "idiom-sized `for node in ast.walk(tree): if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div): continue` traversal prologue shared by two unrelated export detectors: `export_self_sufficiency_lib.unshipped_path_findings` asks whether a path chain names a repo-root entry the export omits, and `check_export_safe_imports._probes_both_layouts` asks whether a module builds the exported `skills/<id>/` form as well as the dev-tree one. The three shared lines are the standard way to reach `Path` `/` chains in an AST; everything after them diverges completely, and the two return different types to different callers. Factoring the prologue into a helper would couple two independently-owned detectors through a traversal utility for no shared decision. Surfaced as new because the unshipped-path guards were reordered this session (#612 changed-line work), which shifted the member's line range and re-fingerprinted the family; the shared lines themselves were not edited.",
       "reviewed_at": "2026-08-17",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "57e10b6bfb42a94d",
+      "note": "an IMPORT block (`os`/`re`/`shutil`/`subprocess`, `pathlib.Path`, `typing.Any`, under `from __future__ import annotations`) shared by scripts/markdownlint_probe.py and skills/public/quality/scripts/nose_tool_lib.py (untouched, unrelated subsystem). Same class already accepted as 36b2225b307ee288: not extractable by construction -- imports cannot be factored out. Every import in the new file is used, so the family cannot be dissolved by editing either member. Two modules that both resolve and shell out to an external binary converge on this set. Surfaced as new only because the markdownlint engine adapter was split out of check_doc_authoring_preflight.py at its 480-line cap, creating a second file carrying the block the original already had.",
+      "reviewed_at": "2026-08-17",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

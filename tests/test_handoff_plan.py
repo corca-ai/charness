@@ -18,6 +18,31 @@ CHUNKED_ROUTING_TEXT = (ROOT / "skills/public/handoff/references/chunked-routing
 _handoff_validator = import_repo_module(ROOT / "scripts" / "validate_handoff_artifact.py", "scripts.validate_handoff_artifact")
 
 
+def load_module_from_path(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+#: The dependency manifest the plan's availability probe reads. Loaded rather than
+#: retyped so a test can never disagree with the shipped tuple about which files the
+#: emitted command actually needs.
+_AUTHORING_PREFLIGHT = load_module_from_path(
+    ROOT / "skills/public/handoff/scripts/handoff_authoring_preflight.py",
+    "handoff_authoring_preflight_for_plan_tests",
+)
+
+
+def _preflight_module():
+    return _AUTHORING_PREFLIGHT
+
+
+def module_preflight_entrypoint() -> str:
+    return _AUTHORING_PREFLIGHT.PREFLIGHT
+
+
 def load_plan_module(path: Path = SCRIPT_PATH):
     spec = importlib.util.spec_from_file_location(f"handoff_plan_test_module_{path.parent.parent.parent.name}", path)
     assert spec is not None and spec.loader is not None
@@ -551,19 +576,41 @@ def test_handoff_plan_briefs_the_rules_whenever_the_next_action_writes(tmp_path:
     module = load_plan_module()
     repo = seed_repo(tmp_path, handoff_body(current_lines=module.MAX_CONTENT_LINES + 2))
     (repo / "scripts").mkdir()
-    # Seed BOTH files the emitted command needs. The rules mode imports
-    # `doc_authoring_rules` at runtime, so a repo carrying only the entrypoint
+    # Seed EVERY file the emitted command needs, read from the manifest rather than
+    # named here. The rules mode imports `doc_authoring_rules` and the preflight imports
+    # `markdownlint_probe`, both at module scope, so a repo carrying only the entrypoint
     # gets a command that dies on import.
-    for name in ("check_doc_authoring_preflight.py", "doc_authoring_rules.py"):
-        shutil.copy(ROOT / "scripts" / name, repo / "scripts")
+    dependencies = _AUTHORING_PREFLIGHT.preflight_dependencies(ROOT)
+    for rel in dependencies:
+        shutil.copy(ROOT / rel, repo / rel)
     plan = run_plan("--repo-root", str(repo), "--intent", "pickup")
 
     assert plan["next_action"]["kind"] == "repair_or_prune_handoff"
-    assert [r for r in plan["required_reads"] if r.get("kind") == "preflight"]
+    preflight_reads = [r for r in plan["required_reads"] if r.get("kind") == "preflight"]
+    assert preflight_reads
 
-    # The probe must cover every file the emitted command needs, not just the
-    # entrypoint. Deleting the runtime-imported half must SUPPRESS the read;
-    # while the probe checked one file, this repo state still advertised it.
-    (repo / "scripts" / "doc_authoring_rules.py").unlink()
-    degraded = run_plan("--repo-root", str(repo), "--intent", "pickup")
-    assert [r for r in degraded["required_reads"] if r.get("kind") == "preflight"] == []
+    # COMPLETENESS, not self-consistency. The retired version of this guard seeded
+    # whatever the dependency tuple named and then asserted each of those entries was
+    # required -- which passes for ANY tuple, including the two-entry one that omitted
+    # twelve files. Running the command it advertised is the only thing that can tell
+    # the two apart, and it is what this assertion does.
+    emitted = preflight_reads[0]["command"]
+    ran = subprocess.run(
+        emitted.split(), cwd=repo, check=False, capture_output=True, text=True
+    )
+    assert "ModuleNotFoundError" not in ran.stderr, (
+        f"the plan advertised a command that cannot import in the repo it probed:\n{ran.stderr}"
+    )
+
+    # And deleting ANY derived dependency must SUPPRESS the read rather than advertise a
+    # command that crashes. Parametrized over the derived closure, so a new sibling import
+    # is covered with no edit here.
+    for rel in dependencies:
+        removed = repo / rel
+        removed.unlink()
+        degraded = run_plan("--repo-root", str(repo), "--intent", "pickup")
+        assert [r for r in degraded["required_reads"] if r.get("kind") == "preflight"] == [], (
+            f"deleting {rel} left the preflight advertised; the emitted command would "
+            "die on import"
+        )
+        shutil.copy(ROOT / rel, removed)
