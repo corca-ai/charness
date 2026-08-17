@@ -90,8 +90,15 @@ def test_broken_fixture_surfaces_all_classes_in_one_pass(tmp_path: Path) -> None
     repo = _seed_repo(tmp_path, _BROKEN_FIXTURE)
     report = _pf.build_report(repo, "docs/handoff.md", "handoff")
 
-    rules = {row["rule"] for row in report.markdownlint["findings"]}
-    assert "MD004" in rules, f"markdownlint should forecast MD004; saw {rules}"
+    if report.markdownlint["available"]:
+        rules = {row["rule"] for row in report.markdownlint["findings"]}
+        assert "MD004" in rules, f"markdownlint should forecast MD004; saw {rules}"
+    else:
+        # No engine reachable from this fixture repo (see markdownlint_engine_ran). The
+        # class is reported unforecast rather than clean, and the OTHER classes below
+        # still have to surface -- the one-pass claim is what this test is for.
+        assert not report.markdownlint["findings"]
+        assert any("markdownlint" in warning for warning in report.warnings)
     assert report.wrapped_inline_code, "wrapped inline-code span not surfaced"
     assert any(
         row["kind"] == "backticked-ref" and row["detail"] == "scripts/real_target.py"
@@ -189,10 +196,18 @@ def _real_gate_markdownlint(repo: Path) -> int | None:
     cmd = _pf._resolve_markdownlint_cmd(repo)
     if cmd is None:
         return None
-    return subprocess.run(
+    proc = subprocess.run(
         [*cmd, "--no-globs", "docs/handoff.md"],
         cwd=repo, check=False, capture_output=True, text=True,
-    ).returncode
+    )
+    # A resolved-but-unrun engine has no verdict to drift from. Comparing its exit code
+    # against the forecast is what made these no-drift arms red in CI on every run that
+    # reached them (`1240348b7`): the fixture repos live under `tmp_path`, so only the
+    # `npm exec --no` tier resolves there, and it refuses instead of linting. `None`
+    # means unmeasured, which is what the callers already skip on.
+    if not _pf.markdownlint_engine_ran(proc.stdout, proc.stderr):
+        return None
+    return proc.returncode
 
 
 def test_no_drift_broken_fixture_matches_real_gate_verdicts(tmp_path: Path) -> None:
@@ -634,3 +649,41 @@ def test_markdownlint_resolution_walks_all_three_tiers(
     # Nothing resolves: the caller must be able to say "not forecast" rather than crash.
     monkeypatch.setattr(_pf.shutil, "which", lambda _name: None)
     assert _pf._resolve_markdownlint_cmd(tmp_path) is None
+
+
+def test_a_resolved_engine_that_never_ran_is_reported_unavailable_not_clean(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Resolution is not execution, and the gap used to render as a clean forecast.
+
+    `npm exec --no` resolves whenever npm is on PATH and then REFUSES when the package
+    is in no reachable node_modules — the shape every CI run of this suite hit, because
+    the fixture repos are under `tmp_path`. Availability keyed on resolution reported
+    that as "markdownlint forecast, no findings": a proof surface calling a class clean
+    that it never measured. The stand-in below is npm's own refusal, verbatim.
+    """
+    repo = _seed_repo(tmp_path, _BROKEN_FIXTURE)
+    refusal = subprocess.CompletedProcess(
+        args=[], returncode=1, stdout="",
+        stderr='npm error npx canceled due to missing packages and no YES option: '
+               '["markdownlint-cli2@0.23.2"]\n',
+    )
+    monkeypatch.setattr(_pf.subprocess, "run", lambda *_a, **_k: refusal)
+
+    collected = _pf.collect_markdownlint(repo, "docs/handoff.md")
+    assert collected == {"available": False, "findings": []}
+
+    # And the report says so, rather than leaving the class silently absent.
+    report = _pf.build_report(repo, "docs/handoff.md", "handoff")
+    assert any("markdownlint" in warning for warning in report.warnings)
+
+
+def test_the_engine_banner_is_what_proves_a_run() -> None:
+    # The positive arm of the guard above: markdownlint-cli2's own banner, and a clean
+    # run (exit 0, no violation lines) still counts as HAVING run. Without this arm the
+    # guard could be satisfied by "any output at all" and would read npm's error text as
+    # a successful lint.
+    assert _pf.markdownlint_engine_ran("markdownlint-cli2 v0.21.0 (markdownlint v0.40.0)\n", "")
+    assert _pf.markdownlint_engine_ran("", "markdownlint-cli2 v0.21.0 (markdownlint v0.40.0)\n")
+    assert not _pf.markdownlint_engine_ran("", "npm error npx canceled\n")
+    assert not _pf.markdownlint_engine_ran("", "")

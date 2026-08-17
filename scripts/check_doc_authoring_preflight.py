@@ -50,6 +50,11 @@ _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 _markdown_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 _path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
 
+# markdownlint-cli2's first output line, on every run it makes: ``markdownlint-cli2 v0.21.0
+# (markdownlint v0.40.0)``. It is the only evidence available here that the ENGINE ran, as
+# opposed to a wrapper that resolved and then refused.
+_MARKDOWNLINT_BANNER_RE = re.compile(r"^markdownlint-cli2 v\S+")
+
 # A markdownlint-cli2 per-violation line: ``<file>:<line>[:<col>] error MDxxx/rule desc``.
 _MARKDOWNLINT_LINE_RE = re.compile(
     r"^(?P<file>.+?):(?P<line>\d+)(?::(?P<col>\d+))?\s+(?:error\s+)?(?P<rule>MD\d+)/(?P<name>\S+)\s*(?P<desc>.*)$"
@@ -169,6 +174,33 @@ def _resolve_markdownlint_cmd(repo_root: Path | None = None) -> list[str] | None
     return None
 
 
+def markdownlint_engine_ran(stdout: str, stderr: str) -> bool:
+    """Did markdownlint-cli2 itself run, or only the wrapper that would launch it?
+
+    Blind class, stated before the acceptance: this reads OUTPUT, so it cannot
+    distinguish an engine that ran and printed nothing from one that never started —
+    markdownlint-cli2 always prints its banner, and the day it stops, this reads every
+    run as a non-run (fail-closed: the class is reported unforecast, never falsely
+    clean). It equally cannot see WHY a non-run happened; the caller gets a boolean, and
+    the operator gets the gate's own message.
+
+    Why it exists: ``_resolve_markdownlint_cmd``'s npm tier resolves whenever ``npm`` is
+    on PATH, which says nothing about whether the package is reachable. ``npm exec --no``
+    — the spelling #630 asks for, and the one this mirror already uses — refuses rather
+    than installing, so on a machine with no local ``markdownlint-cli2`` it exits 1 having
+    linted nothing. Keying availability on resolution reported that as ``available: True``
+    with zero findings: a proof surface saying the markdownlint class was forecast and
+    clean, when it was never run. That is the shape CI failed on (Quality Core,
+    ``1240348b7``); the fixture repos are under ``tmp_path``, so the ``node_modules/.bin``
+    tier cannot hit and the npm tier is always the one taken there.
+    """
+    return any(
+        _MARKDOWNLINT_BANNER_RE.match(line.strip())
+        for stream in (stdout, stderr)
+        for line in stream.splitlines()
+    )
+
+
 def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
     """Run markdownlint-cli2 on the single target file, parsing its findings.
 
@@ -191,6 +223,10 @@ def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
         capture_output=True,
         text=True,
     )
+    if not markdownlint_engine_ran(proc.stdout, proc.stderr):
+        # Resolved but did not run. Reporting this as available-with-no-findings is the
+        # false-clean the banner check exists to close; see markdownlint_engine_ran.
+        return {"available": False, "findings": []}
     findings: list[dict[str, Any]] = []
     for stream in (proc.stderr, proc.stdout):
         for line in stream.splitlines():

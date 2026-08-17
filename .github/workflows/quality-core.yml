@@ -149,7 +149,18 @@ jobs:
         run: pip install -r packaging/mutation-requirements.txt
 
       - name: Install JS dependencies
-        run: npm ci
+        # `node_modules/.bin` on PATH, which `npm ci` alone does not do. The suite's
+        # doc-authoring fixtures build throwaway repos under `tmp_path`, so the
+        # preflight's `node_modules/.bin` tier resolves against the FIXTURE root and
+        # cannot hit; without PATH the only tier left is `npm exec --no`, which refuses
+        # rather than installing (#630's spelling, deliberately) and lints nothing. That
+        # is why three doc-authoring-preflight tests were red on every run of this job
+        # that reached them. The preflight now reports an unrun engine as unforecast
+        # instead of clean, so the tests would SKIP their markdownlint arms here; this
+        # line is what keeps them measured instead of skipped.
+        run: |
+          npm ci
+          echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
 
       - name: Install validation binaries
         run: |
