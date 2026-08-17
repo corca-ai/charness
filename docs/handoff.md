@@ -4,75 +4,76 @@
 
 - Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <date-slug>`
   BEFORE any brief or reviewer spawn. `--session-id` and `--seed` are both required and
-  take the SAME value, so the selection is reproducible and citable.
+  take the SAME value, so the selection is reproducible and citable. The command now
+  prints the frozen bundle path on stderr; cite it in this session's durable artifact.
 - Then run `## Next Session` item 1.
 
 ## Continuation Capability
 
-- The [last session retro](../charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md) carries the 5/5 fix-carries-its-class measurement, five anchored lesson scores, and
-  three sibling-search axes with two deferred follow-up anchors.
-- The executed [real-host checklist record](../charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist.json) is
-  at `v5` with ten raw transcripts beside it; read its `non_claims` before citing it.
+- The [last session retro](../charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md)
+  carries five anchored lesson scores and the three-count defect this session repeated.
 - The digest a session reads before work is [recent lessons](../charness-artifacts/retro/recent-lessons.md).
 
 ## Current State
 
-- **The released tag's real-host checklist is fully executed** — 3 confirmed, 1 REFUTED, 3
-  precondition-unmet or partial, each with a raw transcript beside the
-  record: [real-host checklist](../charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist.json).
-- **The `nose` doctor item demanded an unreachable disposition and is now corrected.**
-  A missing `nose` reports `blocking-install-needed`; `scripts/doctor_lib.py:237` emits
-  advisory only for `mode: manual` or `doctor_policy: advisory`. Reproduce the missing
-  arm without uninstalling: `env PATH=/usr/bin:/bin $(command -v charness) tool doctor nose --no-write-locks`.
-- **Three release-checklist items were unexecutable as written**; all three are repaired
-  in the [release adapter](../.agents/release-adapter.yaml). Re-read that block before trusting any item.
-- **`<plugin-dir>/` is a DOC placeholder no runtime substitutes**, as its owner
-  [check_plugin_dir_references.py](../scripts/check_plugin_dir_references.py) states. Never
-  put it in a field an executor runs. Only release declares its RUN fields; critique/retro
-  `command:` and `integrations/tools/*.json` `checks.*.commands` do not — follow-up 3.
-- **The export instruction arm blocks on consumer `.md` and inventories the rest.** Re-measure
-  with `python3 scripts/check_export_self_sufficiency.py --repo-root .`; expect
-  `consumer_doc_repo_root_instructions: []` and ~79 advisory module-prose entries.
-- **The installed-vs-repo skew is CLOSED**, which only the push could do: the managed
-  checkout at `~/.agents/src/charness` fast-forwards from origin and nothing else moves it.
-  Re-check with `diff -rq ~/.agents/src/charness/plugins/charness plugins/charness`.
+- **#612's blocking signal is closed; the lane is NOT proven green.**
+  `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --base-sha 1c1acd9`
+  exits 4 (PARTIAL): every MAPPED file's changed lines are covered, and 24 unmapped
+  files were never judged. Mutation CI samples on a fresh seed each run.
+- **The mutation lane does not run on push.** [mutation-tests.yml](../.github/workflows/mutation-tests.yml)
+  fires on `schedule` (`17 */12 * * *`) and `workflow_dispatch` only, and it holds
+  `issues: write`, so a manual dispatch can file or update an issue.
+- **Quality Core failed on `1240348b7` in the push mirror, and the cause is not in that
+  commit.** Four tests failed there (three in [doc authoring preflight](../tests/test_doc_authoring_preflight.py),
+  one in [mutate and restore](../tests/quality_gates/test_mutate_and_restore.py)); all 92 pass locally, the failures read as markdownlint
+  resolving to nothing in CI, and no failing test's subject was touched. Suspected the
+  registry-dependent `npm exec` path in
+  [#630](https://github.com/corca-ai/charness/issues/630). Confirm against the run on
+  `5db3df78a` before treating it as flaky.
+- **A proof-surface slice now costs two review rounds and finds defects in both.**
+  Round 2 found the class inside round 1's repair again, 6/6 for this repo. The floor is
+  in [operating contract](./conventions/operating-contract.md) Critique Discipline, and
+  the [session retro](../charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md)
+  records both instances with the reviewer findings that produced them.
+- **[#617](https://github.com/corca-ai/charness/issues/617) is closed; its third surface
+  is not done.** The command and retro reference the bundle; the work workflow does not,
+  filed as [#635](https://github.com/corca-ai/charness/issues/635).
 - Re-prove with `python3 scripts/run_standing_pytest.py` after
   `python3 scripts/sync_root_plugin_manifests.py`, then
-  `python3 -m ruff check --no-cache scripts skills tests`.
-- **COMMIT the slice, THEN run the changed-line proof** — `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --refuse-unestablished`
-  reads `base..HEAD`, so running it on a dirty pool proves nothing.
+  `python3 -m ruff check --no-cache scripts skills tests`, then `-m release_only`.
+- **COMMIT the slice, THEN run the changed-line proof** —
+  `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --refuse-unestablished`
+  reads `base..HEAD`, so a dirty pool proves nothing. Run it BEFORE the broad lane.
 
 ## Next Session
 
-1. **Give `prove`'s stop gate the blind-class question** for detector-touching slices — a
-   question, not a gate. Two measured instances stand behind it, recorded in the
-   session retro: [2026-08-16 retro](../charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md).
-2. **Follow-up `export-instruction-spellings`.** The new arm matches ONE spelling. Live misses
-   include the dot-slash and `bash`-prefixed forms in the quality skill's
+1. **Confirm or refute the CI flake** named in `## Current State` before any new slice;
+   a red main that nobody owns is worse than a known-red one.
+2. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
+   [#631](https://github.com/corca-ai/charness/issues/631),
+   [#632](https://github.com/corca-ai/charness/issues/632), and
+   [#630](https://github.com/corca-ai/charness/issues/630).** All four look repaired in
+   main but are still open. #617's closeout is the worked template: run each issue's own
+   reproduction, then the closeout floor. Do NOT close on code that merely looks right —
+   the #617 reviewer refused exactly that premise.
+3. **Follow-up `export-instruction-spellings`.** The arm matches ONE spelling. Live
+   misses include the dot-slash and `bash`-prefixed forms in the quality skill's
    [catalog](../skills/public/quality/references/catalog.yaml); `.sh` and `.mjs` are unscanned.
-3. **Follow-up `executed-field-declaration`.** Declare executed adapter fields the way
+4. **Follow-up `executed-field-declaration`.** Declare executed adapter fields the way
    [resolve_adapter.py](../skills/public/release/scripts/resolve_adapter.py) already does
    with `EXECUTED_COMMAND_FIELDS`, so a classifier can key on the FIELD, not the file type.
-4. **[#546](https://github.com/corca-ai/charness/issues/546) residual** — separating
+5. **[#546](https://github.com/corca-ai/charness/issues/546) residual** — separating
    "legitimately conditional" from "abandoned behind an opt-in" still needs an
    adapter-declared expectation; a prior repair was measured defective and reverted.
-5. **Unowned residuals** — the seeder cold-start re-prompt and file mode in
-   [#625](https://github.com/corca-ai/charness/issues/625), graduated lessons held `active`
-   against the budget in [#626](https://github.com/corca-ai/charness/issues/626), and the
-   deferred Sibling Search item where
-   `test_a_bare_shipped_directory_reference_is_still_not_reported` passes at an earlier
-   `.exists()` branch. Inspect it with
-   `rg -n -A12 'def test_a_bare_shipped_directory' tests/quality_gates/test_export_self_sufficiency.py`.
 
 ## Discuss
 
-- **The two-round critique cap now has a number against it: 5/5.** Every bounded round
-  last session found the defect inside the REPAIR, one layer down each time — prose claim,
-  evidence marker, wrong command, machine-readable field, exemption reason. All three
-  slices hit the cap, so all three shipped round-2 repairs accepted-unreviewed. Does a
-  proof-surface slice owe review until a round returns clean?
-- **A bulk rewrite of command-shaped strings owes a written executor check first.** Two of
-  five rounds trace to one blanket regex that broke five working commands.
+- **Nothing asks "was this counted?"** Three unenumerated counts landed in durable
+  artifacts this session, one transcribed from another artifact and asserted as an own
+  measurement. Is that a validator question or only a lesson?
+- **`release_only` is invisible to the gate.** The coverage producer runs
+  `-m 'not release_only'`, so any refusal proven solely there is unmeasured. Two lines
+  read as uncovered for exactly this reason. Widen the producer, or accept and document?
 - **This bullet IS an SC14 anchor — do not tidy it away.** The
   [dominance test](../tests/quality_gates/test_command_dominance.py) substitutes into the
   real handoff and needs the bare backticked `python3 scripts/run_standing_pytest.py`, with no flags inside
