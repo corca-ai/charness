@@ -13,26 +13,26 @@
 - The [release record](../charness-artifacts/release/latest.md) holds the published
   version, its verification state, and the distinct-channel readback.
 - The [claims review](../charness-artifacts/release-review/2026-08-17-v6.0.1-prepared-claims-review.md)
-  holds the bump rationale, the non-claims, and the three items it generated.
+  holds the published release's bump rationale and non-claims; its three code items ship here.
 - The digest a session reads before work is [recent lessons](../charness-artifacts/retro/recent-lessons.md).
 
 ## Current State
 
-- **A release published this session; the record could not carry its own bump rationale.**
-  The [claims review](../charness-artifacts/release-review/2026-08-17-v6.0.1-prepared-claims-review.md)
-  holds it, and names the two template defects that forced that.
-- **The claims round found a FALSE CLAIM four code rounds missed** — see the corrected
-  [release critique](../charness-artifacts/critique/2026-08-17-release-v6-0-1.md), which
-  had asserted a rationale lived in a record that has no field for it.
-- **`validate_retro_artifact.py` keys its candidate filter and owned prefix on a hardcoded
-  prefix while its planner path is adapter-declared.** Not reachable today: the scoping
-  that would expose it was reversed before the tag. Reproduce with
-  `python3 scripts/validate_retro_artifact.py --repo-root <repo-with-custom-output_dir> --paths <its retro>`.
-- **Three verdict-surface edits shipped with one bounded round, not two** — recorded
-  `accepted-unreviewed` in the [claims review](../charness-artifacts/release-review/2026-08-17-v6.0.1-prepared-claims-review.md),
-  against the two-round floor in [operating contract](./conventions/operating-contract.md).
-- **[quality/latest.md](../charness-artifacts/quality/latest.md) is stale** — it asserts as
-  open two issues since closed. Deliberately not hand-edited; regenerate, do not patch.
+- **Three verdict-surface slices shipped with NO bounded fresh-eye review.** A
+  session-level instruction prohibited subagent spawning, so the two-round floor in
+  [operating contract](./conventions/operating-contract.md) is unproven, not discharged.
+  Re-read `0ac795c6e`, `fab375d13`, `d4aac10c4` before building on them.
+- **The release record now carries a bump rationale and binds two former literals.**
+  `--bump-rationale` reaches a `## Bump Rationale` section; the no-drift sentence and the
+  adapter focused preflight render an executed disposition or say none was recorded.
+- **The resume lane now runs the drift check and the focused preflight it was claiming.**
+  See [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py);
+  both run before the first push, so a failure stops short of the boundary.
+- **`validate_retro_artifact.py` resolves its prefix from the adapter**, and the retro
+  planner's shape packet is scoped again. Reproduce the old defect with
+  `python3 -m pytest tests/quality_gates/test_retro_artifact_validation.py -k custom_output_dir`.
+- **[quality/latest.md](../charness-artifacts/quality/latest.md) is still stale** — it
+  asserts as open two issues since closed. Regenerate, do not patch; see item 1.
 - **The [#548 single-owner pointer resolver](../scripts/scaffold_artifact_lib.py) raises on a
   looping symlink.** Guarded at one call site only; it has five callers.
 - Re-prove with `python3 scripts/run_standing_pytest.py` after
@@ -44,35 +44,31 @@
 
 ## Next Session
 
-1. **Give the release record a bump-rationale field.** Its writer
-   [publish_release_artifact.py](../skills/public/release/scripts/publish_release_artifact.py) neither
-   takes nor writes one, so the policy's say-why requirement cannot land in the artifact
-   an outside reader gets.
-2. **Bind two lines in [publish_release_artifact.py](../skills/public/release/scripts/publish_release_artifact.py)
-   to their dispositions** — the no-version-drift sentence is an unconditional literal, and
-   the adapter focused preflight prints `required` with no executed state.
-3. **Give [validate_retro_artifact.py](../scripts/validate_retro_artifact.py) the
-   adapter-derived prefix its debug sibling has**, then re-scope the retro shape packet in
-   [plan_retro_run.py](../skills/public/retro/scripts/plan_retro_run.py). Its test asserts
-   the ABSENCE of `--paths` today and must flip with it.
-4. **Regenerate the [quality record](../charness-artifacts/quality/latest.md)** by running
+1. **Regenerate the [quality record](../charness-artifacts/quality/latest.md)** by running
    `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root .` and following
-   its plan; do not hand-edit a dated measurement snapshot.
-5. **[#636](https://github.com/corca-ai/charness/issues/636) residual** — the scoping half
-   shipped; the case-sensitive authoring markers that fail one at a time did not.
-6. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
+   its plan. It is a full `quality` workflow, not a rerun: six required reads, a structural
+   review packet, and a maintainer-local enforcement disposition. Do not hand-edit it.
+2. **[#636](https://github.com/corca-ai/charness/issues/636) residual** — the scoping half
+   shipped (both halves now); the case-sensitive authoring markers that fail one at a time
+   did not.
+3. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
    [#631](https://github.com/corca-ai/charness/issues/631),
    [#632](https://github.com/corca-ai/charness/issues/632),
    [#630](https://github.com/corca-ai/charness/issues/630).** Run each issue's own
    reproduction first; do NOT close on code that merely looks right.
+4. **Prove `--bump-rationale` survives a real resume.** It is rebuilt from arguments, so a
+   dropped flag publishes a record saying none was recorded. Only the planner's
+   [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
+   names it; nothing refuses the omission.
 
 ## Discuss
 
 - **Consumers owe an upgrade step no shipped surface names.** A symlinked debug
   `latest.md` needs its seam-risk index regenerated after upgrade or `--check` fails.
   Should the release adapter carry per-release update instructions?
-- **The boundary-bypass gate has no scoped rotation accept.** Four rotations this session
-  each rewrote the whole baseline; the dup ratchet's `--accept-rotation` is the better shape.
+- **The boundary-bypass gate has no scoped rotation accept.** Four rotations in the last
+  release session each rewrote the whole baseline; the dup ratchet's `--accept-rotation`
+  is the better shape.
 - **This bullet IS an SC14 anchor — do not tidy it away.** The
   [dominance test](../tests/quality_gates/test_command_dominance.py) substitutes into the
   real handoff and needs the bare backticked `python3 scripts/run_standing_pytest.py`, with no flags inside
