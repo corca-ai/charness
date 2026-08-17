@@ -61,7 +61,12 @@ PACKET_CONSUMED_RE = re.compile(
 # sections)`), and treating them as a trigger demands three SHA256 fields for a
 # packet the artifact just said does not exist — a hard refusal of honest work,
 # and the over-block twin of the hole this trigger was widened to close.
-PACKET_ABSENT_VALUES = frozenset({"n/a", "na", "none", "no", "-", "–", "—"})
+# `blocked` is in the set because it is the third value the critique skill's own
+# result contract teaches (`Packet Consumed — <path>, n/a (...), or
+# blocked <reason>`): an honestly skipped packet declared the taught way was
+# refused for missing SHAs on a packet just declared absent. A real packet path
+# can never spell `blocked` — the corpus's paths all carry `/` or `.md`.
+PACKET_ABSENT_VALUES = frozenset({"n/a", "na", "none", "no", "-", "–", "—", "blocked"})
 # The heading form, which 46 checked-in release critiques use and the line trigger
 # above could never match: `## Packet Consumed` on its own heading line with the
 # path on a later line, no colon anywhere. It needs a section parse rather than a

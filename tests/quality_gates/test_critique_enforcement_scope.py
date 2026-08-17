@@ -598,3 +598,22 @@ def test_bare_fresh_eye_mention_stops_at_the_next_section() -> None:
     )
 
     assert _scope.fresh_eye_satisfaction_status(text) == ""
+
+
+def test_blocked_packet_declaration_is_absent_not_a_binding(tmp_path: Path) -> None:
+    """`Packet Consumed: blocked <reason>` is the third value the critique skill's
+    own result contract teaches for an honestly skipped packet. Before #636's
+    sibling fix here, the first token `blocked` was read as a consumed-packet
+    path, demanding three SHA fields for a packet the artifact just declared
+    absent — a validator refusing the value its own skill prescribes."""
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="requested_fields_sent", delivery="findings-received")
+    body = _body(
+        tier=tier,
+        tail="\n## Context\n\n- Packet Consumed: blocked host denied the prepare spawn\n",
+    )
+    relpath = _artifact(repo, "2026-08-18-blocked.md", body)
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 0, result.stderr
