@@ -192,14 +192,21 @@ def test_a_ref_with_no_local_sha_is_skipped_without_resolving_a_range(repo: Path
     """`evaluate` is exported and ships to consuming repos, so a hook shim calling it
     directly is a real caller -- and neither reader this repo owns can produce this shape.
     `parse_push_stdin` always fills four fields, and `--range` refuses an empty side, so
-    the guard is reachable only from that direct caller. Skipping is the correct verdict:
-    an empty local sha names no commit, and passing it to `range_commits` would make git
-    resolve `""..<sha>`, whose failure this floor reports as a NO-VERDICT over the whole
-    push -- a false stop manufactured out of a ref there was nothing to judge.
+    the guard is reachable only from that direct caller.
+
+    The remote sha is deliberately BEHIND head with a commit in between, and that is the
+    whole test. `range_commits` interpolates the empty local sha on the RIGHT
+    (`f"{remote_sha}..{local_sha}"`), and git reads a missing right side as `HEAD` and
+    exits 0 -- so with the remote sha at head, deleting the skip scans an empty range and
+    every assertion here still passes. With the remote sha behind, deleting it scans the
+    commits between, which the count below refuses. An empty local sha names no commit and
+    proposes no landing, so judging anything for that ref is judging commits it never
+    offered.
     """
-    head = _git(repo, "rev-parse", "HEAD")
+    base = _git(repo, "rev-parse", "HEAD")
+    head = _commit(repo, "docs: a commit the empty-sha ref never proposed to land\n", "later.txt")
     refs = [
-        {"local_ref": "", "local_sha": "", "remote_ref": "refs/heads/main", "remote_sha": head},
+        {"local_ref": "", "local_sha": "", "remote_ref": "refs/heads/main", "remote_sha": base},
         {"local_ref": "refs/heads/main", "local_sha": head, "remote_ref": "refs/heads/main",
          "remote_sha": head},
     ]
@@ -209,8 +216,9 @@ def test_a_ref_with_no_local_sha_is_skipped_without_resolving_a_range(repo: Path
     assert payload["ok"] is True
     assert payload["status"] == "not_applicable"
     assert payload["commits_scanned"] == 0, (
-        "the empty-sha ref contributes no commits, and the second ref is already at the "
-        "remote; a nonzero count here would mean the skip resolved a range anyway"
+        "the empty-sha ref must contribute no commits, and the second ref is already at "
+        "the remote; a nonzero count here means the skip was removed and `base..HEAD` "
+        "was resolved for a ref that proposed nothing"
     )
 
 

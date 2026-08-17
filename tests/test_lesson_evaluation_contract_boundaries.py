@@ -241,12 +241,16 @@ def test_validate_receipt_rejects_invalid_contract_fields(
 def test_validate_receipt_requires_the_exact_key_set(tmp_path: Path, shape: str) -> None:
     """EXACT, in both directions, and before any field is read.
 
-    A dropped key would otherwise reach the per-field checks as `None` and be reported as
-    a malformed digest -- a message pointing at the wrong defect. An ADDED key is the one
-    that matters for the digest: `receipt_sha256` is computed over `_RECEIPT_BODY_KEYS`
-    only, so an unrecognized field rides along inside a receipt whose own hash still
-    verifies. This is the check that stops a receipt from carrying anything the hash does
-    not cover.
+    A dropped key would otherwise reach the per-field checks and be reported as whatever
+    that field's own message says -- for `renderer_id`, "renderer_id is unsupported",
+    which describes a receipt from a foreign renderer rather than a malformed one. An
+    ADDED key is the one that matters for the digest: `receipt_sha256` is computed over
+    `_RECEIPT_BODY_KEYS` only, so an unrecognized field rides along inside a receipt whose
+    own hash still verifies. This is the check that stops a receipt from carrying anything
+    the hash does not cover.
+
+    The `not-a-mapping` arm pins the verdict, not the `isinstance` clause: a list's key
+    set already differs, so that clause alone is not what this arm kills.
     """
     receipt: object = _receipt()
     if shape == "dropped-key":

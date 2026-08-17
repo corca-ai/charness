@@ -200,6 +200,11 @@ def test_a_failed_post_create_verification_commits_the_artifact_before_it_refuse
     was published -- the one artifact the recovery path reads. So the arm commits, THEN
     raises. Asserting only the raise would pass against an implementation that dropped the
     commit, which is why the commit is asserted first and by count.
+
+    What the `match=` below does NOT prove: `cli` is the harness stub, so that string is
+    the STUB's literal, not `publish_release_post_create.fail_after_post_create_verification`'s.
+    Changing the real message would not fail here. This test owns the ORDER on the claims
+    lane; the real refusal text is the subprocess test's to own.
     """
     clis: list = []
 

@@ -46,7 +46,8 @@ def _unreachable_run(*_args, **_kwargs):
 
 
 def test_the_same_refusal_fires_in_process_where_coverage_can_see_it(monkeypatch, tmp_path: Path) -> None:
-    """The subprocess test above proves the OPERATOR-visible behaviour and nothing else.
+    """`test_release_claims_review.py::test_publish_cli_refuses_claims_artifact_without_resume`
+    spawns the real binary and proves the OPERATOR-visible behaviour, and nothing else.
 
     A refusal reached only through a spawned binary is invisible to in-process coverage,
     so the mutation lane drops the line and the guard reads as unproven -- which is what

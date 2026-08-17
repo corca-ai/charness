@@ -433,21 +433,24 @@ def test_session_start_main_parses_its_own_flags_and_stays_silent_in_process(
     A hook IS a subprocess in production, so those tests are right about the surface --
     but a spawned interpreter is invisible to in-process coverage, so `main`'s own body
     (the flag surface the installed hook command depends on, and the exit contract) was
-    measured by nothing. The two flags are asserted through their EFFECT rather than by
-    reading `argparse`: `--host` reaches the written record, and `--cwd` is what makes
-    adapter discovery land in the fixture instead of the authoring repo.
+    measured by nothing. Both flags are asserted through their EFFECT rather than by
+    reading `argparse`: `--host` reaches the written record, and `--cwd` is the ONLY
+    thing that can point adapter discovery at the fixture, because the payload carries
+    no `cwd` for `run` to fall back to. Leaving one in would have made the two routes
+    indistinguishable, so wiring `--cwd` to nothing would still have passed.
     """
     _write_adapter(fake_repo, "version: 1\nenabled: true\n")
     script = load_script_module(
         "usage_episode_session_start_in_process",
         REPO_ROOT / "scripts" / "usage_episode_session_start.py",
     )
-    payload = {"hook_event_name": "SessionStart", "cwd": str(fake_repo), "model": "in-process"}
+    payload = {"hook_event_name": "SessionStart", "model": "in-process"}
     monkeypatch.setattr(script.sys, "stdin", io.StringIO(json.dumps(payload)))
 
-    assert script.main(["--host", "grok", "--cwd", str(fake_repo)]) == 0, (
-        "a hook must never propagate a nonzero exit; the host treats it as a failed session start"
-    )
+    # `== 0` is the happy path's exit only: the arm that IMPLEMENTS "never propagate"
+    # is the `except Exception: return 0` swallow, which is `# pragma: no cover` and is
+    # not exercised here. The record assertions below are what carry this test.
+    assert script.main(["--host", "grok", "--cwd", str(fake_repo)]) == 0
 
     sessions_dir = fake_repo / ".charness" / "usage-episodes" / "sessions"
     session_id = (sessions_dir / "current").read_text(encoding="utf-8").strip()

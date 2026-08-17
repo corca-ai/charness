@@ -209,12 +209,19 @@ def unshipped_path_findings(
                 # is how the defect that opened this class was actually written.
                 #
                 # FIRST of the two guards, deliberately. Both `continue`, so the order
-                # cannot change a verdict -- but it decides which one is REACHABLE. A
-                # depth-1 `relative` under a shipped head IS the head, so it exists by
-                # construction and the `.exists()` test below used to swallow every input
-                # this guard is written for: the line was unreachable, and a test named
-                # after it passed one branch early. Ordering it first makes the bare
-                # shipped-directory case exercise the rule that actually decides it.
+                # cannot change a verdict -- but it decides which one is REACHABLE.
+                #
+                # NOT because the depth guard was dead: `shipped_roots` lists NAMES via
+                # `iterdir`, while `.exists()` FOLLOWS symlinks, so a dangling entry is
+                # shipped-and-absent and reached the depth guard under either order
+                # (measured: `iterdir` yields it, `.exists()` is False). What is true is
+                # narrower -- whenever the export tree RESOLVES, a depth-1 `relative`
+                # under a shipped head is the head itself and therefore exists, so
+                # `.exists()` first swallowed every ordinary input this guard is written
+                # for and a test named after the depth rule passed one branch early.
+                # Ordering it first makes the bare shipped-directory case exercise the
+                # rule that actually decides it, without resting on a dead-code claim
+                # that a broken symlink refutes.
                 if len([part for part in relative.split("/") if part]) < 2:
                     continue
                 # A SHIPPED first segment is not enough. Shipping two files out of

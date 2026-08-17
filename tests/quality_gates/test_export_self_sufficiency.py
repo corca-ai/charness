@@ -268,18 +268,38 @@ def test_a_subpath_written_as_one_literal_does_not_escape(tmp_path: Path) -> Non
 def test_a_bare_shipped_directory_reference_is_still_not_reported(tmp_path: Path) -> None:
     """Naming a shipped directory claims nothing about a file inside it.
 
-    This input now reaches the DEPTH rule, which is the rule that decides it. It did not
-    before: `.exists()` was tested first, and a depth-1 `relative` whose head is shipped
-    IS the head, so it existed by construction and the depth guard was unreachable for
-    every input it was written for -- a line no test could measure, under a test named
-    after it. The two guards both `continue`, so reordering them cannot change a verdict;
-    it only decides which one is reachable.
+    Honest about what this asserts and what it cannot: `_minimal_export` creates a real
+    `packaging/` directory, so `[]` holds whether the depth guard fires, the `.exists()`
+    guard fires, or the depth guard is DELETED. This input pins the verdict; it does not
+    witness which rule produced it. The test below is the one that separates them.
     """
     export_root = _minimal_export(
         tmp_path,
         source='from pathlib import Path\np = Path(".") / "packaging"\n',
         requirements="PyYAML>=6\n",
     )
+
+    assert (
+        _lib.unshipped_path_findings(export_root, repo_root_entries={"packaging", "scripts"}) == []
+    )
+
+
+def test_a_dangling_shipped_entry_is_suppressed_by_the_depth_rule_alone(tmp_path: Path) -> None:
+    """The one input that tells the two guards apart, and the reason neither is dead.
+
+    `shipped_roots` lists NAMES through `iterdir`; the sibling guard calls `.exists()`,
+    which FOLLOWS symlinks. A dangling entry is therefore shipped and absent at once, so
+    only the depth rule suppresses it -- delete that rule and this bare directory
+    reference is reported as an unshipped path, which is the mutation the resolved-tree
+    test above cannot kill. Reachable in practice from a sparse or partial checkout that
+    materializes a link without its target.
+    """
+    export_root = _minimal_export(
+        tmp_path, source='from pathlib import Path\np = Path(".") / "packaging"\n'
+    )
+    (export_root / "packaging").symlink_to("nowhere-at-all")
+    assert "packaging" in _lib.shipped_roots(export_root)
+    assert not (export_root / "packaging").exists(), "the fixture must be shipped AND absent"
 
     assert (
         _lib.unshipped_path_findings(export_root, repo_root_entries={"packaging", "scripts"}) == []
