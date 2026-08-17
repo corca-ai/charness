@@ -722,6 +722,28 @@ def test_a_resolved_engine_that_never_ran_is_reported_unavailable_not_clean(
     assert "unavailable:" not in warning
 
 
+def test_no_engine_at_all_reports_unforecast_and_names_the_right_remedy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The other unavailable branch: nothing resolves, not even npm. It must NOT get the
+    # resolved-command message (there is no command to name), and its remedy is to
+    # install the engine rather than to fix a local node_modules. Patched on the module
+    # that OWNS the resolver -- rebinding the preflight's re-exported alias would leave
+    # collect_markdownlint calling the original.
+    monkeypatch.setattr(_mlp, "resolve_markdownlint_cmd", lambda _repo_root=None: None)
+    repo = _seed_repo(tmp_path, _BROKEN_FIXTURE)
+
+    collected = _pf.collect_markdownlint(repo, "docs/handoff.md")
+    assert collected == {"available": False, "findings": []}
+    assert "resolved_command" not in collected
+
+    report = _pf.build_report(repo, "docs/handoff.md", "handoff")
+    assert report.to_dict()["unforecast_classes"] == ["markdownlint"]
+    warning = next(w for w in report.warnings if "markdownlint" in w)
+    assert "(and npm) unavailable" in warning
+    assert "resolved as" not in warning
+
+
 def test_violations_without_a_banner_are_kept_not_discarded(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
