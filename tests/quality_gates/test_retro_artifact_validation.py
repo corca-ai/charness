@@ -546,3 +546,58 @@ def test_the_emitted_opt_in_writes_where_the_floor_probe_reads(tmp_path: Path) -
         repo / "artifacts" / "retros" / "2026-08-17-demo.md",
         output_dir=repo / "artifacts" / "retros",
     )
+
+
+def test_an_artifact_outside_the_resolved_output_dir_keeps_the_floor_on(tmp_path: Path) -> None:
+    """Fail-CLOSED, deliberately: a probe that cannot see the repo's evaluator state
+    must not switch the floor off. That is the escape shape the sibling floors'
+    fail-closed grandfathering guards."""
+    repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
+    stray = repo / "somewhere-else" / "2026-08-17-demo.md"
+    stray.parent.mkdir(parents=True)
+    stray.write_text(_ACTIVATED_RETRO, encoding="utf-8")
+
+    assert retro_validator.lesson_evaluator_declared(
+        stray, output_dir=repo / "artifacts" / "retros"
+    )
+
+
+def test_prefix_falls_back_when_a_resolver_hands_back_a_path_outside_the_repo(
+    tmp_path: Path,
+) -> None:
+    """Every consumer joins this value to the repo root. The adapter refuses an absolute
+    or escaping value; if one arrives from an older adapter or a resolver that skips
+    validation, owning NOTHING is the fail-quiet this module exists to close."""
+    output_dir_lib = load_script_module(
+        "retro_output_dir_lib_escaping", ROOT / "scripts" / "retro_output_dir_lib.py"
+    )
+    repo = tmp_path / "escaping"
+    resolver = repo / "skills" / "public" / "retro" / "scripts" / "resolve_adapter.py"
+    resolver.parent.mkdir(parents=True)
+    resolver.write_text(
+        'def load_adapter(repo_root):\n    return {"data": {"output_dir": "/tmp/retros"}}\n',
+        encoding="utf-8",
+    )
+
+    assert (
+        output_dir_lib.retro_artifact_prefix(repo)
+        == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
+    )
+
+
+def test_no_resolver_in_either_root_yields_no_resolver_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The second root is the installed plugin, so in THIS repo it always resolves.
+    Forcing both to miss is the only way to reach the arm, and the arm matters: a repo
+    with no retro skill reachable is a no-op, not an error."""
+    output_dir_lib = load_script_module(
+        "retro_output_dir_lib_norsolver", ROOT / "scripts" / "retro_output_dir_lib.py"
+    )
+    monkeypatch.setattr(output_dir_lib, "_SCRIPT_REPO_ROOT", tmp_path / "nowhere")
+
+    assert output_dir_lib._retro_resolver_path(tmp_path / "also-nowhere") is None
+    assert (
+        output_dir_lib.retro_artifact_prefix(tmp_path / "also-nowhere")
+        == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
+    )

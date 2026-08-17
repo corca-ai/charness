@@ -396,3 +396,57 @@ def test_backend_command_rejects_unknown_op() -> None:
 
     assert "rogue_op" in str(exc.value)
     assert "OP_PLACEHOLDERS" in str(exc.value)
+
+
+def _arg_guards():
+    return _load_release_module("publish_release_arg_guards")
+
+
+@pytest.mark.parametrize(
+    ("artifact", "expected"),
+    [
+        ("/abs/charness-artifacts/critique/x.md", "normalized repo-relative path"),
+        ("charness-artifacts/critique/../x.md", "normalized repo-relative path"),
+        ("docs/notes.md", "critique markdown artifact"),
+        ("charness-artifacts/critique/x.txt", "critique markdown artifact"),
+    ],
+)
+def test_critique_artifact_arg_refuses_shapes_that_never_reach_the_filesystem(
+    artifact: str, expected: str, tmp_path: Path
+) -> None:
+    """These refusals moved file when `parse_args`' semantic half was split out, and the
+    move took them out of in-process coverage: every remaining exercise ran the CLI as a
+    subprocess, where nothing measures them. Called directly here."""
+    with pytest.raises(SystemExit) as exc:
+        _arg_guards().validate_critique_artifact_arg(
+            tmp_path, artifact, run_command=lambda *_a, **_k: _FakeCompleted(returncode=0)
+        )
+
+    assert expected in str(exc.value)
+
+
+def test_critique_artifact_arg_refuses_a_missing_then_an_untracked_artifact(tmp_path: Path) -> None:
+    guards = _arg_guards()
+    relpath = "charness-artifacts/critique/2026-08-17-demo.md"
+
+    with pytest.raises(SystemExit) as missing:
+        guards.validate_critique_artifact_arg(
+            tmp_path, relpath, run_command=lambda *_a, **_k: _FakeCompleted(returncode=0)
+        )
+    assert "does not exist" in str(missing.value)
+
+    (tmp_path / "charness-artifacts" / "critique").mkdir(parents=True)
+    (tmp_path / relpath).write_text("# critique\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as untracked:
+        guards.validate_critique_artifact_arg(
+            tmp_path, relpath, run_command=lambda *_a, **_k: _FakeCompleted(returncode=1)
+        )
+    assert "must be tracked before release" in str(untracked.value)
+
+    assert (
+        guards.validate_critique_artifact_arg(
+            tmp_path, relpath, run_command=lambda *_a, **_k: _FakeCompleted(returncode=0)
+        )
+        == relpath
+    )
