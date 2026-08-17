@@ -761,3 +761,29 @@ def test_enum_violations_report_together_with_observed_values(tmp_path: Path) ->
     message = str(excinfo.value)
     assert "`Critique Required` must be `yes` or `no` (found `no (see note)`)" in message
     assert "`Next Step` must be `impl` or `spec` (found `implement`)" in message
+
+
+def test_risk_and_resolution_enum_deviations_join_the_same_report(tmp_path: Path) -> None:
+    """`Risk Class: none, timing`, an off-enum pressure, and a bad `Resolution`
+    all land in ONE report with observed values (#636)."""
+    import pytest
+
+    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact()
+        .replace("- Risk Class: none\n", "- Risk Class: none, verdict-rendering\n")
+        .replace("- Generalization Pressure: none\n", "- Generalization Pressure: later\n")
+        .replace(
+            "- Handoff Artifact: none\n",
+            "- Handoff Artifact: none\n- Resolution: parked\n",
+        ),
+    )
+    artifact = repo / "charness-artifacts" / "debug" / "latest.md"
+    with pytest.raises(ValidationError) as excinfo:
+        validate_debug_artifact(artifact, collect_all=True, current_pointer=artifact)
+    message = str(excinfo.value)
+    assert "`Risk Class: none` cannot be combined with other values" in message
+    assert "`Generalization Pressure` must be `none`, `monitor`, or `factor-now` (found `later`)" in message
+    assert "`Resolution` must be `open` or `resolved` (found `parked`)" in message
