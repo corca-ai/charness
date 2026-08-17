@@ -1,6 +1,6 @@
 # Issue 617 Durable Lesson Session Bundle
 
-Status: delivered-unreleased
+Status: released
 Date: 2026-08-14
 Refreshed: 2026-08-15 (S3 of the 6.0.0 release scope) — interrupt carry-forward
 and delivery evidence; the contract below is unchanged, and no decision in it was
@@ -37,10 +37,25 @@ Built and consumed on the current tree. Measured 2026-08-15, not transcribed:
 - `skills/public/retro/references/lesson-evaluation.md:10-13` binds retro to the
   explicit-session-ID lookup and refuses the newest-file guess.
 
-Not claimed: the issue is delivered in-repo and **unreleased**, so it still
-reproduces for its reporter until S7 publishes. Nothing here proves human
-readback, agent use, or lesson effect — the bundle proves only which lessons the
-session-start action issued, which is the non-claim the contract fixed below.
+Released, and the evidence is named so a later reader re-runs it rather than
+trusting this line: `git log -S "def bundle_path" -- scripts/lesson_evaluation_continuity_lib.py`
+resolves to `311844e23`, `git tag --contains 311844e23` lists `v6.0.0`,
+`git show v6.0.0:plugins/charness/scripts/lesson_evaluation_continuity_lib.py`
+carries `bundle_path` (so the CONSUMER copy has it, not only `scripts/`), and
+`gh release view v6.0.0` reports it published `2026-08-16T06:07:24Z`, not a draft.
+This line previously read `delivered-unreleased` with "it still reproduces for
+its reporter until S7 publishes"; S7 published, and the status was never
+refreshed — a bounded reviewer caught it during the #617 closeout, where a stale
+status on the issue's own living contract would have contradicted the closure.
+
+Not claimed: nothing here proves human readback, agent use, or lesson effect —
+the bundle proves only which lessons the session-start action issued, which is
+the non-claim the contract fixed below.
+
+Also not claimed: a consumer repo that opened lesson sessions on a PRE-bundle
+charness now gets `invalid-receipt` for each old receipt, permanently. That is
+the deliberate consequence of the one-contract rule below, not an unrequested
+regression, and it is stated here rather than left for a consumer to discover.
 
 ## Problem
 

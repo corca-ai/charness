@@ -248,13 +248,13 @@ def test_atomic_replace_failure_leaves_no_output_or_temp(
 
 
 def test_open_session_cli_main_delegates_arguments(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     seen: dict[str, object] = {}
 
     def fake_open_session(**kwargs: object) -> dict[str, object]:
         seen.update(kwargs)
-        return {}
+        return {"bundle_path": "charness-artifacts/retro/lesson-session-receipts/s-1.md"}
 
     monkeypatch.setattr(open_lesson_session, "open_session", fake_open_session)
     monkeypatch.setattr(
@@ -274,6 +274,20 @@ def test_open_session_cli_main_delegates_arguments(
     assert seen["repo_root"] == tmp_path.resolve()
     assert seen["session_id"] == "s-1"
     assert seen["seed"] == "seed"
+
+    # #617 asks the COMMAND to reference the bundle by session id, and it did not:
+    # `open_session` returned `bundle_path` and `main` dropped it. The announcement must
+    # land on STDERR, because the receipt binds `stdout_sha256`/`stdout_byte_count` to the
+    # rendered lesson bytes -- one extra stdout line would make every receipt this command
+    # writes fail its own digest check. Both streams are asserted, because putting it on
+    # the wrong one is the failure this arm exists to catch.
+    captured = capsys.readouterr()
+    assert "charness-artifacts/retro/lesson-session-receipts/s-1.md" in captured.err
+    assert "s-1" in captured.err
+    assert captured.out == "", (
+        "the bundle announcement must not reach stdout: those bytes are digest-bound to "
+        "the receipt, so announcing the bundle there would break every receipt"
+    )
 
 
 def test_open_session_script_entrypoint_reports_operational_error(

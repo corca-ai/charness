@@ -62,11 +62,25 @@ def main() -> int:
     parser.add_argument("--session-id", required=True)
     parser.add_argument("--seed", required=True)
     args = parser.parse_args()
-    open_session(
+    result = open_session(
         repo_root=args.repo_root.resolve(),
         session_id=args.session_id,
         seed=args.seed,
         stdout=sys.stdout.buffer,
+    )
+    # STDERR, never stdout: the receipt binds `stdout_sha256`/`stdout_byte_count` to the
+    # rendered lesson bytes, and the bundle is validated by re-reading the file and
+    # comparing against them. One extra line on stdout would make every receipt this
+    # command writes fail its own digest check -- the surface would announce the bundle
+    # by breaking it.
+    #
+    # Announced at all because #617 asks the COMMAND to reference the file by session id,
+    # and it did not: `open_session` has always returned `bundle_path` and `main` dropped
+    # it, so an agent that ran the CLI had no way to learn where the frozen bytes went --
+    # which is the reread path the whole issue exists to provide after compaction.
+    print(
+        f"lesson session {args.session_id}: frozen lesson bundle at {result['bundle_path']}",
+        file=sys.stderr,
     )
     return 0
 
