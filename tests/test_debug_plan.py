@@ -569,3 +569,30 @@ def test_a_closed_template_fence_above_the_real_declaration_still_interrupts(tmp
     assert payload["artifact"]["risk_scope_established"] is True
     assert payload["artifact"]["risk_classes"] == ["external-seam"]
     assert payload["mode"] == "risk-interrupt"
+
+
+def test_the_shape_packet_validates_the_artifact_this_run_writes(tmp_path: Path) -> None:
+    """The emitted command must answer the question the packet's own label asks.
+
+    `debug-artifact-shape` calls itself a schema gate for the current artifact and
+    emitted the whole-corpus command, so its exit code reported the state of the entire
+    historical debug directory instead. A consumer wrote a valid record, saw it reported
+    validated, and still got exit 1 from unrelated legacy debt -- with nothing in the exit
+    code to say the failure was not theirs.
+
+    Asserted against the scaffold's own write path rather than a literal, so a scaffold
+    that routes the write elsewhere (the resolved-followup and subject-refusal arms both
+    do) cannot leave the gate pointed at a file nothing writes.
+    """
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+
+    payload = run_plan(repo)
+
+    write_path = payload["scaffold"]["write_artifact_path"]
+    shape = next(p for p in payload["gate_packets"] if p["id"] == "debug-artifact-shape")
+    assert shape["command"].endswith(f"--paths {write_path}")
+    # The scaffold packet's own validator command names the same artifact. Two packets in
+    # one plan disagreeing about what is being judged is the state this repairs.
+    scaffold_packet = next(p for p in payload["gate_packets"] if p["id"] == "debug-artifact-scaffold")
+    assert scaffold_packet["validator_command"].endswith(f"--paths {write_path}")

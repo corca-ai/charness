@@ -31,7 +31,6 @@
     "5493ebee5a359cb9",
     "57b092dbd58617e0",
     "584137bc9502bb52",
-    "5aaa8310abddb4cc",
     "5e4d972e5574129b",
     "5e810e663bf20edd",
     "6a34e88fa8ab3d91",
@@ -58,6 +57,7 @@
     "d7b77efd01488b77",
     "d9fe7357aa354211",
     "db67c2bca79aa4ab",
+    "e393db6c96e1cef0",
     "e47a116e9526f3c8",
     "ea1b0c89af5cdea5",
     "ebd1be4c5afc46f4",
@@ -147,6 +147,12 @@
       ]
     },
     {
+      "test_file": "tests/quality_gates/test_command_dominance.py",
+      "import_safe_targets": [
+        "skills/public/quality/scripts/inventory_command_dominance.py"
+      ]
+    },
+    {
       "test_file": "tests/quality_gates/test_critique_boundary_ownership_presence.py",
       "import_safe_targets": [
         "scripts/validate_critique_artifacts.py"
@@ -187,6 +193,13 @@
       "import_safe_targets": [
         "skills/public/narrative/scripts/map_sources.py",
         "skills/public/release/scripts/bump_version.py"
+      ]
+    },
+    {
+      "test_file": "tests/quality_gates/test_export_self_sufficiency.py",
+      "import_safe_targets": [
+        "skills/public/gather/scripts/gather_public_url.py",
+        "skills/public/quality/scripts/inventory_command_dominance.py"
       ]
     },
     {
@@ -472,5 +485,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "f5bfcd8fd0024953dc9552c1478b38f67c49757a5dc0b479b9247651325a7071"
+  "writer_integrity_sha256": "909bcb2a1a56329b5d797c750158ff811301fc35bba14fe61cb03f924f7203d6"
 }

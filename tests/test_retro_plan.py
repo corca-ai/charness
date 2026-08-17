@@ -415,3 +415,24 @@ def test_retired_weekly_keys_pass_through_without_error(tmp_path: Path) -> None:
     adapter_packet = next(p for p in payload["gate_packets"] if p["id"] == "adapter-readiness")
     assert adapter_packet["errors"] == []
     assert adapter_packet["status"] == "pass"
+
+
+def test_the_shape_packet_validates_the_artifact_this_run_writes(tmp_path: Path) -> None:
+    """Same class as the debug sibling, found by pattern rather than by report.
+
+    `validate_retro_artifact.py` is a corpus validator, and this packet emitted the
+    unscoped command while the scaffold packet beside it already emitted a scoped one --
+    two packets in one plan judging different populations. Unscoped, legacy-schema debt
+    in an unrelated older retro makes a valid new one exit 1, and the exit code does not
+    say which artifact was at fault.
+    """
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+
+    payload = run_plan(repo)
+
+    scaffold_packet = next(p for p in payload["gate_packets"] if p["id"] == "retro-artifact-scaffold")
+    write_path = scaffold_packet["write_artifact_path"]
+    shape = next(p for p in payload["gate_packets"] if p["id"] == "retro-artifact-shape")
+    assert shape["command"].endswith(f"--paths {write_path}")
+    assert scaffold_packet["validator_command"].endswith(f"--paths {write_path}")

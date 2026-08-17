@@ -175,10 +175,24 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
             write_artifact_role=scaffold["write_artifact_role"],
             validator_command=scaffold["validator_command"],
         ),
+        # Scoped to the artifact this run writes. The packet calls itself a
+        # "current-artifact schema gate" and emitted the whole-corpus command, so its
+        # exit code answered a different question than its own label: a fresh valid
+        # artifact still exited 1 when an unrelated older record carried legacy-schema
+        # debt, and the operator had to read a long report to learn the failure was not
+        # theirs. The corpus sweep is still reachable -- `--all` is the audit mode, and
+        # the broad gate and CI already run it.
         _packet(
             "debug-artifact-shape",
-            "deterministic current-artifact schema gate; trust section/order failures",
-            **_relative_script_command(repo_root, "scripts/validate_debug_artifact.py", "--repo-root", "."),
+            "deterministic schema gate for the artifact this run writes; trust section/order failures",
+            **_relative_script_command(
+                repo_root,
+                "scripts/validate_debug_artifact.py",
+                "--repo-root",
+                ".",
+                "--paths",
+                scaffold["write_artifact_path"],
+            ),
         ),
         _packet(
             "seam-risk-index",

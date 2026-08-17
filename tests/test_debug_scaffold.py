@@ -66,7 +66,14 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert payload["current_pointer_symlink_target"] is None
     assert payload["update_current_pointer_after_write"] is False
     assert payload["refresh_current_pointer_command"] is None
-    assert payload["validator_command"].endswith("scripts/validate_debug_artifact.py --repo-root .")
+    # SCOPED to the artifact this payload writes, not the whole corpus. Unscoped, a
+    # consumer's valid new record still exited 1 from legacy debt in unrelated older
+    # records, and the exit code did not say which artifact was at fault. Asserted
+    # against write_artifact_path so a payload that routes the write elsewhere cannot
+    # leave the command pointed at a file nothing writes.
+    assert payload["validator_command"].endswith(
+        f"scripts/validate_debug_artifact.py --repo-root . --paths {payload['write_artifact_path']}"
+    )
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]
     assert "## Detection Gap" in payload["template"]

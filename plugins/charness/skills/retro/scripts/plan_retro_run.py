@@ -298,10 +298,20 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
             write_artifact_effect=scaffold["write_artifact_effect"],
             validator_command=scaffold["validator_command"],
         ),
+        # Scoped for the same reason the sibling scaffold already scopes its own command:
+        # unscoped, a corpus validator's exit code mixes THIS artifact's verdict with
+        # legacy-schema debt in unrelated older records, and the operator cannot tell
+        # which one made it red. This packet's own scaffold sibling above emits a scoped
+        # command, so the two disagreed about what was being judged. `--all` stays the
+        # audit mode, and the broad gate and CI already run it.
         _packet(
             "retro-artifact-shape",
-            "deterministic Sibling Search follow-up grammar gate; trust section/format failures",
-            **_relative_script_command(repo_root, "scripts/validate_retro_artifact.py", "--repo-root", "."),
+            "deterministic Sibling Search follow-up grammar gate for the artifact this run writes;"
+            " trust section/format failures",
+            **_relative_script_command(
+                repo_root, "scripts/validate_retro_artifact.py",
+                "--repo-root", ".", "--paths", scaffold["write_artifact_path"],
+            ),
         ),
         _packet(
             "auto-session-trigger",

@@ -175,8 +175,30 @@ def render_template(*, title: str, date_text: str) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def validator_command(repo_root: Path) -> str:
-    return _scaffold_lib.validator_command(repo_root=repo_root, script_file=__file__, script_names=VALIDATOR_SCRIPT_NAMES)
+def validator_command(repo_root: Path, write_artifact_path: str | None = None) -> str:
+    """The command that validates THIS artifact, scoped to it when the path is known.
+
+    Unscoped, this emitted `--repo-root .`, which for a corpus validator means the whole
+    historical debug directory. Reported from a consumer repo: a fresh, valid artifact
+    validated clean and the command still exited 1, because unrelated older records carry
+    legacy-schema debt. The operator cannot tell from the exit code whether the thing they
+    just wrote is malformed or whether the corpus was already red, and the repo's own
+    changed-scope gate disagreed with the command the skill emitted.
+
+    `--paths` was already modeled and already exposed; `retro`, `ideation` and `critique`
+    already pass their write path. Debug was the family that did not.
+
+    The path stays OPTIONAL rather than required: a caller with no chosen write path
+    (there is one, in the refusal preview) gets the corpus command, which is the honest
+    answer when there is no single artifact to name. A default of None is what keeps that
+    caller from having to invent a path to ask the question.
+    """
+    return _scaffold_lib.validator_command(
+        repo_root=repo_root,
+        script_file=__file__,
+        script_names=VALIDATOR_SCRIPT_NAMES,
+        artifact_path=write_artifact_path,
+    )
 
 
 def _resolution(path: Path) -> str:
@@ -356,7 +378,6 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
             "artifact_role": "current_pointer",
             "current_pointer_symlink_target": _current_pointer_symlink_target(repo_root, str(payload["artifact_path"])),
             "template": render_template(title=resolved_title, date_text=date_text),
-            "validator_command": validator_command(repo_root),
         }
     )
     if size_budget is not None:
@@ -364,6 +385,11 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     # LAST, because the resolved-followup branch above replaces `write_artifact_path` through
     # a fixed key list. Facts computed before that swap describe the wrong file.
     _scaffold_artifact_lib.with_write_target_facts(repo_root, payload)
+    # AFTER the swap, for the same reason and one the records-only sibling already states:
+    # the command NAMES the artifact path, so computing it before the path is final points
+    # the validator at a file nothing writes. Unscoped this was swap-insensitive by
+    # accident -- it named no path at all.
+    payload["validator_command"] = validator_command(repo_root, str(payload["write_artifact_path"]))
     payload.update(
         _scaffold_artifact_lib.final_subject_facts(
             invocation_subject_key=subject_key,

@@ -712,3 +712,50 @@ def test_missing_output_directory_reports_no_misleading_scaffold_hint(tmp_path: 
     assert result.returncode == 1
     assert "No debug output directory" in result.stderr
     assert "scaffold" not in result.stderr
+
+
+def test_a_scoped_run_isolates_a_fresh_artifact_from_legacy_corpus_debt(tmp_path: Path) -> None:
+    """The reported defect, as the three-artifact case that distinguishes the two modes.
+
+    A corpus validator run unscoped answers "is the whole history clean", and the debug
+    planner emitted exactly that while calling it a current-artifact gate. A consumer
+    wrote a VALID new record, saw it reported validated, and still got exit 1 -- because
+    an unrelated older record carried legacy-schema debt. Nothing in the exit code said
+    which artifact was at fault, and the repo's own changed-scope gate passed, so the two
+    surfaces answered different questions with the same word.
+
+    The fixture below is the minimum that can tell a real fix from a fake one: scoping to
+    a clean corpus would pass for the wrong reason, so the corpus here is deliberately
+    red.
+    """
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    debug_dir = repo / "charness-artifacts" / "debug"
+    fresh = debug_dir / "2026-08-17-debug-review.md"
+    fresh.write_text(valid_current_artifact(), encoding="utf-8")
+    legacy = debug_dir / "2026-01-02-legacy-shape.md"
+    legacy.write_text("# Legacy\nDate: 2026-01-02\n\n## Problem\n\nno other sections\n", encoding="utf-8")
+
+    # Whole corpus: red, and correctly so -- the legacy record IS out of schema.
+    corpus = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
+    assert corpus.returncode == 1
+    assert "2026-01-02-legacy-shape.md" in corpus.stdout + corpus.stderr
+
+    # Scoped to the artifact just authored: green, and it does NOT reach the legacy record.
+    scoped = run_script(
+        "scripts/validate_debug_artifact.py",
+        "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    )
+    assert scoped.returncode == 0, scoped.stdout + scoped.stderr
+    assert "2026-01-02-legacy-shape.md" not in scoped.stdout + scoped.stderr
+
+    # And a scoped run still REFUSES a malformed artifact -- scoping narrows the
+    # population, never the rules. Without this the fix could be "always pass".
+    fresh.write_text("# Broken\nDate: 2026-08-17\n\n## Problem\n\nmissing the rest\n", encoding="utf-8")
+    scoped_broken = run_script(
+        "scripts/validate_debug_artifact.py",
+        "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    )
+    assert scoped_broken.returncode == 1
+    assert "2026-08-17-debug-review.md" in scoped_broken.stdout + scoped_broken.stderr
