@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-17",
-  "source_artifact_count": 524,
-  "candidate_count": 2139,
+  "source_artifact_count": 525,
+  "candidate_count": 2140,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1558,956 +1558,20 @@
       ]
     },
     {
-      "candidate_id": "current_focus:7ea13d0a36d5",
-      "kind": "current_focus",
-      "lesson": "Autonomous continuation of `docs/handoff.md` `## Next Session` from item 2 onward, after the operator asked which items remained once the real-host checklist was set aside.",
-      "normalized_key": "autonomous continuation of docs handoff md next session from item 2 onward after the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "Autonomous continuation of `docs/handoff.md` `## Next Session` from item 2 onward, after the operator asked which items remained once the real-host checklist was set aside."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a3f676841d02",
-      "kind": "current_focus",
-      "lesson": "Handoff pickup.",
-      "normalized_key": "handoff pickup",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
-          "date": "2026-08-16",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "Handoff pickup."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a981f526c585",
-      "kind": "current_focus",
-      "lesson": "S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder.",
-      "normalized_key": "s6b 2 of the 6 0 0 release scope make a dominated command refusable",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-          "date": "2026-08-16",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:c163310f8fc6",
-      "kind": "current_focus",
-      "lesson": "S7 of the 6.0.0 release scope: publish the release and close #608 and #618-#627.",
-      "normalized_key": "s7 of the 6 0 0 release scope publish the release and close 608",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-          "date": "2026-08-16",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "S7 of the 6.0.0 release scope: publish the release and close #608 and #618-#627."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f8afed4b6f9e",
-      "kind": "current_focus",
-      "lesson": "The handoff named five items blocking the deferred 6.0.0 publish, and the owner asked for all outstanding debt to be paid before pushing 51 commits.",
-      "normalized_key": "the handoff named five items blocking the deferred 6 0 0 publish and the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-          "date": "2026-08-16",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The handoff named five items blocking the deferred 6.0.0 publish, and the owner asked for all outstanding debt to be paid before pushing 51 commits."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:e7e195f80a32",
-      "kind": "current_focus",
-      "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency).",
-      "normalized_key": "three slices of the 6 0 0 release scope landed in one session s6b",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency)."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:3ee8f08588f6",
-      "kind": "next_improvement",
-      "lesson": "**A bulk rewrite of command-shaped strings owes a written executor check before the edit** — name what runs each matched field, or do not run the sweep. Two of five review rounds this session trace to one blanket regex; the pre-mortem is a grep, the alternative was a broken template.",
-      "normalized_key": "a bulk rewrite of command shaped strings owes a written executor check before the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**A bulk rewrite of command-shaped strings owes a written executor check before the edit** — name what runs each matched field, or do not run the sweep. Two of five review rounds this session trace to one blanket regex; the pre-mortem is a grep, the alternative was a broken template."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:724ef068d175",
-      "kind": "next_improvement",
-      "lesson": "a host parses text a human wrote as narrative. `S7 closes\\n#626/#627/#631`, written to DESCRIBE a future release, closed #626 the moment the commit was pushed. Before pushing, scan the range's messages for the host's own keyword grammar; a guard that only inspects a staged carrier file cannot see a keyword in a sentence.",
-      "normalized_key": "a host parses text a human wrote as narrative s7 closes n 626 627",
-      "recurrence_class": "keyword-in-prose-is-a-directive",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "a host parses text a human wrote as narrative. `S7 closes\\n#626/#627/#631`, written to DESCRIBE a future release, closed #626 the moment the commit was pushed. Before pushing, scan the range's messages for the host's own keyword grammar; a guard that only inspects a staged carrier file cannot see a keyword in a sentence."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:f2985d3eb38f",
-      "kind": "next_improvement",
-      "lesson": "a test proving a LOCAL layout fact must assert what the module under test bound, never a global interpreter property. Where the arm taken is not observable from the module, force it with a `meta_path` finder rather than by filtering `sys.path`.",
-      "normalized_key": "a test proving a local layout fact must assert what the module under test",
-      "recurrence_class": "global-probe-for-local-fact",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "a test proving a LOCAL layout fact must assert what the module under test bound, never a global interpreter property. Where the arm taken is not observable from the module, force it with a `meta_path` finder rather than by filtering `sys.path`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e83334bd85be",
-      "kind": "next_improvement",
-      "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs.",
-      "normalized_key": "after adding a queued gate or a new skill reference run the repo s",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:7a4296fb47a3",
-      "kind": "next_improvement",
-      "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer.",
-      "normalized_key": "an artifact whose prose carries verification grade claims counts per issue residual ownership which",
-      "recurrence_class": "prose-claim-without-a-reader",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:9b0cfdf68d38",
-      "kind": "next_improvement",
-      "lesson": "before editing any config value, establish whether it is READ by a reader or RUN by an executor. A documentation placeholder in a read field is correct and in an executed field is a shell redirection, and the two are indistinguishable by looking at the value.",
-      "normalized_key": "before editing any config value establish whether it is read by a reader or",
-      "recurrence_class": "executed-vs-read-field",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "before editing any config value, establish whether it is READ by a reader or RUN by an executor. A documentation placeholder in a read field is correct and in an executed field is a shell redirection, and the two are indistinguishable by looking at the value."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a3224900bb6f",
-      "kind": "next_improvement",
-      "lesson": "**capability**: `command_script_target`'s `None` means both \"not judged\" and \"cannot be a path\", and a caller turns one of them into a hard refusal. Make the distinction part of the return value rather than of the docstring.",
-      "normalized_key": "capability command script target s none means both not judged and cannot be a",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability**: `command_script_target`'s `None` means both \"not judged\" and \"cannot be a path\", and a caller turns one of them into a hard refusal. Make the distinction part of the return value rather than of the docstring."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5b19a0587cdb",
-      "kind": "next_improvement",
-      "lesson": "**capability**: give `prove`'s stop gate the blind-class QUESTION for detector-touching slices — \"name one input your acceptance would pass that your blind class says it must not judge\". A question, not a gate (P5). This is the prior retro's `blind-class-before-build-handoff-anchor` item, now with a measured second instance behind it.",
-      "normalized_key": "capability give prove s stop gate the blind class question for detector touching slices",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability**: give `prove`'s stop gate the blind-class QUESTION for detector-touching slices — \"name one input your acceptance would pass that your blind class says it must not judge\". A question, not a gate (P5). This is the prior retro's `blind-class-before-build-handoff-anchor` item, now with a measured second instance behind it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:81e64d98af4f",
-      "kind": "next_improvement",
-      "lesson": "**capability**: — run `seed_lesson_transitions.py` at retro closeout, or make persistence run it. Measured while checking whether THIS retro's lessons had persisted: they had not. The tag makes a lesson *seedable*, and a separate command makes it *selectable*; nobody ran the second one. Three of the four tagged classes in the 2026-08-14 retro had been stranded for two days — authored, committed, and invisible to every session's presentation since. All four are seeded now (37 active lessons, 37 seed transitions), and `detector-blind-class-unstated` draws in 8 of 8 sampled seeds. This is the repo's own \"correct rule, no carrier\" class at the lesson loop itself, and the retro that names that class walked into it.",
-      "normalized_key": "capability run seed lesson transitions py at retro closeout or make persistence run it",
-      "recurrence_class": "tagged-lesson-never-seeded",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability**: — run `seed_lesson_transitions.py` at retro closeout, or make persistence run it. Measured while checking whether THIS retro's lessons had persisted: they had not. The tag makes a lesson *seedable*, and a separate command makes it *selectable*; nobody ran the second one. Three of the four tagged classes in the 2026-08-14 retro had been stranded for two days — authored, committed, and invisible to every session's presentation since. All four are seeded now (37 active lessons, 37 seed transitions), and `detector-blind-class-unstated` draws in 8 of 8 sampled seeds. This is the repo's own \"correct rule, no carrier\" class at the lesson loop itself, and the retro that names that class walked into it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:027522139d42",
-      "kind": "next_improvement",
-      "lesson": "**capability**: the `impl`/`spec` stop gate should ask for the blind-class statement when a slice adds a detector or gate, so the convention this repo already follows in three older detectors stops depending on author habit. Tracked as `blind-class-before-build-handoff-anchor`.",
-      "normalized_key": "capability the impl spec stop gate should ask for the blind class statement when",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability**: the `impl`/`spec` stop gate should ask for the blind-class statement when a slice adds a detector or gate, so the convention this repo already follows in three older detectors stops depending on author habit. Tracked as `blind-class-before-build-handoff-anchor`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c0af04057288",
-      "kind": "next_improvement",
-      "lesson": "**Declare executed adapter fields the way release already does.** `EXECUTED_COMMAND_FIELDS` exists for release and nothing equivalent covers critique/retro `command:` or `integrations/tools/*.json` `checks.*.commands`. Without it, the only defense is classifying by file type, which under-reports by design. Handoff anchor `executed-field-declaration`.",
-      "normalized_key": "declare executed adapter fields the way release already does executed command fields exists for",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**Declare executed adapter fields the way release already does.** `EXECUTED_COMMAND_FIELDS` exists for release and nothing equivalent covers critique/retro `command:` or `integrations/tools/*.json` `checks.*.commands`. Without it, the only defense is classifying by file type, which under-reports by design. Handoff anchor `executed-field-declaration`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:aa4728fcc25e",
-      "kind": "next_improvement",
-      "lesson": "extend the inference-interpretation registry's requirement from \"a module that DECLARES an interpretation must be registered\" to \"a module that renders a verdict about other code must declare its blind class\", so the blind-class habit becomes a gate. This is the carrier two retros have asked for and nothing has built; it is now cheap because the registry, the validator, and the leak scan all exist.",
-      "normalized_key": "extend the inference interpretation registry s requirement from a module that declares an interpretation",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "extend the inference-interpretation registry's requirement from \"a module that DECLARES an interpretation must be registered\" to \"a module that renders a verdict about other code must declare its blind class\", so the blind-class habit becomes a gate. This is the carrier two retros have asked for and nothing has built; it is now cheap because the registry, the validator, and the leak scan all exist."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:541ce40f2185",
-      "kind": "next_improvement",
-      "lesson": "give at least one reviewer the CONSUMER frame explicitly — \"what breaks for a repo that installs this\" — because a scope-shaped review answers only scope-shaped questions, and an error message a consumer cannot act on is invisible from inside the authoring repo.",
-      "normalized_key": "give at least one reviewer the consumer frame explicitly what breaks for a repo",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "give at least one reviewer the CONSUMER frame explicitly — \"what breaks for a repo that installs this\" — because a scope-shaped review answers only scope-shaped questions, and an error message a consumer cannot act on is invisible from inside the authoring repo."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:264549d0a1df",
-      "kind": "next_improvement",
-      "lesson": "make a slice closeout unable to record \"gates clean\" without citing the run receipt, so a claim written from memory is red rather than plausible.",
-      "normalized_key": "make a slice closeout unable to record gates clean without citing the run receipt",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make a slice closeout unable to record \"gates clean\" without citing the run receipt, so a claim written from memory is red rather than plausible."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:025ef8bee1d5",
-      "kind": "next_improvement",
-      "lesson": "measure a text-gate repair's verdict diff over the whole corpus before accepting it; the motivating case is not the blast radius.",
-      "normalized_key": "measure a text gate repair s verdict diff over the whole corpus before accepting",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "measure a text-gate repair's verdict diff over the whole corpus before accepting it; the motivating case is not the blast radius."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:4acfbce3e563",
-      "kind": "next_improvement",
-      "lesson": "**memory**: the fix-carries-its-class pattern now has five consecutive measured instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices rather than as a per-slice surprise, so the two-round rule reads as load-bearing rather than as ceremony.",
-      "normalized_key": "memory the fix carries its class pattern now has five consecutive measured instances s4",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory**: the fix-carries-its-class pattern now has five consecutive measured instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices rather than as a per-slice surprise, so the two-round rule reads as load-bearing rather than as ceremony."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2097550d83f5",
-      "kind": "next_improvement",
-      "lesson": "never reach for `git stash` to compare against HEAD; a detached worktree answers the same question without touching the working tree.",
-      "normalized_key": "never reach for git stash to compare against head a detached worktree answers the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "never reach for `git stash` to compare against HEAD; a detached worktree answers the same question without touching the working tree."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5411be9703e4",
-      "kind": "next_improvement",
-      "lesson": "**The fix-carries-its-class rate is now measured at 5/5 across five rounds and three slices**, on top of the prior session's flat trend. This is the evidence the open `## Discuss` question needs: a proof-surface slice plausibly owes review until a round comes back clean, not two rounds. Recorded here rather than changed unilaterally, because raising the cap is a contract change.",
-      "normalized_key": "the fix carries its class rate is now measured at 5 5 across five",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**The fix-carries-its-class rate is now measured at 5/5 across five rounds and three slices**, on top of the prior session's flat trend. This is the evidence the open `## Discuss` question needs: a proof-surface slice plausibly owes review until a round comes back clean, not two rounds. Recorded here rather than changed unilaterally, because raising the cap is a contract change."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:962c44648b7c",
-      "kind": "next_improvement",
-      "lesson": "the retro planner's default `next_action` can point at another session's record that merely shares today's date, with the scaffold packet declaring `overwrite_existing_content`. Always pass `--title`. Recorded in `## Waste` above with the commit that owns the endangered artifact.",
-      "normalized_key": "the retro planner s default next action can point at another session s record",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "the retro planner's default `next_action` can point at another session's record that merely shares today's date, with the scaffold packet declaring `overwrite_existing_content`. Always pass `--title`. Recorded in `## Waste` above with the commit that owns the endangered artifact."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:b54c4ce6698e",
-      "kind": "next_improvement",
-      "lesson": "when a pattern is used to both DISCOVER and MATCH, one engine must do both. `fnmatch` and `Path.glob` disagree about `*` crossing `/` and about `**/`, in opposite directions, so two readers of one pattern is a defect even when each reader is individually reasonable.",
-      "normalized_key": "when a pattern is used to both discover and match one engine must do",
-      "recurrence_class": "one-engine-per-pattern",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "when a pattern is used to both DISCOVER and MATCH, one engine must do both. `fnmatch` and `Path.glob` disagree about `*` crossing `/` and about `**/`, in opposite directions, so two readers of one pattern is a defect even when each reader is individually reasonable."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:00c728e5b798",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: run the changed-line proof BEFORE the slice commit, not after. Named as a recurrence above; the two follow-up commits it cost this session are the measurement.",
-      "normalized_key": "workflow run the changed line proof before the slice commit not after named as",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: run the changed-line proof BEFORE the slice commit, not after. Named as a recurrence above; the two follow-up commits it cost this session are the measurement."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:b62bdac9e729",
-      "kind": "repeat_trap",
-      "lesson": "**A commit message with backticks was evaluated by the shell**, silently dropping a clause. Caught by reading the stored message back — a different channel than the one that wrote it, which is the only reason it was caught.",
-      "normalized_key": "a commit message with backticks was evaluated by the shell silently dropping a clause",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A commit message with backticks was evaluated by the shell**, silently dropping a clause. Caught by reading the stored message back — a different channel than the one that wrote it, which is the only reason it was caught."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:39a9aec230aa",
-      "kind": "repeat_trap",
-      "lesson": "**Gate-baseline runtime, unflagged debt.** Telemetry: the broad pytest lane peaks at 475.46s across 16 recorded occurrences, and `run_standing_pytest --mode read-only` at 208.32s across 13. This session's own runs were faster (~80s each, 5 runs) but the standing peak is the debt and it belongs to the gate implementation, not to any session that pays it. Routing: unchanged from the prior retro's `monitored-execution` line; not re-filed here. Not waste, recorded because it reads like it: five reviewer rounds cost substantial wall clock and produced every blocker that mattered, including two I introduced myself. The commit-msg refusal is the gate working.",
-      "normalized_key": "gate baseline runtime unflagged debt telemetry the broad pytest lane peaks at 475 46s",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Gate-baseline runtime, unflagged debt.** Telemetry: the broad pytest lane peaks at 475.46s across 16 recorded occurrences, and `run_standing_pytest --mode read-only` at 208.32s across 13. This session's own runs were faster (~80s each, 5 runs) but the standing peak is the debt and it belongs to the gate implementation, not to any session that pays it. Routing: unchanged from the prior retro's `monitored-execution` line; not re-filed here. Not waste, recorded because it reads like it: five reviewer rounds cost substantial wall clock and produced every blocker that mattered, including two I introduced myself. The commit-msg refusal is the gate working."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:2500342b0a24",
-      "kind": "repeat_trap",
-      "lesson": "**I ran `git stash -u` for no reason and stashed the entire session's uncommitted work.** It was recoverable by `git stash pop` and cost only the recovery, but it also corrupted a full quality-lane run that was executing at the time — files vanished under it, ten gates reported failures, and I nearly spent the next hour chasing artifacts of my own mistake. The command had no purpose; I typed it while reaching for a way to compare against HEAD, which a detached worktree answers without touching the working tree.",
-      "normalized_key": "i ran git stash u for no reason and stashed the entire session s",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**I ran `git stash -u` for no reason and stashed the entire session's uncommitted work.** It was recoverable by `git stash pop` and cost only the recovery, but it also corrupted a full quality-lane run that was executing at the time — files vanished under it, ten gates reported failures, and I nearly spent the next hour chasing artifacts of my own mistake. The command had no purpose; I typed it while reaching for a way to compare against HEAD, which a detached worktree answers without touching the working tree."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c09cc36ee063",
-      "kind": "repeat_trap",
-      "lesson": "**Near-miss, not waste, recorded because it nearly was**: the retro planner's default `next_action` was `continue-existing-retro` pointing at `2026-08-16-session-retro.md`, with the scaffold packet declaring `write_artifact_effect: overwrite_existing_content`. That artifact belongs to the PREVIOUS session (committed in `0037dbcfd`) and merely shares today's date. Passing `--title` routed the scaffold to a new path and the prior record survived. This is the producer-scaffold class S2 of this very release exists to fix, arriving through the planner's default rather than the scaffold's write path.",
-      "normalized_key": "near miss not waste recorded because it nearly was the retro planner s default",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Near-miss, not waste, recorded because it nearly was**: the retro planner's default `next_action` was `continue-existing-retro` pointing at `2026-08-16-session-retro.md`, with the scaffold packet declaring `write_artifact_effect: overwrite_existing_content`. That artifact belongs to the PREVIOUS session (committed in `0037dbcfd`) and merely shares today's date. Passing `--title` routed the scaffold to a new path and the prior record survived. This is the producer-scaffold class S2 of this very release exists to fix, arriving through the planner's default rather than the scaffold's write path."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:33c8b5dc648d",
-      "kind": "repeat_trap",
-      "lesson": "Not waste, recorded because it looks like it: eight reviewers over two rounds cost most of the session's wall clock and found every defect that mattered. I found none of the round-1 blockers independently.",
-      "normalized_key": "not waste recorded because it looks like it eight reviewers over two rounds cost",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Not waste, recorded because it looks like it: eight reviewers over two rounds cost most of the session's wall clock and found every defect that mattered. I found none of the round-1 blockers independently."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:4baef1881de8",
-      "kind": "repeat_trap",
-      "lesson": "**`ruff` C901 complexity surfaced after the code was written**, forcing a decomposition pass on two functions. The decomposition was an improvement, so this is cheap waste, not pure loss.",
-      "normalized_key": "ruff c901 complexity surfaced after the code was written forcing a decomposition pass on",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**`ruff` C901 complexity surfaced after the code was written**, forcing a decomposition pass on two functions. The decomposition was an improvement, so this is cheap waste, not pure loss."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:188d5bb170ad",
-      "kind": "repeat_trap",
-      "lesson": "**The changed-line proof ran last, not first**, for the fourth session running. The lesson presented at session open says to run it before the broad lane; the gate refuses a dirty pool, so it needs a commit, and I ran the broad lane first anyway. It then reported seven unproven lines across three files — every one of them a line I had added — which is exactly the cost the lesson names.",
-      "normalized_key": "the changed line proof ran last not first for the fourth session running the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The changed-line proof ran last, not first**, for the fourth session running. The lesson presented at session open says to run it before the broad lane; the gate refuses a dirty pool, so it needs a commit, and I ran the broad lane first anyway. It then reported seven unproven lines across three files — every one of them a line I had added — which is exactly the cost the lesson names."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:807e80a26a45",
-      "kind": "repeat_trap",
-      "lesson": "**The dup ratchet hard-blocked twice, both times after the code was written.** The advisory post-edit hook warned at each edit and I continued; the block landed at commit time and each resolution needed an authored `intentional` entry. Both entries are defensible, so this is sequencing cost, not rework — but it is sequencing cost the advisory already offered to prevent. `moderate` — whether checking mid-slice would have changed either outcome is judgment.",
-      "normalized_key": "the dup ratchet hard blocked twice both times after the code was written the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The dup ratchet hard-blocked twice, both times after the code was written.** The advisory post-edit hook warned at each edit and I continued; the block landed at commit time and each resolution needed an authored `intentional` entry. Both entries are defensible, so this is sequencing cost, not rework — but it is sequencing cost the advisory already offered to prevent. `moderate` — whether checking mid-slice would have changed either outcome is judgment."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:2a4c0cacfcc2",
-      "kind": "repeat_trap",
-      "lesson": "**Three repo completeness guards fired only at full-suite time**, not when the surface they guard was added: a queued gate needs a seeded harness stub, a timing-layer verdict, and a catalog entry for a new reference. Each cost a full suite run (~85s) to discover. They are exactly the right guards; the waste is that nothing prompts them at the moment of the edit.",
-      "normalized_key": "three repo completeness guards fired only at full suite time not when the surface",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Three repo completeness guards fired only at full-suite time**, not when the surface they guard was added: a queued gate needs a seeded harness stub, a timing-layer verdict, and a catalog entry for a new reference. Each cost a full suite run (~85s) to discover. They are exactly the right guards; the waste is that nothing prompts them at the moment of the edit."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 140,
+      "source_count": 141,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-v6-0-1-release-auto-retro.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -3628,6 +2692,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-v6-0-1-release-auto-retro.md",
+          "date": "2026-08-17",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -3637,15 +2709,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 20,
+      "source_count": 21,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-v6-0-1-release-auto-retro.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3802,6 +2874,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md",
           "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-v6-0-1-release-auto-retro.md",
+          "date": "2026-08-17",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -3815,15 +2895,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 20,
+      "source_count": 21,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-v6-0-1-release-auto-retro.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3984,6 +3064,976 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-v6-0-1-release-auto-retro.md",
+          "date": "2026-08-17",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:113de893afd6",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v6.0.1`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v6 0 1",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-v6-0-1-release-auto-retro.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-v6-0-1-release-auto-retro.md",
+          "date": "2026-08-17",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v6.0.1`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7ea13d0a36d5",
+      "kind": "current_focus",
+      "lesson": "Autonomous continuation of `docs/handoff.md` `## Next Session` from item 2 onward, after the operator asked which items remained once the real-host checklist was set aside.",
+      "normalized_key": "autonomous continuation of docs handoff md next session from item 2 onward after the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Autonomous continuation of `docs/handoff.md` `## Next Session` from item 2 onward, after the operator asked which items remained once the real-host checklist was set aside."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a3f676841d02",
+      "kind": "current_focus",
+      "lesson": "Handoff pickup.",
+      "normalized_key": "handoff pickup",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Handoff pickup."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a981f526c585",
+      "kind": "current_focus",
+      "lesson": "S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder.",
+      "normalized_key": "s6b 2 of the 6 0 0 release scope make a dominated command refusable",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S6b-2 of the 6.0.0 release scope: make a dominated command refusable at the seams a document never reaches (SC14, SC15, SC16, SC17, SC19), plus S6b-1's carried sampler remainder."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:c163310f8fc6",
+      "kind": "current_focus",
+      "lesson": "S7 of the 6.0.0 release scope: publish the release and close #608 and #618-#627.",
+      "normalized_key": "s7 of the 6 0 0 release scope publish the release and close 608",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "S7 of the 6.0.0 release scope: publish the release and close #608 and #618-#627."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:f8afed4b6f9e",
+      "kind": "current_focus",
+      "lesson": "The handoff named five items blocking the deferred 6.0.0 publish, and the owner asked for all outstanding debt to be paid before pushing 51 commits.",
+      "normalized_key": "the handoff named five items blocking the deferred 6 0 0 publish and the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The handoff named five items blocking the deferred 6.0.0 publish, and the owner asked for all outstanding debt to be paid before pushing 51 commits."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:e7e195f80a32",
+      "kind": "current_focus",
+      "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency).",
+      "normalized_key": "three slices of the 6 0 0 release scope landed in one session s6b",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Three slices of the 6.0.0 release scope landed in one session: S6b-1 (SC18, one policy for coverage instrumentation), the re-obtained changed-line proof S6 left unobtained, and S6c (SC20, export self-sufficiency)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3ee8f08588f6",
+      "kind": "next_improvement",
+      "lesson": "**A bulk rewrite of command-shaped strings owes a written executor check before the edit** — name what runs each matched field, or do not run the sweep. Two of five review rounds this session trace to one blanket regex; the pre-mortem is a grep, the alternative was a broken template.",
+      "normalized_key": "a bulk rewrite of command shaped strings owes a written executor check before the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**A bulk rewrite of command-shaped strings owes a written executor check before the edit** — name what runs each matched field, or do not run the sweep. Two of five review rounds this session trace to one blanket regex; the pre-mortem is a grep, the alternative was a broken template."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:724ef068d175",
+      "kind": "next_improvement",
+      "lesson": "a host parses text a human wrote as narrative. `S7 closes\\n#626/#627/#631`, written to DESCRIBE a future release, closed #626 the moment the commit was pushed. Before pushing, scan the range's messages for the host's own keyword grammar; a guard that only inspects a staged carrier file cannot see a keyword in a sentence.",
+      "normalized_key": "a host parses text a human wrote as narrative s7 closes n 626 627",
+      "recurrence_class": "keyword-in-prose-is-a-directive",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a host parses text a human wrote as narrative. `S7 closes\\n#626/#627/#631`, written to DESCRIBE a future release, closed #626 the moment the commit was pushed. Before pushing, scan the range's messages for the host's own keyword grammar; a guard that only inspects a staged carrier file cannot see a keyword in a sentence."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:f2985d3eb38f",
+      "kind": "next_improvement",
+      "lesson": "a test proving a LOCAL layout fact must assert what the module under test bound, never a global interpreter property. Where the arm taken is not observable from the module, force it with a `meta_path` finder rather than by filtering `sys.path`.",
+      "normalized_key": "a test proving a local layout fact must assert what the module under test",
+      "recurrence_class": "global-probe-for-local-fact",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a test proving a LOCAL layout fact must assert what the module under test bound, never a global interpreter property. Where the arm taken is not observable from the module, force it with a `meta_path` finder rather than by filtering `sys.path`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e83334bd85be",
+      "kind": "next_improvement",
+      "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs.",
+      "normalized_key": "after adding a queued gate or a new skill reference run the repo s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "after adding a queued gate or a new skill reference, run the repo's declaration guards immediately (`test_quality_run_planner.py`, `test_quality_runner.py`, `test_timing_layer_completeness.py`, `test_closeout_bundle.py`, `validate_surfaces.py`) before the first full suite. Measured this session: they fired at full-suite time and cost two otherwise-unnecessary suite runs."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:7a4296fb47a3",
+      "kind": "next_improvement",
+      "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer.",
+      "normalized_key": "an artifact whose prose carries verification grade claims counts per issue residual ownership which",
+      "recurrence_class": "prose-claim-without-a-reader",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:9b0cfdf68d38",
+      "kind": "next_improvement",
+      "lesson": "before editing any config value, establish whether it is READ by a reader or RUN by an executor. A documentation placeholder in a read field is correct and in an executed field is a shell redirection, and the two are indistinguishable by looking at the value.",
+      "normalized_key": "before editing any config value establish whether it is read by a reader or",
+      "recurrence_class": "executed-vs-read-field",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "before editing any config value, establish whether it is READ by a reader or RUN by an executor. A documentation placeholder in a read field is correct and in an executed field is a shell redirection, and the two are indistinguishable by looking at the value."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a3224900bb6f",
+      "kind": "next_improvement",
+      "lesson": "**capability**: `command_script_target`'s `None` means both \"not judged\" and \"cannot be a path\", and a caller turns one of them into a hard refusal. Make the distinction part of the return value rather than of the docstring.",
+      "normalized_key": "capability command script target s none means both not judged and cannot be a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: `command_script_target`'s `None` means both \"not judged\" and \"cannot be a path\", and a caller turns one of them into a hard refusal. Make the distinction part of the return value rather than of the docstring."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5b19a0587cdb",
+      "kind": "next_improvement",
+      "lesson": "**capability**: give `prove`'s stop gate the blind-class QUESTION for detector-touching slices — \"name one input your acceptance would pass that your blind class says it must not judge\". A question, not a gate (P5). This is the prior retro's `blind-class-before-build-handoff-anchor` item, now with a measured second instance behind it.",
+      "normalized_key": "capability give prove s stop gate the blind class question for detector touching slices",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: give `prove`'s stop gate the blind-class QUESTION for detector-touching slices — \"name one input your acceptance would pass that your blind class says it must not judge\". A question, not a gate (P5). This is the prior retro's `blind-class-before-build-handoff-anchor` item, now with a measured second instance behind it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:81e64d98af4f",
+      "kind": "next_improvement",
+      "lesson": "**capability**: — run `seed_lesson_transitions.py` at retro closeout, or make persistence run it. Measured while checking whether THIS retro's lessons had persisted: they had not. The tag makes a lesson *seedable*, and a separate command makes it *selectable*; nobody ran the second one. Three of the four tagged classes in the 2026-08-14 retro had been stranded for two days — authored, committed, and invisible to every session's presentation since. All four are seeded now (37 active lessons, 37 seed transitions), and `detector-blind-class-unstated` draws in 8 of 8 sampled seeds. This is the repo's own \"correct rule, no carrier\" class at the lesson loop itself, and the retro that names that class walked into it.",
+      "normalized_key": "capability run seed lesson transitions py at retro closeout or make persistence run it",
+      "recurrence_class": "tagged-lesson-never-seeded",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: — run `seed_lesson_transitions.py` at retro closeout, or make persistence run it. Measured while checking whether THIS retro's lessons had persisted: they had not. The tag makes a lesson *seedable*, and a separate command makes it *selectable*; nobody ran the second one. Three of the four tagged classes in the 2026-08-14 retro had been stranded for two days — authored, committed, and invisible to every session's presentation since. All four are seeded now (37 active lessons, 37 seed transitions), and `detector-blind-class-unstated` draws in 8 of 8 sampled seeds. This is the repo's own \"correct rule, no carrier\" class at the lesson loop itself, and the retro that names that class walked into it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:027522139d42",
+      "kind": "next_improvement",
+      "lesson": "**capability**: the `impl`/`spec` stop gate should ask for the blind-class statement when a slice adds a detector or gate, so the convention this repo already follows in three older detectors stops depending on author habit. Tracked as `blind-class-before-build-handoff-anchor`.",
+      "normalized_key": "capability the impl spec stop gate should ask for the blind class statement when",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: the `impl`/`spec` stop gate should ask for the blind-class statement when a slice adds a detector or gate, so the convention this repo already follows in three older detectors stops depending on author habit. Tracked as `blind-class-before-build-handoff-anchor`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c0af04057288",
+      "kind": "next_improvement",
+      "lesson": "**Declare executed adapter fields the way release already does.** `EXECUTED_COMMAND_FIELDS` exists for release and nothing equivalent covers critique/retro `command:` or `integrations/tools/*.json` `checks.*.commands`. Without it, the only defense is classifying by file type, which under-reports by design. Handoff anchor `executed-field-declaration`.",
+      "normalized_key": "declare executed adapter fields the way release already does executed command fields exists for",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**Declare executed adapter fields the way release already does.** `EXECUTED_COMMAND_FIELDS` exists for release and nothing equivalent covers critique/retro `command:` or `integrations/tools/*.json` `checks.*.commands`. Without it, the only defense is classifying by file type, which under-reports by design. Handoff anchor `executed-field-declaration`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:aa4728fcc25e",
+      "kind": "next_improvement",
+      "lesson": "extend the inference-interpretation registry's requirement from \"a module that DECLARES an interpretation must be registered\" to \"a module that renders a verdict about other code must declare its blind class\", so the blind-class habit becomes a gate. This is the carrier two retros have asked for and nothing has built; it is now cheap because the registry, the validator, and the leak scan all exist.",
+      "normalized_key": "extend the inference interpretation registry s requirement from a module that declares an interpretation",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "extend the inference-interpretation registry's requirement from \"a module that DECLARES an interpretation must be registered\" to \"a module that renders a verdict about other code must declare its blind class\", so the blind-class habit becomes a gate. This is the carrier two retros have asked for and nothing has built; it is now cheap because the registry, the validator, and the leak scan all exist."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:541ce40f2185",
+      "kind": "next_improvement",
+      "lesson": "give at least one reviewer the CONSUMER frame explicitly — \"what breaks for a repo that installs this\" — because a scope-shaped review answers only scope-shaped questions, and an error message a consumer cannot act on is invisible from inside the authoring repo.",
+      "normalized_key": "give at least one reviewer the consumer frame explicitly what breaks for a repo",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "give at least one reviewer the CONSUMER frame explicitly — \"what breaks for a repo that installs this\" — because a scope-shaped review answers only scope-shaped questions, and an error message a consumer cannot act on is invisible from inside the authoring repo."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:264549d0a1df",
+      "kind": "next_improvement",
+      "lesson": "make a slice closeout unable to record \"gates clean\" without citing the run receipt, so a claim written from memory is red rather than plausible.",
+      "normalized_key": "make a slice closeout unable to record gates clean without citing the run receipt",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make a slice closeout unable to record \"gates clean\" without citing the run receipt, so a claim written from memory is red rather than plausible."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:025ef8bee1d5",
+      "kind": "next_improvement",
+      "lesson": "measure a text-gate repair's verdict diff over the whole corpus before accepting it; the motivating case is not the blast radius.",
+      "normalized_key": "measure a text gate repair s verdict diff over the whole corpus before accepting",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "measure a text-gate repair's verdict diff over the whole corpus before accepting it; the motivating case is not the blast radius."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4acfbce3e563",
+      "kind": "next_improvement",
+      "lesson": "**memory**: the fix-carries-its-class pattern now has five consecutive measured instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices rather than as a per-slice surprise, so the two-round rule reads as load-bearing rather than as ceremony.",
+      "normalized_key": "memory the fix carries its class pattern now has five consecutive measured instances s4",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: the fix-carries-its-class pattern now has five consecutive measured instances (S4, S6, S6b-1, S6c). Record it as a property of this repo's slices rather than as a per-slice surprise, so the two-round rule reads as load-bearing rather than as ceremony."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2097550d83f5",
+      "kind": "next_improvement",
+      "lesson": "never reach for `git stash` to compare against HEAD; a detached worktree answers the same question without touching the working tree.",
+      "normalized_key": "never reach for git stash to compare against head a detached worktree answers the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "never reach for `git stash` to compare against HEAD; a detached worktree answers the same question without touching the working tree."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5411be9703e4",
+      "kind": "next_improvement",
+      "lesson": "**The fix-carries-its-class rate is now measured at 5/5 across five rounds and three slices**, on top of the prior session's flat trend. This is the evidence the open `## Discuss` question needs: a proof-surface slice plausibly owes review until a round comes back clean, not two rounds. Recorded here rather than changed unilaterally, because raising the cap is a contract change.",
+      "normalized_key": "the fix carries its class rate is now measured at 5 5 across five",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**The fix-carries-its-class rate is now measured at 5/5 across five rounds and three slices**, on top of the prior session's flat trend. This is the evidence the open `## Discuss` question needs: a proof-surface slice plausibly owes review until a round comes back clean, not two rounds. Recorded here rather than changed unilaterally, because raising the cap is a contract change."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:962c44648b7c",
+      "kind": "next_improvement",
+      "lesson": "the retro planner's default `next_action` can point at another session's record that merely shares today's date, with the scaffold packet declaring `overwrite_existing_content`. Always pass `--title`. Recorded in `## Waste` above with the commit that owns the endangered artifact.",
+      "normalized_key": "the retro planner s default next action can point at another session s record",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the retro planner's default `next_action` can point at another session's record that merely shares today's date, with the scaffold packet declaring `overwrite_existing_content`. Always pass `--title`. Recorded in `## Waste` above with the commit that owns the endangered artifact."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:b54c4ce6698e",
+      "kind": "next_improvement",
+      "lesson": "when a pattern is used to both DISCOVER and MATCH, one engine must do both. `fnmatch` and `Path.glob` disagree about `*` crossing `/` and about `**/`, in opposite directions, so two readers of one pattern is a defect even when each reader is individually reasonable.",
+      "normalized_key": "when a pattern is used to both discover and match one engine must do",
+      "recurrence_class": "one-engine-per-pattern",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when a pattern is used to both DISCOVER and MATCH, one engine must do both. `fnmatch` and `Path.glob` disagree about `*` crossing `/` and about `**/`, in opposite directions, so two readers of one pattern is a defect even when each reader is individually reasonable."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:00c728e5b798",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: run the changed-line proof BEFORE the slice commit, not after. Named as a recurrence above; the two follow-up commits it cost this session are the measurement.",
+      "normalized_key": "workflow run the changed line proof before the slice commit not after named as",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: run the changed-line proof BEFORE the slice commit, not after. Named as a recurrence above; the two follow-up commits it cost this session are the measurement."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b62bdac9e729",
+      "kind": "repeat_trap",
+      "lesson": "**A commit message with backticks was evaluated by the shell**, silently dropping a clause. Caught by reading the stored message back — a different channel than the one that wrote it, which is the only reason it was caught.",
+      "normalized_key": "a commit message with backticks was evaluated by the shell silently dropping a clause",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A commit message with backticks was evaluated by the shell**, silently dropping a clause. Caught by reading the stored message back — a different channel than the one that wrote it, which is the only reason it was caught."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:39a9aec230aa",
+      "kind": "repeat_trap",
+      "lesson": "**Gate-baseline runtime, unflagged debt.** Telemetry: the broad pytest lane peaks at 475.46s across 16 recorded occurrences, and `run_standing_pytest --mode read-only` at 208.32s across 13. This session's own runs were faster (~80s each, 5 runs) but the standing peak is the debt and it belongs to the gate implementation, not to any session that pays it. Routing: unchanged from the prior retro's `monitored-execution` line; not re-filed here. Not waste, recorded because it reads like it: five reviewer rounds cost substantial wall clock and produced every blocker that mattered, including two I introduced myself. The commit-msg refusal is the gate working.",
+      "normalized_key": "gate baseline runtime unflagged debt telemetry the broad pytest lane peaks at 475 46s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Gate-baseline runtime, unflagged debt.** Telemetry: the broad pytest lane peaks at 475.46s across 16 recorded occurrences, and `run_standing_pytest --mode read-only` at 208.32s across 13. This session's own runs were faster (~80s each, 5 runs) but the standing peak is the debt and it belongs to the gate implementation, not to any session that pays it. Routing: unchanged from the prior retro's `monitored-execution` line; not re-filed here. Not waste, recorded because it reads like it: five reviewer rounds cost substantial wall clock and produced every blocker that mattered, including two I introduced myself. The commit-msg refusal is the gate working."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2500342b0a24",
+      "kind": "repeat_trap",
+      "lesson": "**I ran `git stash -u` for no reason and stashed the entire session's uncommitted work.** It was recoverable by `git stash pop` and cost only the recovery, but it also corrupted a full quality-lane run that was executing at the time — files vanished under it, ten gates reported failures, and I nearly spent the next hour chasing artifacts of my own mistake. The command had no purpose; I typed it while reaching for a way to compare against HEAD, which a detached worktree answers without touching the working tree.",
+      "normalized_key": "i ran git stash u for no reason and stashed the entire session s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I ran `git stash -u` for no reason and stashed the entire session's uncommitted work.** It was recoverable by `git stash pop` and cost only the recovery, but it also corrupted a full quality-lane run that was executing at the time — files vanished under it, ten gates reported failures, and I nearly spent the next hour chasing artifacts of my own mistake. The command had no purpose; I typed it while reaching for a way to compare against HEAD, which a detached worktree answers without touching the working tree."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c09cc36ee063",
+      "kind": "repeat_trap",
+      "lesson": "**Near-miss, not waste, recorded because it nearly was**: the retro planner's default `next_action` was `continue-existing-retro` pointing at `2026-08-16-session-retro.md`, with the scaffold packet declaring `write_artifact_effect: overwrite_existing_content`. That artifact belongs to the PREVIOUS session (committed in `0037dbcfd`) and merely shares today's date. Passing `--title` routed the scaffold to a new path and the prior record survived. This is the producer-scaffold class S2 of this very release exists to fix, arriving through the planner's default rather than the scaffold's write path.",
+      "normalized_key": "near miss not waste recorded because it nearly was the retro planner s default",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Near-miss, not waste, recorded because it nearly was**: the retro planner's default `next_action` was `continue-existing-retro` pointing at `2026-08-16-session-retro.md`, with the scaffold packet declaring `write_artifact_effect: overwrite_existing_content`. That artifact belongs to the PREVIOUS session (committed in `0037dbcfd`) and merely shares today's date. Passing `--title` routed the scaffold to a new path and the prior record survived. This is the producer-scaffold class S2 of this very release exists to fix, arriving through the planner's default rather than the scaffold's write path."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:33c8b5dc648d",
+      "kind": "repeat_trap",
+      "lesson": "Not waste, recorded because it looks like it: eight reviewers over two rounds cost most of the session's wall clock and found every defect that mattered. I found none of the round-1 blockers independently.",
+      "normalized_key": "not waste recorded because it looks like it eight reviewers over two rounds cost",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Not waste, recorded because it looks like it: eight reviewers over two rounds cost most of the session's wall clock and found every defect that mattered. I found none of the round-1 blockers independently."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4baef1881de8",
+      "kind": "repeat_trap",
+      "lesson": "**`ruff` C901 complexity surfaced after the code was written**, forcing a decomposition pass on two functions. The decomposition was an improvement, so this is cheap waste, not pure loss.",
+      "normalized_key": "ruff c901 complexity surfaced after the code was written forcing a decomposition pass on",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**`ruff` C901 complexity surfaced after the code was written**, forcing a decomposition pass on two functions. The decomposition was an improvement, so this is cheap waste, not pure loss."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:188d5bb170ad",
+      "kind": "repeat_trap",
+      "lesson": "**The changed-line proof ran last, not first**, for the fourth session running. The lesson presented at session open says to run it before the broad lane; the gate refuses a dirty pool, so it needs a commit, and I ran the broad lane first anyway. It then reported seven unproven lines across three files — every one of them a line I had added — which is exactly the cost the lesson names.",
+      "normalized_key": "the changed line proof ran last not first for the fourth session running the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The changed-line proof ran last, not first**, for the fourth session running. The lesson presented at session open says to run it before the broad lane; the gate refuses a dirty pool, so it needs a commit, and I ran the broad lane first anyway. It then reported seven unproven lines across three files — every one of them a line I had added — which is exactly the cost the lesson names."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:807e80a26a45",
+      "kind": "repeat_trap",
+      "lesson": "**The dup ratchet hard-blocked twice, both times after the code was written.** The advisory post-edit hook warned at each edit and I continued; the block landed at commit time and each resolution needed an authored `intentional` entry. Both entries are defensible, so this is sequencing cost, not rework — but it is sequencing cost the advisory already offered to prevent. `moderate` — whether checking mid-slice would have changed either outcome is judgment.",
+      "normalized_key": "the dup ratchet hard blocked twice both times after the code was written the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The dup ratchet hard-blocked twice, both times after the code was written.** The advisory post-edit hook warned at each edit and I continued; the block landed at commit time and each resolution needed an authored `intentional` entry. Both entries are defensible, so this is sequencing cost, not rework — but it is sequencing cost the advisory already offered to prevent. `moderate` — whether checking mid-slice would have changed either outcome is judgment."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2a4c0cacfcc2",
+      "kind": "repeat_trap",
+      "lesson": "**Three repo completeness guards fired only at full-suite time**, not when the surface they guard was added: a queued gate needs a seeded harness stub, a timing-layer verdict, and a catalog entry for a new reference. Each cost a full suite run (~85s) to discover. They are exactly the right guards; the waste is that nothing prompts them at the moment of the edit.",
+      "normalized_key": "three repo completeness guards fired only at full suite time not when the surface",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+      "latest_source_date": "2026-08-16",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Three repo completeness guards fired only at full-suite time**, not when the surface they guard was added: a queued gate needs a seeded harness stub, a timing-layer verdict, and a catalog entry for a new reference. Each cost a full suite run (~85s) to discover. They are exactly the right guards; the waste is that nothing prompts them at the moment of the edit."
         }
       ]
     },
