@@ -417,3 +417,25 @@ def test_reconciler_still_skips_the_one_disposition_entitled_to_the_sentinel() -
     # scoped to void claims, not to the sentinel itself.
     assert report["status_counts"]["not-evaluated"] == 1
     assert report["not_evaluated_reason_counts"]["missing-start"] == 1
+
+
+def test_void_disposition_becomes_a_red_violation_not_a_dropped_row() -> None:
+    """A `\"none\"` disposition must turn the gate red, never fall out of the count.
+
+    The refusal chain #633 closes ends at `collect_dispositions`: the grammar
+    refuses the row, and this test pins that the refusal is CONVERTED into an
+    `invalid-disposition` violation rather than silently shrinking the
+    denominator -- the one remaining way a refused retro could read as green.
+    """
+    from scripts import lesson_evaluation_records_lib as records_lib
+
+    text = (
+        "# Retro\n\n## Lesson Evaluation\n\n"
+        'Lesson evaluation: {"score_event_count": 7, "session_id": "none", '
+        '"status": "effect-recorded"}\n'
+    )
+    dispositions, violations = records_lib.collect_dispositions([("retro/x.md", text)])
+
+    assert dispositions == []
+    assert [item["id"] for item in violations] == ["invalid-disposition"]
+    assert "reserved" in violations[0]["detail"]
