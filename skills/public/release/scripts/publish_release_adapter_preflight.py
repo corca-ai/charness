@@ -147,11 +147,29 @@ def run_release_adapter_preflight(
     *,
     run_command: Callable,
 ) -> None:
+    """Run the focused preflight, and record on ``payload`` what actually executed.
+
+    The `execution` key is what the release record renders. Without it the record
+    showed `status: required` plus a command list -- a PLAN -- with no way for a
+    reader to tell whether any of it ran. `payload` is the same dict the plan puts at
+    `payload["release_adapter_preflight"]`, so writing here is what reaches the record.
+    """
     if payload.get("status") != "required":
+        payload["execution"] = {
+            "status": "not_run",
+            "reason": f"focused preflight status is `{payload.get('status')}`; no commands were required",
+            "executed_commands": [],
+        }
         return
+    executed: list[str] = []
     for command in payload.get("commands", []):
         result = run_command(command, cwd=repo_root, check=False)
         if result.returncode != 0:
+            payload["execution"] = {
+                "status": "failed",
+                "executed_commands": executed,
+                "failed_command": " ".join(command),
+            }
             raise SystemExit(
                 "release adapter focused preflight blocked publish before mutation\n"
                 f"command: {' '.join(command)}\n"
@@ -159,3 +177,5 @@ def run_release_adapter_preflight(
                 f"STDOUT:\n{result.stdout}\n"
                 f"STDERR:\n{result.stderr}"
             )
+        executed.append(" ".join(command))
+    payload["execution"] = {"status": "passed", "executed_commands": executed}

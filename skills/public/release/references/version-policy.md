@@ -34,3 +34,17 @@ Use `major` for:
 
 If the bump level is debatable, say why. `release` should not silently turn a
 human judgment call into a hidden default.
+
+Say it where the reader is. Pass the reason to the publish helper:
+
+```bash
+python3 "$SKILL_DIR/scripts/publish_release.py" --repo-root . --part patch \
+  --bump-rationale "patch, not minor: the one feat is a validator repair, and no
+registered public surface moved."
+```
+
+It is rendered into the release record's `## Bump Rationale` section, so an
+outside reader gets it. Omit it and that section says so in as many words --
+absence is recorded, not hidden. On `--resume` the payload is rebuilt from
+arguments, so repeat the flag or the published record loses the rationale the
+prepared one carried.

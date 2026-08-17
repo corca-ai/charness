@@ -100,6 +100,21 @@ def validate_critique_artifact_arg(
     return normalized
 
 
+def validate_bump_rationale_arg(bump_rationale: str | None) -> str | None:
+    """The `--bump-rationale` value, refused when it would forge release state.
+
+    Rendered VERBATIM into the release record, which other surfaces prove release
+    state by substring-matching -- the same exposure `--critique-artifact` has, and
+    the reason the sentinel rule is shared rather than re-derived here. Heading lines
+    are demoted at render time instead of refused; a sentinel cannot be demoted
+    without changing what the operator wrote, so it stops the run at argument time,
+    before any mutation.
+    """
+    if bump_rationale is not None:
+        _claims_review["assert_no_record_sentinel"](bump_rationale, "--bump-rationale")
+    return bump_rationale
+
+
 def _resolve_git_ident(repo_root: Path, var_name: str) -> str | None:
     proc = subprocess.run(
         ["git", "-C", str(repo_root), "var", var_name],

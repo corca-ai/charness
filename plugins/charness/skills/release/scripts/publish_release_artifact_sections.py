@@ -15,6 +15,17 @@ published_notes_audit_lines = _verification["published_notes_audit_lines"]
 real_host_lines = _verification["real_host_lines"]
 release_observer_lines = _verification["release_observer_lines"]
 
+# The other end of the same timeline: what the helper established BEFORE the release
+# mutation. Same re-export reason as above.
+_premutation = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_premutation_sections.py"))
+)
+bump_rationale_lines = _premutation["bump_rationale_lines"]
+demote_headings = _premutation["demote_headings"]
+release_adapter_preflight_lines = _premutation["release_adapter_preflight_lines"]
+version_drift_lines = _premutation["version_drift_lines"]
+_pending_payload_section = _premutation["pending_payload_section"]
+
 
 def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
     lines = ["", "## Issue Closeout", ""]
@@ -141,53 +152,6 @@ def requested_review_lines(payload: dict[str, Any] | None) -> list[str]:
     lines.append(f"- Configured command count: `{len(commands) if isinstance(commands, list) else 0}`.")
     for warning in payload.get("warnings", []):
         lines.append(f"- Warning: {warning}")
-    return lines
-
-
-def _pending_payload_section(
-    payload: dict[str, Any] | None, *, heading: str, pending: str, status_label: str
-) -> tuple[str, list[str]] | None:
-    """``(status, opening_lines)`` for a section whose payload may not exist yet,
-    or ``None`` once the caller has emitted the pending line.
-
-    Two renderers carried this shape verbatim; shared so a third cannot render a
-    status heading over a payload that was never produced.
-    """
-    lines = ["", heading, ""]
-    if payload is None:
-        return None, lines + [pending]  # type: ignore[return-value]
-    status = str(payload.get("status", "unknown"))
-    lines.append(f"- {status_label}: `{status}`.")
-    return status, lines
-
-
-def release_adapter_preflight_lines(payload: dict[str, Any] | None) -> list[str]:
-    status, lines = _pending_payload_section(
-        payload,
-        heading="## Release Adapter Preflight",
-        pending="- Release adapter focused preflight: pending helper execution.",
-        status_label="Release adapter focused preflight status",
-    )
-    if status is None:
-        return lines
-    if reason := payload.get("reason"):
-        lines.append(f"- Reason: {reason}")
-    if previous_ref := payload.get("previous_ref"):
-        lines.append(f"- Previous release ref: `{previous_ref}`")
-    adapter_paths = payload.get("adapter_paths", [])
-    if adapter_paths:
-        lines.append("- Adapter paths in release delta:")
-        lines.extend(f"  - `{path}`" for path in adapter_paths)
-    changed_fields = payload.get("changed_fields", [])
-    if changed_fields:
-        lines.append("- Changed adapter fields:")
-        lines.extend(f"  - `{field}`" for field in changed_fields)
-    commands = payload.get("commands", [])
-    if commands:
-        lines.append("- Focused preflight commands:")
-        lines.extend(f"  - `{' '.join(command)}`" for command in commands)
-    else:
-        lines.append("- Focused preflight commands: none executed.")
     return lines
 
 

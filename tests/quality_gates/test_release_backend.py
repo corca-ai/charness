@@ -208,6 +208,48 @@ def test_release_adapter_preflight_blocks_on_focused_failure(tmp_path: Path) -> 
 
     assert calls == [["pytest", "tests/quality_gates/test_release_real_host.py", "-q"]]
     assert "release adapter focused preflight blocked publish before mutation" in str(exc.value)
+    assert payload["execution"]["status"] == "failed"
+    assert payload["execution"]["failed_command"] == "pytest tests/quality_gates/test_release_real_host.py -q"
+    assert payload["execution"]["executed_commands"] == []
+
+
+def test_release_adapter_preflight_records_what_it_executed(tmp_path: Path) -> None:
+    """The record renders `execution`; without it a `required` status plus a command
+    list reads as a satisfied requirement when nothing ran."""
+    preflight = _load_release_module("publish_release_preflight")
+    payload = {
+        "status": "required",
+        "commands": [
+            ["python3", "skills/public/release/scripts/resolve_adapter.py", "--repo-root", "."],
+            ["pytest", "tests/quality_gates/test_release_real_host.py", "-q"],
+        ],
+    }
+
+    preflight.run_release_adapter_preflight(
+        tmp_path, payload, run_command=lambda command, **_kwargs: _FakeCompleted(returncode=0)
+    )
+
+    assert payload["execution"]["status"] == "passed"
+    assert payload["execution"]["executed_commands"] == [
+        "python3 skills/public/release/scripts/resolve_adapter.py --repo-root .",
+        "pytest tests/quality_gates/test_release_real_host.py -q",
+    ]
+
+
+def test_release_adapter_preflight_records_that_nothing_was_required(tmp_path: Path) -> None:
+    preflight = _load_release_module("publish_release_preflight")
+    payload = {"status": "not_required", "reason": "adapter unchanged", "commands": []}
+
+    def refuse(command: list[str], **_kwargs):  # pragma: no cover - must not run
+        raise AssertionError(f"no command should run for a not_required preflight: {command}")
+
+    preflight.run_release_adapter_preflight(tmp_path, payload, run_command=refuse)
+
+    assert payload["execution"] == {
+        "status": "not_run",
+        "reason": "focused preflight status is `not_required`; no commands were required",
+        "executed_commands": [],
+    }
 
 
 def test_release_adapter_warns_when_non_gh_backend_lacks_commands(tmp_path: Path) -> None:

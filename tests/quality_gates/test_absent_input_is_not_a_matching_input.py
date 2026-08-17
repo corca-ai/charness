@@ -943,12 +943,28 @@ def test_d48_ensure_release_surface_raises_the_blocker_it_is_given(tmp_path, mon
     assert "boom" in str(excinfo.value)
 
 
-def test_d48_ensure_release_surface_is_silent_when_there_is_no_blocker(tmp_path, monkeypatch):
+def test_d48_ensure_release_surface_returns_the_disposition_when_there_is_no_blocker(tmp_path, monkeypatch):
+    """No blocker is a PASS the record can cite, not silence.
+
+    The release record's no-drift sentence used to be an unconditional literal, so
+    "this check ran and found nothing" and "this check never ran" rendered the same
+    words. The pass has to be a value for the record to be able to tell them apart.
+    """
     cli = _load_script_module(
         "publish_release_cli_absent_input_clean",
         ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py",
     )
-    monkeypatch.setattr(cli, "build_release_payload", lambda root: {"stub": True})
+    monkeypatch.setattr(
+        cli,
+        "build_release_payload",
+        lambda root: {"surface_versions": {"packaging_manifest": "9.9.9"}, "drift": []},
+    )
     monkeypatch.setattr(cli, "release_surface_blocker", lambda payload, version: None)
 
-    assert cli.ensure_release_surface(tmp_path, "9.9.9") is None
+    disposition = cli.ensure_release_surface(tmp_path, "9.9.9", stage="unit")
+
+    assert disposition["status"] == "passed"
+    assert disposition["checked_version"] == "9.9.9"
+    assert disposition["stage"] == "unit"
+    assert disposition["surfaces"] == ["packaging_manifest"]
+    assert disposition["drift"] == []

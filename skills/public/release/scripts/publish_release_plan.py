@@ -90,6 +90,9 @@ def build_publish_payload(
         "commit_message": f"Release {adapter_data['package_id']} {next_version}",
         "notes_mode": "notes-file" if args.notes_file else "generate-notes",
         "critique_artifact": critique_artifact,
+        # `None` when the operator gave none, so the record renders the "not recorded"
+        # sentence rather than an empty rationale section that reads as a satisfied one.
+        "bump_rationale": getattr(args, "bump_rationale", None),
         "execute": args.execute,
     }
 

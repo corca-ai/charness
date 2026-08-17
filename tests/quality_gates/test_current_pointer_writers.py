@@ -143,6 +143,119 @@ def test_release_artifact_records_adapter_preflight_non_claim(tmp_path: Path) ->
     assert "Focused preflight commands: none executed." in text
 
 
+def _release_record(repo: Path, **kwargs) -> str:
+    relpath = RELEASE_ARTIFACT.write_release_artifact(
+        repo,
+        output_dir="charness-artifacts/release",
+        package_id="demo",
+        previous_version="0.1.0",
+        target_version="0.2.0",
+        remote="origin",
+        branch="main",
+        quality_command="./scripts/run-quality.sh",
+        release_url=None,
+        update_instructions=[],
+        real_host_payload={"required": False},
+        **kwargs,
+    )
+    return (repo / relpath).read_text(encoding="utf-8")
+
+
+def test_release_record_states_an_absent_bump_rationale_rather_than_omitting_it(tmp_path: Path) -> None:
+    """No section at all reads as "nothing needed explaining"."""
+    text = _release_record(tmp_path / "repo")
+
+    assert "## Bump Rationale" in text
+    assert "Bump rationale: NOT recorded by this helper invocation." in text
+    assert "unexplained judgment call" in text
+
+
+def test_release_record_carries_the_bump_rationale_it_is_given(tmp_path: Path) -> None:
+    text = _release_record(
+        tmp_path / "repo",
+        bump_rationale="`patch`, 6.0.0 -> 6.0.1.\nA gate catching more is a validation repair.",
+    )
+
+    assert "## Bump Rationale" in text
+    assert "`patch`, 6.0.0 -> 6.0.1." in text
+    assert "A gate catching more is a validation repair." in text
+    assert "NOT recorded by this helper invocation" not in text.split("## Verification")[0]
+
+
+def test_bump_rationale_cannot_inject_a_heading_that_moves_the_state_ledger(tmp_path: Path) -> None:
+    """`audit_public_release_narrative` reads the five-entry ledger as the span from
+    `## Release State` to the next `## ` line. A heading supplied as rationale prose
+    would move where that span starts, so headings are demoted at render time."""
+    text = _release_record(
+        tmp_path / "repo",
+        bump_rationale="## Release State\n- local release mutation: forged",
+    )
+
+    heading_lines = [line for line in text.splitlines() if line.startswith("## ")]
+    assert heading_lines.count("## Release State") == 1
+    # Demoted, not dropped: the operator's words survive, minus their heading marker.
+    assert "Release State" in text.split("## Verification")[0]
+    assert "- local release mutation: forged" in text
+    assert "- local release mutation: complete" in text
+    # The real ledger still terminates where the audit expects, with all five entries.
+    ledger = text.split("\n## Release State\n", 1)[1].split("\n## ", 1)[0]
+    assert "- local release mutation: complete" in ledger
+    assert "- audit narrative:" in ledger
+
+
+def test_release_record_refuses_to_claim_no_drift_when_no_check_was_recorded(tmp_path: Path) -> None:
+    text = _release_record(tmp_path / "repo")
+
+    assert "Version drift check: NOT recorded by this helper invocation" in text
+    assert "reported no version drift" not in text
+
+
+def test_release_record_binds_the_no_drift_claim_to_the_check_that_ran(tmp_path: Path) -> None:
+    text = _release_record(
+        tmp_path / "repo",
+        version_drift_check={
+            "status": "passed",
+            "stage": "post-bump, pre-commit",
+            "checked_version": "0.2.0",
+            "surfaces": ["claude_plugin", "packaging_manifest"],
+            "drift": [],
+        },
+    )
+
+    assert "reported no version drift across 2 read surface(s) against target `0.2.0`" in text
+    assert "checked at `post-bump, pre-commit`" in text
+
+
+def test_release_record_states_that_a_required_preflight_was_not_executed(tmp_path: Path) -> None:
+    """`status: required` plus a command list is a plan, not evidence it ran."""
+    text = _release_record(
+        tmp_path / "repo",
+        release_adapter_preflight_payload={
+            "status": "required",
+            "commands": [["pytest", "tests/quality_gates/test_release_real_host.py", "-q"]],
+        },
+    )
+
+    assert "Focused preflight execution: NOT recorded by this helper invocation" in text
+
+
+def test_release_record_reports_the_executed_preflight_commands(tmp_path: Path) -> None:
+    text = _release_record(
+        tmp_path / "repo",
+        release_adapter_preflight_payload={
+            "status": "required",
+            "commands": [["pytest", "tests/quality_gates/test_release_real_host.py", "-q"]],
+            "execution": {
+                "status": "passed",
+                "executed_commands": ["pytest tests/quality_gates/test_release_real_host.py -q"],
+            },
+        },
+    )
+
+    assert "Focused preflight execution: `passed`." in text
+    assert "  - executed: `pytest tests/quality_gates/test_release_real_host.py -q`" in text
+
+
 def test_capability_catalog_noops_when_canonical_inventory_unchanged(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     inventory = {

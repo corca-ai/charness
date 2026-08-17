@@ -31,6 +31,10 @@ _release_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release
 _release_runtime = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_runtime")
 _resume = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_resume")
 _execute = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_execute")
+# The argument contract lives in its own module (one concept, and this file reached
+# its length cap). Re-exported so `cli.parse_args` stays the one import site.
+_args_module = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_args")
+parse_args = _args_module.parse_args
 _yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 emit_yaml = _yaml_output.emit_yaml
 load_adapter = _resolve_adapter.load_adapter
@@ -62,6 +66,7 @@ fail_release_closeout_draft_validation = _issue_closeout.fail_release_closeout_d
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 commit_issue_closeout_carrier_artifact = _issue_closeout.commit_issue_closeout_carrier_artifact
 validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
+validate_bump_rationale_arg = _preflight.validate_bump_rationale_arg
 enforce_release_critique_gate = _preflight.enforce_release_critique_gate
 build_update_instructions_prep_payload = _preflight.build_update_instructions_prep_payload
 safe_real_host_payload = _preflight.safe_real_host_payload
@@ -138,52 +143,6 @@ def _execution_context() -> SimpleNamespace:
     return SimpleNamespace(**{name: globals()[name] for name in names})
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
-    parser.add_argument("--remote", default="origin", help="Git remote to push to (default: origin)")
-    parser.add_argument("--title", help="Release title (defaults to the tag name)")
-    parser.add_argument("--notes-file", type=Path, help="Path to a release notes file; omit to generate notes from commits")
-    parser.add_argument("--critique-artifact", help="Path to the required release critique artifact (under charness-artifacts/critique/)")
-    parser.add_argument("--critique-blocked", help="Host signal (>=20 chars) when the bounded fresh-eye critique was genuinely blocked by the host runtime; mutually exclusive with --critique-artifact")
-    parser.add_argument("--close-issue", action="append", type=int, default=[], help="Issue number to close at release time; repeat for multiple")
-    parser.add_argument("--close-issue-repo", help="Repository (owner/repo) hosting --close-issue numbers; defaults to current repo")
-    parser.add_argument(
-        "--close-issue-classification",
-        # Keep in step with `issue_verify_closeout.CLASSIFICATIONS`: a value missing
-        # here is refused by argparse before any code runs, i.e. unreachable.
-        choices=("bug", "feature", "deferred-work", "question", "decision-needed", "consolidated"),
-        help="Classification applied to every --close-issue number for the issue-owned draft validator",
-    )
-    parser.add_argument(
-        "--close-issue-carrier-file",
-        type=Path,
-        help="Path to the closeout ledger validated before release and committed only after observer evidence exists",
-    )
-    parser.add_argument(
-        "--close-issue-behavior", action="append", default=[],
-        help='Behavioral-verdict line for a --close-issue, e.g. "Behavior #42: confirmed via fresh checkout install" '
-        '(repeat per issue; single-issue shorthand "Behavior: <...>" also matches). Required rung-1 presence floor '
-        "before a release closes a linked issue.",
-    )
-    parser.add_argument("--execute", action="store_true", help="Execute the publish plan; without it the payload is printed dry-run")
-    parser.add_argument("--prep-update-instructions", action="store_true", help="Emit version-agnostic update_instructions guidance + staleness report, then exit. Run this BEFORE the release critique so the adapter guard does not HOLD the publish; does not require a clean worktree or the critique gate.")
-    parser.add_argument("--resume", action="store_true", help=(
-        "Resume a partial publish (requires --publish-current). For a post-publication issue-closeout "
-        "commit, repeat the exact original issue, classification, carrier, behavior, repo, critique, and "
-        "--notes-file arguments. Omitting --notes-file on resume is refused when notes for the tag are drafted."))
-    parser.add_argument("--claims-review-artifact", help=(
-        "Repo-relative charness.release.claims-review.v2 JSON record for a marked prepared release; commit it "
-        "with the review narrative it names, then use --resume --publish-current --claims-review-artifact <path>. "
-        "A `pass` requires an `observer_distinctness` object naming one of separate-agent-context / separate-host / "
-        "separate-operator plus its concrete signal and the review narrative; a host with no distinct observer "
-        "records `verdict: unproven` with `kind: unproven` instead of a same-agent reread. Run plan_release_run.py "
-        "at a prepared stop for the exact resume invocation."))
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--publish-current", action="store_true", help="Publish the current packaging manifest version without bumping")
-    group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump before publishing")
-    group.add_argument("--set-version", help="Explicit version string to set before publishing")
-    return parser.parse_args()
 def run_requested_review_gate(repo_root: Path) -> dict[str, Any]:
     review_gate_payload = build_review_gate_payload(repo_root, run_commands=True)
     if review_gate_payload["status"] == "blocked":
@@ -231,10 +190,30 @@ def run_bump(args: argparse.Namespace, repo_root: Path) -> None:
     run(bump_command, cwd=repo_root)
 
 
-def ensure_release_surface(repo_root: Path, expected_version: str) -> None:
-    blocker = release_surface_blocker(build_release_payload(repo_root), expected_version)
+def ensure_release_surface(repo_root: Path, expected_version: str, *, stage: str = "unrecorded stage") -> dict[str, Any]:
+    """Refuse a drifted release surface, and RETURN what the check established.
+
+    The return value is not decoration: the release record used to assert
+    "`current_release.py` reported no version drift" as an unconditional literal, so
+    the sentence rendered identically on a lane that never called this. Callers store
+    the disposition on the payload as `version_drift_check`, and the record says the
+    check was not recorded when they did not.
+    """
+    release_payload = build_release_payload(repo_root)
+    blocker = release_surface_blocker(release_payload, expected_version)
     if blocker:
         raise SystemExit(blocker)
+    surface_versions = release_payload.get("surface_versions")
+    return {
+        "status": "passed",
+        "stage": stage,
+        "checked_version": expected_version,
+        "surfaces": sorted(surface_versions) if isinstance(surface_versions, dict) else [],
+        # Always empty on this path -- a non-empty `drift` raised above. Recorded so the
+        # disposition reads as the output of a check rather than as a constant.
+        "drift": list(release_payload.get("drift") or []),
+        "absence_corroboration": release_payload.get("absence_corroboration"),
+    }
 
 
 def finalize_release_payload(
@@ -308,6 +287,7 @@ def _load_adapter_and_gate(
     """Returns the gate REPORT too: discarded here, a presence-only publish left
     no durable record at an irreversible boundary."""
     adapter_data = _valid_adapter_data(repo_root)
+    validate_bump_rationale_arg(args.bump_rationale)
     critique_artifact = validate_critique_artifact_arg(repo_root, args.critique_artifact, run_command=run)
     critique_gate = enforce_release_critique_gate(
         repo_root,

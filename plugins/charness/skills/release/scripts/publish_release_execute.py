@@ -104,7 +104,9 @@ def _prepare_release_attempt(
     )
     cli.run_release_adapter_preflight(repo_root, adapter_preflight_payload, run_command=cli.run)
     cli.run_bump(args, repo_root)
-    cli.ensure_release_surface(repo_root, next_version)
+    payload["version_drift_check"] = cli.ensure_release_surface(
+        repo_root, next_version, stage="post-bump, pre-commit"
+    )
 
     final_release_paths = sorted(set(release_content_paths + cli.changed_paths(repo_root)))
     host_payload = cli.safe_real_host_payload(repo_root, final_release_paths, build_payload=cli.build_real_host_payload)

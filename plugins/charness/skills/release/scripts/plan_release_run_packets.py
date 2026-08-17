@@ -126,9 +126,14 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
             # prepared stop, so a dropped flag simply leaves the issue open. (The
             # post-publication lane does refuse the omission; this one has nothing to
             # compare against.)
+            # `--bump-rationale` is in the SAME unenforceable class as the close-issue
+            # flags: the resume rebuilds its payload from arguments, and a prepared stop
+            # holds the rationale only as record prose this planner does not parse. A
+            # dropped flag publishes a record whose Bump Rationale section says none was
+            # recorded -- honest, and still a lost explanation.
             "repeat_original_arguments": [
                 "--notes-file", "--close-issue", "--close-issue-classification",
-                "--close-issue-carrier-file",
+                "--close-issue-carrier-file", "--bump-rationale",
             ],
             "placeholders": sorted(
                 {value for value in (critique_value, claims_value) if value.startswith("<") or "<" in value}

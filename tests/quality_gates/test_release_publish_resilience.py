@@ -548,6 +548,15 @@ def _simulate_partial_publish(
     output_dir = repo / "charness-artifacts" / "release"
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "latest.md").write_text("# Release demo 0.0.0 (partial)\n", encoding="utf-8")
+    # The generated install surfaces, as the interrupted publish would have left them:
+    # the real prepare lane runs the adapter's sync command inside `run_bump`, so a tree
+    # that reached "committed and tagged" has them. The fixture used to skip it, which
+    # made the seeded partial state one no interrupted publish can produce -- and it read
+    # as an absent-surface repo to every check the resume lane runs.
+    subprocess.run(
+        [sys.executable, str(repo / "scripts" / "sync_root_plugin_manifests.py"), "--repo-root", str(repo)],
+        check=True, capture_output=True, text=True,
+    )
     _git(repo, "add", "-A")
     commit_args = ["commit", "-m", "Release demo 0.0.0"]
     if closeout_body is not None:

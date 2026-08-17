@@ -213,12 +213,15 @@ def test_issue_closeout_draft_gate_names_the_stub_producer_not_only_the_validato
 def test_issue_closeout_covers_release_helper_issue_verification() -> None:
     closeout = _read(CLOSEOUT)
     resolve_flow = _read(RESOLVE_FLOW)
-    release_cli = _read(ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py")
+    # The argument CONTRACT, not the module that used to hold it: `parse_args` moved to
+    # `publish_release_args` at the length cap, and this assertion is about the release
+    # helper offering `--close-issue` at all, not about which file declares it.
+    release_args = _read(ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_args.py")
     publication_boundary = _read(ROOT / "skills" / "public" / "release" / "references" / "publication-boundary.md")
 
     assert "Release-driven direct-to-default work follows the same linkage" in closeout
     assert "post-push issue verification payload" in resolve_flow
-    assert "--close-issue" in release_cli
+    assert "--close-issue" in release_args
     assert "payload.distinct_channel_verification" in publication_boundary
 
 

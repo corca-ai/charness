@@ -12,6 +12,8 @@ _sections = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_artifact_sections.py")))
 )
 claims_review_lines = _sections.claims_review_lines
+bump_rationale_lines = _sections.bump_rationale_lines
+version_drift_lines = _sections.version_drift_lines
 issue_closeout_lines = _sections.issue_closeout_lines
 release_record_lines = _sections.release_record_lines
 release_push_lines = _sections.release_push_lines
@@ -64,6 +66,8 @@ def write_release_artifact(
     release_observer: dict[str, Any] | None = None,
     claims_review: dict[str, Any] | None = None,
     release_stage: str | None = None,
+    bump_rationale: str | None = None,
+    version_drift_check: dict[str, Any] | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -86,11 +90,16 @@ def write_release_artifact(
         f"- target version: `{target_version}`",
         f"- git branch: `{branch}`",
         f"- git remote: `{remote}`",
+        # ABOVE `## Release State`, never between that heading and
+        # `## Public Release Verification`: the narrative audit reads the five-entry ledger
+        # as the span between them, so a section landing inside it truncates the ledger and
+        # blocks the publish with four "missing required entry" blockers.
+        *bump_rationale_lines(bump_rationale),
         "",
         "## Verification",
         "",
         f"- `{quality_command}` {quality_status}.",
-        "- `current_release.py` reported no version drift across packaging and generated install surfaces.",
+        *version_drift_lines(version_drift_check),
         *([] if prepared else release_push_lines(public_release_verification)),
         "",
         "## Release State",
@@ -161,4 +170,6 @@ def write_current_artifact(
         release_runtime=payload.get("release_runtime"), baton_reconcile=payload.get("baton_reconcile"),
         release_observer=payload.get("release_observer"), claims_review=payload.get("claims_review"),
         release_stage=release_stage or payload.get("release_stage"),
+        bump_rationale=payload.get("bump_rationale"),
+        version_drift_check=payload.get("version_drift_check"),
     )

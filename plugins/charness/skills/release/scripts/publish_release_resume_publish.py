@@ -126,6 +126,16 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         payload["resume_head_release_content_close_refs"] = close_refs
         if close_refs:
             raise SystemExit("--resume: release-content HEAD contains issue close keywords before post-publication observer evidence: " + str(close_refs))
+    # Both of these were CLAIMED by the record this lane writes and executed by neither.
+    # The prepare ran them, but the resume rebuilds its payload from arguments, so the
+    # published record -- the one an outside reader gets -- asserted "no version drift" and
+    # showed a `required` adapter preflight on the strength of a run in a different process
+    # that left no evidence it could read. Both are cheap and idempotent, and both run
+    # BEFORE the first push here, so a failure stops short of the irreversible boundary.
+    payload["version_drift_check"] = cli.ensure_release_surface(
+        repo_root, plan["next_version"], stage="resume, pre-publish"
+    )
+    cli.run_release_adapter_preflight(repo_root, plan["adapter_preflight_payload"], run_command=cli.run)
     common.run_pre_push_quality_gates(repo_root, adapter_data, payload, cli=cli)
     fresh = common.timed(payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root))
     payload["fresh_checkout_probe_status"] = fresh["status"]
