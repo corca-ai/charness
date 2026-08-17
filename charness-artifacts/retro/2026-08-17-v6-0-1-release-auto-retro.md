@@ -17,7 +17,7 @@ session retro is still owed and this record is not a substitute for it.
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `skills/public/release/references/adapter-contract.md`, `skills/public/release/scripts/bump_version.py`, `skills/public/release/scripts/resolve_adapter.py`.
-- Evaluated changed paths: 154.
+- Evaluated changed paths: 157.
 
 ## Waste
 
