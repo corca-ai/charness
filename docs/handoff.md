@@ -3,31 +3,34 @@
 ## Workflow Trigger
 
 - Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <date-slug>`
-  BEFORE any brief or reviewer spawn. `--session-id` and `--seed` are both required and
-  take the SAME value, so the selection is reproducible and citable. The command now
-  prints the frozen bundle path on stderr; cite it in this session's durable artifact.
+  BEFORE any brief or reviewer spawn — the REPO'S OWN copy, never the installed one:
+  the installed-copy declare wrote a receipt without a ledger event this session, the
+  half-written state the continuity gate then refuses (`unknown session` on every score).
 - Then run `## Next Session` item 1.
 
 ## Continuation Capability
 
 - The [release record](../charness-artifacts/release/latest.md) holds the published
   version, its verification state, and the distinct-channel readback.
-- The [session retro](../charness-artifacts/retro/2026-08-18-session-retro.md) holds the
-  five-round window's waste, decisions, and the improvements items 5 and 8 below carry.
+- The [session retro](../charness-artifacts/retro/2026-08-18-session-retro-second.md)
+  holds this run's window: five verified issue closes, two reviewed verdict-surface
+  fixes, and the foreign-helper declare failure.
+- The [quality record](../charness-artifacts/quality/2026-08-18-quality-review.md) holds
+  the current posture: gates, runtime signals, the pytest budget breach, and the
+  recommended next quality moves.
 - The [digest](../charness-artifacts/retro/recent-lessons.md) holds what a session reads
-  before work; the [unclaimed-session disposition](../charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md)
-  holds why one inherited receipt is `presentation-unproven`.
+  before work. Nothing is pushed; local main is many commits ahead of origin.
 
 ## Current State
 
-- **Five critique rounds ran; the last round's repairs are `accepted-unreviewed`.** The
-  record is the [session critique](../charness-artifacts/critique/2026-08-17-session-release-record-retro-prefix.md),
-  whose Fresh-Eye section labels its own unfalsifiable parts. Every round found the
-  previous round's repair carrying the class it repaired.
+- **#633/#632/#631/#630/#636 are CLOSED with verified readback**, each on executed
+  reproductions with a bound critique artifact; #638 and #639 are FILED. Inventory:
+  `gh issue list --repo corca-ai/charness --state open`.
+- **The pytest lane has breached its 120s budget in five recent samples** (max 130.9s,
+  all passing); the [quality record](../charness-artifacts/quality/2026-08-18-quality-review.md)
+  Weak section holds the numbers and the recommended move.
 - **The resume lane deliberately runs NO surface gate and NO focused preflight**; the
   three reasons sit at the [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py) call site.
-- **[quality/latest.md](../charness-artifacts/quality/latest.md) is still stale** — it
-  asserts as open two issues since closed. Regenerate, do not patch; see item 1.
 - **The [#548 single-owner pointer resolver](../scripts/scaffold_artifact_lib.py) raises on a
   looping symlink.** Guarded at one call site only; it has five callers.
 - Re-prove with `python3 scripts/run_standing_pytest.py` after
@@ -40,40 +43,33 @@
 
 ## Next Session
 
-1. **Regenerate the [quality record](../charness-artifacts/quality/latest.md)** by running
-   `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root .` and following
-   its plan. It is a full `quality` workflow, not a rerun: six required reads, a structural
-   review packet, and a maintainer-local enforcement disposition. Do not hand-edit it.
-2. **[#636](https://github.com/corca-ai/charness/issues/636) residual** — its scoping half
-   shipped. The case-sensitive authoring markers that fail one at a time did not; read the
-   issue for what remains, because no artifact in this repo records it.
-3. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
-   [#631](https://github.com/corca-ai/charness/issues/631),
-   [#632](https://github.com/corca-ai/charness/issues/632),
-   [#630](https://github.com/corca-ai/charness/issues/630).** Run each issue's own
-   reproduction first; do NOT close on code that merely looks right.
-4. **Prove `--bump-rationale` survives a real resume.** It is rebuilt from arguments,
+1. **Push needs its phase-scoped grant** — local main carries this run's closes,
+   critiques, retro, and quality record; nothing is pushed. Confirm the grant, then
+   `python3 scripts/run_standing_pytest.py` before the push per the re-prove line above.
+2. **Prove `--bump-rationale` survives a real resume.** It is rebuilt from arguments,
    nothing refuses the omission, and only the planner's
    [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py) packet names it;
    the [version policy](../skills/public/release/references/version-policy.md)
    holds what the record promises. Only the non-claims lane can lose it.
-5. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
+3. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
    `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/`; a
    `scripts/`-only sweep misses
    [seed_retro_memory.py](../skills/public/setup/scripts/seed_retro_memory.py). Moving one
    site was tried twice and reverted twice — `canonical_retro_citation` and
    `collect_retro_candidates` are what make the literal load-bearing.
-6. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
+4. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
    venv-only install gives a traceback where a refusal belongs; the shell-out lives in
    [publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py) itself.
-7. **The critique validator refuses the value its own skill teaches** —
-   [critique_enforcement_scope.py](../scripts/critique_enforcement_scope.py)'s
-   `PACKET_ABSENT_VALUES` omits `blocked`, so an honestly skipped packet declared the way
-   `charness:critique` prescribes demands SHAs for a packet just declared absent.
-8. **File the two `Destination: issue` improvements no issue carries yet** — a per-round
-   critique findings artifact bound to the round's fingerprint window, and surfacing
-   outstanding lesson sessions at session START; both are named in the
-   [session retro](../charness-artifacts/retro/2026-08-18-session-retro.md) Next Improvements.
+5. **[#639](https://github.com/corca-ai/charness/issues/639) carries the lesson-session
+   START-surfacing work**, now with two more anchors from this run: the installed-copy
+   declare that half-writes, and the atomicity gap the retro's capability improvement
+   names. [#638](https://github.com/corca-ai/charness/issues/638) holds the per-round
+   critique findings artifact.
+6. **Two recorded review residuals await their small slices** — the wrapped-line
+   `blocked` asymmetry in [critique_enforcement_scope.py](../scripts/critique_enforcement_scope.py),
+   and the retro planner/scaffold disagreeing on the second-dated-retro path; both are
+   in the [session retro](../charness-artifacts/retro/2026-08-18-session-retro-second.md)
+   Sibling Search.
 
 ## Discuss
 
