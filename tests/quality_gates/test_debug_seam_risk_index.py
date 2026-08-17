@@ -203,3 +203,22 @@ def test_a_symlinked_pointer_indexes_one_interrupt_not_two(tmp_path: Path, monke
     # favour of the target would leave the index with no current-pointer entry at all.
     assert index["entries"][0]["artifact_path"] == "charness-artifacts/debug/latest.md"
     assert index["entries"][0]["is_current_pointer"] is True
+
+
+def test_the_index_never_indexes_itself(tmp_path: Path, monkeypatch, capsys) -> None:
+    # `seam-risk-index.md` lives in the same directory and matches the `*.md` glob, so
+    # without the skip the index would ingest its own previous output -- growing a row
+    # per run and reporting a count of artifacts that includes a report. The dedupe
+    # rewrite moved this guard, so it is pinned rather than assumed to have survived.
+    repo = seed_repo(tmp_path, ("2026-04-22-host-seam.md", debug_artifact()))
+    debug_dir = repo / "charness-artifacts" / "debug"
+    (debug_dir / "seam-risk-index.md").write_text("# Seam Risk Index\n\nprevious output\n", encoding="utf-8")
+
+    result = run_debug_seam_risk_index(monkeypatch, capsys, "--repo-root", str(repo), "--write")
+    assert result.returncode == 0, result.stderr
+    index = json.loads((debug_dir / "seam-risk-index.json").read_text(encoding="utf-8"))
+
+    listed = [entry["artifact_path"] for entry in index["entries"]]
+    skipped = [row["artifact_path"] for row in index["skipped_artifacts"]]
+    assert not any("seam-risk-index" in path for path in listed + skipped)
+    assert index["source_artifact_count"] == 1

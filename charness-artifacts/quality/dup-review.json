@@ -4591,6 +4591,20 @@
       "note": "an IMPORT block (`os`/`re`/`shutil`/`subprocess`, `pathlib.Path`, `typing.Any`, under `from __future__ import annotations`) shared by scripts/markdownlint_probe.py and skills/public/quality/scripts/nose_tool_lib.py (untouched, unrelated subsystem). Same class already accepted as 36b2225b307ee288: not extractable by construction -- imports cannot be factored out. Every import in the new file is used, so the family cannot be dissolved by editing either member. Two modules that both resolve and shell out to an external binary converge on this set. Surfaced as new only because the markdownlint engine adapter was split out of check_doc_authoring_preflight.py at its 480-line cap, creating a second file carrying the block the original already had.",
       "reviewed_at": "2026-08-17",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "16fe94fc5ba51363",
+      "reviewed_at": "2026-08-17",
+      "surface": "code",
+      "note": "the `*-artifact-shape` gate packet block, now mirrored between plan_debug_run.py and plan_retro_run.py. The duplication is the FIX, not a by-product: both packets emitted an unscoped whole-corpus validator command while calling themselves a current-artifact gate, and scoping both to scaffold['write_artifact_path'] is what made them agree. Same class already accepted as 2dd39753778c7cb1 (the `_read(...)` block mirrored across the handoff and debug portable planners): each planner is loaded by file path from its own skill package with no shared import root, so a common helper would either break skill-local portability or reintroduce the repo-module dependency these planners deliberately avoid. Surfaced as new because the two blocks converged."
+    },
+    {
+      "class": "intentional",
+      "id": "5f38559076c60b76",
+      "reviewed_at": "2026-08-17",
+      "surface": "code",
+      "note": "the per-skill `validator_command` wrapper, now shared by debug, critique and ideation scaffolds. Each is a delegation to scripts/scaffold_artifact_lib.validator_command -- the shared owner ALREADY holds the logic, and what repeats is the three-line wrapper a portable skill package needs to reach it. Debug joined the family in this slice by finally passing its write path (it emitted the whole-corpus command, so a fresh valid artifact exited 1 on unrelated legacy debt), so the duplication is these producers agreeing rather than drifting. Collapsing the wrappers would mean a skill importing another skill's script, which the package boundary forbids."
     }
   ],
   "fixable_ceiling": 0,
