@@ -237,13 +237,30 @@ def test_bump_rationale_lines_cannot_be_read_as_record_claims_or_fences(tmp_path
 
 
 def test_bump_rationale_that_renders_empty_still_says_it_is_absent(tmp_path: Path) -> None:
-    """Absence is decided on the RENDERED body. Deciding it on the raw argument made
-    `--bump-rationale '#'` truthy, demote to nothing, and emit the heading over an empty
-    body -- a reader who sees the section infers a rationale was supplied."""
-    for supplied in ("#", "###", "  ##  ", "\n\n"):
+    """Absence is decided on the RENDERED body, so a heading is never emitted over
+    nothing -- a reader who sees the section infers a rationale was supplied."""
+    for supplied in ("", "   ", "\n\n", "\n \n"):
         text = _release_record(tmp_path / f"repo-{abs(hash(supplied))}", bump_rationale=supplied)
 
-        assert "Bump rationale: NOT recorded by this helper invocation." in text, supplied
+        assert "Bump rationale: NOT recorded by this helper invocation." in text, repr(supplied)
+
+
+def test_the_record_carries_the_operators_words_unaltered(tmp_path: Path) -> None:
+    """The record must say what it was GIVEN. An earlier repair stripped leading `#`
+    runs to make headings inert, which quoting already does -- and it silently rewrote
+    hash-prefixed issue references at the start of a line into bare numbers, inside a
+    document that is committed, tagged and published before any human re-reads it. It
+    also manufactured the very substring it was meant to suppress: `# ## Release State`
+    demoted to the literal `## Release State`.
+    """
+    supplied = "#4028 forced the level.\n## and a heading-looking line\n# alone"
+    text = _release_record(tmp_path / "repo", bump_rationale=supplied)
+
+    body = text.split("## Bump Rationale", 1)[1].split("## Verification", 1)[0]
+    for line in supplied.splitlines():
+        assert f"> {line}" in body, line
+    # Inert despite being verbatim: no line of the rationale is a heading.
+    assert [line for line in body.splitlines() if line.startswith("#")] == []
 
 
 def test_release_record_refuses_to_claim_no_drift_when_no_check_was_recorded(tmp_path: Path) -> None:

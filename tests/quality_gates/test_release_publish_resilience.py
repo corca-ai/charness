@@ -548,13 +548,14 @@ def _simulate_partial_publish(
     output_dir = repo / "charness-artifacts" / "release"
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "latest.md").write_text("# Release demo 0.0.0 (partial)\n", encoding="utf-8")
-    # NOT synced, and that is load-bearing. Seeding without the generated install surfaces
-    # leaves all four declarable surfaces absent with no `unpublished_release_surfaces`
-    # line -- `absence_corroboration == "uncorroborated"`, the D48 state. It is the only
-    # repo state in this suite that has it, and running the sync here (tried, reverted)
-    # silently removed the suite's whole D48 population to accommodate a resume-lane gate
-    # that is itself reverted. A less realistic fixture that preserves the state under test
-    # beats a realistic one that deletes it.
+    # NOT synced, restoring the original seeding after a sync was tried and reverted with
+    # the resume-lane gate that motivated it. The honest reason is narrower than the one
+    # first written here: no test in this file ASSERTS `absence_corroboration`, so the
+    # uncorroborated state this seeding happens to produce is an incidental property, not
+    # coverage -- the real D48 assertions live in
+    # `test_absent_input_is_not_a_matching_input.py`, which builds its own repos and was
+    # never affected. This is reverted because nothing needs the sync once the gate is
+    # gone, not because it was protecting a population under test.
     _git(repo, "add", "-A")
     commit_args = ["commit", "-m", "Release demo 0.0.0"]
     if closeout_body is not None:

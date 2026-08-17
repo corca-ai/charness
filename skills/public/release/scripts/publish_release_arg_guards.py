@@ -1,9 +1,3 @@
-from __future__ import annotations
-
-import runpy
-from pathlib import Path
-from typing import Callable
-
 """Operator-supplied values, refused before they reach the release record.
 
 Split from `publish_release_preflight` at its length cap. One concept, and the
@@ -13,6 +7,13 @@ a document other surfaces prove release state by reading. Every guard here runs 
 argument time, before any mutation, because the record they protect is committed,
 tagged and published before most of its readers ever run.
 """
+
+from __future__ import annotations
+
+import re
+import runpy
+from pathlib import Path
+from typing import Callable
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 
@@ -72,15 +73,35 @@ def validate_bump_rationale_arg(bump_rationale: str | None) -> str | None:
     """
     if bump_rationale is not None:
         _claims_review["assert_no_record_sentinel"](bump_rationale, "--bump-rationale")
-        _assert_no_hidden_record(bump_rationale)
+        _assert_no_raw_html(bump_rationale)
     return bump_rationale
 
 
-def _assert_no_hidden_record(bump_rationale: str) -> None:
-    if "<!--" in bump_rationale:
+_RAW_HTML_RE = re.compile(r"<[!/]?[A-Za-z]|<!--")
+
+
+def _assert_no_raw_html(bump_rationale: str) -> None:
+    """Refuse raw HTML in prose that is rendered into the published record.
+
+    The class, not one member of it. This started as an `"<!--" in value` check,
+    because an HTML comment hides every line after it from the RENDERED document a
+    human reads while leaving the bytes every substring audit reads intact -- so the
+    state ledger, the "NOT recorded" sentences and a `Claims review verdict: unproven`
+    all disappear from view with every gate green. Hiding the negatives is worse than
+    forging a positive and no check in this repo can see it.
+
+    But `<!--` is not the only construct with that property: an unterminated `<details>`
+    collapses the remainder of the rendered document into a disclosure widget, and
+    `<summary>` and other unclosed containers behave similarly. Naming one member is
+    the blacklist shape the sibling renderer's docstring argues against, so the rule is
+    "no raw HTML" -- a bump rationale is prose and needs none. Quoting cannot help here:
+    a blockquote renders its HTML.
+    """
+    match = _RAW_HTML_RE.search(bump_rationale)
+    if match:
         raise SystemExit(
-            "--bump-rationale must not contain '<!--'; it is rendered into the published "
-            "release record, and an HTML comment hides every line after it from the "
-            "rendered document a reader sees while leaving the bytes every audit reads "
-            "intact. Say it in prose instead."
+            f"--bump-rationale must not contain raw HTML (found {match.group(0)!r}); it is "
+            "rendered into the published release record, and an unterminated tag or comment "
+            "hides every line after it from the document a reader sees while leaving the "
+            "bytes every audit reads intact. Say it in prose instead."
         )

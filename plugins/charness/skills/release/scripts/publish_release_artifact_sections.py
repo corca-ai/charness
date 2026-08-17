@@ -21,7 +21,6 @@ _premutation = runpy.run_path(
     str(Path(__file__).resolve().with_name("publish_release_premutation_sections.py"))
 )
 bump_rationale_lines = _premutation["bump_rationale_lines"]
-demote_headings = _premutation["demote_headings"]
 release_adapter_preflight_lines = _premutation["release_adapter_preflight_lines"]
 version_drift_lines = _premutation["version_drift_lines"]
 _pending_payload_section = _premutation["pending_payload_section"]

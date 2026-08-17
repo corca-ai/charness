@@ -18,16 +18,16 @@
 
 ## Current State
 
-- **Three verdict-surface slices shipped with NO bounded fresh-eye review.** A
-  session-level instruction prohibited subagent spawning, so the two-round floor in
-  [operating contract](./conventions/operating-contract.md) is unproven, not discharged.
-  Re-read `0ac795c6e`, `fab375d13`, `d4aac10c4` before building on them.
-- **The release record now carries a bump rationale and binds two former literals.**
-  `--bump-rationale` reaches a `## Bump Rationale` section; the no-drift sentence and the
-  adapter focused preflight render an executed disposition or say none was recorded.
-- **The resume lane now runs the drift check and the focused preflight it was claiming.**
-  See [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py);
-  both run before the first push, so a failure stops short of the boundary.
+- **Both critique rounds ran; round-2 repairs are `accepted-unreviewed`.** The floor in
+  [operating contract](./conventions/operating-contract.md) caps at two rounds, so the
+  fixes in the final commit were read by nobody. Round 1 returned eight blockers.
+- **The resume lane deliberately runs NO surface gate and NO focused preflight.** One was
+  added there and reverted; see the comment in
+  [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py).
+  Its record says "NOT recorded by this helper invocation", which is true of that lane.
+- **The release record carries a bump rationale, quoted verbatim.**
+  `--bump-rationale` reaches a `## Bump Rationale` section; `version_drift_check` is set
+  on the execute lane only, and renders as unrecorded everywhere else.
 - **`validate_retro_artifact.py` resolves its prefix from the adapter**, and the retro
   planner's shape packet is scoped again. Reproduce the old defect with
   `python3 -m pytest tests/quality_gates/test_retro_artifact_validation.py -k custom_output_dir`.
@@ -60,6 +60,13 @@
    dropped flag publishes a record saying none was recorded. Only the planner's
    [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
    names it; nothing refuses the omission.
+5. **Round-2 residuals, all disclosed and none fixed.** `run_release_adapter_preflight`
+   shells out to a bare test-runner binary, so a venv-only install gives a traceback
+   where a refusal belongs
+   ([publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py)).
+   ~20 lesson-lifecycle scripts still hold the literal `charness-artifacts/retro/`; find
+   them with `grep -rln "charness-artifacts/retro" scripts/`. `seed_retro_memory.py` is
+   the one that reports a state contradicting the retro validator.
 
 ## Discuss
 

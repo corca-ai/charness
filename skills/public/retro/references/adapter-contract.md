@@ -57,8 +57,18 @@ auto_session_trigger_path_globs: []
 
 ## Field Semantics
 
+- `output_dir` is a repo-relative directory. It is canonicalized on load -- a
+  leading `./`, a trailing `/`, and doubled separators are normalized away -- and
+  an absolute or repo-escaping value is a broken adapter, not a fallback.
+  Canonicalizing is not tidiness: the scaffold builds its write path by joining
+  this string, while the validator derives its owned prefix through a path type,
+  so an untidy value made the two name different directories and a `--paths` run
+  reported `Validated 0 retro artifact(s).` over the artifact it was handed.
+  Retro is currently the only skill that normalizes and refuses on this shared
+  field name; the siblings still accept whatever they are given.
 - `summary_path` is optional and points at a compact human-readable digest of
-  recent retro lessons for future session pickup.
+  recent retro lessons for future session pickup. It is NOT derived from
+  `output_dir`, so a repo that moves one should move both.
 - `evidence_paths` are additional repo-relative file or directory locators worth
   reading for retros. The planner preserves their declared order and reports
   missing optional locators without turning them into a blocking prerequisite.

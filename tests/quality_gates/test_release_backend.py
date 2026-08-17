@@ -253,6 +253,28 @@ def test_bump_rationale_refuses_a_forged_release_state_sentinel() -> None:
     assert "--bump-rationale" in str(exc.value)
 
 
+@pytest.mark.parametrize(
+    "hider", ["patch. <!-- see thread", "patch.\n<details>", "patch. <SCRIPT", "patch.\n</div>"]
+)
+def test_bump_rationale_refuses_raw_html_that_hides_the_rest_of_the_record(hider: str) -> None:
+    """Refused as a CLASS, not as one member.
+
+    The guard began as an `"<!--" in value` check, and the test that covered it also
+    carried a record sentinel -- which trips the earlier guard, so that test stayed
+    green with this one deleted. These inputs isolate it. An unterminated comment,
+    `<details>` or any unclosed container hides every line below it from the rendered
+    document a human reads, while every substring audit passes over the raw bytes:
+    the state ledger, the "NOT recorded" sentences and a `verdict: unproven` all
+    vanish with the gates green. Quoting cannot help -- a blockquote renders its HTML.
+    """
+    preflight = _load_release_module("publish_release_preflight")
+
+    with pytest.raises(SystemExit) as exc:
+        preflight.validate_bump_rationale_arg(hider)
+
+    assert "raw HTML" in str(exc.value)
+
+
 def test_release_adapter_preflight_records_that_nothing_was_required(tmp_path: Path) -> None:
     preflight = _load_release_module("publish_release_preflight")
     payload = {"status": "not_required", "reason": "adapter unchanged", "commands": []}

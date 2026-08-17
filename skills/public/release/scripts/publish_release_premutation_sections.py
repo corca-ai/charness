@@ -11,61 +11,48 @@ other two rendered a claim whether or not a check produced it. Their sibling mod
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
-_HEADING_PREFIX_RE = re.compile(r"^\s*#+\s*")
 
+def rationale_body_lines(text: str) -> list[str]:
+    """Operator prose as a blockquote, VERBATIM, which is what makes it inert.
 
-def demote_headings(text: str) -> list[str]:
-    """Operator-supplied prose with every leading heading run removed, to a FIXED POINT.
+    Quoting is the whole mechanism. A previous repair also stripped leading `#` runs
+    to a fixed point, and that was both redundant and destructive: quoting already
+    holds the invariant, while the strip silently rewrote what the operator wrote into
+    a record that is committed, tagged and published before any human re-reads it. A
+    rationale whose line OPENS with a hash-prefixed issue reference silently lost it,
+    and repos that cite issues that way put one at the start of a line constantly. It
+    also made the one case it was added for WORSE: `# ## Release State` demoted to
+    the literal `## Release State`,
+    manufacturing the substring the heading-presence audit matches. A record that says
+    something other than what it was given is the class this whole section repairs.
 
-    One `re.sub` was not enough and the difference was a blocker: the pattern's `#+`
-    cannot cross whitespace, so `# ## Release State` lost only the first marker and
-    emitted `## Release State` at column 0 -- a real heading, above the genuine one,
-    which is where `audit_public_release_narrative` then judged the five-entry ledger
-    from. `#\\t##`, `  #  ###` and any deeper nesting had the same shape.
-
-    Belt to the braces of `quote_lines`: the blockquote prefix is what actually keeps
-    these lines out of the audit's heading grammar. This runs first so the quoted text
-    reads as prose rather than as markers the reader has to discount.
-    """
-    lines = []
-    for raw in text.strip().splitlines():
-        line = raw.rstrip()
-        while True:
-            stripped = _HEADING_PREFIX_RE.sub("", line)
-            if stripped == line:
-                break
-            line = stripped
-        lines.append(line)
-    return lines
-
-
-def quote_lines(lines: list[str]) -> list[str]:
-    """Operator prose as a blockquote, which is what makes it structurally inert.
-
-    Demotion is a character-prefix filter defending a document-structure invariant,
-    and three separate constructs walked past it. Quoting closes the class instead of
-    growing the blacklist, because every reader of this record anchors its patterns
-    at line start:
+    Quoting is inert to every LINE-ANCHORED reader of this record, which is the family
+    that decides structure:
 
     * `_release_state_block` matches `line.strip() == "## Release State"` and
-      terminates on `line.startswith("## ")`; `> ## Release State` satisfies neither.
-    * `validate_current_pointer_freshness.TARGET_VERSION_RE` anchors
-      `^[ \\t]*(?:[-*][ \\t]*)?target version:` -- a `>` prefix does not match, so a
-      rationale mentioning a rejected target version can no longer make the record
-      "carry disagreeing target-version claims". That gate fires on every later push,
-      and on the claims lane the poisoned record is already TAGGED and published.
-    * `audit_public_release_narrative._FENCE_RE` anchors ` ``` ` at line start, so an
-      unterminated fence in the rationale can no longer blank the rest of the record
-      (which suppressed even the blocker that would have explained it).
+      terminates on `line.startswith("## ")`; `> ## Release State` satisfies neither,
+      so prose cannot move the span the five-entry ledger is judged from.
+    * `validate_current_pointer_freshness.TARGET_VERSION_RE` is `^`-anchored with no
+      `>` in its prefix class, so a rationale mentioning a rejected target version can
+      no longer make the record "carry disagreeing target-version claims" -- a gate
+      that fires on every later push, over a record already tagged and published.
+    * both `_FENCE_RE`s anchor at line start, so an unterminated fence can no longer
+      blank the rest of the record (which suppressed even the explanatory blocker).
 
-    What quoting does NOT close is `<!--`: an HTML comment hides everything after it
-    from the RENDERED document a human reads on GitHub, while every substring audit
-    still passes over the raw bytes. That one is refused at argument time.
+    NON-CLAIM, because the obvious over-statement is false: not every reader of this
+    record is line-anchored. `_audit_artifact` tests `target_tag`, the four
+    `REQUIRED_HEADINGS` and the five ledger labels as plain SUBSTRINGS, and a quoted
+    `> ## Verification` still contains one. Those are presence checks that
+    `write_release_artifact` always satisfies from its own literals, so operator prose
+    can only ever add a redundant match -- it cannot remove one. That is an invariant
+    living outside this function, and it is stated rather than assumed.
+
+    What quoting does NOT close is raw HTML; `_assert_no_raw_html` refuses it at
+    argument time.
     """
-    return [f"> {line}" if line else ">" for line in lines]
+    return [f"> {line}" if line else ">" for line in text.strip().splitlines()]
 
 
 def bump_rationale_lines(bump_rationale: str | None) -> list[str]:
@@ -88,10 +75,10 @@ def bump_rationale_lines(bump_rationale: str | None) -> list[str]:
     # argument meant `--bump-rationale '#'` was truthy, demoted to `""`, and emitted the
     # heading over an empty body with no absence sentence -- inverting this docstring's
     # own guarantee, because a reader who sees the section infers one was supplied.
-    body = demote_headings(bump_rationale or "")
-    if not any(line.strip() for line in body):
+    body = rationale_body_lines(bump_rationale or "")
+    if not any(line.strip("> ").strip() for line in body):
         return lines + absent
-    return lines + quote_lines(body)
+    return lines + body
 
 
 def version_drift_lines(version_drift_check: dict[str, Any] | None) -> list[str]:

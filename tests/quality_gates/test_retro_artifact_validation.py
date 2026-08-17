@@ -519,3 +519,30 @@ def test_prefix_resolution_returns_a_verdict_when_the_consumer_resolver_raises(
         output_dir_lib.retro_artifact_prefix(repo)
         == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
     )
+
+
+def test_the_emitted_opt_in_writes_where_the_floor_probe_reads(tmp_path: Path) -> None:
+    """The announcement's remedy must be able to close what the announcement describes.
+
+    The verdict and announcement halves were joined, and the opt-in they BOTH name was
+    left writing to a literal. For a custom `output_dir` repo that traded a loud false
+    refusal for a quiet permanent one: the floor reported inert, the operator ran the
+    command it printed, a ledger appeared somewhere the probe never looks, and the
+    report said inert again -- forever. No test compared the command's write target
+    with the probed directory, which is the same join that caught the sibling defect.
+    """
+    repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
+
+    result = run_script(
+        str(ROOT / "scripts" / "init_lesson_ledger.py"), "--repo-root", str(repo)
+    )
+
+    assert result.returncode == 0, result.stderr
+    declared = repo / "artifacts" / "retros" / retro_validator.LESSON_LEDGER_FILENAME
+    assert declared.is_file(), result.stdout
+    assert not (repo / "charness-artifacts" / "retro").exists()
+    # And the probe that decides "inert" now sees it.
+    assert retro_validator.lesson_evaluator_declared(
+        repo / "artifacts" / "retros" / "2026-08-17-demo.md",
+        output_dir=repo / "artifacts" / "retros",
+    )

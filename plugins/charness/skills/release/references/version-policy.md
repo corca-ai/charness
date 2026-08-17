@@ -48,3 +48,19 @@ outside reader gets it. Omit it and that section says so in as many words --
 absence is recorded, not hidden. On `--resume` the payload is rebuilt from
 arguments, so repeat the flag or the published record loses the rationale the
 prepared one carried.
+
+The value is quoted verbatim as a blockquote, which makes it inert to the
+line-anchored readers of that record. Raw HTML is refused at argument time: an
+unterminated comment or container hides every line below it from the rendered
+document while leaving the bytes every audit reads intact.
+
+**This flag was rejected once, on 2026-07-27, and that decision is superseded.**
+The rejection read "the policy says 'say why', not 'add a CLI surface'", and
+priced the flag at "a permanent surface plus a validator obligation to stop it
+being filled with 'n/a'". Both halves of that price were paid, and the argument
+that overturned it is that prose could not carry the sentence to the reader who
+needs it: a later release's patch-vs-minor reasoning had to live in a separate
+review artifact because the record's template emitted no field for it, and
+re-running the helper could not add one. What the rejection got right is
+unaddressed -- nothing stops a rationale reading "n/a", and no validator is
+proposed for that. It is a human explanation judged by human readers.
