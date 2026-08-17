@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-18",
-  "source_artifact_count": 527,
-  "candidate_count": 2144,
+  "source_artifact_count": 528,
+  "candidate_count": 2145,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -554,6 +554,40 @@
       ]
     },
     {
+      "candidate_id": "class:cfe3dd7af53f",
+      "kind": "next_improvement",
+      "lesson": "this is the SECOND inherited unclaimed session in three days, and the first artifact already filed this improvement, so the class recurred with the follow-up open. An opened lesson session with no disposition blocks the pre-push gate for a later author who cannot honestly clear it with anything but `presentation-unproven`. Surface outstanding sessions at session START, where the opener can still close them, instead of at push time where only a stranger can. Structural pattern: state opened by one actor and only enforceable against another. Triggering instance(s): `2026-08-16-s9`, `2026-08-17-3bbe7879`. Destination: issue.",
+      "normalized_key": "an opened lesson session with no disposition blocks the pre push gate for every",
+      "recurrence_class": "session-opened-never-closed",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
+          "date": "2026-08-17",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "an opened lesson session with no disposition blocks the pre-push gate for every LATER author, not the one who opened it. Consider surfacing outstanding sessions at session start, where the opener can still close them, instead of at push time where only a stranger can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "this is the SECOND inherited unclaimed session in three days, and the first artifact already filed this improvement, so the class recurred with the follow-up open. An opened lesson session with no disposition blocks the pre-push gate for a later author who cannot honestly clear it with anything but `presentation-unproven`. Surface outstanding sessions at session START, where the opener can still close them, instead of at push time where only a stranger can. Structural pattern: state opened by one actor and only enforceable against another. Triggering instance(s): `2026-08-16-s9`, `2026-08-17-3bbe7879`. Destination: issue."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:e0b7c3ebcc2b",
       "kind": "next_improvement",
       "lesson": "prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs.",
@@ -618,40 +652,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: — when a function has more than one refusal arm, write one test per arm at authoring time. A changed-line gate names one uncovered line per pass, so N hidden branches cost N round-trips."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:9d8719cab2e0",
-      "kind": "next_improvement",
-      "lesson": "**capability**: operate the local lesson ledger as a real loop by declaring a preview session and actually presenting its list before work, then recording only sparse, anchored effects at retro; do not infer continuity from the existence of the scripts.",
-      "normalized_key": "implement durable lesson ledger state before selection or scoring a session snapshot does not",
-      "recurrence_class": "durable-lesson-ledger-first",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 5,
-      "recency_weight": 0.9259,
-      "alpha": 0.24,
-      "selection_weight": 1.1481,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "implement durable lesson-ledger state before selection or scoring; a session snapshot does not authorize either lifecycle step."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability**: operate the local lesson ledger as a real loop by declaring a preview session and actually presenting its list before work, then recording only sparse, anchored effects at retro; do not infer continuity from the existence of the scripts."
         }
       ]
     }
@@ -1196,6 +1196,40 @@
       ]
     },
     {
+      "candidate_id": "class:cfe3dd7af53f",
+      "kind": "next_improvement",
+      "lesson": "this is the SECOND inherited unclaimed session in three days, and the first artifact already filed this improvement, so the class recurred with the follow-up open. An opened lesson session with no disposition blocks the pre-push gate for a later author who cannot honestly clear it with anything but `presentation-unproven`. Surface outstanding sessions at session START, where the opener can still close them, instead of at push time where only a stranger can. Structural pattern: state opened by one actor and only enforceable against another. Triggering instance(s): `2026-08-16-s9`, `2026-08-17-3bbe7879`. Destination: issue.",
+      "normalized_key": "an opened lesson session with no disposition blocks the pre push gate for every",
+      "recurrence_class": "session-opened-never-closed",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
+          "date": "2026-08-17",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "an opened lesson session with no disposition blocks the pre-push gate for every LATER author, not the one who opened it. Consider surfacing outstanding sessions at session start, where the opener can still close them, instead of at push time where only a stranger can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "this is the SECOND inherited unclaimed session in three days, and the first artifact already filed this improvement, so the class recurred with the follow-up open. An opened lesson session with no disposition blocks the pre-push gate for a later author who cannot honestly clear it with anything but `presentation-unproven`. Surface outstanding sessions at session START, where the opener can still close them, instead of at push time where only a stranger can. Structural pattern: state opened by one actor and only enforceable against another. Triggering instance(s): `2026-08-16-s9`, `2026-08-17-3bbe7879`. Destination: issue."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:e0b7c3ebcc2b",
       "kind": "next_improvement",
       "lesson": "prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs.",
@@ -1468,6 +1502,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:38d1320519d4",
+      "kind": "current_focus",
+      "lesson": "`2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861` was opened by a prior session and never claimed by a retro.",
+      "normalized_key": "2026 08 17 3bbe7879 6108 421f 87b5 90ec6831e861 was opened by a prior session",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md",
+          "date": "2026-08-18",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "`2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861` was opened by a prior session and never claimed by a retro."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c12b73a4bb82",
       "kind": "current_focus",
       "lesson": "A handoff pickup that took three named items — a bump-rationale field on the release record, two unbound record claims bound to executed checks, and an adapter-derived retro prefix — and then spent most of its length on five critique rounds over its own output.",
@@ -1620,32 +1680,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "The operator asked for a plan for autonomous repo improvement from the handoff, open issues, and recent lessons, then said to execute it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:cfe3dd7af53f",
-      "kind": "next_improvement",
-      "lesson": "an opened lesson session with no disposition blocks the pre-push gate for every LATER author, not the one who opened it. Consider surfacing outstanding sessions at session start, where the opener can still close them, instead of at push time where only a stranger can.",
-      "normalized_key": "an opened lesson session with no disposition blocks the pre push gate for every",
-      "recurrence_class": "session-opened-never-closed",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
-          "date": "2026-08-17",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "an opened lesson session with no disposition blocks the pre-push gate for every LATER author, not the one who opened it. Consider surfacing outstanding sessions at session start, where the opener can still close them, instead of at push time where only a stranger can."
         }
       ]
     },

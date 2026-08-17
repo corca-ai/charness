@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- `2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861` was opened by a prior session and never claimed by a retro. (source: `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`)
 - A handoff pickup that took three named items — a bump-rationale field on the release record, two unbound record claims bound to executed checks, and an adapter-derived retro prefix — and then spent most of its length on five critique rounds over its own output. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`)
-- `2026-08-16-s9` was opened by a prior session and never claimed by a retro. (source: `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - run the changed-line coverage proof immediately after the slice commit and BEFORE the broad lane, as the handoff already says. Four broad reruns this session paid for the reverse order. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 5)
 - state a detector's blind class — "what can this mechanism NOT see?" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was "it cannot see any renderer", which was the whole finding, and it took three review rounds to surface. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 3)
 - **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
-- prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 2)
+- this is the SECOND inherited unclaimed session in three days, and the first artifact already filed this improvement, so the class recurred with the follow-up open. An opened lesson session with no disposition blocks the pre-push gate for a later author who cannot honestly clear it with anything but `presentation-unproven`. Surface outstanding sessions at session START, where the opener can still close them, instead of at push time where only a stranger can. Structural pattern: state opened by one actor and only enforceable against another. Triggering instance(s): `2026-08-16-s9`, `2026-08-17-3bbe7879`. Destination: issue. (source: `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`; sources: 2)
 
 ## Selection Policy
 
@@ -47,4 +47,5 @@
 - `charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md`
 - `charness-artifacts/retro/2026-08-16-session-retro.md`
 - `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`
+- `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
