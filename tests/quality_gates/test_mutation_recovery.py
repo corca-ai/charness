@@ -250,15 +250,74 @@ def test_attach_child_refuses_early_exit_timeout_invalid_marker_and_changed_owne
         with pytest.raises(mar.SweepError, match="did not record"):
             timed_out.attach_child(journal_id, Process(None))
 
+    # A marker that is still unreadable when the deadline expires. The clock is driven
+    # because the wait is now a retry loop: an unreadable marker is re-read until the
+    # deadline rather than refused on the first look, so a real clock would spend the
+    # whole 5s window here proving nothing.
     _repo, _target, invalid, journal_id, _original, _mutated = _seed_recovery(tmp_path, "invalid-marker")
     invalid.child_marker.write_text("not-a-pgid", encoding="utf-8")
-    with pytest.raises(mar.SweepError, match="invalid process group"):
-        invalid.attach_child(journal_id, Process(None))
+    invalid_clock = iter((0.0, 1.0, 6.0))
+    with monkeypatch.context() as invalid_patch:
+        invalid_patch.setattr(mr.time, "monotonic", lambda: next(invalid_clock))
+        with pytest.raises(mar.SweepError, match="invalid process group"):
+            invalid.attach_child(journal_id, Process(None))
 
     _repo, _target, changed, _journal_id, _original, _mutated = _seed_recovery(tmp_path, "changed-owner")
     changed.child_marker.write_text("43210", encoding="utf-8")
     with pytest.raises(mar.SweepError, match="ownership changed before child launch"):
         changed.attach_child("another-owner", Process(None))
+
+
+def test_a_marker_caught_mid_write_is_waited_out_not_called_invalid(tmp_path: Path) -> None:
+    """The race that read as a flaky test, from the parent's side.
+
+    The wrapper used to publish its pgid with `write_text` -- create, write, close --
+    while the parent waited only for the path to EXIST. On a loaded runner the parent
+    could read between create and write, get `""`, and raise "recorded an invalid
+    process group". Quality Core hit it once on `1240348b7` and it was indistinguishable
+    from a genuinely corrupt marker. The empty file below is exactly that window held
+    open; a parent that refuses on first look fails here.
+    """
+
+    class Process:
+        def poll(self):
+            return None
+
+    _repo, _target, recovery, journal_id, _original, _mutated = _seed_recovery(tmp_path, "mid-write")
+    recovery.child_marker.write_text("", encoding="utf-8")
+    filled: list[int] = []
+
+    original_sleep = mr.time.sleep
+
+    def fill_on_first_sleep(seconds: float) -> None:
+        if not filled:
+            filled.append(1)
+            recovery.child_marker.write_text("43210\n", encoding="utf-8")
+        original_sleep(seconds)
+
+    mr.time.sleep = fill_on_first_sleep
+    try:
+        assert recovery.attach_child(journal_id, Process()) == 43210
+    finally:
+        mr.time.sleep = original_sleep
+    assert filled, "the marker was read before the parent ever waited; the window was not exercised"
+
+
+def test_the_wrapper_publishes_its_pgid_by_rename(tmp_path: Path) -> None:
+    # The writer's side of the same race, run for real: the wrapper is executed with a
+    # marker path, and the file it leaves must be complete. Asserting the source text
+    # would only prove a spelling, so the wrapper is actually run.
+    marker = tmp_path / "child-pgid"
+    start = tmp_path / "child-start"
+    start.write_text("start\n", encoding="utf-8")
+    proc = subprocess.run(
+        [sys.executable, "-c", mr._CHILD_WRAPPER, str(marker), str(start), sys.executable, "-c", ""],
+        check=False, capture_output=True, text=True,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert int(marker.read_text(encoding="utf-8").strip()) > 1
+    # No staging file survives a normal run -- `clear()` rmdir's this directory.
+    assert not (tmp_path / "child-pgid.partial").exists()
 
 
 def test_pid_activity_handles_permissions_proc_errors_and_zombies(monkeypatch: pytest.MonkeyPatch) -> None:

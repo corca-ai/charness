@@ -169,19 +169,28 @@ class MutationRecovery:
 
     def attach_child(self, journal_id: str, process: subprocess.Popen) -> int:
         """Bind a stopped child session to the journal before allowing exec."""
+        # The wait condition is a READABLE pgid, not a path that exists. Existence alone
+        # was the race: the wrapper published the marker with write_text, so the parent
+        # could read it empty and turn a timing window into "recorded an invalid process
+        # group" -- observed once in CI (Quality Core, 1240348b7) and indistinguishable
+        # from a genuinely corrupt marker. The wrapper now renames the marker into place,
+        # so an unreadable one here is a real defect; this loop keeps waiting anyway
+        # rather than trusting one writer's atomicity, and the deadline still bounds it.
         deadline = time.monotonic() + 5
+        process_group: int | None = None
         while time.monotonic() < deadline:
-            if self.child_marker.exists():
+            try:
+                process_group = int(self.child_marker.read_text(encoding="utf-8").strip())
                 break
+            except (OSError, ValueError):
+                pass
             if process.poll() is not None:
                 raise RecoveryError("mutated test wrapper exited before recording its process group")
             time.sleep(0.01)
-        else:
+        if process_group is None:
+            if self.child_marker.exists():
+                raise RecoveryError("mutated test wrapper recorded an invalid process group")
             raise RecoveryError("mutated test wrapper did not record its process group")
-        try:
-            process_group = int(self.child_marker.read_text(encoding="utf-8").strip())
-        except (OSError, ValueError) as exc:
-            raise RecoveryError("mutated test wrapper recorded an invalid process group") from exc
         payload = self._read()
         if payload.get("id") != journal_id:
             raise RecoveryError("mutation recovery ownership changed before child launch")
@@ -193,6 +202,10 @@ class MutationRecovery:
     def _clear_child_markers(self) -> None:
         self.child_start.unlink(missing_ok=True)
         self.child_marker.unlink(missing_ok=True)
+        # The wrapper's rename staging path. A child killed between write and rename
+        # leaves it behind, and `clear()` rmdir's this directory -- a stale sibling
+        # turns the teardown into OSError: Directory not empty.
+        self.child_marker.with_name(self.child_marker.name + ".partial").unlink(missing_ok=True)
 
     @staticmethod
     def _pid_active(pid: int) -> bool:
@@ -320,7 +333,14 @@ import time
 from pathlib import Path
 
 marker, start, *command = sys.argv[1:]
-Path(marker).write_text(str(os.getpid()) + "\\n", encoding="utf-8")
+# Published by rename, not by write_text. The parent polls the marker for EXISTENCE and
+# then reads it, so a plain write_text -- create, write, close -- lets the parent win
+# between create and write and read an empty file. That is `int("")`, which the parent
+# reports as "recorded an invalid process group": a load-dependent race that reads as a
+# flaky test. Same-directory rename is atomic, so the path never exists half-written.
+staging = Path(marker + ".partial")
+staging.write_text(str(os.getpid()) + "\\n", encoding="utf-8")
+os.replace(staging, marker)
 while not Path(start).exists():
     time.sleep(0.01)
 os.execvp(command[0], command)
