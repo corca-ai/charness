@@ -435,10 +435,11 @@ def test_an_opted_in_custom_output_dir_repo_still_owes_its_disposition(tmp_path:
     (repo / "artifacts" / "retros" / "2026-08-17-demo.md").write_text(
         _ACTIVATED_RETRO, encoding="utf-8"
     )
+    ledger_dir = repo / "charness-artifacts" / "retro"
     init_lesson_ledger.init_lesson_ledger(
         repo_root=repo,
-        output_dir=repo / "artifacts" / "retros",
-        summary_path=repo / "artifacts" / "retros" / "recent-lessons.md",
+        output_dir=ledger_dir,
+        summary_path=ledger_dir / "recent-lessons.md",
     )
 
     result = run_script(
@@ -538,13 +539,18 @@ def test_the_emitted_opt_in_writes_where_the_floor_probe_reads(tmp_path: Path) -
     )
 
     assert result.returncode == 0, result.stderr
-    declared = repo / "artifacts" / "retros" / retro_validator.LESSON_LEDGER_FILENAME
-    assert declared.is_file(), result.stdout
-    assert not (repo / "charness-artifacts" / "retro").exists()
-    # And the probe that decides "inert" now sees it.
+    # The LITERAL, matching all 30 readers of this ledger. Writing it to the declared
+    # `output_dir` was tried and reverted: the probe then saw it and switched the floor
+    # ON while every other lifecycle entry point still opened the literal and raised.
+    written = repo / "charness-artifacts" / "retro" / retro_validator.LESSON_LEDGER_FILENAME
+    assert written.is_file(), result.stdout
+
+    # And the probe that decides "inert" reads the same path, for a repo whose retros
+    # live somewhere else entirely.
     assert retro_validator.lesson_evaluator_declared(
         repo / "artifacts" / "retros" / "2026-08-17-demo.md",
         output_dir=repo / "artifacts" / "retros",
+        repo_root=repo,
     )
 
 
@@ -558,7 +564,7 @@ def test_an_artifact_outside_the_resolved_output_dir_keeps_the_floor_on(tmp_path
     stray.write_text(_ACTIVATED_RETRO, encoding="utf-8")
 
     assert retro_validator.lesson_evaluator_declared(
-        stray, output_dir=repo / "artifacts" / "retros"
+        stray, output_dir=repo / "artifacts" / "retros", repo_root=repo
     )
 
 

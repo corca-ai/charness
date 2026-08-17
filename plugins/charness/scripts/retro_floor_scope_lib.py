@@ -25,8 +25,21 @@ from runtime_bootstrap import import_repo_module
 
 _lesson_evaluation = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
 _lesson_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
-_output_dir_lib = import_repo_module(__file__, "scripts.retro_output_dir_lib")
-retro_artifact_prefix = _output_dir_lib.retro_artifact_prefix
+#: The lesson-ledger subsystem is keyed on ONE literal, repo-wide, deliberately.
+#: Making these probes adapter-derived was tried and reverted twice. The first attempt
+#: moved the announcement only, and the run then refused an artifact for a missing
+#: disposition while printing "no retro owes a disposition". The second moved the
+#: writer too, and that was worse: 29 other lifecycle entry points -- `open_lesson_session`,
+#: `record_lesson_score`, `check_lesson_ledger`, the contract register -- still read the
+#: literal, so a consumer who opted in got the floor switched ON and every one of those
+#: raising `FileNotFoundError`. Inert-and-stuck beats on-and-unsatisfiable.
+#:
+#: A consistent literal is a known, greppable state; a half-migrated one disagrees with
+#: itself for exactly the consumers the migration was for. Migrating it is one slice over
+#: all 30 sites with its own proof, not a rider on a validator repair. What IS
+#: adapter-derived is `validate_retro_artifact`'s candidate filter and owned prefix --
+#: the reported defect, and a different question from where the ledger lives.
+LESSON_LEDGER_PREFIX = "charness-artifacts/retro/"
 
 
 # Every retro must consult the north star and say what it found (user standing
@@ -53,7 +66,9 @@ LESSON_LEDGER_FILENAME = "lesson-ledger.json"
 LESSON_LEDGER_BOOTSTRAP_SCRIPT = "init_lesson_ledger.py"
 
 
-def lesson_evaluator_declared(path: Path, *, output_dir: Path | None = None) -> bool:
+def lesson_evaluator_declared(
+    path: Path, *, output_dir: Path | None = None, repo_root: Path | None = None
+) -> bool:
     """Whether this repo declares the lesson evaluator the disposition floor scores.
 
     Both `skills/public/retro/references/lesson-evaluation.md` ("repos whose
@@ -78,15 +93,22 @@ def lesson_evaluator_declared(path: Path, *, output_dir: Path | None = None) -> 
     never fires — the exact escape shape the sibling floors' fail-closed
     grandfathering guards.
 
-    ``output_dir`` is the ADAPTER-RESOLVED directory, bound once per run. It used
-    to be the literal `charness-artifacts/retro`, and leaving it that way while the
-    announcement half (`date_activated_rules`, `report_enforcement_scope`) moved to
-    the adapter split one run's answer in two: for a consumer declaring
-    `artifacts/retros`, this returned True and REFUSED the artifact for a missing
-    disposition while the same process printed "no retro owes a disposition". The
-    emitted opt-in could not close it either -- `init_lesson_ledger.py` writes to
-    the literal path this side never looked at. ``None`` keeps the old layout guard
-    for direct callers that have no run context.
+    TWO questions, and they take different answers because they are different
+    questions. "Is this artifact one of this repo's retros" is adapter-shaped -- the
+    validator's candidate filter now yields artifacts from a declared `output_dir`, so a
+    membership test keyed on the literal would call every one of them foreign and
+    fail-closed onto a floor the repo never opted into. "Where is the ledger" is the
+    LITERAL, because 30 scripts read it there and moving one moves nothing (see
+    `LESSON_LEDGER_PREFIX`).
+
+    Reading the ledger beside the ARTIFACT was the shape that made the two halves of one
+    run disagree: for a declared `artifacts/retros` it probed a directory the
+    announcement never looked at, and no opt-in could reconcile them. Both halves now
+    read one path.
+
+    Fail-CLOSED when the artifact is outside the repo's retro directory: there the probe
+    cannot see the repo's evaluator state, and a floor that switches ITSELF off on an
+    unrecognized layout is a floor that silently never fires.
     """
     directory = path.parent
     if output_dir is None:
@@ -94,7 +116,12 @@ def lesson_evaluator_declared(path: Path, *, output_dir: Path | None = None) -> 
             return True
     elif directory.resolve() != output_dir.resolve():
         return True
-    return (directory / LESSON_LEDGER_FILENAME).is_file()
+    # `repo_root` is PASSED, never re-derived by walking up from `output_dir`: that walk
+    # has to guess how many segments the declared directory has, and it is only right for
+    # a two-segment one. A caller with no run context falls back to the artifact's own
+    # directory, which is the literal layout by construction.
+    ledger_root = repo_root / LESSON_LEDGER_PREFIX if repo_root is not None else path.parent
+    return (ledger_root / LESSON_LEDGER_FILENAME).is_file()
 
 
 def lesson_ledger_bootstrap_command(repo_root: Path) -> str:
@@ -129,7 +156,7 @@ def date_activated_rules(repo_root: Path) -> list[dict[str, object]]:
     now announces the same thing from these constants, so the announcement cannot
     drift from the rule it announces.
     """
-    prefix = retro_artifact_prefix(repo_root)
+    prefix = LESSON_LEDGER_PREFIX
     ledger = repo_root / prefix / LESSON_LEDGER_FILENAME
     declared = ledger.is_file()
     return [
@@ -181,7 +208,7 @@ def report_enforcement_scope(run, artifacts) -> None:
     until tripped, and a disposition duty a repo could not tell it had opted out
     of. Reporting only; it changes no verdict and no exit code.
     """
-    prefix = retro_artifact_prefix(run.repo_root)
+    prefix = LESSON_LEDGER_PREFIX
     ledger = run.repo_root / prefix / LESSON_LEDGER_FILENAME
     declared = ledger.is_file()
     activation = _lesson_evaluation.ACTIVATION_DATE.isoformat()

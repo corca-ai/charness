@@ -47,10 +47,6 @@ _writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
 # ends up being told two different next steps for the identical state.
 _hook_context = import_repo_module(__file__, "scripts.session_start_lesson_context")
 _records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
-# The one owner of "where does this repo keep its retros", shared with the probe that
-# decides whether the lesson floor is inert. Two answers to that question is what made
-# the opt-in this script implements unable to close the floor it opts into.
-_output_dir_lib = import_repo_module(__file__, "scripts.retro_output_dir_lib")
 
 # A function called per repo root, not a constant bound once at import: the seeder's
 # runnable spelling differs between this source tree and an installed plugin inside a
@@ -121,18 +117,21 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     args = parser.parse_args()
     root = args.repo_root.resolve()
-    # ADAPTER-RESOLVED, not the literal it used to be. This is the command
-    # `report_enforcement_scope` tells an operator to run when it reports the lesson
-    # floor inert, and the probe that decides "inert" moved to the adapter. While this
-    # side kept the literal, a repo declaring another `output_dir` was told to opt in,
-    # got a ledger written somewhere the probe never looks, and stayed inert forever --
-    # an announcement naming a remedy that provably cannot close what it describes. The
-    # loud pre-existing bug (a false refusal) had been traded for a quiet one.
-    output_dir = _output_dir_lib.retro_output_dir(root)
+    # The LITERAL, and this was briefly adapter-resolved before being reverted. Moving
+    # the write alone flipped a consumer's floor from inert to ON-and-unsatisfiable: the
+    # probe then saw a ledger and enforced the disposition duty, while `open_lesson_session`,
+    # `record_lesson_score`, `check_lesson_ledger` and ~26 other entry points still opened
+    # the literal path and raised. `check_lesson_ledger.py` is named in this script's own
+    # FileExistsError, so the refusal path pointed at a tool that would report the ledger
+    # missing. One literal across the whole subsystem is the honest state until all 30 sites
+    # move together; `retro_floor_scope_lib.LESSON_LEDGER_PREFIX` records the rule.
+    #
+    # `summary_path` stays a separately declared adapter field, not a derivation of the
+    # output dir -- retro's own adapter contract says so in as many words.
     result = init_lesson_ledger(
         repo_root=root,
-        output_dir=output_dir,
-        summary_path=output_dir / "recent-lessons.md",
+        output_dir=root / "charness-artifacts/retro",
+        summary_path=root / "charness-artifacts/retro/recent-lessons.md",
     )
     step = next_step(root)
     # Unconditional YAML. The retired receipt line was a strict projection of

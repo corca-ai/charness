@@ -75,8 +75,14 @@ def bump_rationale_lines(bump_rationale: str | None) -> list[str]:
     # argument meant `--bump-rationale '#'` was truthy, demoted to `""`, and emitted the
     # heading over an empty body with no absence sentence -- inverting this docstring's
     # own guarantee, because a reader who sees the section infers one was supplied.
+    # Absence is decided on the ARGUMENT, not by un-stripping the rendered lines.
+    # `line.strip("> ")` removed EVERY leading `>`, so a rationale of `>>>` stripped to
+    # nothing and the record announced "NOT recorded" over a rationale that WAS supplied
+    # -- a false absence on the disclosure surface, which this repo ranks above a false
+    # positive. `rationale_body_lines` already strips and splits, so an argument that is
+    # only whitespace yields no lines at all.
     body = rationale_body_lines(bump_rationale or "")
-    if not any(line.strip("> ").strip() for line in body):
+    if not body:
         return lines + absent
     return lines + body
 

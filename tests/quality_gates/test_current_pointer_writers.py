@@ -344,6 +344,11 @@ def test_release_record_names_the_preflight_command_that_failed(tmp_path: Path) 
     assert "Focused preflight execution: `failed`." in text
     assert "  - executed: `pytest a -q`" in text
     assert "  - failed: `pytest b -q`" in text
+    # The token is never alone. A mutation inverting this branch survived the whole
+    # suite: the record then published `execution: \`failed\`.` with no sentence saying
+    # what that means, which is the "a reader who sees a status word infers the thing
+    # happened" failure the branch exists to prevent.
+    assert "recorded absence, not a passing preflight" in text
 
 
 def test_capability_catalog_noops_when_canonical_inventory_unchanged(tmp_path: Path) -> None:

@@ -10,7 +10,6 @@ tagged and published before most of its readers ever run.
 
 from __future__ import annotations
 
-import re
 import runpy
 from pathlib import Path
 from typing import Callable
@@ -73,35 +72,38 @@ def validate_bump_rationale_arg(bump_rationale: str | None) -> str | None:
     """
     if bump_rationale is not None:
         _claims_review["assert_no_record_sentinel"](bump_rationale, "--bump-rationale")
-        _assert_no_raw_html(bump_rationale)
+        _assert_no_hidden_record(bump_rationale)
     return bump_rationale
 
 
-_RAW_HTML_RE = re.compile(r"<[!/]?[A-Za-z]|<!--")
+def _assert_no_hidden_record(bump_rationale: str) -> None:
+    """Refuse the one construct that hides a rendered record from OUTSIDE a blockquote.
 
+    This was widened to all raw HTML and narrowed back, and the measurement is why.
+    Every rationale line is quoted, so a markdown BLOCK container -- `<details>`,
+    `<summary>`, an unclosed `<div>` -- is closed at the end of the blockquote and its
+    blast radius stops there. An unterminated `<!--` does not: it survives into the
+    emitted HTML stream and is consumed by the HTML parser, which has no idea a
+    blockquote ended, so everything below it disappears from the document a human reads
+    while every substring audit passes over the raw bytes. That asymmetry is the whole
+    reason this guard exists, and it names exactly one construct because exactly one
+    construct has the property.
 
-def _assert_no_raw_html(bump_rationale: str) -> None:
-    """Refuse raw HTML in prose that is rendered into the published record.
-
-    The class, not one member of it. This started as an `"<!--" in value` check,
-    because an HTML comment hides every line after it from the RENDERED document a
-    human reads while leaving the bytes every substring audit reads intact -- so the
-    state ledger, the "NOT recorded" sentences and a `Claims review verdict: unproven`
-    all disappear from view with every gate green. Hiding the negatives is worse than
-    forging a positive and no check in this repo can see it.
-
-    But `<!--` is not the only construct with that property: an unterminated `<details>`
-    collapses the remainder of the rendered document into a disclosure widget, and
-    `<summary>` and other unclosed containers behave similarly. Naming one member is
-    the blacklist shape the sibling renderer's docstring argues against, so the rule is
-    "no raw HTML" -- a bump rationale is prose and needs none. Quoting cannot help here:
-    a blockquote renders its HTML.
+    The wide version refused ordinary prose. `<[!/]?[A-Za-z]` matches `<path>`, `<ref>`,
+    `<repo>` and a bare autolink -- placeholders this repo writes constantly, including
+    in its own root docs -- so a release was blocked at argument time for English, with
+    an error quoting two characters as the offender. The sibling that renders this record
+    already owns that lesson: `strip_display_code` exists because content shown AS CODE
+    is not asserted to the reader, and its docstring records breaking "in opposite
+    directions" when that was ignored. A guard whose false positives are ordinary
+    sentences is not paying for the true positives it adds.
     """
-    match = _RAW_HTML_RE.search(bump_rationale)
-    if match:
+    if "<!--" in bump_rationale:
         raise SystemExit(
-            f"--bump-rationale must not contain raw HTML (found {match.group(0)!r}); it is "
-            "rendered into the published release record, and an unterminated tag or comment "
-            "hides every line after it from the document a reader sees while leaving the "
-            "bytes every audit reads intact. Say it in prose instead."
+            "--bump-rationale must not contain '<!--'; it is rendered into the published "
+            "release record, and an unterminated HTML comment survives past the blockquote "
+            "this value is rendered in, hiding every line below it from the document a "
+            "reader sees while leaving the bytes every audit reads intact. Say it in prose "
+            "instead. Angle-bracket placeholders like `<path>` are fine: they are inside "
+            "the blockquote and cannot escape it."
         )

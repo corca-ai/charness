@@ -253,26 +253,48 @@ def test_bump_rationale_refuses_a_forged_release_state_sentinel() -> None:
     assert "--bump-rationale" in str(exc.value)
 
 
-@pytest.mark.parametrize(
-    "hider", ["patch. <!-- see thread", "patch.\n<details>", "patch. <SCRIPT", "patch.\n</div>"]
-)
-def test_bump_rationale_refuses_raw_html_that_hides_the_rest_of_the_record(hider: str) -> None:
-    """Refused as a CLASS, not as one member.
+def test_bump_rationale_refuses_the_comment_that_escapes_its_blockquote() -> None:
+    """One construct, because exactly one has the property.
 
-    The guard began as an `"<!--" in value` check, and the test that covered it also
-    carried a record sentinel -- which trips the earlier guard, so that test stayed
-    green with this one deleted. These inputs isolate it. An unterminated comment,
-    `<details>` or any unclosed container hides every line below it from the rendered
-    document a human reads, while every substring audit passes over the raw bytes:
-    the state ledger, the "NOT recorded" sentences and a `verdict: unproven` all
-    vanish with the gates green. Quoting cannot help -- a blockquote renders its HTML.
+    Every rationale line is quoted, so a markdown BLOCK container is closed at the end
+    of the blockquote. An unterminated `<!--` is not a markdown construct: it survives
+    into the emitted HTML and is consumed by the HTML parser, hiding the state ledger,
+    the "NOT recorded" sentences and a `verdict: unproven` from the document a human
+    reads while every substring audit passes.
+
+    The isolated input matters: the test that used to cover this also carried a record
+    sentinel, which trips the earlier guard, so it stayed green with this guard deleted.
     """
     preflight = _load_release_module("publish_release_preflight")
 
     with pytest.raises(SystemExit) as exc:
-        preflight.validate_bump_rationale_arg(hider)
+        preflight.validate_bump_rationale_arg("patch. <!-- see the review thread")
 
-    assert "raw HTML" in str(exc.value)
+    assert "<!--" in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    "prose",
+    [
+        "patch: only `charness worktree create --path <path>` changed",
+        "patch: the reviewer read <ref>:<path> to reach the base",
+        "patch: see <https://example.test/issues/1>",
+        "minor: b<c only after the migration",
+        "patch: an unclosed <details> would be bounded by the blockquote",
+    ],
+)
+def test_bump_rationale_accepts_ordinary_prose_with_angle_brackets(prose: str) -> None:
+    """The accept side, which the wide version had no test for at all.
+
+    A guard covering all raw HTML refused `<path>`, `<ref>` and autolinks -- notation
+    this repo writes in its own root docs -- so a release was blocked at argument time
+    for English, with an error quoting two characters as the offender. False positives
+    here are ordinary sentences; the true positives the width added were block
+    containers a blockquote already bounds.
+    """
+    preflight = _load_release_module("publish_release_preflight")
+
+    assert preflight.validate_bump_rationale_arg(prose) == prose
 
 
 def test_release_adapter_preflight_records_that_nothing_was_required(tmp_path: Path) -> None:

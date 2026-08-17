@@ -18,9 +18,9 @@
 
 ## Current State
 
-- **Both critique rounds ran; round-2 repairs are `accepted-unreviewed`.** The floor in
-  [operating contract](./conventions/operating-contract.md) caps at two rounds, so the
-  fixes in the final commit were read by nobody. Round 1 returned eight blockers.
+- **Three critique rounds ran; the last round's repairs are `accepted-unreviewed`.** The
+  record is the [session critique](../charness-artifacts/critique/2026-08-17-session-release-record-retro-prefix.md).
+  Each round found the previous round's repair carrying the class it repaired.
 - **The resume lane deliberately runs NO surface gate and NO focused preflight.** One was
   added there and reverted; see the comment in
   [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py).
@@ -60,13 +60,15 @@
    dropped flag publishes a record saying none was recorded. Only the planner's
    [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
    names it; nothing refuses the omission.
-5. **Round-2 residuals, all disclosed and none fixed.** `run_release_adapter_preflight`
-   shells out to a bare test-runner binary, so a venv-only install gives a traceback
-   where a refusal belongs
+5. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Every site is
+   found by `grep -rln "charness-artifacts/retro" scripts/ skills/`; that count is the
+   scope, and it includes
+   [seed_retro_memory.py](../skills/public/setup/scripts/seed_retro_memory.py), which the
+   obvious `scripts/`-only sweep misses. Moving one site was tried twice and reverted;
+   the second attempt flipped a consumer's floor from inert to on-and-unsatisfiable.
+6. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
+   venv-only install gives a traceback where a refusal belongs
    ([publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py)).
-   ~20 lesson-lifecycle scripts still hold the literal `charness-artifacts/retro/`; find
-   them with `grep -rln "charness-artifacts/retro" scripts/`. `seed_retro_memory.py` is
-   the one that reports a state contradicting the retro validator.
 
 ## Discuss
 

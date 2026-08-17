@@ -391,12 +391,17 @@ def validate_north_star_alignment(
 
 
 def validate_lesson_evaluation_disposition(
-    path: Path, lines: list[str], observed_date: date | None, *, output_dir: Path | None = None
+    path: Path,
+    lines: list[str],
+    observed_date: date | None,
+    *,
+    output_dir: Path | None = None,
+    repo_root: Path | None = None,
 ) -> None:
     """Require one strict disposition for the activated cohort of an opted-in repo."""
     if observed_date is None or observed_date < _lesson_evaluation.ACTIVATION_DATE:
         return
-    if not lesson_evaluator_declared(path, output_dir=output_dir):
+    if not lesson_evaluator_declared(path, output_dir=output_dir, repo_root=repo_root):
         return
     try:
         _lesson_evaluation.parse_disposition("\n".join(lines))
@@ -416,10 +421,9 @@ def validate_retro_artifact(
 ) -> None:
     """Validate one retro artifact.
 
-    ``repo_root``/``output_dir`` are the RUN's, bound once by the factory below rather
-    than re-derived per artifact -- both because re-resolving the adapter per artifact
-    is the ×150 regression the debug sibling records, and because the floors that read
-    them must agree with the announcement the same run prints.
+    ``repo_root`` is the RUN's, bound once by the factory below rather than re-derived
+    per artifact: re-resolving the adapter per artifact is the x150 regression the debug
+    sibling records.
     """
     lines = path.read_text(encoding="utf-8").splitlines()
     observed_date = _retro_observed_date(path, lines)
@@ -445,7 +449,7 @@ def validate_retro_artifact(
             lines, observed_date, repo_root if repo_root is not None else _repo_root_for(path)
         ),
         lambda: validate_lesson_evaluation_disposition(
-            path, lines, observed_date, output_dir=output_dir
+            path, lines, observed_date, output_dir=output_dir, repo_root=repo_root
         ),
     )
     # collect_all surfaces every violation in one pass (the CLI default) so a

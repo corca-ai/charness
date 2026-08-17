@@ -8,7 +8,10 @@ being a literal -- resolving it now carries a layout search, an adapter read, an
 fallback whose two rejected alternatives are the interesting part.
 
 `validate_retro_artifact` re-exports both public names, so its importers keep one
-import site.
+import site. It deliberately exposes no `retro_output_dir` helper:
+`lesson_evaluation_records_lib` already owns a function of that exact name and
+signature returning the LITERAL directory, and two same-named owners with opposite
+answers is worse than either.
 """
 
 from __future__ import annotations
@@ -98,7 +101,3 @@ def retro_artifact_prefix(repo_root: Path) -> str:
         return DEFAULT_RETRO_ARTIFACT_PREFIX
     return f"{normalized}/"
 
-
-def retro_output_dir(repo_root: Path) -> Path:
-    """The resolved retro output directory, for callers that need the path itself."""
-    return repo_root / retro_artifact_prefix(repo_root).rstrip("/")
