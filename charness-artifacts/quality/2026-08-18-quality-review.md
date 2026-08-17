@@ -7,8 +7,8 @@ Title: Repo-wide posture regeneration after the stale 2026-08-14 record
 Target boundary: repo-wide posture question — regenerate the quality record the handoff
 named stale (it asserted #619/#620 open; both are closed). No target skill.
 
-Ambient repo findings: docs-graph `link_only_lines` at 171 over its 167 ratchet,
-repaired in-run (four handoff link lines got a holdings phrase, commit `9e1865e45`);
+Ambient repo findings: docs-graph `link_only_lines` at 171 over its 167 ratchet, repaired
+in-run (four handoff link lines got a holdings phrase, commit `9e1865e45`);
 `check-lesson-evaluation-continuity` fails on this session's own just-declared lesson
 receipt — as designed until this session's retro claims it.
 
@@ -61,10 +61,8 @@ receipt — as designed until this session's retro claims it.
 
 - pytest lane has already breached its 120s budget in five recent samples (max 130.9s,
   all passing runs); the budget claim and the measured lane disagree today.
-- docs-graph failing at HEAD: the commit-time layer cannot see broad-lane regressions —
-  by validator-timing-layers design, but it left main red for a day.
-- 24 of 43 active lessons have no anchored evidence — exposure counts only, so their
-  lifecycle (graduate/rewrite/archive) is undecidable from the ledger today.
+- docs-graph failing at HEAD: the commit-time layer cannot see broad-lane regressions — by design, but it left main red for a day.
+- 24 of 43 active lessons have no anchored evidence — exposure counts only, so their lifecycle (graduate/rewrite/archive) is undecidable from the ledger today.
 
 ## Missing
 
@@ -74,19 +72,21 @@ receipt — as designed until this session's retro claims it.
 
 - 72 Python files in the length warn band (advisory, none over the 480 hard limit); split-on-concept remains the standing remedy.
 - Doc-duplicate family between `skills/public/achieve/scripts/goal_artifact_template.md`
-  and `skills/public/handoff/scripts/templates/auto_draft_goal.md` (exact tier, ~28
-  removable lines) — single-sourcing deferred to a slice that owns both skills.
+  and `skills/public/handoff/scripts/templates/auto_draft_goal.md` (~28 removable lines) —
+  single-sourcing deferred to a slice that owns both skills.
 
 ## Advisory
 
-- structural review result (command: `./scripts/render_lesson_lifecycle_review.py --repo-root .`):
-  capability_needed=an honest current posture record; strongest centers are the
-  hook-enforced lane and adapter-routed inventories; strengthen next the ledger's
-  anchored-evidence coverage (24/43 unanchored), without which lifecycle is undecidable.
-- prose review result (inventory: `inventory_skill_ergonomics.py --repo-root . --summary`):
-  59 host-surface hits are dominated by adapter examples per finding-level
-  review_context (spot-reviewed, not a full 22-skill prose read); 3 `argparse_missing_help`
-  hits in quality scripts are real minor debt; no core overfill, no package issue anchors.
+- structural review result: `capability_needed`=an honest current posture record;
+  strongest centers are the hook-enforced lane and adapter-routed inventories; strengthen
+  next the ledger's anchored-evidence coverage (24/43 unanchored), without which
+  lifecycle is undecidable — command: `./scripts/render_lesson_lifecycle_review.py --repo-root .`.
+- prose review result: the ergonomics inventory reports `finding_status=heuristics_present`
+  over `checked_skill_count=22` with `prose_review_status=required`; this pass answers it
+  at spot level, not a full 22-skill prose read: `subcheck_counts` are dominated by
+  `host_surface_reference` (59, mostly adapter examples per finding-level review_context),
+  `argparse_missing_help` (3, quality scripts) is real minor debt, and `core_overfill`
+  and `package_issue_anchor` are both 0.
 - Lesson lifecycle judged on anchors, not recurrence (evidence: same lifecycle command):
   `changed-line-proof-before-broad-quality` failed twice while already in prose at the
   failure point — strengthen-binding; `premise-not-checked-against-source` transfers to
