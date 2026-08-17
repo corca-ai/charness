@@ -614,3 +614,29 @@ def test_handoff_plan_briefs_the_rules_whenever_the_next_action_writes(tmp_path:
             "die on import"
         )
         shutil.copy(ROOT / rel, removed)
+
+
+def test_the_dependency_walk_survives_a_source_it_cannot_read(tmp_path: Path) -> None:
+    """An unreadable dependency stops the walk THROUGH it, not the probe.
+
+    The walk reads the TARGET repo's sources, so it meets whatever is on that disk. A
+    file it cannot open contributes no further edges -- but it is still a named
+    dependency, and it must stay in the returned set: dropping it would let the plan
+    advertise a command whose import graph was never checked past that point. The
+    `is_file()` arm covers absence; this covers present-but-unreadable, which is the one
+    a permissions-restricted checkout hits.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    for rel in _AUTHORING_PREFLIGHT.PREFLIGHT_ROOTS:
+        shutil.copy(ROOT / rel, repo / rel)
+    unreadable = repo / _AUTHORING_PREFLIGHT.PREFLIGHT
+    unreadable.chmod(0o000)
+    try:
+        resolved = _AUTHORING_PREFLIGHT.preflight_dependencies(repo)
+    finally:
+        unreadable.chmod(0o644)
+
+    assert _AUTHORING_PREFLIGHT.PREFLIGHT in resolved
+    # The bootstrap modules are listed explicitly, so they survive an unreadable root.
+    assert "scripts/runtime_bootstrap.py" in resolved

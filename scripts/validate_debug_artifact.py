@@ -338,7 +338,39 @@ def validate_dated_seam_risk_enums(lines: list[str]) -> None:
         )
 
 
-def validate_debug_artifact(path: Path, *, collect_all: bool = False) -> None:
+def is_current_artifact(path: Path, current_pointer: Path | None = None) -> bool:
+    """Does the CURRENT (strict) schema govern this file, or the legacy dated one?
+
+    Keyed on ROLE, not on filename. The filename test alone gave the same bytes two
+    different verdicts depending on which name reached them: where `latest.md` is a
+    symlink, `--paths <the pointer>` ran the strict checks and `--paths <its target>`
+    ran only the legacy ones. That was invisible while every emitted command was
+    unscoped -- the corpus glob yields `latest.md` too, so the strict checks always ran
+    on the current content under SOME name. Scoping the emitted command to the artifact
+    being authored removed that other name, so an artifact the scaffold writes in the
+    current shape (its template carries `## Invariant Proof`, `## Sibling Search`,
+    `## Seam Risk`, `## Interrupt Decision`) was judged by the legacy rules, and a
+    missing `disconfirmer:` or `cross-file:` marker passed. Nothing caught it because
+    no test pinned WHICH ruleset a scoped run selects.
+
+    Blind class: this reads the pointer as it stands NOW. A run that validates a record
+    before the pointer is refreshed onto it sees a legacy record and says so -- correct
+    for what is on disk, and the reason the scaffold's own emitted command names the
+    pointer as well as the record.
+    """
+    if path.name == "latest.md":
+        return True
+    if current_pointer is None or not current_pointer.is_symlink():
+        return False
+    try:
+        return current_pointer.resolve() == path.resolve()
+    except OSError:
+        return False
+
+
+def validate_debug_artifact(
+    path: Path, *, collect_all: bool = False, current_pointer: Path | None = None
+) -> None:
     lines = read_lines(path)
     base_checks = (
         lambda: validate_title(
@@ -351,7 +383,7 @@ def validate_debug_artifact(path: Path, *, collect_all: bool = False) -> None:
             lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact", artifact_type="debug"
         ),
     )
-    if path.name == "latest.md":
+    if is_current_artifact(path, current_pointer):
         required_sections = (
             REQUIRED_SECTIONS[:8]
             + CURRENT_DIAGNOSIS_SECTIONS
@@ -412,20 +444,49 @@ def _selected_artifacts(args, repo_root: Path, output_dir: Path) -> list[Path] |
     return scoped or None
 
 
-def _owned_prefix(repo_root: Path) -> str | None:
-    """The artifact directory this validator owns, from the adapter.
+def _adapter_output_dir(repo_root: Path) -> str | None:
+    """The adapter-declared output directory, or None when the adapter does not vouch for it.
 
-    A callable, not a constant, because debug is the one family whose output directory
-    is adapter-declared -- and the value is needed AFTER `--repo-root` is parsed. Returns
-    None when the adapter cannot be read: owning nothing restores the previous behavior,
-    and inventing a prefix would refuse named paths against a directory this repo never
-    declared. The adapter failure itself is reported by `_debug_artifacts`.
+    Keyed on the adapter's own `valid`, not on a try/except: `load_adapter` does not raise
+    on a malformed file, it returns a payload. An unclosed YAML sequence parses to the
+    STRING `[unclosed`, which as an owned prefix matches no real path -- so the named-path
+    refusal would silently never fire, which is the failure mode the prefix exists to
+    prevent, reintroduced through the back door. `valid: False` is the adapter saying it
+    cannot vouch for its own contents, and owning nothing there restores the pre-scoping
+    behavior rather than refusing paths against a directory nobody declared.
+
+    A MISSING adapter is not a failure: it resolves to the documented default, which is a
+    real directory this validator legitimately owns.
     """
-    try:
-        output_dir = load_adapter(repo_root)["data"]["output_dir"]
-    except Exception:  # noqa: BLE001 -- any unreadable adapter means "owns nothing"
+    adapter = load_adapter(repo_root)
+    if not adapter.get("valid"):
+        return None
+    output_dir = adapter.get("data", {}).get("output_dir")
+    if not isinstance(output_dir, str) or not output_dir.strip():
+        return None
+    return output_dir
+
+
+def _owned_prefix(repo_root: Path) -> str | None:
+    """The artifact directory this validator owns, resolved after `--repo-root` is parsed.
+
+    A callable, not a constant, because debug is the one family whose output directory is
+    adapter-declared. Inventing a prefix when the adapter cannot be trusted would refuse
+    named paths against a directory this repo never declared; the adapter failure itself
+    is reported by `_debug_artifacts`.
+    """
+    output_dir = _adapter_output_dir(repo_root)
+    if output_dir is None:
         return None
     return f"{Path(output_dir).as_posix().rstrip('/')}/"
+
+
+def _current_pointer(repo_root: Path) -> Path | None:
+    """The adapter-declared current-pointer path, for the strict-vs-legacy role test."""
+    output_dir = _adapter_output_dir(repo_root)
+    if output_dir is None:
+        return None
+    return repo_root / output_dir / "latest.md"
 
 
 def _debug_artifacts(run) -> list[Path] | None:
@@ -479,7 +540,9 @@ def main() -> int:
         owned_prefix=_owned_prefix,
         artifacts_fn=_debug_artifacts,
         validate_factory=lambda run: (
-            lambda artifact: validate_debug_artifact(artifact, collect_all=run.collect_all)
+            lambda artifact: validate_debug_artifact(
+                artifact, collect_all=run.collect_all, current_pointer=_current_pointer(run.repo_root)
+            )
         ),
         no_scope_message="No debug artifacts in scope.",
         per_artifact_success=True,

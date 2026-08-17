@@ -816,3 +816,97 @@ def test_the_owned_prefix_comes_from_the_adapter_not_a_literal(tmp_path: Path) -
     )
     assert missing.returncode == 1, missing.stdout + missing.stderr
     assert "resolve to nothing" in missing.stdout + missing.stderr
+
+
+def _strict_only_violation(body: str) -> str:
+    """Remove the falsifiable-hypothesis marker: a CURRENT-schema rule with no legacy analogue."""
+    return body.replace(
+        " | disconfirmer: add `.cautilus` to a fixture and assert it is excluded", ""
+    )
+
+
+def test_the_same_bytes_get_the_same_verdict_under_either_name(tmp_path: Path) -> None:
+    """Ruleset keyed on ROLE, not filename -- the defect scoping the emitted command exposed.
+
+    `latest.md` is a symlink in real repos, so the artifact being authored is reached by
+    two names. Keyed on filename, `--paths <pointer>` ran the strict current-schema checks
+    and `--paths <its target>` ran only the legacy dated ones -- two verdicts for one file.
+    Invisible while every emitted command was unscoped, because the corpus glob yields
+    `latest.md` too and the strict checks always ran under SOME name. Scoping removed the
+    other name, so a current-shaped artifact was judged by legacy rules and a missing
+    `disconfirmer:` passed.
+
+    The fixture violates a rule the CURRENT schema has and the legacy one does not, which
+    is what makes the two rulesets distinguishable at all.
+    """
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    debug_dir = repo / "charness-artifacts" / "debug"
+    record = debug_dir / "2026-08-17-debug-review.md"
+    record.write_text(_strict_only_violation(valid_current_artifact()), encoding="utf-8")
+    # The real layout: the pointer is a symlink onto the record being authored.
+    (debug_dir / "latest.md").unlink()
+    (debug_dir / "latest.md").symlink_to(record.name)
+
+    by_pointer = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/latest.md",
+    )
+    by_target = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    )
+    assert by_pointer.returncode == 1, by_pointer.stdout + by_pointer.stderr
+    assert by_target.returncode == by_pointer.returncode, (
+        "the same bytes were judged differently depending on which name reached them:\n"
+        f"pointer rc={by_pointer.returncode} target rc={by_target.returncode}\n"
+        f"target output: {by_target.stdout + by_target.stderr}"
+    )
+
+    # And a record the pointer does NOT reference stays on the legacy ruleset -- the fix
+    # widens strictness to the current artifact's other name, not to the whole corpus.
+    unreferenced = debug_dir / "2026-01-02-old-record.md"
+    unreferenced.write_text(_strict_only_violation(valid_current_artifact()), encoding="utf-8")
+    legacy = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
+        "--paths", "charness-artifacts/debug/2026-01-02-old-record.md",
+    )
+    assert legacy.returncode == 0, legacy.stdout + legacy.stderr
+
+
+def test_an_adapter_that_cannot_vouch_for_itself_owns_nothing(tmp_path: Path) -> None:
+    """Both adapter-derived resolvers degrade together, and only when the adapter says so.
+
+    `load_adapter` does not raise on a malformed file, so a try/except would never fire:
+    an invalid `version` still returns a payload. Keying on `valid` is what stops a
+    garbage prefix from silently disabling the named-path refusal -- which would
+    reintroduce the silent pass through the back door. A MISSING adapter is not a
+    failure; it resolves to the documented default, a real directory this validator owns.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "validate_debug_artifact_degraded", ROOT / "scripts" / "validate_debug_artifact.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    def seed(name: str, body: str) -> Path:
+        repo = tmp_path / name
+        (repo / ".agents").mkdir(parents=True)
+        (repo / ".agents" / "debug-adapter.yaml").write_text(body, encoding="utf-8")
+        return repo
+
+    invalid = seed("invalid", "version: 9\nrepo: demo\nlanguage: en\n")
+    assert module._owned_prefix(invalid) is None
+    assert module._current_pointer(invalid) is None
+
+    # A missing adapter is the documented default, NOT a degradation.
+    absent = tmp_path / "absent"
+    absent.mkdir()
+    assert module._owned_prefix(absent) == "charness-artifacts/debug/"
+    assert module._current_pointer(absent) is not None
+
+    # A valid adapter is honoured as declared -- the property a constant prefix breaks.
+    declared = seed("declared", "version: 1\nrepo: demo\nlanguage: en\noutput_dir: artifacts/debugs\n")
+    assert module._owned_prefix(declared) == "artifacts/debugs/"
+    assert module._current_pointer(declared) == declared / "artifacts/debugs" / "latest.md"
