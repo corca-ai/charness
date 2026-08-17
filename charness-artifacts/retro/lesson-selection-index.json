@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-18",
-  "source_artifact_count": 528,
-  "candidate_count": 2145,
+  "source_artifact_count": 529,
+  "candidate_count": 2153,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1554,6 +1554,58 @@
       ]
     },
     {
+      "candidate_id": "current_focus:de3a393904a3",
+      "kind": "current_focus",
+      "lesson": "An owner-directed autonomous improvement run over the handoff backlog: regenerate the stale quality record, verify-and-close the issue sweep, repair two verdict surfaces (#636 residual, critique `blocked` vocabulary), and file the two retro-named issues.",
+      "normalized_key": "an owner directed autonomous improvement run over the handoff backlog regenerate the stale quality",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+          "date": "2026-08-18",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "An owner-directed autonomous improvement run over the handoff backlog: regenerate the stale quality record, verify-and-close the issue sweep, repair two verdict surfaces (#636 residual, critique `blocked` vocabulary), and file the two retro-named issues."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ff04c9919983",
+      "kind": "next_improvement",
+      "lesson": "a validator's advisory-marker grammar (first-physical-line matching) is worth one comment in the template it scaffolds; two of this session's five artifact cycles were that grammar discovered by refusal.",
+      "normalized_key": "a validator s advisory marker grammar first physical line matching is worth one comment",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a validator's advisory-marker grammar (first-physical-line matching) is worth one comment in the template it scaffolds; two of this session's five artifact cycles were that grammar discovered by refusal."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6d469012c306",
       "kind": "next_improvement",
       "lesson": "before adding a gate, grep the surface for a comment that already declined it. Two of this session's blockers were decisions the repo had deliberated and recorded, one of them a comment one function from the edit.",
@@ -1628,6 +1680,162 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "make a review round leave a durable artifact as it runs, not at closeout. Five rounds produced one critique artifact written after round 3, so rounds 4 and 5 could not read what rounds 1-3 established. Destination: `critique` skill, per-round findings file bound to the round's boundary-fingerprint window id."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e15ea6f7a796",
+      "kind": "next_improvement",
+      "lesson": "`open_lesson_session` should be atomic across ledger event, bundle, and receipt — the observed state (receipt without event) is exactly the half-written shape its own continuity gate then refuses a later author over. Destination: issue, folded into #639's surface-at-start work or its own.",
+      "normalized_key": "open lesson session should be atomic across ledger event bundle and receipt the observed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`open_lesson_session` should be atomic across ledger event, bundle, and receipt — the observed state (receipt without event) is exactly the half-written shape its own continuity gate then refuses a later author over. Destination: issue, folded into #639's surface-at-start work or its own."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:bbb84e7ca398",
+      "kind": "next_improvement",
+      "lesson": "when a hook or handoff prints a helper command, check whether the spelled copy is the target repo's own before running it verbatim; the provenance guard exists on write paths but the declare path proved reachable through the installed copy.",
+      "normalized_key": "when a hook or handoff prints a helper command check whether the spelled copy",
+      "recurrence_class": "foreign-helper-command-in-hook",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when a hook or handoff prints a helper command, check whether the spelled copy is the target repo's own before running it verbatim; the provenance guard exists on write paths but the declare path proved reachable through the installed copy."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2544ee3ff134",
+      "kind": "repeat_trap",
+      "lesson": "**A foreign helper opened the lesson session.** The SessionStart hook prints the installed-copy command (`~/.agents/src/charness/scripts/open_lesson_session.py`) and I ran it verbatim against this repo: it wrote the receipt and bundle but not the ledger session event, so every score append refused with `unknown session` until a repo-local re-declare (which persisted the event, then correctly refused the existing bundle). The #632 class — an instruction naming the wrong tree's copy — reached me through the hook text itself.",
+      "normalized_key": "a foreign helper opened the lesson session the sessionstart hook prints the installed copy",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A foreign helper opened the lesson session.** The SessionStart hook prints the installed-copy command (`~/.agents/src/charness/scripts/open_lesson_session.py`) and I ran it verbatim against this repo: it wrote the receipt and bundle but not the ledger session event, so every score append refused with `unknown session` until a repo-local re-declare (which persisted the event, then correctly refused the existing bundle). The #632 class — an instruction naming the wrong tree's copy — reached me through the hook text itself."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a5cf47ba2c5b",
+      "kind": "repeat_trap",
+      "lesson": "Planner/scaffold disagreement: `plan_retro_run.py` routes today's second retro to `-second.md` while `scaffold_retro_artifact.py` routes to a session-id-suffixed name. Score events already cited the planner's name, so this artifact follows the planner.",
+      "normalized_key": "planner scaffold disagreement plan retro run py routes today s second retro to second",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Planner/scaffold disagreement: `plan_retro_run.py` routes today's second retro to `-second.md` while `scaffold_retro_artifact.py` routes to a session-id-suffixed name. Score events already cited the planner's name, so this artifact follows the planner."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:dc847beb20bd",
+      "kind": "repeat_trap",
+      "lesson": "**The docs-graph ratchet was already red at HEAD** (171 > 167) from before this session; four handoff link-only lines paid the repair. Cheap, but the failure sat invisible at commit time by validator-timing-layers design.",
+      "normalized_key": "the docs graph ratchet was already red at head 171 167 from before this",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The docs-graph ratchet was already red at HEAD** (171 > 167) from before this session; four handoff link-only lines paid the repair. Cheap, but the failure sat invisible at commit time by validator-timing-layers design."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9e55f663f802",
+      "kind": "repeat_trap",
+      "lesson": "**The quality record paid three shrink-to-fit cycles** against the 140-line budget plus two advisory-marker grammar cycles (`prose review result:` must open the physical line; evidence markers are matched on the bullet's FIRST line only). The validator reports all rule violations in one pass, but each length trim was still a separate edit-validate loop.",
+      "normalized_key": "the quality record paid three shrink to fit cycles against the 140 line budget",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The quality record paid three shrink-to-fit cycles** against the 140-line budget plus two advisory-marker grammar cycles (`prose review result:` must open the physical line; evidence markers are matched on the bullet's FIRST line only). The validator reports all rule violations in one pass, but each length trim was still a separate edit-validate loop."
         }
       ]
     },

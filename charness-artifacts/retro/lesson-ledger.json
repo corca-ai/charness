@@ -974,6 +974,36 @@
         ]
       },
       "snapshot_sha256": "75c27023103640527bd12517bf0b87e6d9af53222f7140cc6bd5dae27fa0d884"
+    },
+    {
+      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "bar-recorded-as-prose",
+          "detector-blind-class-unstated",
+          "global-probe-for-local-fact",
+          "isolated-agent-base-mismatch",
+          "agent-authored-score-role",
+          "green-test-is-not-covered-line",
+          "goal-closeout-evidence-binding",
+          "graduation-is-proposal",
+          "changed-line-proof-before-broad-quality",
+          "conservative-static-verdicts"
+        ]
+      },
+      "snapshot_sha256": "cb05f5dd02f173880b1d41eb14089bf0a03553c776df02be5908143e73a2e75e"
     }
   ],
   "score_events": [
@@ -1455,6 +1485,38 @@
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "not-consulted",
       "anchor": "Never revisited while building _assert_no_hidden_record, a detector whose blind class is 'it cannot see any renderer' -- which was the entire round-5 finding. The class was committed three times (widened, narrowed, rebuilt) before a reviewer asked the question the lesson names."
+    },
+    {
+      "event_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35-e1",
+      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran the focused changed-line proof immediately after each slice commit and BEFORE any broad lane, both times it applied: after 5a8d2005a (clean) and after de9bb2fcc, where it named 3 then 7 uncovered changed lines in debug_interrupt_grammar.py; the repairs (85c943e3d) landed before the single final broad run. Without it the coverage gaps would have surfaced in the broad lane instead, each repair costing another ~144s rerun as the origin session's four reruns did."
+    },
+    {
+      "event_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35-e2",
+      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "Verified new debug-validator tests by MEASURING the changed lines with prepush_focused_changed_line_coverage rather than trusting green: the first passing batch left lines 175/179/203 unexercised and the second left 75-76/105-106/116-117/170 — seven lines green tests silently missed. Without the measurement the slice would have shipped on passing tests with those branches unpinned, and the measurement even refuted my first fixture shape (stripped section lines cannot carry an empty value)."
+    },
+    {
+      "event_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35-e3",
+      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Stated the near-miss detector's blind class in debug_interrupt_grammar's docstrings BEFORE writing its first acceptance test ('only CASE variants of the exact prefix text; a reworded marker, a missing bullet, or a wrong section still reports as plainly missing'), and briefed the round-1 reviewer against that boundary. Otherwise the blind class would have been left for a reviewer round to surface, which in the origin session took three rounds."
+    },
+    {
+      "event_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35-e4",
+      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "lesson_id": "graduation-is-proposal",
+      "outcome": "changed-an-action",
+      "anchor": "The quality record recommends graduating changed-line-proof-before-broad-quality THROUGH record_contract_graduation_proposal.py with its two-evidence-session floor, rather than writing the rule into the always-loaded contract directly — which is where the recommendation would have gone without the lesson, since two anchored cost sessions looked sufficient to just ship it."
     }
   ],
   "lessons": {
@@ -1551,10 +1613,10 @@
     "graduation-is-proposal": {
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
       "transition_id": "seed-graduation-is-proposal",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1746,10 +1808,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -4,
-      "score_count": 8,
+      "score_total": -3,
+      "score_count": 9,
       "outcome_counts": {
-        "changed-an-action": 2,
+        "changed-an-action": 3,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -1791,10 +1853,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 1,
-      "score_count": 1,
+      "score_total": 2,
+      "score_count": 2,
       "outcome_counts": {
-        "changed-an-action": 1,
+        "changed-an-action": 2,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1956,10 +2018,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 1,
-      "score_count": 7,
+      "score_total": 2,
+      "score_count": 8,
       "outcome_counts": {
-        "changed-an-action": 4,
+        "changed-an-action": 5,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,
