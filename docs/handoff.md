@@ -18,12 +18,12 @@
 
 ## Current State
 
-- **Four critique rounds ran; the last round's repairs are `accepted-unreviewed`.** The
+- **Five critique rounds ran; the last round's repairs are `accepted-unreviewed`.** The
   record is the [session critique](../charness-artifacts/critique/2026-08-17-session-release-record-retro-prefix.md),
   whose Fresh-Eye section labels its own unfalsifiable parts. Every round found the
   previous round's repair carrying the class it repaired.
-- **The resume lane deliberately runs NO surface gate and NO focused preflight**, and its
-  record says so; the three reasons are at the call site in
+- **The resume lane deliberately runs NO surface gate and NO focused preflight**; the three
+  reasons are at the call site in
   [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py).
 - **The release record carries a bump rationale**, quoted verbatim and emitted LAST so
   no construct in it can hide the record; see
@@ -45,36 +45,36 @@
 
 ## Next Session
 
-1. **Regenerate the [quality record](../charness-artifacts/quality/latest.md)** by running
+1. **This session owes a retro and did not write one.** Confirm with
+   `python3 skills/public/retro/scripts/check_auto_trigger.py --repo-root . --base-ref da6913245`.
+   A lesson session was declared at open, so the disposition floor applies. Write it FIRST.
+2. **Regenerate the [quality record](../charness-artifacts/quality/latest.md)** by running
    `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root .` and following
    its plan. It is a full `quality` workflow, not a rerun: six required reads, a structural
    review packet, and a maintainer-local enforcement disposition. Do not hand-edit it.
-2. **[#636](https://github.com/corca-ai/charness/issues/636) residual** — its scoping half
+3. **[#636](https://github.com/corca-ai/charness/issues/636) residual** — its scoping half
    shipped. The case-sensitive authoring markers that fail one at a time did not; read the
    issue for what remains, because no artifact in this repo records it.
-3. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
+4. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
    [#631](https://github.com/corca-ai/charness/issues/631),
    [#632](https://github.com/corca-ai/charness/issues/632),
    [#630](https://github.com/corca-ai/charness/issues/630).** Run each issue's own
    reproduction first; do NOT close on code that merely looks right.
-4. **Prove `--bump-rationale` survives a real resume — on BOTH lanes.** It is rebuilt from
-   arguments, so a dropped flag publishes a record saying none was recorded. Only the
-   planner's [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
-   names it; nothing refuses the omission. The warning is unconditional in three places
-   but only one lane can actually lose it: the claims lane skips the artifact write, so
-   its record is the prepared one and keeps the rationale.
-5. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
-   `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/` — a
+5. **Prove `--bump-rationale` survives a real resume.** It is rebuilt from arguments and
+   nothing refuses the omission; only the planner's
+   [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
+   names it. The warning is unconditional in three places but only the non-claims lane
+   can actually lose it — the claims lane skips the artifact write.
+6. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
+   `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/`; a
    `scripts/`-only sweep misses
-   [seed_retro_memory.py](../skills/public/setup/scripts/seed_retro_memory.py), the test
-   constants, the adapter, and the plugin mirror. Moving one site was tried twice and
-   reverted twice; the second attempt flipped a consumer's floor from inert to
-   on-and-unsatisfiable. `canonical_retro_citation` and `collect_retro_candidates` are
-   the two that make the literal load-bearing.
-6. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
+   [seed_retro_memory.py](../skills/public/setup/scripts/seed_retro_memory.py). Moving one
+   site was tried twice and reverted twice — `canonical_retro_citation` and
+   `collect_retro_candidates` are what make the literal load-bearing.
+7. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
    venv-only install gives a traceback where a refusal belongs
    ([publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py)).
-7. **The critique validator refuses the value its own skill teaches** —
+8. **The critique validator refuses the value its own skill teaches** —
    [critique_enforcement_scope.py](../scripts/critique_enforcement_scope.py)'s
    `PACKET_ABSENT_VALUES` omits `blocked`, so an honestly skipped packet declared the way
    `charness:critique` prescribes demands SHAs for a packet just declared absent.
