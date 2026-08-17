@@ -40,6 +40,7 @@ _lesson_records = import_repo_module(__file__, "scripts.lesson_evaluation_record
 #: adapter-derived is `validate_retro_artifact`'s candidate filter and owned prefix --
 #: the reported defect, and a different question from where the ledger lives.
 LESSON_LEDGER_PREFIX = "charness-artifacts/retro/"
+_output_dir_lib = import_repo_module(__file__, "scripts.retro_output_dir_lib")
 
 
 # Every retro must consult the north star and say what it found (user standing
@@ -66,9 +67,7 @@ LESSON_LEDGER_FILENAME = "lesson-ledger.json"
 LESSON_LEDGER_BOOTSTRAP_SCRIPT = "init_lesson_ledger.py"
 
 
-def lesson_evaluator_declared(
-    path: Path, *, output_dir: Path | None = None, repo_root: Path | None = None
-) -> bool:
+def lesson_evaluator_declared(path: Path, *, output_dir: Path | None = None) -> bool:
     """Whether this repo declares the lesson evaluator the disposition floor scores.
 
     Both `skills/public/retro/references/lesson-evaluation.md` ("repos whose
@@ -93,35 +92,44 @@ def lesson_evaluator_declared(
     never fires — the exact escape shape the sibling floors' fail-closed
     grandfathering guards.
 
-    TWO questions, and they take different answers because they are different
-    questions. "Is this artifact one of this repo's retros" is adapter-shaped -- the
-    validator's candidate filter now yields artifacts from a declared `output_dir`, so a
-    membership test keyed on the literal would call every one of them foreign and
-    fail-closed onto a floor the repo never opted into. "Where is the ledger" is the
-    LITERAL, because 30 scripts read it there and moving one moves nothing (see
-    `LESSON_LEDGER_PREFIX`).
+    The lesson-evaluation lifecycle is keyed on the LITERAL layout end to end, and this
+    floor is scoped to what that lifecycle can actually serve.
 
-    Reading the ledger beside the ARTIFACT was the shape that made the two halves of one
-    run disagree: for a declared `artifacts/retros` it probed a directory the
-    announcement never looked at, and no opt-in could reconcile them. Both halves now
-    read one path.
+    That scope is not a guess. `lesson_score_outcome_lib.canonical_retro_citation`
+    refuses any `--source-retro` whose parts are not exactly
+    `("charness-artifacts", "retro", "<name>.md")`, and
+    `lesson_evaluation_records_lib.collect_retro_candidates` globs the same literal. So
+    for a repo declaring another `output_dir`, no score event can cite its retros and no
+    candidate enumeration can see them: the only disposition value reachable is
+    `not-evaluated / missing-start`, forever. Enforcing a duty whose sole satisfying
+    answer is "not evaluated" is the dishonesty this floor's own history names, and it is
+    what an earlier version of this function shipped -- with a test pinning it as correct.
 
-    Fail-CLOSED when the artifact is outside the repo's retro directory: there the probe
-    cannot see the repo's evaluator state, and a floor that switches ITSELF off on an
-    unrecognized layout is a floor that silently never fires.
+    So an artifact outside the literal layout owes NOTHING, and `report_enforcement_scope`
+    says why rather than staying quiet. That is the difference from fail-open: fail-open
+    is a probe that cannot see the repo's state and guesses "no duty". Here the state is
+    established positively -- the repo declares a directory, and the lifecycle provably
+    cannot address it. A floor that silently never fires is the escape shape; a floor that
+    announces the boundary it does not cross is a scoped floor.
+
+    THREE cases, and collapsing the last two was a defect in both directions:
+
+    * inside the literal layout -- the ledger beside the artifact is the declaration,
+      probed at the one path all ~30 lifecycle scripts read.
+    * inside a directory the repo POSITIVELY DECLARED as its `output_dir` -- scoped out
+      per the paragraph above, and `report_enforcement_scope` prints why.
+    * anywhere else -- fail-CLOSED. Here the probe genuinely cannot see the repo's
+      evaluator state, and a floor that switches ITSELF off on an unrecognized layout is
+      a floor that silently never fires. This is the case the scoped-out arm must not
+      swallow: "the lifecycle cannot address a declared directory" is an established
+      fact, while "I do not know where this file is" is not.
     """
     directory = path.parent
-    if output_dir is None:
-        if directory.name != "retro" or directory.parent.name != "charness-artifacts":
-            return True
-    elif directory.resolve() != output_dir.resolve():
-        return True
-    # `repo_root` is PASSED, never re-derived by walking up from `output_dir`: that walk
-    # has to guess how many segments the declared directory has, and it is only right for
-    # a two-segment one. A caller with no run context falls back to the artifact's own
-    # directory, which is the literal layout by construction.
-    ledger_root = repo_root / LESSON_LEDGER_PREFIX if repo_root is not None else path.parent
-    return (ledger_root / LESSON_LEDGER_FILENAME).is_file()
+    if directory.name == "retro" and directory.parent.name == "charness-artifacts":
+        return (directory / LESSON_LEDGER_FILENAME).is_file()
+    if output_dir is not None and directory.resolve() == output_dir.resolve():
+        return False
+    return True
 
 
 def lesson_ledger_bootstrap_command(repo_root: Path) -> str:
@@ -212,6 +220,21 @@ def report_enforcement_scope(run, artifacts) -> None:
     ledger = run.repo_root / prefix / LESSON_LEDGER_FILENAME
     declared = ledger.is_file()
     activation = _lesson_evaluation.ACTIVATION_DATE.isoformat()
+    # The boundary is ANNOUNCED, not left to be inferred from a floor that quietly
+    # never fires. A repo whose retros live outside the literal layout cannot reach
+    # the lifecycle at all -- scores cannot cite those paths and candidate
+    # enumeration cannot see them -- so it owes no disposition and deserves to be
+    # told that, including that the opt-in below would not change it.
+    declared_dir = _output_dir_lib.retro_artifact_prefix(run.repo_root)
+    if declared_dir != prefix:
+        print(
+            f"Lesson evaluation floor: out of scope -- this repo declares "
+            f"`output_dir: {declared_dir.rstrip('/')}`, and the lesson lifecycle is keyed on "
+            f"`{prefix.rstrip('/')}` end to end (score citations and candidate enumeration "
+            "both refuse other paths). Its retros owe no disposition, and creating a "
+            "ledger would not change that."
+        )
+        return
     if declared:
         print(
             f"Lesson evaluation floor: enforced for retros dated >= {activation} "

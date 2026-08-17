@@ -50,9 +50,14 @@ arguments, so repeat the flag or the published record loses the rationale the
 prepared one carried.
 
 The value is quoted verbatim as a blockquote, which makes it inert to the
-line-anchored readers of that record. Raw HTML is refused at argument time: an
-unterminated comment or container hides every line below it from the rendered
-document while leaving the bytes every audit reads intact.
+line-anchored readers of that record. What quoting does not bound is refused at
+argument time: `<script>`, `<style>`, `<textarea>`, the opaque legacy elements, and
+an unterminated tag or comment. Those put every line below them inside something the
+HTML parser does not read as markup, so the state ledger and the record's negative
+sentences vanish from the document a reader sees while the bytes stay intact.
+Angle-bracket placeholders like `<path>` and `<ref>` are accepted; so are `<details>`
+and `<div>`, which the blockquote does bound. Both directions were measured against a
+renderer rather than reasoned about.
 
 **This flag was rejected once, on 2026-07-27, and that decision is superseded.**
 The rejection read "the policy says 'say why', not 'add a CLI surface'", and

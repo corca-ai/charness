@@ -5,9 +5,14 @@ Date: 2026-08-17
 
 Three slices taken from the handoff: give the release record a bump-rationale field,
 bind two of its unconditional sentences to executed checks, and resolve the retro
-validator's owned prefix from the adapter. Three review rounds ran over them.
+validator's owned prefix from the adapter. Four review rounds ran over them.
 
 ## Failure Angles
+
+Every angle below was raised by a bounded reviewer, not by the author. The author's own
+reading produced none of them, and produced the defects they name. Recorded that way
+because an earlier version of this section was written in the author's analytical voice
+with no provenance, which silently transferred the credit.
 
 - **A gate added where the repo had already declined one.** The resume lane carried a
   comment naming that gate "a KNOWN GAP, not a decision this slice is entitled to make";
@@ -26,16 +31,23 @@ validator's owned prefix from the adapter. Three review rounds ran over them.
 
 ## Counterweight Pass
 
-- The resume-lane gate was defensible in isolation and wrong in context: the surface
-  check itself is sound, and the recorded decision against it was about WHERE.
-- The retro prefix defect was real and reported by a consumer; the fix was not the
-  problem, its blast radius was. Scope reduction rather than reversal was correct.
-- Quoting operator prose closes the line-anchored class in one move and was upheld under
-  attack in all three rounds. The over-wide raw-HTML refusal built on top of it was not:
-  it refused ordinary English for true positives a blockquote already bounds.
-- Two mutants were run against the predictions of round 3. One prediction was wrong (the
-  plugin-root fallback IS pinned, by a test the reviewer had not read); one was right.
-  Both are recorded rather than only the confirming one.
+- The resume-lane gate is not salvageable by re-placing it. An earlier draft of this
+  line called it "defensible in isolation and wrong in context"; that softens a finding
+  whose entire content is that a gate IS its placement. It could have stranded a
+  published release.
+- The retro prefix defect was real and consumer-reported, and the fix's blast radius was
+  the author's alone. Two attempts, two reverts, and the second was worse than the state
+  it repaired.
+- Quoting operator prose closes the line-anchored class in one move and survived attack
+  in every round. The refusal built on top of it did not survive: it was widened past
+  what quoting bounds, then narrowed past what quoting does NOT bound, and only a
+  rendered measurement settled where the line is.
+- Predictions from reviewers were executed rather than believed. Round 3 predicted two
+  surviving mutants: one died (the plugin-root fallback is pinned by a test that reviewer
+  had not read, recorded as F10) and one survived (the unasserted absence sentence, fixed
+  in the same commit). Round 4 predicted `<script>`/`<style>`/`<textarea>` escape a
+  blockquote and flagged its own trace as unmeasured; rendering it confirmed the reviewer
+  and refuted the author's narrowing.
 
 ## Structured Findings
 
@@ -49,35 +61,66 @@ validator's owned prefix from the adapter. Three review rounds ran over them.
 - F8 | bin: valid-but-defer | evidence: strong | ref: skills/public/release/scripts/publish_release_adapter_preflight.py | action: defer | note: the focused preflight shells out to a bare test-runner binary, so a venv-only install raises where a refusal belongs; deferred to handoff item 6
 - F9 | bin: valid-but-defer | evidence: strong | ref: scripts/lesson_evaluation_records_lib.py | action: defer | note: the lesson-ledger directory is answered by ~30 sites on one literal; migrating it is a single slice with its own proof, deferred to handoff item 5
 - F10 | bin: over-worry | evidence: contested | ref: scripts/retro_output_dir_lib.py | action: defer | note: a round-3 reviewer predicted the plugin-root fallback was unpinned; the mutant was executed and died, so the prediction is recorded as refuted rather than acted on
+- F11 | bin: valid-but-defer | evidence: strong | ref: scripts/critique_enforcement_scope.py | action: defer | note: `PACKET_ABSENT_VALUES` omits `blocked`, the value skills/public/critique/SKILL.md teaches for an honestly skipped packet, so writing the taught value triggers the binding floor and refuses the artifact for SHAs of a packet it declared absent; deferred to handoff
 
 ## Reviewer Tier Evidence
 
-- Requested tier: n/a — this host exposes no per-subagent tier control to the parent
-- Requested spawn fields: subagent_type=bounded-reviewer, no host addressing name
-- Host exposure state: unsupported
-- Application state: n/a — no host signal is exposed for reviewer model or effort
+Recorded per this repo's own adapter, which prescribes the Claude-host shape. An
+earlier version of this artifact wrote `n/a` and `unsupported`, which told a reader
+the repo has no tier policy for this host. It has one, in the file the reviewers'
+own contract points at.
+
+- Requested tier: `high-leverage` (adapter `reviewer_tiers.high-leverage`)
+- Requested spawn fields: typed `bounded-reviewer`, session-model inheritance
+  (per-host contract); no host addressing name
+- Host exposure state: host-defaulted
+- Application state: n/a — this host reports no per-subagent model or effort signal
 - Delivery state: findings-received
 
 ## Fresh-Eye Satisfaction
 
-`parent-delegated`. Nine bounded reviewers across three rounds, spawned unnamed as
-`bounded-reviewer`. Rounds 1 and 2 are the operating contract's floor; round 3 was
-requested directly by the repo owner and exceeds it.
+`parent-delegated`. Twelve bounded reviewers across four rounds, spawned unnamed as
+`bounded-reviewer`. Rounds 1 and 2 are the operating contract's floor; rounds 3 and 4
+were requested directly by the repo owner and exceed it.
 
 Delegation was blocked for the first three commits: a session-level instruction
 prohibited spawning until the owner requested review. Those commits shipped unreviewed
 and are named in the round-1 findings.
 
 Reviewer boundary: round 1 verified `drift: []` with no parent writes in the window.
-Round 2 verified `verdict: parent-attributed`, `drift: []` with every changed path
-declared — the parent wrote the repairs after the reviewers finished. Round 3's window
-is open at the time of writing and its repairs are parent writes in the same shape.
+Rounds 2 and 3 verified `verdict: parent-attributed`, `drift: []` with every changed
+path declared — the parent wrote the repairs after the reviewers finished. Round 4's
+window is open at the time of writing.
+
+NON-CLAIM, because this section is the one place the artifact describes its own author's
+diligence and nothing in the tree corroborates it. The reviewer runs left no durable
+record: no fingerprint snapshot is committed, no per-round findings artifact exists, and
+the boundary verdicts above are transcribed rather than cited. A reader can check every
+`ref:` in the findings against the code; they cannot check that twelve reviewers ran, or
+that any boundary verify returned what this says. That is unfalsifiable testimony and is
+labelled as such rather than presented in the same voice as the measured claims.
 
 ## Reviewed Input Identity
 
-<!-- No packet consumed: reviewers were briefed on commit ranges and file lists
-inline, not through a prepare_packet.py packet. The binding floor is therefore off,
-and the reviewed input is identified by the commit shas named in each round's brief. -->
+Packet Consumed: none
+
+`.agents/critique-adapter.yaml` declares `packet_sections`, which opts this repo into
+the prepare-packet contract, and the critique skill says to run the prepare runner once
+before spawning angle subagents. That step was skipped: reviewers were briefed on commit
+ranges and file lists inline. The binding floor is therefore off — not because it does
+not apply, but because omitting the declaration is what turns it off. The reviewed input
+is identified only by the commit shas named in each round's brief.
+
+The value reads `none` rather than the `blocked <reason>` the critique skill teaches,
+because `critique_enforcement_scope.PACKET_ABSENT_VALUES` does not contain `blocked`:
+writing the taught value turns the binding floor ON and then refuses the artifact for
+three SHA fields describing a packet it just said does not exist. The skill and its
+validator disagree about the vocabulary for an honestly skipped packet, which is F11.
+
+Stated in the body rather than in an HTML comment. An earlier version of this section
+put the admission inside `<!-- -->`, so a reader saw a heading and nothing under it —
+the same hide-the-negative shape this session shipped a release-record guard against on
+the same day.
 
 ## Boundary Ownership
 
@@ -86,4 +129,10 @@ and the reviewed input is identified by the commit shas named in each round's br
   the release record an outside reader gets
 - Owning surface: the adapter for the directory; the record renderers for what the record
   claims; the lesson-ledger subsystem for its own literal, until it moves as one
-- Verdict: moved-to-owner
+- Verdict: escalated-to-issue-spec
+
+`moved-to-owner` was written first and is wrong: it implies the relocation is in the
+diff. Half of it is — the retro directory's canonicalisation moved to the adapter. The
+other half was deliberately taken OUT of the diff: the lesson-ledger literal is answered
+by every site in that subsystem, and moving one was tried twice and reverted twice. That
+half is escalated to a named next-session slice, not relocated.

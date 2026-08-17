@@ -10,6 +10,7 @@ tagged and published before most of its readers ever run.
 
 from __future__ import annotations
 
+import re
 import runpy
 from pathlib import Path
 from typing import Callable
@@ -76,34 +77,52 @@ def validate_bump_rationale_arg(bump_rationale: str | None) -> str | None:
     return bump_rationale
 
 
+#: Element names whose CONTENT the HTML tokenizer stops parsing as markup: raw-text and
+#: escapable-raw-text elements, plus the opaque legacy ones. An unterminated opener puts
+#: the rest of the document inside them.
+_OPAQUE_ELEMENTS = ("script", "style", "textarea", "pre", "plaintext", "xmp", "iframe", "noembed")
+_OPAQUE_OPENER_RE = re.compile(r"<\s*/?\s*(" + "|".join(_OPAQUE_ELEMENTS) + r")\b", re.IGNORECASE)
+#: A `<` starting a tag that is never closed by a `>`: an unterminated attribute value
+#: swallows the rest of the document into the attribute.
+_UNCLOSED_TAG_RE = re.compile(r"<[A-Za-z][^>]*$", re.DOTALL)
+
+
 def _assert_no_hidden_record(bump_rationale: str) -> None:
-    """Refuse the one construct that hides a rendered record from OUTSIDE a blockquote.
+    """Refuse the constructs MEASURED to remove the record from what a reader sees.
 
-    This was widened to all raw HTML and narrowed back, and the measurement is why.
-    Every rationale line is quoted, so a markdown BLOCK container -- `<details>`,
-    `<summary>`, an unclosed `<div>` -- is closed at the end of the blockquote and its
-    blast radius stops there. An unterminated `<!--` does not: it survives into the
-    emitted HTML stream and is consumed by the HTML parser, which has no idea a
-    blockquote ended, so everything below it disappears from the document a human reads
-    while every substring audit passes over the raw bytes. That asymmetry is the whole
-    reason this guard exists, and it names exactly one construct because exactly one
-    construct has the property.
+    Measured, not reasoned. Each candidate was rendered into a record body of the shape
+    `write_release_artifact` emits and the output fed to an HTML parser, asking not "are
+    the ledger bytes present" -- they always are, which is why every substring audit
+    passes -- but "does the ledger arrive as document flow". Under python-markdown 3.3.6:
 
-    The wide version refused ordinary prose. `<[!/]?[A-Za-z]` matches `<path>`, `<ref>`,
-    `<repo>` and a bare autolink -- placeholders this repo writes constantly, including
-    in its own root docs -- so a release was blocked at argument time for English, with
-    an error quoting two characters as the offender. The sibling that renders this record
-    already owns that lesson: `strip_display_code` exists because content shown AS CODE
-    is not asserted to the reader, and its docstring records breaking "in opposite
-    directions" when that was ignored. A guard whose false positives are ordinary
-    sentences is not paying for the true positives it adds.
+    * `<script>`, `<style>`, `<textarea>`: bytes present, ledger NOT visible. The
+      tokenizer enters raw-text state and `</blockquote>` is character data there, so
+      quoting does not bound them and everything below the rationale disappears.
+    * an unterminated attribute (`<span title="x`): the ledger does not even reach the
+      HTML.
+    * `<details>`, `<summary>`, `<div>`: visible. The blockquote's end tag pops the stack
+      and the stray element with it, so these are genuinely harmless and refusing them
+      was the over-wide version's false positive.
+    * `<!--`: visible under this renderer. Kept in the refusal anyway, because a
+      pass-through renderer (`cmark --unsafe`, pandoc) emits it into the stream where it
+      does hide the rest -- but recorded here as UNPROVEN for the renderer measured,
+      rather than asserted as the guard's headline true positive the way it once was.
+
+    Which renderer produces "the document a human reader sees" is not settled and the
+    guard cannot settle it: GitHub sanitizes `<script>`/`<style>` away entirely, and
+    `cmark` in safe mode replaces all raw HTML with a closed comment. The list is
+    therefore the union of what any plausible target renders opaquely, which is still a
+    CLOSED list of element names -- so `<path>`, `<ref>`, `<repo>` and autolinks, the
+    notation this repo writes constantly, are untouched.
     """
-    if "<!--" in bump_rationale:
+    match = _OPAQUE_OPENER_RE.search(bump_rationale) or _UNCLOSED_TAG_RE.search(bump_rationale)
+    if match or "<!--" in bump_rationale:
+        found = match.group(0) if match else "<!--"
         raise SystemExit(
-            "--bump-rationale must not contain '<!--'; it is rendered into the published "
-            "release record, and an unterminated HTML comment survives past the blockquote "
-            "this value is rendered in, hiding every line below it from the document a "
-            "reader sees while leaving the bytes every audit reads intact. Say it in prose "
-            "instead. Angle-bracket placeholders like `<path>` are fine: they are inside "
-            "the blockquote and cannot escape it."
+            f"--bump-rationale must not contain {found!r}; it is rendered into the published "
+            "release record, and this construct puts every line below it inside an element "
+            "the HTML parser does not read as markup -- the state ledger, the "
+            "\"NOT recorded\" sentences and the claims verdict vanish from the document a "
+            "reader sees while the bytes every audit reads stay intact. Say it in prose "
+            "instead; angle-bracket placeholders like `<path>` are fine."
         )

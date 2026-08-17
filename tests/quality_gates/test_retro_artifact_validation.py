@@ -421,16 +421,23 @@ def test_verdict_and_announcement_agree_under_a_custom_output_dir(tmp_path: Path
     )
 
     combined = result.stdout + result.stderr
-    announced_inert = "floor: inert" in combined
+    announced_no_duty = "floor: inert" in combined or "out of scope" in combined
     refused_for_disposition = result.returncode != 0 and "Lesson evaluation" in combined
-    assert not (announced_inert and refused_for_disposition), combined
-    # This repo declares no ledger, so the honest pair is: announce inert, do not refuse.
-    assert announced_inert, combined
+    assert not (announced_no_duty and refused_for_disposition), combined
+    # The lifecycle cannot address this repo's retros, so the honest pair is:
+    # announce the boundary, do not refuse.
+    assert announced_no_duty, combined
     assert result.returncode == 0, combined
 
 
-def test_an_opted_in_custom_output_dir_repo_still_owes_its_disposition(tmp_path: Path) -> None:
-    """The other direction: the floor must not switch itself off for these repos."""
+def test_a_custom_output_dir_repo_is_told_the_floor_cannot_reach_it(tmp_path: Path) -> None:
+    """A scoped floor announces the boundary it does not cross.
+
+    This is not fail-open: fail-open is a probe that cannot see the state and guesses
+    "no duty". Here the state is established positively -- the repo declares a
+    directory and the lifecycle provably cannot address it -- and the run says so,
+    including that the opt-in would not change it.
+    """
     repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
     (repo / "artifacts" / "retros" / "2026-08-17-demo.md").write_text(
         _ACTIVATED_RETRO, encoding="utf-8"
@@ -446,8 +453,15 @@ def test_an_opted_in_custom_output_dir_repo_still_owes_its_disposition(tmp_path:
         str(ROOT / "scripts" / "validate_retro_artifact.py"), "--repo-root", str(repo), "--all"
     )
 
-    assert result.returncode != 0, result.stdout
-    assert "Lesson evaluation" in (result.stdout + result.stderr)
+    # NOT refused, and the run says why. Enforcing here was tried and is the defect this
+    # scoping replaced: `canonical_retro_citation` refuses any --source-retro outside
+    # `charness-artifacts/retro`, and `collect_retro_candidates` globs the same literal,
+    # so no score event could ever cite this retro. The only satisfying disposition would
+    # be `not-evaluated / missing-start`, forever -- a duty whose sole legal answer is
+    # "not evaluated" is the dishonesty the floor's own docstring names.
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "out of scope" in (result.stdout + result.stderr)
+    assert "would not change that" in (result.stdout + result.stderr)
 
 
 def test_a_sweep_over_a_missing_output_directory_is_refused_not_reported_clean(
@@ -545,26 +559,26 @@ def test_the_emitted_opt_in_writes_where_the_floor_probe_reads(tmp_path: Path) -
     written = repo / "charness-artifacts" / "retro" / retro_validator.LESSON_LEDGER_FILENAME
     assert written.is_file(), result.stdout
 
-    # And the probe that decides "inert" reads the same path, for a repo whose retros
-    # live somewhere else entirely.
-    assert retro_validator.lesson_evaluator_declared(
+    # ...and the floor still does not reach this repo's retros, because the lifecycle
+    # cannot cite or enumerate them. The opt-in is honest about its own limit.
+    assert not retro_validator.lesson_evaluator_declared(
         repo / "artifacts" / "retros" / "2026-08-17-demo.md",
         output_dir=repo / "artifacts" / "retros",
-        repo_root=repo,
     )
 
 
-def test_an_artifact_outside_the_resolved_output_dir_keeps_the_floor_on(tmp_path: Path) -> None:
-    """Fail-CLOSED, deliberately: a probe that cannot see the repo's evaluator state
-    must not switch the floor off. That is the escape shape the sibling floors'
-    fail-closed grandfathering guards."""
+def test_a_stray_artifact_still_fails_closed(tmp_path: Path) -> None:
+    """Scoping the floor to declared directories must not swallow the blind case."""
     repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
     stray = repo / "somewhere-else" / "2026-08-17-demo.md"
     stray.parent.mkdir(parents=True)
     stray.write_text(_ACTIVATED_RETRO, encoding="utf-8")
 
+    # A stray file is the fail-CLOSED case, not the scoped-out one: the probe cannot
+    # see where it is, which is a different answer from a declared directory the
+    # lifecycle provably cannot address.
     assert retro_validator.lesson_evaluator_declared(
-        stray, output_dir=repo / "artifacts" / "retros", repo_root=repo
+        stray, output_dir=repo / "artifacts" / "retros"
     )
 
 

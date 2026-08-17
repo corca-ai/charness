@@ -253,24 +253,33 @@ def test_bump_rationale_refuses_a_forged_release_state_sentinel() -> None:
     assert "--bump-rationale" in str(exc.value)
 
 
-def test_bump_rationale_refuses_the_comment_that_escapes_its_blockquote() -> None:
-    """One construct, because exactly one has the property.
+@pytest.mark.parametrize(
+    "hider",
+    [
+        "patch. <script>",
+        "patch.\n<STYLE>",
+        "patch. <textarea>",
+        "patch. <plaintext>",
+        'patch <span title="unterminated',
+        "patch. <!-- see the review thread",
+    ],
+)
+def test_bump_rationale_refuses_what_removes_the_record_from_a_reader(hider: str) -> None:
+    """Each of these was MEASURED, not reasoned about.
 
-    Every rationale line is quoted, so a markdown BLOCK container is closed at the end
-    of the blockquote. An unterminated `<!--` is not a markdown construct: it survives
-    into the emitted HTML and is consumed by the HTML parser, hiding the state ledger,
-    the "NOT recorded" sentences and a `verdict: unproven` from the document a human
-    reads while every substring audit passes.
+    Rendering a record body of the emitted shape and feeding the output to an HTML
+    parser asks the question that matters: not "are the ledger bytes present" -- they
+    always are, which is why every substring audit passes -- but "does the ledger arrive
+    as document flow". These do not. The raw-text elements put `</blockquote>` itself
+    into character data, and an unterminated tag swallows the rest into an attribute.
 
-    The isolated input matters: the test that used to cover this also carried a record
-    sentinel, which trips the earlier guard, so it stayed green with this guard deleted.
+    The isolated inputs matter: the test that used to cover this carried a record
+    sentinel, which trips an earlier guard, so it stayed green with this one deleted.
     """
     preflight = _load_release_module("publish_release_preflight")
 
-    with pytest.raises(SystemExit) as exc:
-        preflight.validate_bump_rationale_arg("patch. <!-- see the review thread")
-
-    assert "<!--" in str(exc.value)
+    with pytest.raises(SystemExit):
+        preflight.validate_bump_rationale_arg(hider)
 
 
 @pytest.mark.parametrize(
@@ -279,18 +288,18 @@ def test_bump_rationale_refuses_the_comment_that_escapes_its_blockquote() -> Non
         "patch: only `charness worktree create --path <path>` changed",
         "patch: the reviewer read <ref>:<path> to reach the base",
         "patch: see <https://example.test/issues/1>",
-        "minor: b<c only after the migration",
-        "patch: an unclosed <details> would be bounded by the blockquote",
+        "patch: a < b held after the migration and c > d did not",
+        "patch: an unclosed <details> is bounded by the blockquote",
+        "patch: <div> containers render inside the quote",
     ],
 )
-def test_bump_rationale_accepts_ordinary_prose_with_angle_brackets(prose: str) -> None:
-    """The accept side, which the wide version had no test for at all.
+def test_bump_rationale_accepts_prose_the_blockquote_does_bound(prose: str) -> None:
+    """The accept side, which the over-wide version had no test for at all.
 
     A guard covering all raw HTML refused `<path>`, `<ref>` and autolinks -- notation
-    this repo writes in its own root docs -- so a release was blocked at argument time
-    for English, with an error quoting two characters as the offender. False positives
-    here are ordinary sentences; the true positives the width added were block
-    containers a blockquote already bounds.
+    this repo writes in its own root docs -- blocking a release for English. `<details>`
+    and `<div>` are here because they were measured VISIBLE: the blockquote's end tag
+    pops them off the stack. That is the whole reason the wide version did not pay.
     """
     preflight = _load_release_module("publish_release_preflight")
 

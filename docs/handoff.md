@@ -18,9 +18,10 @@
 
 ## Current State
 
-- **Three critique rounds ran; the last round's repairs are `accepted-unreviewed`.** The
-  record is the [session critique](../charness-artifacts/critique/2026-08-17-session-release-record-retro-prefix.md).
-  Each round found the previous round's repair carrying the class it repaired.
+- **Four critique rounds ran; the last round's repairs are `accepted-unreviewed`.** The
+  record is the [session critique](../charness-artifacts/critique/2026-08-17-session-release-record-retro-prefix.md),
+  whose Fresh-Eye section labels its own unfalsifiable parts. Every round found the
+  previous round's repair carrying the class it repaired.
 - **The resume lane deliberately runs NO surface gate and NO focused preflight.** One was
   added there and reverted; see the comment in
   [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py).
@@ -37,7 +38,8 @@
   looping symlink.** Guarded at one call site only; it has five callers.
 - Re-prove with `python3 scripts/run_standing_pytest.py` after
   `python3 scripts/sync_root_plugin_manifests.py`, then
-  `python3 -m ruff check --no-cache scripts skills tests`, then `-m release_only`.
+  `python3 -m ruff check --no-cache scripts skills tests`, then
+  `python3 -m pytest -q -m release_only`.
 - **COMMIT the slice, THEN run the changed-line proof** —
   `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --refuse-unestablished`
   reads `base..HEAD`, so a dirty pool proves nothing. Run it BEFORE the broad lane.
@@ -48,9 +50,9 @@
    `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root .` and following
    its plan. It is a full `quality` workflow, not a rerun: six required reads, a structural
    review packet, and a maintainer-local enforcement disposition. Do not hand-edit it.
-2. **[#636](https://github.com/corca-ai/charness/issues/636) residual** — the scoping half
-   shipped (both halves now); the case-sensitive authoring markers that fail one at a time
-   did not.
+2. **[#636](https://github.com/corca-ai/charness/issues/636) residual** — its scoping half
+   shipped. The case-sensitive authoring markers that fail one at a time did not; read the
+   issue for what remains, because no artifact in this repo records it.
 3. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
    [#631](https://github.com/corca-ai/charness/issues/631),
    [#632](https://github.com/corca-ai/charness/issues/632),
@@ -60,15 +62,22 @@
    dropped flag publishes a record saying none was recorded. Only the planner's
    [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
    names it; nothing refuses the omission.
-5. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Every site is
-   found by `grep -rln "charness-artifacts/retro" scripts/ skills/`; that count is the
-   scope, and it includes
-   [seed_retro_memory.py](../skills/public/setup/scripts/seed_retro_memory.py), which the
-   obvious `scripts/`-only sweep misses. Moving one site was tried twice and reverted;
-   the second attempt flipped a consumer's floor from inert to on-and-unsatisfiable.
+5. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
+   `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/` — a
+   `scripts/`-only sweep misses
+   [seed_retro_memory.py](../skills/public/setup/scripts/seed_retro_memory.py), the test
+   constants, the adapter, and the plugin mirror. Moving one site was tried twice and
+   reverted twice; the second attempt flipped a consumer's floor from inert to
+   on-and-unsatisfiable. `canonical_retro_citation` and `collect_retro_candidates` are
+   the two that make the literal load-bearing.
 6. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
    venv-only install gives a traceback where a refusal belongs
    ([publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py)).
+7. **The critique validator refuses the value its own skill teaches.**
+   [critique_enforcement_scope.py](../scripts/critique_enforcement_scope.py)'s
+   `PACKET_ABSENT_VALUES` omits `blocked`, so declaring an honestly skipped packet the
+   way `charness:critique` prescribes turns the binding floor on and demands SHAs for a
+   packet just declared absent.
 
 ## Discuss
 

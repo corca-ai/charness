@@ -49,8 +49,12 @@ def rationale_body_lines(text: str) -> list[str]:
     can only ever add a redundant match -- it cannot remove one. That is an invariant
     living outside this function, and it is stated rather than assumed.
 
-    What quoting does NOT close is raw HTML; `_assert_no_raw_html` refuses it at
-    argument time.
+    What quoting does NOT close is an element whose CONTENT the HTML tokenizer stops
+    reading as markup -- `<script>`, `<style>`, `<textarea>`, an unterminated attribute.
+    Those were MEASURED to remove the record from what a reader sees while every
+    substring audit passes, and `_assert_no_hidden_record` refuses them at argument
+    time. A previous version of this sentence named a function that does not exist and
+    a rule the guard did not implement.
     """
     return [f"> {line}" if line else ">" for line in text.strip().splitlines()]
 
@@ -71,16 +75,17 @@ def bump_rationale_lines(bump_rationale: str | None) -> list[str]:
         "requires a stated rationale whenever the bump level is debatable; this record "
         "carries none, so the level above is an unexplained judgment call."
     ]
-    # Absence is decided on the RENDERED body, not on the raw argument. Deciding on the
-    # argument meant `--bump-rationale '#'` was truthy, demoted to `""`, and emitted the
-    # heading over an empty body with no absence sentence -- inverting this docstring's
-    # own guarantee, because a reader who sees the section infers one was supplied.
-    # Absence is decided on the ARGUMENT, not by un-stripping the rendered lines.
-    # `line.strip("> ")` removed EVERY leading `>`, so a rationale of `>>>` stripped to
-    # nothing and the record announced "NOT recorded" over a rationale that WAS supplied
-    # -- a false absence on the disclosure surface, which this repo ranks above a false
-    # positive. `rationale_body_lines` already strips and splits, so an argument that is
-    # only whitespace yields no lines at all.
+    # Absence is decided on the LINE LIST, which is neither the raw argument nor the
+    # rendered text, and both of those were tried. Deciding on the argument made
+    # `--bump-rationale '#'` truthy over an empty body; un-stripping the rendered lines
+    # with `line.strip("> ")` ate every leading `>`, so `>>>` announced "NOT recorded"
+    # over a rationale that WAS supplied -- a false absence, which this repo ranks above
+    # a false positive. `rationale_body_lines` strips and splits, so a whitespace-only
+    # argument yields no lines at all.
+    #
+    # NON-CLAIM: a line list is not visibility. A zero-width space, or a rationale that
+    # is only an invisible element, yields one line and renders as an empty quote bar
+    # under a heading with no absence sentence. Not closed here.
     body = rationale_body_lines(bump_rationale or "")
     if not body:
         return lines + absent
