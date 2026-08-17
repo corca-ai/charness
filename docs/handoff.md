@@ -10,34 +10,31 @@
 
 ## Continuation Capability
 
-- The [last session retro](../charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md)
-  carries five anchored lesson scores and the three-count defect this session repeated.
+- The [release record](../charness-artifacts/release/latest.md) holds the published
+  version, its verification state, and the distinct-channel readback.
+- The [claims review](../charness-artifacts/release-review/2026-08-17-v6.0.1-prepared-claims-review.md)
+  holds the bump rationale, the non-claims, and the three items it generated.
 - The digest a session reads before work is [recent lessons](../charness-artifacts/retro/recent-lessons.md).
 
 ## Current State
 
-- **#612's blocking signal is closed; the lane is NOT proven green.**
-  `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --base-sha 1c1acd9`
-  exits 4 (PARTIAL): every MAPPED file's changed lines are covered, and 24 unmapped
-  files were never judged. Mutation CI samples on a fresh seed each run.
-- **The mutation lane does not run on push.** [mutation-tests.yml](../.github/workflows/mutation-tests.yml)
-  fires on `schedule` (`17 */12 * * *`) and `workflow_dispatch` only, and it holds
-  `issues: write`, so a manual dispatch can file or update an issue.
-- **Quality Core failed on `1240348b7` in the push mirror, and the cause is not in that
-  commit.** Four tests failed there (three in [doc authoring preflight](../tests/test_doc_authoring_preflight.py),
-  one in [mutate and restore](../tests/quality_gates/test_mutate_and_restore.py)); all 92 pass locally, the failures read as markdownlint
-  resolving to nothing in CI, and no failing test's subject was touched. Suspected the
-  registry-dependent `npm exec` path in
-  [#630](https://github.com/corca-ai/charness/issues/630). Confirm against the run on
-  `5db3df78a` before treating it as flaky.
-- **A proof-surface slice now costs two review rounds and finds defects in both.**
-  Round 2 found the class inside round 1's repair again, 6/6 for this repo. The floor is
-  in [operating contract](./conventions/operating-contract.md) Critique Discipline, and
-  the [session retro](../charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md)
-  records both instances with the reviewer findings that produced them.
-- **[#617](https://github.com/corca-ai/charness/issues/617) is closed; its third surface
-  is not done.** The command and retro reference the bundle; the work workflow does not,
-  filed as [#635](https://github.com/corca-ai/charness/issues/635).
+- **A release published this session; the record could not carry its own bump rationale.**
+  The [claims review](../charness-artifacts/release-review/2026-08-17-v6.0.1-prepared-claims-review.md)
+  holds it, and names the two template defects that forced that.
+- **The claims round found a FALSE CLAIM four code rounds missed** — see the corrected
+  [release critique](../charness-artifacts/critique/2026-08-17-release-v6-0-1.md), which
+  had asserted a rationale lived in a record that has no field for it.
+- **`validate_retro_artifact.py` keys its candidate filter and owned prefix on a hardcoded
+  prefix while its planner path is adapter-declared.** Not reachable today: the scoping
+  that would expose it was reversed before the tag. Reproduce with
+  `python3 scripts/validate_retro_artifact.py --repo-root <repo-with-custom-output_dir> --paths <its retro>`.
+- **Three verdict-surface edits shipped with one bounded round, not two** — recorded
+  `accepted-unreviewed` in the [claims review](../charness-artifacts/release-review/2026-08-17-v6.0.1-prepared-claims-review.md),
+  against the two-round floor in [operating contract](./conventions/operating-contract.md).
+- **[quality/latest.md](../charness-artifacts/quality/latest.md) is stale** — it asserts as
+  open two issues since closed. Deliberately not hand-edited; regenerate, do not patch.
+- **The [#548 single-owner pointer resolver](../scripts/scaffold_artifact_lib.py) raises on a
+  looping symlink.** Guarded at one call site only; it has five callers.
 - Re-prove with `python3 scripts/run_standing_pytest.py` after
   `python3 scripts/sync_root_plugin_manifests.py`, then
   `python3 -m ruff check --no-cache scripts skills tests`, then `-m release_only`.
@@ -47,35 +44,35 @@
 
 ## Next Session
 
-1. **Tie the transient Quality Core failure to a cause, or stop suspecting
-   [#630](https://github.com/corca-ai/charness/issues/630).** One red run and one green
-   run over the same tests is a flake with no owner; the next recurrence should be caught
-   with the runner's markdownlint resolution logged, not re-diagnosed from memory.
-2. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
+1. **Give the release record a bump-rationale field.** Its writer
+   [publish_release_artifact.py](../skills/public/release/scripts/publish_release_artifact.py) neither
+   takes nor writes one, so the policy's say-why requirement cannot land in the artifact
+   an outside reader gets.
+2. **Bind two lines in [publish_release_artifact.py](../skills/public/release/scripts/publish_release_artifact.py)
+   to their dispositions** — the no-version-drift sentence is an unconditional literal, and
+   the adapter focused preflight prints `required` with no executed state.
+3. **Give [validate_retro_artifact.py](../scripts/validate_retro_artifact.py) the
+   adapter-derived prefix its debug sibling has**, then re-scope the retro shape packet in
+   [plan_retro_run.py](../skills/public/retro/scripts/plan_retro_run.py). Its test asserts
+   the ABSENCE of `--paths` today and must flip with it.
+4. **Regenerate the [quality record](../charness-artifacts/quality/latest.md)** by running
+   `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root .` and following
+   its plan; do not hand-edit a dated measurement snapshot.
+5. **[#636](https://github.com/corca-ai/charness/issues/636) residual** — the scoping half
+   shipped; the case-sensitive authoring markers that fail one at a time did not.
+6. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
    [#631](https://github.com/corca-ai/charness/issues/631),
-   [#632](https://github.com/corca-ai/charness/issues/632), and
-   [#630](https://github.com/corca-ai/charness/issues/630).** All four look repaired in
-   main but are still open. #617's closeout is the worked template: run each issue's own
-   reproduction, then the closeout floor. Do NOT close on code that merely looks right —
-   the #617 reviewer refused exactly that premise.
-3. **Follow-up `export-instruction-spellings`.** The arm matches ONE spelling. Live
-   misses include the dot-slash and `bash`-prefixed forms in the quality skill's
-   [catalog](../skills/public/quality/references/catalog.yaml); `.sh` and `.mjs` are unscanned.
-4. **Follow-up `executed-field-declaration`.** Declare executed adapter fields the way
-   [resolve_adapter.py](../skills/public/release/scripts/resolve_adapter.py) already does
-   with `EXECUTED_COMMAND_FIELDS`, so a classifier can key on the FIELD, not the file type.
-5. **[#546](https://github.com/corca-ai/charness/issues/546) residual** — separating
-   "legitimately conditional" from "abandoned behind an opt-in" still needs an
-   adapter-declared expectation; a prior repair was measured defective and reverted.
+   [#632](https://github.com/corca-ai/charness/issues/632),
+   [#630](https://github.com/corca-ai/charness/issues/630).** Run each issue's own
+   reproduction first; do NOT close on code that merely looks right.
 
 ## Discuss
 
-- **Nothing asks "was this counted?"** Three unenumerated counts landed in durable
-  artifacts this session, one transcribed from another artifact and asserted as an own
-  measurement. Is that a validator question or only a lesson?
-- **`release_only` is invisible to the gate.** The coverage producer runs
-  `-m 'not release_only'`, so any refusal proven solely there is unmeasured. Two lines
-  read as uncovered for exactly this reason. Widen the producer, or accept and document?
+- **Consumers owe an upgrade step no shipped surface names.** A symlinked debug
+  `latest.md` needs its seam-risk index regenerated after upgrade or `--check` fails.
+  Should the release adapter carry per-release update instructions?
+- **The boundary-bypass gate has no scoped rotation accept.** Four rotations this session
+  each rewrote the whole baseline; the dup ratchet's `--accept-rotation` is the better shape.
 - **This bullet IS an SC14 anchor — do not tidy it away.** The
   [dominance test](../tests/quality_gates/test_command_dominance.py) substitutes into the
   real handoff and needs the bare backticked `python3 scripts/run_standing_pytest.py`, with no flags inside
