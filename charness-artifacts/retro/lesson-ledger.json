@@ -1423,6 +1423,38 @@
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "read-but-not-applied",
       "anchor": "Recorded the depth guard's reachability rationale as a code comment with no test pinning it; the comment was false and the test named after the rule passed one branch early, until a dangling-symlink fixture was added."
+    },
+    {
+      "event_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b-harness-differential-not-test",
+      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro.md",
+      "lesson_id": "harness-differential-not-test",
+      "outcome": "changed-an-action",
+      "anchor": "release_only showed 8 failures; instead of reading the tests I diffed the environment first and found HTTP 429 from codeload.github.com, then stashed the whole slice and reproduced the same failure at HEAD. Without the lesson the next move was hunting a cause inside my own diff, which touched none of those files."
+    },
+    {
+      "event_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "read-but-not-applied",
+      "anchor": "In view in the frozen list AND in the handoff's own Current State, and still not applied: I ran the broad standing+release lanes before the changed-line proof on four slices. Each proof then returned uncovered lines, and each repair cost another full broad rerun."
+    },
+    {
+      "event_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b-closeout-authoring-rework",
+      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro.md",
+      "lesson_id": "closeout-authoring-rework",
+      "outcome": "read-but-not-applied",
+      "anchor": "The lesson says run the authoring preflight BEFORE drafting the final packet. I drafted docs/handoff.md and then validated it five times: refused for a transcribed version, a transcribed count, a dominated command, and the content-line budget twice."
+    },
+    {
+      "event_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b-detector-blind-class-unstated",
+      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "not-consulted",
+      "anchor": "Never revisited while building _assert_no_hidden_record, a detector whose blind class is 'it cannot see any renderer' -- which was the entire round-5 finding. The class was committed three times (widened, narrowed, rebuilt) before a reviewer asked the question the lesson names."
     }
   ],
   "lessons": {
@@ -1579,13 +1611,13 @@
     "closeout-authoring-rework": {
       "source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
       "transition_id": "seed-closeout-authoring-rework",
-      "score_total": -2,
-      "score_count": 2,
+      "score_total": -3,
+      "score_count": 3,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 1,
+        "read-but-not-applied": 2,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1714,13 +1746,13 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -3,
-      "score_count": 7,
+      "score_total": -4,
+      "score_count": 8,
       "outcome_counts": {
         "changed-an-action": 2,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
-        "read-but-not-applied": 3,
+        "read-but-not-applied": 4,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1774,10 +1806,10 @@
     "harness-differential-not-test": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-harness-differential-not-test",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1924,11 +1956,11 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 2,
-      "score_count": 6,
+      "score_total": 1,
+      "score_count": 7,
       "outcome_counts": {
         "changed-an-action": 4,
-        "not-consulted": 0,
+        "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,
         "legacy-scalar": 0

@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- A handoff pickup that took three named items — a bump-rationale field on the release record, two unbound record claims bound to executed checks, and an adapter-derived retro prefix — and then spent most of its length on five critique rounds over its own output. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`)
 - `2026-08-16-s9` was opened by a prior session and never claimed by a retro. (source: `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`)
-- The operator asked for a plan for autonomous repo improvement from the handoff, open issues, and recent lessons, then said to execute it. (source: `charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md`)
 
 ## Repeat Traps
 
@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
+- run the changed-line coverage proof immediately after the slice commit and BEFORE the broad lane, as the handoff already says. Four broad reruns this session paid for the reverse order. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 5)
+- state a detector's blind class — "what can this mechanism NOT see?" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was "it cannot see any renderer", which was the whole finding, and it took three review rounds to surface. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 3)
 - **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
-- **workflow**: — state a detector's blind class ("what can this mechanism NOT see?") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above. (source: `charness-artifacts/retro/2026-08-16-session-retro.md`; sources: 2)
-- **capability**: operate the local lesson ledger as a real loop by declaring a preview session and actually presenting its list before work, then recording only sparse, anchored effects at retro; do not infer continuity from the existence of the scripts. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
-- state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score. (source: `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`; sources: 2)
+- prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 2)
 
 ## Selection Policy
 
@@ -32,9 +32,7 @@
 - `charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md`
 - `charness-artifacts/retro/2026-08-06-session-retro.md`
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
-- `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
-- `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`
-- `charness-artifacts/retro/2026-08-12-session-retro.md`
+- `charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md`
 - `charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md`
 - `charness-artifacts/retro/2026-08-13-session-retro.md`
 - `charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md`
@@ -48,5 +46,5 @@
 - `charness-artifacts/retro/2026-08-15-session-retro.md`
 - `charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md`
 - `charness-artifacts/retro/2026-08-16-session-retro.md`
-- `charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md`
 - `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`
+- `charness-artifacts/retro/2026-08-18-session-retro.md`
