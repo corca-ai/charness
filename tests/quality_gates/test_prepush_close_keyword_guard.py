@@ -190,9 +190,12 @@ def test_a_ref_deletion_lands_no_commits_and_scans_none(repo: Path) -> None:
 
 def test_a_ref_with_no_local_sha_is_skipped_without_resolving_a_range(repo: Path) -> None:
     """`evaluate` is exported and ships to consuming repos, so a hook shim calling it
-    directly is a real caller -- and neither reader this repo owns can produce this shape.
-    `parse_push_stdin` always fills four fields, and `--range` refuses an empty side, so
-    the guard is reachable only from that direct caller.
+    directly is a real caller, and that is the only caller this guard is reachable from.
+    `parse_push_stdin` CAN emit an empty `local_sha` -- its all-dropped sentinel sets all
+    four fields empty, pinned by `test_parses_the_pre_push_stdin_grammar...` below -- but
+    that sentinel always carries `dropped_lines > 0`, and `evaluate` returns the
+    no-verdict payload before the loop on any drop, so it never reaches here. `--range`
+    refuses an empty side outright.
 
     The remote sha is deliberately BEHIND head with a commit in between, and that is the
     whole test. `range_commits` interpolates the empty local sha on the RIGHT

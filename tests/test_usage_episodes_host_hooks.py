@@ -426,7 +426,7 @@ def test_session_start_script_writes_session_when_enabled(fake_repo: Path, fake_
 
 
 def test_session_start_main_parses_its_own_flags_and_stays_silent_in_process(
-    fake_repo: Path, monkeypatch: pytest.MonkeyPatch
+    fake_repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """`main` itself, in-process, because every other test here spawns it.
 
@@ -438,7 +438,18 @@ def test_session_start_main_parses_its_own_flags_and_stays_silent_in_process(
     thing that can point adapter discovery at the fixture, because the payload carries
     no `cwd` for `run` to fall back to. Leaving one in would have made the two routes
     indistinguishable, so wiring `--cwd` to nothing would still have passed.
+
+    `chdir(tmp_path)` is what makes that discrimination SAFE rather than merely sharp.
+    Dropping the payload `cwd` promotes `Path.cwd()` to the last fallback, and under
+    pytest that is the authoring repo -- whose adapter is `enabled: true`. So the very
+    mutation this test exists to kill would otherwise run against the LIVE tree and
+    overwrite `.charness/usage-episodes/sessions/current`, which the slice-closeout
+    emitter reads. `_assert_live_usage_episodes_unchanged` would not catch it: it is not
+    autouse here, and `sessions/**` is the one subtree it deliberately exempts. From
+    `tmp_path` no ancestor carries an adapter, so the mutant resolves no adapter, the
+    fixture assertions still fail, and nothing production-owned is touched.
     """
+    monkeypatch.chdir(tmp_path)
     _write_adapter(fake_repo, "version: 1\nenabled: true\n")
     script = load_script_module(
         "usage_episode_session_start_in_process",

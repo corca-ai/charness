@@ -204,7 +204,9 @@ def test_a_failed_post_create_verification_commits_the_artifact_before_it_refuse
     What the `match=` below does NOT prove: `cli` is the harness stub, so that string is
     the STUB's literal, not `publish_release_post_create.fail_after_post_create_verification`'s.
     Changing the real message would not fail here. This test owns the ORDER on the claims
-    lane; the real refusal text is the subprocess test's to own.
+    lane; the real refusal text is the subprocess test's to own -- and that owner
+    (`test_release_publish.py`) is `release_only`, so it does NOT run in the standing or
+    mutation lanes. "Owned elsewhere" here means owned outside the routine gate.
     """
     clis: list = []
 
