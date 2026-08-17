@@ -968,3 +968,15 @@ def test_d48_ensure_release_surface_returns_the_disposition_when_there_is_no_blo
     assert disposition["stage"] == "unit"
     assert disposition["surfaces"] == ["packaging_manifest"]
     assert disposition["drift"] == []
+
+    # The coverage the old `assert ... is None` form carried and this one would have
+    # dropped: a payload with NEITHER key still returns a disposition rather than raising.
+    # `surfaces` is derived from `build_release_payload`, so a payload shaped unlike the
+    # real one is exactly where a derivation crashes -- and this call sits after the bump,
+    # where a traceback lands between the mutation and the record.
+    monkeypatch.setattr(cli, "build_release_payload", lambda root: {"stub": True})
+
+    minimal = cli.ensure_release_surface(tmp_path, "9.9.9", stage="unit")
+
+    assert minimal["surfaces"] == []
+    assert minimal["drift"] == []

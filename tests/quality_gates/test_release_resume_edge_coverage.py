@@ -92,17 +92,12 @@ class _ClaimsResumeCli:
     def build_retro_trigger_evaluation(*_args, **_kwargs):
         return {"required": False}
 
-    @staticmethod
-    def ensure_release_surface(_root, expected_version, *, stage="unrecorded stage"):
-        # The lane that PUBLISHES now runs this too. Recorded rather than ignored: the
-        # record's no-drift sentence is rendered from this return value, so a stub that
-        # returned `None` would silently reintroduce the unbound claim it replaced.
-        return {"status": "passed", "stage": stage, "checked_version": expected_version,
-                "surfaces": ["packaging_manifest"], "drift": []}
-
-    @staticmethod
-    def run_release_adapter_preflight(_root, payload, *, run_command):
-        payload["execution"] = {"status": "not_run", "reason": "fixture", "executed_commands": []}
+    # No `ensure_release_surface` / `run_release_adapter_preflight` stubs: the resume lane
+    # calls neither. Both were added here, and a reviewer showed the stubs were INERT --
+    # they returned a good value into a payload no test read, so the two production lines
+    # they existed for could be deleted with the whole suite green. A stub whose absence
+    # cannot break a test is not coverage; if the calls ever return, they need an assertion
+    # on `payload["version_drift_check"]`, not a double.
 
     def verify_release_visible(self, *_args, **_kwargs):
         return SimpleNamespace(
@@ -183,8 +178,7 @@ def _resume_claims_publication_leg(
         # `previous_version` is what the real planner carries and what the notes lint must
         # ground on this lane; the fixture would otherwise pin the defect as intended.
         "payload": {"commit_message": "Release v1.2.3", "previous_version": "1.2.2"},
-        "tag_name": "v1.2.3", "branch": "main", "next_version": "1.2.3",
-        "adapter_preflight_payload": {"status": "not_required", "commands": []},
+        "tag_name": "v1.2.3", "branch": "main",
         "backend": "github", "issue_repo": "example/demo", "release_content_paths": [], "title": "v1.2.3",
     }
     args = SimpleNamespace(execute=True, remote="origin", notes_file=notes_file, close_issue=[])

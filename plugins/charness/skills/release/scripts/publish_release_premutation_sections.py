@@ -18,18 +18,54 @@ _HEADING_PREFIX_RE = re.compile(r"^\s*#+\s*")
 
 
 def demote_headings(text: str) -> list[str]:
-    """Operator-supplied prose as lines that cannot become record HEADINGS.
+    """Operator-supplied prose with every leading heading run removed, to a FIXED POINT.
 
-    The record is not just read: `audit_public_release_narrative` locates the
-    release-state ledger as the span between `## Release State` and the next `## `
-    line, so a `##` line inside operator prose moves where that ledger is judged to
-    start and end. Demoted rather than refused -- the value is a human explanation
-    supplied after the critique gate, and a refusal there costs a release cycle to
-    reword prose. The record-state sentinel is a separate rule refused at argument
-    parsing (`assert_no_record_sentinel`), because demoting that one would silently
-    change what the operator wrote about release state.
+    One `re.sub` was not enough and the difference was a blocker: the pattern's `#+`
+    cannot cross whitespace, so `# ## Release State` lost only the first marker and
+    emitted `## Release State` at column 0 -- a real heading, above the genuine one,
+    which is where `audit_public_release_narrative` then judged the five-entry ledger
+    from. `#\\t##`, `  #  ###` and any deeper nesting had the same shape.
+
+    Belt to the braces of `quote_lines`: the blockquote prefix is what actually keeps
+    these lines out of the audit's heading grammar. This runs first so the quoted text
+    reads as prose rather than as markers the reader has to discount.
     """
-    return [_HEADING_PREFIX_RE.sub("", line.rstrip()) for line in text.strip().splitlines()]
+    lines = []
+    for raw in text.strip().splitlines():
+        line = raw.rstrip()
+        while True:
+            stripped = _HEADING_PREFIX_RE.sub("", line)
+            if stripped == line:
+                break
+            line = stripped
+        lines.append(line)
+    return lines
+
+
+def quote_lines(lines: list[str]) -> list[str]:
+    """Operator prose as a blockquote, which is what makes it structurally inert.
+
+    Demotion is a character-prefix filter defending a document-structure invariant,
+    and three separate constructs walked past it. Quoting closes the class instead of
+    growing the blacklist, because every reader of this record anchors its patterns
+    at line start:
+
+    * `_release_state_block` matches `line.strip() == "## Release State"` and
+      terminates on `line.startswith("## ")`; `> ## Release State` satisfies neither.
+    * `validate_current_pointer_freshness.TARGET_VERSION_RE` anchors
+      `^[ \\t]*(?:[-*][ \\t]*)?target version:` -- a `>` prefix does not match, so a
+      rationale mentioning a rejected target version can no longer make the record
+      "carry disagreeing target-version claims". That gate fires on every later push,
+      and on the claims lane the poisoned record is already TAGGED and published.
+    * `audit_public_release_narrative._FENCE_RE` anchors ` ``` ` at line start, so an
+      unterminated fence in the rationale can no longer blank the rest of the record
+      (which suppressed even the blocker that would have explained it).
+
+    What quoting does NOT close is `<!--`: an HTML comment hides everything after it
+    from the RENDERED document a human reads on GitHub, while every substring audit
+    still passes over the raw bytes. That one is refused at argument time.
+    """
+    return [f"> {line}" if line else ">" for line in lines]
 
 
 def bump_rationale_lines(bump_rationale: str | None) -> list[str]:
@@ -43,14 +79,19 @@ def bump_rationale_lines(bump_rationale: str | None) -> list[str]:
     sees no section infers there was nothing to explain.
     """
     lines = ["", "## Bump Rationale", ""]
-    text = (bump_rationale or "").strip()
-    if not text:
-        return lines + [
-            "- Bump rationale: NOT recorded by this helper invocation. `version-policy.md` "
-            "requires a stated rationale whenever the bump level is debatable; this record "
-            "carries none, so the level above is an unexplained judgment call."
-        ]
-    return lines + demote_headings(text)
+    absent = [
+        "- Bump rationale: NOT recorded by this helper invocation. `version-policy.md` "
+        "requires a stated rationale whenever the bump level is debatable; this record "
+        "carries none, so the level above is an unexplained judgment call."
+    ]
+    # Absence is decided on the RENDERED body, not on the raw argument. Deciding on the
+    # argument meant `--bump-rationale '#'` was truthy, demoted to `""`, and emitted the
+    # heading over an empty body with no absence sentence -- inverting this docstring's
+    # own guarantee, because a reader who sees the section infers one was supplied.
+    body = demote_headings(bump_rationale or "")
+    if not any(line.strip() for line in body):
+        return lines + absent
+    return lines + quote_lines(body)
 
 
 def version_drift_lines(version_drift_check: dict[str, Any] | None) -> list[str]:
@@ -67,7 +108,12 @@ def version_drift_lines(version_drift_check: dict[str, Any] | None) -> list[str]
             "- Version drift check: NOT recorded by this helper invocation, so this record "
             "makes no no-drift claim about packaging and generated install surfaces."
         ]
-    surfaces = version_drift_check.get("surfaces") or []
+    # `list`, not truthiness: `surfaces` reaching here as an int raised TypeError inside
+    # the record writer -- a traceback between the mutation and the record -- and as a
+    # STRING it rendered `len("abc")` as "across 3 read surface(s)", a wrong count stated
+    # as a measurement. A count is a claim; it is made only over something countable.
+    raw_surfaces = version_drift_check.get("surfaces")
+    surfaces = raw_surfaces if isinstance(raw_surfaces, (list, tuple)) else []
     scope = f" across {len(surfaces)} read surface(s)" if surfaces else ""
     stage = version_drift_check.get("stage") or "unrecorded stage"
     return [
@@ -86,7 +132,11 @@ def pending_payload_section(
     a third cannot render a status heading over a payload that was never produced.
     """
     lines = ["", heading, ""]
-    if payload is None:
+    # Any non-mapping, not just `None`: a list or a string reaching here raised
+    # AttributeError inside the record writer, which is a traceback where a section
+    # belongs. Unreachable from today's in-process producers; a renderer on this surface
+    # should not depend on that staying true.
+    if not isinstance(payload, dict):
         return None, lines + [pending]
     status = str(payload.get("status", "unknown"))
     lines.append(f"- {status_label}: `{status}`.")
@@ -118,12 +168,13 @@ def release_adapter_preflight_lines(payload: dict[str, Any] | None) -> list[str]
         lines.append(f"- Previous release ref: `{previous_ref}`")
     lines.extend(labeled_code_list("Adapter paths in release delta", payload.get("adapter_paths", [])))
     lines.extend(labeled_code_list("Changed adapter fields", payload.get("changed_fields", [])))
-    commands = payload.get("commands", [])
+    raw_commands = payload.get("commands")
+    commands = raw_commands if isinstance(raw_commands, (list, tuple)) else []
     if commands:
         lines.append("- Focused preflight commands:")
         lines.extend(f"  - `{' '.join(command)}`" for command in commands)
     else:
-        lines.append("- Focused preflight commands: none executed.")
+        lines.append("- Focused preflight commands: none planned.")
     # `status: required` plus a command list is a PLAN, and the record rendered nothing
     # else: a reader could not tell whether the commands ran, and on the resume lane that
     # publishes they did not. The execution disposition is written by
@@ -136,10 +187,24 @@ def release_adapter_preflight_lines(payload: dict[str, Any] | None) -> list[str]
             "record does not establish that the commands above ran."
         )
         return lines
-    lines.append(f"- Focused preflight execution: `{execution.get('status')}`.")
+    # The token is never alone. `claims_review_lines` argues the rule this follows: a
+    # reader who sees a status word infers the thing happened, so a status that is NOT a
+    # clean execution states its negative property in words. `not_run` and `failed` are
+    # both absences of a passing preflight and neither may read as one; an unrecognised
+    # status is treated as an absence too, because a backticked token this module cannot
+    # interpret would otherwise render as an authoritative verdict.
+    status = str(execution.get("status"))
+    lines.append(f"- Focused preflight execution: `{status}`.")
+    if status != "passed":
+        lines.append(
+            "- This is a recorded absence, not a passing preflight: no focused adapter "
+            "check is claimed to have completed successfully for this release."
+        )
     if reason := execution.get("reason"):
         lines.append(f"  - Reason: {reason}")
-    lines.extend(f"  - executed: `{command}`" for command in execution.get("executed_commands", []))
+    raw_executed = execution.get("executed_commands")
+    executed = raw_executed if isinstance(raw_executed, (list, tuple)) else []
+    lines.extend(f"  - executed: `{command}`" for command in executed)
     if failed := execution.get("failed_command"):
         lines.append(f"  - failed: `{failed}`")
     return lines

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import runpy
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
 from typing import Any
 
@@ -69,6 +69,33 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def canonicalize_output_dir(validated: dict[str, Any], errors: list[str]) -> None:
+    """Give `output_dir` ONE canonical spelling, in place.
+
+    Owned here because both consumers read the value from here and neither can
+    normalise for the other. The scaffold builds its write path with a raw f-string
+    (`f"{output_dir}/{date}-{slug}.md"`) while the validator derives its prefix through
+    a `Path`. For any non-canonical value the two silently disagreed:
+    `charness-artifacts/retro/` made the scaffold emit `charness-artifacts/retro//x.md`,
+    whose tail then held a `/` and was dropped as a nested archive -- `Validated 0 retro
+    artifact(s).` and exit 0 over a path the caller NAMED. `./x` and `x//y` diverged the
+    same way. Normalising once, before either side sees the value, removes the class;
+    refusing instead would break consumers whose adapters are merely untidy.
+
+    An absolute or repo-escaping directory IS refused, because every consumer joins this
+    value to the repo root: a value resolving outside cannot be made to mean anything,
+    and falling back silently would validate a directory the repo never declared.
+    """
+    output_dir = validated.get("output_dir")
+    if not isinstance(output_dir, str) or not output_dir.strip():
+        return
+    normalized = PurePosixPath(output_dir.strip()).as_posix().rstrip("/")
+    if not normalized or normalized.startswith(("/", "..")):
+        errors.append(f"output_dir must be a repo-relative directory; got {output_dir!r}")
+        return
+    validated["output_dir"] = normalized
+
+
 def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[str, Any], list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -80,6 +107,8 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
+
+    canonicalize_output_dir(validated, errors)
 
     for field in STRING_LIST_FIELDS:
         items = optional_string_list(data.get(field), field, errors)

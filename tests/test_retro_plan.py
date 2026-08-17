@@ -12,6 +12,19 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _load(name: str, relpath: str) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(name, ROOT / relpath)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+RETRO_OUTPUT_DIR_LIB = _load(
+    "retro_output_dir_lib_plan_test", "scripts/retro_output_dir_lib.py"
+)
+
+
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
@@ -432,11 +445,26 @@ def test_the_retro_shape_packet_is_scoped_to_the_artifact_this_run_writes(
     literal here could not see it.
     """
     repo = tmp_path / "repo"
+    # A CUSTOM output_dir, because that is the configuration the repair is about. Written
+    # against the default, this test passed identically before the fix while its docstring
+    # narrated a consumer "that declared a different directory" -- a test measuring nothing
+    # the paragraph above it claims.
     write_adapter(repo)
+    adapter = repo / ".agents" / "retro-adapter.yaml"
+    adapter.write_text(
+        adapter.read_text(encoding="utf-8").replace(
+            "output_dir: charness-artifacts/retro", "output_dir: artifacts/retros"
+        ),
+        encoding="utf-8",
+    )
 
     payload = run_plan(repo)
 
     shape = next(p for p in payload["gate_packets"] if p["id"] == "retro-artifact-shape")
     scaffold = next(p for p in payload["gate_packets"] if p["id"] == "retro-artifact-scaffold")
+    assert scaffold["write_artifact_path"].startswith("artifacts/retros/")
     assert f'--paths {scaffold["write_artifact_path"]}' in shape["command"]
     assert "after the retro artifact is written" in shape["run_when"]
+    # The path the packet names is the one the validator would own for THIS repo.
+    prefix = RETRO_OUTPUT_DIR_LIB.retro_artifact_prefix(repo)
+    assert scaffold["write_artifact_path"].startswith(prefix)

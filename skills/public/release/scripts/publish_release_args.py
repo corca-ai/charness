@@ -14,7 +14,14 @@ import argparse
 from pathlib import Path
 
 
-def parse_args() -> argparse.Namespace:
+def build_parser() -> argparse.ArgumentParser:
+    """The parser itself, so a caller can ask what the command surface OFFERS.
+
+    Split from `parse_args` because the only way to test "this flag exists" was a
+    substring search over this file's source, which stayed green with the flag
+    deleted: `--close-issue` still occurs inside `--close-issue-repo` and in five
+    help strings. A question about the command surface is answered by the surface.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
     parser.add_argument("--remote", default="origin", help="Git remote to push to (default: origin)")
@@ -64,4 +71,8 @@ def parse_args() -> argparse.Namespace:
     group.add_argument("--publish-current", action="store_true", help="Publish the current packaging manifest version without bumping")
     group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump before publishing")
     group.add_argument("--set-version", help="Explicit version string to set before publishing")
-    return parser.parse_args()
+    return parser
+
+
+def parse_args() -> argparse.Namespace:
+    return build_parser().parse_args()

@@ -13,9 +13,9 @@ import site.
 
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
-from runtime_bootstrap import load_path_module, skill_script
+from runtime_bootstrap import load_path_module, repo_root_from_script, skill_script
 
 #: The prefix used when this repo's retro adapter cannot be read at all. NOT the
 #: prefix a run uses -- `retro_artifact_prefix` is. It was a bare constant in the
@@ -28,38 +28,77 @@ from runtime_bootstrap import load_path_module, skill_script
 DEFAULT_RETRO_ARTIFACT_PREFIX = "charness-artifacts/retro/"
 
 
-def _retro_resolver_path(repo_root: Path) -> Path | None:
-    """Retro's own adapter resolver, or ``None`` when this repo has no retro skill.
+#: This script's OWN tree, which for a consumer is the installed plugin.
+_SCRIPT_REPO_ROOT = repo_root_from_script(__file__)
 
-    `skill_script` is the shared owner of the dev-tree-vs-export layout search; the
-    sibling validators that predate it still each carry their own copy. `None`
-    rather than the raise, because a repo without the retro skill installed is not
-    an error for a validator whose whole job may legitimately be a no-op.
+
+def _retro_resolver_path(repo_root: Path) -> Path | None:
+    """Retro's adapter resolver for ``repo_root``, or ``None`` when none is reachable.
+
+    Two roots, and the second is not optional. The target repo comes first, because a
+    repo that vendors its own retro skill must be read by that copy. But the ordinary
+    consumer has only `.agents/retro-adapter.yaml` and gets the skill from the
+    installed plugin -- searching the target repo alone found nothing there and fell
+    back to the DEFAULT prefix, which is the very fail-quiet this module exists to
+    close, reproduced inside its own fix. A test asserting the scaffold and the
+    validator name one directory is what caught it; the single-root version passed
+    every test that only called this function.
+
+    `skill_script` is the shared owner of the dev-tree-vs-export layout search.
+    `None` rather than the raise, because a repo with no retro skill reachable at all
+    is not an error for a validator whose whole job may legitimately be a no-op.
     """
-    try:
-        return skill_script(repo_root, "retro", "resolve_adapter.py")
-    except FileNotFoundError:
-        return None
+    for root in (repo_root, _SCRIPT_REPO_ROOT):
+        try:
+            return skill_script(root, "retro", "resolve_adapter.py")
+        except FileNotFoundError:
+            continue
+    return None
 
 
 def retro_artifact_prefix(repo_root: Path) -> str:
     """The retro output directory THIS repo declares, as a trailing-slash prefix.
 
     Read the same way the retro skill reads it, so the validator and the planner
-    cannot disagree about which directory holds a repo's retros.
+    cannot disagree about which directory holds a repo's retros. The value is
+    canonicalised by retro's `resolve_adapter` -- one owner, because a raw-string
+    producer and a `Path`-normalising consumer disagreed silently for every untidy
+    `output_dir` -- so this only appends the separator.
 
     Falls back to `DEFAULT_RETRO_ARTIFACT_PREFIX` rather than to `None` or `""`,
     and the two rejected alternatives are why: `None` would make `candidate_paths`
     unable to glob anything, and an empty prefix would make EVERY named path look
     owned -- the opposite failure, refusing paths that belong to no retro family at
-    all. An unreadable adapter therefore keeps today's behaviour instead of
-    inventing a new one.
+    all.
+
+    The `except Exception` is not defensive padding. This executes the resolver of
+    the repo UNDER VALIDATION, whose module body itself runs a bootstrap search: a
+    partial install, an exported layout missing `skill_runtime_bootstrap.py`, or a
+    syntax error in a consumer's own copy all raise, and an uncaught one is a
+    traceback out of a surface whose entire job is to render a verdict. The
+    docstring used to claim an unreadable adapter kept today's behaviour while only
+    a MISSING one did; this makes the claim true.
     """
-    resolver_path = _retro_resolver_path(repo_root)
     output_dir: object = None
+    resolver_path = _retro_resolver_path(repo_root)
     if resolver_path is not None:
-        module = load_path_module("retro_validator_resolve_adapter", resolver_path)
-        output_dir = module.load_adapter(repo_root).get("data", {}).get("output_dir")
+        try:
+            module = load_path_module("retro_validator_resolve_adapter", resolver_path)
+            output_dir = module.load_adapter(repo_root).get("data", {}).get("output_dir")
+        except Exception:  # noqa: BLE001 - see docstring: a verdict, never a traceback
+            output_dir = None
     if not isinstance(output_dir, str) or not output_dir.strip():
         return DEFAULT_RETRO_ARTIFACT_PREFIX
-    return f"{Path(output_dir).as_posix().rstrip('/')}/"
+    normalized = PurePosixPath(output_dir.strip()).as_posix().rstrip("/")
+    # An absolute or repo-escaping value cannot name a directory inside the tree being
+    # validated. The adapter refuses it; if one arrives anyway (an older adapter, a
+    # consumer resolver that skips validation), owning nothing is the fail-quiet this
+    # module exists to close, so fall back to the declared default instead.
+    if not normalized or normalized.startswith(("/", "..")):
+        return DEFAULT_RETRO_ARTIFACT_PREFIX
+    return f"{normalized}/"
+
+
+def retro_output_dir(repo_root: Path) -> Path:
+    """The resolved retro output directory, for callers that need the path itself."""
+    return repo_root / retro_artifact_prefix(repo_root).rstrip("/")

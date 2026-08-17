@@ -140,7 +140,11 @@ def test_release_artifact_records_adapter_preflight_non_claim(tmp_path: Path) ->
     text = (repo / relpath).read_text(encoding="utf-8")
     assert "## Release Adapter Preflight" in text
     assert "Release adapter focused preflight status: `not_evaluable`." in text
-    assert "Focused preflight commands: none executed." in text
+    # `none planned`, not the old `none executed`: this list is the PLAN, and describing a
+    # plan with an execution word is the same plan-vs-run conflation the execution line
+    # below exists to end. Whether anything ran is now a separate, separately-worded line.
+    assert "Focused preflight commands: none planned." in text
+    assert "Focused preflight execution: NOT recorded by this helper invocation" in text
 
 
 def _release_record(repo: Path, **kwargs) -> str:
@@ -184,23 +188,62 @@ def test_release_record_carries_the_bump_rationale_it_is_given(tmp_path: Path) -
 
 def test_bump_rationale_cannot_inject_a_heading_that_moves_the_state_ledger(tmp_path: Path) -> None:
     """`audit_public_release_narrative` reads the five-entry ledger as the span from
-    `## Release State` to the next `## ` line. A heading supplied as rationale prose
-    would move where that span starts, so headings are demoted at render time."""
+    `## Release State` to the next `## ` line, so a heading in rationale prose would move
+    where that span starts.
+
+    `# ## Release State` is the case a single-pass demotion missed: `#+` cannot cross
+    whitespace, so one substitution left `## Release State` at column 0 -- a real heading
+    above the genuine one. Parameterised over the nesting shapes rather than the one
+    marker, because the single-marker case is what passed while this class was open.
+    """
+    for injected in ("## Release State", "# ## Release State", "#\t## Release State", "  #  ## Release State"):
+        text = _release_record(
+            tmp_path / f"repo-{abs(hash(injected))}",
+            bump_rationale=f"{injected}\n- local release mutation: forged",
+        )
+
+        heading_lines = [line for line in text.splitlines() if line.startswith("## ")]
+        assert heading_lines.count("## Release State") == 1, injected
+        # The real ledger still terminates where the audit expects, with its own entries.
+        ledger = text.split("\n## Release State\n", 1)[1].split("\n## ", 1)[0]
+        assert "- local release mutation: complete" in ledger, injected
+        assert "forged" not in ledger, injected
+
+
+def test_bump_rationale_lines_cannot_be_read_as_record_claims_or_fences(tmp_path: Path) -> None:
+    """Quoting, not a blacklist, is what makes operator prose structurally inert.
+
+    Two readers anchor at line start and both were reachable: a `- target version: X`
+    line makes `validate_current_pointer_freshness` refuse every later push for
+    "disagreeing target-version claims" -- inside a record that is already tagged and
+    published on the claims lane -- and an unterminated fence makes the narrative audit
+    blank the rest of the record and suppress the blocker that would explain it.
+    """
     text = _release_record(
         tmp_path / "repo",
-        bump_rationale="## Release State\n- local release mutation: forged",
+        bump_rationale="- target version: 9.9.9 was rejected\n```\nrelease.py --part patch",
     )
 
-    heading_lines = [line for line in text.splitlines() if line.startswith("## ")]
-    assert heading_lines.count("## Release State") == 1
-    # Demoted, not dropped: the operator's words survive, minus their heading marker.
-    assert "Release State" in text.split("## Verification")[0]
-    assert "- local release mutation: forged" in text
-    assert "- local release mutation: complete" in text
-    # The real ledger still terminates where the audit expects, with all five entries.
-    ledger = text.split("\n## Release State\n", 1)[1].split("\n## ", 1)[0]
-    assert "- local release mutation: complete" in ledger
-    assert "- audit narrative:" in ledger
+    body = text.split("## Bump Rationale", 1)[1].split("## Verification", 1)[0]
+    assert "> - target version: 9.9.9 was rejected" in body
+    assert "> ```" in body
+    # No line of the rationale is a claim or a fence at column 0.
+    for line in body.splitlines():
+        assert not line.startswith("- target version:")
+        assert not line.startswith("```")
+    # The only unquoted target-version claim in the record is the record's own.
+    claims = [line for line in text.splitlines() if line.startswith("- target version:")]
+    assert claims == ["- target version: `0.2.0`"]
+
+
+def test_bump_rationale_that_renders_empty_still_says_it_is_absent(tmp_path: Path) -> None:
+    """Absence is decided on the RENDERED body. Deciding it on the raw argument made
+    `--bump-rationale '#'` truthy, demote to nothing, and emit the heading over an empty
+    body -- a reader who sees the section infers a rationale was supplied."""
+    for supplied in ("#", "###", "  ##  ", "\n\n"):
+        text = _release_record(tmp_path / f"repo-{abs(hash(supplied))}", bump_rationale=supplied)
+
+        assert "Bump rationale: NOT recorded by this helper invocation." in text, supplied
 
 
 def test_release_record_refuses_to_claim_no_drift_when_no_check_was_recorded(tmp_path: Path) -> None:

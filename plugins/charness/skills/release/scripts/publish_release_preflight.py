@@ -33,6 +33,13 @@ def _load_adapter_preflight_helper() -> Any:
 
 
 _adapter_preflight = _load_adapter_preflight_helper()
+# Operator-supplied argument guards live beside the command surface they guard.
+# Re-exported so `publish_release_cli` keeps one import site.
+_arg_guards = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_arg_guards.py"))
+)
+validate_critique_artifact_arg = _arg_guards["validate_critique_artifact_arg"]
+validate_bump_rationale_arg = _arg_guards["validate_bump_rationale_arg"]
 # One owner for the record-sentinel rule. This path is rendered into the release record as
 # `## Review Proof` on every write, including the published one.
 _claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
@@ -71,48 +78,6 @@ def _load_shared_closeout_helper() -> Any:
         "scripts.check_prescribed_skill_executed_lib",
     )
 
-
-def validate_critique_artifact_arg(
-    repo_root: Path,
-    artifact: str | None,
-    *,
-    run_command: Callable,
-) -> str | None:
-    if artifact is None:
-        return None
-    relpath = Path(artifact)
-    if relpath.is_absolute() or any(part in ("", ".", "..") for part in relpath.parts):
-        raise SystemExit("--critique-artifact must be a normalized repo-relative path")
-    normalized = relpath.as_posix()
-    if not normalized.startswith(CRITIQUE_ARTIFACT_PREFIX) or relpath.suffix != ".md":
-        raise SystemExit("--critique-artifact must point at a critique markdown artifact")
-    _claims_review["assert_no_record_sentinel"](normalized, "--critique-artifact")
-    resolved = (repo_root / relpath).resolve()
-    try:
-        resolved.relative_to(repo_root)
-    except ValueError as exc:
-        raise SystemExit("--critique-artifact must stay inside the repo root") from exc
-    if not resolved.is_file():
-        raise SystemExit(f"--critique-artifact does not exist: {normalized}")
-    tracked = run_command(["git", "ls-files", "--error-unmatch", normalized], cwd=repo_root, check=False)
-    if tracked.returncode != 0:
-        raise SystemExit(f"--critique-artifact must be tracked before release: {normalized}")
-    return normalized
-
-
-def validate_bump_rationale_arg(bump_rationale: str | None) -> str | None:
-    """The `--bump-rationale` value, refused when it would forge release state.
-
-    Rendered VERBATIM into the release record, which other surfaces prove release
-    state by substring-matching -- the same exposure `--critique-artifact` has, and
-    the reason the sentinel rule is shared rather than re-derived here. Heading lines
-    are demoted at render time instead of refused; a sentinel cannot be demoted
-    without changing what the operator wrote, so it stops the run at argument time,
-    before any mutation.
-    """
-    if bump_rationale is not None:
-        _claims_review["assert_no_record_sentinel"](bump_rationale, "--bump-rationale")
-    return bump_rationale
 
 
 def _resolve_git_ident(repo_root: Path, var_name: str) -> str | None:

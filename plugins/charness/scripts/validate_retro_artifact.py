@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -27,6 +28,22 @@ _lesson_records = import_repo_module(__file__, "scripts.lesson_evaluation_record
 _output_dir = import_repo_module(__file__, "scripts.retro_output_dir_lib")
 DEFAULT_RETRO_ARTIFACT_PREFIX = _output_dir.DEFAULT_RETRO_ARTIFACT_PREFIX
 retro_artifact_prefix = _output_dir.retro_artifact_prefix
+# Which dated floors are switched on for this repo, and how a run announces that.
+# Re-exported because `plan_retro_run` and `seed_retro_memory` load THIS module, and
+# because the enforcement below and the announcement there must read one owner: they
+# were split once and disagreed about whether a repo owed a disposition at all.
+_floor_scope = import_repo_module(__file__, "scripts.retro_floor_scope_lib")
+NEXT_IMPROVEMENTS_HEADING = _floor_scope.NEXT_IMPROVEMENTS_HEADING
+RECURRENCE_LINEAGE_RULE_DATE = _floor_scope.RECURRENCE_LINEAGE_RULE_DATE
+PERSISTED_FORM_RULE_DATE = _floor_scope.PERSISTED_FORM_RULE_DATE
+NORTH_STAR_RULE_DATE = _floor_scope.NORTH_STAR_RULE_DATE
+NORTH_STAR_HEADING = _floor_scope.NORTH_STAR_HEADING
+LESSON_LEDGER_FILENAME = _floor_scope.LESSON_LEDGER_FILENAME
+LESSON_LEDGER_BOOTSTRAP_SCRIPT = _floor_scope.LESSON_LEDGER_BOOTSTRAP_SCRIPT
+lesson_evaluator_declared = _floor_scope.lesson_evaluator_declared
+lesson_ledger_bootstrap_command = _floor_scope.lesson_ledger_bootstrap_command
+date_activated_rules = _floor_scope.date_activated_rules
+report_enforcement_scope = _floor_scope.report_enforcement_scope
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
 git_changed_paths = _scripts_artifact_validator_module.git_changed_paths
@@ -45,15 +62,12 @@ file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_pre
 # so the session-retro `## Next Improvements` floor never forks achieve parsing.
 disposition_form = import_repo_module(__file__, "scripts.disposition_form")
 
-NEXT_IMPROVEMENTS_HEADING = "## Next Improvements"
 DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md (#329 disposition-form floor)"
 # Recurrence-lineage floor for standalone retros: the symmetric extension of the
 # achieve rung 1d to a session retro's `## Next Improvements`. Its own enforce-from
 # date lands the day after this floor so every existing retro (all dated on or
 # before the landing day) is grandfathered and the broad gate stays green; only
 # retros dated on/after it must carry a lineage marker on issue-form dispositions.
-RECURRENCE_LINEAGE_RULE_DATE = date(2026, 6, 9)
-PERSISTED_FORM_RULE_DATE = date(2026, 6, 25)
 # Every retro must consult the north star and say what it found (user standing
 # request, 2026-08-02). Recorded as a floor rather than prose because prose is
 # what it already was: `SKILL.md` has always pointed at the design standard, two
@@ -77,8 +91,6 @@ PERSISTED_FORM_RULE_DATE = date(2026, 6, 25)
 # RESIDUAL_LEDGER_RULE_DATE / STRUCTURAL_FOLLOWUP_RULE_DATE precedent. Three
 # same-day retros from earlier goals this session would otherwise be refused
 # retroactively for a decision taken after they were written.
-NORTH_STAR_RULE_DATE = date(2026, 8, 3)
-NORTH_STAR_HEADING = "North Star Alignment"
 # The authoring-repo-internal spelling every other portable surface already uses
 # (rename-critique.md, disposition-reviewer-brief.md, closeout-discipline.md,
 # ledger-and-dispositions.md, mutation-testing.md). A bare `docs/design-north-star.md`
@@ -95,8 +107,6 @@ NORTH_STAR_HEADING = "North Star Alignment"
 #: when a readable path matters most -- so it must not keep the spelling the scaffold
 #: just removed. Resolved per-repo below instead.
 NORTH_STAR_DOC = "docs/design-north-star.md"
-LESSON_LEDGER_FILENAME = "lesson-ledger.json"
-LESSON_LEDGER_BOOTSTRAP_SCRIPT = "init_lesson_ledger.py"
 _PERSISTED_LINE = re.compile(r"^Persisted:\s+(yes|no):\s+\S.+$")
 RETRO_PREPARE_PACKET_KIND = "charness.retro_prepare_packet"
 RETRO_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Retro Prepare Packet(?:\s+—\s+\S.*)?$")
@@ -134,6 +144,22 @@ def _is_session_artifact(relpath: str, prefix: str) -> bool:
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
     prefix = retro_artifact_prefix(repo_root)
     if all_artifacts:
+        # A missing output directory is refused, never reported as a clean sweep. The
+        # debug sibling ignores its adapter's `valid` flag for good reasons this module
+        # copied -- but what made that safe there is `_debug_artifacts` exiting 1 on a
+        # directory that does not exist, and copying the permissive read without the
+        # backstop meant one typo'd `output_dir` (`[unclosed` parses to a plain STRING
+        # with `valid: True`) globbed nothing and printed green over the whole corpus.
+        # `--all` IS the corpus audit; it must not be satisfiable by looking nowhere.
+        directory = repo_root / prefix.rstrip("/")
+        if not directory.is_dir():
+            print(
+                f"No retro output directory at {prefix.rstrip('/')} (repo root {repo_root}). "
+                "This is not a clean corpus: nothing was opened. Check the retro adapter's "
+                "`output_dir`, or the --repo-root this run was given.",
+                file=sys.stderr,
+            )
+            raise SystemExit(1)
         return [
             path
             for path in sorted(
@@ -363,119 +389,14 @@ def validate_north_star_alignment(
         )
 
 
-def lesson_evaluator_declared(path: Path) -> bool:
-    """Whether this repo declares the lesson evaluator the disposition floor scores.
-
-    Both `skills/public/retro/references/lesson-evaluation.md` ("repos whose
-    evidence declares no evaluator have no lesson-scoring duty") and the retro
-    `SKILL.md` ("otherwise there is no scoring duty") say the duty is
-    conditional. The code said the opposite: EVERY retro dated on/after the
-    activation date owed a disposition in ANY repo. A consuming repo that had
-    never opted in could therefore satisfy the gate only with `not-evaluated /
-    missing-start` — permanently, because no other value is reachable without a
-    ledger — while the prose told it there was no duty at all. Prose and code
-    disagreeing about a duty is the dishonesty here, not the strictness; the code
-    now matches the prose.
-
-    The declaration is the ledger itself: it is the declared-session evaluator's
-    only state, and `scripts/init_lesson_ledger.py` is the explicit opt-in that
-    creates it. Probed beside the artifact because that directory IS the retro
-    output dir.
-
-    Fail-CLOSED when the artifact does not sit in a canonical retro output dir.
-    There the probe cannot see the repo's evaluator state at all, and a floor
-    that switches ITSELF off on an unrecognized layout is a floor that silently
-    never fires — the exact escape shape the sibling floors' fail-closed
-    grandfathering guards. Every real run resolves the directory, because
-    `candidate_paths` only ever yields paths under `retro_artifact_prefix`.
-    """
-    directory = path.parent
-    if directory.name != "retro" or directory.parent.name != "charness-artifacts":
-        return True
-    return (directory / LESSON_LEDGER_FILENAME).is_file()
-
-
-def lesson_ledger_bootstrap_command(repo_root: Path) -> str:
-    """The runnable opt-in command for THIS layout, not one repo's spelling.
-
-    A consuming repo has no `scripts/` of its own — it gets one beside this
-    validator inside the installed plugin. Emitting a bare
-    `scripts/init_lesson_ledger.py` would tell a consuming author to run a file
-    they do not have, which is the same "names a path nothing creates" defect
-    that put the retro scaffold's north star line and this repo's own adapter
-    anchor on the reported list. Repo-local wins when present, mirroring
-    `scaffold_artifact_lib.validator_command`'s resolution order so a consumer
-    cites the same script its broad gate would.
-
-    Delegated to `lesson_evaluation_records_lib` since the retro run planner had to
-    resolve `record_lesson_score.py` the identical way: a second copy of this
-    resolution is how one surface starts naming `scripts/...` in a repo that has no
-    `scripts/` while its sibling names the installed path.
-    """
-    return _lesson_records.repo_or_installed_command(
-        repo_root, LESSON_LEDGER_BOOTSTRAP_SCRIPT, "--repo-root", "."
-    )
-
-
-def date_activated_rules(repo_root: Path) -> list[dict[str, object]]:
-    """Every retro floor that switches on by artifact date, as announceable data.
-
-    These dates were reachable only by TRIPPING them: a consuming author whose
-    previous retro needed no `## Lesson Evaluation` section read the new refusal
-    as breakage rather than as a dated floor that had just activated. The achieve
-    family already emits `rule_date` in every report payload; the retro planner
-    now announces the same thing from these constants, so the announcement cannot
-    drift from the rule it announces.
-    """
-    prefix = retro_artifact_prefix(repo_root)
-    ledger = repo_root / prefix / LESSON_LEDGER_FILENAME
-    declared = ledger.is_file()
-    return [
-        {
-            "id": "lesson-evaluation-disposition",
-            "rule_date": _lesson_evaluation.ACTIVATION_DATE.isoformat(),
-            "what": (
-                "a retro dated on/after this owes exactly one `Lesson evaluation: <JSON>` line "
-                f"inside `{_lesson_evaluation.SECTION_HEADING}`"
-            ),
-            "conditional_on": (
-                f"this repo declaring a lesson evaluator ({prefix}{LESSON_LEDGER_FILENAME})"
-            ),
-            "evaluator_declared": declared,
-            "enforced_here": declared,
-            "opt_in_command": None if declared else lesson_ledger_bootstrap_command(repo_root),
-        },
-        {
-            "id": "north-star-alignment",
-            "rule_date": NORTH_STAR_RULE_DATE.isoformat(),
-            "what": f"a retro dated on/after this needs a `## {NORTH_STAR_HEADING}` section with content",
-            "enforced_here": True,
-        },
-        {
-            "id": "recurrence-lineage",
-            "rule_date": RECURRENCE_LINEAGE_RULE_DATE.isoformat(),
-            "what": (
-                f"`{NEXT_IMPROVEMENTS_HEADING}` issue-routed dispositions need a recurrence-lineage "
-                "marker (`novel:` / `recurs:`)"
-            ),
-            "enforced_here": True,
-        },
-        {
-            "id": "persisted-form",
-            "rule_date": PERSISTED_FORM_RULE_DATE.isoformat(),
-            "what": "`## Persisted` must read `Persisted: yes: <path>` or `Persisted: no: <reason>`",
-            "enforced_here": True,
-        },
-    ]
-
 
 def validate_lesson_evaluation_disposition(
-    path: Path, lines: list[str], observed_date: date | None
+    path: Path, lines: list[str], observed_date: date | None, *, output_dir: Path | None = None
 ) -> None:
     """Require one strict disposition for the activated cohort of an opted-in repo."""
     if observed_date is None or observed_date < _lesson_evaluation.ACTIVATION_DATE:
         return
-    if not lesson_evaluator_declared(path):
+    if not lesson_evaluator_declared(path, output_dir=output_dir):
         return
     try:
         _lesson_evaluation.parse_disposition("\n".join(lines))
@@ -485,35 +406,21 @@ def validate_lesson_evaluation_disposition(
         ) from exc
 
 
-def report_enforcement_scope(run, artifacts) -> None:
-    """Name whether the conditional lesson-evaluation floor actually ran.
 
-    `run_changed_artifact_validator` documents `on_complete` for exactly this
-    case: a floor that is off emits nothing by construction, so a run reporting
-    only "Validated N retro artifacts" reads as coverage it does not have. Both
-    silences this closes were reported together — an activation date invisible
-    until tripped, and a disposition duty a repo could not tell it had opted out
-    of. Reporting only; it changes no verdict and no exit code.
+def validate_retro_artifact(
+    path: Path,
+    *,
+    collect_all: bool = False,
+    repo_root: Path | None = None,
+    output_dir: Path | None = None,
+) -> None:
+    """Validate one retro artifact.
+
+    ``repo_root``/``output_dir`` are the RUN's, bound once by the factory below rather
+    than re-derived per artifact -- both because re-resolving the adapter per artifact
+    is the ×150 regression the debug sibling records, and because the floors that read
+    them must agree with the announcement the same run prints.
     """
-    prefix = retro_artifact_prefix(run.repo_root)
-    ledger = run.repo_root / prefix / LESSON_LEDGER_FILENAME
-    declared = ledger.is_file()
-    activation = _lesson_evaluation.ACTIVATION_DATE.isoformat()
-    if declared:
-        print(
-            f"Lesson evaluation floor: enforced for retros dated >= {activation} "
-            f"(evaluator declared at {prefix}{LESSON_LEDGER_FILENAME})."
-        )
-        return
-    print(
-        f"Lesson evaluation floor: inert — this repo declares no lesson evaluator "
-        f"({prefix}{LESSON_LEDGER_FILENAME} absent), so no retro owes a disposition. "
-        f"Opt in with `{lesson_ledger_bootstrap_command(run.repo_root)}`; the floor then applies "
-        f"from {activation}."
-    )
-
-
-def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     observed_date = _retro_observed_date(path, lines)
     checks = (
@@ -530,13 +437,36 @@ def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
         # script's, because the two differ exactly where it matters: an exported copy
         # validating a consuming repo's retro would otherwise resolve `REPO_ROOT` to the
         # plugin tree and name charness's design doc at a consumer.
-        lambda: validate_north_star_alignment(lines, observed_date, _repo_root_for(path)),
-        lambda: validate_lesson_evaluation_disposition(path, lines, observed_date),
+        # The RUN's root when there is one: `--repo-root` is the repo being validated,
+        # while `_repo_root_for` can only infer it from a canonical layout and returns
+        # None for every consumer that declares another `output_dir` -- which silently
+        # dropped the per-repo design-doc name this argument exists to carry.
+        lambda: validate_north_star_alignment(
+            lines, observed_date, repo_root if repo_root is not None else _repo_root_for(path)
+        ),
+        lambda: validate_lesson_evaluation_disposition(
+            path, lines, observed_date, output_dir=output_dir
+        ),
     )
     # collect_all surfaces every violation in one pass (the CLI default) so a
     # multi-rule retro draft is fixed in one edit instead of one rule per gate
     # run. --fail-fast opts back into stopping at the first violation.
     run_validation_checks(checks, collect_all=collect_all, artifact_label="retro artifact")
+
+
+def _validate_factory(run):
+    """Bind the per-RUN adapter resolution once, not once per artifact.
+
+    Both reasons are recorded elsewhere in this subsystem: the debug sibling measured
+    a per-artifact adapter read at ~150 reloads on a full sweep, and this module's own
+    verdict/announcement split came from two halves resolving the directory
+    independently. One resolution per run makes both problems unrepresentable.
+    """
+    repo_root = run.repo_root
+    output_dir = repo_root / retro_artifact_prefix(repo_root).rstrip("/")
+    return lambda artifact: validate_retro_artifact(
+        artifact, collect_all=run.collect_all, repo_root=repo_root, output_dir=output_dir
+    )
 
 
 def main() -> int:
@@ -549,9 +479,7 @@ def main() -> int:
         artifact_label="retro artifact",
         changed_paths_fn=changed_paths,
         candidate_paths_fn=candidate_paths,
-        validate_factory=lambda run: (
-            lambda artifact: validate_retro_artifact(artifact, collect_all=run.collect_all)
-        ),
+        validate_factory=_validate_factory,
         fail_fast_help=(
             "Stop at the first rule violation instead of reporting every violation in one pass."
         ),

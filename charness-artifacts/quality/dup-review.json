@@ -2879,6 +2879,13 @@
     },
     {
       "class": "intentional",
+      "id": "9b4662e0d3e0baef",
+      "note": "the per-skill `for field in STRING_FIELDS: optional_string(...)` / `STRING_LIST_FIELDS: optional_string_list(...)` binding loop, shared by five adapter validators (critique_adapter_lib, create-skill, impl, release, retro). Four members are untouched; it surfaced as new because retro's resolve_adapter gained an `output_dir` canonicaliser and its line span shifted -- rotation, not new duplication. The primitives are ALREADY shared through scripts/adapter_lib (`optional_string`, `optional_string_list`, `validate_adapter_version`); what the detector matches is the loop that declares WHICH fields each skill has, which is the per-skill contract itself. A shared `apply_string_fields(data, validated, FIELDS, errors)` is a real available extraction and is named here rather than done: it touches five independently-owned adapter surfaces across four skills that must ship standalone, which is its own slice with its own proof, not a rider on a repair pass.",
+      "reviewed_at": "2026-08-17",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "9cfe2051c81aa248",
       "note": "The REQUIRED skill-runtime bootstrap block, same family already accepted as b989fb81bcc1a770 with a rotated content-addressed id after this slice edited a member (the id-rotation behaviour #534 tracks). It cannot be factored into a helper: its job is to LOCATE the helper loader before any shared import is possible, and check_bootstrap_shim_consistency already guards it against drift.",
       "reviewed_at": "2026-08-09",

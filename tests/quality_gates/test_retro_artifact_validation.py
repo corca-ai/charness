@@ -398,3 +398,124 @@ def test_a_named_missing_retro_is_refused_under_a_custom_output_dir(tmp_path: Pa
 
     assert result.returncode != 0, result.stdout
     assert "2026-08-17-never-written.md" in (result.stdout + result.stderr)
+
+
+def test_verdict_and_announcement_agree_under_a_custom_output_dir(tmp_path: Path) -> None:
+    """One run must not refuse an artifact and report no duty in the same breath.
+
+    The half-done migration shipped exactly that: `report_enforcement_scope` moved to
+    the adapter while `lesson_evaluator_declared` kept the literal
+    `charness-artifacts/retro`, so a consumer declaring `artifacts/retros` got
+    "Lesson evaluation floor: inert -- no retro owes a disposition" on stdout and a
+    refusal for a missing disposition in the exit code. Running the opt-in command the
+    message printed could never fix it, because `init_lesson_ledger.py` writes to the
+    directory the verdict half never looked at.
+    """
+    repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
+    (repo / "artifacts" / "retros" / "2026-08-17-demo.md").write_text(
+        _ACTIVATED_RETRO, encoding="utf-8"
+    )
+
+    result = run_script(
+        str(ROOT / "scripts" / "validate_retro_artifact.py"), "--repo-root", str(repo), "--all"
+    )
+
+    combined = result.stdout + result.stderr
+    announced_inert = "floor: inert" in combined
+    refused_for_disposition = result.returncode != 0 and "Lesson evaluation" in combined
+    assert not (announced_inert and refused_for_disposition), combined
+    # This repo declares no ledger, so the honest pair is: announce inert, do not refuse.
+    assert announced_inert, combined
+    assert result.returncode == 0, combined
+
+
+def test_an_opted_in_custom_output_dir_repo_still_owes_its_disposition(tmp_path: Path) -> None:
+    """The other direction: the floor must not switch itself off for these repos."""
+    repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
+    (repo / "artifacts" / "retros" / "2026-08-17-demo.md").write_text(
+        _ACTIVATED_RETRO, encoding="utf-8"
+    )
+    init_lesson_ledger.init_lesson_ledger(
+        repo_root=repo,
+        output_dir=repo / "artifacts" / "retros",
+        summary_path=repo / "artifacts" / "retros" / "recent-lessons.md",
+    )
+
+    result = run_script(
+        str(ROOT / "scripts" / "validate_retro_artifact.py"), "--repo-root", str(repo), "--all"
+    )
+
+    assert result.returncode != 0, result.stdout
+    assert "Lesson evaluation" in (result.stdout + result.stderr)
+
+
+def test_a_sweep_over_a_missing_output_directory_is_refused_not_reported_clean(
+    tmp_path: Path,
+) -> None:
+    """`--all` IS the corpus audit, so it must not be satisfiable by looking nowhere.
+
+    The permissive adapter read was copied from the debug sibling without the
+    directory-existence refusal that made it safe there: `output_dir: [unclosed`
+    parses to a plain string with `valid: True`, globs nothing, and printed green
+    over the entire corpus.
+    """
+    repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
+    (repo / "artifacts" / "retros").rmdir()
+
+    result = run_script(
+        str(ROOT / "scripts" / "validate_retro_artifact.py"), "--repo-root", str(repo), "--all"
+    )
+
+    assert result.returncode != 0, result.stdout
+    assert "not a clean corpus" in result.stderr
+    assert "Validated 0" not in result.stdout
+
+
+def test_an_untidy_output_dir_does_not_split_the_scaffold_from_the_validator(
+    tmp_path: Path,
+) -> None:
+    """One trailing slash reopened the whole fail-quiet: the scaffold built its write
+    path with a raw f-string while the validator normalised, so `retro/` produced
+    `retro//x.md`, whose tail then held a `/` and was dropped as a nested archive.
+    Canonicalising in the adapter is what makes the two halves agree by construction."""
+    resolve_adapter = load_script_module(
+        "retro_resolve_adapter_untidy", ROOT / "skills/public/retro/scripts/resolve_adapter.py"
+    )
+    for untidy in ("charness-artifacts/retro/", "./charness-artifacts/retro", "charness-artifacts//retro"):
+        data, errors, _warnings = resolve_adapter.validate_adapter_data(
+            {"version": 1, "output_dir": untidy}, tmp_path
+        )
+        assert errors == [], (untidy, errors)
+        assert data["output_dir"] == "charness-artifacts/retro", untidy
+
+
+def test_an_output_dir_outside_the_repo_is_refused_by_the_adapter(tmp_path: Path) -> None:
+    """Every consumer joins this value to the repo root, so a value that resolves
+    outside cannot be made to mean anything; owning nothing is the fail-quiet."""
+    resolve_adapter = load_script_module(
+        "retro_resolve_adapter_escape", ROOT / "skills/public/retro/scripts/resolve_adapter.py"
+    )
+    for escaping in ("/tmp/retros", "../outside"):
+        _data, errors, _warnings = resolve_adapter.validate_adapter_data(
+            {"version": 1, "output_dir": escaping}, tmp_path
+        )
+        assert any("repo-relative" in error for error in errors), (escaping, errors)
+
+
+def test_prefix_resolution_returns_a_verdict_when_the_consumer_resolver_raises(
+    tmp_path: Path,
+) -> None:
+    """A verdict surface must not traceback. The docstring claimed an unreadable
+    adapter kept today's behaviour while only a MISSING one did."""
+    output_dir_lib = load_script_module(
+        "retro_output_dir_lib_raising", ROOT / "scripts" / "retro_output_dir_lib.py"
+    )
+    repo = tmp_path / "broken"
+    resolver = repo / "skills" / "public" / "retro" / "scripts" / "resolve_adapter.py"
+    resolver.parent.mkdir(parents=True)
+    resolver.write_text("raise ImportError('skill_runtime_bootstrap.py not found')\n", encoding="utf-8")
+
+    assert (
+        output_dir_lib.retro_artifact_prefix(repo)
+        == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
+    )
