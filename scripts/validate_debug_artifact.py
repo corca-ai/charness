@@ -54,6 +54,15 @@ FORCED_RISK_CLASSES = _scripts_risk_interrupt_lib_module.FORCED_RISK_CLASSES
 ALLOWED_GENERALIZATION_PRESSURE = _scripts_risk_interrupt_lib_module.ALLOWED_GENERALIZATION_PRESSURE
 _parse_risk_classes = _scripts_risk_interrupt_lib_module._parse_risk_classes
 
+# The interrupt/seam grammar lives in its own module (split at the length cap
+# during #636's one-pass reporting work); re-exported here so callers and tests
+# keep one import surface for debug validation.
+_scripts_debug_interrupt_grammar_module = import_repo_module(__file__, "scripts.debug_interrupt_grammar")
+section_lines = _scripts_debug_interrupt_grammar_module.section_lines
+extract_prefixed_values = _scripts_debug_interrupt_grammar_module.extract_prefixed_values
+validate_current_interrupt_sections = _scripts_debug_interrupt_grammar_module.validate_current_interrupt_sections
+validate_dated_seam_risk_enums = _scripts_debug_interrupt_grammar_module.validate_dated_seam_risk_enums
+
 SIBLING_BOUNDARY_HEADINGS = (
     "## Seam Risk",
     "## Interrupt Decision",
@@ -102,108 +111,6 @@ def validate_candidate_causes(lines: list[str]) -> None:
     bullets = [line.strip() for line in lines[start:end] if line.strip().startswith("- ")]
     if len(bullets) < 3:
         raise ValidationError("`## Candidate Causes` must list at least three plausible causes")
-
-
-def section_lines(lines: list[str], heading: str, next_headings: tuple[str, ...]) -> list[str]:
-    start = find_index(lines, heading) + 1
-    end = len(lines)
-    for candidate in next_headings:
-        if candidate == heading:
-            continue
-        try:
-            index = find_index(lines, candidate)
-        except ValidationError:
-            continue
-        if index > start and index < end:
-            end = index
-    return [line.strip() for line in lines[start:end] if line.strip()]
-
-
-def extract_prefixed_values(lines: list[str], prefixes: tuple[str, ...]) -> dict[str, str]:
-    values: dict[str, str] = {}
-    for prefix in prefixes:
-        line = next((line for line in lines if line.startswith(prefix)), None)
-        if line is None:
-            raise ValidationError(f"missing required line `{prefix}...`")
-        value = line[len(prefix) :].strip()
-        if not value:
-            raise ValidationError(f"`{prefix}...` must not be empty")
-        values[prefix] = value
-    return values
-
-
-def validate_current_interrupt_sections(lines: list[str]) -> None:
-    if "## Seam Risk" not in lines or "## Interrupt Decision" not in lines:
-        raise ValidationError("current debug artifact must include `## Seam Risk` and `## Interrupt Decision`")
-
-    seam_lines = section_lines(lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention"))
-    interrupt_lines = section_lines(
-        lines,
-        "## Interrupt Decision",
-        ("## Seam Risk", "## Interrupt Decision", "## Prevention", "## Related Prior Incidents"),
-    )
-    seam_values = extract_prefixed_values(
-        seam_lines,
-        (
-            "- Interrupt ID: ",
-            "- Risk Class: ",
-            "- Seam: ",
-            "- Disproving Observation: ",
-            "- What Local Reasoning Cannot Prove: ",
-            "- Generalization Pressure: ",
-        ),
-    )
-    interrupt_values = extract_prefixed_values(
-        interrupt_lines,
-        (
-            "- Critique Required: ",
-            "- Next Step: ",
-            "- Handoff Artifact: ",
-        ),
-    )
-    risk_classes = tuple(part.strip() for part in seam_values["- Risk Class: "].split(",") if part.strip())
-    if not risk_classes:
-        raise ValidationError("`Risk Class` must list at least one value")
-    invalid = [value for value in risk_classes if value not in ALLOWED_RISK_CLASSES]
-    if invalid:
-        raise ValidationError("`Risk Class` contains unknown values")
-    if "none" in risk_classes and len(risk_classes) > 1:
-        raise ValidationError("`Risk Class: none` cannot be combined with other values")
-
-    generalization_pressure = seam_values["- Generalization Pressure: "]
-    if generalization_pressure not in ALLOWED_GENERALIZATION_PRESSURE:
-        raise ValidationError("`Generalization Pressure` must be `none`, `monitor`, or `factor-now`")
-
-    critique_required = interrupt_values["- Critique Required: "]
-    if critique_required not in {"yes", "no"}:
-        raise ValidationError("`Critique Required` must be `yes` or `no`")
-    next_step = interrupt_values["- Next Step: "]
-    if next_step not in {"impl", "spec"}:
-        raise ValidationError("`Next Step` must be `impl` or `spec`")
-
-    # `Resolution` is OPTIONAL for backward-compat (legacy artifacts predate it):
-    # a missing field is read by plan_debug_run.py as an open investigation to
-    # continue. When the author DOES declare it, constrain it to the lifecycle
-    # enum the planner consumes (`open` to continue, `resolved` to demote the
-    # pointer to a prior incident so it stops hijacking a fresh bug).
-    resolution_line = next((line for line in interrupt_lines if line.startswith("- Resolution: ")), None)
-    if resolution_line is not None:
-        # Match the planner's case-folding (plan_debug_run.py lowercases before the
-        # `== "resolved"` compare) so the validator never rejects a value the
-        # consumer would honor — a producer/consumer mismatch in its own right.
-        resolution = resolution_line[len("- Resolution: ") :].strip().lower()
-        if resolution not in {"open", "resolved"}:
-            raise ValidationError("`Resolution` must be `open` or `resolved`")
-
-    forced = bool(set(risk_classes) & FORCED_RISK_CLASSES or generalization_pressure == "factor-now")
-    if forced and critique_required != "yes":
-        raise ValidationError("forced risk interrupt must record `Critique Required: yes`")
-    if forced and next_step != "spec":
-        raise ValidationError("forced risk interrupt must record `Next Step: spec`")
-    if forced:
-        handoff = interrupt_values["- Handoff Artifact: "]
-        if not handoff.startswith("charness-artifacts/spec/") or not handoff.endswith(".md"):
-            raise ValidationError("forced risk interrupt must point `Handoff Artifact` at `charness-artifacts/spec/*.md`")
 
 
 def validate_current_invariant_proof(lines: list[str]) -> None:
@@ -304,43 +211,6 @@ def validate_falsifiable_hypothesis_marker(lines: list[str]) -> None:
         "`disconfirmer: n/a — <why no cheap refutation exists>` escape, or the trivial-fix "
         f"short-circuit, also satisfies it); see {FALSIFIABLE_SOURCE_REFERENCE}."
     )
-
-
-def validate_dated_seam_risk_enums(lines: list[str]) -> None:
-    """Enforce the `risk_interrupt_lib` Risk Class / Generalization Pressure
-    taxonomy on dated debug records that carry a `## Seam Risk` section.
-
-    `risk_interrupt_lib.parse_debug_interrupt` — consumed by `plan_risk_interrupt`
-    in `run_slice_closeout.py` via the current-pointer `latest.md` — rejects an
-    off-taxonomy `Risk Class` / `Generalization Pressure`. The dated author-time
-    path did not run that enum check, so an off-taxonomy value passed at write
-    time and only surfaced repo-wide at closeout, far from the artifact (#366).
-    This applies the same enums the consumer uses (imported, not hand-copied) at
-    author time.
-
-    Only the enum subset runs on dated records — forced-interrupt completeness
-    (`Critique Required` / `Next Step` / spec `Handoff Artifact`) stays a
-    `latest.md` concern — so the historical dated corpus, whose `## Seam Risk`
-    values are all in-taxonomy, is not retro-regressed. Records with no
-    `## Seam Risk` section (legacy shapes) are unaffected.
-    """
-    if "## Seam Risk" not in lines:
-        return
-    seam_lines = section_lines(lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention"))
-    seam_values = extract_prefixed_values(
-        seam_lines,
-        (
-            "- Risk Class: ",
-            "- Generalization Pressure: ",
-        ),
-    )
-    _parse_risk_classes(seam_values["- Risk Class: "])
-    generalization_pressure = seam_values["- Generalization Pressure: "]
-    if generalization_pressure not in ALLOWED_GENERALIZATION_PRESSURE:
-        raise ValidationError(
-            "`Generalization Pressure` must be one of "
-            + ", ".join(f"`{value}`" for value in sorted(ALLOWED_GENERALIZATION_PRESSURE))
-        )
 
 
 def _same_resolved_path(left: Path, right: Path) -> bool:

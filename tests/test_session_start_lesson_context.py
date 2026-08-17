@@ -480,16 +480,20 @@ def test_the_refresh_command_resolves_against_the_tree_it_runs_from(tmp_path: Pa
 def test_the_refresh_command_falls_back_to_a_placeholder_rather_than_a_wrong_path(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Neither layout resolved: emit `<charness>/...`, not a path that does not exist.
+    """Neither layout resolved: emit a bare-token placeholder, not a wrong path.
 
     This is the branch for a tree shaped like neither the authoring repo nor the
     installed plugin. A reader can substitute a placeholder; a reader cannot debug a
-    confidently-printed path that is simply absent. Driven by pointing the module at a
-    tree that has no refresh script, because both real layouts DO resolve here.
+    confidently-printed path that is simply absent. The token is BARE on purpose:
+    a `<...>` placeholder pasted into a shell becomes a redirection error, and
+    `skills/public/` is a spelling no consuming tree has (#632). Driven by pointing
+    the module at a tree that has no refresh script, because both real layouts DO
+    resolve here.
     """
     monkeypatch.setattr(lesson_context, "_script_tree_root", lambda: tmp_path)
 
     text = lesson_context._refresh_command(tmp_path)
 
-    assert text.startswith("python3 <charness>/skills/public/retro/scripts/")
+    assert text.startswith("python3 CHARNESS_PLUGIN_DIR/skills/retro/scripts/")
+    assert "<" not in text
     assert f"--repo-root {tmp_path}" in text

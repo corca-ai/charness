@@ -712,3 +712,52 @@ def test_missing_output_directory_reports_no_misleading_scaffold_hint(tmp_path: 
     assert result.returncode == 1
     assert "No debug output directory" in result.stderr
     assert "scaffold" not in result.stderr
+
+
+def test_marker_case_variant_is_named_and_reported_with_its_siblings(tmp_path: Path) -> None:
+    """One gate run teaches the full accepted shape (#636).
+
+    A `- Non-claims:` case variant used to read as plainly missing, and each
+    missing marker surfaced one per run. The report must name the near-miss AS a
+    case problem and carry the other missing marker in the same message.
+    In-process on purpose: the CLI conversion is already pinned by the
+    subprocess tests above, and the boundary-bypass ratchet counts every new
+    subprocess call site.
+    """
+    import pytest
+
+    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact()
+        .replace("- Non-Claims: n/a\n", "- Non-claims: n/a\n")
+        .replace("- Producer Proof: n/a\n", ""),
+    )
+    artifact = repo / "charness-artifacts" / "debug" / "latest.md"
+    with pytest.raises(ValidationError) as excinfo:
+        validate_debug_artifact(artifact, collect_all=True, current_pointer=artifact)
+    message = str(excinfo.value)
+    assert "marker prefixes are case-sensitive" in message
+    assert "`- Non-claims:`" in message
+    assert "missing required line `- Producer Proof: ...`" in message
+
+
+def test_enum_violations_report_together_with_observed_values(tmp_path: Path) -> None:
+    """Two enum deviations cost one gate run, not two, and each names its value."""
+    import pytest
+
+    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact()
+        .replace("- Critique Required: no\n", "- Critique Required: no (see note)\n")
+        .replace("- Next Step: impl\n", "- Next Step: implement\n"),
+    )
+    artifact = repo / "charness-artifacts" / "debug" / "latest.md"
+    with pytest.raises(ValidationError) as excinfo:
+        validate_debug_artifact(artifact, collect_all=True, current_pointer=artifact)
+    message = str(excinfo.value)
+    assert "`Critique Required` must be `yes` or `no` (found `no (see note)`)" in message
+    assert "`Next Step` must be `impl` or `spec` (found `implement`)" in message

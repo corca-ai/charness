@@ -479,7 +479,7 @@
     {
       "class": "intentional",
       "id": "1e790839dc306944",
-      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape — de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
+      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape \u2014 de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
       "reviewed_at": "2026-08-08",
       "surface": "doc"
     },
@@ -514,7 +514,7 @@
     {
       "class": "intentional",
       "id": "222aaec8531c8f44",
-      "note": "claim_fidelity_lib _validate_string_list vs _validate_optional_string_list: deliberately-distinct required-vs-optional channel validators sharing only the duplicate-entry check and return tail; keeping them separate documents the RCF-or-RSF floor contract (one channel required non-empty, the other optional/None) — extraction would obscure the distinction — intentional",
+      "note": "claim_fidelity_lib _validate_string_list vs _validate_optional_string_list: deliberately-distinct required-vs-optional channel validators sharing only the duplicate-entry check and return tail; keeping them separate documents the RCF-or-RSF floor contract (one channel required non-empty, the other optional/None) \u2014 extraction would obscure the distinction \u2014 intentional",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -696,7 +696,7 @@
     {
       "class": "intentional",
       "id": "2dd39753778c7cb1",
-      "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable — intentional",
+      "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable \u2014 intentional",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -913,7 +913,7 @@
     {
       "class": "intentional",
       "id": "36b2225b307ee288",
-      "note": "an IMPORT block (`re`/`runpy`/`sys`, `pathlib.Path`, `types.SimpleNamespace`, `typing.Any`) shared by two quality inventories that both bootstrap a sibling module via runpy. Not extractable by construction — imports cannot be factored out — and it surfaced as new only because this session's S26/S30/S32 edits shifted the spans around it.",
+      "note": "an IMPORT block (`re`/`runpy`/`sys`, `pathlib.Path`, `types.SimpleNamespace`, `typing.Any`) shared by two quality inventories that both bootstrap a sibling module via runpy. Not extractable by construction \u2014 imports cannot be factored out \u2014 and it surfaced as new only because this session's S26/S30/S32 edits shifted the spans around it.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -962,7 +962,7 @@
     {
       "class": "intentional",
       "id": "39f3067dafaf11d2",
-      "note": "two adjacent list-building functions in issue_verify_closeout_body: `_classification_requirements` (a per-classification table of required field ids and their aliases) and `_missing_ledger_fields` (the walk that evaluates that table). Same SHAPE — short function, builds a list, returns it — and entirely different content: one is data, the other is the verdict loop over it. Collapsing them would fuse the table with its interpreter, which is the opposite of the separation that makes the classification set readable. Surfaced as NEW by rotation: this slice ADDED the separate-counts rule to the sibling ledger, which changed `_missing_ledger_fields`'s length enough to hash against its neighbour. The slice already took the genuine consolidation available — both sibling-field shape rules (decision/proof, and population-vs-removals) now live in one owner, `issue_closeout_ledger_counts.missing_sibling_ledger_fields`, rather than inline at the call site — and the family persisted after it. Classified rather than chased: this run has already MEASURED that letting a rotated duplicate hash drive the design of a proof surface produces a worse verdict surface (see 2f95a48e67c2f1b5, where that chase routed two complete-state floors onto the wrong section walk and shipped a latent false green). ROTATED to 39f3067dafaf11d2 the same day, same two members, same reasoning: the round-2 repair threaded a `substantive=` predicate through the sibling call, changing the function's length again. The hash moves whenever either neighbour's line count does, which is itself the argument for classifying rather than chasing.",
+      "note": "two adjacent list-building functions in issue_verify_closeout_body: `_classification_requirements` (a per-classification table of required field ids and their aliases) and `_missing_ledger_fields` (the walk that evaluates that table). Same SHAPE \u2014 short function, builds a list, returns it \u2014 and entirely different content: one is data, the other is the verdict loop over it. Collapsing them would fuse the table with its interpreter, which is the opposite of the separation that makes the classification set readable. Surfaced as NEW by rotation: this slice ADDED the separate-counts rule to the sibling ledger, which changed `_missing_ledger_fields`'s length enough to hash against its neighbour. The slice already took the genuine consolidation available \u2014 both sibling-field shape rules (decision/proof, and population-vs-removals) now live in one owner, `issue_closeout_ledger_counts.missing_sibling_ledger_fields`, rather than inline at the call site \u2014 and the family persisted after it. Classified rather than chased: this run has already MEASURED that letting a rotated duplicate hash drive the design of a proof surface produces a worse verdict surface (see 2f95a48e67c2f1b5, where that chase routed two complete-state floors onto the wrong section walk and shipped a latent false green). ROTATED to 39f3067dafaf11d2 the same day, same two members, same reasoning: the round-2 repair threaded a `substantive=` predicate through the sibling call, changing the function's length again. The hash moves whenever either neighbour's line count does, which is itself the argument for classifying rather than chasing.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -997,7 +997,7 @@
     {
       "class": "intentional",
       "id": "3b537fee705455a7",
-      "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom — intentional",
+      "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom \u2014 intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -1193,14 +1193,14 @@
     {
       "class": "intentional",
       "id": "447ce891d33e3595",
-      "note": "the `main()` of the two measurement scripts written on 2026-08-01 — measure_adapter_yaml_uninterpreted and measure_inventory_consumption_floor: parse --repo-root/--json, call scan(), print JSON or a human summary, map the findings to an exit code. The SHAPE is deliberately the same because this repo's rule is that a threshold is defended by a re-runnable number, and an operator should be able to run either script the same way. What differs is every line of the body: different corpora, different report keys, different exit conditions (one refuses uninterpreted lines and unreadable files, the other refuses lowered citations, refused exemptions, and below-floor label values). Extracting a shared CLI would mean a framework that takes a scan function and a printer, which is more machinery than two ~40-line mains.",
+      "note": "the `main()` of the two measurement scripts written on 2026-08-01 \u2014 measure_adapter_yaml_uninterpreted and measure_inventory_consumption_floor: parse --repo-root/--json, call scan(), print JSON or a human summary, map the findings to an exit code. The SHAPE is deliberately the same because this repo's rule is that a threshold is defended by a re-runnable number, and an operator should be able to run either script the same way. What differs is every line of the body: different corpora, different report keys, different exit conditions (one refuses uninterpreted lines and unreadable files, the other refuses lowered citations, refused exemptions, and below-floor label values). Extracting a shared CLI would mean a framework that takes a scan function and a printer, which is more machinery than two ~40-line mains.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
     {
       "class": "intentional",
       "id": "449b33b02d20b1fc",
-      "note": "the loop skeletons of adapter_lib's two parsers, _parse_list_items and _parse_block: read a line's shape, skip the ignorable ones, break on a dedent, dispatch on what is left. Everything genuinely shared was extracted while closing sweep row S24 — _line_shape, _is_ignorable, and _mapping_value (the three-way `key:` value dispatch) — and this is what did not shrink. What remains differs in the only way that matters: one accumulates a list and BREAKS on a non-item at its own indent, the other accumulates a mapping and RECORDS that same line as uninterpreted. Collapsing them would mean one loop branching on which node type it is parsing, which is the shape this file already avoids. Verified behavior-identical to HEAD's parser across the 74 files `git ls-files '*.yaml' '*.yml'` lists, by loading both module versions side by side from a detached HEAD worktree and diffing `load_yaml` output — a wider scope than the 44-file probe, and a different check from the in-module identity assertion, which only proves the sink is observation-only. Fingerprint rotated 9c85183d79665013 -> 449b33b02d20b1fc when the round-2 repairs edited both loops; same two members, same reasoning.",
+      "note": "the loop skeletons of adapter_lib's two parsers, _parse_list_items and _parse_block: read a line's shape, skip the ignorable ones, break on a dedent, dispatch on what is left. Everything genuinely shared was extracted while closing sweep row S24 \u2014 _line_shape, _is_ignorable, and _mapping_value (the three-way `key:` value dispatch) \u2014 and this is what did not shrink. What remains differs in the only way that matters: one accumulates a list and BREAKS on a non-item at its own indent, the other accumulates a mapping and RECORDS that same line as uninterpreted. Collapsing them would mean one loop branching on which node type it is parsing, which is the shape this file already avoids. Verified behavior-identical to HEAD's parser across the 74 files `git ls-files '*.yaml' '*.yml'` lists, by loading both module versions side by side from a detached HEAD worktree and diffing `load_yaml` output \u2014 a wider scope than the 44-file probe, and a different check from the in-module identity assertion, which only proves the sink is observation-only. Fingerprint rotated 9c85183d79665013 -> 449b33b02d20b1fc when the round-2 repairs edited both loops; same two members, same reasoning.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -1256,7 +1256,7 @@
     {
       "class": "intentional",
       "id": "479ac3885e3e2227",
-      "note": "stdlib import header (argparse/json/re/runpy/pathlib/SimpleNamespace/typing) shared by plan_handoff_run and audit_public_release_narrative; a shared import shim would couple independent portable scripts for a stdlib boilerplate — intentional",
+      "note": "stdlib import header (argparse/json/re/runpy/pathlib/SimpleNamespace/typing) shared by plan_handoff_run and audit_public_release_narrative; a shared import shim would couple independent portable scripts for a stdlib boilerplate \u2014 intentional",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -1417,7 +1417,7 @@
     {
       "class": "intentional",
       "id": "50f11ad09152927c",
-      "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape — a shared echo helper would couple unrelated skill adapter libs for negligible value",
+      "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape \u2014 a shared echo helper would couple unrelated skill adapter libs for negligible value",
       "reviewed_at": "2026-06-28",
       "surface": "code"
     },
@@ -1431,7 +1431,7 @@
     {
       "class": "intentional",
       "id": "5159d62f261a8894",
-      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -1578,7 +1578,7 @@
     {
       "class": "intentional",
       "id": "57a52ad013e764b8",
-      "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
+      "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained \u2014 intentional",
       "reviewed_at": "2026-07-02",
       "surface": "doc"
     },
@@ -1613,7 +1613,7 @@
     {
       "class": "intentional",
       "id": "58d074440dbf9aa2",
-      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -1718,7 +1718,7 @@
     {
       "class": "intentional",
       "id": "5e83d247011389f1",
-      "note": "idiom-sized two-line early-return guard (`if <mapping>.get(<key>) != <literal>: return`) shared by scripts/validate_integrations.py's cautilus-trigger applicability check and the release resume's unproven-claims warning. Different mappings, different keys, different subsystems, and no shared behaviour to extract — only a Python spelling. Same class already accepted as 003780cc89f2ccfd and 349f5d577fe2588b. Surfaced as new because the release helper gained the second member when a CI-blocked guard was extracted into its own testable function; the validate_integrations member is untouched.",
+      "note": "idiom-sized two-line early-return guard (`if <mapping>.get(<key>) != <literal>: return`) shared by scripts/validate_integrations.py's cautilus-trigger applicability check and the release resume's unproven-claims warning. Different mappings, different keys, different subsystems, and no shared behaviour to extract \u2014 only a Python spelling. Same class already accepted as 003780cc89f2ccfd and 349f5d577fe2588b. Surfaced as new because the release helper gained the second member when a CI-blocked guard was extracted into its own testable function; the validate_integrations member is untouched.",
       "reviewed_at": "2026-08-13",
       "surface": "code"
     },
@@ -1767,7 +1767,7 @@
     {
       "class": "intentional",
       "id": "604e4e6088db9c52",
-      "note": "session-start hook `_debug` env-gated stderr helper shared by two STANDALONE user-level SessionStart entrypoints (scripts/session_start_find_skills.py, scripts/usage_episode_session_start.py), differing only by the module prefix string; family rotated when the 0.61.0 routing front-load shifted surrounding lines (the helper itself pre-existed in v0.60.0). session_start_find_skills.py is deliberately stdlib-only so the every-session hook cannot break on a sibling import; extracting the 3-line helper would add import/bootstrap coupling to the most safety-critical hook for no real value — intentional",
+      "note": "session-start hook `_debug` env-gated stderr helper shared by two STANDALONE user-level SessionStart entrypoints (scripts/session_start_find_skills.py, scripts/usage_episode_session_start.py), differing only by the module prefix string; family rotated when the 0.61.0 routing front-load shifted surrounding lines (the helper itself pre-existed in v0.60.0). session_start_find_skills.py is deliberately stdlib-only so the every-session hook cannot break on a sibling import; extracting the 3-line helper would add import/bootstrap coupling to the most safety-critical hook for no real value \u2014 intentional",
       "reviewed_at": "2026-07-04",
       "surface": "code"
     },
@@ -1851,7 +1851,7 @@
     {
       "class": "intentional",
       "id": "62e19bb7ee0fbe0a",
-      "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
+      "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) \u2014 intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
       "reviewed_at": "2026-07-05",
       "surface": "code"
     },
@@ -1872,7 +1872,7 @@
     {
       "class": "intentional",
       "id": "637bb6af7e7552e5",
-      "note": "The `spec_from_file_location` sibling-loader preamble, shared by thirteen members across `achieve` and `handoff`. Twelve are untouched and pre-date this slice: the family is REVEALED by adding a fourteenth, not introduced by it. Same rationale this file already records for e2be6ebfbea2ac95 and 1190bcd05d674cea: these modules are executed directly as often as they are imported, and the export flattens `skills/public/<id>/` to `skills/<id>/`, so a dotted import resolves in one layout and not the other. `goal_artifact_closeout_loaders.py` already collected the loaders it could, and its own docstring records that each stays VERBATIM so behavior is preserved exactly — a generic loader would have to re-register module names and would break the one-directional leaf dependency these floors rely on to avoid circular imports.",
+      "note": "The `spec_from_file_location` sibling-loader preamble, shared by thirteen members across `achieve` and `handoff`. Twelve are untouched and pre-date this slice: the family is REVEALED by adding a fourteenth, not introduced by it. Same rationale this file already records for e2be6ebfbea2ac95 and 1190bcd05d674cea: these modules are executed directly as often as they are imported, and the export flattens `skills/public/<id>/` to `skills/<id>/`, so a dotted import resolves in one layout and not the other. `goal_artifact_closeout_loaders.py` already collected the loaders it could, and its own docstring records that each stays VERBATIM so behavior is preserved exactly \u2014 a generic loader would have to re-register module names and would break the one-directional leaf dependency these floors rely on to avoid circular imports.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -2054,7 +2054,7 @@
     {
       "class": "intentional",
       "id": "6ff3e380d6a8fcaf",
-      "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract — every stage must present it identically so the stages compose — and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
+      "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract \u2014 every stage must present it identically so the stages compose \u2014 and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
       "reviewed_at": "2026-07-27",
       "surface": "code"
     },
@@ -2670,7 +2670,7 @@
     {
       "class": "intentional",
       "id": "8dc7bd9985a9904b",
-      "note": "Each conditional goal-artifact floor binds its OWN `RULE_DATE` to the shared `goal_artifact_floor_grammar.is_floor_in_scope` helper through a two-line `applies()`. The extraction this family suggests has already been done: the date comparison and the fail-closed-on-missing-`Created:` semantics live in the grammar, and what repeats is only the per-floor binding of a distinct landing date. Collapsing those bindings would mean one shared rule date across floors that landed on different days, which would retroactively apply a new floor to goals shaped before it existed — the exact corpus-reddening the grandfather exists to prevent. blocked-matrix, operator-queue, and backlog-recount are three independent floors, not three copies of one.",
+      "note": "Each conditional goal-artifact floor binds its OWN `RULE_DATE` to the shared `goal_artifact_floor_grammar.is_floor_in_scope` helper through a two-line `applies()`. The extraction this family suggests has already been done: the date comparison and the fail-closed-on-missing-`Created:` semantics live in the grammar, and what repeats is only the per-floor binding of a distinct landing date. Collapsing those bindings would mean one shared rule date across floors that landed on different days, which would retroactively apply a new floor to goals shaped before it existed \u2014 the exact corpus-reddening the grandfather exists to prevent. blocked-matrix, operator-queue, and backlog-recount are three independent floors, not three copies of one.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -3195,7 +3195,7 @@
     {
       "class": "intentional",
       "id": "b01eea3857c9c9a6",
-      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -3307,7 +3307,7 @@
     {
       "class": "intentional",
       "id": "b4c5b67aa226c2fc",
-      "note": "scripts/host_hook_install_lib.py: the two halves of the repo's standard try/except ImportError sibling-module bootstrap — the fallback arm must repeat the same import list after inserting the script directory on sys.path, so the repetition IS the idiom. It crossed the scan threshold only because this slice's matcher/entry-identity split added a second imported module to both halves; collapsing it would mean abandoning the bootstrap pattern in one file while every sibling keeps it. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
+      "note": "scripts/host_hook_install_lib.py: the two halves of the repo's standard try/except ImportError sibling-module bootstrap \u2014 the fallback arm must repeat the same import list after inserting the script directory on sys.path, so the repetition IS the idiom. It crossed the scan threshold only because this slice's matcher/entry-identity split added a second imported module to both halves; collapsing it would mean abandoning the bootstrap pattern in one file while every sibling keeps it. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
       "reviewed_at": "2026-07-30",
       "surface": "code"
     },
@@ -3335,14 +3335,14 @@
     {
       "class": "intentional",
       "id": "b5a9e7d2038bd0c3",
-      "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract — every stage must present it identically so the stages compose — and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
+      "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract \u2014 every stage must present it identically so the stages compose \u2014 and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
       "reviewed_at": "2026-07-27",
       "surface": "code"
     },
     {
       "class": "intentional",
       "id": "b6162ea7c2be7c0c",
-      "note": "The `issue` skill's sibling-import preamble — `runpy.run_path(.../issue_local_import.py)[\"sibling_loader\"](__file__)` plus the module bindings it produces. It is irreducible by construction: the preamble EXISTS to bootstrap loading a sibling module, so it cannot itself be loaded from a sibling without the chicken-and-egg it solves. `issue_close.py`, `issue_tool.py`, and `issue_read.py` already carried it; this slice added it to `issue_runtime.py` so that module could stop re-deriving the backend binary/template rule and call `issue_backend.resolve_op` instead — trading a three-line bootstrap idiom for the removal of a duplicated verdict rule that had no placeholder validation. Same rationale as the already-accepted `e2be6ebfbea2ac95` entry for per-entrypoint runtime bootstraps. Not claimed as measured against a prior scan of the tree.",
+      "note": "The `issue` skill's sibling-import preamble \u2014 `runpy.run_path(.../issue_local_import.py)[\"sibling_loader\"](__file__)` plus the module bindings it produces. It is irreducible by construction: the preamble EXISTS to bootstrap loading a sibling module, so it cannot itself be loaded from a sibling without the chicken-and-egg it solves. `issue_close.py`, `issue_tool.py`, and `issue_read.py` already carried it; this slice added it to `issue_runtime.py` so that module could stop re-deriving the backend binary/template rule and call `issue_backend.resolve_op` instead \u2014 trading a three-line bootstrap idiom for the removal of a duplicated verdict rule that had no placeholder validation. Same rationale as the already-accepted `e2be6ebfbea2ac95` entry for per-entrypoint runtime bootstraps. Not claimed as measured against a prior scan of the tree.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -3370,7 +3370,7 @@
     {
       "class": "intentional",
       "id": "b84a05853c8b2d2a",
-      "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants — a util module would couple them for little value; intentional",
+      "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants \u2014 a util module would couple them for little value; intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -3496,7 +3496,7 @@
     {
       "class": "intentional",
       "id": "c30381f2b0da17b7",
-      "note": "scripts/host_hook_entry_identity.py: the two thin public wrappers entries_match_command / entry_carries_foreign_command over the single _entry_holds predicate. Collapsing them into one call site would push the ours=True/ours=False polarity into every caller, which is exactly the confusion the named pair exists to prevent — the whole point of splitting them is that 'our hook is in this entry' and 'someone else's command is in this entry' are different questions with different consequences for whether the matcher may be rewritten.",
+      "note": "scripts/host_hook_entry_identity.py: the two thin public wrappers entries_match_command / entry_carries_foreign_command over the single _entry_holds predicate. Collapsing them into one call site would push the ours=True/ours=False polarity into every caller, which is exactly the confusion the named pair exists to prevent \u2014 the whole point of splitting them is that 'our hook is in this entry' and 'someone else's command is in this entry' are different questions with different consequences for whether the matcher may be rewritten.",
       "reviewed_at": "2026-07-30",
       "surface": "code"
     },
@@ -3615,7 +3615,7 @@
     {
       "class": "intentional",
       "id": "c9a1067198c8bb00",
-      "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
+      "note": "the repo's standard sibling-module import bootstrap \u2014 `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports \u2014 shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -3769,7 +3769,7 @@
     {
       "class": "intentional",
       "id": "d2a9d918b9d972a1",
-      "note": "optional-string-list validation shape shared by claim_fidelity_lib._validate_optional_string_list (raises ValidationError) and check_command_docs.optional_string_list (accumulates to an errors list); different error models across unrelated modules make a shared helper a coupling cost for no gain — intentional",
+      "note": "optional-string-list validation shape shared by claim_fidelity_lib._validate_optional_string_list (raises ValidationError) and check_command_docs.optional_string_list (accumulates to an errors list); different error models across unrelated modules make a shared helper a coupling cost for no gain \u2014 intentional",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -4021,7 +4021,7 @@
     {
       "class": "intentional",
       "id": "de4ecc062765a5eb",
-      "note": "ROTATED from 5f672b193b2f3c05 (itself rotated from 5505a8794c55f12d) — same two members, same reasoning, third re-fingerprint. Members: scripts/inventory_skill_script_references.py and skills/public/handoff/scripts/prepare_chunk_packet.py, sharing `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option. Re-fingerprinted this time by adding `--strict` when the operator promoted the check from advisory to gate. Not extractable: a portable skill package must not import repo-level scripts/, and check_documented_command_flags/argparse_surface_lib read the option surface back off each script's own parser, so a shared builder would blind the documented-flag gate. The repeated rotation is itself evidence the family is boilerplate rather than debt — its membership never grows, only its hash.",
+      "note": "ROTATED from 5f672b193b2f3c05 (itself rotated from 5505a8794c55f12d) \u2014 same two members, same reasoning, third re-fingerprint. Members: scripts/inventory_skill_script_references.py and skills/public/handoff/scripts/prepare_chunk_packet.py, sharing `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option. Re-fingerprinted this time by adding `--strict` when the operator promoted the check from advisory to gate. Not extractable: a portable skill package must not import repo-level scripts/, and check_documented_command_flags/argparse_surface_lib read the option surface back off each script's own parser, so a shared builder would blind the documented-flag gate. The repeated rotation is itself evidence the family is boilerplate rather than debt \u2014 its membership never grows, only its hash.",
       "reviewed_at": "2026-08-02",
       "surface": "code"
     },
@@ -4168,7 +4168,7 @@
     {
       "class": "intentional",
       "id": "e7cd6cac93eb10b9",
-      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -4287,7 +4287,7 @@
     {
       "class": "intentional",
       "id": "ee2f2b3e036c78a7",
-      "note": "runtime_bootstrap import/bootstrap header shared by top-level scripts (build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics); portable modules keep local import bootstrap for direct execution — intentional, not extractable",
+      "note": "runtime_bootstrap import/bootstrap header shared by top-level scripts (build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics); portable modules keep local import bootstrap for direct execution \u2014 intentional, not extractable",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -4329,7 +4329,7 @@
     {
       "class": "intentional",
       "id": "f1b3765205bd97ef",
-      "note": "the tail of a validator `main()` — print a count to stderr and return 1, else print a 'Validated N …' line and return 0, then `if __name__ == '__main__': raise SystemExit(main())`. Shared by check_skill_bootstrap_vars (untouched) and check_markdown_inline_code, whose summary sentence changed on 2026-08-01 (it said 'wrapped inline code span(s)' for a finding class that is no longer only wraps) and rotated the fingerprint. This is the repo's standard CLI exit convention; the only thing that differs between the two is the sentence, and extracting it would mean a helper taking two format strings and a count.",
+      "note": "the tail of a validator `main()` \u2014 print a count to stderr and return 1, else print a 'Validated N \u2026' line and return 0, then `if __name__ == '__main__': raise SystemExit(main())`. Shared by check_skill_bootstrap_vars (untouched) and check_markdown_inline_code, whose summary sentence changed on 2026-08-01 (it said 'wrapped inline code span(s)' for a finding class that is no longer only wraps) and rotated the fingerprint. This is the repo's standard CLI exit convention; the only thing that differs between the two is the sentence, and extracting it would mean a helper taking two format strings and a count.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -4497,7 +4497,7 @@
     {
       "class": "intentional",
       "id": "fba5b0dd854c84ab",
-      "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them — intentional; revisit if a 3rd consumer appears",
+      "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them \u2014 intentional; revisit if a 3rd consumer appears",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -4626,6 +4626,20 @@
       "reviewed_at": "2026-08-17",
       "surface": "code",
       "note": "the per-skill `validator_command` wrapper, now shared by debug, critique and ideation scaffolds. Each is a delegation to scripts/scaffold_artifact_lib.validator_command -- the shared owner ALREADY holds the logic, and what repeats is the three-line wrapper a portable skill package needs to reach it. Debug joined the family in this slice by finally passing its write path (it emitted the whole-corpus command, so a fresh valid artifact exited 1 on unrelated legacy debt), so the duplication is these producers agreeing rather than drifting. Collapsing the wrappers would mean a skill importing another skill's script, which the package boundary forbids."
+    },
+    {
+      "class": "intentional",
+      "id": "ddff0a325db1a074",
+      "note": "section_lines/extract shape shared between debug_interrupt_grammar (author-time, #636 one-pass collected report naming case near-misses and observed values) and risk_interrupt_lib (closeout consumer, fail-fast one-at-a-time by design). The two serve different reporting contracts and cannot share an owner without a cycle: grammar imports risk_interrupt_lib for the enum taxonomy (#366), so risk_interrupt_lib cannot import the grammar back; artifact_validator, the common upstream, sits at 479/480 of its length cap. Surfaced because the #636 split created debug_interrupt_grammar.py; risk_interrupt_lib untouched. Unification deferred until artifact_validator has headroom or a fourth copy appears.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f628004cc09e5192",
+      "note": "prefix-marker extraction idiom shared with validate_cautilus_proof.py:81-86 (untouched, six lines). Same reasoning as ddff0a325db1a074: the grammar copy carries the #636 collected-report semantics the idiom copies deliberately do not; extracting a shared helper for a six-line idiom would couple an eval-only proof validator to the debug grammar module.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

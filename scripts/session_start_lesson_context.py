@@ -155,8 +155,12 @@ def _refresh_command(repo_root: Path) -> str:
     for relative in REFRESH_SCRIPT_RELATIVE:
         if (tree / relative).is_file():
             return f"python3 {tree / relative} --repo-root {repo_root}"
+    # Unreachable when either shipped layout is intact. The bare token follows
+    # `lesson_command_citation.PLUGIN_DIR_TOKEN`: a `<...>` placeholder inside a
+    # pasted command becomes a shell redirection error, and `skills/public/` is a
+    # spelling no consuming tree has (#632).
     return (
-        "python3 <charness>/skills/public/retro/scripts/refresh_recent_lessons.py "
+        "python3 CHARNESS_PLUGIN_DIR/skills/retro/scripts/refresh_recent_lessons.py "
         f"--repo-root {repo_root}"
     )
 
