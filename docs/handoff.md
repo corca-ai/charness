@@ -47,8 +47,10 @@
 
 ## Next Session
 
-1. **Confirm or refute the CI flake** named in `## Current State` before any new slice;
-   a red main that nobody owns is worse than a known-red one.
+1. **Tie the transient Quality Core failure to a cause, or stop suspecting
+   [#630](https://github.com/corca-ai/charness/issues/630).** One red run and one green
+   run over the same tests is a flake with no owner; the next recurrence should be caught
+   with the runner's markdownlint resolution logged, not re-diagnosed from memory.
 2. **Verify-and-close sweep for [#633](https://github.com/corca-ai/charness/issues/633),
    [#631](https://github.com/corca-ai/charness/issues/631),
    [#632](https://github.com/corca-ai/charness/issues/632), and
