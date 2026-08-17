@@ -143,7 +143,12 @@ def unresolvable_named_paths(
       it* is a real thing the caller named; a path that never existed is a typo.
 
     A git failure yields no known deletions, so the check falls back to on-disk
-    existence rather than to a blanket pass.
+    existence rather than to a blanket pass. That covers git RETURNING nonzero and git
+    being ABSENT: `check=False` suppresses only the first, and a missing binary raises
+    `FileNotFoundError` straight out of `subprocess.run`. The distinction was dead code
+    until a validator declared an `owned_prefix`; the first one that did made an
+    uncaught traceback reachable from a surface whose whole job is to render a verdict,
+    on any image that ships a lint stage without git.
     """
     if owned_prefix is None:
         return []
@@ -153,7 +158,14 @@ def unresolvable_named_paths(
         return []
     deleted: set[str] = set()
     for args in (["ls-files", "--deleted", "-z"], ["diff", "--cached", "--name-only", "--diff-filter=D", "-z"]):
-        result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
+        try:
+            result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
+        except OSError:
+            # No git binary, or it cannot be executed here. Same disposition as a git
+            # that ran and failed: no KNOWN deletions, so a named path that is missing
+            # on disk stays refused. Refusing is the safe direction -- the alternative
+            # is passing a run that validated nothing.
+            continue
         if result.returncode == 0:
             deleted.update(
                 entry for entry in result.stdout.decode("utf-8", errors="surrogateescape").split("\0") if entry

@@ -14,6 +14,7 @@ ruleset on the filename gave one file two verdicts depending on which name reach
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -363,3 +364,43 @@ def test_an_unreadable_candidate_is_not_current_rather_than_a_crash(tmp_path: Pa
     unreadable.mkdir()
 
     assert module.is_current_artifact(unreadable, pointer) is False
+
+
+def test_a_missing_git_binary_refuses_rather_than_crashing(tmp_path: Path) -> None:
+    """`check=False` suppresses a failing git, not an ABSENT one.
+
+    `unresolvable_named_paths` shells out to git to learn which named paths are gone
+    because this change deleted them. A missing binary raises `FileNotFoundError`
+    straight out of `subprocess.run`, and the surrounding docstring's "a git failure
+    yields no known deletions" promise did not cover it. The path was dead code until a
+    validator declared an `owned_prefix` -- the first one that did made an uncaught
+    traceback reachable from a validator, on any image that ships a lint stage without
+    git. Refusing is the safe direction; the alternative is passing a run that validated
+    nothing.
+    """
+    # Imported through the repo's own module path, not by file location: this module
+    # carries `from __future__ import annotations` dataclasses whose resolution needs
+    # the real package context, and a file-location load fails on them.
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import artifact_run_scope as module
+    finally:
+        sys.path.pop(0)
+
+    real_run = module.subprocess.run
+
+    def no_git(cmd, *args, **kwargs):
+        if cmd and cmd[0] == "git":
+            raise FileNotFoundError(2, "No such file or directory", "git")
+        return real_run(cmd, *args, **kwargs)
+
+    module.subprocess.run = no_git
+    try:
+        refused = module.unresolvable_named_paths(
+            tmp_path, ["charness-artifacts/debug/never-written.md"],
+            owned_prefix="charness-artifacts/debug/",
+        )
+    finally:
+        module.subprocess.run = real_run
+
+    assert refused == ["charness-artifacts/debug/never-written.md"]

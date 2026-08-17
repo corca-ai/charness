@@ -185,6 +185,11 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
         _packet(
             "debug-artifact-shape",
             "deterministic schema gate for the artifact this run writes; trust section/order failures",
+            # Ordering is load-bearing now that the command NAMES the artifact: run before
+            # the write and the validator refuses a path that resolves to nothing, which
+            # reads as a typo accusation for an agent doing the ordinary thing (cheap
+            # deterministic packets first).
+            run_when="after the artifact is written; the command names it by path",
             **_relative_script_command(
                 repo_root,
                 "scripts/validate_debug_artifact.py",

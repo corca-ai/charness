@@ -377,13 +377,16 @@ def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Repo
             warnings.append(
                 f"markdownlint-cli2 resolved as `{shlex.join(resolved)}` but produced no "
                 "engine output, so the markdownlint rule class was not forecast; a local "
-                "install (npm install, or markdownlint-cli2 on PATH) is what this needs. "
-                "The markdown gate still runs it at commit time."
+                "install (`npm ci`, or markdownlint-cli2 on PATH) is what this needs. "
+                "`check-markdown.sh` resolves the same three tiers and REFUSES at commit "
+                "time until one of them runs, so this is not a forecast you can skip."
             )
         else:
             warnings.append(
-                "markdownlint-cli2 (and npm) unavailable: the markdownlint rule class was "
-                "not forecast; the markdown gate still runs it at commit time."
+                "markdownlint-cli2 (and npm) unavailable: the markdownlint rule class was not "
+                "forecast. `check-markdown.sh` resolves the same three tiers and exits 1 "
+                "when none of them resolves, so install the engine (`npm ci`, or "
+                "markdownlint-cli2 on PATH) rather than waiting for the commit gate."
             )
     unforecast: list[str] = []
     if adapter_load_failed(repo_root):
@@ -461,7 +464,8 @@ def rules_payload(rules: dict[str, Any]) -> dict[str, Any]:
         "a markdownlint command resolves here; run with --path <draft> to forecast the "
         "rule findings, which is also what proves the engine actually runs"
         if rules["markdownlint"]["resolves"]
-        else "binary unavailable here; the markdown gate still runs it"
+        else "binary unavailable here; `check-markdown.sh` refuses at commit time until it "
+        "resolves, so install it (`npm ci`, or markdownlint-cli2 on PATH)"
     )
     regenerable = rules["regenerable_facts"]
     if regenerable["classes"] and not regenerable["verdict"]:

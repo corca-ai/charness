@@ -466,8 +466,9 @@ def run_changed_artifact_validator(
             named = ", ".join(unresolvable)
             print(
                 f"named {artifact_label} path(s) resolve to nothing: {named}; "
-                "nothing was validated. Check the spelling and that the path is (or was) a real "
-                "file in this repo.",
+                "nothing was validated. If you have not written the artifact yet, write it "
+                "first -- a scoped gate names its path before the file exists. Otherwise check "
+                "the spelling and that the path is (or was) a real file in this repo.",
                 file=sys.stderr,
             )
             return 1

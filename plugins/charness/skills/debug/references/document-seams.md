@@ -24,6 +24,8 @@ python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root .
 # then run the emitted validator_command
 ```
 
-The current pointer, usually `latest.md`, must use the scaffolded schema.
-Dated records can remain legacy-compatible so old incident memory is still
-readable and does not hide which new artifact failed validation.
+The current pointer, usually `latest.md`, must use the scaffolded schema, and so
+must the dated record it designates when the pointer is a symlink or a byte copy
+-- one file reached by two names gets one verdict. Every OTHER dated record can
+remain legacy-compatible so old incident memory is still readable and does not
+hide which new artifact failed validation.

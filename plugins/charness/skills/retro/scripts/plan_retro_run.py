@@ -298,20 +298,24 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
             write_artifact_effect=scaffold["write_artifact_effect"],
             validator_command=scaffold["validator_command"],
         ),
-        # Scoped for the same reason the sibling scaffold already scopes its own command:
-        # unscoped, a corpus validator's exit code mixes THIS artifact's verdict with
-        # legacy-schema debt in unrelated older records, and the operator cannot tell
-        # which one made it red. This packet's own scaffold sibling above emits a scoped
-        # command, so the two disagreed about what was being judged. `--all` stays the
-        # audit mode, and the broad gate and CI already run it.
+        # NOT scoped, deliberately, and this is a REVERSAL of a scoping change made in
+        # this same release. `validate_retro_artifact` keys both its candidate filter and
+        # its owned prefix on the literal `charness-artifacts/retro/`, while the path this
+        # packet would name comes from the adapter's `output_dir` -- a required, free-form
+        # consumer key. For a consumer who declares a different directory the two disagree,
+        # and the scoped command printed "Validated 0 retro artifact(s)." and exited 0:
+        # a schema gate reporting green having opened nothing. Measured, not theorised.
+        #
+        # The debug sibling could be scoped safely because its validator resolves the
+        # owned prefix from the adapter. Giving retro the same resolver means introducing
+        # adapter loading into a validator that has none, which is a verdict-surface
+        # change owing its own proof and review rounds -- not a release-eve edit. Until
+        # then the unscoped corpus command is the honest one: it always judges something.
         _packet(
             "retro-artifact-shape",
-            "deterministic Sibling Search follow-up grammar gate for the artifact this run writes;"
-            " trust section/format failures",
-            **_relative_script_command(
-                repo_root, "scripts/validate_retro_artifact.py",
-                "--repo-root", ".", "--paths", scaffold["write_artifact_path"],
-            ),
+            "deterministic Sibling Search follow-up grammar gate; trust section/format failures",
+            run_when="after the retro artifact is written; this validates the checked-in corpus",
+            **_relative_script_command(repo_root, "scripts/validate_retro_artifact.py", "--repo-root", "."),
         ),
         _packet(
             "auto-session-trigger",

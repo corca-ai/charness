@@ -1,0 +1,746 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-17T05:36:18Z",
+  "prepared_for": "release-v6.1.0",
+  "changed_ref": "1214f66ea052167592d9441b91bdf8bbe76e91ce..6f9c1cafdaaf0972c6672ce5b720a4012b9367da",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `1214f66ea052167592d9441b91bdf8bbe76e91ce..6f9c1cafdaaf0972c6672ce5b720a4012b9367da`:\n- .agents/release-adapter.yaml\n- .agents/surfaces.json\n- .github/workflows/mutation-tests.yml\n- .github/workflows/quality-core.yml\n- charness-artifacts/critique/2026-08-17-issue-617-closeout.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/issue/2026-08-16-6-0-0-closeout-ledger.md\n- charness-artifacts/issue/2026-08-16-issue-618-closeout.md\n- charness-artifacts/issue/2026-08-16-issue-619-closeout.md\n- charness-artifacts/issue/2026-08-16-issue-620-closeout.md\n- charness-artifacts/issue/2026-08-16-issue-621-closeout.md\n- charness-artifacts/issue/2026-08-16-issue-622-closeout.md\n- charness-artifacts/issue/2026-08-16-issue-623-closeout.md\n- charness-artifacts/issue/2026-08-16-issue-624-closeout.md\n- charness-artifacts/issue/2026-08-16-issue-625-closeout.md\n- charness-artifacts/issue/2026-08-16-issue-626-closeout-comment.md\n- charness-artifacts/issue/2026-08-16-issue-627-closeout.md\n- charness-artifacts/metrics/rca-ledger.jsonl\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/01-installed-vs-repo-spot-check.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/02-charness-doctor.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/03-tool-doctor-nose-present.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/04-tool-doctor-nose-pathscoped-missing.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/05-tool-install-nose-dryrun-detail.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/06-nose-version.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/07-tool-sync-support-nose.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/08-inventory-nose-clones.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/09-unmeasured-surfaces.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/10-grok-surface.txt\n- charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist.json\n- charness-artifacts/probe/2026-08-16-v6.0.0-release-observer.json\n- charness-artifacts/quality/dup-review.json\n- charness-artifacts/quality/sloc-inventory/latest.json\n- charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.json\n- charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.md\n- charness-artifacts/release/latest.md\n- charness-artifacts/retro/2026-08-16-085455-packet.json\n- charness-artifacts/retro/2026-08-16-085455-packet.md\n- charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md\n- charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md\n- charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md\n- charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md\n- charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md\n- charness-artifacts/retro/lesson-ledger.json\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.md\n- charness-artifacts/retro/recent-lessons.md\n- charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md\n- docs/handoff.md\n- plugins/charness/scripts/artifact_validator.py\n- plugins/charness/scripts/boundary-bypass-baseline.json\n- plugins/charness/scripts/build_debug_seam_risk_index.py\n- plugins/charness/scripts/check_doc_authoring_preflight.py\n- plugins/charness/scripts/check_export_self_sufficiency.py\n- plugins/charness/scripts/doc_authoring_rules.py\n- plugins/charness/scripts/export_self_sufficiency_lib.py\n- plugins/charness/scripts/markdownlint_probe.py\n- plugins/charness/scripts/mutation_recovery.py\n- plugins/charness/scripts/open_lesson_session.py\n- plugins/charness/scripts/prepush_close_keyword_guard.py\n- plugins/charness/scripts/prepush_close_keyword_scan.py\n- plugins/charness/scripts/validate_debug_artifact.py\n- plugins/charness/scripts/validate_retro_artifact.py\n- plugins/charness/skills/critique/references/counterweight-triage.md\n- plugins/charness/skills/debug/scripts/plan_debug_run.py\n- plugins/charness/skills/debug/scripts/scaffold_debug_artifact.py\n- plugins/charness/skills/handoff/scripts/handoff_authoring_preflight.py\n- plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py\n- plugins/charness/skills/quality/references/bootstrap-escalations.md\n- plugins/charness/skills/quality/references/cautilus-on-demand.md\n- plugins/charness/skills/quality/references/mutation-testing.md\n- plugins/charness/skills/quality/references/operability-signals.md\n- plugins/charness/skills/release/references/adapter-contract.md\n- plugins/charness/skills/release/scripts/bump_version.py\n- plugins/charness/skills/release/scripts/resolve_adapter.py\n- plugins/charness/skills/retro/scripts/plan_retro_run.py\n- plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py\n- scripts/artifact_validator.py\n- scripts/boundary-bypass-baseline.json\n- scripts/build_debug_seam_risk_index.py\n- scripts/check_doc_authoring_preflight.py\n- scripts/check_export_self_sufficiency.py\n- scripts/doc_authoring_rules.py\n- scripts/export_self_sufficiency_lib.py\n- scripts/markdownlint_probe.py\n- scripts/mutation_recovery.py\n- scripts/open_lesson_session.py\n- scripts/prepush_close_keyword_guard.py\n- scripts/prepush_close_keyword_scan.py\n- scripts/validate_debug_artifact.py\n- scripts/validate_retro_artifact.py\n- skills/public/critique/references/counterweight-triage.md\n- skills/public/debug/scripts/plan_debug_run.py\n- skills/public/debug/scripts/scaffold_debug_artifact.py\n- skills/public/handoff/scripts/handoff_authoring_preflight.py\n- skills/public/issue/scripts/issue_verify_closeout_body.py\n- skills/public/quality/references/bootstrap-escalations.md\n- skills/public/quality/references/cautilus-on-demand.md\n- skills/public/quality/references/mutation-testing.md\n- skills/public/quality/references/operability-signals.md\n- skills/public/release/references/adapter-contract.md\n- skills/public/release/scripts/bump_version.py\n- skills/public/release/scripts/resolve_adapter.py\n- skills/public/retro/scripts/plan_retro_run.py\n- skills/public/retro/scripts/scaffold_retro_artifact.py\n- tests/control_plane/test_integrations_validation.py\n- tests/coverage_debt/test_batch6.py\n- tests/quality_gates/test_debug_seam_risk_index.py\n- tests/quality_gates/test_docs_and_misc.py\n- tests/quality_gates/test_export_self_sufficiency.py\n- tests/quality_gates/test_markdown_lint_resolution.py\n- tests/quality_gates/test_mutation_recovery.py\n- tests/quality_gates/test_prepush_close_keyword_guard.py\n- tests/quality_gates/test_quality_declaration_path_resolution.py\n- tests/quality_gates/test_release_claims_in_process.py\n- tests/quality_gates/test_release_claims_review.py\n- tests/quality_gates/test_release_resume_edge_coverage.py\n- tests/quality_gates/test_retro_artifact_validation.py\n- tests/test_debug_artifact_scope.py\n- tests/test_debug_plan.py\n- tests/test_debug_scaffold.py\n- tests/test_doc_authoring_preflight.py\n- tests/test_handoff_plan.py\n- tests/test_lesson_evaluation_contract_boundaries.py\n- tests/test_lesson_lifecycle_review.py\n- tests/test_lesson_session_emission.py\n- tests/test_retro_plan.py\n- tests/test_retro_scaffold.py\n- tests/test_usage_episodes_host_hooks.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/artifact_validator.py, scripts/boundary-bypass-baseline.json, scripts/build_debug_seam_risk_index.py, scripts/check_doc_authoring_preflight.py, scripts/check_export_self_sufficiency.py, scripts/doc_authoring_rules.py, scripts/export_self_sufficiency_lib.py, scripts/markdownlint_probe.py, scripts/mutation_recovery.py, scripts/open_lesson_session.py, scripts/prepush_close_keyword_guard.py, scripts/prepush_close_keyword_scan.py, scripts/validate_debug_artifact.py, scripts/validate_retro_artifact.py, skills/public/critique/references/counterweight-triage.md, skills/public/debug/scripts/plan_debug_run.py, skills/public/debug/scripts/scaffold_debug_artifact.py, skills/public/handoff/scripts/handoff_authoring_preflight.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/references/bootstrap-escalations.md, skills/public/quality/references/cautilus-on-demand.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/operability-signals.md, skills/public/release/references/adapter-contract.md, skills/public/release/scripts/bump_version.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  derived matches: plugins/charness/scripts/artifact_validator.py, plugins/charness/scripts/boundary-bypass-baseline.json, plugins/charness/scripts/build_debug_seam_risk_index.py, plugins/charness/scripts/check_doc_authoring_preflight.py, plugins/charness/scripts/check_export_self_sufficiency.py, plugins/charness/scripts/doc_authoring_rules.py, plugins/charness/scripts/export_self_sufficiency_lib.py, plugins/charness/scripts/markdownlint_probe.py, plugins/charness/scripts/mutation_recovery.py, plugins/charness/scripts/open_lesson_session.py, plugins/charness/scripts/prepush_close_keyword_guard.py, plugins/charness/scripts/prepush_close_keyword_scan.py, plugins/charness/scripts/validate_debug_artifact.py, plugins/charness/scripts/validate_retro_artifact.py, plugins/charness/skills/critique/references/counterweight-triage.md, plugins/charness/skills/debug/scripts/plan_debug_run.py, plugins/charness/skills/debug/scripts/scaffold_debug_artifact.py, plugins/charness/skills/handoff/scripts/handoff_authoring_preflight.py, plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py, plugins/charness/skills/quality/references/bootstrap-escalations.md, plugins/charness/skills/quality/references/cautilus-on-demand.md, plugins/charness/skills/quality/references/mutation-testing.md, plugins/charness/skills/quality/references/operability-signals.md, plugins/charness/skills/release/references/adapter-contract.md, plugins/charness/skills/release/scripts/bump_version.py, plugins/charness/skills/release/scripts/resolve_adapter.py, plugins/charness/skills/retro/scripts/plan_retro_run.py, plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-17-issue-617-closeout.md, charness-artifacts/issue/2026-08-16-6-0-0-closeout-ledger.md, charness-artifacts/issue/2026-08-16-issue-618-closeout.md, charness-artifacts/issue/2026-08-16-issue-619-closeout.md, charness-artifacts/issue/2026-08-16-issue-620-closeout.md, charness-artifacts/issue/2026-08-16-issue-621-closeout.md, charness-artifacts/issue/2026-08-16-issue-622-closeout.md, charness-artifacts/issue/2026-08-16-issue-623-closeout.md, charness-artifacts/issue/2026-08-16-issue-624-closeout.md, charness-artifacts/issue/2026-08-16-issue-625-closeout.md, charness-artifacts/issue/2026-08-16-issue-626-closeout-comment.md, charness-artifacts/issue/2026-08-16-issue-627-closeout.md, charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.md, charness-artifacts/release/latest.md, charness-artifacts/retro/2026-08-16-085455-packet.md, charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md, charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md, charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md, charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md, charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md, charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md, charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.md, charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.md, charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.md, charness-artifacts/retro/recent-lessons.md, charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md, docs/handoff.md, skills/public/critique/references/counterweight-triage.md, skills/public/quality/references/bootstrap-escalations.md, skills/public/quality/references/cautilus-on-demand.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/operability-signals.md, skills/public/release/references/adapter-contract.md\n  derived matches: plugins/charness/skills/critique/references/counterweight-triage.md, plugins/charness/skills/quality/references/bootstrap-escalations.md, plugins/charness/skills/quality/references/cautilus-on-demand.md, plugins/charness/skills/quality/references/mutation-testing.md, plugins/charness/skills/quality/references/operability-signals.md, plugins/charness/skills/release/references/adapter-contract.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- handoff-machine-readers: docs/handoff.md is a rotating human document that is ALSO a machine-read source: the retro-memory gate requires its recent-lessons reference, and the artifact-surface preflight requires its H2 sections and a References link.\n  source matches: docs/handoff.md\n  verify: python3 scripts/validate_handoff_artifact.py --repo-root ., python3 -m pytest -q tests/quality_gates/test_retro_memory.py\n- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.\n  source matches: charness-artifacts/quality/dup-review.json\n  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --detail >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --detail >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: .agents/release-adapter.yaml, skills/public/critique/references/counterweight-triage.md, skills/public/quality/references/bootstrap-escalations.md, skills/public/quality/references/cautilus-on-demand.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/operability-signals.md, skills/public/release/references/adapter-contract.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/references/counterweight-triage.md, skills/public/debug/scripts/plan_debug_run.py, skills/public/debug/scripts/scaffold_debug_artifact.py, skills/public/handoff/scripts/handoff_authoring_preflight.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/references/bootstrap-escalations.md, skills/public/quality/references/cautilus-on-demand.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/operability-signals.md, skills/public/release/references/adapter-contract.md, skills/public/release/scripts/bump_version.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  derived matches: plugins/charness/skills/critique/references/counterweight-triage.md, plugins/charness/skills/debug/scripts/plan_debug_run.py, plugins/charness/skills/debug/scripts/scaffold_debug_artifact.py, plugins/charness/skills/handoff/scripts/handoff_authoring_preflight.py, plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py, plugins/charness/skills/quality/references/bootstrap-escalations.md, plugins/charness/skills/quality/references/cautilus-on-demand.md, plugins/charness/skills/quality/references/mutation-testing.md, plugins/charness/skills/quality/references/operability-signals.md, plugins/charness/skills/release/references/adapter-contract.md, plugins/charness/skills/release/scripts/bump_version.py, plugins/charness/skills/release/scripts/resolve_adapter.py, plugins/charness/skills/retro/scripts/plan_retro_run.py, plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/references/counterweight-triage.md, skills/public/debug/scripts/plan_debug_run.py, skills/public/debug/scripts/scaffold_debug_artifact.py, skills/public/handoff/scripts/handoff_authoring_preflight.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/references/bootstrap-escalations.md, skills/public/quality/references/cautilus-on-demand.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/operability-signals.md, skills/public/release/references/adapter-contract.md, skills/public/release/scripts/bump_version.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/references/counterweight-triage.md, skills/public/debug/scripts/plan_debug_run.py, skills/public/debug/scripts/scaffold_debug_artifact.py, skills/public/handoff/scripts/handoff_authoring_preflight.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/references/bootstrap-escalations.md, skills/public/quality/references/cautilus-on-demand.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/operability-signals.md, skills/public/release/references/adapter-contract.md, skills/public/release/scripts/bump_version.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/release-adapter.yaml\n  verify: python3 scripts/validate_adapters.py --repo-root .\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- release-claims-review-evidence: Committed, machine-readable claims-review evidence that binds a prepared local release record before publication may resume.\n  source matches: charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.json, charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.md\n  verify: for review_record in charness-artifacts/release-review/*.json; do [ -e \"$review_record\" ] && python3 -m json.tool \"$review_record\" >/dev/null || exit $?; done\n- surface-obligations: Repo-owned changed-surface manifest that drives slice closeout obligations.\n  source matches: .agents/surfaces.json\n  verify: python3 scripts/validate_surfaces.py --repo-root .\n- export-self-sufficiency: Whether the checked-in plugin export can run on a machine that has only the export: shipped dependency contract, and repo-root paths exported modules read.\n  source matches: scripts/check_export_self_sufficiency.py, scripts/export_self_sufficiency_lib.py\n  derived matches: plugins/charness/scripts/check_export_self_sufficiency.py, plugins/charness/scripts/export_self_sufficiency_lib.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/check_export_self_sufficiency.py --repo-root ., python3 -m pytest -q tests/quality_gates/test_export_self_sufficiency.py\n- mutation-testing-workflow: Repo-owned scheduled mutation testing workflow, runner config, and adapter slot behavior.\n  source matches: .github/workflows/mutation-tests.yml\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 -m pytest -q tests/quality_gates/test_quality_mutation_testing.py, python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py, python3 scripts/check_github_actions.py --repo-root ., python3 scripts/validate_adapters.py --repo-root ., python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- quality-core-workflow: Repo-local light push/tag CI plus the CI-PR changed-line mutation mirror (consumer-inert; every step invokes a repo-owned validator).\n  source matches: .github/workflows/quality-core.yml\n  verify: python3 scripts/check_github_actions.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-17-issue-617-closeout.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist.json, charness-artifacts/probe/2026-08-16-v6.0.0-release-observer.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- probe-command-transcripts: Raw stdout/stderr transcripts committed under a charness-artifacts/probe/<probe-name>-transcripts/ directory, holding the re-checkable output that the sibling probe JSON only excerpts. Scoped to .txt under a *-transcripts/ directory so it cannot silently absorb another attachment extension, matching the audit-evidence-attachments rule.\n  source matches: charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/01-installed-vs-repo-spot-check.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/02-charness-doctor.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/03-tool-doctor-nose-present.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/04-tool-doctor-nose-pathscoped-missing.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/05-tool-install-nose-dryrun-detail.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/06-nose-version.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/07-tool-sync-support-nose.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/08-inventory-nose-clones.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/09-unmeasured-surfaces.txt, charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/10-grok-surface.txt\n  verify: for path in charness-artifacts/probe/*-transcripts/*.txt; do [ -e \"$path\" ] || continue; head -n 1 \"$path\" | grep -q '^\\$ ' || { echo \"$path: first line must record the command as '$ <cmd>'\"; exit 1; }; cmds=$(grep -c '^\\$ ' \"$path\"); exits=$(grep -c '^\\[exit=' \"$path\"); [ \"$cmds\" = \"$exits\" ] || { echo \"$path: $cmds command line(s) but $exits '[exit=N]' marker(s); every recorded command needs its return code\"; exit 1; }; done\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: scripts/build_debug_seam_risk_index.py\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-16-085455-packet.json, charness-artifacts/retro/2026-08-16-085455-packet.md, charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md, charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md, charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md, charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md, charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md, charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md, charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.md, charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.md, charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.md, charness-artifacts/retro/recent-lessons.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- lesson-ledger-and-contract-register: Local cited lesson state and the explicit pre-contract-mutation register probe.\n  source matches: charness-artifacts/retro/lesson-ledger.json, charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.json, charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.json, charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.json, charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.json\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/check_lesson_ledger.py --repo-root ., python3 scripts/check_contract_register.py --repo-root ., python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_contract_register.py\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/artifact_validator.py, plugins/charness/scripts/boundary-bypass-baseline.json, plugins/charness/scripts/build_debug_seam_risk_index.py, plugins/charness/scripts/check_doc_authoring_preflight.py, plugins/charness/scripts/check_export_self_sufficiency.py, plugins/charness/scripts/doc_authoring_rules.py, plugins/charness/scripts/export_self_sufficiency_lib.py, plugins/charness/scripts/markdownlint_probe.py, plugins/charness/scripts/mutation_recovery.py, plugins/charness/scripts/open_lesson_session.py, plugins/charness/scripts/prepush_close_keyword_guard.py, plugins/charness/scripts/prepush_close_keyword_scan.py, plugins/charness/scripts/validate_debug_artifact.py, plugins/charness/scripts/validate_retro_artifact.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/artifact_validator.py, scripts/build_debug_seam_risk_index.py, scripts/check_doc_authoring_preflight.py, scripts/check_export_self_sufficiency.py, scripts/doc_authoring_rules.py, scripts/export_self_sufficiency_lib.py, scripts/markdownlint_probe.py, scripts/mutation_recovery.py, scripts/open_lesson_session.py, scripts/prepush_close_keyword_guard.py, scripts/prepush_close_keyword_scan.py, scripts/validate_debug_artifact.py, scripts/validate_retro_artifact.py, tests/control_plane/test_integrations_validation.py, tests/coverage_debt/test_batch6.py, tests/quality_gates/test_debug_seam_risk_index.py, tests/quality_gates/test_docs_and_misc.py, tests/quality_gates/test_export_self_sufficiency.py, tests/quality_gates/test_markdown_lint_resolution.py, tests/quality_gates/test_mutation_recovery.py, tests/quality_gates/test_prepush_close_keyword_guard.py, tests/quality_gates/test_quality_declaration_path_resolution.py, tests/quality_gates/test_release_claims_in_process.py, tests/quality_gates/test_release_claims_review.py, tests/quality_gates/test_release_resume_edge_coverage.py, tests/quality_gates/test_retro_artifact_validation.py, tests/test_debug_artifact_scope.py, tests/test_debug_plan.py, tests/test_debug_scaffold.py, tests/test_doc_authoring_preflight.py, tests/test_handoff_plan.py, tests/test_lesson_evaluation_contract_boundaries.py, tests/test_lesson_lifecycle_review.py, tests/test_lesson_session_emission.py, tests/test_retro_plan.py, tests/test_retro_scaffold.py, tests/test_usage_episodes_host_hooks.py\n  derived matches: plugins/charness/scripts/artifact_validator.py, plugins/charness/scripts/build_debug_seam_risk_index.py, plugins/charness/scripts/check_doc_authoring_preflight.py, plugins/charness/scripts/check_export_self_sufficiency.py, plugins/charness/scripts/doc_authoring_rules.py, plugins/charness/scripts/export_self_sufficiency_lib.py, plugins/charness/scripts/markdownlint_probe.py, plugins/charness/scripts/mutation_recovery.py, plugins/charness/scripts/open_lesson_session.py, plugins/charness/scripts/prepush_close_keyword_guard.py, plugins/charness/scripts/prepush_close_keyword_scan.py, plugins/charness/scripts/validate_debug_artifact.py, plugins/charness/scripts/validate_retro_artifact.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/artifact_validator.py, scripts/build_debug_seam_risk_index.py, scripts/check_doc_authoring_preflight.py, scripts/check_export_self_sufficiency.py, scripts/doc_authoring_rules.py, scripts/export_self_sufficiency_lib.py, scripts/markdownlint_probe.py, scripts/mutation_recovery.py, scripts/open_lesson_session.py, scripts/prepush_close_keyword_guard.py, scripts/prepush_close_keyword_scan.py, scripts/validate_debug_artifact.py, scripts/validate_retro_artifact.py, skills/public/debug/scripts/plan_debug_run.py, skills/public/debug/scripts/scaffold_debug_artifact.py, skills/public/handoff/scripts/handoff_authoring_preflight.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/release/scripts/bump_version.py, skills/public/release/scripts/resolve_adapter.py, skills/public/retro/scripts/plan_retro_run.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n- closeout-floor-matrix: Declared floor x classification x carrier matrix for issue closeout, and the behavioral probe that re-derives it from the real carriers.\n  source matches: skills/public/issue/scripts/issue_verify_closeout_body.py\n  verify: python3 scripts/check_closeout_floor_matrix.py --repo-root .\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "1214f66ea052167592d9441b91bdf8bbe76e91ce..6f9c1cafdaaf0972c6672ce5b720a4012b9367da",
+    "resolved_changed_ref": [
+      "6f9c1cafdaaf0972c6672ce5b720a4012b9367da",
+      "^1214f66ea052167592d9441b91bdf8bbe76e91ce"
+    ],
+    "base_head": "6f9c1cafdaaf0972c6672ce5b720a4012b9367da",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/release-adapter.yaml",
+      ".agents/surfaces.json",
+      ".github/workflows/mutation-tests.yml",
+      ".github/workflows/quality-core.yml",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/issue/2026-08-16-6-0-0-closeout-ledger.md",
+      "charness-artifacts/issue/2026-08-16-issue-618-closeout.md",
+      "charness-artifacts/issue/2026-08-16-issue-619-closeout.md",
+      "charness-artifacts/issue/2026-08-16-issue-620-closeout.md",
+      "charness-artifacts/issue/2026-08-16-issue-621-closeout.md",
+      "charness-artifacts/issue/2026-08-16-issue-622-closeout.md",
+      "charness-artifacts/issue/2026-08-16-issue-623-closeout.md",
+      "charness-artifacts/issue/2026-08-16-issue-624-closeout.md",
+      "charness-artifacts/issue/2026-08-16-issue-625-closeout.md",
+      "charness-artifacts/issue/2026-08-16-issue-626-closeout-comment.md",
+      "charness-artifacts/issue/2026-08-16-issue-627-closeout.md",
+      "charness-artifacts/metrics/rca-ledger.jsonl",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/01-installed-vs-repo-spot-check.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/02-charness-doctor.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/03-tool-doctor-nose-present.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/04-tool-doctor-nose-pathscoped-missing.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/05-tool-install-nose-dryrun-detail.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/06-nose-version.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/07-tool-sync-support-nose.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/08-inventory-nose-clones.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/09-unmeasured-surfaces.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/10-grok-surface.txt",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist.json",
+      "charness-artifacts/probe/2026-08-16-v6.0.0-release-observer.json",
+      "charness-artifacts/quality/dup-review.json",
+      "charness-artifacts/quality/sloc-inventory/latest.json",
+      "charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.json",
+      "charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.md",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/retro/2026-08-16-085455-packet.json",
+      "charness-artifacts/retro/2026-08-16-085455-packet.md",
+      "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md",
+      "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
+      "charness-artifacts/retro/lesson-ledger.json",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.md",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.md",
+      "charness-artifacts/retro/recent-lessons.md",
+      "charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md",
+      "docs/handoff.md",
+      "plugins/charness/scripts/artifact_validator.py",
+      "plugins/charness/scripts/boundary-bypass-baseline.json",
+      "plugins/charness/scripts/build_debug_seam_risk_index.py",
+      "plugins/charness/scripts/check_doc_authoring_preflight.py",
+      "plugins/charness/scripts/check_export_self_sufficiency.py",
+      "plugins/charness/scripts/doc_authoring_rules.py",
+      "plugins/charness/scripts/export_self_sufficiency_lib.py",
+      "plugins/charness/scripts/markdownlint_probe.py",
+      "plugins/charness/scripts/mutation_recovery.py",
+      "plugins/charness/scripts/open_lesson_session.py",
+      "plugins/charness/scripts/prepush_close_keyword_guard.py",
+      "plugins/charness/scripts/prepush_close_keyword_scan.py",
+      "plugins/charness/scripts/validate_debug_artifact.py",
+      "plugins/charness/scripts/validate_retro_artifact.py",
+      "plugins/charness/skills/critique/references/counterweight-triage.md",
+      "plugins/charness/skills/debug/scripts/plan_debug_run.py",
+      "plugins/charness/skills/debug/scripts/scaffold_debug_artifact.py",
+      "plugins/charness/skills/handoff/scripts/handoff_authoring_preflight.py",
+      "plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py",
+      "plugins/charness/skills/quality/references/bootstrap-escalations.md",
+      "plugins/charness/skills/quality/references/cautilus-on-demand.md",
+      "plugins/charness/skills/quality/references/mutation-testing.md",
+      "plugins/charness/skills/quality/references/operability-signals.md",
+      "plugins/charness/skills/release/references/adapter-contract.md",
+      "plugins/charness/skills/release/scripts/bump_version.py",
+      "plugins/charness/skills/release/scripts/resolve_adapter.py",
+      "plugins/charness/skills/retro/scripts/plan_retro_run.py",
+      "plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py",
+      "scripts/artifact_validator.py",
+      "scripts/boundary-bypass-baseline.json",
+      "scripts/build_debug_seam_risk_index.py",
+      "scripts/check_doc_authoring_preflight.py",
+      "scripts/check_export_self_sufficiency.py",
+      "scripts/doc_authoring_rules.py",
+      "scripts/export_self_sufficiency_lib.py",
+      "scripts/markdownlint_probe.py",
+      "scripts/mutation_recovery.py",
+      "scripts/open_lesson_session.py",
+      "scripts/prepush_close_keyword_guard.py",
+      "scripts/prepush_close_keyword_scan.py",
+      "scripts/validate_debug_artifact.py",
+      "scripts/validate_retro_artifact.py",
+      "skills/public/critique/references/counterweight-triage.md",
+      "skills/public/debug/scripts/plan_debug_run.py",
+      "skills/public/debug/scripts/scaffold_debug_artifact.py",
+      "skills/public/handoff/scripts/handoff_authoring_preflight.py",
+      "skills/public/issue/scripts/issue_verify_closeout_body.py",
+      "skills/public/quality/references/bootstrap-escalations.md",
+      "skills/public/quality/references/cautilus-on-demand.md",
+      "skills/public/quality/references/mutation-testing.md",
+      "skills/public/quality/references/operability-signals.md",
+      "skills/public/release/references/adapter-contract.md",
+      "skills/public/release/scripts/bump_version.py",
+      "skills/public/release/scripts/resolve_adapter.py",
+      "skills/public/retro/scripts/plan_retro_run.py",
+      "skills/public/retro/scripts/scaffold_retro_artifact.py",
+      "tests/control_plane/test_integrations_validation.py",
+      "tests/coverage_debt/test_batch6.py",
+      "tests/quality_gates/test_debug_seam_risk_index.py",
+      "tests/quality_gates/test_docs_and_misc.py",
+      "tests/quality_gates/test_export_self_sufficiency.py",
+      "tests/quality_gates/test_markdown_lint_resolution.py",
+      "tests/quality_gates/test_mutation_recovery.py",
+      "tests/quality_gates/test_prepush_close_keyword_guard.py",
+      "tests/quality_gates/test_quality_declaration_path_resolution.py",
+      "tests/quality_gates/test_release_claims_in_process.py",
+      "tests/quality_gates/test_release_claims_review.py",
+      "tests/quality_gates/test_release_resume_edge_coverage.py",
+      "tests/quality_gates/test_retro_artifact_validation.py",
+      "tests/test_debug_artifact_scope.py",
+      "tests/test_debug_plan.py",
+      "tests/test_debug_scaffold.py",
+      "tests/test_doc_authoring_preflight.py",
+      "tests/test_handoff_plan.py",
+      "tests/test_lesson_evaluation_contract_boundaries.py",
+      "tests/test_lesson_lifecycle_review.py",
+      "tests/test_lesson_session_emission.py",
+      "tests/test_retro_plan.py",
+      "tests/test_retro_scaffold.py",
+      "tests/test_usage_episodes_host_hooks.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/release-adapter.yaml",
+        "content_sha256": "0bbff0a3b4c667f4e6b5e2d6992acd8ee7c332433bcd70b63fd003e2daae65f0"
+      },
+      {
+        "path": ".agents/surfaces.json",
+        "content_sha256": "f915261420eb247d4586e143319bc1ab6e25560f7c7c921fe1a11438f0f4a742"
+      },
+      {
+        "path": ".github/workflows/mutation-tests.yml",
+        "content_sha256": "928d11bedac2710cbbdc5c4de07b5ef62b601599f266988cb2bc8b6f940034c3"
+      },
+      {
+        "path": ".github/workflows/quality-core.yml",
+        "content_sha256": "10c9d0b4d4044cab67c1b66c0a5de8d4b5f83dc80c2cc307c31ad4e41176875f"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "c081e84fba92e5ee363322a8c6e20d318b630c94cd0a35eeb244f94f182663d0"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-6-0-0-closeout-ledger.md",
+        "content_sha256": "0486f2b2c910257fabbb53797238122010a5832651dc63b66ac53de2f7e4d644"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-618-closeout.md",
+        "content_sha256": "5e903d3eb7112667cbc31a78f9ba1405f748f22f0480ee786a41d42f5ffbeb6d"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-619-closeout.md",
+        "content_sha256": "4bd84665ec551ded8d4f3bebb8c975e219a80c01a89e0a068445ff3ec11223c5"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-620-closeout.md",
+        "content_sha256": "da6bb928ab4be9babd3d4edd8599a6599788a0684d005c250ecd837075584557"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-621-closeout.md",
+        "content_sha256": "aaae7244712859ed0b775a22bb3a0b168c2da451e98058e1924786abd834f7ba"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-622-closeout.md",
+        "content_sha256": "33d8ae8eb2335d6d5963191e96b4fddf88c19d12d0fed591b5a55f973209de0e"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-623-closeout.md",
+        "content_sha256": "df72adbc2aa193863c04495e3bdedb0b0d11c1cc8dd50fe2547825c379fab79a"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-624-closeout.md",
+        "content_sha256": "9d42545715be2255fb6b8b4d4a6265da2bf214add76556220a31bb20ae09a8bd"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-625-closeout.md",
+        "content_sha256": "c904528adfb700a788555e2094463519c477865870b45e688b17d2293ee37a06"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-626-closeout-comment.md",
+        "content_sha256": "aa0d6e2b2033543b82e46690fb0cd8297e585f1e1b1ca40e73256cde8c629048"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-16-issue-627-closeout.md",
+        "content_sha256": "edc18834a42698a004baf110ec5413d4c6f5407801673d3ed5454fc30d338fae"
+      },
+      {
+        "path": "charness-artifacts/metrics/rca-ledger.jsonl",
+        "content_sha256": "77933a1dba3d3b5c6bb3e6cf4d915cbf81a1f9142e12bdc3bab993cc38b2d21c"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/01-installed-vs-repo-spot-check.txt",
+        "content_sha256": "7a875ee1ed4f9813184b3b4e236fb5a4023c8822871ef52f319670e954b70654"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/02-charness-doctor.txt",
+        "content_sha256": "c86a47ddaaf0feb27f29200d1b3c0ff5e15c3dedc524787915f5c18723a83a45"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/03-tool-doctor-nose-present.txt",
+        "content_sha256": "ee4b0c3faca2468997acdd5efc707418a0e219baa03ca35978565ab9d21e2218"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/04-tool-doctor-nose-pathscoped-missing.txt",
+        "content_sha256": "de7563117cdf93e44020c8c0e0bb59a9c008424cfaa89df2db26197b45da4415"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/05-tool-install-nose-dryrun-detail.txt",
+        "content_sha256": "4890a6ffd2616a326d0e5aaec56b54b110ccbdec71d96b18433f1dfbf8a0ca96"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/06-nose-version.txt",
+        "content_sha256": "ec4d5f9a06cc485f9a0ff7a208968bd6484f7e884880f2a87540943ace90bc72"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/07-tool-sync-support-nose.txt",
+        "content_sha256": "3601e8aae4c2795977a5cd1a3afb3564485fdc8c9b3b900832a1718ecd888515"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/08-inventory-nose-clones.txt",
+        "content_sha256": "74aa0ac148dac38d71860466ca0e7b2d4cd042caf1e55adb7e19edb5050a6fed"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/09-unmeasured-surfaces.txt",
+        "content_sha256": "a6b7c12c1d1aa5c0f30898082774f7b22afd46396ff99c22fa31250c7b5fd1d9"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist-transcripts/10-grok-surface.txt",
+        "content_sha256": "2327fc57d35cba9f1c042b35555633d279f3a73d688364b55cdfbd030a8668fa"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-real-host-checklist.json",
+        "content_sha256": "30bf21d521117f0a1cafb8cc88ecd03dfad6c5a2ee040922747f7a5acbe96fe6"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-16-v6.0.0-release-observer.json",
+        "content_sha256": "c07aa2971c36dd6bfb8ed8a9b204e567f518580b7acfb3912d0fc73b405e2047"
+      },
+      {
+        "path": "charness-artifacts/quality/dup-review.json",
+        "content_sha256": "80a1791d5a897ec5f1c07e8dc4d2c3f7891b3af12c8a88e7cccb9f2167e2fa7e"
+      },
+      {
+        "path": "charness-artifacts/quality/sloc-inventory/latest.json",
+        "content_sha256": "38b8e9288e0455e02be79a6fcc0eb343c6bff21c70c26997e897af3a64f97698"
+      },
+      {
+        "path": "charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.json",
+        "content_sha256": "362d33be08edb6c91692bb4b12106f60ee4f877217f3d7634f6d3c4ba6e6bf25"
+      },
+      {
+        "path": "charness-artifacts/release-review/2026-08-16-v6.0.0-prepared-claims-review.md",
+        "content_sha256": "502b93d888d9ad19262a6c16bb7eaacc09fbe7c4bf177f03e475318c2f9765a5"
+      },
+      {
+        "path": "charness-artifacts/release/latest.md",
+        "content_sha256": "a033755851ec99a153df10f62078247a701b1d2c11f33f9c685051812735acd6"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-16-085455-packet.json",
+        "content_sha256": "c3f62821a9fc3d5eb15865ae284145942994ff38b2bc03276183b2e5ff09a3fb"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-16-085455-packet.md",
+        "content_sha256": "6de7b801ce72e7c58df41b2d59e27a876d3465d0640d65983839bb91c3219e0d"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+        "content_sha256": "f31590a6fd2b51263ce6418e075471ee11b69a633a73990468590cdefcea24e8"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+        "content_sha256": "c9997cc9d585359756fb42bc2f88ab0b83b0d9ba9ab3bacebcbf4305ef539ed3"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-16-v6-0-0-release-auto-retro.md",
+        "content_sha256": "55582634722b0959176029883d0c7ca417040da5dee55ded1173b88b7d99b0a4"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+        "content_sha256": "76ba408e644509e4e9aa04eb62dfa63bd774be01198fae785e5846a43d5f8953"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
+        "content_sha256": "3d43617cc971e8afefcdafa1464ec27410d0c699298ea6ea0370610f89f63820"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-ledger.json",
+        "content_sha256": "e793bfb4838bc6b668aa89d5c8800fcb73875581f0b7399b79646c14ac404a34"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "e3f99f3e2ca8fc7ace5e240b02b8aa99b5031fdaec8892c3ee354429a3f53bd4"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.json",
+        "content_sha256": "20f04b3ac084adc6502badc5081ddccb6586f8e1822c2559fa9ec01c01d9143a"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+        "content_sha256": "289848fdd2c0fc71868fe5ce97d9589799327c832c42d070b55030676c8c67b3"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.json",
+        "content_sha256": "564dd5ad6aee5728fe9269b54f6a033f99047993075ccd808ed7949a2dde586b"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
+        "content_sha256": "bcd3560a8db00380b31d94a78b0edb937439978221d6b621d870963c49ba8cc4"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.json",
+        "content_sha256": "6137aa2f32b6a152189fde19eed1f8d0ffcb048c628fdab3e477ea9e5946bac0"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861.md",
+        "content_sha256": "30b7beb77f3cd305d7f260e8878e952d107751fa473f73e4e0477a87fdbc8469"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.json",
+        "content_sha256": "d85a0e1e833f404172e5695c4e3a5db2390a4736a93218f172e10de5bcd9bd38"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-17-autonomous-improve.md",
+        "content_sha256": "c27272d9158677b4c39272305be19259f33fe200267383b7533034539b85d702"
+      },
+      {
+        "path": "charness-artifacts/retro/recent-lessons.md",
+        "content_sha256": "ba7399cc55ecbfbcf4c20eaae8f9de6c5ac6e14aaf558e8a640a9eb6435234fe"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md",
+        "content_sha256": "53d6d32f0614c1021ad657b9d3b6c18e104dcba686dafdf592f13bfa22716f4c"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "d1e72686a9f0ebb77e6468dbaf0cfe9960bbc46164deb9f572a334a25b03e6c8"
+      },
+      {
+        "path": "plugins/charness/scripts/artifact_validator.py",
+        "content_sha256": "05773634d2970248f3850339cce845b6cc03b643035825666767600da050cbfa"
+      },
+      {
+        "path": "plugins/charness/scripts/boundary-bypass-baseline.json",
+        "content_sha256": "a76640bd2fcbe387bb846f29d84a4cc2814edd51049dbe18bc4fd7ab16ae4fd0"
+      },
+      {
+        "path": "plugins/charness/scripts/build_debug_seam_risk_index.py",
+        "content_sha256": "f39e116da94b7c6a2f9e1f33435e953642577a3ba5246d996c4fab810f8df2d4"
+      },
+      {
+        "path": "plugins/charness/scripts/check_doc_authoring_preflight.py",
+        "content_sha256": "42af1480d0882dba533b8f28ca12ce52c17b09650cba9c8ff952253852d8aa18"
+      },
+      {
+        "path": "plugins/charness/scripts/check_export_self_sufficiency.py",
+        "content_sha256": "4a98c490910c26913b77dde12a0a498a0d92153f40d309b0ce5b28796dc3cbf3"
+      },
+      {
+        "path": "plugins/charness/scripts/doc_authoring_rules.py",
+        "content_sha256": "7a8ae28cc9455ea5f0be2e31c545aa74068fad26b19ca7d3767366cf89be12c4"
+      },
+      {
+        "path": "plugins/charness/scripts/export_self_sufficiency_lib.py",
+        "content_sha256": "9e14d1d02ca79a33b8888760e5e37c6134ed09ff2845a72fb7a33e4441c2112d"
+      },
+      {
+        "path": "plugins/charness/scripts/markdownlint_probe.py",
+        "content_sha256": "12d04380274a0cf26e825083a1882b7331ff73d5fc55b64f8fd751310834cccd"
+      },
+      {
+        "path": "plugins/charness/scripts/mutation_recovery.py",
+        "content_sha256": "f998aab1c83c687ab2b1b50c875e700f242007da6a3afb004d1a2365a818efe0"
+      },
+      {
+        "path": "plugins/charness/scripts/open_lesson_session.py",
+        "content_sha256": "9939ed3ba76af5c6613d7a28c722c0e4f7a085a05cb3f8e775f3365fd2c030ef"
+      },
+      {
+        "path": "plugins/charness/scripts/prepush_close_keyword_guard.py",
+        "content_sha256": "f434b71ec995175d4090e90a68eccfa8a0a11b19e4b58f03be883c0cbc1b3de2"
+      },
+      {
+        "path": "plugins/charness/scripts/prepush_close_keyword_scan.py",
+        "content_sha256": "682d994f5a06bf4e7cbe894a5f7299e10d0d225d9a012423875328ee0ce6e619"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_debug_artifact.py",
+        "content_sha256": "07b4a1e9c62703ba8afc57a6f466d6f081635cf47011c2199e45d456524ca0b1"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_retro_artifact.py",
+        "content_sha256": "3887761863765d4d6479ca230c5fde79a0d79125324be2009acf97f9bc5c6dc9"
+      },
+      {
+        "path": "plugins/charness/skills/critique/references/counterweight-triage.md",
+        "content_sha256": "9f1bdfac452e86ff531e3df94607cfff7d719abaf5da8582d67809f09658c6cc"
+      },
+      {
+        "path": "plugins/charness/skills/debug/scripts/plan_debug_run.py",
+        "content_sha256": "24267e1455567a44bae7516943096ba1b75fb5607b6e11053b428bcc5b701752"
+      },
+      {
+        "path": "plugins/charness/skills/debug/scripts/scaffold_debug_artifact.py",
+        "content_sha256": "ef68b754083bd295969ef09eb8362868f1c0210ecce78b0641709e548d24730e"
+      },
+      {
+        "path": "plugins/charness/skills/handoff/scripts/handoff_authoring_preflight.py",
+        "content_sha256": "5dcfe6ea81512eed886485135ee1b9889214fcb93948dff264fb4ee6536b6b57"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py",
+        "content_sha256": "4714cff3c246cf064438e0d30b3037731ed17b40dd170725a859159abdf7cc7d"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/bootstrap-escalations.md",
+        "content_sha256": "552e0f693d7747bea5b188e289792cc285ad40e781bb040846480390b745f2b4"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/cautilus-on-demand.md",
+        "content_sha256": "42cb950456461a3093bc9dfac85756308899f8e6a439c4da020a86613ec987cf"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/mutation-testing.md",
+        "content_sha256": "94744d1a80977300d8a95ef19407b1a403b0fc5f40c3a589cfbc81f5e1930e3b"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/operability-signals.md",
+        "content_sha256": "de932b0494e46d9f03043e5559816adb47941d982008bcd67ad6dce9e5893f87"
+      },
+      {
+        "path": "plugins/charness/skills/release/references/adapter-contract.md",
+        "content_sha256": "b9a62f17875400582215f5d3d090c1861b8a9bdbdce8141baefd666d19c01499"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/bump_version.py",
+        "content_sha256": "3d0a00d4fc75c2280c8baf52bce5e3314d4036fa998f479d747388cbf42edbaf"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/resolve_adapter.py",
+        "content_sha256": "133de46b0a1fdcbb93bf5b4b227d35f4c47a1ea1f0fd7c1212af81a5c8f5c6a3"
+      },
+      {
+        "path": "plugins/charness/skills/retro/scripts/plan_retro_run.py",
+        "content_sha256": "3defadf90b48480a15280bc991f1602c6fcc59f1d49af98f918675b178882273"
+      },
+      {
+        "path": "plugins/charness/skills/retro/scripts/scaffold_retro_artifact.py",
+        "content_sha256": "7ff325d3f0db2906366ded6eb4585fe396b5abdc8f1547404a1daac5ce34fd1e"
+      },
+      {
+        "path": "scripts/artifact_validator.py",
+        "content_sha256": "05773634d2970248f3850339cce845b6cc03b643035825666767600da050cbfa"
+      },
+      {
+        "path": "scripts/boundary-bypass-baseline.json",
+        "content_sha256": "a76640bd2fcbe387bb846f29d84a4cc2814edd51049dbe18bc4fd7ab16ae4fd0"
+      },
+      {
+        "path": "scripts/build_debug_seam_risk_index.py",
+        "content_sha256": "f39e116da94b7c6a2f9e1f33435e953642577a3ba5246d996c4fab810f8df2d4"
+      },
+      {
+        "path": "scripts/check_doc_authoring_preflight.py",
+        "content_sha256": "42af1480d0882dba533b8f28ca12ce52c17b09650cba9c8ff952253852d8aa18"
+      },
+      {
+        "path": "scripts/check_export_self_sufficiency.py",
+        "content_sha256": "4a98c490910c26913b77dde12a0a498a0d92153f40d309b0ce5b28796dc3cbf3"
+      },
+      {
+        "path": "scripts/doc_authoring_rules.py",
+        "content_sha256": "7a8ae28cc9455ea5f0be2e31c545aa74068fad26b19ca7d3767366cf89be12c4"
+      },
+      {
+        "path": "scripts/export_self_sufficiency_lib.py",
+        "content_sha256": "9e14d1d02ca79a33b8888760e5e37c6134ed09ff2845a72fb7a33e4441c2112d"
+      },
+      {
+        "path": "scripts/markdownlint_probe.py",
+        "content_sha256": "12d04380274a0cf26e825083a1882b7331ff73d5fc55b64f8fd751310834cccd"
+      },
+      {
+        "path": "scripts/mutation_recovery.py",
+        "content_sha256": "f998aab1c83c687ab2b1b50c875e700f242007da6a3afb004d1a2365a818efe0"
+      },
+      {
+        "path": "scripts/open_lesson_session.py",
+        "content_sha256": "9939ed3ba76af5c6613d7a28c722c0e4f7a085a05cb3f8e775f3365fd2c030ef"
+      },
+      {
+        "path": "scripts/prepush_close_keyword_guard.py",
+        "content_sha256": "f434b71ec995175d4090e90a68eccfa8a0a11b19e4b58f03be883c0cbc1b3de2"
+      },
+      {
+        "path": "scripts/prepush_close_keyword_scan.py",
+        "content_sha256": "682d994f5a06bf4e7cbe894a5f7299e10d0d225d9a012423875328ee0ce6e619"
+      },
+      {
+        "path": "scripts/validate_debug_artifact.py",
+        "content_sha256": "07b4a1e9c62703ba8afc57a6f466d6f081635cf47011c2199e45d456524ca0b1"
+      },
+      {
+        "path": "scripts/validate_retro_artifact.py",
+        "content_sha256": "3887761863765d4d6479ca230c5fde79a0d79125324be2009acf97f9bc5c6dc9"
+      },
+      {
+        "path": "skills/public/critique/references/counterweight-triage.md",
+        "content_sha256": "9f1bdfac452e86ff531e3df94607cfff7d719abaf5da8582d67809f09658c6cc"
+      },
+      {
+        "path": "skills/public/debug/scripts/plan_debug_run.py",
+        "content_sha256": "24267e1455567a44bae7516943096ba1b75fb5607b6e11053b428bcc5b701752"
+      },
+      {
+        "path": "skills/public/debug/scripts/scaffold_debug_artifact.py",
+        "content_sha256": "ef68b754083bd295969ef09eb8362868f1c0210ecce78b0641709e548d24730e"
+      },
+      {
+        "path": "skills/public/handoff/scripts/handoff_authoring_preflight.py",
+        "content_sha256": "5dcfe6ea81512eed886485135ee1b9889214fcb93948dff264fb4ee6536b6b57"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_verify_closeout_body.py",
+        "content_sha256": "4714cff3c246cf064438e0d30b3037731ed17b40dd170725a859159abdf7cc7d"
+      },
+      {
+        "path": "skills/public/quality/references/bootstrap-escalations.md",
+        "content_sha256": "552e0f693d7747bea5b188e289792cc285ad40e781bb040846480390b745f2b4"
+      },
+      {
+        "path": "skills/public/quality/references/cautilus-on-demand.md",
+        "content_sha256": "42cb950456461a3093bc9dfac85756308899f8e6a439c4da020a86613ec987cf"
+      },
+      {
+        "path": "skills/public/quality/references/mutation-testing.md",
+        "content_sha256": "94744d1a80977300d8a95ef19407b1a403b0fc5f40c3a589cfbc81f5e1930e3b"
+      },
+      {
+        "path": "skills/public/quality/references/operability-signals.md",
+        "content_sha256": "de932b0494e46d9f03043e5559816adb47941d982008bcd67ad6dce9e5893f87"
+      },
+      {
+        "path": "skills/public/release/references/adapter-contract.md",
+        "content_sha256": "b9a62f17875400582215f5d3d090c1861b8a9bdbdce8141baefd666d19c01499"
+      },
+      {
+        "path": "skills/public/release/scripts/bump_version.py",
+        "content_sha256": "3d0a00d4fc75c2280c8baf52bce5e3314d4036fa998f479d747388cbf42edbaf"
+      },
+      {
+        "path": "skills/public/release/scripts/resolve_adapter.py",
+        "content_sha256": "133de46b0a1fdcbb93bf5b4b227d35f4c47a1ea1f0fd7c1212af81a5c8f5c6a3"
+      },
+      {
+        "path": "skills/public/retro/scripts/plan_retro_run.py",
+        "content_sha256": "3defadf90b48480a15280bc991f1602c6fcc59f1d49af98f918675b178882273"
+      },
+      {
+        "path": "skills/public/retro/scripts/scaffold_retro_artifact.py",
+        "content_sha256": "7ff325d3f0db2906366ded6eb4585fe396b5abdc8f1547404a1daac5ce34fd1e"
+      },
+      {
+        "path": "tests/control_plane/test_integrations_validation.py",
+        "content_sha256": "2dbbe18382839ef50a7c0a6e177f61291bdb9de45aabafd7791efb3b4902158c"
+      },
+      {
+        "path": "tests/coverage_debt/test_batch6.py",
+        "content_sha256": "826680e27b989fa32c6657f77a72585fd558c9c0cee25789cbd8efa0eec6274c"
+      },
+      {
+        "path": "tests/quality_gates/test_debug_seam_risk_index.py",
+        "content_sha256": "2c67b347a6650010b5b5eaedbce3b34dcdecff6f13d3c7735bc375a987db8855"
+      },
+      {
+        "path": "tests/quality_gates/test_docs_and_misc.py",
+        "content_sha256": "310ae4f1a90bfa1a073e839514d7b6f2c0f664d4e9028c3675c6681d7b439174"
+      },
+      {
+        "path": "tests/quality_gates/test_export_self_sufficiency.py",
+        "content_sha256": "a5e45b675b41a56cda70aa1f318532354daeb5e5b31d2a239033353e1803e2e1"
+      },
+      {
+        "path": "tests/quality_gates/test_markdown_lint_resolution.py",
+        "content_sha256": "68b9b9f115dd88d9e5adb25ec891e7e8b45323b85610651cddc34ce38888b126"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_recovery.py",
+        "content_sha256": "e7bfbb33f4d016e3d648a4d72341809d4bc20ed3574250f75bba1b940012e3e9"
+      },
+      {
+        "path": "tests/quality_gates/test_prepush_close_keyword_guard.py",
+        "content_sha256": "e8af7d4a05ddd0bce2f8848f9873104d0ebaf47b2890ac8e6bc5c9b56e73eef4"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_declaration_path_resolution.py",
+        "content_sha256": "73bd1e9c708c03075192af88943a954174cb3e918f0dd34fe7aae775d12ee791"
+      },
+      {
+        "path": "tests/quality_gates/test_release_claims_in_process.py",
+        "content_sha256": "d311c59b716ffe48778646ccff6294f565332d106853ff675c29dcad1bcc0056"
+      },
+      {
+        "path": "tests/quality_gates/test_release_claims_review.py",
+        "content_sha256": "1bd1d2dff5c090c9c562c1c953b095b1bf207fd9389a2ba24b501f1426ec1793"
+      },
+      {
+        "path": "tests/quality_gates/test_release_resume_edge_coverage.py",
+        "content_sha256": "071ba097ba7b88edf8bcd2dd4d28d5aad5a17315eab74cf004a65bc3dc8661ea"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_artifact_validation.py",
+        "content_sha256": "3c33152b59b4827ef0de0e1f2475a28f4c1e8bf0f15cdeb61979ccf13050745a"
+      },
+      {
+        "path": "tests/test_debug_artifact_scope.py",
+        "content_sha256": "f252dfe3f2add700cb95d99f3cde4d6847013d596d5359117e2e61111d6f4002"
+      },
+      {
+        "path": "tests/test_debug_plan.py",
+        "content_sha256": "b9a2a08106bd1d9beda9a13e6e67ed9e1b12e944f7f18e9c8b3795862845adf5"
+      },
+      {
+        "path": "tests/test_debug_scaffold.py",
+        "content_sha256": "06354e04e55a2564ea4931e53905e0c659ace136d2b2834acdb6bf287691d228"
+      },
+      {
+        "path": "tests/test_doc_authoring_preflight.py",
+        "content_sha256": "a16c64c4f0950a99ce38747e7d7012dd606c9d12acfdb092b95a06436235de85"
+      },
+      {
+        "path": "tests/test_handoff_plan.py",
+        "content_sha256": "1f0639a57438916d8b64eaaf9f3a8b7d86eb714f7e3a3e65b74de73e97457787"
+      },
+      {
+        "path": "tests/test_lesson_evaluation_contract_boundaries.py",
+        "content_sha256": "c1bdcc2aa763a93b01a2a21673fc9ddbeb4de430ba7da75611176f58694a1ac5"
+      },
+      {
+        "path": "tests/test_lesson_lifecycle_review.py",
+        "content_sha256": "94121b865b0b9aa45914541778dcc9bd4cfa14aa95d144f3da1491928d43784f"
+      },
+      {
+        "path": "tests/test_lesson_session_emission.py",
+        "content_sha256": "83ff68b1518af7dc28b56d9b221e08f826fbd2aedd4e3ec2421093fe0664ad75"
+      },
+      {
+        "path": "tests/test_retro_plan.py",
+        "content_sha256": "34522059399132f944ad7c4b495adedcd80450eeb45019571c4753310107cf41"
+      },
+      {
+        "path": "tests/test_retro_scaffold.py",
+        "content_sha256": "59f283b9031433622d4c7fb08a1e6f39214ae9365f54b2b348393dd544204e40"
+      },
+      {
+        "path": "tests/test_usage_episodes_host_hooks.py",
+        "content_sha256": "e68cc5434e9c9ed363dc67f0fe12723908389316329fd788e6b5c4a6484301e6"
+      }
+    ],
+    "reviewed_patch_sha256": "fd306cd84e79e786703c70fb2fe4a2832c6dcacf9e841c7ac98927458d9d8895",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-17-issue-617-closeout.md"
+    ],
+    "identity_sha256": "d86001bbf9efff4db899fcc0b1c6b22f3efd0df0870b18b5e659844e114a5d4c"
+  }
+}

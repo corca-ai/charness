@@ -9,6 +9,17 @@ mutating the installed CLI source of truth.
 They are not the operator install contract. For supported installation and
 refresh guidance, use the Quick Start in [README.md](../README.md).
 
+## Prerequisites
+
+Run `npm ci` once in a fresh checkout, before the standing suite or
+[run-quality.sh](../scripts/run-quality.sh). It installs `markdownlint-cli2` into
+`node_modules/.bin`, which the markdown gate and the doc-authoring preflight
+both resolve. Without it the preflight's markdownlint arms have no engine, and
+the suite REFUSES rather than skipping them — a passing run that measured
+nothing is the outcome that default exists to prevent. Set
+`CHARNESS_REQUIRE_MARKDOWNLINT=0` to accept an unmeasured markdownlint class on
+a machine where installing the engine is not possible.
+
 ## Repo-Local Dogfood
 
 If you changed this checkout locally and want the installed host surface to

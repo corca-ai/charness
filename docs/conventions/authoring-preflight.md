@@ -197,7 +197,13 @@ the preflight probes it with a sample.
 [check_doc_authoring_preflight.py](../../scripts/check_doc_authoring_preflight.py)
 reuses the real validators — `check_markdown_inline_code`, `check_doc_links`,
 markdownlint-cli2 with the repo config, and the owning length constant — so the
-forecast cannot drift from what the gate enforces. Pass `--as-surface handoff`
+forecast cannot drift from what the gate enforces WHEN EACH CLASS RUNS. A class
+that could not run is reported in the payload's `unforecast_classes`, never as
+clean: an absent markdownlint engine, or a handoff adapter that exists but will
+not load, puts its class in that list and appends a warning naming the remedy.
+An empty `unforecast_classes` means no class reported itself unmeasured — which
+is the strongest claim the collectors support, not a guarantee that everything
+was measured. Pass `--as-surface handoff`
 to forecast a capped surface's length floor on a draft path. It is an affordance,
 not a gate: a doc still commits without it, the existing gates stay the
 enforcement, and

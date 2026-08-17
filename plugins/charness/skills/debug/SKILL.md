@@ -58,9 +58,10 @@ disk, not why, and its causes are not exhaustive, so pair it with
 Before stopping, run the `validator_command` emitted by the scaffold helper or
 the planner's `debug-artifact-shape` packet. Do not replace it with a guessed
 repo-local scripts path unless the emitted command already points there. The
-validator treats `latest.md` as the strict current schema and historical debug
-records as legacy debug memory; when a record fails, the error names the
-artifact path.
+validator applies the strict current schema to whatever the current pointer
+DESIGNATES -- `latest.md` itself, and the dated record it points at when it is a
+symlink or a byte copy -- and treats every other dated record as legacy debug
+memory; when a record fails, the error names the artifact path.
 
 ```bash
 # Required Tools: rg

@@ -74,9 +74,11 @@ the decision with the location so the next reader inherits the list.
 
 ## Enforced honesty markers (validator-owned)
 
-`validate_debug_artifact.py` enforces the closeout shape on the `latest.md` form
-only (forward-only; the dated corpus stays immutable). Author these markers; the
-validator owns the mechanics and the failure messages.
+`validate_debug_artifact.py` enforces the closeout shape on the CURRENT artifact:
+the `latest.md` form and, when the pointer is a symlink or a byte copy, the dated
+record it designates. Every other dated record stays legacy (forward-only; the
+rest of the corpus is immutable). Author these markers; the validator owns the
+mechanics and the failure messages.
 
 - **cross-file scope** — `## Sibling Search` must carry `cross-file: <path-or-axis>`
   naming a sibling outside the subject file, or `no cross-file sibling: <reason>`

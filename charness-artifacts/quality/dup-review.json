@@ -4594,10 +4594,10 @@
     },
     {
       "class": "intentional",
-      "id": "16fe94fc5ba51363",
+      "id": "fff203aab10f054e",
       "reviewed_at": "2026-08-17",
       "surface": "code",
-      "note": "the `*-artifact-shape` gate packet block, now mirrored between plan_debug_run.py and plan_retro_run.py. The duplication is the FIX, not a by-product: both packets emitted an unscoped whole-corpus validator command while calling themselves a current-artifact gate, and scoping both to scaffold['write_artifact_path'] is what made them agree. Same class already accepted as 2dd39753778c7cb1 (the `_read(...)` block mirrored across the handoff and debug portable planners): each planner is loaded by file path from its own skill package with no shared import root, so a common helper would either break skill-local portability or reintroduce the repo-module dependency these planners deliberately avoid. Surfaced as new because the two blocks converged."
+      "note": "the `*-artifact-shape` gate packet block, now mirrored between plan_debug_run.py and plan_retro_run.py. The duplication is the FIX, not a by-product: both packets emitted an unscoped whole-corpus validator command while calling themselves a current-artifact gate, and scoping both to scaffold['write_artifact_path'] is what made them agree. Same class already accepted as 2dd39753778c7cb1 (the `_read(...)` block mirrored across the handoff and debug portable planners): each planner is loaded by file path from its own skill package with no shared import root, so a common helper would either break skill-local portability or reintroduce the repo-module dependency these planners deliberately avoid. Surfaced as new because the two blocks converged. ROTATED to fff203aab10f054e in the same release when the release critique reversed retro's scoping (its validator keys on a hardcoded prefix, so a consumer-declared output_dir validated nothing and exited 0) and added `run_when` to both packets. Same two members, same reasoning: the blocks still mirror each other, and each planner is loaded by file path from its own skill package with no shared import root."
     },
     {
       "class": "intentional",
