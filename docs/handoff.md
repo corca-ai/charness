@@ -24,9 +24,8 @@
   record is the [session critique](../charness-artifacts/critique/2026-08-17-session-release-record-retro-prefix.md),
   whose Fresh-Eye section labels its own unfalsifiable parts. Every round found the
   previous round's repair carrying the class it repaired.
-- **The resume lane deliberately runs NO surface gate and NO focused preflight**; the three
-  reasons are at the call site in
-  [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py).
+- **The resume lane deliberately runs NO surface gate and NO focused preflight**; the
+  three reasons sit at the [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py) call site.
 - **[quality/latest.md](../charness-artifacts/quality/latest.md) is still stale** — it
   asserts as open two issues since closed. Regenerate, do not patch; see item 1.
 - **The [#548 single-owner pointer resolver](../scripts/scaffold_artifact_lib.py) raises on a
@@ -55,8 +54,8 @@
    reproduction first; do NOT close on code that merely looks right.
 4. **Prove `--bump-rationale` survives a real resume.** It is rebuilt from arguments,
    nothing refuses the omission, and only the planner's
-   [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
-   names it; the [version policy](../skills/public/release/references/version-policy.md)
+   [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py) packet names it;
+   the [version policy](../skills/public/release/references/version-policy.md)
    holds what the record promises. Only the non-claims lane can lose it.
 5. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
    `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/`; a
@@ -65,8 +64,8 @@
    site was tried twice and reverted twice — `canonical_retro_citation` and
    `collect_retro_candidates` are what make the literal load-bearing.
 6. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
-   venv-only install gives a traceback where a refusal belongs
-   ([publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py)).
+   venv-only install gives a traceback where a refusal belongs; the shell-out lives in
+   [publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py) itself.
 7. **The critique validator refuses the value its own skill teaches** —
    [critique_enforcement_scope.py](../scripts/critique_enforcement_scope.py)'s
    `PACKET_ABSENT_VALUES` omits `blocked`, so an honestly skipped packet declared the way
@@ -74,7 +73,7 @@
 8. **File the two `Destination: issue` improvements no issue carries yet** — a per-round
    critique findings artifact bound to the round's fingerprint window, and surfacing
    outstanding lesson sessions at session START; both are named in the
-   [session retro](../charness-artifacts/retro/2026-08-18-session-retro.md).
+   [session retro](../charness-artifacts/retro/2026-08-18-session-retro.md) Next Improvements.
 
 ## Discuss
 
