@@ -1323,6 +1323,46 @@
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
       "anchor": "I committed each slice and then ran prepush_focused_changed_line_coverage.py --refuse-unestablished over base..HEAD, instead of running it on the dirty pool where it reads nothing, and got blocking: [] with no follow-up commits — where last session the same proof cost two extra commits."
+    },
+    {
+      "event_id": "s17-green-test",
+      "session_id": "2026-08-17-autonomous-improve",
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "Measured coverage for the exact line numbers instead of accepting the CI list; that read found publish_release_claims_review.py 234 and 387 already covered. Otherwise I would have written tests against two lines that were never the defect."
+    },
+    {
+      "event_id": "s17-blind-class",
+      "session_id": "2026-08-17-autonomous-improve",
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "read-but-not-applied",
+      "anchor": "Changed verdict-ordering in the export detector without stating what the mechanism cannot see; a reviewer then refuted my dead-code premise by naming the unseen class (iterdir lists a dangling symlink, .exists() does not)."
+    },
+    {
+      "event_id": "s17-changed-line-order",
+      "session_id": "2026-08-17-autonomous-improve",
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "read-but-not-applied",
+      "anchor": "Ran the full standing suite and committed before running the changed-line proof; the proof then returned two uncovered lines and cost the extra commit edcfd6e12."
+    },
+    {
+      "event_id": "s17-closeout-order",
+      "session_id": "2026-08-17-autonomous-improve",
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "lesson_id": "closeout-authoring-rework",
+      "outcome": "read-but-not-applied",
+      "anchor": "Planned push before retro; the pre-push gate refused on unclaimed-emission for this session's own receipt, which running the closeout floor first would have surfaced without a failed push."
+    },
+    {
+      "event_id": "s17-prose-bar",
+      "session_id": "2026-08-17-autonomous-improve",
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "read-but-not-applied",
+      "anchor": "Recorded the depth guard's reachability rationale as a code comment with no test pinning it; the comment was false and the test named after the rule passed one branch early, until a dangling-symlink fixture was added."
     }
   ],
   "lessons": {
@@ -1479,13 +1519,13 @@
     "closeout-authoring-rework": {
       "source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
       "transition_id": "seed-closeout-authoring-rework",
-      "score_total": -1,
-      "score_count": 1,
+      "score_total": -2,
+      "score_count": 2,
       "outcome_counts": {
         "changed-an-action": 0,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1614,13 +1654,13 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -2,
-      "score_count": 6,
+      "score_total": -3,
+      "score_count": 7,
       "outcome_counts": {
         "changed-an-action": 2,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
-        "read-but-not-applied": 2,
+        "read-but-not-applied": 3,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1659,10 +1699,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -1794,13 +1834,13 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 5,
-      "score_count": 5,
+      "score_total": 4,
+      "score_count": 6,
       "outcome_counts": {
         "changed-an-action": 5,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 0,
+        "read-but-not-applied": 1,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -1824,13 +1864,13 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 3,
-      "score_count": 5,
+      "score_total": 2,
+      "score_count": 6,
       "outcome_counts": {
         "changed-an-action": 4,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 1,
+        "read-but-not-applied": 2,
         "legacy-scalar": 0
       },
       "state": "active",

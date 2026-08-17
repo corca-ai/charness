@@ -2,8 +2,8 @@
 
 ## Current Focus
 
-- Autonomous continuation of `docs/handoff.md` `## Next Session` from item 2 onward, after the operator asked which items remained once the real-host checklist was set aside. (source: `charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md`)
-- Handoff pickup. (source: `charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md`)
+- `2026-08-16-s9` was opened by a prior session and never claimed by a retro. (source: `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`)
+- The operator asked for a plan for autonomous repo improvement from the handoff, open issues, and recent lessons, then said to execute it. (source: `charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md`)
 
 ## Repeat Traps
 
@@ -47,5 +47,6 @@
 - `charness-artifacts/retro/2026-08-15-s3-lesson-loop.md`
 - `charness-artifacts/retro/2026-08-15-session-retro.md`
 - `charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md`
-- `charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md`
 - `charness-artifacts/retro/2026-08-16-session-retro.md`
+- `charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md`
+- `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`

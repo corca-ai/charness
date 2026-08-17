@@ -4577,6 +4577,13 @@
       "note": "`scaffold_retro_artifact._north_star_prompt` and `validate_retro_artifact.north_star_reference` deliberately mirror one branch shape (`repo_root is not None and (repo_root / NORTH_STAR_DOC).is_file()`) because they must AGREE: a review round found them stating opposite conclusions about the same spelling, with the discarded `<authoring-repo>/` placeholder surviving on the refusal message a consuming author reads when they FAIL. They cannot share the code that would enforce agreement: the scaffold is a PORTABLE skill script and the validator is a repo-root one, so importing across would make an exported module depend on a file the export does not ship -- the exact class #634 tracks. Agreement is pinned as a VALUE instead, by test_north_star_reference_resolves_per_repo_and_never_writes_a_placeholder asserting the two NORTH_STAR_DOC constants are equal and neither surface emits a placeholder in either branch. Their emitted strings differ; only the resolution branch is shared in shape.",
       "reviewed_at": "2026-08-16",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c8218aae3a22d131",
+      "note": "idiom-sized `for node in ast.walk(tree): if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div): continue` traversal prologue shared by two unrelated export detectors: `export_self_sufficiency_lib.unshipped_path_findings` asks whether a path chain names a repo-root entry the export omits, and `check_export_safe_imports._probes_both_layouts` asks whether a module builds the exported `skills/<id>/` form as well as the dev-tree one. The three shared lines are the standard way to reach `Path` `/` chains in an AST; everything after them diverges completely, and the two return different types to different callers. Factoring the prologue into a helper would couple two independently-owned detectors through a traversal utility for no shared decision. Surfaced as new because the unshipped-path guards were reordered this session (#612 changed-line work), which shifted the member's line range and re-fingerprinted the family; the shared lines themselves were not edited.",
+      "reviewed_at": "2026-08-17",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
