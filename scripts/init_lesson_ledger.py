@@ -128,10 +128,15 @@ def main() -> int:
     #
     # `summary_path` stays a separately declared adapter field, not a derivation of the
     # output dir -- retro's own adapter contract says so in as many words.
+    # Through the owner, not a raw string. An earlier version of these two lines argued
+    # at length that the subsystem must stay on ONE literal and then spelled a fresh copy
+    # of it -- in a file that already imports `_records`, whose `retro_output_dir` is the
+    # literal's owner. The comment naming the rule and the line breaking it were adjacent.
+    output_dir = _records.retro_output_dir(root)
     result = init_lesson_ledger(
         repo_root=root,
-        output_dir=root / "charness-artifacts/retro",
-        summary_path=root / "charness-artifacts/retro/recent-lessons.md",
+        output_dir=output_dir,
+        summary_path=_records.summary_path(root),
     )
     step = next_step(root)
     # Unconditional YAML. The retired receipt line was a strict projection of

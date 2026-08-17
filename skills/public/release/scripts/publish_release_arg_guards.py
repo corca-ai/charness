@@ -10,7 +10,6 @@ tagged and published before most of its readers ever run.
 
 from __future__ import annotations
 
-import re
 import runpy
 from pathlib import Path
 from typing import Callable
@@ -59,70 +58,30 @@ def validate_bump_rationale_arg(bump_rationale: str | None) -> str | None:
     substring-matching -- the same exposure `--critique-artifact` has, and the reason
     the sentinel rule is shared rather than re-derived here.
 
-    Two rules, and the split is deliberate. Line-start constructs (headings, fences,
-    claim-shaped bullets) are made inert at RENDER time by quoting the prose, because
-    the value is a human explanation supplied after the critique gate and a refusal
-    there costs a release cycle to reword. `<!--` cannot be handled that way: quoting
-    does not stop an HTML comment from swallowing the rest of the RENDERED document,
-    so a record whose every substring audit passes would show a human reader nothing
-    below the rationale -- not the state ledger, not the "NOT recorded" sentences, not
-    a `Claims review verdict: unproven`. Hiding the negatives is worse than forging a
-    positive, and it is invisible to every check this repo has. Same for a record-state
-    sentinel, which cannot be neutralised without changing what the operator wrote.
-    Both stop the run at argument time, before any mutation.
+    ONE rule now, and the deleted one is the more interesting half. A guard used to
+    enumerate constructs that hide the rest of a RENDERED record -- raw-text elements,
+    unclosed tags, HTML comments. It was widened, narrowed and rebuilt across three
+    review rounds and was wrong in both directions every time, because it decided what a
+    renderer shows while being unable to see a renderer: this repo declares no renderer
+    dependency, no test re-ran the check, and no artifact recorded its output, so the
+    word "measured" in its docstring was testimony a reader could not verify. The record
+    also emits a raw `<!--` on line two of every prepared release itself, and proves
+    release state by substring-matching it -- so this document's shipped model was always
+    text, and the guard was reasoning about a reader nobody had evidence of.
+
+    The class is closed by POSITION instead: `write_release_artifact` emits
+    `## Bump Rationale` last, so an unterminated construct in operator prose has nothing
+    below it to hide. That works for every renderer, measured or not, and rewrites none
+    of the operator's bytes.
+
+    What remains is renderer-independent. A record-state sentinel is matched as a
+    SUBSTRING by other surfaces to prove release state, so it cannot be neutralised by
+    position or by quoting without changing what the operator wrote. It stops the run at
+    argument time, before any mutation.
     """
     if bump_rationale is not None:
         _claims_review["assert_no_record_sentinel"](bump_rationale, "--bump-rationale")
-        _assert_no_hidden_record(bump_rationale)
     return bump_rationale
 
 
-#: Element names whose CONTENT the HTML tokenizer stops parsing as markup: raw-text and
-#: escapable-raw-text elements, plus the opaque legacy ones. An unterminated opener puts
-#: the rest of the document inside them.
-_OPAQUE_ELEMENTS = ("script", "style", "textarea", "pre", "plaintext", "xmp", "iframe", "noembed")
-_OPAQUE_OPENER_RE = re.compile(r"<\s*/?\s*(" + "|".join(_OPAQUE_ELEMENTS) + r")\b", re.IGNORECASE)
-#: A `<` starting a tag that is never closed by a `>`: an unterminated attribute value
-#: swallows the rest of the document into the attribute.
-_UNCLOSED_TAG_RE = re.compile(r"<[A-Za-z][^>]*$", re.DOTALL)
 
-
-def _assert_no_hidden_record(bump_rationale: str) -> None:
-    """Refuse the constructs MEASURED to remove the record from what a reader sees.
-
-    Measured, not reasoned. Each candidate was rendered into a record body of the shape
-    `write_release_artifact` emits and the output fed to an HTML parser, asking not "are
-    the ledger bytes present" -- they always are, which is why every substring audit
-    passes -- but "does the ledger arrive as document flow". Under python-markdown 3.3.6:
-
-    * `<script>`, `<style>`, `<textarea>`: bytes present, ledger NOT visible. The
-      tokenizer enters raw-text state and `</blockquote>` is character data there, so
-      quoting does not bound them and everything below the rationale disappears.
-    * an unterminated attribute (`<span title="x`): the ledger does not even reach the
-      HTML.
-    * `<details>`, `<summary>`, `<div>`: visible. The blockquote's end tag pops the stack
-      and the stray element with it, so these are genuinely harmless and refusing them
-      was the over-wide version's false positive.
-    * `<!--`: visible under this renderer. Kept in the refusal anyway, because a
-      pass-through renderer (`cmark --unsafe`, pandoc) emits it into the stream where it
-      does hide the rest -- but recorded here as UNPROVEN for the renderer measured,
-      rather than asserted as the guard's headline true positive the way it once was.
-
-    Which renderer produces "the document a human reader sees" is not settled and the
-    guard cannot settle it: GitHub sanitizes `<script>`/`<style>` away entirely, and
-    `cmark` in safe mode replaces all raw HTML with a closed comment. The list is
-    therefore the union of what any plausible target renders opaquely, which is still a
-    CLOSED list of element names -- so `<path>`, `<ref>`, `<repo>` and autolinks, the
-    notation this repo writes constantly, are untouched.
-    """
-    match = _OPAQUE_OPENER_RE.search(bump_rationale) or _UNCLOSED_TAG_RE.search(bump_rationale)
-    if match or "<!--" in bump_rationale:
-        found = match.group(0) if match else "<!--"
-        raise SystemExit(
-            f"--bump-rationale must not contain {found!r}; it is rendered into the published "
-            "release record, and this construct puts every line below it inside an element "
-            "the HTML parser does not read as markup -- the state ledger, the "
-            "\"NOT recorded\" sentences and the claims verdict vanish from the document a "
-            "reader sees while the bytes every audit reads stay intact. Say it in prose "
-            "instead; angle-bracket placeholders like `<path>` are fine."
-        )

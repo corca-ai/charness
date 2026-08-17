@@ -22,13 +22,12 @@
   record is the [session critique](../charness-artifacts/critique/2026-08-17-session-release-record-retro-prefix.md),
   whose Fresh-Eye section labels its own unfalsifiable parts. Every round found the
   previous round's repair carrying the class it repaired.
-- **The resume lane deliberately runs NO surface gate and NO focused preflight.** One was
-  added there and reverted; see the comment in
+- **The resume lane deliberately runs NO surface gate and NO focused preflight**, and its
+  record says so; the three reasons are at the call site in
   [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py).
-  Its record says "NOT recorded by this helper invocation", which is true of that lane.
-- **The release record carries a bump rationale, quoted verbatim.**
-  `--bump-rationale` reaches a `## Bump Rationale` section; `version_drift_check` is set
-  on the execute lane only, and renders as unrecorded everywhere else.
+- **The release record carries a bump rationale**, quoted verbatim and emitted LAST so
+  no construct in it can hide the record; see
+  [version-policy.md](../skills/public/release/references/version-policy.md).
 - **`validate_retro_artifact.py` resolves its prefix from the adapter**, and the retro
   planner's shape packet is scoped again. Reproduce the old defect with
   `python3 -m pytest tests/quality_gates/test_retro_artifact_validation.py -k custom_output_dir`.
@@ -58,10 +57,12 @@
    [#632](https://github.com/corca-ai/charness/issues/632),
    [#630](https://github.com/corca-ai/charness/issues/630).** Run each issue's own
    reproduction first; do NOT close on code that merely looks right.
-4. **Prove `--bump-rationale` survives a real resume.** It is rebuilt from arguments, so a
-   dropped flag publishes a record saying none was recorded. Only the planner's
-   [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
-   names it; nothing refuses the omission.
+4. **Prove `--bump-rationale` survives a real resume — on BOTH lanes.** It is rebuilt from
+   arguments, so a dropped flag publishes a record saying none was recorded. Only the
+   planner's [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py)
+   names it; nothing refuses the omission. The warning is unconditional in three places
+   but only one lane can actually lose it: the claims lane skips the artifact write, so
+   its record is the prepared one and keeps the rationale.
 5. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
    `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/` — a
    `scripts/`-only sweep misses
@@ -73,11 +74,10 @@
 6. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
    venv-only install gives a traceback where a refusal belongs
    ([publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py)).
-7. **The critique validator refuses the value its own skill teaches.**
+7. **The critique validator refuses the value its own skill teaches** —
    [critique_enforcement_scope.py](../scripts/critique_enforcement_scope.py)'s
-   `PACKET_ABSENT_VALUES` omits `blocked`, so declaring an honestly skipped packet the
-   way `charness:critique` prescribes turns the binding floor on and demands SHAs for a
-   packet just declared absent.
+   `PACKET_ABSENT_VALUES` omits `blocked`, so an honestly skipped packet declared the way
+   `charness:critique` prescribes demands SHAs for a packet just declared absent.
 
 ## Discuss
 

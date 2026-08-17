@@ -329,5 +329,15 @@ def baton_reconcile_lines(record: dict[str, Any] | None) -> list[str]:
 
 
 def user_update_lines(update_instructions: list[str]) -> list[str]:
+    """The adapter's refresh steps, each flattened onto ONE line.
+
+    The record's other free-text inlet, and it was rendered raw while its sibling was
+    being hardened. `update_instructions` is an unconstrained string list in the release
+    adapter, so a YAML entry containing a newline puts its second line at column 0 of the
+    published record -- reopening the `- target version:` and unterminated-fence class
+    that the bump rationale's quoting closes, on the same document. `flatten_signal` is
+    the in-repo precedent for exactly this, and a well-formed single-line instruction is
+    unchanged by it.
+    """
     steps = update_instructions or ["Document the operator-facing refresh path before calling the release fully closed."]
-    return ["", "## User Update Steps", "", *(f"- {item}" for item in steps), ""]
+    return ["", "## User Update Steps", "", *(f"- {flatten_signal(item)}" for item in steps), ""]

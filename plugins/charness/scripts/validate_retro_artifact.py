@@ -23,8 +23,10 @@ _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 _lesson_evaluation = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
 _lesson_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
 # Where this repo keeps its retros, resolved from its own adapter rather than from a
-# literal written here. Re-exported so `plan_retro_run` and `seed_retro_memory` -- which
-# load THIS module -- keep one import site.
+# literal written here. `retro_artifact_prefix` is used below; `DEFAULT_RETRO_ARTIFACT_PREFIX`
+# is re-exported for tests that assert the fallback identity. An earlier comment claimed
+# `plan_retro_run` and `seed_retro_memory` needed one import site for these -- they take
+# `date_activated_rules` and `lesson_ledger_bootstrap_command`, not either prefix name.
 _output_dir = import_repo_module(__file__, "scripts.retro_output_dir_lib")
 DEFAULT_RETRO_ARTIFACT_PREFIX = _output_dir.DEFAULT_RETRO_ARTIFACT_PREFIX
 retro_artifact_prefix = _output_dir.retro_artifact_prefix
@@ -63,49 +65,12 @@ file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_pre
 disposition_form = import_repo_module(__file__, "scripts.disposition_form")
 
 DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md (#329 disposition-form floor)"
-# Recurrence-lineage floor for standalone retros: the symmetric extension of the
-# achieve rung 1d to a session retro's `## Next Improvements`. Its own enforce-from
-# date lands the day after this floor so every existing retro (all dated on or
-# before the landing day) is grandfathered and the broad gate stays green; only
-# retros dated on/after it must carry a lineage marker on issue-form dispositions.
-# Every retro must consult the north star and say what it found (user standing
-# request, 2026-08-02). Recorded as a floor rather than prose because prose is
-# what it already was: `SKILL.md` has always pointed at the design standard, two
-# consecutive retros still shipped without a facet mapping, and the operator had
-# to ask twice. That is a recorded recurrence, not a first finding.
-#
-# Presence-only, never a content classifier: the floor proves the question was
-# ASKED, and the answer's quality is the fresh-eye reviewer's call.
-#
-# Grandfathered by observable date, and fail-OPEN on an undatable artifact --
-# deliberately the `validate_persisted_form` convention rather than
-# `validate_recurrence_lineage`'s fail-CLOSED one. The two differ for a reason:
-# lineage guards a claim a retro MAKES, where an undatable file dodging the check
-# is a live escape, while this guards a section a retro must CONTAIN, where the
-# only undatable files are legacy artifacts that predate the rule by months
-# (`weekly-2026-04-14.md` has no `Date:` line at all). Fail-closed here would
-# refuse history rather than catch anything. New retros are always datable: both
-# the scaffold and `persist_retro_artifact.py` write the date.
-# Lands 2026-08-02; enforcement begins the NEXT day so every retro frozen on or
-# before the landing day is grandfathered -- the established
-# RESIDUAL_LEDGER_RULE_DATE / STRUCTURAL_FOLLOWUP_RULE_DATE precedent. Three
-# same-day retros from earlier goals this session would otherwise be refused
-# retroactively for a decision taken after they were written.
-# The authoring-repo-internal spelling every other portable surface already uses
-# (rename-critique.md, disposition-reviewer-brief.md, closeout-discipline.md,
-# ledger-and-dispositions.md, mutation-testing.md). A bare `docs/design-north-star.md`
-# told a CONSUMING author to read a file that does not exist there and that no
-# setup path creates, so the required section was either skipped or satisfied
-# against the wrong doc. The floor is presence-only, so what it actually demands
-# is that SOME governing design standard was consulted -- the message now says
-# that instead of naming one repo's path as if it were universal.
-#: SUPERSEDED spelling, kept only as the thing this constant is not. The scaffold that
-#: seeds the section stopped writing `<authoring-repo>/...` into a consuming repo's own
-#: artifact, because that is charness's INTERNAL vocabulary for "resolves in my tree,
-#: not yours" and a consuming author reads it as a path to a directory that does not
-#: exist. The refusal message is the surface that author hits when they FAIL, which is
-#: when a readable path matters most -- so it must not keep the spelling the scaffold
-#: just removed. Resolved per-repo below instead.
+#: The path `north_star_reference` names when the repo being validated has this file.
+#: Deliberately NOT charness's internal `<authoring-repo>/...` spelling: a consuming
+#: author reads that as a directory they do not have, and the refusal message is the
+#: surface they hit when they fail, which is when a readable path matters most. The
+#: comment here used to describe the constant as "superseded", which read as a warning
+#: against the live value it sits on; the superseded thing was the other spelling.
 NORTH_STAR_DOC = "docs/design-north-star.md"
 _PERSISTED_LINE = re.compile(r"^Persisted:\s+(yes|no):\s+\S.+$")
 RETRO_PREPARE_PACKET_KIND = "charness.retro_prepare_packet"

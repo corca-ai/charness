@@ -237,8 +237,13 @@ def test_bump_rationale_lines_cannot_be_read_as_record_claims_or_fences(tmp_path
 
 
 def test_bump_rationale_that_renders_empty_still_says_it_is_absent(tmp_path: Path) -> None:
-    """Absence is decided on the RENDERED body, so a heading is never emitted over
-    nothing -- a reader who sees the section infers a rationale was supplied."""
+    """Absence is decided on the LINE LIST -- neither the raw argument nor the rendered
+    text, and both of those were tried -- so a heading is never emitted over nothing.
+
+    NON-CLAIM: a line list is not visibility. A rationale that is only an invisible
+    element yields one line and renders as an empty quote bar under the heading. Not
+    closed here, and the same non-claim is recorded beside the code.
+    """
     for supplied in ("", "   ", "\n\n", "\n \n"):
         text = _release_record(tmp_path / f"repo-{abs(hash(supplied))}", bump_rationale=supplied)
 
@@ -505,3 +510,28 @@ def test_refresh_current_pointer_refuses_an_unreadable_record(tmp_path: Path) ->
     assert "could not be read" in payload["reason"]
     assert payload["would_update"] is False
     assert os.readlink(pointer) == real.name, "pointer repointed by an unreadable record"
+
+
+@pytest.mark.parametrize(
+    "hider",
+    ["<script>", "<style>", "<textarea>", "<plaintext>", '<span title="unterminated', "<!--"],
+)
+def test_a_hiding_construct_in_the_rationale_has_nothing_below_it(tmp_path: Path, hider: str) -> None:
+    """Position, not a refusal, is what closes the hidden-record class.
+
+    Each of these puts the rest of a rendered document inside something an HTML parser
+    does not read as markup. The section is emitted LAST, so the rest is empty: the
+    state ledger, the "NOT recorded" sentences and the claims verdict are all ABOVE it
+    and survive whatever the operator wrote. This works for every renderer, including
+    ones nothing in this repo can run.
+    """
+    text = _release_record(tmp_path / f"repo-{abs(hash(hider))}", bump_rationale=f"patch. {hider}")
+
+    headings = [line for line in text.splitlines() if line.startswith("## ")]
+    assert headings[-1] == "## Bump Rationale", headings
+    ledger_start = text.index("\n## Release State\n")
+    assert text.index("## Bump Rationale") > ledger_start
+    for entry in ("- local release mutation:", "- branch/tag push:", "- audit narrative:"):
+        assert entry in text[ledger_start:text.index("## Bump Rationale")], entry
+    # And the operator's bytes are unaltered.
+    assert f"> patch. {hider}" in text

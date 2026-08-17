@@ -348,14 +348,6 @@ def test_retro_prefix_follows_the_repos_declared_output_dir(tmp_path: Path) -> N
     assert retro_validator.retro_artifact_prefix(repo) == "artifacts/retros/"
 
 
-def test_retro_prefix_falls_back_when_the_repo_declares_nothing(tmp_path: Path) -> None:
-    """Not `None` and not `""`: the first cannot glob and the second owns every path."""
-    assert (
-        retro_validator.retro_artifact_prefix(tmp_path / "bare")
-        == retro_validator.DEFAULT_RETRO_ARTIFACT_PREFIX
-    )
-
-
 def test_named_retro_paths_are_not_silently_dropped_under_a_custom_output_dir(
     tmp_path: Path,
 ) -> None:

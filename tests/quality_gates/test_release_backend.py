@@ -254,7 +254,7 @@ def test_bump_rationale_refuses_a_forged_release_state_sentinel() -> None:
 
 
 @pytest.mark.parametrize(
-    "hider",
+    "value",
     [
         "patch. <script>",
         "patch.\n<STYLE>",
@@ -262,48 +262,43 @@ def test_bump_rationale_refuses_a_forged_release_state_sentinel() -> None:
         "patch. <plaintext>",
         'patch <span title="unterminated',
         "patch. <!-- see the review thread",
-    ],
-)
-def test_bump_rationale_refuses_what_removes_the_record_from_a_reader(hider: str) -> None:
-    """Each of these was MEASURED, not reasoned about.
-
-    Rendering a record body of the emitted shape and feeding the output to an HTML
-    parser asks the question that matters: not "are the ledger bytes present" -- they
-    always are, which is why every substring audit passes -- but "does the ledger arrive
-    as document flow". These do not. The raw-text elements put `</blockquote>` itself
-    into character data, and an unterminated tag swallows the rest into an attribute.
-
-    The isolated inputs matter: the test that used to cover this carried a record
-    sentinel, which trips an earlier guard, so it stayed green with this one deleted.
-    """
-    preflight = _load_release_module("publish_release_preflight")
-
-    with pytest.raises(SystemExit):
-        preflight.validate_bump_rationale_arg(hider)
-
-
-@pytest.mark.parametrize(
-    "prose",
-    [
         "patch: only `charness worktree create --path <path>` changed",
         "patch: the reviewer read <ref>:<path> to reach the base",
         "patch: see <https://example.test/issues/1>",
         "patch: a < b held after the migration and c > d did not",
         "patch: an unclosed <details> is bounded by the blockquote",
-        "patch: <div> containers render inside the quote",
     ],
 )
-def test_bump_rationale_accepts_prose_the_blockquote_does_bound(prose: str) -> None:
-    """The accept side, which the over-wide version had no test for at all.
+def test_bump_rationale_refuses_nothing_for_how_it_might_render(value: str) -> None:
+    """No construct is refused for rendering, and none is rewritten.
 
-    A guard covering all raw HTML refused `<path>`, `<ref>` and autolinks -- notation
-    this repo writes in its own root docs -- blocking a release for English. `<details>`
-    and `<div>` are here because they were measured VISIBLE: the blockquote's end tag
-    pops them off the stack. That is the whole reason the wide version did not pay.
+    A guard used to enumerate HTML that hides the rest of a rendered record. It was
+    widened, narrowed and rebuilt across three review rounds and was wrong in both
+    directions each time, because it decided what a renderer shows while nothing here
+    can see a renderer -- this repo declares no renderer dependency, so the word
+    "measured" in its docstring named an observation no reader could re-run.
+
+    The class is closed by POSITION instead: the section is emitted last, so an
+    unterminated construct has nothing below it to swallow. Both the hiders and the
+    ordinary prose the wide version blocked are accepted here, and the record test
+    beside this one proves the ledger survives them.
     """
     preflight = _load_release_module("publish_release_preflight")
 
-    assert preflight.validate_bump_rationale_arg(prose) == prose
+    assert preflight.validate_bump_rationale_arg(value) == value
+
+
+def test_bump_rationale_still_refuses_a_release_state_sentinel() -> None:
+    """The one refusal that survives, and it is renderer-independent: other surfaces
+    prove release state by substring-matching this record, so a sentinel cannot be
+    neutralised by position or by quoting without changing what the operator wrote."""
+    preflight = _load_release_module("publish_release_preflight")
+    claims = _load_release_module("publish_release_claims_review")
+
+    with pytest.raises(SystemExit) as exc:
+        preflight.validate_bump_rationale_arg(f"patch <!-- {claims.MARKER} -->")
+
+    assert "--bump-rationale" in str(exc.value)
 
 
 def test_release_adapter_preflight_records_that_nothing_was_required(tmp_path: Path) -> None:

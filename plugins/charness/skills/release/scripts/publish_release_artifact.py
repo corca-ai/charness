@@ -90,11 +90,6 @@ def write_release_artifact(
         f"- target version: `{target_version}`",
         f"- git branch: `{branch}`",
         f"- git remote: `{remote}`",
-        # ABOVE `## Release State`, never between that heading and
-        # `## Public Release Verification`: the narrative audit reads the five-entry ledger
-        # as the span between them, so a section landing inside it truncates the ledger and
-        # blocks the publish with four "missing required entry" blockers.
-        *bump_rationale_lines(bump_rationale),
         "",
         "## Verification",
         "",
@@ -137,6 +132,23 @@ def write_release_artifact(
     lines.extend(fresh_checkout_lines(fresh_checkout_payload))
     lines.extend(issue_closeout_lines(issue_closeout))
     lines.extend(user_update_lines(update_instructions))
+    # LAST, and that placement is the mechanism rather than a layout preference. This
+    # section is the only operator-authored prose in the record, and the whole class of
+    # hazard it carries is "an unterminated construct hides everything BELOW it": a raw-text
+    # element, a template, an unclosed tag, an HTML comment. With nothing below it, the
+    # blast radius of any of them is the rationale itself.
+    #
+    # This replaces a refusal that tried to enumerate the hazardous constructs. That guard
+    # was widened, narrowed, and rebuilt across three review rounds and was wrong in both
+    # directions each time, because it decided what a RENDERED document shows while being
+    # unable to see any renderer -- and this repo has no renderer dependency to see one
+    # with. Position closes the class for every renderer, measured or not, and rewrites
+    # none of the operator's bytes. It also cannot go stale.
+    #
+    # Not above `## Release State`, which was the previous home: the narrative audit reads
+    # the five-entry ledger as the span to the next `## `, so a section inside it blocks
+    # the publish with four missing-entry blockers.
+    lines.extend(bump_rationale_lines(bump_rationale))
     write_current_pointer_text(artifact_path, "\n".join(lines))
     return str(artifact_path.relative_to(repo_root))
 

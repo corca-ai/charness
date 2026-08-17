@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Which directory a repo keeps its retros in.
 
-Split from `validate_retro_artifact` at its length cap. One concept, not a spill
-(D33): this answers "where are THIS repo's retros" and renders no verdict on any
-artifact. It became a job worth its own module the moment the directory stopped
-being a literal -- resolving it now carries a layout search, an adapter read, and a
-fallback whose two rejected alternatives are the interesting part.
+One concept, and it renders no verdict on any artifact: this answers "where are THIS
+repo's retros", which stopped being a literal and became a layout search, an adapter
+read, and a fallback whose two rejected alternatives are the interesting part.
+
+It is a module rather than a function in the validator for a reason that outlived the
+length cap it was first split for: `lesson_evaluation_records_lib` owns a
+`retro_output_dir(repo_root) -> Path` returning the LITERAL directory, and two
+same-named owners with opposite answers is worse than either.
 
 `validate_retro_artifact` re-exports both public names, so its importers keep one
 import site. It deliberately exposes no `retro_output_dir` helper:

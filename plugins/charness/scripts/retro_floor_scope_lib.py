@@ -154,7 +154,7 @@ def lesson_ledger_bootstrap_command(repo_root: Path) -> str:
     )
 
 
-def date_activated_rules(repo_root: Path) -> list[dict[str, object]]:
+def date_activated_rules(repo_root: Path, *, output_dir: Path | None = None) -> list[dict[str, object]]:
     """Every retro floor that switches on by artifact date, as announceable data.
 
     These dates were reachable only by TRIPPING them: a consuming author whose
@@ -166,7 +166,13 @@ def date_activated_rules(repo_root: Path) -> list[dict[str, object]]:
     """
     prefix = LESSON_LEDGER_PREFIX
     ledger = repo_root / prefix / LESSON_LEDGER_FILENAME
-    declared = ledger.is_file()
+    # THREE announcers had to agree and only two were moved: this one kept reporting
+    # `enforced_here: True` for a repo the other two had scoped out, and the retro planner
+    # shows this payload to the author beside the line "Read date_activated_rules before
+    # concluding a floor is broken". Same run, two answers -- the defect co-locating the
+    # probes was supposed to end.
+    out_of_scope = output_dir is not None and _output_dir_lib.retro_artifact_prefix(repo_root) != prefix
+    declared = ledger.is_file() and not out_of_scope
     return [
         {
             "id": "lesson-evaluation-disposition",

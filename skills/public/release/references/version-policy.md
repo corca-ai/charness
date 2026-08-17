@@ -49,15 +49,17 @@ absence is recorded, not hidden. On `--resume` the payload is rebuilt from
 arguments, so repeat the flag or the published record loses the rationale the
 prepared one carried.
 
-The value is quoted verbatim as a blockquote, which makes it inert to the
-line-anchored readers of that record. What quoting does not bound is refused at
-argument time: `<script>`, `<style>`, `<textarea>`, the opaque legacy elements, and
-an unterminated tag or comment. Those put every line below them inside something the
-HTML parser does not read as markup, so the state ledger and the record's negative
-sentences vanish from the document a reader sees while the bytes stay intact.
-Angle-bracket placeholders like `<path>` and `<ref>` are accepted; so are `<details>`
-and `<div>`, which the blockquote does bound. Both directions were measured against a
-renderer rather than reasoned about.
+Nothing in the value is refused for how it might render, and nothing is rewritten.
+It is quoted verbatim as a blockquote, which makes it inert to every line-anchored
+reader of the record, and the section is emitted LAST, so an unterminated construct
+in it has nothing below to swallow. Position is the mechanism: a refusal that
+enumerated hazardous HTML was tried three times and was wrong in both directions each
+time, because it decided what a rendered document shows while nothing here can see a
+renderer. Write `<path>`, `<details>` or a stray `<` freely.
+
+One value is still refused: a release-state sentinel. Other surfaces prove release
+state by substring-matching this record, so that one cannot be neutralised by position
+or by quoting without changing what you wrote.
 
 **This flag was rejected once, on 2026-07-27, and that decision is superseded.**
 The rejection read "the policy says 'say why', not 'add a CLI surface'", and
