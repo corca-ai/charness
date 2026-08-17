@@ -195,4 +195,8 @@ def test_no_repo_owned_source_reaches_the_npm_registry_through_exec() -> None:
     # if `scripts/` were reorganized. The known call sites are the liveness proof.
     assert "scripts/check-markdown.sh" in " ".join(scanned)
     assert "scripts/check-secrets.sh" in " ".join(scanned)
-    assert "scripts/check_doc_authoring_preflight.py" in " ".join(scanned)
+    # The Python call site moved out of check_doc_authoring_preflight.py into its own
+    # engine-adapter module when that file hit its length cap. This anchor is doing
+    # exactly its job by failing on that move: it is what proves the scan still reaches
+    # the Python lane after `scripts/` is reorganized, which is the rot it guards.
+    assert "scripts/markdownlint_probe.py" in " ".join(scanned)

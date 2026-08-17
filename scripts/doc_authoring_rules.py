@@ -230,7 +230,15 @@ def build_rules(repo_root: Path, as_surface: str | None) -> dict[str, Any]:
         # the preflight lane resolves, so on a repo whose only markdownlint lives there
         # one command reports the class as forecast and the other as unavailable — two
         # payloads, opposite answers about the same capability.
-        "markdownlint": {"available": _preflight._resolve_markdownlint_cmd(repo_root) is not None},
+        #
+        # The key is `resolves`, not `available`, and the difference is the whole point.
+        # This lane runs no engine, so all it can honestly report is that a command
+        # resolves; the preflight lane's `available` means the engine RAN and was parsed.
+        # `npm exec --no` resolves whenever npm is on PATH and then refuses, so spelling
+        # both `available` reinstated the contradiction the comment above names — and
+        # handoff_authoring_preflight.py emits these two commands adjacently, so an agent
+        # reads both payloads in one sequence.
+        "markdownlint": {"resolves": _preflight._resolve_markdownlint_cmd(repo_root) is not None},
     }
 
 

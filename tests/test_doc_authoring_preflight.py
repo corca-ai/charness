@@ -12,10 +12,12 @@ properties the goal requires:
 from __future__ import annotations
 
 import importlib.util
+import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -37,6 +39,10 @@ _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
 _advisories = import_repo_module(__file__, "scripts.slice_closeout_advisories")
 _rules = import_repo_module(__file__, "scripts.doc_authoring_rules")
+# The markdownlint engine adapter, split out of the preflight at its length cap. The
+# preflight re-exports its names, but a monkeypatch has to land on the module that
+# OWNS them -- patching the re-export would rebind a name nothing calls.
+_mlp = import_repo_module(__file__, "scripts.markdownlint_probe")
 
 _BROKEN_FIXTURE = (
     "# Demo Handoff\n"
@@ -90,15 +96,6 @@ def test_broken_fixture_surfaces_all_classes_in_one_pass(tmp_path: Path) -> None
     repo = _seed_repo(tmp_path, _BROKEN_FIXTURE)
     report = _pf.build_report(repo, "docs/handoff.md", "handoff")
 
-    if report.markdownlint["available"]:
-        rules = {row["rule"] for row in report.markdownlint["findings"]}
-        assert "MD004" in rules, f"markdownlint should forecast MD004; saw {rules}"
-    else:
-        # No engine reachable from this fixture repo (see markdownlint_engine_ran). The
-        # class is reported unforecast rather than clean, and the OTHER classes below
-        # still have to surface -- the one-pass claim is what this test is for.
-        assert not report.markdownlint["findings"]
-        assert any("markdownlint" in warning for warning in report.warnings)
     assert report.wrapped_inline_code, "wrapped inline-code span not surfaced"
     assert any(
         row["kind"] == "backticked-ref" and row["detail"] == "scripts/real_target.py"
@@ -106,6 +103,17 @@ def test_broken_fixture_surfaces_all_classes_in_one_pass(tmp_path: Path) -> None
     ), f"backticked pathy ref not surfaced: {report.doc_links}"
     assert report.length["over"], "length cap breach not surfaced"
     assert report.blocked
+    # markdownlint LAST: the one-pass claim is about the classes above, and an engine
+    # that could not run here must not take them down with it.
+    if not report.markdownlint["available"]:
+        # Reported unforecast rather than clean, and said so where a machine can read it.
+        assert not report.markdownlint["findings"]
+        assert report.to_dict()["unforecast_classes"] == ["markdownlint"]
+        assert any("markdownlint" in warning for warning in report.warnings)
+        _refuse_or_note_unrun_markdownlint()
+    rules = {row["rule"] for row in report.markdownlint["findings"]}
+    assert "MD004" in rules, f"markdownlint should forecast MD004; saw {rules}"
+    assert report.to_dict()["unforecast_classes"] == []
 
 
 def test_length_cap_is_read_live_from_the_owning_validator(tmp_path: Path) -> None:
@@ -189,6 +197,24 @@ def _real_gate_inline_code(repo: Path) -> int:
     )
 
 
+#: Set in every CI job that runs this suite AFTER putting `node_modules/.bin` on PATH.
+#: Without it, a machine with no reachable markdownlint engine takes the unforecast
+#: branch of every markdownlint arm below and reports PASS -- red tests quietly turned
+#: vacuous, which is a worse outcome than the failure this suite was repaired from.
+#: Where it is set, a skipped arm is a hard failure instead.
+REQUIRE_MARKDOWNLINT_ENV = "CHARNESS_REQUIRE_MARKDOWNLINT"
+
+
+def _refuse_or_note_unrun_markdownlint() -> None:
+    reason = (
+        "markdownlint-cli2 did not run here, so this arm proved nothing. Put "
+        "node_modules/.bin on PATH (npm ci) or install markdownlint-cli2."
+    )
+    if os.environ.get(REQUIRE_MARKDOWNLINT_ENV) == "1":
+        pytest.fail(f"{REQUIRE_MARKDOWNLINT_ENV}=1 but {reason}")
+    pytest.skip(reason)
+
+
 def _real_gate_markdownlint(repo: Path) -> int | None:
     # `repo` is passed so this comparison resolves the same three tiers the gate does;
     # without it the no-drift check silently skipped its markdownlint arm on a machine
@@ -218,16 +244,18 @@ def test_no_drift_broken_fixture_matches_real_gate_verdicts(tmp_path: Path) -> N
     assert bool(report.doc_links) == (_real_gate_doc_links(repo) != 0)
     # wrapped-inline forecast fires iff the real inline-code gate fails.
     assert bool(report.wrapped_inline_code) == (_real_gate_inline_code(repo) != 0)
-    # markdownlint forecast fires iff the real markdownlint engine fails.
-    ml = _real_gate_markdownlint(repo)
-    if ml is not None:
-        assert bool(report.markdownlint["findings"]) == (ml != 0)
     # length forecast fires iff the file exceeds the gate's live cap, counted
     # the way the gate counts it (content lines, not raw file length).
     lines = (repo / "docs" / "handoff.md").read_text(encoding="utf-8").splitlines()
     counted = _handoff.content_lines(lines)
     assert report.length["current"] == len(counted)
     assert report.length["over"] == (len(counted) > _handoff.MAX_CONTENT_LINES)
+    # markdownlint forecast fires iff the real markdownlint engine fails. LAST, because
+    # an unrun engine skips from here and the arms above must run regardless.
+    ml = _real_gate_markdownlint(repo)
+    if ml is None:
+        _refuse_or_note_unrun_markdownlint()
+    assert bool(report.markdownlint["findings"]) == (ml != 0)
 
 
 def test_no_drift_clean_fixture_passes_every_real_gate(tmp_path: Path) -> None:
@@ -237,8 +265,9 @@ def test_no_drift_clean_fixture_passes_every_real_gate(tmp_path: Path) -> None:
     assert _real_gate_doc_links(repo) == 0
     assert _real_gate_inline_code(repo) == 0
     ml = _real_gate_markdownlint(repo)
-    if ml is not None:
-        assert ml == 0
+    if ml is None:
+        _refuse_or_note_unrun_markdownlint()
+    assert ml == 0
 
 
 def test_cli_exit_code_blocks_on_broken_silent_on_clean(tmp_path: Path) -> None:
@@ -624,13 +653,13 @@ def test_markdownlint_resolution_walks_all_three_tiers(
     local.write_text("#!/bin/sh\n", encoding="utf-8")
 
     # Tier 1 wins over everything, and `repo_root` is not consulted.
-    monkeypatch.setattr(_pf.shutil, "which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(_mlp.shutil, "which", lambda name: f"/usr/bin/{name}")
     assert _pf._resolve_markdownlint_cmd(tmp_path) == ["markdownlint-cli2"]
 
     # Tier 2: no binary on PATH, but the repo has run `npm install`. npm must NOT be
     # reached — asking it to find a file already sitting in the tree pays the whole
     # cost for none of the benefit, which is half of what #630 reported.
-    monkeypatch.setattr(_pf.shutil, "which", lambda name: "/usr/bin/npm" if name == "npm" else None)
+    monkeypatch.setattr(_mlp.shutil, "which", lambda name: "/usr/bin/npm" if name == "npm" else None)
     local.chmod(0o755)
     assert _pf._resolve_markdownlint_cmd(tmp_path) == [str(local)]
 
@@ -647,7 +676,7 @@ def test_markdownlint_resolution_walks_all_three_tiers(
     assert argv[:3] == ["npm", "exec", "--no"]
 
     # Nothing resolves: the caller must be able to say "not forecast" rather than crash.
-    monkeypatch.setattr(_pf.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(_mlp.shutil, "which", lambda _name: None)
     assert _pf._resolve_markdownlint_cmd(tmp_path) is None
 
 
@@ -668,14 +697,54 @@ def test_a_resolved_engine_that_never_ran_is_reported_unavailable_not_clean(
         stderr='npm error npx canceled due to missing packages and no YES option: '
                '["markdownlint-cli2@0.23.2"]\n',
     )
-    monkeypatch.setattr(_pf.subprocess, "run", lambda *_a, **_k: refusal)
+    # Patched on the MODULE, not on the stdlib module object `_pf.subprocess` refers to:
+    # the latter is process-wide, so `build_report` below would also intercept the
+    # `git ls-files` that collect_doc_links reaches through repo_file_listing, and the
+    # second half of this test would be proving something other than it claims.
+    monkeypatch.setattr(
+        _mlp, "subprocess", SimpleNamespace(run=lambda *_a, **_k: refusal)
+    )
 
     collected = _pf.collect_markdownlint(repo, "docs/handoff.md")
-    assert collected == {"available": False, "findings": []}
+    assert collected["available"] is False
+    assert collected["findings"] == []
+    assert collected["resolved_command"], "the operator needs the command that produced nothing"
 
-    # And the report says so, rather than leaving the class silently absent.
+    # And the report says so where a machine reads it, not only in prose.
     report = _pf.build_report(repo, "docs/handoff.md", "handoff")
-    assert any("markdownlint" in warning for warning in report.warnings)
+    assert report.to_dict()["unforecast_classes"] == ["markdownlint"]
+    # The message names whichever command actually resolved -- not a hardcoded tier,
+    # since which tier wins depends on the host running this test. The old text said
+    # "markdownlint-cli2 (and npm) unavailable", which on this branch is false and sends
+    # the operator to install something already installed.
+    warning = next(w for w in report.warnings if "markdownlint" in w)
+    assert " ".join(collected["resolved_command"]) in warning
+    assert "unavailable:" not in warning
+
+
+def test_violations_without_a_banner_are_kept_not_discarded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A `noBanner` consumer repo must not have its real findings thrown away.
+
+    Guarding the PARSE on the banner would turn a correct block into a clean forecast on
+    any repo whose `.markdownlint-cli2.jsonc` suppresses the banner — this guard's own
+    failure class, inverted, and strictly worse than what it replaced. Parsed violations
+    are as strong a proof of a run as the banner is.
+    """
+    repo = _seed_repo(tmp_path, _BROKEN_FIXTURE)
+    no_banner = subprocess.CompletedProcess(
+        args=[], returncode=1, stdout="",
+        stderr="docs/handoff.md:4:1 error MD004/ul-style Unordered list style "
+               "[Expected: asterisk; Actual: dash]\n",
+    )
+    monkeypatch.setattr(
+        _mlp, "subprocess", SimpleNamespace(run=lambda *_a, **_k: no_banner)
+    )
+
+    collected = _pf.collect_markdownlint(repo, "docs/handoff.md")
+    assert collected["available"] is True
+    assert [row["rule"] for row in collected["findings"]] == ["MD004"]
 
 
 def test_the_engine_banner_is_what_proves_a_run() -> None:

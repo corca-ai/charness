@@ -19,6 +19,21 @@ ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "mutate_and_restore.py"
 mar = import_repo_module(SCRIPT, "scripts.mutate_and_restore")
 mr = sys.modules[mar.MutationRecovery.__module__]
+#: The file `mr` must resolve to. Named as a literal because the hop above is invisible to
+#: the mutation-pool mapper: it walks imports and text, and this module is reached through
+#: a `sys.modules` lookup keyed on a class's `__module__`, so `scripts/mutation_recovery.py`
+#: mapped to NO standing test and its changed lines went unjudged (PARTIAL, exit 4).
+#: Re-importing the file to fix that would bind a SECOND module object, and the
+#: monkeypatching below would then patch a module nothing under test uses.
+RECOVERY_SOURCE = ROOT / "scripts" / "mutation_recovery.py"
+
+
+def test_the_module_under_test_is_the_file_on_disk() -> None:
+    # Asserts what THIS module bound, not a global interpreter property: the `sys.modules`
+    # hop above could silently resolve elsewhere if `mutate_and_restore` were refactored to
+    # import MutationRecovery from a shim, and every monkeypatch below would then patch a
+    # module nothing under test uses -- passing tests over unexercised code.
+    assert Path(mr.__file__).resolve() == RECOVERY_SOURCE.resolve()
 
 
 def _seed_recovery(tmp_path: Path, name: str = "recovery-repo"):

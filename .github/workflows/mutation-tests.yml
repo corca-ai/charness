@@ -60,7 +60,16 @@ jobs:
         run: pip install -r packaging/mutation-requirements.txt
 
       - name: Install JS mutation runner
-        run: npm ci
+        # `node_modules/.bin` on PATH, which `npm ci` alone does not do. This job runs
+        # the same standing suite as quality-core's changed-line job, and the
+        # doc-authoring-preflight tests build fixture repos under `tmp_path` where the
+        # preflight's `node_modules/.bin` tier resolves against the FIXTURE root and
+        # cannot hit. Without PATH those tests SKIP their markdownlint arms; the env
+        # flag turns a skip here into a failure, so a vacuous run cannot read as green.
+        run: |
+          npm ci
+          echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
+          echo "CHARNESS_REQUIRE_MARKDOWNLINT=1" >> "$GITHUB_ENV"
 
       - name: Install validation binaries
         run: |

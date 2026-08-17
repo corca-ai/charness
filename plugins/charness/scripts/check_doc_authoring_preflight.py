@@ -29,10 +29,7 @@ blocking commit-gate plan; a non-blocking guard test keeps it that way.
 from __future__ import annotations
 
 import argparse
-import os
-import re
-import shutil
-import subprocess
+import shlex
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -49,16 +46,14 @@ _handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 _markdown_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 _path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
+_markdownlint = import_repo_module(__file__, "scripts.markdownlint_probe")
 
-# markdownlint-cli2's first output line, on every run it makes: ``markdownlint-cli2 v0.21.0
-# (markdownlint v0.40.0)``. It is the only evidence available here that the ENGINE ran, as
-# opposed to a wrapper that resolved and then refused.
-_MARKDOWNLINT_BANNER_RE = re.compile(r"^markdownlint-cli2 v\S+")
-
-# A markdownlint-cli2 per-violation line: ``<file>:<line>[:<col>] error MDxxx/rule desc``.
-_MARKDOWNLINT_LINE_RE = re.compile(
-    r"^(?P<file>.+?):(?P<line>\d+)(?::(?P<col>\d+))?\s+(?:error\s+)?(?P<rule>MD\d+)/(?P<name>\S+)\s*(?P<desc>.*)$"
-)
+# Re-exported, not re-implemented. The markdownlint engine adapter moved to its own
+# module at this file's length cap; these names are the seam its callers and this
+# repo's tests already bind, so they stay bound HERE and forward there.
+_resolve_markdownlint_cmd = _markdownlint.resolve_markdownlint_cmd
+markdownlint_engine_ran = _markdownlint.markdownlint_engine_ran
+collect_markdownlint = _markdownlint.collect_markdownlint
 
 
 class PreflightError(Exception):
@@ -149,100 +144,6 @@ def _doc_link_indices(repo_root: Path) -> tuple[Path, set[str], dict[str, str], 
 
 # --- per-class collectors (each reuses the owning validator, no fork) --------
 
-
-def _resolve_markdownlint_cmd(repo_root: Path | None = None) -> list[str] | None:
-    """Mirror ``check-markdown.sh``'s three tiers. Returns None when none resolve.
-
-    The mirror is the point, and it had drifted: this function claimed to mirror the
-    shell gate while skipping the ``node_modules/.bin`` tier and spelling the fallback
-    ``npm exec --`` with no ``--no``. #630 is filed against exactly that spelling —
-    without ``--no``, npm reaches the registry and pays the network round trip on any
-    machine where the binary is not on PATH — and this file is emitted as an operator
-    command by ``closeout_bundle_lib``, ``slice_closeout_advisories``, and
-    ``plan_handoff_run``, so the unguarded spelling was live, not dead. A docstring
-    asserting a mirror is not one; the tiers are duplicated here in the same order the
-    shell gate resolves them.
-    """
-    if shutil.which("markdownlint-cli2"):
-        return ["markdownlint-cli2"]
-    if repo_root is not None:
-        local = repo_root / "node_modules" / ".bin" / "markdownlint-cli2"
-        if os.access(local, os.X_OK):
-            return [str(local)]
-    if shutil.which("npm"):
-        return ["npm", "exec", "--no", "--", "markdownlint-cli2"]
-    return None
-
-
-def markdownlint_engine_ran(stdout: str, stderr: str) -> bool:
-    """Did markdownlint-cli2 itself run, or only the wrapper that would launch it?
-
-    Blind class, stated before the acceptance: this reads OUTPUT, so it cannot
-    distinguish an engine that ran and printed nothing from one that never started —
-    markdownlint-cli2 always prints its banner, and the day it stops, this reads every
-    run as a non-run (fail-closed: the class is reported unforecast, never falsely
-    clean). It equally cannot see WHY a non-run happened; the caller gets a boolean, and
-    the operator gets the gate's own message.
-
-    Why it exists: ``_resolve_markdownlint_cmd``'s npm tier resolves whenever ``npm`` is
-    on PATH, which says nothing about whether the package is reachable. ``npm exec --no``
-    — the spelling #630 asks for, and the one this mirror already uses — refuses rather
-    than installing, so on a machine with no local ``markdownlint-cli2`` it exits 1 having
-    linted nothing. Keying availability on resolution reported that as ``available: True``
-    with zero findings: a proof surface saying the markdownlint class was forecast and
-    clean, when it was never run. That is the shape CI failed on (Quality Core,
-    ``1240348b7``); the fixture repos are under ``tmp_path``, so the ``node_modules/.bin``
-    tier cannot hit and the npm tier is always the one taken there.
-    """
-    return any(
-        _MARKDOWNLINT_BANNER_RE.match(line.strip())
-        for stream in (stdout, stderr)
-        for line in stream.splitlines()
-    )
-
-
-def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
-    """Run markdownlint-cli2 on the single target file, parsing its findings.
-
-    The same engine + ``.markdownlint-cli2.jsonc`` config the markdown gate uses
-    (config is auto-discovered from ``repo_root``). markdownlint-cli2 writes the
-    banner to stdout and per-violation lines to stderr; scan both for the target.
-
-    Single-file scope (``--no-globs rel``) is verdict-equivalent to the gate's
-    full-list lint because every markdownlint rule in the repo config is
-    per-file; a hypothetical cross-file rule (e.g. link-reciprocity) would need
-    this to widen to the linked set.
-    """
-    cmd = _resolve_markdownlint_cmd(repo_root)
-    if cmd is None:
-        return {"available": False, "findings": []}
-    proc = subprocess.run(
-        [*cmd, "--no-globs", rel],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if not markdownlint_engine_ran(proc.stdout, proc.stderr):
-        # Resolved but did not run. Reporting this as available-with-no-findings is the
-        # false-clean the banner check exists to close; see markdownlint_engine_ran.
-        return {"available": False, "findings": []}
-    findings: list[dict[str, Any]] = []
-    for stream in (proc.stderr, proc.stdout):
-        for line in stream.splitlines():
-            match = _MARKDOWNLINT_LINE_RE.match(line.strip())
-            if not match or match.group("file") != rel:
-                continue
-            findings.append(
-                {
-                    "line": int(match.group("line")),
-                    "col": int(match.group("col")) if match.group("col") else None,
-                    "rule": match.group("rule"),
-                    "name": match.group("name"),
-                    "desc": match.group("desc").strip(),
-                }
-            )
-    return {"available": True, "findings": findings}
 
 
 def collect_wrapped_inline_code(doc: Path) -> list[dict[str, Any]]:
@@ -389,9 +290,25 @@ class Report:
             or self.length["over"]
         )
 
+    @property
+    def unforecast_classes(self) -> list[str]:
+        """Rule classes this run could not measure at all.
+
+        `blocked` reads FINDINGS, so a class that was never run contributes nothing to
+        it and the command exits 0. That is fine as a gate verdict — this command is a
+        forecast, and the owning gates still run at commit time — but `closeout_bundle_lib`
+        records "passed" from that returncode, so an unmeasured class was indistinguishable
+        from a clean one in the durable artifact. The exit code is deliberately NOT changed
+        (it would turn every machine without a local markdownlint into a failing closeout);
+        what changes is that the payload now says so in a field, not only in prose inside a
+        truncated stdout blob.
+        """
+        return [] if self.markdownlint["available"] else ["markdownlint"]
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "status": "blocked" if self.blocked else "ok",
+            "unforecast_classes": self.unforecast_classes,
             "target": self.target,
             "markdownlint": self.markdownlint,
             "wrapped_inline_code": self.wrapped_inline_code,
@@ -418,10 +335,23 @@ def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Repo
     warnings: list[str] = []
     markdownlint = collect_markdownlint(repo_root, rel)
     if not markdownlint["available"]:
-        warnings.append(
-            "markdownlint-cli2 (and npm) unavailable: the markdownlint rule class was "
-            "not forecast; the markdown gate still runs it at commit time."
-        )
+        # Two distinct causes, two distinct remedies. The original message named the
+        # only cause that existed when it was written; emitting it unchanged on the
+        # resolved-but-unrun branch sends the operator to install npm when npm is
+        # already there and `npm install` / PATH is the actual fix.
+        resolved = markdownlint.get("resolved_command")
+        if resolved:
+            warnings.append(
+                f"markdownlint-cli2 resolved as `{shlex.join(resolved)}` but produced no "
+                "engine output, so the markdownlint rule class was not forecast; a local "
+                "install (npm install, or markdownlint-cli2 on PATH) is what this needs. "
+                "The markdown gate still runs it at commit time."
+            )
+        else:
+            warnings.append(
+                "markdownlint-cli2 (and npm) unavailable: the markdownlint rule class was "
+                "not forecast; the markdown gate still runs it at commit time."
+            )
     return Report(
         target=rel,
         markdownlint=markdownlint,
@@ -477,9 +407,13 @@ def rules_payload(rules: dict[str, Any]) -> dict[str, Any]:
             "link form / backticked file references were NOT probed -- this repo has no "
             "tracked path-shaped file to classify, and an invented one would teach the wrong rule"
         )
+    # "resolves", not "is available": this lane never ran the engine, and a resolved
+    # `npm exec --no` refuses. Saying so keeps the hint from promising a forecast that
+    # the --path run it recommends may then report as unforecast.
     payload["markdownlint_hint"] = (
-        "run with --path <draft> to forecast the rule findings"
-        if rules["markdownlint"]["available"]
+        "a markdownlint command resolves here; run with --path <draft> to forecast the "
+        "rule findings, which is also what proves the engine actually runs"
+        if rules["markdownlint"]["resolves"]
         else "binary unavailable here; the markdown gate still runs it"
     )
     regenerable = rules["regenerable_facts"]
