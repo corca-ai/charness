@@ -42,10 +42,21 @@ from typing import Any
 __all__ = ["version_refused", "unspeakable_version_message", "refuse_unspeakable_version"]
 
 # The wording `validate_adapter_version` emits. A prefix rather than an equality set
-# because the supported version is interpolated (`version must be 1`), and a `field=`
-# override renames the whole message. Pinned against the real check by the driving test
-# named in the module docstring, so a reworded refusal fails there rather than silently
-# turning every consumer guard below into a no-op.
+# because the supported version is interpolated into `version must be {supported}`.
+#
+# BLIND SPOT, stated because an earlier draft of this comment cited it as a REASON for
+# the prefix and it is nothing of the kind: a `field=` override defeats prefix matching
+# exactly as it defeats equality. `field="schema_version"` emits `schema_version must be
+# 1`, which starts with neither entry, and `worktree_doctor_lib`'s `manifest.` prefix has
+# the same effect. No call site of the shared check passes `field=` today, and the one
+# real renamer is listed as exempt in the reconciliation census -- but a future caller
+# that does would turn every consumer guard here into a silent no-op. That limit is
+# pinned as an assertion in the driving test rather than left as prose.
+#
+# Substring matching would cover the rename and was rejected: `tool_version must be a
+# string` already exists in this repo's vocabulary, and widening to catch a hypothetical
+# renamer at the cost of matching real unrelated errors trades a silent no-op for a
+# spurious refusal, which is the worse direction for a guard that stops a run.
 _REFUSAL_PREFIXES = ("version must be", "version is required")
 
 

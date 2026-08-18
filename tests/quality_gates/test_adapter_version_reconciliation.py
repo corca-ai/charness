@@ -36,7 +36,10 @@ Blind class, measured rather than guessed:
   for `repo` and `language`. `issue`'s backend and `capability_catalog`'s registry flag
   are covered by bespoke tests instead (in this file, and in
   `tests/test_capability_catalog.py`). A row's containment is only as strong as what the
-  probe can express at it, which is why the liveness test prints what it reached.
+  probe can express at it. The liveness test asserts only that SOME probe field reached a
+  row, so a row carried solely by `repo`/`language` renders green while proving little
+  about its steering surface -- it names the reached set in its failure message, which
+  helps when it fails and not when it passes.
 * Nothing here sees an adapter whose version this reader SPEAKS but whose fields mean
   something else.
 """
@@ -390,7 +393,8 @@ def test_the_containment_probe_actually_steers_every_site_it_covers(label, path,
     reached = {key: value for key, value in steered.items() if bare.get(key) != value}
     assert reached, (
         f"no CONTAINMENT_PROBE field reaches {label}'s resolved payload on a supported "
-        "version, so its containment row proves nothing; add a field this site honors"
+        f"version, so its containment row proves nothing; add a field this site honors. "
+        f"Probe fields offered: {sorted(CONTAINMENT_PROBE)}"
     )
 
 

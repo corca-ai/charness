@@ -44,6 +44,7 @@ _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
 _handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 _markdown_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 _path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
 _markdownlint = import_repo_module(__file__, "scripts.markdownlint_probe")
@@ -115,12 +116,19 @@ def adapter_load_failed(repo_root: Path) -> bool:
     `collect_regenerable_facts`, so a YAML typo turns two rule classes into
     "measured, nothing found" and the command exits 0 with an empty report. `absent` and
     `broken` are separated here so `unforecast_classes` can name the second.
+
+    A REFUSED VERSION counts as broken, and testing for a raised exception alone missed
+    it: a `version: 9` adapter loads cleanly and returns a payload carrying the refusal in
+    `errors`, so this answered False and `surface_cap` went on to forecast the shipped
+    ceiling to an author whose repo had declared its own. This file already owns the
+    "the adapter is broken, say so" decision for exactly that reason, which is why the
+    version arm belongs here rather than in a fifth caller-side guard.
     """
     try:
-        _handoff.load_adapter(repo_root)
+        payload = _handoff.load_adapter(repo_root)
     except Exception:  # noqa: BLE001 -- the point IS that any load failure counts
         return True
-    return False
+    return _version_verdict.version_refused(payload.get("errors"))
 
 
 def _length_surfaces(repo_root: Path) -> tuple[LengthSurface, ...]:

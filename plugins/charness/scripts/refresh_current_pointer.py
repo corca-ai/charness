@@ -14,6 +14,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _resolve_artifact_path = import_repo_module(__file__, "scripts.resolve_artifact_path")
 load_adapter = _resolve_artifact_path.load_adapter
+_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 
 _artifact_naming = import_repo_module(__file__, "scripts.artifact_naming_lib")
 ArtifactClassError = _artifact_naming.ArtifactClassError
@@ -168,6 +169,20 @@ def _symlink_pointer(
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
+    # Before `_current_path`: this is the family-agnostic pointer writer, so on a version
+    # this reader cannot speak it would place `latest.md` -- the file other sessions read
+    # as "the current asset" -- under the shipped default directory. The containment check
+    # further down catches the mixed case, but it reports `record artifact path is outside
+    # the skill output directory`, which points the operator at the record path when the
+    # wrong line is in the adapter; and when the CALLER resolved from the same
+    # misversioned adapter, both paths are the default and nothing catches it at all.
+    refused = _version_verdict.refuse_unspeakable_version(
+        lambda root: load_adapter(root, args.skill_id),
+        repo_root,
+        adapter_name=f"{args.skill_id}-adapter.yaml",
+    )
+    if refused is not None:
+        return refused
     adapter = load_adapter(repo_root, args.skill_id)
     try:
         artifact_class = artifact_class_from_adapter(adapter)

@@ -120,6 +120,25 @@ SURFACES = (
             "--markdown-file", str(repo / "body.md"),
         ),
     ),
+    # Round-2 review found these two, and the first was measured before it was guarded:
+    # `refresh_recent_lessons` wrote a SHADOW digest and selection index into
+    # `charness-artifacts/retro/` while the repo's declared digest stayed untouched, and
+    # reported the shadow path at exit 0. It is the entrypoint the session-start hook
+    # names in its own remediation line, so the operator is sent there precisely when the
+    # adapter is what is wrong.
+    (
+        "lessons_digest_writer",
+        "skills/public/retro/scripts/refresh_recent_lessons.py",
+        lambda repo: ("--repo-root", str(repo)),
+    ),
+    (
+        "current_pointer_writer",
+        "scripts/refresh_current_pointer.py",
+        lambda repo: (
+            "--repo-root", str(repo), "--skill-id", "retro",
+            "--record-artifact-path", "docs/retros/2026-08-18-probe.md",
+        ),
+    ),
 )
 
 
@@ -183,6 +202,52 @@ def test_the_predicate_tracks_the_shared_check_rather_than_a_copy_of_its_wording
     ADAPTER_LIB.validate_adapter_version(declared, {}, errors, required=required)
 
     assert VERDICT.version_refused(errors) is refused, errors
+
+
+def test_the_doc_authoring_preflight_calls_a_refused_version_broken_not_absent(tmp_path: Path) -> None:
+    """The FORECAST side, at the one place that already owns the distinction.
+
+    `adapter_load_failed` separates an absent adapter from a broken one so
+    `unforecast_classes` can name the second. It tested for a raised exception, and a
+    `version: 9` adapter does not raise -- it loads cleanly and carries the refusal in
+    `errors`. So the preflight called it healthy and published the shipped 78 as the cap
+    to write to, for a repo that had declared its own. The other forecasters (scaffolds,
+    run planners) are deliberately still unguarded and named in this module's blind class;
+    this one had a home for the answer.
+    """
+    preflight = load_script_module(
+        "check_doc_authoring_preflight", ROOT / "scripts/check_doc_authoring_preflight.py"
+    )
+    repo = _seeded_repo(tmp_path, "9")
+    speakable = _seeded_repo(tmp_path / "ok", "1")
+
+    assert preflight.adapter_load_failed(repo) is True
+    # The polarity control: a healthy adapter must not be called broken, or the arm above
+    # would be satisfied by a function that returns True unconditionally.
+    assert preflight.adapter_load_failed(speakable) is False
+
+
+def test_a_renamed_version_field_is_the_predicate_s_pinned_blind_spot() -> None:
+    """The limit, asserted rather than described.
+
+    `version_refused` reads error STRINGS, so a `field=` override renames the message out
+    from under it: `schema_version must be 1` starts with neither refusal prefix. No call
+    site passes `field=` today and the one real renamer (`worktree_doctor_lib`'s
+    `manifest.` prefix) is an exempt census row -- but the day a caller does, every
+    consumer guard becomes a silent no-op with nothing red.
+
+    Asserted as the CURRENT behavior, so a future widening of the predicate fails here and
+    the person doing it has to decide deliberately: this test flipping is the signal that
+    the blind spot closed, not a breakage.
+    """
+    errors: list[str] = []
+    ADAPTER_LIB.validate_adapter_version({"schema_version": 9}, {}, errors, field="schema_version")
+
+    assert errors == ["schema_version must be 1"], errors
+    assert VERDICT.version_refused(errors) is False, (
+        "the renamed-field blind spot closed; update the comment in "
+        "scripts/adapter_version_verdict.py and this test together"
+    )
 
 
 def test_an_unreadable_adapter_is_not_reported_as_a_version_refusal(tmp_path: Path) -> None:

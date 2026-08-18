@@ -24,6 +24,9 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 
 _scripts_recent_lessons_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.recent_lessons_lib")
 build_recent_lessons = _scripts_recent_lessons_lib_module.build_recent_lessons
@@ -45,6 +48,18 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     SKILL_RUNTIME.require_repo_local_helper(__file__, repo_root)
     adapter = load_adapter(repo_root)
+    # The same guard `persist_retro_artifact` carries, and the same harm: measured, a
+    # `version: 9` adapter declaring `output_dir: docs/retros` +
+    # `summary_path: docs/retros/lessons.md` wrote a SHADOW digest and selection index
+    # into `charness-artifacts/retro/`, left the repo's declared digest untouched, and
+    # reported the shadow path as a success payload at exit 0. This is the entrypoint the
+    # session-start hook names in its remediation line, so the operator is sent here
+    # precisely when the adapter is the thing that is wrong.
+    refused = _version_verdict.refuse_unspeakable_version(
+        load_adapter, repo_root, adapter_name="retro-adapter.yaml"
+    )
+    if refused is not None:
+        return refused
     summary_rel = adapter["data"]["summary_path"]
     output_dir = repo_root / adapter["data"]["output_dir"]
     summary_path = repo_root / summary_rel
