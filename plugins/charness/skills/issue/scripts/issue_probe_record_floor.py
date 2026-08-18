@@ -382,6 +382,19 @@ def probe_record_blocks() -> bool:
     return PROBE_RECORD_SEVERITY == "block"
 
 
+def probe_record_problem_fields(result: dict) -> list[str]:
+    """The floor's findings as carrier problems -- EMPTY while it is advisory.
+
+    The severity branch lives here rather than in each carrier. Written the other way
+    first, and two things went wrong at once: every carrier grew an `if
+    probe_record_blocks()` of its own (three copies of one decision, which is how three
+    earlier floors came to disagree about which carriers they reached), and the guarded
+    line was unreachable at REVIEW severity so the changed-line gate reported it uncovered
+    -- correctly, since the flip after slice 5 would otherwise be the first time it ran.
+    """
+    return probe_record_problems(result) if probe_record_blocks() else []
+
+
 def probe_record_advisory(result: dict) -> list[str]:
     """REVIEW-severity lines for a floor that found something and is not vetoing.
 

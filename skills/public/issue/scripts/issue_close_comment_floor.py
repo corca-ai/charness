@@ -123,7 +123,7 @@ def evaluate_close_comment_floor(
         and hotl_dispositions["ok"]
         and ai_provenance["ok"]
         and resolution_critique.get("ok", True)
-        and (probe_record["ok"] or not _PROBE_FLOOR.probe_record_blocks())
+        and not _PROBE_FLOOR.probe_record_problem_fields(probe_record)
         and not consolidated_ledger
     )
     return {

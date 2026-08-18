@@ -252,8 +252,14 @@ def _release_draft(
         verdict = payload.get("issue_closeout_behavioral_verdict")
         if isinstance(verdict, dict) and not verdict.get("ok", True):
             report["behavioral_verdict"] = verdict
+        # Lifted UNCONDITIONALLY, unlike its `behavioral_verdict` neighbour above.
+        # `_refusing_floors` already keys on `applies and not ok`, so a passing payload in
+        # the report changes no verdict -- and the conditional version was unreachable
+        # while the floor is held at REVIEW severity, which would have made the flip after
+        # slice 5 the first execution of the one line the release lane's attribution
+        # depends on. An attribution path that has never run is not attribution.
         probe = payload.get("issue_closeout_probe_record")
-        if isinstance(probe, dict) and not probe.get("ok", True):
+        if isinstance(probe, dict):
             report["probe_record"] = probe
         report["release_refusal"] = str(exc)[:400]
         return report

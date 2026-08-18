@@ -264,8 +264,7 @@ def verify_closeout(
     hotl_dispositions = evaluate_hotl_dispositions(body, classification, numbers)
     ai_provenance = evaluate_ai_provenance(body, classification)
     probe_record = evaluate_probe_record(body, classification, numbers, repo_root=repo_root)
-    if _PROBE_FLOOR.probe_record_blocks():
-        missing_fields.extend(_PROBE_FLOOR.probe_record_problems(probe_record))
+    missing_fields.extend(_PROBE_FLOOR.probe_record_problem_fields(probe_record))
     if carrier == "manual-fallback":
         reason_value = _first_field(_body_fields(body), ("manual close reason", "manual fallback reason"))
         if not _has_substantive_value(reason_value):
@@ -349,7 +348,7 @@ def verify_closeout(
         and behavioral_verdict["ok"]
         and hotl_dispositions["ok"]
         and ai_provenance["ok"]
-        and (probe_record["ok"] or not _PROBE_FLOOR.probe_record_blocks())
+        and not _PROBE_FLOOR.probe_record_problem_fields(probe_record)
     )
     status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
     # Additive migration: the bare status tokens sound terminal,

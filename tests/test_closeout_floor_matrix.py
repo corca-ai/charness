@@ -579,3 +579,4 @@ def test_a_readback_control_run_that_is_refused_never_claims_the_floor_fired(
         lib, "run_ingress", lambda *a, **k: (False, "the anchor was refused", set())
     )
     assert lib._readback_outcome(world, "pr-body", "bug") == "input-refused"
+

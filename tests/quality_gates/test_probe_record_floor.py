@@ -442,3 +442,83 @@ def test_the_second_release_entrypoint_refuses_silence_too(tmp_path: Path) -> No
             run=run_must_not_be_called, behavior_lines=[], probe_record_lines=[],
             carrier_source="probe-floor-test",
         )
+
+
+# --- the blocking paths, exercised at `block` severity --------------------------
+# Held at REVIEW by operator ruling, so none of this runs in normal operation. It is
+# tested BECAUSE it does not run: the flip after slice 5 must not be the first time this
+# code executes. A severity switch whose armed half is unproven is not a switch, it is a
+# deferred surprise.
+
+
+def _arm_blocking(monkeypatch, *modules) -> None:
+    for module in modules:
+        monkeypatch.setattr(module, "PROBE_RECORD_SEVERITY", "block")
+
+
+def test_verify_closeout_refuses_an_unbacked_claim_at_block_severity(monkeypatch) -> None:
+    verify = runpy.run_path(str(_ISSUE_SCRIPTS / "issue_verify_closeout.py"))
+    _arm_blocking(monkeypatch, verify["_PROBE_FLOOR"])
+    result = verify["evaluate_probe_record"](_body(_CLAIM), "bug", [42], repo_root=ROOT)
+    assert result["ok"] is False
+    problems = verify["_PROBE_FLOOR"].probe_record_problems(result)
+    assert problems and problems[0].startswith("probe_record:#42")
+    assert verify["_PROBE_FLOOR"].probe_record_blocks() is True
+
+
+def test_the_release_refusal_names_the_flag_and_the_finding(monkeypatch) -> None:
+    import pytest
+
+    verdict = _FLOORS_MOD.evaluate_release_probe_record(
+        ["Behavior #44: confirmed via fresh checkout install"], [], [44], ROOT
+    )
+    with pytest.raises(SystemExit) as excinfo:
+        _FLOORS_MOD.fail_release_probe_record_floor(verdict)
+    message = str(excinfo.value)
+    assert "--close-issue-probe-record" in message
+    assert "irreversible boundary" in message
+    assert "probe_record:#44" in message
+
+
+def test_both_release_entrypoints_refuse_at_block_severity(tmp_path: Path, monkeypatch) -> None:
+    # The pair this floor exists to guard: one runs before quality and mutation, the other
+    # reaches `gh issue close` directly and can be entered by resume with no preflight.
+    import pytest
+
+    floor = _CLOSEOUT_MOD._release_closeout_floors()._load_probe_floor()
+    _arm_blocking(monkeypatch, floor)
+
+    def run_must_not_be_called(*_args, **_kwargs):
+        raise AssertionError("refused before any backend call, or the guard is too late")
+
+    carrier = tmp_path / "carrier.md"
+    carrier.write_text("Closes #44.\nClassification: feature\n", encoding="utf-8")
+    claim = ["Behavior #44: confirmed via fresh checkout install"]
+
+    with pytest.raises(SystemExit, match="no probe record establishes"):
+        _CLOSEOUT_MOD.preflight_release_issues(
+            tmp_path, repo="example/demo", issue_numbers=[44],
+            payload={"commit_message": "chore(release): probe floor test",
+                     "tag_name": "v0.0.0-probe-floor-test",
+                     "quality_command": "bash scripts/run-quality.sh"},
+            run=run_must_not_be_called, behavior_lines=claim, probe_record_lines=[],
+            classification="feature", carrier_file=carrier,
+            carrier_source="probe-floor-test",
+        )
+    with pytest.raises(SystemExit, match="no probe record establishes"):
+        _CLOSEOUT_MOD.ensure_release_issues_closed(
+            tmp_path, repo="example/demo", issue_numbers=[44], payload={},
+            run=run_must_not_be_called, behavior_lines=claim, probe_record_lines=[],
+            carrier_source="probe-floor-test",
+        )
+
+
+def test_problem_fields_are_empty_while_advisory_and_populated_when_armed(monkeypatch) -> None:
+    # The one place the severity decision lives, so no carrier can disagree with another
+    # about it. Both arms exercised here rather than through each carrier's setup.
+    result = evaluate_probe_record(_body(_CLAIM), "bug", [42], repo_root=ROOT)
+    assert result["ok"] is False
+    assert _FLOOR_MOD.probe_record_problem_fields(result) == []
+    monkeypatch.setattr(_FLOOR_MOD, "PROBE_RECORD_SEVERITY", "block")
+    fields = _FLOOR_MOD.probe_record_problem_fields(result)
+    assert fields and fields[0].startswith("probe_record:#42")

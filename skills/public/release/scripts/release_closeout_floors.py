@@ -112,13 +112,27 @@ def _issue_closeout_body():
     return _ISSUE_CLOSEOUT_BODY
 
 
+_PROBE_FLOOR_UNLOADED = object()
+_PROBE_FLOOR_CACHE: object = _PROBE_FLOOR_UNLOADED
+
+
 def _load_probe_floor():
     """The issue skill's PROBE-RECORD floor, or ``None``. Absence becomes a REFUSAL naming
     what to install, never a pass: a publish is an irreversible boundary where a traceback
-    reads as a broken tool rather than as a check that did not run."""
-    return _load_issue_skill_module(
-        "issue_probe_record_floor.py", "release_issue_probe_record_floor"
-    )
+    reads as a broken tool rather than as a check that did not run.
+
+    CACHED, for the second time in this slice and for the same two reasons: re-executing
+    the module per call is wasteful, and it makes the floor UNPATCHABLE -- every caller got
+    a fresh copy, so the severity read by `release_probe_record_blocks` and the severity
+    read a line later by the floor itself came from different module objects. A test that
+    armed one of them was silently testing nothing, which is how this was found.
+    """
+    global _PROBE_FLOOR_CACHE
+    if _PROBE_FLOOR_CACHE is _PROBE_FLOOR_UNLOADED:
+        _PROBE_FLOOR_CACHE = _load_issue_skill_module(
+            "issue_probe_record_floor.py", "release_issue_probe_record_floor"
+        )
+    return _PROBE_FLOOR_CACHE
 
 
 def evaluate_release_probe_record(
