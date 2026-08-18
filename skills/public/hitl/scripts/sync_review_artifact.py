@@ -24,6 +24,9 @@ _current_pointer_writer = SKILL_RUNTIME.load_repo_module_from_skill_script(__fil
 # artifact -- the durable artifact it syncs is written by `_sync_lib`, not printed here.
 _render_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").render_yaml
 load_adapter = _resolve_adapter.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 write_current_pointer_text = _current_pointer_writer.write_current_pointer_text
 
 
@@ -35,6 +38,17 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    # GUARDED BEFORE THE PAYLOAD IS READ, and this one WRITES: without `--check` it calls
+    # `write_current_pointer_text` at the resolved path. Measured at `97dfc881a`: a repo
+    # declaring `output_dir: docs/mine-hitl` under `version: 9` reported
+    # `artifact_path: charness-artifacts/hitl/latest.md`, `status: synced`, exit 0 — a
+    # review pointer written where the repo does not keep them, while the one it does keep
+    # goes stale.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="hitl-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     try:
         session = _sync_lib.load_session(repo_root, adapter, args.session_id)

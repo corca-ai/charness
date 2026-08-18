@@ -266,12 +266,12 @@
       "reason": "resolve_states_for_repo() at lines 210-218 checks `if adapter.get('valid') is False:` immediately after loading the issue adapter and returns an empty states map plus a diagnostic instead of resolving issue states against defaulted backend/target data; callers treat the diagnostic as 'check not run' rather than 'nothing is closed'."
     },
     "skills/public/handoff/scripts/parse_handoff_entries.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "Lines 57-59: `_resolve_handoff_path` calls resolve_adapter.load_adapter(repo_root) and returns `(repo_root / adapter['artifact_path']).resolve()` with no check of adapter['valid'] or adapter['errors'] anywhere in the function or its caller."
+      "verdict": "guarded",
+      "reason": "_resolve_handoff_path now refuses via `_adapter_version_verdict.unspeakable_version_message(...)` before `adapter[\"artifact_path\"]` is read. The guard sits AFTER the explicit-path arm on purpose: `parse_handoff_entries.py <path>` asks the adapter nothing. Measured flip at 97dfc881a: a repo declaring `output_dir: docs/mine` under `version: 9` returned `handoff_path: <repo>/docs/handoff.md` with `ok: true` and a real `entry_count` -- a confident, well-formed answer about a file the repo does not use. Controls: version 1 returns `docs/mine/handoff.md`; no adapter returns the default; the explicit-path arm still works under version 9. Probe record: charness-artifacts/probe/2026-08-19-handoff-hitl-version-refusal.md."
     },
     "skills/public/handoff/scripts/plan_handoff_run.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "_artifact_summary (line 156-157) and _resolved_max_content_lines (line 100-117) act on adapter[\"artifact_path\"]/adapter[\"data\"] unconditionally; the errors check at line 279 only adds an advisory reference read and echoes errors in the output envelope (line 397-403), it never gates the artifact_path or next_action that get built from the defaulted data."
+      "verdict": "guarded",
+      "reason": "build_plan's adapter read now refuses before `artifact_path` and the `max_content_lines` ceiling are resolved. THIS FILE ALREADY READ `errors` AND THAT WAS NOT ENOUGH, which is the row's point: the read added an advisory and echoed errors into the envelope while never gating the `artifact_path` or `next_action` built from the defaulted data -- an echoed error beside an acted-on default. Measured flip at 97dfc881a: a repo declaring `output_dir: docs/mine` under `version: 9` planned against `artifact_path: docs/handoff.md`, exit 0, so every emitted command and gate packet named the wrong file. Control at version 1 returns `docs/mine/handoff.md`. Probe record: charness-artifacts/probe/2026-08-19-handoff-hitl-version-refusal.md."
     },
     "skills/public/handoff/scripts/scaffold_handoff_artifact.py": {
       "verdict": "guarded",
@@ -290,8 +290,8 @@
       "reason": "main() (line 37-45) passes `adapter[\"runtime_dir\"]` into render_report(); same `_runtime_dir()` hard-coded constant as check_review_state.py, unaffected by output_dir or by version-refusal reverting data to defaults."
     },
     "skills/public/hitl/scripts/sync_review_artifact.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "Line 44 `artifact_path = repo_root / adapter[\"artifact_path\"]` is used unconditionally to write_current_pointer_text (line 46-47) or check staleness (line 45); no check of adapter[\"errors\"]/adapter[\"valid\"] anywhere in the file, unlike runtime_dir this field DOES depend on data[\"output_dir\"] via `_add_artifact_payload`."
+      "verdict": "guarded",
+      "reason": "The adapter read now refuses before `adapter[\"artifact_path\"]` is resolved, and this surface WRITES: without `--check` it calls `write_current_pointer_text` at that path. Measured flip at 97dfc881a: a repo declaring `output_dir: docs/mine-hitl` under `version: 9` reported `artifact_path: charness-artifacts/hitl/latest.md`, `status: synced`, exit 0 -- a review pointer written where the repo does not keep them while the one it does keep goes stale. Controls: version 1 returns `docs/mine-hitl/latest.md`; no adapter returns the default; the refusal leaves no file behind. Probe record: charness-artifacts/probe/2026-08-19-handoff-hitl-version-refusal.md."
     },
     "skills/public/impl/scripts/survey_verification.py": {
       "verdict": "accepted-risk-unguarded",

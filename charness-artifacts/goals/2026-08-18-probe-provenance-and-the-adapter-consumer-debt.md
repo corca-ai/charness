@@ -72,7 +72,22 @@ the pre-implementation critique passes.
 - Per the operating contract's TWO-ROUND CAP, round-2 repairs are ACCEPTED-UNREVIEWED: no
   third round read them. That includes the widened predicate at four call sites, the
   AST-based `guarded` witness, and the parse-door arm across the eight-surface table.
-- Next action: the five-row cost recount the Slice Plan specifies, then rows 6+.
+- Cost recount DONE and in `## Slice Log`. Rows 6-13 landed after it, in three batches:
+  the five artifact scaffolds (`d4522a3ca`), and the two handoff readers plus the HITL
+  sync writer. Census ACCEPTED RISK 37 -> 24. Recount, never read off this line:
+  `python3 scripts/check_adapter_consumer_classification.py --repo-root .`.
+- Two findings from those batches are RECORDED, not carried as green:
+  `scripts/risk_interrupt_lib.py` was attempted and DROPPED without a verdict — its harm
+  did not reproduce, and reading the code shows why: it falls back to a raw line scan of
+  `.agents/debug-adapter.yaml` with no version check at all, so it carries a
+  `no-version-validation` class its census row does not name. And the scaffold batch's
+  first proof was HOLLOW: the changed-line producer reported five exercised guard lines as
+  uncovered, because `suggest_mutation_coverage_command` maps tests to sources BY NAME and
+  that test file built every path from an f-string. A test the mapper cannot see is a test
+  the coverage lane does not have.
+- Next action: rows 14+. Rows 6-13 have had NO bounded review round; the two-round rule's
+  trigger is met (each changes what a reader resolves and acts on), so a round is OWED
+  before this slice can be called done.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line

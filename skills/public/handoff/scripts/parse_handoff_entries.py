@@ -32,6 +32,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_lib")
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 chunked_routing_issue_source = SKILL_RUNTIME.load_local_skill_module(
     __file__, "chunked_routing_issue_source"
 )
@@ -55,6 +58,22 @@ def _resolve_handoff_path(args: argparse.Namespace) -> Path:
     if explicit is not None:
         return explicit
     repo_root = _repo_root_for_adapter(args)
+    # GUARDED AT THE READ SITE. An unhonored declaration does not degrade this reader --
+    # it points it at a DIFFERENT FILE, and every count below is then computed from that
+    # file with no sign anything was wrong. Measured on the real CLI at `97dfc881a`: a
+    # repo declaring `output_dir: docs/mine` under `version: 9` returned
+    # `handoff_path: <repo>/docs/handoff.md` and `ok: true` with a real `entry_count`,
+    # parsed out of the charness default location. At `version: 1` the same repo returns
+    # `docs/mine/handoff.md`.
+    #
+    # The explicit-path arm above is deliberately BEFORE this: a caller that named the
+    # file is not asking the adapter anything, and refusing it would break
+    # `parse_handoff_entries.py docs/handoff.md`.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        resolve_adapter.load_adapter, repo_root, adapter_name="handoff-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = resolve_adapter.load_adapter(repo_root)
     return (repo_root / adapter["artifact_path"]).resolve()
 

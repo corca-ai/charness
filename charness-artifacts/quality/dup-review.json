@@ -4829,6 +4829,13 @@
       "note": "Four members across `scaffold_critique_artifact.py`, `scaffold_debug_artifact.py`, `scaffold_ideation_artifact.py` (UNTOUCHED by this slice) and `scaffold_retro_artifact.py`: the `validator_command` delegation binding each skill's own `VALIDATOR_SCRIPT_NAMES` plus the dated-record payload tail. Pre-existing and already classified in the same terms at ba8a0440c9106e3f; the untouched ideation member is the evidence that this is the family's own shape rather than duplication this slice introduced. Each member binds a DIFFERENT validator script set, which is the one thing that must not be shared.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4f4051badcdc7e4c",
+      "note": "The read-site version-refusal guard, now in both handoff readers: the five-line `unspeakable_version_message` call-and-raise naming `handoff-adapter.yaml`. Same accepted class as 3271ee812f709043 and d9fa0dc749dbb5ca -- the extractable half is already extracted into `scripts.adapter_version_verdict`, and what remains has to sit at the read site because that is the property the census verdict is about. These two are the sharpest case for keeping it there: `parse_handoff_entries` guards AFTER its explicit-path arm (a caller that named the file asks the adapter nothing) while `plan_handoff_run` guards at the top, so the two placements are deliberately different even though the five lines are identical.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -62,6 +62,9 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
@@ -377,6 +380,21 @@ def build_plan(
     intent: str,
     invoked_directly: bool,
 ) -> dict[str, Any]:
+    # GUARDED AT THE READ SITE. The planner's `artifact_path` and the `max_content_lines`
+    # ceiling it forecasts against both come out of this payload. Measured at `97dfc881a`:
+    # a repo declaring `output_dir: docs/mine` under `version: 9` planned against
+    # `artifact_path: docs/handoff.md`, exit 0 — so every command and gate packet the plan
+    # emits named a file the repo does not keep its handoff in.
+    #
+    # This file DOES read `errors` further down, and that was not enough, which is the
+    # census row's point: the read adds an advisory and echoes errors into the envelope,
+    # and never gates the `artifact_path` or `next_action` built from the defaulted data.
+    # An echoed error beside an acted-on default is the "a read is not a check" shape.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        resolve_adapter.load_adapter, repo_root, adapter_name="handoff-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = resolve_adapter.load_adapter(repo_root)
     artifact = _artifact_summary(repo_root, adapter)
     resolved_intent = _resolve_intent(requested=intent, invoked_directly=invoked_directly)
