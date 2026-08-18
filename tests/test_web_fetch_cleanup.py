@@ -18,6 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 GATHER_SCRIPTS = ROOT / "skills" / "public" / "gather" / "scripts"
 SPA_HTML = "<html><body><div id=\"root\"></div></body></html>"
+# Hang backstop for the SIGTERM-mid-render test's readiness wait, NOT the bar it
+# measures -- that is the child's process state (see the comment at the wait loop).
+# Sized an order of magnitude above the observed cost of reaching the browser stage
+# so a trip means "investigate a hang", not "the lane was busy".
+_HANG_BACKSTOP_SECONDS = 120
 
 _ACQUIRE = load_script_module(
     "acquire_public_url_for_cleanup_test",
@@ -363,14 +368,47 @@ def test_acquire_closes_session_on_sigterm_mid_render(tmp_path: Path) -> None:
         text=True,
     )
     try:
-        deadline = time.monotonic() + 10
+        # WAIT ON PROCESS STATE, NOT ON WALL TIME. The bar here used to be a 10s
+        # deadline, which measures the MACHINE rather than the behavior under test:
+        # everything before the `open` call -- interpreter startup, imports, the
+        # direct-response stage -- is unbounded work whose duration is set by how
+        # many xdist workers happen to be scheduled beside this test. Under the full
+        # parallel lane it exceeded 10s and the suite went red on a green tree, which
+        # is the same class `#668` carries for the pytest budget.
+        #
+        # The real failure this test must catch is "the child reached the browser
+        # stage and never opened a session", and that is observable WITHOUT a clock:
+        # the child would have exited. So the loop breaks on the log line, fails
+        # IMMEDIATELY and distinguishably when the child exits without one -- with
+        # the child's own output, which the wall-clock form never captured -- and
+        # keeps waiting for as long as the child is alive and therefore still
+        # progressing.
+        #
+        # BLIND CLASS, stated because the remaining bound is still a clock: the
+        # `_HANG_BACKSTOP_SECONDS` cap cannot distinguish a genuinely hung child from
+        # a machine slow enough to need more than two minutes to reach the `open`
+        # call. It is sized as a hang backstop, not as the bar -- an order of
+        # magnitude above the observed startup cost -- so tripping it is a signal to
+        # investigate a hang, never a routine load artifact. It does not make the
+        # test load-independent; it makes the load-dependent arm rare and legible
+        # instead of common and silent.
+        deadline = time.monotonic() + _HANG_BACKSTOP_SECONDS
         while time.monotonic() < deadline:
             if log.is_file() and any(" open " in line for line in log.read_text(encoding="utf-8").splitlines()):
                 break
-            time.sleep(0.1)
+            if proc.poll() is not None:
+                stdout, stderr = proc.communicate()
+                raise AssertionError(
+                    "acquire_public_url exited before the fake agent-browser logged an open call "
+                    f"(returncode {proc.returncode}); log: "
+                    + (log.read_text(encoding="utf-8") if log.is_file() else "<no log>")
+                    + f"\nstdout:\n{stdout}\nstderr:\n{stderr}"
+                )
+            time.sleep(0.05)
         else:
             raise AssertionError(
-                "fake agent-browser never logged an open call: "
+                f"fake agent-browser never logged an open call within the {_HANG_BACKSTOP_SECONDS}s "
+                "hang backstop while the child stayed alive: "
                 + (log.read_text(encoding="utf-8") if log.is_file() else "<no log>")
             )
         proc.send_signal(signal.SIGTERM)

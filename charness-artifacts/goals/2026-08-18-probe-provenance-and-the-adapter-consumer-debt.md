@@ -1,6 +1,6 @@
 # Achieve Goal: A verdict may not claim more than its probe measured
 
-Status: draft
+Status: active
 Created: 2026-08-18
 Activation: `/goal @charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md`
 
