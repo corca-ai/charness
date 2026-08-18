@@ -50,11 +50,13 @@ RELEASE_SCRIPTS = REPO_ROOT / "skills" / "public" / "release" / "scripts"
 COVERS = (
     "skills/public/release/scripts/release_closeout_authorization.py",
     "skills/public/release/scripts/release_issue_closeout.py",
+    "skills/public/release/scripts/release_closeout_floors.py",
     "skills/public/release/scripts/release_issue_closeout_message.py",
 )
 
 AUTHZ_PATH = RELEASE_SCRIPTS / "release_closeout_authorization.py"
 CLOSEOUT_PATH = RELEASE_SCRIPTS / "release_issue_closeout.py"
+FLOORS_PATH = RELEASE_SCRIPTS / "release_closeout_floors.py"
 
 
 def _load(path: Path, name: str, *, as_file: Path | None = None):
@@ -81,6 +83,9 @@ def _release_scripts_tree(tmp_path: Path, *, sibling: bool = True) -> Path:
     scripts.mkdir(parents=True)
     if sibling:
         shutil.copy2(CLOSEOUT_PATH, scripts / "release_issue_closeout.py")
+        # The loader now borrows `_package_root` from the floors module, which owns the
+        # cross-skill resolution; a vendored tree without it cannot answer at all.
+        shutil.copy2(FLOORS_PATH, scripts / "release_closeout_floors.py")
     return scripts
 
 
@@ -113,7 +118,7 @@ def _spec_none_for(module_name: str):
 def test_authorization_loader_returns_none_when_its_own_sibling_loader_is_unusable(
     monkeypatch,
 ) -> None:
-    """The loader borrows `release_issue_closeout._package_root` to find the issue
+    """The loader borrows `release_closeout_floors._package_root` to find the issue
     skill. If that sibling cannot even be turned into a module spec, the release lane
     has no way to locate the authorization logic — it must answer "not installed"
     (None) rather than raise, because this code runs at the top of every release

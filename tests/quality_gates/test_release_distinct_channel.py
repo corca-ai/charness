@@ -272,7 +272,7 @@ def test_initial_release_commit_reserves_validated_closeout_body_for_later() -> 
     commands: list[list[str]] = []
     writes = {"count": 0}
     cli = _release_commit_artifact_cli(commands, writes)
-    args = SimpleNamespace(close_issue=[44], close_issue_behavior=[], remote="origin")
+    args = SimpleNamespace(close_issue=[44], close_issue_behavior=[], close_issue_probe_record=[], remote="origin")
     state = _release_commit_artifact_state()
     result = _EXECUTE._commit_release_artifact(args, Path("."), state, {}, cli=cli)
     commit = next(command for command in commands if command[:2] == ["git", "commit"])
@@ -286,7 +286,8 @@ def test_initial_release_commit_never_falls_back_to_a_closeout_body() -> None:
     commands: list[list[str]] = []
     writes = {"count": 0}
     cli = _release_commit_artifact_cli(commands, writes)
-    args = SimpleNamespace(close_issue=[44], close_issue_behavior=["Behavior #44: verified via installer"], remote="origin")
+    args = SimpleNamespace(close_issue=[44], close_issue_behavior=["Behavior #44: verified via installer"],
+        close_issue_probe_record=["Probe record #44: local-only-by-contract"], remote="origin")
     state = _release_commit_artifact_state()
     state["payload"]["issue_closeout_draft_validation"]["paragraphs"] = []
 
@@ -300,7 +301,7 @@ def test_commit_release_artifact_rechecks_fresh_checkout_after_amend() -> None:
     commands: list[list[str]] = []
     writes = {"count": 0}
     cli = _release_commit_artifact_cli_with_passed_probe(commands, writes)
-    args = SimpleNamespace(close_issue=[44], close_issue_behavior=[], remote="origin")
+    args = SimpleNamespace(close_issue=[44], close_issue_behavior=[], close_issue_probe_record=[], remote="origin")
     state = _release_commit_artifact_state()
 
     result = _EXECUTE._commit_release_artifact(args, Path("."), state, {}, cli=cli)
@@ -365,7 +366,7 @@ def test_wiring_refuses_issue_close_on_silent_observer() -> None:
     def silent_observer(repo_root, payload, **kwargs):
         return None  # records NOTHING — simulates a regression that skips the observer
 
-    args = SimpleNamespace(remote="origin", close_issue=[], close_issue_behavior=[])
+    args = SimpleNamespace(remote="origin", close_issue=[], close_issue_behavior=[], close_issue_probe_record=[])
     cli = _base_cli(silent_observer, recorder)
     with pytest.raises(SystemExit, match="rung-1 floor refused issue closeout"):
         _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
@@ -379,7 +380,8 @@ def test_wiring_proceeds_to_issue_close_on_recorded_disposition() -> None:
     def disposing_observer(repo_root, payload, **kwargs):
         payload["distinct_channel_verification"] = {"channel": "none", "status": "skipped", "reason": "x"}
 
-    args = SimpleNamespace(remote="origin", close_issue=[44], close_issue_behavior=["Behavior #44: x"])
+    args = SimpleNamespace(remote="origin", close_issue=[44], close_issue_behavior=["Behavior #44: x"],
+        close_issue_probe_record=["Probe record #44: local-only-by-contract"])
     cli = _base_cli(disposing_observer, recorder)
     _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
     # F2a: a typed disposition (not a confirmation) still advances the close.
@@ -407,7 +409,8 @@ def test_carrier_commit_failure_prevents_issue_state_mutation() -> None:
         raise RuntimeError("carrier push failed")
 
     cli.commit_issue_closeout_carrier_artifact = fail_carrier
-    args = SimpleNamespace(remote="origin", close_issue=[44], close_issue_behavior=["Behavior #44: x"])
+    args = SimpleNamespace(remote="origin", close_issue=[44], close_issue_behavior=["Behavior #44: x"],
+        close_issue_probe_record=["Probe record #44: local-only-by-contract"])
 
     with pytest.raises(RuntimeError, match="carrier push failed"):
         _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)

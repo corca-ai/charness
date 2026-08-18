@@ -41,6 +41,15 @@ def _load_path(path: Path):
 
 _CLOSEOUT = _load("release_issue_closeout")
 _MESSAGE = _load_path(_HELPER)
+# Cross-skill issue-helper resolution has ONE owner: `release_closeout_floors`. These
+# tests kept their subject and changed their address.
+_FLOORS_MOD = _load_path(_SCRIPTS / "release_closeout_floors.py")
+
+
+def _floors_of(module):
+    """The floors module a loaded `release_issue_closeout` copy resolves to."""
+    return module._release_closeout_floors()
+
 
 
 def _fake_run(states: dict[str, str], calls: list[list[str]]):
@@ -101,8 +110,12 @@ def test_evaluate_release_behavioral_verdict_refuses_with_typed_message_on_the_r
     # same "helper missing" SystemExit on the REAL loaded module/file, with a
     # non-empty issue_numbers so the floor is actually reached (unlike the
     # empty-list early return above).
-    monkeypatch.setattr(_CLOSEOUT, "_ISSUE_CLOSEOUT_BODY", None)
-    monkeypatch.setattr(_CLOSEOUT, "_ISSUE_CLOSEOUT_BODY_ERROR", "issue_closeout_rung1_floors.py not found (forced)")
+    # The floor moved to `release_closeout_floors`, which resolves the issue helper itself,
+    # so the patch target moved with it. The PROPERTY under test is unchanged and is the
+    # reason to keep this test rather than delete it: on the real module, a missing issue
+    # helper must produce a typed refusal that NAMES the file to install, not a traceback.
+    floors = _CLOSEOUT._release_closeout_floors()
+    monkeypatch.setattr(floors, "_issue_closeout_body", lambda: None)
     with pytest.raises(SystemExit, match="issue_closeout_rung1_floors.py"):
         _CLOSEOUT.evaluate_release_behavioral_verdict(["Behavior #44: confirmed via fresh checkout"], [44])
 
@@ -139,6 +152,8 @@ def test_preflight_proceeds_when_behavior_present(tmp_path: Path) -> None:
         Path("."), repo="example/demo", issue_numbers=[44], payload=payload,
         run=_fake_run({"44": "OPEN"}, calls),
         behavior_lines=["Behavior #44: confirmed via fresh checkout install"],
+
+        probe_record_lines=["Probe record #44: local-only-by-contract"],
         classification="bug",
         carrier_file=carrier,
     )
@@ -164,6 +179,8 @@ def test_manual_fallback_comment_includes_behavior_lines() -> None:
         Path("."), repo="example/demo", issue_numbers=[44], payload=payload,
         run=_fake_run({"44": "OPEN"}, calls),
         behavior_lines=["Behavior #44: confirmed via fresh checkout install"],
+
+        probe_record_lines=["Probe record #44: local-only-by-contract"],
     )
     close_call = next(call for call in calls if call[:3] == ["gh", "issue", "close"])
     comment = close_call[close_call.index("--comment") + 1]
@@ -180,6 +197,8 @@ def test_ensure_release_issues_closed_records_state_verified_not_verified() -> N
         Path("."), repo="example/demo", issue_numbers=[44], payload=payload,
         run=_fake_run({"44": "OPEN"}, calls),
         behavior_lines=["Behavior #44: confirmed via fresh checkout install"],
+
+        probe_record_lines=["Probe record #44: local-only-by-contract"],
     )
     assert payload["issue_closeout"]["status"] == "state-verified"
     assert payload["issue_closeout"]["status"] != "verified"
@@ -201,14 +220,14 @@ def test_package_root_resolves_installed_layout() -> None:
     # match an installed-plugin path; the second loop's installed pattern
     # ("skills","release","scripts") must be checked and match instead.
     path = Path("/opt/plugin/skills/release/scripts/release_issue_closeout.py")
-    package_root, installed_first = _CLOSEOUT._package_root(path)
+    package_root, installed_first = _FLOORS_MOD._package_root(path)
     assert package_root == Path("/opt/plugin")
     assert installed_first is True
 
 
 def test_package_root_raises_when_neither_layout_matches() -> None:
     with pytest.raises(ImportError, match="cannot resolve release package root"):
-        _CLOSEOUT._package_root(Path("/nowhere/foo.py"))
+        _FLOORS_MOD._package_root(Path("/nowhere/foo.py"))
 
 
 def _seed_issue_helper(package_root: Path, *, installed: bool, filename: str, body: str = "OK = True\n") -> Path:
@@ -228,20 +247,20 @@ def test_load_issue_closeout_body_lib_covers_missing_and_unloadable_candidates(
     # exhausts to the final "not found" raise -- all three in one pass.
     package_root = tmp_path / "pkg"
     _seed_issue_helper(package_root, installed=True, filename="issue_closeout_rung1_floors.py")
-    monkeypatch.setattr(_CLOSEOUT, "_package_root", lambda _here: (package_root, False))
+    monkeypatch.setattr(_FLOORS_MOD, "_package_root", lambda _here: (package_root, False))
     monkeypatch.setattr(_CLOSEOUT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
 
     with pytest.raises(ImportError, match="issue_closeout_rung1_floors.py not found"):
-        _CLOSEOUT._load_issue_closeout_body_lib()
+        _FLOORS_MOD._load_issue_closeout_body_lib()
 
 
 def test_load_issue_closeout_body_lib_skips_loader_without_spec(tmp_path: Path, monkeypatch) -> None:
     package_root = tmp_path / "pkg"
     _seed_issue_helper(package_root, installed=False, filename="issue_closeout_rung1_floors.py")
-    monkeypatch.setattr(_CLOSEOUT, "_package_root", lambda _here: (package_root, True))
+    monkeypatch.setattr(_FLOORS_MOD, "_package_root", lambda _here: (package_root, True))
     monkeypatch.setattr(_CLOSEOUT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
     with pytest.raises(ImportError, match="issue_closeout_rung1_floors.py not found"):
-        _CLOSEOUT._load_issue_closeout_body_lib()
+        _FLOORS_MOD._load_issue_closeout_body_lib()
 
 
 def test_release_closeout_wrappers_refuse_when_message_helper_missing(monkeypatch) -> None:
@@ -340,9 +359,12 @@ def test_module_level_absence_degrade_records_error_on_the_real_file(tmp_path: P
     # repo's `release_issue_closeout.py` (confirmed via the loader's `spec.origin`,
     # unlike `test_module_import_survives_missing_issue_skill` below which loads a
     # tmp_path COPY and so cannot attribute to the real file).
-    isolated_file = tmp_path / "nowhere" / "release_issue_closeout.py"
+    # The module-level try/except moved to `release_closeout_floors` with the cross-skill
+    # resolution it guards; this exercises it in THAT real repo file, for the same reason
+    # and by the same technique.
+    isolated_file = tmp_path / "nowhere" / "release_closeout_floors.py"
     isolated_file.parent.mkdir(parents=True)
-    spec = importlib.util.spec_from_file_location("release_issue_closeout_reexec", _SCRIPTS / "release_issue_closeout.py")
+    spec = importlib.util.spec_from_file_location("release_closeout_floors_reexec", _SCRIPTS / "release_closeout_floors.py")
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     module.__file__ = str(isolated_file)
@@ -363,11 +385,15 @@ def test_module_import_survives_missing_issue_skill(tmp_path: Path) -> None:
     fake_scripts.mkdir(parents=True)
     shutil.copy2(_SCRIPTS / "release_issue_closeout.py", fake_scripts / "release_issue_closeout.py")
     shutil.copy2(_HELPER, fake_scripts / "release_issue_closeout_message.py")
+    # The floors module is part of the RELEASE skill and always ships with it. These
+    # trees simulate a missing ISSUE skill, not an incomplete release one, so copying
+    # it keeps each test measuring the absence it names.
+    shutil.copy2(_SCRIPTS / "release_closeout_floors.py", fake_scripts / "release_closeout_floors.py")
 
     module = _load_path(fake_scripts / "release_issue_closeout.py")  # must not raise
 
-    assert module._ISSUE_CLOSEOUT_BODY is None
-    assert module._ISSUE_CLOSEOUT_BODY_ERROR is not None
+    assert _floors_of(module)._ISSUE_CLOSEOUT_BODY is None
+    assert _floors_of(module)._ISSUE_CLOSEOUT_BODY_ERROR is not None
 
 
 def test_no_close_issue_still_works_when_issue_skill_missing(tmp_path: Path) -> None:
@@ -375,6 +401,10 @@ def test_no_close_issue_still_works_when_issue_skill_missing(tmp_path: Path) -> 
     fake_scripts.mkdir(parents=True)
     shutil.copy2(_SCRIPTS / "release_issue_closeout.py", fake_scripts / "release_issue_closeout.py")
     shutil.copy2(_HELPER, fake_scripts / "release_issue_closeout_message.py")
+    # The floors module is part of the RELEASE skill and always ships with it. These
+    # trees simulate a missing ISSUE skill, not an incomplete release one, so copying
+    # it keeps each test measuring the absence it names.
+    shutil.copy2(_SCRIPTS / "release_closeout_floors.py", fake_scripts / "release_closeout_floors.py")
     module = _load_path(fake_scripts / "release_issue_closeout.py")
 
     # (a) a release that does not close any issue is unaffected by the absence.
@@ -392,6 +422,10 @@ def test_missing_artifact_helper_fails_only_when_artifact_action_runs(tmp_path: 
     fake_scripts.mkdir(parents=True)
     shutil.copy2(_SCRIPTS / "release_issue_closeout.py", fake_scripts / "release_issue_closeout.py")
     shutil.copy2(_HELPER, fake_scripts / "release_issue_closeout_message.py")
+    # The floors module is part of the RELEASE skill and always ships with it. These
+    # trees simulate a missing ISSUE skill, not an incomplete release one, so copying
+    # it keeps each test measuring the absence it names.
+    shutil.copy2(_SCRIPTS / "release_closeout_floors.py", fake_scripts / "release_closeout_floors.py")
     module = _load_path(fake_scripts / "release_issue_closeout.py")
 
     with pytest.raises(SystemExit, match="artifact helper is unavailable in this installation"):
@@ -403,6 +437,10 @@ def test_close_issue_refuses_with_typed_message_when_issue_skill_missing(tmp_pat
     fake_scripts.mkdir(parents=True)
     shutil.copy2(_SCRIPTS / "release_issue_closeout.py", fake_scripts / "release_issue_closeout.py")
     shutil.copy2(_HELPER, fake_scripts / "release_issue_closeout_message.py")
+    # The floors module is part of the RELEASE skill and always ships with it. These
+    # trees simulate a missing ISSUE skill, not an incomplete release one, so copying
+    # it keeps each test measuring the absence it names.
+    shutil.copy2(_SCRIPTS / "release_closeout_floors.py", fake_scripts / "release_closeout_floors.py")
     module = _load_path(fake_scripts / "release_issue_closeout.py")
 
     # (b) --close-issue with the lib missing refuses with a typed message

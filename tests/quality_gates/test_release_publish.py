@@ -254,6 +254,7 @@ def test_publish_release_does_not_close_issues_when_post_create_verification_fai
     result = _run_publish_patch(
         repo, env, "--close-issue", "44",
         "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 1
@@ -279,6 +280,7 @@ def test_publish_release_records_distinct_channel_confirmation_before_issue_clos
     result = _run_publish_patch(
         repo, env, "--close-issue", "44",
         "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 0, result.stderr
@@ -309,6 +311,7 @@ def test_publish_release_records_distinct_channel_disposition_and_still_closes(t
     result = _run_publish_patch(
         repo, env, "--close-issue", "44",
         "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 0, result.stderr
@@ -330,6 +333,7 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     result = _run_publish_patch(
         repo, env, "--close-issue", "44",
         "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 0, result.stderr
@@ -396,8 +400,8 @@ def test_publish_release_accepts_full_bug_closeout_carrier(tmp_path: Path) -> No
         "bug",
         "--close-issue-carrier-file",
         str(carrier),
-        "--close-issue-behavior",
-        "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 0, result.stderr

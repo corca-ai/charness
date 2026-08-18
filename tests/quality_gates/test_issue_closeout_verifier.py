@@ -193,6 +193,7 @@ def test_issue_verify_closeout_rejects_empty_bug_sibling_proof(tmp_path: Path) -
                 "Siblings: same nearby file.",
                 "Prevention: verify-closeout blocks missing carriers.",
                 "Behavior #42: behavior test exercises the fix (distinct channel).",
+                "Probe record #42: local-only-by-contract",
                 "AI-provenance: agent-drafted; human-audited per the resolution critique.",
             ]
         ),

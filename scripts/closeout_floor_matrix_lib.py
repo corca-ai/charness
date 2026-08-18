@@ -68,6 +68,11 @@ FLOORS = (
     "ai_provenance",
     "resolution_critique",
     "consolidation_readback",
+    # Added 2026-08-18: one rung below `behavioral_verdict`. That floor refuses SILENCE
+    # about behavior; this one refuses a behavioral CLAIM that no probe record
+    # establishes. Declaring it here is what makes its per-carrier reach measured rather
+    # than asserted -- the gate re-derives every cell by running the real ingresses.
+    "probe_record",
 )
 
 # Findings are hoisted to the front of the refusal detail, so this cap only ever
@@ -129,6 +134,13 @@ _FLOOR_LINE = {
     "resolution_critique": (
         "Critique: blocked the probe host does not spawn a bounded reviewer for a fixture body"
     ),
+    # The matrix probe body's `Behavior:` line CLAIMS a verification, so the probe-record
+    # floor is live on it. A fixture body has no real measurement behind it, so it answers
+    # in the floor's own typed vocabulary -- and deleting this line is exactly how the
+    # floor's input gets broken, no special case needed.
+    "probe_record": (
+        "Probe record: local-only-by-contract - the matrix probe body carries no real measurement"
+    ),
 }
 # The HOTL floor is presence-GATED: deleting the line makes it inert rather than
 # refused, so breaking it means an entry that mentions a status without leading with
@@ -142,7 +154,7 @@ _SOURCE_BROKEN = "Source origin: a Slack thread in the operator's workspace"
 # asserts a move, not a fix, so a carrier that carries these is refused outright --
 # which means the baseline cannot carry them and these floors' inputs cannot exist on
 # a consolidated body at all. Measured, not assumed: `observe` confirms the refusal.
-_REPAIR_CLAIM_FLOORS = ("behavioral_verdict", "hotl_dispositions", "resolution_critique")
+_REPAIR_CLAIM_FLOORS = ("behavioral_verdict", "hotl_dispositions", "resolution_critique", "probe_record")
 
 
 def probe_body(classification: str, carrier: str, broken_floor: str | None) -> str:
@@ -213,6 +225,10 @@ def _release_draft(
     # probe artifact as a fact about the carrier. A real operator supplies the flag
     # regardless of what the carrier file says.
     behavior_lines = [] if broken == "behavioral_verdict" else [_FLOOR_LINE["behavioral_verdict"]]
+    # The probe record reaches this lane the same way the behavioral verdict does -- as a
+    # CLI-shaped argument, not from the carrier file -- so the baseline must supply it or
+    # the release lane refuses a body built to pass every floor.
+    probe_lines = [] if broken == "probe_record" else [_FLOOR_LINE["probe_record"]]
     payload: dict[str, Any] = {
         "commit_message": "chore(release): closeout floor matrix probe",
         "tag_name": "v0.0.0-closeout-floor-matrix-probe",
@@ -222,6 +238,7 @@ def _release_draft(
         closeout.preflight_release_issues(
             world.root, repo=REPO, issue_numbers=[NUMBER], payload=payload,
             run=world.run_backend, behavior_lines=behavior_lines,
+            probe_record_lines=probe_lines,
             classification=classification, carrier_file=carrier_file,
             carrier_source="closeout-floor-matrix-probe",
         )
@@ -235,6 +252,9 @@ def _release_draft(
         verdict = payload.get("issue_closeout_behavioral_verdict")
         if isinstance(verdict, dict) and not verdict.get("ok", True):
             report["behavioral_verdict"] = verdict
+        probe = payload.get("issue_closeout_probe_record")
+        if isinstance(probe, dict) and not probe.get("ok", True):
+            report["probe_record"] = probe
         report["release_refusal"] = str(exc)[:400]
         return report
     return payload["issue_closeout_draft_validation"]
@@ -334,7 +354,12 @@ def _refusing_floors(report: dict[str, Any]) -> set[str]:
         preservation = section.get("source_preservation")
         if isinstance(preservation, dict) and preservation.get("missing"):
             refusing.add("source_preservation")
-        for floor in ("behavioral_verdict", "hotl_dispositions", "ai_provenance"):
+        # `probe_record` reports the same `applies`/`ok` shape as these three, so it reads
+        # here rather than needing its own clause. Omitting it made every cell
+        # `refused-elsewhere`: the carrier DID refuse the broken body, but could not say
+        # the probe-record floor was why -- which is exactly the unattributed refusal this
+        # function exists to refuse to count.
+        for floor in ("behavioral_verdict", "hotl_dispositions", "ai_provenance", "probe_record"):
             record = section.get(floor)
             if isinstance(record, dict) and record.get("applies") and not record.get("ok", True):
                 refusing.add(floor)
@@ -462,7 +487,7 @@ def _channel_floor(carrier: str, floor: str) -> bool:
     an identical body does NOT mean the input was absent -- the `broken == baseline`
     shortcut would misread it as `input-refused` on a consolidated body.
     """
-    return carrier == "release-draft" and floor == "behavioral_verdict"
+    return carrier == "release-draft" and floor in ("behavioral_verdict", "probe_record")
 
 
 def _with_line(body: str, floor: str) -> str:

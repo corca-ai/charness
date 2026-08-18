@@ -77,6 +77,7 @@ def _feature_closeout_body(close_line: str = "Close #44.") -> str:
             "Prevention: release closeout preflight blocks mismatched carriers before mutation.",
             "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
             "Behavior #44: confirmed via fresh checkout install",
+            "Probe record #44: local-only-by-contract",
             "AI-provenance: agent-drafted via charness issue resolve; human-audited per the resolution critique",
         ]
     )
@@ -122,8 +123,8 @@ def _run_close_issue_publish(
         argv.extend(["--close-issue-carrier-file", str(carrier)])
     argv.extend(
         [
-            "--close-issue-behavior",
-            "Behavior #44: confirmed via fresh checkout install",
+            "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
+            "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
             "--critique-blocked",
             "synthetic-host-signal for legacy issue-closeout preflight test",
             "--execute",

@@ -571,6 +571,7 @@ def _resume_closeout_args(carrier: Path) -> tuple[str, ...]:
         "--close-issue-classification", "bug",
         "--close-issue-carrier-file", str(carrier),
         "--close-issue-behavior", "Behavior #44: confirmed through the release resume fixture",
+        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
     )
 
 
@@ -620,6 +621,7 @@ def _run_patch_closeout(repo: Path, env: dict[str, str]) -> subprocess.Completed
         env,
         "--close-issue", "44",
         "--close-issue-behavior", "Behavior #44: confirmed through recovery fixture",
+        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
     )
 
 
@@ -636,6 +638,7 @@ def _resume_patch_closeout(
         "--close-issue-classification", "bug",
         "--close-issue-carrier-file", str(carrier),
         "--close-issue-behavior", "Behavior #44: confirmed through recovery fixture",
+        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
         "--critique-blocked", CRITIQUE_BLOCKED,
         "--claims-review-artifact", "charness-artifacts/release-review/fixture-claims.json",
     )

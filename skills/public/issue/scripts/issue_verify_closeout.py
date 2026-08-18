@@ -116,6 +116,11 @@ evaluate_source_preservation = _FLOORS.evaluate_source_preservation
 evaluate_behavioral_verdict = _FLOORS.evaluate_behavioral_verdict
 evaluate_hotl_dispositions = _FLOORS.evaluate_hotl_dispositions
 evaluate_ai_provenance = _FLOORS.evaluate_ai_provenance
+# The probe-record floor is a SIBLING module, not part of `_FLOORS`, because it must read
+# `scripts.probe_record_lib` and `issue_closeout_rung1_floors` states it never imports
+# repo-internal `scripts/`. Keeping that property intact is worth one more import here.
+_PROBE_FLOOR = _load_local("issue_probe_record_floor")
+evaluate_probe_record = _PROBE_FLOOR.evaluate_probe_record
 FLOOR_EXEMPT_CLASSIFICATIONS = _FLOORS.FLOOR_EXEMPT_CLASSIFICATIONS
 review_advisory_for_classification = _FLOORS.review_advisory_for_classification
 strip_code_fences = _BODY._strip_code_fences
@@ -258,6 +263,8 @@ def verify_closeout(
     behavioral_verdict = evaluate_behavioral_verdict(body, classification, numbers)
     hotl_dispositions = evaluate_hotl_dispositions(body, classification, numbers)
     ai_provenance = evaluate_ai_provenance(body, classification)
+    probe_record = evaluate_probe_record(body, classification, numbers, repo_root=repo_root)
+    missing_fields.extend(_PROBE_FLOOR.probe_record_problems(probe_record))
     if carrier == "manual-fallback":
         reason_value = _first_field(_body_fields(body), ("manual close reason", "manual fallback reason"))
         if not _has_substantive_value(reason_value):
@@ -341,6 +348,7 @@ def verify_closeout(
         and behavioral_verdict["ok"]
         and hotl_dispositions["ok"]
         and ai_provenance["ok"]
+        and probe_record["ok"]
     )
     status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
     # Additive migration: the bare status tokens sound terminal,
@@ -405,6 +413,7 @@ def verify_closeout(
         "behavioral_verdict": behavioral_verdict,
         "hotl_dispositions": hotl_dispositions,
         "ai_provenance": ai_provenance,
+        "probe_record": probe_record,
         "verified_state": verified_state,
         # Empty for every other classification. Present and per (source, destination)
         # for `consolidated`, so an operator can see WHICH of the four tracker facts

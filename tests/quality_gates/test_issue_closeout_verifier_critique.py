@@ -7,6 +7,7 @@ in the sibling file.
 """
 from __future__ import annotations
 
+import re
 import subprocess
 from pathlib import Path
 
@@ -40,7 +41,14 @@ def _bug_closeout_body(
     provenance_line: str | None = (
         "AI-provenance: agent-drafted; human-audited per the resolution critique"
     ),
+    # Derived from every issue `close_line` names, for the same reason the shared
+    # `issue_closeout_support.bug_closeout_body` derives it: a behavior line that claims a
+    # verification owes a probe record, and a multi-issue close owes one per issue.
+    probe_line: str | None = None,
 ) -> str:
+    if probe_line is None:
+        targets = " ".join(f"#{number}" for number in re.findall(r"#(\d+)\b", close_line))
+        probe_line = f"Probe record {targets}: local-only-by-contract" if targets else None
     parts = [
         close_line,
         "JTBD: resolve GitHub issues end-to-end.",
@@ -55,6 +63,8 @@ def _bug_closeout_body(
         parts.append(behavior_line)
     if provenance_line is not None:
         parts.append(provenance_line)
+    if probe_line is not None:
+        parts.append(probe_line)
     return "\n\n".join(parts)
 
 
@@ -392,6 +402,7 @@ def test_feature_closeout_with_blocked_critique_is_accepted(tmp_path: Path) -> N
         "Prevention: closeout discipline added.\n"
         "Critique: blocked claude-code-agent-tool-missing in offline session\n"
         "Behavior #42: behavior test exercises the new surface (distinct channel)\n"
+        "Probe record #42: local-only-by-contract\n"
         "AI-provenance: agent-drafted; human-audited per the resolution critique\n",
         encoding="utf-8",
     )

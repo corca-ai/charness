@@ -302,6 +302,9 @@ def test_a_bug_close_is_refused_by_every_body_floor(world: ProbeWorld) -> None:
         "ai_provenance": "fires",
         "resolution_critique": "fires",
         "consolidation_readback": "inert",
+        # One rung below `behavioral_verdict`: that floor refuses silence about behavior,
+        # this one refuses a behavioral CLAIM that no probe record establishes.
+        "probe_record": "fires",
     }
 
 

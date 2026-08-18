@@ -4689,6 +4689,55 @@
       "note": "idiom-sized `if not <arg>: return []` empty-input guard shared by six unrelated functions: `probe_record_parse._dedent` (an empty block has no minimum indentation to remove, and `min()` over no lines raises), `quality_bootstrap_lifecycle`, `subprocess_guard`'s parallel runner (no commands means no completed processes), `vendored_path_lib.vendored_prefixes` (no configured values means nothing is vendored), and two release planners. The matched tokens are a two-token early return and the line above it; the argument meanings and the reason the empty case is special differ per member -- for `_dedent` it is guarding an exception, for the others it is a degenerate-input shortcut. There is nothing to extract but `if not x: return []`, and routing six independently-owned functions through a shared helper would couple them while hiding which one owns its empty-case decision. Same class already accepted as f1aa7272dbfe0a06 for the `-> bool` / `return False` spelling. Surfaced as new because slice 1 of the probe-provenance goal added `_dedent`; the other five members are untouched.",
       "reviewed_at": "2026-08-18",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2d249259876682d2",
+      "note": "the two probe-record floors' refusal-message assembly -- `issue_probe_record_floor.probe_record_problems` and `release_closeout_floors.fail_release_probe_record_floor`. Deliberately parallel and deliberately NOT shared: each names the surface an author must fix, and they differ where it matters -- the issue carrier says `add a Probe record #N: line to the carrier body`, the release one says `pass --close-issue-probe-record`. A shared formatter would have to branch on carrier to say either, which is the same code with a worse seam, and a single message would send half of all authors to the wrong place. The release side already delegates the FINDINGS to the issue floor's `probe_record_problems`; only the surrounding instruction is local.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "317df63752903e83",
+      "note": "the anchored leading-token disposition check -- `issue_probe_record_floor._dispositioned` beside `issue_resolution_critique`'s equivalent. Same shape because the repo has ONE grammar for typed dispositions (`issue_closeout_rung1_floors._HOTL_STATUS_LEAD` documents why it must be leading-token anchored: an unanchored search accepts a status's own negation). The VOCABULARIES differ per floor -- the probe floor's set excludes `verified` on purpose, since a probe record's whole job is to back a verification rather than assert one -- so sharing the matcher would mean passing the vocabulary in and gaining nothing but a parameter.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "33d2b4fafddbcb2b",
+      "note": "the cross-skill candidate-walk in `release_closeout_floors._load_issue_skill_module` beside `commit_msg_closeout_authorization`'s. Both resolve an issue-skill module across source-tree and installed layouts; they cannot share a helper because one is a repo-root script and the other is an EXPORTED public-skill script, so importing across would make the export depend on a file it does not ship -- the exact class #634 tracks. This slice already collapsed the two copies that were inside one file; what remains is the export boundary, which is not collapsible.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4760da10b9984646",
+      "note": "two 2-line `raise SystemExit(` openings inside `release_closeout_floors`, one per floor. The matched span is the raise keyword and the first line of a message; the messages themselves are entirely different (one names the missing behavioral-verdict line, the other names an unbacked claim). There is nothing to extract but `raise SystemExit(`.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "723662deb6c348ba",
+      "note": "the skill-runtime bootstrap ancestor-walk idiom, already present in ~130 files across every public skill. `issue_probe_record_floor._load_probe_record_lib` and `issue_verify_closeout`'s import block join an established repo-wide pattern rather than introducing one; the family is a scan-rotation artifact of adding two more members to a shape that is the convention.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ce3a3c11ba2102f0",
+      "note": "the same cross-skill loader idiom as 33d2b4fafddbcb2b, across the skill boundary this time: `handoff/draft_goal_from_chunk`, `release_closeout_authorization`, `release_closeout_floors`, `release_issue_closeout_message`. Each is an EXPORTED skill script and none may import another skill's module at package level, so the candidate-walk is the pattern this repo chose for cross-skill reuse and its docstrings say so. Collapsing them would require a shared module that every skill ships a copy of, which is the same duplication one directory up.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e9727b64a8140447",
+      "note": "`preflight_release_issues` and `ensure_release_issues_closed` in `release_issue_closeout`. Their overlap GREW this slice because both now run the probe-record floor -- and that is the point, not an accident: the module's own comment records that `ensure_release_issues_closed` reaches `gh issue close` directly and that resume/recovery can invoke it with NO preflight in the process. Guarding only one would leave one of two entrypoints to an irreversible boundary unguarded, which is the third of the three 2026-08-18 refutations this floor exists to answer. The repeated authorization call above it is the same deliberate redundancy for the same reason. Collapsing them would re-open the gap.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

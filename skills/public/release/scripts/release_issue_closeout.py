@@ -9,52 +9,6 @@ from typing import Any
 ISSUE_CLOSEOUT_CARRIER = "direct_post_publish_commit_body"
 
 
-def _package_root(script_path: Path) -> tuple[Path, bool]:
-    parts = script_path.parts
-    for index in range(len(parts) - 3):
-        if parts[index : index + 4] == ("skills", "public", "release", "scripts"):
-            return Path(*parts[:index]), False
-    for index in range(len(parts) - 2):
-        if parts[index : index + 3] == ("skills", "release", "scripts"):
-            return Path(*parts[:index]), True
-    raise ImportError(f"cannot resolve release package root for {script_path}")
-
-
-def _load_issue_closeout_body_lib():
-    """Import the issue skill's closeout body-check helper without modifying it,
-    so the release close-issue boundary reuses the SAME rung-1
-    behavioral-verdict presence floor the issue skill's own closeout already
-    enforces, instead of a second copy of the parsing logic. Mirrors
-    ``skills/public/handoff/scripts/draft_goal_from_chunk.py``'s
-    ``_load_goal_artifact_lib`` cross-skill import pattern (the established way
-    this repo shares a skill-owned library across skill boundaries). Supports
-    both source-tree ``skills/public/issue`` and installed plugin
-    ``skills/issue`` layouts.
-    """
-    here = Path(__file__).resolve()
-    package_root, installed_first = _package_root(here)
-    rels = (
-        Path("skills/issue/scripts/issue_closeout_rung1_floors.py"),
-        Path("skills/public/issue/scripts/issue_closeout_rung1_floors.py"),
-    )
-    if not installed_first:
-        rels = tuple(reversed(rels))
-    for rel in rels:
-        candidate = package_root / rel
-        if not candidate.is_file():
-            continue
-        spec = importlib.util.spec_from_file_location("release_issue_closeout_rung1_floors", candidate)
-        if spec is None or spec.loader is None:
-            continue
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    raise ImportError(
-        "issue skill issue_closeout_rung1_floors.py not found in source-tree "
-        "skills/public/issue/scripts or installed skills/issue/scripts layout"
-    )
-
-
 def _load_authorization_module():
     """The release lane's authorization module, or None on a partial vendoring.
 
@@ -109,13 +63,6 @@ def _load_local_release_module(module_name: str):
 # traceback. Mirrors the try/except degrade in
 # skills/public/handoff/scripts/plan_handoff_run.py:54-60.
 try:
-    _ISSUE_CLOSEOUT_BODY = _load_issue_closeout_body_lib()
-    _ISSUE_CLOSEOUT_BODY_ERROR: str | None = None
-except ImportError as exc:
-    _ISSUE_CLOSEOUT_BODY = None
-    _ISSUE_CLOSEOUT_BODY_ERROR = str(exc)
-
-try:
     _MESSAGE = _load_local_release_module("release_issue_closeout_message")
     _MESSAGE_ERROR: str | None = None
 except ImportError as exc:
@@ -151,46 +98,82 @@ commit_issue_closeout_carrier_artifact = _artifact_action("commit_issue_closeout
 # `evaluate_behavioral_verdict` uses to exempt `question`/`decision-needed`
 # carriers is force-applied here via a fixed classification rather than
 # exempted by issue type the way the issue skill's own closeout is.
+
+
 _RELEASE_BEHAVIORAL_CLASSIFICATION = "feature"
 
 
-def evaluate_release_behavioral_verdict(behavior_lines: list[str], issue_numbers: list[int]) -> dict[str, Any]:
-    """Rung-1 presence floor (P5): mirrors the issue skill's own
-    ``evaluate_behavioral_verdict`` onto the release close-issue boundary. A
-    `Behavior #N: <...>` line (or the single-issue `Behavior: <...>` shorthand)
-    naming a distinct evidence channel, or a typed non-`verified` disposition,
-    satisfies it EQUALLY (F2a) -- it refuses *silence* only. Whether the named
-    channel is genuinely distinct is the fresh-eye release closeout reviewer's
-    judgment (rung-2), never this floor's.
-    """
-    if not issue_numbers:
-        return {"applies": False, "ok": True, "missing": []}
-    if _ISSUE_CLOSEOUT_BODY is None:
-        raise SystemExit(
-            "release --close-issue requires the issue skill's "
-            "issue_closeout_rung1_floors.py (the behavioral-verdict floor helper), but it was "
-            f"not found on this install: {_ISSUE_CLOSEOUT_BODY_ERROR}\n"
-            "vendor/install the `issue` skill alongside `release` on this host, or drop "
-            "--close-issue from this publish."
-        )
-    return _ISSUE_CLOSEOUT_BODY.evaluate_behavioral_verdict(
-        "\n".join(behavior_lines), _RELEASE_BEHAVIORAL_CLASSIFICATION, issue_numbers
-    )
+# The floors moved to `release_closeout_floors` when this file crossed its length gate.
+# Reached through ONE cached, tolerant accessor and ONE delegator rather than four
+# hand-written wrappers: the longhand version tripped the duplicate ratchet with eleven
+# new families and the length gate on the same lines, both reporting that "resolve the
+# module, branch on absence, forward the call" had been copied per function.
+#
+# Cached because re-executing the module per call is wasteful AND unpatchable -- a test
+# that patches the returned object was handed a fresh copy next call, so its patch
+# silently did nothing and read as "the refusal stopped working". Tolerant because this
+# module is built to survive a partial install, and a module-level raise would turn every
+# release that touches no issue into a crash. The rationale in full lives in
+# `release_closeout_floors`' own docstring.
+_UNLOADED = object()
+_FLOORS_CACHE: object = _UNLOADED
+_FLOORS_UNAVAILABLE = (
+    "the release closeout floors module (release_closeout_floors.py) is not present beside "
+    "release_issue_closeout.py on this install, so the rung-1 floors a release close must "
+    "clear cannot be read. This refuses rather than passing: a check that could not run has "
+    "not run."
+)
+_INERT = {"applies": False, "ok": True, "missing": []}
 
 
-def fail_release_behavioral_verdict_floor(verdict: dict[str, Any]) -> None:
-    # floor-addition-restraint: mirrors the issue skill's existing rung-1
-    # behavioral-verdict presence floor onto the release close-issue boundary
-    # (counterweight-verified north-star finding: release closeout bypassed it
-    # entirely). Presence-only -- no new authored surface beyond the
-    # `--close-issue-behavior` CLI flag this floor reads.
-    raise SystemExit(
-        "release issue closeout refused: missing per-issue behavioral-verdict line.\n"
-        f"issues without a `Behavior #N:` line (or typed non-verified disposition): {verdict.get('missing')}\n"
-        'pass `--close-issue-behavior "Behavior #<N>: <distinct-channel or disposition>"` '
-        "(repeat per issue; the single-issue shorthand `Behavior: <...>` also matches) "
-        "before release closes a linked issue."
-    )
+def _release_closeout_floors():
+    global _FLOORS_CACHE
+    if _FLOORS_CACHE is _UNLOADED:
+        path = Path(__file__).resolve().with_name("release_closeout_floors.py")
+        module = None
+        if path.is_file():
+            spec = importlib.util.spec_from_file_location("release_closeout_floors", path)
+            if spec is not None and spec.loader is not None:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+        _FLOORS_CACHE = module
+    return _FLOORS_CACHE
+
+
+def _delegate(name: str, *, issue_index: int | None = None, absent=None):
+    """`issue_index` names where the issue list sits for the evaluators with an inert
+    empty case -- read BEFORE the module resolution, so a release closing no issue is
+    unaffected by a missing helper, a property this repo already had and already tested.
+    `absent` defaults to refusing: a delegate that forgets to say gets the safe answer."""
+
+    def call(*args, **kwargs):
+        if issue_index is not None and (
+            not (args[issue_index] if len(args) > issue_index else kwargs.get("issue_numbers", []))
+        ):
+            return dict(_INERT)
+        floors = _release_closeout_floors()
+        if floors is None:
+            if absent is None:
+                raise SystemExit(f"release issue closeout refused: {_FLOORS_UNAVAILABLE}")
+            return absent(args, kwargs)
+        return getattr(floors, name)(*args, **kwargs)
+
+    call.__name__ = name
+    return call
+
+
+def _probe_absent(args, kwargs):
+    numbers = args[2] if len(args) > 2 else kwargs.get("issue_numbers", [])
+    return {"applies": True, "ok": False, "missing": list(numbers), "failed": [],
+            "records": [], "library_unavailable": _FLOORS_UNAVAILABLE}
+
+
+evaluate_release_behavioral_verdict = _delegate("evaluate_release_behavioral_verdict", issue_index=1)
+fail_release_behavioral_verdict_floor = _delegate("fail_release_behavioral_verdict_floor")
+evaluate_release_probe_record = _delegate(
+    "evaluate_release_probe_record", issue_index=2, absent=_probe_absent
+)
+fail_release_probe_record_floor = _delegate("fail_release_probe_record_floor")
 
 
 def github_repo_slug(repo_root: Path, backend: dict[str, Any], *, run) -> str | None:
@@ -289,6 +272,7 @@ def preflight_release_issues(
     payload: dict[str, Any],
     run,
     behavior_lines: list[str] | None = None,
+    probe_record_lines: list[str] | None = None,
     classification: str | None = None,
     carrier_file: Path | None = None,
     carrier_source: str = "release",
@@ -296,6 +280,7 @@ def preflight_release_issues(
     if not issue_numbers:
         payload["issue_closeout_preflight"] = {"status": "not_requested", "issues": []}
         payload["issue_closeout_behavioral_verdict"] = {"applies": False, "ok": True, "missing": []}
+        payload["issue_closeout_probe_record"] = {"applies": False, "ok": True, "missing": []}
         return
     # First statement after the empty-set early return, and ahead of every read, temp
     # write, draft validation, bump, and publication below.
@@ -321,6 +306,15 @@ def preflight_release_issues(
     payload["issue_closeout_behavioral_verdict"] = behavioral_verdict
     if not behavioral_verdict["ok"]:
         fail_release_behavioral_verdict_floor(behavioral_verdict)
+    # One rung deeper, and deliberately AFTER the presence floor: an issue with no behavior
+    # line at all is that floor's refusal to report, and two floors naming the same missing
+    # line is how a failure report starts double-counting.
+    probe_record = evaluate_release_probe_record(
+        list(behavior_lines or []), list(probe_record_lines or []), issue_numbers, repo_root
+    )
+    payload["issue_closeout_probe_record"] = probe_record
+    if not probe_record["ok"]:
+        fail_release_probe_record_floor(probe_record)
     if repo is None:
         raise SystemExit(
             "release --close-issue requires a GitHub repo before mutation; "
@@ -370,6 +364,7 @@ def ensure_release_issues_closed(
     payload: dict[str, Any],
     run,
     behavior_lines: list[str] | None = None,
+    probe_record_lines: list[str] | None = None,
     carrier_source: str = "release",
 ) -> None:
     if not issue_numbers:
@@ -381,6 +376,18 @@ def ensure_release_issues_closed(
     refuse_unauthorized_release_close(
         repo_root, repo=repo, issue_numbers=issue_numbers, carrier_source=carrier_source
     )
+    # RE-RUN HERE FOR THE SAME REASON THE AUTHORIZATION IS RE-RUN, and the comment above is
+    # the evidence: this function reaches `gh issue close` directly, and resume/recovery can
+    # call it with no preflight in this process. Guarding only the preflight would leave one
+    # of two entrypoints to an irreversible boundary unguarded -- which is, precisely, the
+    # third of the three 2026-08-18 refutations this floor exists to answer, reproduced in
+    # the wiring of its own countermeasure.
+    probe_record = evaluate_release_probe_record(
+        list(behavior_lines or []), list(probe_record_lines or []), issue_numbers, repo_root
+    )
+    payload["issue_closeout_probe_record"] = probe_record
+    if not probe_record["ok"]:
+        fail_release_probe_record_floor(probe_record)
     if repo is None:
         raise SystemExit("release close issue verification needs a GitHub repo; pass --close-issue-repo")
     preflight_by_number = {

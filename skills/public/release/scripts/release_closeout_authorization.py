@@ -29,7 +29,11 @@ def load_closeout_authorization():
     in the consuming repo's crosswalk artifact, and a repo with no crosswalk has
     nothing to protect.
     """
-    sibling = Path(__file__).resolve().with_name("release_issue_closeout.py")
+    # The single owner of "where is the issue skill" moved to `release_closeout_floors`
+    # when the closeout module crossed its length gate. Following it keeps the one-owner
+    # property this docstring depends on; pointing at the old home would have left two
+    # answers again, which is exactly what it warns about.
+    sibling = Path(__file__).resolve().with_name("release_closeout_floors.py")
     spec = importlib.util.spec_from_file_location("release_closeout_package_root", sibling)
     if spec is None or spec.loader is None:
         return None

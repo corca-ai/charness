@@ -23,18 +23,23 @@ the pre-implementation critique passes.
   the load-dependent arm is rare and legible, not eliminated. No node is quarantined and
   there is NO expected-red baseline: any red in the standing lane stops the run, and a red
   on that node means investigate a hang.
-- Current slice: 1 — the probe record. COMPLETE pending round-2 fold; two bounded review
-  rounds ran, round 1 produced substantial repairs, round 2 read the repaired surface.
-- Current slice intent: build the probe record library and its resolver — quoted stimulus
-  provenance, a base/HEAD pair bound to a named observable, in `boundary_probe_lib`'s
-  typed vocabulary, with the no-base and no-build arms answered and written back into
-  Fixed Decision 2. Wiring it into its two readers is slice 2 and is NOT in this intent.
-- Next action: slice 2 — wire the record into the issue-closeout rung-1 floor and the
-  release publication floor. Measured wiring points: `issue_verify_closeout.py:258` and
-  `issue_close_comment_floor.py:68` reach the issue side (and `release_issue_closeout.py:176`
-  reuses the same floor); the release PUBLICATION floor is the blocker family in
-  `publish_release_preflight.py`. The floor must key on `state != evaluated` — see Fixed
-  Decision 3's inverted-consumer-rule note before writing it.
+- Slice 1 — the probe record: **COMPLETE at `ef37bcbaa`**. Both bounded rounds ran; round 1
+  produced substantial repairs and round 2 found one of those repairs shipping the class it
+  repaired. Round-2 repairs are ACCEPTED-UNREVIEWED under the two-round cap. Full ledger in
+  `## Slice Log`.
+- Current slice: 2 — wire the record into its two readers.
+- Current slice intent: make the probe record REQUIRED where a wrong claim escapes, not
+  merely produced — the issue-closeout rung-1 floor and the release publication floor —
+  and prove each refuses a carrier that omits it. Paying down debt rows is slice 5 and is
+  NOT in this intent.
+- Next action: add the issue-side floor as a NEW sibling module (do not put it in
+  `issue_closeout_rung1_floors.py`, whose docstring states it never imports repo-internal
+  `scripts/`; `issue_resolution_critique.py` is the precedent for a sibling that does).
+  Measured wiring points: `issue_verify_closeout.py:258` and `issue_close_comment_floor.py:68`
+  reach the issue side, and `release_issue_closeout.py:176` reuses the same floor; the
+  release PUBLICATION floor is the blocker family in `publish_release_preflight.py`.
+  **The floor must key on `state != evaluated`** — see Fixed Decision 3's
+  inverted-consumer-rule note, which exists because the sibling's rule is the opposite.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line
@@ -420,6 +425,29 @@ corpus stays the commitment. The residual risk this leaves live is recorded unde
   none was verified as still true here, and counting is not re-verifying.
 
 ## Operator Decision Queue
+
+- Decision: **slice 2 adds a standing per-close obligation to this repo, and the cost was
+  measured rather than estimated.** The probe-record floor now fires on every carrier that
+  accepts a behavioral classification — five issue carriers plus the release-draft lane —
+  so any close whose `Behavior #N:` line claims a verification owes a `Probe record #N:`
+  naming a record that resolves `evaluated`, or a typed disposition. Migrating the existing
+  suite to it took 67 failing tests across 15 files, and it added an operator-facing CLI
+  flag (`--close-issue-probe-record`) to `publish_release`. The obligation is triggered by
+  the CLAIM, not the classification, so an honest non-verifying close is untouched.
+  Owner: repo operator. Why deferred: the goal's `## User Acceptance` requires the floor to
+  REFUSE a missing field, so it is built and landed as specified; what is NOT settled is
+  whether the standing tax is worth it before slice 5 proves the mechanism on 45 real rows.
+  Unblock action: keep, or downgrade the floor to REVIEW severity until slice 5 reports.
+  Revisit trigger: the slice-5 five-row cost recount.
+- Decision: **public-skill validation for the `issue`, `quality` and `release` semantic
+  change was NOT performed this session.** `run_slice_closeout.py` reports `issue` as
+  `evaluator-required` and asks whether `evals/cautilus/scenarios.json` coverage should
+  change; Cautilus is eval-only and ask-before-run, and no grant exists, so it was not run
+  and the closeout was acknowledged with the decision recorded here rather than with a
+  silent pass. The consumer contract in `docs/public-skill-dogfood.json` is likewise NOT
+  refrozen. Owner: repo operator. Why deferred: running an evaluator is a granted action.
+  Unblock action: grant a Cautilus evaluation, or rule that scenario coverage is unchanged.
+  Revisit trigger: before any release that publishes these skills.
 
 - Decision: does quality's same-day scaffold overwrite stay (continue-in-place, as debug
   documents) or go (the defect `#628` reports)? The families currently disagree.

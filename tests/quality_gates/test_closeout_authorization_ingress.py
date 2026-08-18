@@ -75,6 +75,7 @@ def _body(tmp_path: Path, number: int) -> Path:
                 "Prevention: the authorization gate refuses unevidenced closes.",
                 "Critique: blocked synthetic-test-harness: this test spawns no reviewer",
                 f"Behavior #{number}: behavior test exercises the fix (distinct channel from CLOSED)",
+                f"Probe record #{number}: local-only-by-contract",
                 "AI-provenance: agent-drafted; human-audited per the resolution critique",
             ]
         ),

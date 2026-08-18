@@ -49,6 +49,15 @@ def build_parser() -> argparse.ArgumentParser:
         '(repeat per issue; single-issue shorthand "Behavior: <...>" also matches). Required rung-1 presence floor '
         "before a release closes a linked issue.",
     )
+    parser.add_argument(
+        "--close-issue-probe-record", action="append", default=[],
+        help='Probe record for a --close-issue whose behavioral verdict claims a verification, e.g. '
+        '"Probe record #42: charness-artifacts/probe/2026-08-18-x.md" (repeat per issue; single-issue '
+        'shorthand "Probe record: <...>" also matches). A typed disposition -- local-only-by-contract, '
+        "blocked-needs-operator, no-behavior-change -- satisfies it equally where no probe applies. "
+        "Rung-1 floor: the named record must resolve `evaluated`, so a claim cannot outrun its "
+        "measurement at a publish.",
+    )
     parser.add_argument("--bump-rationale", help=(
         "Why THIS bump level, rendered into the release record's `## Bump Rationale` section. "
         "version-policy.md requires a stated rationale whenever the level is debatable. Repeat it "

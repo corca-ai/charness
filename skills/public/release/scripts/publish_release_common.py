@@ -72,6 +72,7 @@ def preflight_close_issue_carrier(
         run=cli.run,
         carrier_source=carrier_source,
         behavior_lines=args.close_issue_behavior,
+        probe_record_lines=args.close_issue_probe_record,
         classification=args.close_issue_classification,
         carrier_file=args.close_issue_carrier_file.resolve() if args.close_issue_carrier_file else None,
     )
@@ -248,6 +249,7 @@ def close_issues_install_refresh_and_commit(
             payload=payload,
             run=cli.run,
             behavior_lines=args.close_issue_behavior,
+            probe_record_lines=args.close_issue_probe_record,
             # The lane name must reach HERE above all: this is the call that runs
             # `gh issue close`. Threading it only through the preflight left the
             # irreversible call misattributing which lane asked for it.

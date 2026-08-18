@@ -27,6 +27,21 @@
       ],
       "rationale": "resolve_manual_disposition returns a TYPED, RECORDED `skipped` disposition -- the fallback path when no adapter `post_delivery_readback_probe` is declared for `human-backend` announcement delivery. record_announcement.py writes it into the delivery record's `verification` field in `.charness/announcement/announcements.jsonl`. This satisfies the rung-1 presence floor (a confirmation or a typed non-`verified` disposition pass equally, mirroring the release skill's WS-1 rung-1/rung-2 split) but is never a silent clean pass -- the disposition and its `reason` are legible in the persisted ledger record that announcement closeout renders from."
     },
+    "scripts/boundary_probe_lib.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "structured_warning",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "PROBE_NOT_CONFIGURED",
+        "not-configured",
+        "state"
+      ],
+      "rationale": "`not_configured` is one arm of the three-state probe vocabulary `evaluated | not-configured | not-established` that replaced a bare `triggered: false`. It is a DETERMINED verdict, not a silent pass: the repo deliberately declared no cross-surface probe, so the objective override is off by design while the always-brief and closeout presence floors still apply. It is distinguishable from `not-established` (configured but not evaluable) on two channels at once \u2014 the state word and the exit byte, since undetermined exits 3 and this exits 0. The state leads the payload and `triggered` is emitted ONLY when the probe actually ran, so a caller polling one key cannot read 'could not tell' as 'no'."
+    },
     "scripts/build_debug_seam_risk_index.py": {
       "states": [
         "skipped"
@@ -145,20 +160,6 @@
         "skipped"
       ],
       "rationale": "A documented `charness` invocation whose subcommand token is not a single subcommand name -- `charness tool install/update/doctor` names three of them in one prose span -- is counted by reason instead of guessed at. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the YAML payload as skipped, so a green run states how much of the documented subcommand surface it did not prove rather than reading as full coverage."
-    },
-    "scripts/gate_report_emit.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "operator_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "Not proven"
-      ],
-      "rationale": "Not a gate: the shared renderer the findings-shaped gates emit through. render_findings_with_skipped owns the \"Not proven\" tail for every caller, and it appends that tail to the PASS output as well as the fail output -- a bare \"validated N invocations\" reads as full coverage of a surface and a gate that skipped anything has not covered it. The literal lives here rather than in each gate, which is why the callers declare the `skipped` state and this file declares the term that renders it."
     },
     "scripts/check_mutation_score.py": {
       "states": [
@@ -304,7 +305,7 @@
         "not-configured",
         "skipped"
       ],
-      "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs — `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
+      "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs \u2014 `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
     },
     "scripts/doctor.py": {
       "states": [
@@ -347,6 +348,20 @@
         "skipped"
       ],
       "rationale": "Filtered mutation work is summarized by inspected and skipped counts."
+    },
+    "scripts/gate_report_emit.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "operator_summary",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "Not proven"
+      ],
+      "rationale": "Not a gate: the shared renderer the findings-shaped gates emit through. render_findings_with_skipped owns the \"Not proven\" tail for every caller, and it appends that tail to the PASS output as well as the fail output -- a bare \"validated N invocations\" reads as full coverage of a surface and a gate that skipped anything has not covered it. The literal lives here rather than in each gate, which is why the callers declare the `skipped` state and this file declares the term that renders it."
     },
     "scripts/github_actions_lib.py": {
       "states": [
@@ -400,6 +415,20 @@
         "disabled"
       ],
       "rationale": "Tool installation reports disabled adapter state as structured skipped output."
+    },
+    "scripts/lesson_evaluation_records_lib.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "structured_warning",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "state"
+      ],
+      "rationale": "Same probe vocabulary. Reports that this repo declares no lesson evaluator, so there is no session to reconcile and no score to solicit. Distinct from a repo that declared one and skipped the read, which is what makes a missing-start disposition a finding rather than a configuration state in an opted-in repo."
     },
     "scripts/lifecycle_usage_capture.py": {
       "states": [
@@ -548,6 +577,20 @@
       ],
       "rationale": "Retro persistence records skipped summary refresh reasons in payload state."
     },
+    "scripts/session_start_lesson_context.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "stdout_attention",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "state"
+      ],
+      "rationale": "Same probe vocabulary reused rather than a fourth spelling invented. A repo that has not opted into the lesson lifecycle (no ledger) is `not_configured`, and the SessionStart hook stays SILENT for it by design \u2014 injecting a lesson block into a repo that never asked for one is the cost this state exists to avoid. It is not a hidden failure: an opted-in repo's undetermined case is loud and exits 3, so silence here means the repo declared no evaluator, never that the read failed."
+    },
     "scripts/skill_outcome_wiring.py": {
       "states": [
         "skipped"
@@ -560,7 +603,7 @@
         "judge skipped",
         "skipped"
       ],
-      "rationale": "The A/B harness outcome-grade wiring carries the grader's judge-kind `skipped` verdict into the per-arm report (the `judge skipped` column) and marks an eval with no outcome-assertions.json as `skipped` with an explicit `no outcome-assertions.json — skipped` cell. Both are surfaced in the rendered outcome section and a high `judge skipped` count is flagged in the caveat, so a non-run live judge or a missing assertion set cannot read as a clean outcome pass. Advisory-only (never gates); an untrustworthy grader fails the self-test gate and grading is skipped-with-reason."
+      "rationale": "The A/B harness outcome-grade wiring carries the grader's judge-kind `skipped` verdict into the per-arm report (the `judge skipped` column) and marks an eval with no outcome-assertions.json as `skipped` with an explicit `no outcome-assertions.json \u2014 skipped` cell. Both are surfaced in the rendered outcome section and a high `judge skipped` count is flagged in the caveat, so a non-run live judge or a missing assertion set cannot read as a clean outcome pass. Advisory-only (never gates); an untrustworthy grader fails the self-test gate and grading is skipped-with-reason."
     },
     "scripts/skill_runtime_bootstrap.py": {
       "states": [
@@ -948,6 +991,20 @@
       ],
       "rationale": "issue create emits a terminal payload with readback_skipped and body_verified null when --skip-readback is requested; an unverified write is surfaced to the operator, never silently treated as a confirmed write."
     },
+    "skills/public/issue/scripts/issue_probe_record_floor.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "explicit_skip_summary",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "skipped_classification",
+        "library_unavailable"
+      ],
+      "rationale": "Two typed skips, both rendered into the closeout report the carrier prints, neither silent. (1) `skipped_classification`: a `question`/`decision-needed` close has no user-facing behavior to confirm, so no verification claim exists for a probe record to back -- the same gate and the same reason as the sibling behavioral-verdict floor, checked against this floor's own subject rather than inherited, and reported as `applies: false` with the classification named. (2) `library_unavailable`: when `scripts/probe_record_lib.py` cannot be resolved from this tree the floor returns `ok: false` with the reason text -- it REFUSES rather than skipping, because a check that could not run has not run, and reporting it as satisfied is the class of silence this floor exists to close. Both reach the operator through `probe_record_problems`, which every carrier renders."
+    },
     "skills/public/issue/scripts/issue_resolution_critique.py": {
       "states": [
         "skipped"
@@ -975,6 +1032,20 @@
         "scope_classification"
       ],
       "rationale": "Inline-prompt bulk helper marks default-glob scans as advisory-only when no canonical prompt_asset_roots are supplied; classification is in stdout and JSON payload."
+    },
+    "skills/public/quality/scripts/check_regenerable_facts.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "structured_warning",
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "diagnostics"
+      ],
+      "rationale": "The regenerable-facts gate refuses rather than passing when it is not configured for a repo or for docs. The 2026-08-14 --json removal folded that refusal, its remedy, and the unclassified-docs non-claim out of the retired human renderer and into the `status` and `diagnostics` payload keys, so a run that judged nothing cannot read as a clean verdict."
     },
     "skills/public/quality/scripts/cli_ergonomics_lib.py": {
       "states": [
@@ -1160,7 +1231,7 @@
         "skipped",
         "reason"
       ],
-      "rationale": "run_post_publish_install_refresh returns not_configured (surfaced under install_refresh). confirm_release_via_distinct_channel (WS-1 rung-2) returns status skipped only when there is no published release URL and no adapter post_publish_distinct_channel_probe; that skipped is a TYPED, RECORDED disposition written to payload.distinct_channel_verification and rendered in the release artifact's `## Distinct-Channel Verification` section, which the human rung-2 disposition review audits. It passes the rung-1 presence floor (render-not-declare, F2a) but is never a silent clean pass — the gap is legible, not green."
+      "rationale": "run_post_publish_install_refresh returns not_configured (surfaced under install_refresh). confirm_release_via_distinct_channel (WS-1 rung-2) returns status skipped only when there is no published release URL and no adapter post_publish_distinct_channel_probe; that skipped is a TYPED, RECORDED disposition written to payload.distinct_channel_verification and rendered in the release artifact's `## Distinct-Channel Verification` section, which the human rung-2 disposition review audits. It passes the rung-1 presence floor (render-not-declare, F2a) but is never a silent clean pass \u2014 the gap is legible, not green."
     },
     "skills/public/release/scripts/publish_release_retro.py": {
       "states": [
@@ -1202,6 +1273,21 @@
       ],
       "rationale": "Release adapter parsing preserves requested-review advisory-only policy and skipped-review patterns for requested-review gate decisions."
     },
+    "skills/public/retro/scripts/check_auto_trigger.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "structured_warning",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "configuration_status",
+        "not-configured",
+        "state"
+      ],
+      "rationale": "Same three-state probe vocabulary as `boundary_probe_lib`: `not_configured` means this repo declared no auto-retro trigger, which is a determined opt-out and exits 0, while an adapter that is absent, misspelled, or unparseable is `not-established` and exits 3. Before that split a caller polling `triggered` read every one of those worlds as a judged 'no'."
+    },
     "skills/public/setup/scripts/seed_dependencies.py": {
       "states": [
         "skipped"
@@ -1214,6 +1300,20 @@
         "skipped"
       ],
       "rationale": "Dependency seeding reports skipped dependency setup as structured payload status."
+    },
+    "skills/public/setup/scripts/seed_retro_memory.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "artifact_visible",
+        "operator_summary"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "unset"
+      ],
+      "rationale": "This script used to seed `auto_session_trigger_surfaces: []` and `auto_session_trigger_path_globs: []` into a fresh adapter, which the probe then read as an INTENTIONAL opt-out the repo had never chosen \u2014 two mechanisms agreeing on the wrong default. It now leaves the keys unset so the probe reports `not_configured` and its remediation fires, and the seed report says so rather than implying a configured state."
     },
     "skills/public/shared/scripts/reviewer_result.py": {
       "states": [
@@ -1251,92 +1351,6 @@
         "status=\"skipped\""
       ],
       "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
-    },
-    "scripts/boundary_probe_lib.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "structured_warning",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "PROBE_NOT_CONFIGURED",
-        "not-configured",
-        "state"
-      ],
-      "rationale": "`not_configured` is one arm of the three-state probe vocabulary `evaluated | not-configured | not-established` that replaced a bare `triggered: false`. It is a DETERMINED verdict, not a silent pass: the repo deliberately declared no cross-surface probe, so the objective override is off by design while the always-brief and closeout presence floors still apply. It is distinguishable from `not-established` (configured but not evaluable) on two channels at once — the state word and the exit byte, since undetermined exits 3 and this exits 0. The state leads the payload and `triggered` is emitted ONLY when the probe actually ran, so a caller polling one key cannot read 'could not tell' as 'no'."
-    },
-    "skills/public/retro/scripts/check_auto_trigger.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "structured_warning",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "configuration_status",
-        "not-configured",
-        "state"
-      ],
-      "rationale": "Same three-state probe vocabulary as `boundary_probe_lib`: `not_configured` means this repo declared no auto-retro trigger, which is a determined opt-out and exits 0, while an adapter that is absent, misspelled, or unparseable is `not-established` and exits 3. Before that split a caller polling `triggered` read every one of those worlds as a judged 'no'."
-    },
-    "scripts/session_start_lesson_context.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "stdout_attention",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "not-configured",
-        "state"
-      ],
-      "rationale": "Same probe vocabulary reused rather than a fourth spelling invented. A repo that has not opted into the lesson lifecycle (no ledger) is `not_configured`, and the SessionStart hook stays SILENT for it by design — injecting a lesson block into a repo that never asked for one is the cost this state exists to avoid. It is not a hidden failure: an opted-in repo's undetermined case is loud and exits 3, so silence here means the repo declared no evaluator, never that the read failed."
-    },
-    "scripts/lesson_evaluation_records_lib.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "structured_warning",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "not-configured",
-        "state"
-      ],
-      "rationale": "Same probe vocabulary. Reports that this repo declares no lesson evaluator, so there is no session to reconcile and no score to solicit. Distinct from a repo that declared one and skipped the read, which is what makes a missing-start disposition a finding rather than a configuration state in an opted-in repo."
-    },
-    "skills/public/setup/scripts/seed_retro_memory.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "artifact_visible",
-        "operator_summary"
-      ],
-      "evidence_terms": [
-        "not-configured",
-        "unset"
-      ],
-      "rationale": "This script used to seed `auto_session_trigger_surfaces: []` and `auto_session_trigger_path_globs: []` into a fresh adapter, which the probe then read as an INTENTIONAL opt-out the repo had never chosen — two mechanisms agreeing on the wrong default. It now leaves the keys unset so the probe reports `not_configured` and its remediation fires, and the seed report says so rather than implying a configured state."
-    },
-    "skills/public/quality/scripts/check_regenerable_facts.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "structured_warning",
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "not-configured",
-        "diagnostics"
-      ],
-      "rationale": "The regenerable-facts gate refuses rather than passing when it is not configured for a repo or for docs. The 2026-08-14 --json removal folded that refusal, its remedy, and the unclassified-docs non-claim out of the retired human renderer and into the `status` and `diagnostics` payload keys, so a run that judged nothing cannot read as a clean verdict."
     }
   }
 }

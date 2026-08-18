@@ -233,7 +233,7 @@ def test_a_failed_post_create_verification_commits_the_artifact_before_it_refuse
 def test_resume_closeout_requires_original_irreversible_inputs() -> None:
     args = SimpleNamespace(
         close_issue=[], close_issue_classification=None, close_issue_carrier_file=None,
-        close_issue_behavior=[],
+        close_issue_behavior=[], close_issue_probe_record=[],
     )
 
     with pytest.raises(SystemExit, match="Recovery never infers or omits issue-close context") as error:
@@ -735,7 +735,8 @@ def test_resume_dry_run_validates_carrier_without_reconciling(capsys) -> None:
     args = SimpleNamespace(
         execute=False, close_issue=[44], close_issue_classification="bug",
         close_issue_carrier_file=Path("carrier.md"),
-        close_issue_behavior=["Behavior #44: fixture"], remote="origin",
+        close_issue_behavior=["Behavior #44: fixture"],
+        close_issue_probe_record=["Probe record #44: local-only-by-contract"], remote="origin",
     )
     plan = {
         "payload": {"issue_closeout_draft_validation": {"commit_message": message}},
