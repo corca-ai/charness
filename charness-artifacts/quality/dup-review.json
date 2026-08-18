@@ -4801,6 +4801,13 @@
       "note": "The same read-site guard as 3271ee812f709043, matched as a tighter seven-line window between `check_real_host_proof.build_payload` and `plan_release_run.build_plan`. Same reasoning, and the planner row is the one where it matters most: its guard exists specifically so the refusal is a property of that file rather than of the order its callees happen to be called in, which `tests/quality_gates/test_release_planner_version_refusal.py::test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee` pins by stubbing the callees.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0610d3bc4b18c1af",
+      "note": "Intra-file, between `applied_rewrite_review_policy`'s returned dict literal and a window inside `bootstrap_review`'s body. Both are literal payload constructions for DIFFERENT durable artifacts -- one queue item's review policy, and the `state.yaml` mapping -- and they share the shape of a mapping literal, not a single key. Neither region's content changed in this slice; the family surfaced because the version-refusal guard and its comment entered the file and reshaped the window. Extracting a shared builder here would put an indirection over two unrelated schemas whose whole value is being readable as the artifact they produce.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

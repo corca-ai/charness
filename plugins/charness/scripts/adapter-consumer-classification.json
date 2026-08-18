@@ -278,8 +278,8 @@
       "reason": "payload_for (line 163-177) reads adapter[\"artifact_path\"] and max_content_lines(adapter) with no errors/valid check, and scripts/scaffold_artifact_lib.py (checked, no errors/valid handling) writes write_artifact_path unconditionally; this matches the task's pre-listed 'already known unguarded+consequential' set."
     },
     "skills/public/hitl/scripts/bootstrap_review.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "bootstrap_review (line 98-99) reads `adapter[\"data\"].get(\"require_explicit_apply\", True)` and writes it straight into state.yaml/queue.json (lines 110-168) with no reference anywhere in the file to adapter[\"errors\"] or adapter[\"valid\"]."
+      "verdict": "guarded",
+      "reason": "bootstrap_review() now calls `_adapter_version_verdict.unspeakable_version_message(load_adapter, repo_root, adapter_name=\"hitl-adapter.yaml\")` and raises SystemExit ABOVE the `mkdir`, so no write in the function is reachable under an unspeakable version -- earlier than the release-gate rows needed, because everything below that line writes and a refusal after `mkdir` leaves a half-bootstrapped session. Measured flip: a repo declaring `require_explicit_apply: false` got `require_explicit_apply: true` / `apply_mode: explicit-after-all-chunks` WRITTEN into state.yaml at exit 0. HARM DIRECTION RECORDED HONESTLY: the read is `.get(..., True)`, so an unspeakable version always lands on the STRICTER apply policy and cannot weaken this control; the defect is a policy the repo never declared persisted into a durable artifact read as the repo's own contract. Probe record: charness-artifacts/probe/2026-08-19-hitl-bootstrap-version-refusal.md."
     },
     "skills/public/hitl/scripts/check_review_state.py": {
       "verdict": "safe-not-consequential",

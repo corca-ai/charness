@@ -22,6 +22,9 @@ render_yaml_mapping = _scripts_render_lib_module.render_yaml_mapping
 emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 _SCRATCHPAD_TEMPLATE = Template(
     (Path(__file__).resolve().parent / "templates" / "scratchpad.md.txt").read_text(encoding="utf-8")
 )
@@ -93,6 +96,26 @@ def scratchpad_text(session_id: str, portable_target: str, base_ref: str, scope:
 
 
 def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: str, scope: str) -> dict[str, object]:
+    # GUARDED BEFORE THE SESSION DIRECTORY IS CREATED, which is earlier than the other
+    # rows in this slice need to be: everything below this line WRITES. A refusal after
+    # `mkdir` would leave a half-bootstrapped session on disk that the operator then has
+    # to distinguish from a real one.
+    #
+    # WHAT IT COSTS TO BE UNGUARDED, measured on the real CLI: a repo declaring
+    # `require_explicit_apply: false` under a refused version got `require_explicit_apply:
+    # true` and `apply_mode: explicit-after-all-chunks` WRITTEN INTO `state.yaml`, exit 0.
+    #
+    # This row's harm is asymmetric and is recorded as such rather than dramatized. The
+    # reader's fallback is `.get("require_explicit_apply", True)`, so an unspeakable
+    # version always lands on the STRICTER apply policy -- it cannot weaken this control.
+    # What it does is persist a policy the repo never declared into a durable artifact that
+    # an operator and later runs read as the repo's own contract, and silently run a
+    # workflow other than the one the repo asked for.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="hitl-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     output_dir = repo_root / ".charness" / "hitl" / "runtime" / session_id
     output_dir.mkdir(parents=True, exist_ok=True)
     adapter = load_adapter(repo_root)
