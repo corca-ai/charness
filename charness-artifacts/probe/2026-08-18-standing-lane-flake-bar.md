@@ -42,14 +42,20 @@ python3 -c "import time,pathlib;time.sleep(12);pathlib.Path(LOG).write_text('--u
 
 ## Base observable
 
+The `base`/`head` prefixes the probe transcript printed are deliberately NOT reproduced
+here. The section heading already says which arm this is, and a per-arm label inside the
+capture would make base and head differ by the label rather than by the measurement — the
+one shape that silently disarms this record format's central rule for every record that
+copies this exemplar.
+
 ```
-base  waited  10.0s -> AssertionError: fake agent-browser never logged an open call
+waited 10.0s -> AssertionError: fake agent-browser never logged an open call
 ```
 
 ## Head observable
 
 ```
-head  waited  12.1s -> passed
+waited 12.1s -> passed
 ```
 
 ## Non-claims

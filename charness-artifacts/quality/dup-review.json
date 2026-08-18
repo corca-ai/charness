@@ -4682,6 +4682,13 @@
       "note": "idiom-sized `def <name>(...) -> bool:` + `if not <arg>: return False` guard-clause shape shared by four unrelated predicates: `probe_record_lib._contains_block` (an empty quote must never report containment, because the empty-slice identity would otherwise verify a record for having quoted nothing), `check_cli_skill_surface._relevant_change` (an empty changed set means EVERYTHING is relevant -- the opposite polarity), `vendored_path_lib.is_vendored_relative` (no configured prefixes means nothing is vendored), and `dup_ratchet_git`'s own helper. The matched tokens are the def line and a two-token early return; the guarded conditions, the argument meanings, and even the SENSE of the empty case differ per member. There is nothing to extract but `if not x: return False`, and routing four independently-owned predicates through a shared helper would couple them while hiding which one owns its empty-case decision. Surfaced as new because slice 1 of the probe-provenance goal added `_contains_block`; the other three members are untouched.",
       "reviewed_at": "2026-08-18",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "54bf3d213071cf1b",
+      "note": "idiom-sized `if not <arg>: return []` empty-input guard shared by six unrelated functions: `probe_record_parse._dedent` (an empty block has no minimum indentation to remove, and `min()` over no lines raises), `quality_bootstrap_lifecycle`, `subprocess_guard`'s parallel runner (no commands means no completed processes), `vendored_path_lib.vendored_prefixes` (no configured values means nothing is vendored), and two release planners. The matched tokens are a two-token early return and the line above it; the argument meanings and the reason the empty case is special differ per member -- for `_dedent` it is guarding an exception, for the others it is a degenerate-input shortcut. There is nothing to extract but `if not x: return []`, and routing six independently-owned functions through a shared helper would couple them while hiding which one owns its empty-case decision. Same class already accepted as f1aa7272dbfe0a06 for the `-> bool` / `return False` spelling. Surfaced as new because slice 1 of the probe-provenance goal added `_dedent`; the other five members are untouched.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

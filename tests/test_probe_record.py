@@ -121,7 +121,12 @@ def test_absent_base_establishes_an_existence_claim(tmp_path: Path) -> None:
 
 
 def test_absent_base_does_not_establish_a_change_claim(tmp_path: Path) -> None:
-    result = _resolve(_record(base_arm="base-absent", base_observable="n/a"), tmp_path)
+    # The base capture must be SUBSTANTIVE, or the empty-capture check refuses first and
+    # this test passes without ever reaching the branch it is named for.
+    result = _resolve(
+        _record(base_arm="base-absent", base_observable="the surface does not exist at base"),
+        tmp_path,
+    )
     assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
     assert "no prior behavior" in _reasons(result)
 
@@ -193,7 +198,13 @@ def test_base_observed_with_no_captured_reading_is_refused(tmp_path: Path) -> No
     # the arm ASSERTS a measurement the record does not contain.
     result = _resolve(_record(base_observable=""), tmp_path)
     assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
-    assert "section is empty" in _reasons(result)
+    assert "owes a `Base observable` section" in _reasons(result)
+
+
+def test_base_observed_with_no_head_reading_is_refused(tmp_path: Path) -> None:
+    result = _resolve(_record(head_observable=""), tmp_path)
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "no captured observable is not populated" in _reasons(result)
 
 
 def test_a_source_ref_that_names_no_path_is_unresolvable(tmp_path: Path) -> None:
@@ -247,6 +258,12 @@ def test_an_unresolvable_pin_is_unresolvable_not_verified(tmp_path: Path) -> Non
     result = probe_record_lib.verify_source_quote(tmp_path, "adapter.py", QUOTED, revision="deadbee")
     assert result["status"] == "unresolvable"
     assert "revision" in result["reason"]
+
+
+def test_dedent_of_an_empty_block_is_empty() -> None:
+    # `min()` over no lines raises, and a window can be empty when the needle is longer
+    # than the haystack.
+    assert probe_record_lib._dedent([]) == []
 
 
 def test_an_empty_needle_never_reports_containment() -> None:
@@ -319,6 +336,171 @@ def test_a_blank_line_ends_a_wrapped_value() -> None:
     assert parsed["fields"]["claim"] == "the real claim"
 
 
+# --- repairs from the slice-1 bounded review -------------------------------
+# Each of these was MEASURED resolving `evaluated` before the repair, not reasoned about.
+
+
+def test_absent_base_with_no_captured_reading_is_refused(tmp_path: Path) -> None:
+    # The two-word bypass: relabel a change claim as an existence claim on an absent base
+    # and the entire base/HEAD bar -- the actual `#528` countermeasure -- was skipped,
+    # because only `base-observed` checked that the captures existed.
+    text = _record(claim_kind="existence", base_arm="base-absent")
+    text = text.split("\n## Base observable")[0] + "\n"
+    assert "Head observable" not in text
+    result = _resolve(text, tmp_path)
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "no captured observable is not populated" in _reasons(result)
+
+
+def test_a_mistyped_local_path_may_not_be_excused_as_degraded(tmp_path: Path) -> None:
+    # The escape hatch that was cheaper than fixing the quote: a fabricated quote is
+    # refused, but a fabricated quote plus one dropped letter in the path was accepted.
+    result = _resolve(
+        _record(source_ref="adapterTYPO.py", source_degraded_reason="quoted from the file as of today"),
+        tmp_path,
+    )
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "does not cover this" in _reasons(result)
+
+
+def test_a_bad_revision_pin_may_not_be_excused_as_degraded(tmp_path: Path) -> None:
+    _git_repo_with_source(tmp_path)
+    result = probe_record_lib.resolve_probe_record_text(
+        _record(source_revision="deadbee", source_degraded_reason="pinned to the pre-fix tree"),
+        repo_root=tmp_path,
+    )
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "does not cover this" in _reasons(result)
+
+
+def test_a_source_outside_the_repo_is_never_verified(tmp_path: Path) -> None:
+    # Self-verifying provenance: a file the author wrote and no reviewer can open.
+    outside = tmp_path.parent / "outside-notes.txt"
+    outside.write_text(SOURCE_BODY, encoding="utf-8")
+    result = probe_record_lib.verify_source_quote(tmp_path, f"../{outside.name}", QUOTED)
+    assert result["status"] == "unresolvable"
+    assert "outside the repo" in result["reason"]
+
+
+def test_a_flattened_quote_does_not_verify_against_a_nested_source(tmp_path: Path) -> None:
+    # `#528`'s own mapping-vs-list confusion, which the first cut of this check passed.
+    (tmp_path / "vocab.yaml").write_text(
+        "deliberately_absent:\n  planner:\n    - some-key\n", encoding="utf-8"
+    )
+    flattened = "deliberately_absent:\nplanner:\n- some-key"
+    assert probe_record_lib.verify_source_quote(tmp_path, "vocab.yaml", flattened)["status"] == "absent"
+
+
+def test_a_correctly_nested_quote_still_verifies_when_the_record_indents_it(tmp_path: Path) -> None:
+    # The other direction: markdown indents a quoted block wholesale and that is not a
+    # structure change, so relative depth is what matters, never absolute column.
+    (tmp_path / "vocab.yaml").write_text(
+        "top:\ndeliberately_absent:\n  planner:\n    - some-key\n", encoding="utf-8"
+    )
+    indented = "    deliberately_absent:\n      planner:\n        - some-key"
+    assert probe_record_lib.verify_source_quote(tmp_path, "vocab.yaml", indented)["status"] == "verified"
+
+
+def test_captures_differing_only_by_an_arm_label_measured_nothing(tmp_path: Path) -> None:
+    # The shape the first worked example taught, which would have made the base==head rule
+    # unfalsifiable for every record copying it.
+    result = _resolve(
+        _record(base_observable="base  exit 1 (refusing)", head_observable="head  exit 1 (refusing)"),
+        tmp_path,
+    )
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "measured nothing" in _reasons(result)
+
+
+def test_a_duplicated_field_is_ambiguous_not_first_wins(tmp_path: Path) -> None:
+    # A record whose intro DEMONSTRATES the format at column 0 used to resolve against the
+    # example while a human read the real values below.
+    result = _resolve("Claim: the example value\n" + _record(), tmp_path)
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "more than once" in _reasons(result)
+
+
+def test_an_indented_sublist_is_a_continuation_not_a_phantom_field() -> None:
+    parsed = probe_record_lib.parse_probe_record(
+        "Observable: the resolver status, one of\n  verified: the quote is present\n"
+    )
+    assert parsed["fields"]["observable"] == "the resolver status, one of verified: the quote is present"
+    assert "verified" not in parsed["fields"]
+
+
+def test_a_fence_with_a_multi_token_info_string_still_opens(tmp_path: Path) -> None:
+    parsed = probe_record_lib.parse_probe_record(
+        '## Stimulus\n\n```console session\nClaim: not a field\n```\n'
+    )
+    assert parsed["sections"]["stimulus"] == "Claim: not a field"
+    assert "claim" not in parsed["fields"]
+
+
+def test_a_four_backtick_fence_is_not_closed_by_an_inner_three(tmp_path: Path) -> None:
+    # Quoting markdown that itself contains fences is exactly how this repo's most
+    # quotable sources look, and a truncated quote is usually still a verifying prefix.
+    parsed = probe_record_lib.parse_probe_record(
+        "## Source text\n\n````\nline one\n```\nline two\n```\nline three\n````\n"
+    )
+    assert parsed["sections"]["source_text"] == "line one\n```\nline two\n```\nline three"
+
+
+def test_two_fences_under_one_heading_are_both_kept(tmp_path: Path) -> None:
+    parsed = probe_record_lib.parse_probe_record(
+        "## Head observable\n\n```\nthe command\n```\n\n```\nthe output\n```\n"
+    )
+    assert parsed["sections"]["head_observable"] == "the command\nthe output"
+
+
+def test_a_refusal_must_use_the_not_applicable_arm(tmp_path: Path) -> None:
+    result = _resolve(
+        _record(claim_kind="refusal", base_arm="banana", refusal_reason="no resolver contract exists"),
+        tmp_path,
+    )
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "owes base arm" in _reasons(result)
+
+
+def test_evaluated_carries_its_residual_judgment(tmp_path: Path) -> None:
+    # `evaluated` is not a terminal green; the questions the mechanism cannot answer ride
+    # along with the pass so the distinct observer is handed their agenda.
+    result = _resolve(_record(), tmp_path)
+    assert result["state"] == probe_record_lib.PROBE_EVALUATED
+    assert len(result["residual_judgment"]) == len(probe_record_lib.RESIDUAL_JUDGMENT)
+    assert any("Source conditions" in line for line in result["residual_judgment"])
+
+
+def test_a_refused_record_carries_no_residual_judgment(tmp_path: Path) -> None:
+    result = _resolve(_record(base_arm="base-unrunnable"), tmp_path)
+    assert result["residual_judgment"] == []
+
+
+# --- holes that remain BY DESIGN, pinned as tests so slice 2 cannot forget them ---
+
+
+def test_a_real_quote_with_a_contradicting_stimulus_still_evaluates(tmp_path: Path) -> None:
+    # The `#528` author quotes a REAL line from the source that defines the claim and then
+    # writes an invented stimulus. Nothing compares the two. This is the documented limit
+    # of `verify_source_quote`, pinned here rather than left as prose, because the first
+    # docstring claimed the opposite and its test encoded the same wrong model.
+    result = _resolve(_record(stimulus="deliberately_absent:\n  - some-key   # invented shape"), tmp_path)
+    assert result["state"] == probe_record_lib.PROBE_EVALUATED, _reasons(result)
+    assert result["source_quote"]["status"] == "verified"
+
+
+def test_source_conditions_is_compared_to_nothing(tmp_path: Path) -> None:
+    # The `#628` countermeasure is presence-only. A stimulus that flatly contradicts the
+    # stated conditions still evaluates; only a reader catches it.
+    result = _resolve(
+        _record(
+            source_conditions="the scaffold run with NO arguments",
+            stimulus="charness quality scaffold --title 'a different cohort'",
+        ),
+        tmp_path,
+    )
+    assert result["state"] == probe_record_lib.PROBE_EVALUATED, _reasons(result)
+
+
 def test_a_placeholder_value_is_silence(tmp_path: Path) -> None:
     result = _resolve(_record(observable="TBD"), tmp_path)
     assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
@@ -347,6 +529,26 @@ def test_a_heading_with_no_fence_is_an_empty_section_not_a_missing_one(tmp_path:
     parsed = probe_record_lib.parse_probe_record("## Source text\n\n## Stimulus\n\n```\nrun it\n```\n")
     assert parsed["sections"]["source_text"] == ""
     assert parsed["sections"]["stimulus"] == "run it"
+
+
+# --- the shipped exemplar ---------------------------------------------------
+
+
+def test_the_shipped_probe_record_resolves_evaluated() -> None:
+    """The repo's worked example is checked by the suite, not only by hand.
+
+    It resolves through `git show 1b49a1ae0:docs/handoff.md`, so this also covers the
+    pinned-revision path against real history. Every later record is written by copying
+    this one; an exemplar that quietly stopped resolving would teach the wrong shape to
+    all of them.
+    """
+    record = ROOT / "charness-artifacts" / "probe" / "2026-08-18-standing-lane-flake-bar.md"
+    result = probe_record_lib.resolve_probe_record_text(
+        record.read_text(encoding="utf-8"), repo_root=ROOT
+    )
+    assert result["state"] == probe_record_lib.PROBE_EVALUATED, result["undetermined_reasons"]
+    assert result["source_quote"]["status"] == "verified"
+    assert result["covers_all_call_sites"] is True
 
 
 # --- the command surface ----------------------------------------------------

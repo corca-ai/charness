@@ -78,6 +78,23 @@ Which rule catches which refutation, stated so the mechanism can be judged again
 | `#628` — probed under convenient conditions, not the reported ones | Quoted stimulus provenance bound to the source's conditions (Fixed Decisions 2 and 4) |
 | Round 2 — one of two entrypoints guarded | Call-site enumeration (Fixed Decisions 5 and 7) |
 
+**Correction, 2026-08-18, from slice 1's bounded review — row 2 overclaimed and the
+mechanism does not do what this table said.** `Source conditions:` is a presence-only
+field: it is required to be substantive and then it is compared to NOTHING. `#628`'s own
+source is a GitHub issue body, the one source class `verify_source_quote` can never read,
+so the refutation the quote mechanism is named after lives outside that mechanism's
+reach. A stimulus that flatly contradicts the stated conditions still resolves
+`evaluated`, and there is a test pinning that so it cannot be forgotten. The honest
+reading of row 2 is: **the conditions and the stimulus are placed side by side in one
+record for a distinct observer to compare.** That is a real P4 legibility tooth and it is
+not a mechanical one. Row 1 and row 3 stand — row 3 only after slice 1's review round,
+which found the call-site answer was reported and then ignored by the verdict.
+
+The same review found the quote check crediting itself with `#528` in its own docstring,
+which is the "remedy set covers two failures and reports three" failure this section warns
+about, occurring inside the slice. `#528`'s countermeasure is the base/HEAD arm rule; the
+quote makes a mismatch legible to a reviewer, and no more.
+
 This repo already enforces the stimulus countermeasure on its TEST surface: a behavior test
 carries a mutation that must be killed, and the reconciliation census carries a liveness
 control so a row cannot pass by sharing no field with its probe. It does not enforce it on
@@ -113,7 +130,7 @@ first would reproduce the 2026-08-18 error 45 times.
   | Base arm | Disposition |
   | --- | --- |
   | `base-observed` | Compare. Differ → `evaluated`. Agree → `not-established` ("measured nothing"). Either capture empty → `not-established`. |
-  | `base-absent` | Establishes an `existence` claim ("this surface now refuses"). Refuses a `change` claim: with no surface at base there is no prior behavior for a change to be measured against. |
+  | `base-absent` | Establishes an `existence` claim ("this surface now refuses"). Refuses a `change` claim: with no surface at base there is no prior behavior for a change to be measured against. **Still owes BOTH captures** — the HEAD reading IS the claim, and the base capture is the evidence the surface really is absent. Without that, relabelling a change claim as an existence claim on an absent base was a two-word bypass of this whole table, measured resolving `evaluated` with no observable in the record at all. |
   | `base-unrunnable` | Always `not-established`. **A base that could not run is not a base that disagreed** — this is the `#528` shape, where a crashed base "differs" from HEAD for a reason that has nothing to do with the fix. |
   | `base-not-applicable` | Reserved for a `refusal` claim. On any behavioral claim it is refused outright, because it is otherwise the escape hatch: declare no base applies while still claiming a flip. |
 
@@ -132,6 +149,14 @@ first would reproduce the 2026-08-18 error 45 times.
   leaves unproven.** The census's own stated blind class is that it classifies FILES, not
   call sites; a row flipped on one guarded site while a second still substitutes a charness
   default is the third 2026-08-18 refutation replicated once per row.
+  **Disambiguated 2026-08-18 after slice 1's review found this decision and `## Behavioral
+  Proof` pulling in opposite directions, and the code implementing the permissive one.**
+  Naming an unproven site keeps the record COMPLETE, which is what this decision asks for;
+  it does NOT make the claim established, which is what Behavioral Proof requires ("a row
+  does not improve while an enumerated site is unproven"). Both hold once the two are kept
+  apart: a record that honestly names an unprobed entrypoint is well-formed and resolves
+  `not-established`. Before the repair it resolved `evaluated` and exited 0 under
+  `--require-evaluated` — the third refutation passing the very mode built to stop it.
 - **A verdict change with no probe record named at the frozen target is not a paid row.**
   `scripts/prepush_focused_changed_line_coverage.py` returns status `noop` exit 0 when no
   mutation-pool file changed, so a commit editing only `adapter-consumer-classification.json`
