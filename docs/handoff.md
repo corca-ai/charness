@@ -19,7 +19,7 @@
   the current posture: gates, runtime signals, the pytest budget breach, and the
   recommended next quality moves.
 - The [digest](../charness-artifacts/retro/recent-lessons.md) holds what a session reads
-  before work. Nothing is pushed; local main is many commits ahead of origin.
+  before work. Main and the released tag are pushed; remote and local are in sync.
 
 ## Current State
 
@@ -43,29 +43,27 @@
 
 ## Next Session
 
-1. **Push needs its phase-scoped grant** — local main carries this run's closes,
-   critiques, retro, and quality record; nothing is pushed. Confirm the grant, then
-   `python3 scripts/run_standing_pytest.py` before the push per the re-prove line above.
-2. **Prove `--bump-rationale` survives a real resume.** It is rebuilt from arguments,
-   nothing refuses the omission, and only the planner's
-   [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py) packet names it;
-   the [version policy](../skills/public/release/references/version-policy.md)
-   holds what the record promises. Only the non-claims lane can lose it.
-3. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
+1. **The release is published and verified** — the [release record](../charness-artifacts/release/latest.md)
+   holds the version (`git describe --tags --abbrev=0`), claims review, distinct-channel
+   readback, and verbatim bump rationale. Remaining half of the resume proof: the
+   OMISSION case — a resume that forgets `--bump-rationale` on the non-claims lane
+   still loses it silently; only the planner's
+   [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py) packet names it.
+2. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
    `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/`; a
    `scripts/`-only sweep misses
    [seed_retro_memory.py](../skills/public/setup/scripts/seed_retro_memory.py). Moving one
    site was tried twice and reverted twice — `canonical_retro_citation` and
    `collect_retro_candidates` are what make the literal load-bearing.
-4. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
+3. **`run_release_adapter_preflight` shells out to a bare test-runner binary**, so a
    venv-only install gives a traceback where a refusal belongs; the shell-out lives in
    [publish_release_adapter_preflight.py](../skills/public/release/scripts/publish_release_adapter_preflight.py) itself.
-5. **[#639](https://github.com/corca-ai/charness/issues/639) carries the lesson-session
+4. **[#639](https://github.com/corca-ai/charness/issues/639) carries the lesson-session
    START-surfacing work**, now with two more anchors from this run: the installed-copy
    declare that half-writes, and the atomicity gap the retro's capability improvement
    names. [#638](https://github.com/corca-ai/charness/issues/638) holds the per-round
    critique findings artifact.
-6. **Two recorded review residuals await their small slices** — the wrapped-line
+5. **Two recorded review residuals await their small slices** — the wrapped-line
    `blocked` asymmetry in [critique_enforcement_scope.py](../scripts/critique_enforcement_scope.py),
    and the retro planner/scaffold disagreeing on the second-dated-retro path; both are
    in the [session retro](../charness-artifacts/retro/2026-08-18-session-retro-second.md)
