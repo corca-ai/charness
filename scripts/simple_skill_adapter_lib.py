@@ -10,7 +10,7 @@ from scripts.adapter_lib import (
     parse_failure_error,
     uninterpreted_warnings,
 )
-from scripts.adapter_version_verdict import version_refused
+from scripts.adapter_version_verdict import declarations_unhonored
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
@@ -86,7 +86,7 @@ def load_adapter_contract(
             # through here would report `configured` for a field whose value was refused:
             # the resolved payload and the state map beside it disagreeing about one
             # adapter. The containment has to reach BOTH or it reaches neither.
-            contained_raw = {} if version_refused(errors) else (raw_data or {})
+            contained_raw = {} if declarations_unhonored(errors) else (raw_data or {})
             payload.update(extra_payload(data, contained_raw, found))
         return payload
 

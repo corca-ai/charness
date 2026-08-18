@@ -87,7 +87,7 @@ def test_a_guarded_row_must_carry_its_structural_witness(tmp_path: Path) -> None
 
     problems, _counts = GATE.check(repo)
 
-    assert any("does not reference" in problem for problem in problems), problems
+    assert any("references none of" in problem for problem in problems), problems
 
 
 def test_a_reasonless_row_fails(tmp_path: Path) -> None:
@@ -445,3 +445,50 @@ def test_the_cli_names_how_many_files_carry_more_than_one_class(tmp_path: Path) 
     assert result.returncode == 0, result.stderr
     assert "total classifications: 2 across 1 file(s)" in result.stdout
     assert "1 file(s) carry more than one defect class" in result.stdout
+
+
+def test_the_guarded_witness_refuses_a_comment_and_the_narrow_predicate(tmp_path: Path) -> None:
+    """Round 2 of the slice-5 review found this gate's `guarded` witness unable to
+    witness the property it names, TWICE, at two depths.
+
+    The first witness was the bare module name `adapter_version_verdict`. Three files were
+    passing as `guarded` while asking `version_refused`, which answers False for a parser
+    refusal — so the same "nothing declared is honored" state walked past them, and one of
+    the three wrote two durable files to a directory the repo never named at exit 0.
+
+    Tightening it to the widened names as a SUBSTRING of the file text was the same defect
+    one layer up: the repair's own explanatory comment contained the name, so a revert to
+    `version_refused` left this gate green. Mutation-tested rather than assumed, which is
+    how that was found. It now asks whether the file CALLS one of them.
+    """
+    narrow = "def go(root):\n    p = load_adapter(root)\n    return version_refused(p['errors'])\n"
+    repo = _tree(
+        tmp_path / "a",
+        {"scripts/narrow.py": narrow},
+        {"scripts/narrow.py": {"verdict": "guarded", "reason": "asks the narrow predicate"}},
+    )
+    problems, _ = GATE.check(repo)
+    assert any("references none of" in p for p in problems), problems
+
+    commented = (
+        "def go(root):\n"
+        "    # widened to declarations_unhonored, see the slice-5 round-2 review\n"
+        "    p = load_adapter(root)\n"
+        "    return version_refused(p['errors'])\n"
+    )
+    repo = _tree(
+        tmp_path / "b",
+        {"scripts/commented.py": commented},
+        {"scripts/commented.py": {"verdict": "guarded", "reason": "names it in a comment only"}},
+    )
+    problems, _ = GATE.check(repo)
+    assert any("references none of" in p for p in problems), problems
+
+    real = "def go(root):\n    p = load_adapter(root)\n    return declarations_unhonored(p['errors'])\n"
+    repo = _tree(
+        tmp_path / "c",
+        {"scripts/real.py": real},
+        {"scripts/real.py": {"verdict": "guarded", "reason": "asks the condition"}},
+    )
+    problems, _ = GATE.check(repo)
+    assert problems == [], problems

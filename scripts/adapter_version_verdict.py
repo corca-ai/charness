@@ -32,7 +32,10 @@ returns `data=infer_repo_defaults(...)` with `errors=[parse_failure_error(exc)]`
 is the same "nothing declared is honored" state reached by a different door. A round-1
 bounded review found `version: !!int 9` -- one token added to the very input the
 version guard refuses -- walking straight past this module, and the pre-repair harm was
-reproduced on three release CLIs at exit 0. So this module's predicate is the CONDITION,
+reproduced on three release CLIs at exit 0. Round 2 found the first repair applied HERE
+and not at the three consumers that ask the predicate directly, where the same input
+wrote two durable files to a directory the repo never named; `unhonored_cause` and
+`unhonored_remedy` exist so a caller can widen without hand-rolling the branch. So this module's predicate is the CONDITION,
 not the wording of one check that detects it.
 
 Blind class: this reads the resolver's ERROR STRINGS. It cannot see a consumer that
@@ -53,6 +56,8 @@ __all__ = [
     "version_refused",
     "parse_refused",
     "declarations_unhonored",
+    "unhonored_cause",
+    "unhonored_remedy",
     "unspeakable_version_message",
     "refuse_unspeakable_version",
 ]
@@ -103,6 +108,30 @@ def declarations_unhonored(errors: Any) -> bool:
     return version_refused(errors) or parse_refused(errors)
 
 
+def unhonored_cause(errors: Any) -> str:
+    """The clause naming WHICH door, for a caller that writes its own sentence.
+
+    Round 2 of the slice-5 review found the round-1 repair applied to this module and not
+    to the three consumers that ask the predicate directly and phrase their own refusal.
+    Those refusals all said "declares a `version` this reader does not speak", which is
+    the wrong instruction for a document the parser never read. This exists so a caller
+    can widen its predicate without hand-rolling that branch -- and so the two wordings
+    have one owner rather than four.
+    """
+    return "could not be parsed" if parse_refused(errors) else (
+        "declares a `version` this reader does not speak"
+    )
+
+
+def unhonored_remedy(errors: Any, adapter_name: str) -> str:
+    """The matching fix instruction for `unhonored_cause`."""
+    return (
+        f"Fix the YAML in `.agents/{adapter_name}` so the document parses, then re-run."
+        if parse_refused(errors)
+        else f"Set `version: 1` in `.agents/{adapter_name}` and re-run."
+    )
+
+
 def _any_error_starting_with(errors: Any, prefixes: tuple[str, ...]) -> bool:
     if not isinstance(errors, list):
         return False
@@ -119,8 +148,8 @@ def unspeakable_version_message(
     and routing them through one exception here would put an artifact-rule hint on a
     failure that is not an artifact rule violation.
 
-    Named for the first of the two doors and kept that way because fifteen consumers call
-    it under this name; it answers `declarations_unhonored`, which is the condition. The
+    Named for the first of the two doors and kept that way because seven consumers call
+    it under this name and four more call `refuse_unspeakable_version`; it answers `declarations_unhonored`, which is the condition. The
     message BRANCHES, because the remediation differs: one is an adapter line, the other
     is a YAML document the parser would not read at all.
 

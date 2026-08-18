@@ -87,9 +87,26 @@ EXCLUDED_NAMES = (
 )
 EXCLUDED_SUFFIXES = ("_adapter_lib.py",)
 
+# The `guarded` witness. Round 2 of the slice-5 review found the previous witness --
+# the bare module name `adapter_version_verdict` -- unable to distinguish a file that asks
+# the RIGHT question from one that merely imports the module. Three files were passing as
+# `guarded` while asking `version_refused`, which answers False for a parser refusal, so
+# the same "nothing declared is honored" state walked past them; one of the three wrote two
+# durable files to a directory the repo never named, exit 0. A witness that a verdict can
+# satisfy without holding the property is not a witness.
+#
+# Any ONE of these is sufficient, and a bare `version_refused` is deliberately not among
+# them: `declarations_unhonored` is the condition, and the two message entrypoints ask it.
+GUARDED_WITNESSES = (
+    "declarations_unhonored",
+    "unspeakable_version_message",
+    "refuse_unspeakable_version",
+)
+
 VERDICTS = {
-    # Calls into `adapter_version_verdict` and refuses.
-    "guarded": "adapter_version_verdict",
+    # Calls into `adapter_version_verdict` and refuses on the CONDITION, not on one
+    # door's wording. See GUARDED_WITNESSES.
+    "guarded": GUARDED_WITNESSES,
     # Reads `errors`/`valid` itself and refuses or degrades deliberately.
     "safe-checks-errors": None,
     # Reads a payload but nothing it reads can mis-steer anything.
@@ -260,12 +277,23 @@ def check(repo_root: Path) -> tuple[list[str], dict[str, int]]:
             seen.add(verdict)
             if not (row.get("reason") or "").strip():
                 problems.append(f"{rel}: verdict `{verdict}` carries no reason")
-            marker = VERDICTS[verdict]
-            if marker and marker not in (repo_root / rel).read_text(encoding="utf-8"):
-                problems.append(
-                    f"{rel}: classified `{verdict}` but does not reference `{marker}`. "
-                    "This is the one verdict with a structural witness; the others are prose."
-                )
+            markers = VERDICTS[verdict]
+            if markers:
+                # AST, not a substring of the file text. The first cut of this tightening
+                # was a substring check and it was mutation-tested: reverting a consumer to
+                # the narrow `version_refused` left the gate GREEN, because the repair's own
+                # explanatory COMMENT contained the widened name. A witness that a comment
+                # can satisfy is the same defect one layer up, so this asks whether the
+                # file CALLS one of them.
+                called = _call_names(ast.parse((repo_root / rel).read_text(encoding="utf-8")))
+                if not any(marker in called for marker in markers):
+                    problems.append(
+                        f"{rel}: classified `{verdict}` but references none of "
+                        f"{', '.join(f'`{m}`' for m in markers)}. This is the one verdict "
+                        "with a structural witness; the others are prose. A bare "
+                        "`version_refused` does NOT satisfy it: it answers False for a "
+                        "parser refusal, which leaves the same charness defaults in `data`."
+                    )
 
     for rel in sorted(set(declared) - set(live)):
         problems.append(

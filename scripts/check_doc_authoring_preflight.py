@@ -128,7 +128,12 @@ def adapter_load_failed(repo_root: Path) -> bool:
         payload = _handoff.load_adapter(repo_root)
     except Exception:  # noqa: BLE001 -- the point IS that any load failure counts
         return True
-    return _version_verdict.version_refused(payload.get("errors"))
+    # `declarations_unhonored`, not `version_refused`: round 2 of the slice-5 review
+    # found the narrow predicate answering False for a parser refusal, which leaves
+    # the same defaults in `data` and so forecast the shipped ceiling to an author
+    # whose repo had declared its own -- the exact bug this arm exists for, by the
+    # other door.
+    return _version_verdict.declarations_unhonored(payload.get("errors"))
 
 
 def _length_surfaces(repo_root: Path) -> tuple[LengthSurface, ...]:

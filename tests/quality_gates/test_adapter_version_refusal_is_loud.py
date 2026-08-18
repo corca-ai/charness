@@ -161,6 +161,48 @@ def test_an_unspeakable_version_refuses_loudly(label, rel_path, args_fn, tmp_pat
 
 
 @pytest.mark.parametrize(("label", "rel_path", "args_fn"), SURFACES, ids=[row[0] for row in SURFACES])
+def test_a_parser_refusal_refuses_just_as_loudly_at_every_surface(
+    label, rel_path, args_fn, tmp_path
+) -> None:
+    """The second door, driven through every surface's own `main()` — which is what the
+    first cut of this repair did NOT do.
+
+    Round 1 of the slice-5 review found the consumer guards keyed on the wording of one
+    check rather than on the condition. The repair widened the shared helper and added a
+    predicate-level test, and round 2 found that test could not see the defect it was
+    written for: three consumers ask the predicate DIRECTLY and were still on the narrow
+    one. `version: !!int 9` beside a declared `output_dir: docs/gathered` wrote both the
+    dated record and `latest.md` under `charness-artifacts/gather`, `status: updated`,
+    exit 0 — a durable write to a directory the repo never named, while `version: 9` in
+    the same repo refused.
+
+    Parameterizing the EXISTING surface table is the fix that could not have been faked:
+    it is the same eight entrypoints, the same `main()`, one token different in the
+    fixture.
+    """
+    repo = _seeded_repo(tmp_path, "!!int 9")
+
+    result = run_main(rel_path, *args_fn(repo))
+
+    assert result.returncode != 0, f"{label} did not refuse: {result.stdout}"
+    combined = result.stdout + result.stderr
+    # Two shapes are acceptable and both are refusals. Seven surfaces route through a
+    # resolver that CATCHES the parse failure and records it in `errors`, so they render
+    # this module's `could not be parsed` refusal. `quality_gate` reaches a loader that
+    # lets the `ValueError` out, so it refuses with the parser's own
+    # `unsupported YAML construct` text. What matters is the same for both: non-zero, the
+    # parse problem named, and no vacuous pass.
+    assert (
+        "could not be parsed" in combined or "unsupported YAML construct" in combined
+    ), f"{label} refusal does not name the cause: {combined}"
+    # The instruction must match the door. Sending an operator to edit `version:` in a
+    # document the parser never read is the wrong repair, and is what every one of these
+    # surfaces said before round 2.
+    assert "does not speak" not in combined, f"{label} sends the operator to the wrong line: {combined}"
+    assert "Validated 0" not in combined, f"{label} still reports a vacuous pass: {combined}"
+
+
+@pytest.mark.parametrize(("label", "rel_path", "args_fn"), SURFACES, ids=[row[0] for row in SURFACES])
 def test_a_speakable_version_is_not_refused_for_its_version(label, rel_path, args_fn, tmp_path) -> None:
     """The polarity control. Every assertion above is satisfied by a surface that refuses
     EVERYTHING, so each must be shown not to fire on the supported version. The surfaces

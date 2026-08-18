@@ -62,10 +62,17 @@ the pre-implementation critique passes.
   headline is that a one-token input (`version: !!int 9`) walked past every consumer
   guard in the repo, and that the read-site rationale published into eight surfaces was
   an argued harm the code refutes.
-- Next action: ROUND 2 over the repairs — the two-round rule's trigger is met and round 1
-  produced substantial repairs, including a change to `scripts/adapter_version_verdict.py`,
-  which is the proof surface every one of these guards calls. Then the five-row cost
-  recount the Slice Plan specifies, then rows 6+.
+- Round 2 RAN and was NOT clean, which is the fourth consecutive slice where the round
+  reading the REPAIRS found what the first round could not. Round 1's fix widened the
+  shared helper and left THREE consumers asking the narrow predicate; `version: !!int 9`
+  still wrote two durable files to a directory the repo never named, exit 0. Round 2 also
+  found the census gate's `guarded` witness unable to witness its own property — and the
+  first tightening of it was the same defect one layer up, passing on the repair's own
+  COMMENT until mutation testing caught it. Repairs are in `## Slice Log`.
+- Per the operating contract's TWO-ROUND CAP, round-2 repairs are ACCEPTED-UNREVIEWED: no
+  third round read them. That includes the widened predicate at four call sites, the
+  AST-based `guarded` witness, and the parse-door arm across the eight-surface table.
+- Next action: the five-row cost recount the Slice Plan specifies, then rows 6+.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line

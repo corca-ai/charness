@@ -70,12 +70,19 @@ def main() -> int:
     # directory the repo keeps retros in, and a SECOND lessons digest would appear at
     # the default `summary_path` while the repo's own stopped being refreshed -- on the
     # surface every session reads before work.
-    if _version_verdict.version_refused(adapter.get("errors")):
+    #
+    # Widened in round 2 of the slice-5 review: this asked `version_refused`, one of the
+    # two doors into "nothing declared is honored". A parser refusal is the other, and
+    # would have written a shadow retro AND a shadow lessons digest at the charness
+    # defaults -- on the surface every session reads before work.
+    errors = adapter.get("errors")
+    if _version_verdict.declarations_unhonored(errors):
         print(
-            "retro adapter declares a `version` this reader does not speak "
-            f"({'; '.join(adapter.get('errors') or [])}); nothing it declares is honored, "
+            f"retro adapter {_version_verdict.unhonored_cause(errors)} "
+            f"({'; '.join(errors or [])}); nothing it declares is honored, "
             "so this retro would be written to the charness default directory rather "
-            "than this repo's. Set `version: 1` in `.agents/retro-adapter.yaml`.",
+            "than this repo's. "
+            + _version_verdict.unhonored_remedy(errors, "retro-adapter.yaml"),
             file=sys.stderr,
         )
         return 1

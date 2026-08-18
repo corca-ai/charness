@@ -56,12 +56,20 @@ def _resolve_output_dir(repo_root: Path) -> Path:
     # appears elsewhere, reported as `status: updated`, exit 0. Refuse instead: this
     # writes a durable knowledge asset, and writing it to the wrong place is worse than
     # not writing it.
-    if _version_verdict.version_refused(payload.get("errors")):
+    #
+    # ROUND 2 OF THE SLICE-5 REVIEW WIDENED THIS PREDICATE. It asked `version_refused`,
+    # which is one door into that state; a parser refusal is the other, and reaches the
+    # same `infer_defaults(...)` payload. Measured on the real CLI: `version: !!int 9`
+    # beside a declared `output_dir: docs/gathered` wrote BOTH the dated record and
+    # `latest.md` under `charness-artifacts/gather`, `status: updated`, exit 0 -- while
+    # `version: 9` in the same repo refused. The narrow predicate was the escape.
+    errors = payload.get("errors")
+    if _version_verdict.declarations_unhonored(errors):
         raise wlib.WriteError(
-            "gather adapter declares a `version` this reader does not speak "
-            f"({'; '.join(payload.get('errors') or [])}); nothing it declares is honored, "
+            f"gather adapter {_version_verdict.unhonored_cause(errors)} "
+            f"({'; '.join(errors or [])}); nothing it declares is honored, "
             "so `output_dir` would be the charness default rather than this repo's. "
-            "Set `version: 1` in `.agents/gather-adapter.yaml` and re-run."
+            + _version_verdict.unhonored_remedy(errors, "gather-adapter.yaml")
         )
     data = payload.get("data") or {}
     output_dir = data.get("output_dir")

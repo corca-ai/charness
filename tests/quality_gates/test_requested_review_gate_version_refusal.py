@@ -1,16 +1,26 @@
-"""The requested-review gate refuses an unspeakable adapter version instead of
+"""The requested-review gate refuses an unhonored adapter declaration instead of
 reporting the opposite of what the repo declared.
 
-This is the sharpest shape in the adapter-consumer debt: a gate that reads a payload it
-could not actually read, finds the charness default, and reports `not_configured` —
-"this repo declares none" — over a repo that declared a command AND a
-`block-if-unconfigured` policy, at exit 0. The enforcement it was supposed to apply
-downgrades itself to advisory, and nothing says so.
+Measured on the real CLI before the repair, not argued: with `version: 9` and a declared
+`requested_review_commands`, the gate printed `configuration status: not_configured` —
+"this repo declares none" — over a repo that declared a command, at exit 0.
 
-Measured on the real CLI before the repair, not argued. The guard sits at the READ SITE
-rather than at `main()` because this gate has three entrypoints: its own CLI, and
-`plan_release_run` and `publish_release_cli`, which both import `build_payload`
-directly. A refusal in `main()` would have left two of them reading defaults.
+Two claims this docstring USED to carry were refuted by bounded review and are recorded
+here rather than quietly dropped, because both were published into several surfaces:
+
+* "a refusal in `main()` would have left two importers reading charness defaults." False.
+  Under an unhonored declaration both stop earlier — `publish_release_cli` at
+  `_valid_adapter_data`, `plan_release_run` behind `if adapter.get("valid")`. The measured
+  count is ZERO. Read-site placement buys POSITIONAL INDEPENDENCE, which is a real and
+  smaller property.
+* "the repo declared a `block-if-unconfigured` policy and the gate downgraded its own
+  enforcement to advisory." `resolve_adapter` accepts exactly
+  `{warn-if-unconfigured, advisory-only}`, so that clause described a configuration no
+  repo can hold. The measured half — a declared COMMAND read back as `not_configured` —
+  is the whole finding.
+
+Round 2 then found the guard keyed on one door: `version: !!int 9` makes the parser refuse
+the document and reaches the same charness defaults. Both doors are pinned below.
 """
 from __future__ import annotations
 

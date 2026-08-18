@@ -88,6 +88,16 @@ were run on the same HEAD and both are part of the evidence:
 
 ## Non-claims
 
+- **The stimulus above carries an invalid policy value, and the polarity control ran over
+  a `valid: false` repo because of it.** `requested_review_policy: block-if-unconfigured`
+  is not a value `resolve_adapter` accepts — it validates against exactly
+  `{warn-if-unconfigured, advisory-only}` — so the speakable-version control was passing
+  over a repo invalid for a reason unrelated to the version, and only because this gate
+  does not read `valid`. The stimulus is left verbatim because it is what ran. What is
+  withdrawn is the narrative half that said the gate "downgraded its own enforcement to
+  advisory" over a declared `block-if-unconfigured` policy: no repo can hold that
+  configuration. The measured half stands unchanged and is the whole finding — a DECLARED
+  COMMAND read back as `not_configured`, which does not depend on the policy field at all.
 - **The guard this record measured keyed on ONE door, and a round-1 bounded review found a
   second.** `version: !!int 9` — one token added to this record's own stimulus — makes the
   parser refuse the document, and `simple_skill_adapter_lib` answers that with
