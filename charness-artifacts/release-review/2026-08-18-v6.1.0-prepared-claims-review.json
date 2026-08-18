@@ -1,0 +1,16 @@
+{
+ "schema_version": "charness.release.claims-review.v2",
+ "prepared_commit": "7be2245394a4cdb210e97722e5fcd6dc4c363e45",
+ "release_record_path": "charness-artifacts/release/latest.md",
+ "release_record_sha256": "4ba117577fce6ba51ff0f04acefc88675bdd7fb1523a3bb4f247aea6f86f1b36",
+ "target_version": "6.1.0",
+ "tag_name": "v6.1.0",
+ "verdict": "pass",
+ "preparer_context": "parent session operating the charness release skill; ran the pre-mutation release critique, pushed main with the pre-push lane green, and ran publish_release --execute to the prepared stage",
+ "reviewer_context": "one bounded read-only reviewer subagent context (Read/Grep/Glob only; no Bash, Edit, Write or Agent), spawned fresh against the prepared record and not given the preparer's verdict",
+ "observer_distinctness": {
+  "kind": "separate-agent-context",
+  "signal": "Spawned as a bounded-reviewer subagent whose envelope exposed only Read, Grep and Glob; it reported Bash/Edit/Write/Agent absent, verified refs by reading .git files directly, and returned CLAIMS-CLEAN with five minors the preparer had not written down, including a date inconsistency inside the preparer's own helper run.",
+  "review_artifact": "charness-artifacts/release-review/2026-08-18-v6.1.0-prepared-claims-review.md"
+ }
+}
