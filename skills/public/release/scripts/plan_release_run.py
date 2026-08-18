@@ -30,6 +30,9 @@ _publish_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release
 _drafted_notes = SKILL_RUNTIME.load_local_skill_module(__file__, "drafted_release_notes")
 _prepared_stop = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_prepared_stop")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
@@ -178,6 +181,31 @@ def _real_host_path_scope(
 
 def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
+    # GUARDED AT THE READ SITE, though this row is WEAKER than the three gate rows and is
+    # recorded that way rather than dressed up. Measured at `dd5b6dee9`: the planner did
+    # NOT go silent under a refused version -- it printed
+    # `next_action=repair_adapter: Release adapter is invalid.` and left the two
+    # `valid`-gated evidence packets null. What it DID emit, at exit 0, was a plan
+    # asserting `package_id: <the temp directory's own name>` and two paths under
+    # `packaging/` and `plugins/` that do not exist, with `blockers: []`.
+    #
+    # Rows 2 and 3 already made this exit 1 by inheritance: `build_release_payload` is
+    # called before the three unconditional `data` reads (`update_instructions`,
+    # `release_record_path`, `drafted_notes_candidates`) and its `SystemExit` is not
+    # caught by the `except Exception` around it. That inheritance is REAL and was
+    # measured, but it is positional -- reordering this function, or widening that
+    # `except` to `BaseException`, restores the old behavior with no test failing. The
+    # guard here makes the row's verdict a property of this file rather than of the order
+    # its callees happen to be called in.
+    #
+    # Narrow by construction: only an UNSPEAKABLE version refuses. An adapter that is
+    # speakable but otherwise invalid still plans and still reports its own next action,
+    # which is the affordance this planner exists for.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="release-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     data = adapter.get("data") if isinstance(adapter.get("data"), dict) else {}
     release_payload: dict[str, Any] | None = None

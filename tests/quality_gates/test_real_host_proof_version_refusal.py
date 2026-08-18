@@ -1,0 +1,96 @@
+"""The real-host proof gate refuses an unspeakable adapter version instead of INVERTING
+its own verdict toward the permissive side.
+
+This row is sharper than a degraded answer. Measured on the real CLI: a repo declaring
+`real_host_required_path_globs: ["src/**"]` plus a checklist, handed the changed path
+`src/a.py`, printed `real_host=not-required: This repo declares no release-time real-host
+proof triggers` at exit 0 under a refused version — and `real_host=required` under a
+speakable one. Same repo, same paths, opposite verdict, on the gate whose job is to stop a
+publish that skipped real-host proof.
+
+The module's own docstring builds a four-state `evaluation_scope` vocabulary precisely so
+`not required` can never cover `we never checked`, and documents `not-configured` as "a
+genuine opt-out". An unspeakable version was the fifth state that vocabulary did not have:
+the opt-out was printed over a repo that opted IN.
+"""
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from .support import ROOT
+
+GATE = ROOT / "skills" / "public" / "release" / "scripts" / "check_real_host_proof.py"
+
+DECLARED = 'real_host_required_path_globs:\n  - "src/**"\nreal_host_checklist:\n  - run it on a real host\n'
+
+
+def _repo(tmp_path: Path, adapter: str | None) -> Path:
+    repo = tmp_path / "repo"
+    repo.mkdir(parents=True, exist_ok=True)
+    if adapter is not None:
+        (repo / ".agents").mkdir(parents=True, exist_ok=True)
+        (repo / ".agents" / "release-adapter.yaml").write_text(adapter, encoding="utf-8")
+    return repo
+
+
+def _run(repo: Path) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(GATE), "--repo-root", str(repo), "--paths", "src/a.py"],
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_an_unspeakable_version_refuses_rather_than_inverting_the_verdict(tmp_path: Path) -> None:
+    # The behavioral flip this row is paid down by. Before the guard this exact input
+    # printed `real_host=not-required` at exit 0 over a repo whose declared glob the
+    # changed path matches.
+    result = _run(_repo(tmp_path, "version: 9\n" + DECLARED))
+    assert result.returncode == 1, result.stdout
+    assert "does not speak" in result.stderr
+    assert "release-adapter.yaml" in result.stderr
+    assert "not-required" not in result.stdout
+
+
+def test_a_speakable_version_still_reports_what_the_repo_declared(tmp_path: Path) -> None:
+    # The polarity control that catches a gate which simply refuses everything. This is
+    # also the reading that proves the refused-version arm was an INVERSION: same repo,
+    # same paths, `required` here.
+    result = _run(_repo(tmp_path, "version: 1\n" + DECLARED))
+    assert result.returncode == 0, result.stderr
+    assert "real_host=required" in result.stdout
+
+
+def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path) -> None:
+    # The documented opt-out survives. A repo that declares no triggers is not a repo
+    # whose declaration could not be read, and conflating the two would refuse every
+    # consumer that never opted in.
+    result = _run(_repo(tmp_path, None))
+    assert result.returncode == 0, result.stderr
+    assert "real_host=not-required" in result.stdout
+
+
+@pytest.mark.parametrize(
+    "importer", ["plan_release_run", "publish_release_cli", "publish_release_plan"]
+)
+def test_every_importer_of_build_payload_inherits_the_guard(tmp_path: Path, importer: str) -> None:
+    """The call-site coverage this row's probe record claims.
+
+    All three re-export `build_payload` as `build_real_host_payload`, so a refusal in
+    `main()` would have covered one entrypoint and left three. The guard is inside the
+    read site, which covers them by construction rather than by remembering to repeat it.
+    """
+    from tests.script_main import load_script_module
+
+    module = load_script_module(
+        f"{importer}_for_real_host_guard_test",
+        ROOT / "skills" / "public" / "release" / "scripts" / f"{importer}.py",
+    )
+    repo = _repo(tmp_path, "version: 9\n" + DECLARED)
+    with pytest.raises(SystemExit) as excinfo:
+        module.build_real_host_payload(repo, ["src/a.py"])
+    assert "does not speak" in str(excinfo.value)

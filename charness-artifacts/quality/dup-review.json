@@ -4780,6 +4780,27 @@
       "note": "The read-site version-refusal guard slice 5 installs in each adapter consumer: `current_release.build_payload` and `check_requested_review_gate.build_payload`. The shared text is the five-line call-and-raise plus the `load_adapter`/`data` unpack; the extractable half is ALREADY extracted (`_adapter_version_verdict.unspeakable_version_message`). After those lines the two bodies share nothing -- one computes surface-version drift across five publish surfaces, the other runs requested-review commands and evaluates a policy. Folding the residue behind a decorator or wrapper would move the refusal off the read site, which is the one property the census verdict is about: the guard has to sit where the payload is read, because these functions have three importers each and a refusal anywhere else leaves those importers on charness defaults.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0c2a366d3962c75d",
+      "note": "The `scripts.surfaces_lib` module-alias block (`load_repo_module_from_skill_script` plus five name bindings), shared by `retro/check_auto_trigger.py` and `release/check_real_host_proof.py`. Same accepted class as 0ba3df38f822e05f, which classified the surfaces_lib alias block across the two thin surfaces CLIs. Neither member's text changed in this slice; the family surfaced because inserting the `_adapter_version_verdict` binding above it in `check_real_host_proof.py` reshaped the surrounding window. An alias block is an import statement in this repo's no-ordinary-imports runtime; it cannot be factored out without the shared loader it exists to reach.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3271ee812f709043",
+      "note": "SUPERSEDES 737db65b8360343d, which held the same idiom across two members; `check_real_host_proof.build_payload` is the third. The read-site version-refusal guard slice 5 installs in each adapter consumer. The shared text is the five-line call-and-raise plus the `load_adapter` unpack; the extractable half is ALREADY extracted (`_adapter_version_verdict.unspeakable_version_message`). After those lines the three bodies share nothing -- surface-version drift across five publish surfaces, real-host trigger evaluation, and requested-review command execution. Folding the residue behind a decorator or wrapper would move the refusal off the read site, which is the one property the census verdict is about: each of these functions has three importers, and a refusal anywhere else leaves those importers on charness defaults.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d9fa0dc749dbb5ca",
+      "note": "The same read-site guard as 3271ee812f709043, matched as a tighter seven-line window between `check_real_host_proof.build_payload` and `plan_release_run.build_plan`. Same reasoning, and the planner row is the one where it matters most: its guard exists specifically so the refusal is a property of that file rather than of the order its callees happen to be called in, which `tests/quality_gates/test_release_planner_version_refusal.py::test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee` pins by stubbing the callees.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

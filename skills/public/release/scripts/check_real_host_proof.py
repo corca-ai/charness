@@ -54,6 +54,9 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 
 _scripts_surfaces_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.surfaces_lib")
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
@@ -133,6 +136,27 @@ def surface_error_payload(error: str) -> dict[str, object]:
 
 
 def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object]:
+    # GUARDED AT THE READ SITE. Three modules import this `build_payload` directly
+    # (`publish_release_cli`, `publish_release_plan`, `plan_release_run`), so a refusal in
+    # `main()` would leave all three evaluating triggers this reader invented.
+    #
+    # WHAT IT COSTS TO BE UNGUARDED, measured on the real CLI: a repo declaring
+    # `real_host_required_path_globs: ["src/**"]` and a checklist under a refused version,
+    # handed the changed path `src/a.py`, printed `real_host=not-required: This repo
+    # declares no release-time real-host proof triggers`, exit 0. The same repo at a
+    # speakable version prints `real_host=required`. So the refused version does not
+    # degrade the answer -- it INVERTS the verdict, and lands on the permissive side, on
+    # the gate whose whole job is to stop a publish that skipped real-host proof.
+    #
+    # This module's docstring builds a four-state vocabulary specifically so that "not
+    # required" can never cover "we never checked". An unspeakable version was the fifth
+    # state that vocabulary did not have: `not-configured` is documented as "a genuine
+    # opt-out", and it was being printed over a repo that opted IN.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="release-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     trigger_surfaces = adapter["data"].get("real_host_required_surfaces", [])
     trigger_globs = adapter["data"].get("real_host_required_path_globs", [])

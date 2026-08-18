@@ -36,17 +36,26 @@ the pre-implementation critique passes.
   bounded round (the two-round trigger was not met: `--list-consumers` is read-only and no
   verdict logic changed). The round caught this slice publishing a FALSE measurement into
   four surfaces; corrected and recounted. `#599` stays OPEN — see `## User Acceptance`.
-- Current slice: 4 — the census gate's own contract.
-- Current slice intent: multi-class rows, the no-increase seam over the full per-verdict
-  vector with a GENERATED baseline, and the AST witness trial with its falsifier
-  pre-registered and its stop rule armed. Paying rows down is slice 5, not this.
-- Next action: slice 4. Read `## Operator Decision Queue` FIRST — the contestable seeded
-  verdict pair (`reconcile_usage_episodes_host_hooks.py` vs `quality_label_universe.py`)
-  has a revisit trigger of "before slice 4 ratchets any baseline", and ratcheting over a
-  mis-seeded row freezes the mis-seeding. Fixed Decision 8's multi-class premise is already
-  verified against the file: `scripts/build_retro_lesson_selection_index.py` carries BOTH
-  classes (line 55 `load_adapter` unchecked, line 33 a raw `.agents/retro-adapter.yaml`
-  read).
+- Slice 4 — the census gate's own contract: **PART 1 COMPLETE at `dd5b6dee9`** (multi-class
+  rows, per-verdict counting, the multi-class report line under test) and the AST witness
+  trial's measured NEGATIVE recorded at `e8fa718ba` (89% agreement is correlation; it fails
+  on per-call-site and on name collision, so it is not decidable and the pre-registered
+  stop rule fired). **PART 2 — the no-increase ratchet — IS NOT BUILT, deliberately.** Its
+  own revisit trigger says "before slice 4 ratchets any baseline", and the contestable
+  seeded verdict pair in `## Operator Decision Queue`
+  (`reconcile_usage_episodes_host_hooks.py` vs `quality_label_universe.py`) is unruled:
+  ratcheting over a mis-seeded row freezes the mis-seeding. Recorded as BLOCKED on an
+  operator ruling rather than skipped.
+- Current slice: 5 — pay down the debt rows, in severity order, release gates first.
+- Rows paid down so far, each by a MEASURED behavioral flip with its own probe record and
+  polarity controls: `check_requested_review_gate.py` (`90348df50`), `current_release.py`
+  (`f7d3fb70e`), and — uncommitted at this writing — `check_real_host_proof.py` and
+  `plan_release_run.py`. Census ACCEPTED RISK 37 -> 33. Recount, never read off this line:
+  `python3 scripts/check_adapter_consumer_classification.py --repo-root .`.
+- Next action: commit rows 3 and 4, run the changed-line proof, then run the FIRST bounded
+  review round over all four rows as one packet — the two-round rule's trigger is met
+  (every row changes what verdict a release gate renders) and the review boundary for a
+  45-row slice is the five-row cost checkpoint, not each row. Then the cost recount.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line
