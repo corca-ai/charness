@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.script_main import load_script_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
@@ -150,6 +150,91 @@ def test_the_raw_yaml_rule_needs_both_witnesses(tmp_path: Path, source: str, enu
     problems, counts = GATE.check(repo)
 
     assert (counts.get("UNCLASSIFIED", 0) == 1) is enumerated, (problems, counts)
+
+
+def test_an_absent_manifest_is_an_empty_one_not_a_hard_error(tmp_path: Path) -> None:
+    """A tree with no consumers and no manifest PASSES, and a tree with consumers and no
+    manifest fails once per consumer -- naming them, where a `missing manifest` refusal
+    would name only the file. Raising instead broke every fixture repo that runs the
+    broad lane without carrying charness's own manifest."""
+    empty = tmp_path / "empty"
+    (empty / "scripts").mkdir(parents=True)
+    (empty / "scripts" / "plain.py").write_text("def go():\n    return 1\n", encoding="utf-8")
+
+    problems, counts = GATE.check(empty)
+
+    assert problems == []
+    assert counts == {}
+
+    populated = tmp_path / "populated"
+    (populated / "scripts").mkdir(parents=True)
+    (populated / "scripts" / "reader.py").write_text(CALLS_LOADER, encoding="utf-8")
+
+    problems, _counts = GATE.check(populated)
+
+    assert any("reader.py" in problem for problem in problems), problems
+
+
+def test_an_unparseable_file_is_a_hard_error_not_a_skip(tmp_path: Path) -> None:
+    """Skipping it would shrink the denominator, which is the one thing a completeness
+    census must never do: an unreadable file would render as "no consumers here"."""
+    repo = _tree(tmp_path, {"scripts/broken.py": "def (\n"}, {})
+
+    with pytest.raises(SystemExit, match="could not be parsed"):
+        GATE.check(repo)
+
+
+def test_a_call_whose_target_is_not_a_name_is_not_a_loader(tmp_path: Path) -> None:
+    """A call through a subscript or a call result has no static name to match. It must
+    answer False rather than raise -- the enumerator walks every call in the repo, and one
+    exotic call shape must not take the census down."""
+    repo = _tree(tmp_path, {"scripts/exotic.py": "HANDLERS = {}\n\ndef go(root):\n    return HANDLERS['x'](root)\n"}, {})
+
+    problems, counts = GATE.check(repo)
+
+    assert problems == []
+    assert counts == {}
+
+
+def test_the_cli_reports_counts_and_exits_non_zero_on_an_unclassified_consumer(tmp_path: Path) -> None:
+    """Drives `main()`, because the counts print and the exit code ARE the gate's operator
+    surface: a check() that returns problems nobody prints is not a gate."""
+    repo = _tree(
+        tmp_path,
+        {"scripts/reader.py": CALLS_LOADER, "scripts/known.py": CALLS_LOADER},
+        {"scripts/known.py": {"verdict": "accepted-risk-unguarded", "reason": "declared risk"}},
+    )
+    module = load_script_module("gate_cli_fail", ROOT / "scripts/check_adapter_consumer_classification.py")
+
+    result = run_loaded_script_main(
+        "scripts/check_adapter_consumer_classification.py", module, "--repo-root", str(repo)
+    )
+
+    assert result.returncode == 1
+    assert "UNCLASSIFIED: 1" in result.stdout
+    # The accepted-risk line is printed on every run, passing or failing. An accepted risk
+    # that stops being counted is an accepted risk that stops being decided.
+    assert "ACCEPTED RISK: 1" in result.stdout
+    assert "not classified" in result.stderr
+
+
+def test_the_cli_exits_zero_and_totals_when_everything_is_classified(tmp_path: Path) -> None:
+    repo = _tree(
+        tmp_path,
+        {"scripts/known.py": CALLS_LOADER},
+        {"scripts/known.py": {"verdict": "safe-checks-errors", "reason": "checks errors at L1"}},
+    )
+    module = load_script_module("gate_cli_pass", ROOT / "scripts/check_adapter_consumer_classification.py")
+
+    result = run_loaded_script_main(
+        "scripts/check_adapter_consumer_classification.py", module, "--repo-root", str(repo)
+    )
+
+    assert result.returncode == 0
+    assert "total classified: 1" in result.stdout
+    # No accepted-risk rows here, so the line must be absent rather than printed as zero:
+    # a standing "ACCEPTED RISK: 0" trains the reader to skip the line that matters.
+    assert "ACCEPTED RISK" not in result.stdout
 
 
 def test_the_real_repo_is_fully_classified() -> None:
