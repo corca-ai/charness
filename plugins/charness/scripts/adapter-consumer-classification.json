@@ -430,8 +430,8 @@
       "reason": "build_payload() (line 135-139) does `adapter = load_adapter(repo_root)` then immediately reads `adapter[\"data\"].get(\"real_host_required_surfaces\", [])` etc. with no error/valid check -- matches the already-known-unguarded description given (repo declaring `real_host_required_surfaces` gets told 'this repo declares no release-time real-host proof triggers', exit 0)."
     },
     "skills/public/release/scripts/check_requested_review_gate.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "build_payload() (line 64-75) does `adapter = load_adapter(repo_root); data = adapter[\"data\"]` with no error/valid check anywhere in the file, then reads `data.get(\"requested_review_commands\", [])` and executes them via `_run_review_commands` (subprocess.run with shell=True) at line 75."
+      "verdict": "guarded",
+      "reason": "build_payload() calls `adapter_version_verdict.unspeakable_version_message` BEFORE `load_adapter`'s payload is read and raises SystemExit when the version was refused. Guarded at the READ SITE rather than at `main()` because this gate has three entrypoints -- its own CLI, plus `plan_release_run` and `publish_release_cli`, which import `build_payload` directly -- so a refusal in `main()` would have left two of them reading charness defaults. Paid down by a behavioral flip measured on the real CLI, not a verdict-string edit: probe record charness-artifacts/probe/2026-08-19-requested-review-gate-version-refusal.md (base dd5b6dee9 reported `configuration status: not_configured` at exit 0 over a repo that declared a command; head 90348df50 refuses at exit 1), with both polarity controls run and tests/quality_gates/test_requested_review_gate_version_refusal.py pinning it."
     },
     "skills/public/release/scripts/current_release.py": {
       "verdict": "accepted-risk-unguarded",
