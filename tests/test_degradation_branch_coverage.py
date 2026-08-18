@@ -31,9 +31,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import artifact_validator  # noqa: E402
-import artifact_violation_report  # noqa: E402
 import check_doc_authoring_preflight as preflight  # noqa: E402
 import check_doc_links  # noqa: E402
+
+# `from scripts import ...`, not a bare `import artifact_violation_report`: the
+# coverage mapper resolves a changed file to its tests by looking for the DOTTED
+# module path, and a bare top-level import is invisible to it -- the gate reported
+# this file as mapping to no standing test at all while these tests drove it.
+from scripts import artifact_violation_report  # noqa: E402
 
 # --- artifact_violation_report: the scaffold hint must degrade, never raise ----
 # The hint machinery moved out of `artifact_validator` when that file hit its length

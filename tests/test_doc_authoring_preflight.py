@@ -867,3 +867,26 @@ def test_the_engine_banner_is_what_proves_a_run() -> None:
     assert _pf.markdownlint_engine_ran("", "markdownlint-cli2 v0.21.0 (markdownlint v0.40.0)\n")
     assert not _pf.markdownlint_engine_ran("", "npm error npx canceled\n")
     assert not _pf.markdownlint_engine_ran("", "")
+
+
+def test_a_vendored_checker_without_the_cap_parameter_still_forecasts(monkeypatch) -> None:
+    """Mixed-version install: new preflight, older vendored validator.
+
+    `collect_length` began passing the resolved cap as a second positional argument in
+    the same release that gave the checker its second parameter, and the surrounding
+    `except` catches only `ValidationError` -- so an older vendored
+    `validate_max_content_lines(lines)` raised an uncaught `TypeError` where a forecast
+    belonged. The fallback loses the resolved cap for that install, which is the old
+    behavior rather than a new wrong one, so this asserts a report comes back at all.
+    """
+    calls: list[int] = []
+
+    def one_argument_only(lines):
+        calls.append(len(lines))
+
+    monkeypatch.setattr(_handoff, "validate_max_content_lines", one_argument_only)
+    report = _pf.build_report(ROOT, "docs/handoff.md", None)
+
+    assert calls, "the fallback must actually reach the one-argument checker"
+    assert report.length["surface"] == "handoff"
+    assert report.length["detail"] is None
