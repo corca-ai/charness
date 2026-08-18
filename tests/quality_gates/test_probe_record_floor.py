@@ -7,6 +7,7 @@ values satisfy it, and what happens when the record exists but did not establish
 """
 from __future__ import annotations
 
+import importlib.util
 import runpy
 from pathlib import Path
 
@@ -14,10 +15,34 @@ ROOT = Path(__file__).resolve().parents[2]
 _ISSUE_SCRIPTS = ROOT / "skills" / "public" / "issue" / "scripts"
 _RELEASE_SCRIPTS = ROOT / "skills" / "public" / "release" / "scripts"
 
-_FLOOR = runpy.run_path(str(_ISSUE_SCRIPTS / "issue_probe_record_floor.py"))
-evaluate_probe_record = _FLOOR["evaluate_probe_record"]
-probe_record_problems = _FLOOR["probe_record_problems"]
-_RELEASE_FLOORS = runpy.run_path(str(_RELEASE_SCRIPTS / "release_closeout_floors.py"))
+def _load(path: Path):
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_FLOOR_MOD = _load(_ISSUE_SCRIPTS / "issue_probe_record_floor.py")
+evaluate_probe_record = _FLOOR_MOD.evaluate_probe_record
+probe_record_problems = _FLOOR_MOD.probe_record_problems
+_FLOORS_MOD = _load(_RELEASE_SCRIPTS / "release_closeout_floors.py")
+_CLOSEOUT_MOD = _load(_RELEASE_SCRIPTS / "release_issue_closeout.py")
+_RELEASE_FLOORS = {
+    "evaluate_release_probe_record": _FLOORS_MOD.evaluate_release_probe_record,
+}
+
+# Modules this file is the standing coverage for, declared as quoted repo-relative paths
+# so `suggest_mutation_coverage_command` can MAP them. The mapper reads textual references
+# and these tests build their paths from variables (`_ISSUE_SCRIPTS / "x.py"`), which match
+# none of its patterns -- so the changed-line gate reported these files unmapped and then
+# blocked on lines this suite actually covers. Same declaration, same reason, as
+# `test_issue_consolidated_closeout.py`.
+_COVERS = (
+    "skills/public/issue/scripts/issue_probe_record_floor.py",
+    "skills/public/issue/scripts/issue_close_comment_floor.py",
+    "skills/public/release/scripts/release_closeout_floors.py",
+    "skills/public/release/scripts/release_issue_closeout.py",
+)
 
 _CLAIM = "Behavior #42: behavior test exercises the fixed path (distinct channel from CLOSED)"
 
@@ -217,47 +242,101 @@ def test_the_close_comment_carrier_names_the_probe_problem_in_its_refusal(tmp_pa
     assert "probe_record:#42" in text
 
 
-def test_the_release_floors_report_absence_rather_than_passing(tmp_path: Path) -> None:
+def test_the_release_floors_report_absence_rather_than_passing(monkeypatch) -> None:
     # A vendored tree with `release` but not `issue`: the probe floor must REFUSE with a
-    # reason naming what to install. A check that could not run has not run.
-    import importlib.util
-    import shutil
-
-    scripts = tmp_path / "skills" / "public" / "release" / "scripts"
-    scripts.mkdir(parents=True)
-    shutil.copy2(_RELEASE_SCRIPTS / "release_closeout_floors.py", scripts / "release_closeout_floors.py")
-    spec = importlib.util.spec_from_file_location("floors_isolated", scripts / "release_closeout_floors.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    verdict = module.evaluate_release_probe_record(["Behavior #44: confirmed"], [], [44], tmp_path)
+    # reason naming what to install. Patched on the REAL module, not a tmp_path copy --
+    # a copy's coverage attributes to the copy, so the branch reads untested.
+    monkeypatch.setattr(_FLOORS_MOD, "_load_probe_floor", lambda: None)
+    verdict = _FLOORS_MOD.evaluate_release_probe_record(["Behavior #44: confirmed"], [], [44], ROOT)
     assert verdict["ok"] is False
     assert "issue_probe_record_floor.py was not found" in verdict["library_unavailable"]
-    assert module.evaluate_release_behavioral_verdict([], []) == {"applies": False, "ok": True, "missing": []}
 
 
-def test_the_closeout_delegator_refuses_when_the_floors_module_is_absent(tmp_path: Path) -> None:
+def test_the_release_behavioral_floor_is_inert_with_no_issues() -> None:
+    assert _FLOORS_MOD.evaluate_release_behavioral_verdict([], []) == {
+        "applies": False, "ok": True, "missing": [],
+    }
+
+
+def test_the_closeout_delegator_refuses_when_the_floors_module_is_absent(monkeypatch) -> None:
     # `release_issue_closeout` reaches the floors through one delegator. When the sibling
     # is absent the probe evaluator returns a refusal payload and the rest raise -- never a
     # pass, which is the whole point of defaulting `absent` to a refusal.
-    import importlib.util
-    import shutil
-
     import pytest
 
-    scripts = tmp_path / "skills" / "public" / "release" / "scripts"
-    scripts.mkdir(parents=True)
-    for name in ("release_issue_closeout.py", "release_issue_closeout_message.py"):
-        shutil.copy2(_RELEASE_SCRIPTS / name, scripts / name)
-    spec = importlib.util.spec_from_file_location("closeout_isolated", scripts / "release_issue_closeout.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    assert module._release_closeout_floors() is None
-    verdict = module.evaluate_release_probe_record([], ["Probe record #44: x"], [44], tmp_path)
+    monkeypatch.setattr(_CLOSEOUT_MOD, "_FLOORS_CACHE", None)
+    verdict = _CLOSEOUT_MOD.evaluate_release_probe_record([], ["Probe record #44: x"], [44], ROOT)
     assert verdict["ok"] is False
     assert "release_closeout_floors.py" in verdict["library_unavailable"]
     with pytest.raises(SystemExit, match="release_closeout_floors.py"):
-        module.evaluate_release_behavioral_verdict(["Behavior #44: confirmed"], [44])
+        _CLOSEOUT_MOD.evaluate_release_behavioral_verdict(["Behavior #44: confirmed"], [44])
     with pytest.raises(SystemExit, match="release_closeout_floors.py"):
-        module.fail_release_probe_record_floor(verdict)
+        _CLOSEOUT_MOD.fail_release_probe_record_floor(verdict)
+
+
+def test_an_undispositioned_probe_line_is_reported_with_its_state() -> None:
+    # Reaches `probe_record_problems`' failed-entry branch and the `library_unavailable`
+    # branch, which report different things and must not be collapsed.
+    result = evaluate_probe_record(
+        _body(_CLAIM, "Probe record #42: absent.md"), "bug", [42], repo_root=ROOT
+    )
+    problems = probe_record_problems(result)
+    assert any("not-established" in p or "could not be read" in p for p in problems)
+    assert probe_record_problems(
+        {"applies": True, "ok": False, "library_unavailable": "no lib here"}
+    ) == ["probe_record:no lib here"]
+
+
+def test_a_placeholder_line_is_skipped_by_both_readers() -> None:
+    # A line that MATCHES the grammar but says nothing (`-`, `TBD`, `n/a`) binds on
+    # neither reader. It must not be mistaken for an answer on either side: a placeholder
+    # behavior line owes nothing, and a placeholder probe line satisfies nothing.
+    owes_nothing = evaluate_probe_record(
+        _body("Behavior #42: -"), "bug", [42], repo_root=ROOT
+    )
+    assert owes_nothing["ok"] is True
+    assert owes_nothing["owing"] == []
+
+    unsatisfied = evaluate_probe_record(
+        _body(_CLAIM, "Probe record #42: -"), "bug", [42], repo_root=ROOT
+    )
+    assert unsatisfied["ok"] is False
+    assert unsatisfied["missing"] == [42]
+
+
+def test_the_issue_floor_refuses_when_the_probe_library_is_unresolvable(monkeypatch) -> None:
+    # A tree whose `scripts/probe_record_lib.py` cannot be resolved: the floor REFUSES and
+    # names why. A check that could not run has not run, and reporting it as satisfied is
+    # the class of silence this floor exists to close.
+    monkeypatch.setattr(_FLOOR_MOD, "_load_probe_record_lib", lambda: None)
+    result = evaluate_probe_record(_body(_CLAIM), "bug", [42], repo_root=ROOT)
+    assert result["ok"] is False
+    assert "could not be resolved" in result["library_unavailable"]
+    assert probe_record_problems(result) == [f"probe_record:{result['library_unavailable']}"]
+
+
+def test_the_second_release_entrypoint_refuses_an_unbacked_claim(tmp_path: Path) -> None:
+    """`ensure_release_issues_closed` reaches `gh issue close` DIRECTLY.
+
+    The module's own comment records that resume/recovery can invoke it with no preflight
+    in the process, which is why the authorization check is re-run there. The probe floor
+    is re-run for the same reason: guarding only the preflight would leave one of two
+    entrypoints to an irreversible boundary unguarded. This test is that guarantee -- it
+    calls the second entrypoint alone and asserts it refuses BEFORE any backend call.
+    """
+    import pytest
+
+    def run_must_not_be_called(*_args, **_kwargs):
+        raise AssertionError("refused before any backend call, or the guard is too late")
+
+    with pytest.raises(SystemExit, match="no probe record establishes"):
+        _CLOSEOUT_MOD.ensure_release_issues_closed(
+            tmp_path,
+            repo="example/demo",
+            issue_numbers=[44],
+            payload={},
+            run=run_must_not_be_called,
+            behavior_lines=["Behavior #44: confirmed via fresh checkout install"],
+            probe_record_lines=[],
+            carrier_source="probe-floor-test",
+        )
