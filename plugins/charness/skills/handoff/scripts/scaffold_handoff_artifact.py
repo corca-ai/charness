@@ -175,9 +175,13 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     # too and could not tell "honored" from "fell back". Re-measured on the field the
     # contract actually reads, and the control now returns `docs/mine/handoff.md`.
     #
-    # `payload_for` rather than `main()` because that is where the target is resolved and
-    # because this module's `payload_for` is imported elsewhere; a refusal at the
-    # entrypoint would cover one caller.
+    # `payload_for` rather than `main()`: the target is resolved HERE, so the refusal is a
+    # property of this function rather than of whatever calls it. A round-1 bounded review
+    # over rows 6-13 REFUTED the sentence this comment used to carry ("this module's
+    # `payload_for` is imported elsewhere; a refusal at the entrypoint would cover one
+    # caller") -- verified false for quality, critique and handoff, whose only importers
+    # are tests. It is true only for retro (`plan_retro_run`) and debug (`plan_debug_run`).
+    # This slice had ALREADY struck the same unmeasured harm claim once, for rows 1-5.
     refusal = _adapter_version_verdict.unspeakable_version_message(
         load_adapter, repo_root, adapter_name="handoff-adapter.yaml"
     )

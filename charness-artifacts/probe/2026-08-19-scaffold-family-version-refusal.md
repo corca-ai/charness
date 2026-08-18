@@ -17,8 +17,10 @@ Base ref: 0bcb6b227
 Head ref: working tree at 0bcb6b227
 Base arm: base-observed
 Call sites unproven: none — each file holds ONE adapter-payload call site, in
-  `payload_for`, and the guard sits above it; `payload_for` is the imported symbol in each
-  of these skills, so a refusal at `main()` would cover the CLI and leave the importers
+  `payload_for`, and the guard sits above it. CORRECTED after a bounded review: the
+  claim first written here, that `payload_for` is the imported symbol in EACH of these
+  skills, is false. Only retro and debug have a production importer (`plan_retro_run`,
+  `plan_debug_run`); quality, critique and handoff are imported only by tests
 
 ## Source text
 
@@ -32,9 +34,9 @@ specific of the five.
     },
 ```
 
-The other four rows say the same thing about their own `payload_for`, and each was read
-before its guard was placed. Two of those rows are weaker as SOURCES and this record says
-so rather than quoting them as if they were equal: `scaffold_critique_artifact.py`'s
+TWO of the other four say the same thing about their own `payload_for`, and each was read
+before its guard was placed. The remaining two are weaker as SOURCES and this record names
+them rather than quoting them as if they were equal: `scaffold_critique_artifact.py`'s
 reason is `"Already reported/known per task background as unguarded+consequential; not
 re-derived here"`, and `scaffold_handoff_artifact.py`'s cites the same pre-listed set. The
 census row is not the evidence for those two — the measurement below is.
@@ -79,7 +81,16 @@ Every one is the charness default. Every one of those repos declared something e
 exit 1
 ```
 
-Measured on all five, each with its own adapter name in the message.
+Measured on all five. The five adapter-name lines, which are the part of this arm that a
+single generalized run could not produce:
+
+```
+`.agents/quality-adapter.yaml` declares a `version` this reader does not speak ...
+`.agents/retro-adapter.yaml` declares a `version` this reader does not speak ...
+`.agents/debug-adapter.yaml` declares a `version` this reader does not speak ...
+`.agents/critique-adapter.yaml` declares a `version` this reader does not speak ...
+`.agents/handoff-adapter.yaml` declares a `version` this reader does not speak ...
+```
 
 ## Polarity controls
 
@@ -99,13 +110,29 @@ Measured on all five, each with its own adapter name in the message.
 
 ## Non-claims
 
+- **This batch changed two files OUTSIDE its own rows and did not declare it until a
+  bounded review found it.** `plan_retro_run` and `plan_debug_run` call the now-guarded
+  `payload_for` before building their envelope, so an unhonored declaration produces the
+  guard's one-line refusal at exit 1 instead of the full diagnostic plan they used to emit
+  (`ok: false`, an `adapter-readiness` fail packet, a `references/adapter-contract.md`
+  required read). Measured at `0bcb6b227` and at HEAD. The exit code is unchanged and the
+  plan no longer leaks a `write_artifact_path` built from charness defaults, so nothing is
+  less safe — but the diagnostic is gone, and whether to restore it for this input class
+  is an operator design call staged in the goal's decision queue, not something this batch
+  decided. Pinned by
+  `tests/quality_gates/test_scaffold_version_refusal.py::test_the_planner_behavior_change_this_slice_caused_is_pinned`.
+- **The read-site rationale first written for these rows was REFUTED and is corrected
+  above, not deleted.** "A refusal at the entrypoint would cover one caller" is true for
+  retro and debug and false for quality, critique and handoff. This slice had already
+  struck the same unmeasured harm claim once, for rows 1-5, and re-published it here.
 - **Two of the five refuse a PARSER refusal with a raw traceback, not a rendered verdict.**
   `quality` and `critique` reach a resolver that lets the `ValueError` out. They stop the
   run and they do not relocate the artifact, which is this row's claim, but the operator
   sees a stack trace instead of an instruction. That is a real residual, named here rather
   than absorbed; fixing that resolver is a different change than the one these rows make.
-- This record establishes FIVE files. It says nothing about the 27
-  `accepted-risk-unguarded` rows that remain.
+- This record establishes FIVE files. It says nothing about the rows that remain; recount
+  with `python3 scripts/check_adapter_consumer_classification.py --repo-root .` rather than
+  reading a number off this line.
 - The claim is about the write TARGET only. Nothing here asserts the scaffolds are correct
   in any other respect, or that the artifacts they produce are well-formed.
 - Two of the five census rows quoted above did not derive their own finding

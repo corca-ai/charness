@@ -106,21 +106,30 @@ no file at the default location.
   surfaces.
 - **the explicit-path arm**, `parse_handoff_entries.py <path>` under `version: 9` → exit
   0, `handoff_path` as given. A caller that named the file is not asking the adapter
-  anything, and the guard is placed after that arm so it stays that way.
+  anything FOR THE PATH IT PARSES, and the guard is placed after that arm so it stays
+  that way. A bounded review narrowed that sentence: `<path> --with-issues` DOES reach the
+  handoff adapter, through `chunked_routing_issue_source.build_issue_entries` and its
+  `issue_source:` block. That path is safe today because the helper checks
+  `adapter.get("valid") is False` and returns `enabled: False`, so no charness default is
+  acted on — but the safety is the helper's, not this exemption's, and no test covers
+  `<path> --with-issues` under `version: 9`.
 
 ## Non-claims
 
-- This record establishes THREE files. It says nothing about the 24
-  `accepted-risk-unguarded` rows that remain.
+- This record establishes THREE files. It says nothing about the rows that remain;
+  recount with `python3 scripts/check_adapter_consumer_classification.py --repo-root .`.
 - **A fourth row was attempted in this batch and DROPPED without a verdict.**
   `scripts/risk_interrupt_lib.py` was measured and its harm did NOT reproduce: base and
   control both returned the declared `docs/mine-debug/latest.md`. Reading the code
   explains why and makes the row bigger, not smaller — `_load_debug_adapter` falls back to
   a RAW LINE SCAN of `.agents/debug-adapter.yaml` when the debug skill's resolver is not
   present, and that fallback reads `output_dir:` with no version check at all. So the row
-  carries a `no-version-validation` class its census entry does not name, and reproducing
-  the resolver arm needs a repo that ships the skill tree. It stays
-  `accepted-risk-unguarded` and unpaid rather than being classified on an argument.
+  carries a `no-version-validation` class its census entry did not name, and reproducing
+  the resolver arm needs a repo that ships the skill tree. It stays UNPAID rather than
+  being classified on an argument. A bounded review then pointed out that recording the
+  second class ONLY here left the manifest — the surface the gate reads — saying half of
+  it, so the row is now a multi-class entry carrying both verdicts with the measurement
+  above as the second one's evidence.
 - The claim is about path resolution only. Nothing here asserts these readers are correct
   in any other respect.
 - The base and head observables were captured by running the CLIs, not derived from the

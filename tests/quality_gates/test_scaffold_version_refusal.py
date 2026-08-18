@@ -48,6 +48,12 @@ SCAFFOLDS = (
 # all five `raise SystemExit(refusal)` lines uncovered — while the suite was green and the
 # lines were, in fact, exercised. A test the mapper cannot see is a test the coverage lane
 # does not have. `test_the_script_table_matches_the_derived_paths` keeps this honest.
+# The two whose resolvers let a parser refusal's `ValueError` out instead of recording
+# it in `errors`: `quality_adapter_lib` and `critique_adapter_lib` call `load_yaml_file`
+# with no handler, while retro/debug/handoff go through `simple_skill_adapter_lib`, which
+# catches it. Named here so the count in the probe record is pinned by a test.
+RAW_TRACEBACK_SKILLS = frozenset({"quality", "critique"})
+
 SCRIPT_PATHS = {
     "quality": "skills/public/quality/scripts/scaffold_quality_artifact.py",
     "retro": "skills/public/retro/scripts/scaffold_retro_artifact.py",
@@ -119,10 +125,17 @@ def test_a_parser_refusal_refuses_at_the_same_place(
     repo = _repo(tmp_path, skill, f"version: !!int 9\nrepo: demo\noutput_dir: {declared}\n")
     result = _run(skill, repo)
     assert result.returncode != 0, result.stdout
-    assert (
-        "could not be parsed" in result.stderr
-        or "unsupported YAML construct" in result.stderr
-    ), result.stderr
+    # KEYED ON THE SKILL, not a disjunction. A round-1 bounded review over these rows
+    # pointed out that `A or B` for all five leaves the published "two of five" count
+    # unfalsifiable: fix `quality`'s resolver or regress `retro`'s and the test stays
+    # green while the record drifts. This asserts which surface renders which shape.
+    if skill in RAW_TRACEBACK_SKILLS:
+        assert "Traceback" in result.stderr, result.stderr
+        assert "unsupported YAML construct" in result.stderr, result.stderr
+        assert "could not be parsed" not in result.stderr, result.stderr
+    else:
+        assert "could not be parsed" in result.stderr, result.stderr
+        assert "Traceback" not in result.stderr, result.stderr
     assert default not in result.stdout
 
 
@@ -164,8 +177,10 @@ def test_payload_for_itself_raises_in_process(
     files, because nothing it can see ever executed that line. A guard whose refusal line
     the suite cannot observe is a guard a refactor can delete quietly.
 
-    This also proves the guard is inside `payload_for` rather than `main()`, which is what
-    the importers of `payload_for` depend on.
+    This also proves the guard is inside `payload_for` rather than `main()`. That matters
+    for retro and debug, whose `payload_for` IS called by `plan_retro_run` and
+    `plan_debug_run`; for quality, critique and handoff the only importers are tests, and
+    a round-1 bounded review over these rows refuted the claim that said otherwise.
     """
     from tests.script_main import load_script_module
 
@@ -174,3 +189,43 @@ def test_payload_for_itself_raises_in_process(
     with pytest.raises(SystemExit) as excinfo:
         module.payload_for(repo, title="probe")
     assert "does not speak" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    ("planner", "skill"),
+    [
+        ("skills/public/retro/scripts/plan_retro_run.py", "retro"),
+        ("skills/public/debug/scripts/plan_debug_run.py", "debug"),
+    ],
+)
+def test_the_planner_behavior_change_this_slice_caused_is_pinned(
+    tmp_path: Path, planner: str, skill: str
+) -> None:
+    """A COLLATERAL behavior change these rows made outside their own files, found by a
+    bounded review and pinned here so it cannot drift back unnoticed.
+
+    `plan_retro_run` and `plan_debug_run` call the guarded `payload_for` before building
+    their envelope. Before these rows, an unhonored declaration produced a full diagnostic
+    plan at exit 1 — `ok: false`, an `adapter-readiness` gate packet with `status: fail`,
+    and a `references/adapter-contract.md` required read — while ALSO carrying a
+    `write_artifact_path` computed from charness defaults. Now it produces the guard's
+    one-line refusal at exit 1 and no plan at all.
+
+    Exit code unchanged; the defaulted path no longer leaks; the diagnostic is gone.
+    Whether to restore the diagnostic for this input class is an operator design call,
+    staged in the goal's decision queue. This test asserts the SHAPE that ships today.
+    """
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / f"{skill}-adapter.yaml").write_text(
+        f"version: 9\nrepo: demo\noutput_dir: docs/mine-{skill}\n", encoding="utf-8"
+    )
+    result = subprocess.run(
+        [sys.executable, str(ROOT / planner), "--repo-root", str(repo)],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1, result.stdout
+    assert "does not speak" in result.stderr
+    assert "adapter-readiness" not in result.stdout
+    assert "write_artifact_path" not in result.stdout

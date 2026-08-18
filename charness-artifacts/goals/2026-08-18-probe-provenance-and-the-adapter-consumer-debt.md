@@ -573,6 +573,22 @@ corpus stays the commitment. The residual risk this leaves live is recorded unde
   Revisit trigger: before any release that publishes `issue`, `quality` or `release`.
 - **DECIDED 2026-08-19 by the operator — push happens after the retro**, not before. Every
   commit in this run is local until then.
+- Decision: should `plan_retro_run` and `plan_debug_run` keep emitting their DIAGNOSTIC
+  plan when the adapter's declaration was not honored, or is the guard's one-line refusal
+  the better answer for that input class? Slice 5 rows 6-13 changed this as COLLATERAL and
+  did not declare it until a bounded review found it. Measured at `0bcb6b227` and at HEAD:
+  base emitted `ok: false`, an `adapter-readiness` fail packet and a
+  `references/adapter-contract.md` required read at exit 1, while ALSO carrying a
+  `write_artifact_path` computed from charness defaults; HEAD emits the refusal at exit 1
+  and no plan. Nothing is less safe and the defaulted leak is gone; what is lost is the
+  planner's own diagnostic shape, which its whole design is built around. Owner: repo
+  operator. Why deferred: restoring it means a bespoke degraded-plan path in two planners,
+  which is scope growth with a weaker payoff than the refusal message already gives, and
+  that new surface would itself owe review. Unblock action: rule keep-refusal or
+  restore-plan. Revisit trigger: slice 6, or any change to either planner's envelope.
+  Current shape is PINNED by
+  `tests/quality_gates/test_scaffold_version_refusal.py::test_the_planner_behavior_change_this_slice_caused_is_pinned`,
+  so a silent drift back is a test failure.
 - Decision: does quality's same-day scaffold overwrite stay (continue-in-place, as debug
   documents) or go (the defect `#628` reports)? The families currently disagree.
   Owner: repo operator. Why deferred: it is a design call, not a defect fix, and closing

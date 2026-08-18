@@ -307,9 +307,11 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     # `output_dir: docs/mine-debug` under `version: 9` got back `artifact_path: charness-artifacts/debug/latest.md`, exit 0, and the scaffold
     # would have written there.
     #
-    # `payload_for` rather than `main()` because that is where the target is resolved and
-    # because this module's `payload_for` is imported elsewhere; a refusal at the
-    # entrypoint would cover one caller.
+    # `payload_for` rather than `main()`, and here the importer claim is MEASURED rather
+    # than assumed: `plan_debug_run` calls this function directly, so a refusal at the
+    # entrypoint would have covered the CLI and left that caller on charness defaults.
+    # (The same sentence was refuted for quality, critique and handoff, whose only
+    # importers are tests -- see those files.)
     refusal = _adapter_version_verdict.unspeakable_version_message(
         load_adapter, repo_root, adapter_name="debug-adapter.yaml"
     )
