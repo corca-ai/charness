@@ -19,6 +19,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 _artifact_naming = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
 _refresh_current_pointer = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.refresh_current_pointer")
 _scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
@@ -28,6 +31,16 @@ _summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_outpu
 
 
 def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.date) -> dict[str, object]:
+    # GUARDED AT THE READ SITE. Every path this function returns is derived from
+    # `output_dir`, so an unhonored declaration relocates the quality artifact rather than
+    # degrading the answer. Measured at `00c50ed3f`: a repo declaring
+    # `output_dir: docs/mine-q` under `version: 9` returned
+    # `artifact_path: charness-artifacts/quality/latest.md`, exit 0.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="quality-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     output_dir = Path(adapter["data"]["output_dir"])
     current_path = output_dir / "latest.md"

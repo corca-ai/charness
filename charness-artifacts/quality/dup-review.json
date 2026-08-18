@@ -4836,6 +4836,13 @@
       "note": "The read-site version-refusal guard, now in both handoff readers: the five-line `unspeakable_version_message` call-and-raise naming `handoff-adapter.yaml`. Same accepted class as 3271ee812f709043 and d9fa0dc749dbb5ca -- the extractable half is already extracted into `scripts.adapter_version_verdict`, and what remains has to sit at the read site because that is the property the census verdict is about. These two are the sharpest case for keeping it there: `parse_handoff_entries` guards AFTER its explicit-path arm (a caller that named the file asks the adapter nothing FOR THE PATH IT PARSES; `--with-issues` does reach it, safely, via a helper's own `valid` check) while `plan_handoff_run` guards at the top, so the two placements are deliberately different even though the five lines are identical.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a2e32c068aac058a",
+      "note": "The read-site version-refusal guard across the six quality-skill readers, including `scaffold_quality_artifact` (UNTOUCHED by this slice \u2014 it gained its copy in rows 6-10, which is the evidence this is the idiom's own shape rather than duplication these rows introduced). Same accepted class as 3271ee812f709043, d9fa0dc749dbb5ca and 4f4051badcdc7e4c: the extractable half is already extracted into `scripts.adapter_version_verdict`, and the five-line call-and-raise has to sit at the read site because that is the property the census verdict is about. Two placements in this family are deliberately DIFFERENT despite the identical lines: `check_runtime_budget` wraps its copy in `_refuse_unhonored_adapter` because it has TWO points where the loader is handed to a lib, and `render_runtime_summary` / `inventory_ci_recoverable_gates` guard where the loader is HANDED OVER rather than at a payload read of their own, since `runtime_budget_lib` takes it injected and cannot refuse for an adapter it cannot name.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

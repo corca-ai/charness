@@ -22,6 +22,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_lib")
 runtime_budget_sizing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_sizing_lib")
 
@@ -59,6 +62,26 @@ def summarize(report: dict) -> dict:
     return summary
 
 
+def _refuse_unhonored_adapter(repo_root: Path) -> None:
+    """Both of this CLI's adapter reads go through `runtime_budget_lib` /
+    `runtime_budget_sizing_lib`, which take the loader INJECTED and so cannot know which
+    adapter they are reading or refuse for it. That seam is deliberate, so the guard lives
+    here, at the point the loader is handed over.
+
+    Measured at `00c50ed3f`: a repo declaring `runtime_budgets` and a `startup_probes`
+    entry under `version: 9` was told `quality adapter has no effective runtime budget for
+    the selected profile` and `quality adapter has no startup_probes`, exit 0 -- two
+    advisory-shaped findings asserting the OPPOSITE of what the repo declared. `main()`
+    branches on `profile_config_errors` and never on the adapter's own `errors`, so
+    nothing downstream could have caught it.
+    """
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="quality-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose runtime-signals.json budgets should be enforced")
@@ -90,6 +113,7 @@ def main() -> int:
         # ordinary report shape, so the combination is a usage error.
         if args.summary or args.detail:
             parser.error("--suggest-budgets emits a YAML fragment; it cannot be combined with --summary/--detail")
+        _refuse_unhonored_adapter(args.repo_root.resolve())
         profile, suggestions, commands_source = runtime_budget_sizing_lib.suggest_budgets(
             args.repo_root.resolve(),
             load_adapter,
@@ -108,6 +132,7 @@ def main() -> int:
         print(runtime_budget_sizing_lib.format_budget_suggestion(profile, suggestions, commands_source=commands_source))
         return 0
 
+    _refuse_unhonored_adapter(args.repo_root.resolve())
     report = runtime_budget_lib.evaluate(
         args.repo_root.resolve(),
         load_adapter,

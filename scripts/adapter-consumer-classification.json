@@ -338,16 +338,16 @@
       "reason": "main() at line 162-166 checks `not adapter.get('valid', True)` and discards the adapter (sets refusal, adapter=None) rather than scanning with its data; line 186-193 marks the run failed (`report.get('adapter_refusal')`) and main() returns 1, so it never substitutes defaults for a declared-but-unspeakable version."
     },
     "skills/public/quality/scripts/check_runtime_budget.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "L95/L113 pass `load_adapter` into runtime_budget_lib; main() branches only on `profile_config_errors`, never on the adapter's own `errors`. On a refused version the declared `runtime_budgets` ceiling is absent and the run reports nothing to check. Same root cause as the runtime_budget_lib row."
+      "verdict": "guarded",
+      "reason": "`_refuse_unhonored_adapter` runs before BOTH points where `load_adapter` is handed to a lib (the sizing path and the evaluate path). Base: two advisory-shaped findings asserting the OPPOSITE of the declaration -- `quality adapter has no effective runtime budget for the selected profile` and `quality adapter has no startup_probes` -- exit 0. Control at version 1: `WARN pytest: no sample yet (budget 70000ms)`. Guarded at the READ SITE and measured at 00c50ed3f against a repo declaring `output_dir: docs/mine-q`, a `startup_probes` entry and `runtime_budgets: {pytest: 70000}` in the shapes the contract actually reads. NOTE ON THE FIRST MEASUREMENT: the initial stimulus used field shapes this contract ignores, so the speakable-version control returned the same output as the refused one and the flip was UNPROVEN for two of the five; both arms were re-run. Probe record: charness-artifacts/probe/2026-08-19-quality-readers-version-refusal.md."
     },
     "skills/public/quality/scripts/check_standing_doc_provenance.py": {
       "verdict": "safe-checks-errors",
       "reason": "run() at line 55-65 checks adapter.get('errors') and returns early (ok=False, findings=[]) before reading config['standing_doc_provenance']; main() at line 116-118 exits 1 with 'standing-doc provenance check skipped: repair the quality adapter.'"
     },
     "skills/public/quality/scripts/inventory_ci_recoverable_gates.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "L65 hands `load_adapter` to runtime_budget_lib.evaluate with no `errors` check; inherits the same defaulted-budget answer and reports it as an inventory fact."
+      "verdict": "guarded",
+      "reason": "build_report() now refuses before handing `load_adapter` to `runtime_budget_lib`. Base: `0 cost-ranked gate(s)` plus `no cost-ranked standing gates: configure runtime_budgets` -- instructing the operator to configure what the operator configured -- exit 0. Control at version 1: `1 cost-ranked gate(s) ... keep-local pytest`. Guarded at the READ SITE and measured at 00c50ed3f against a repo declaring `output_dir: docs/mine-q`, a `startup_probes` entry and `runtime_budgets: {pytest: 70000}` in the shapes the contract actually reads. NOTE ON THE FIRST MEASUREMENT: the initial stimulus used field shapes this contract ignores, so the speakable-version control returned the same output as the refused one and the flip was UNPROVEN for two of the five; both arms were re-run. Probe record: charness-artifacts/probe/2026-08-19-quality-readers-version-refusal.md."
     },
     "skills/public/quality/scripts/inventory_cli_ergonomics.py": {
       "verdict": "safe-checks-errors",
@@ -374,8 +374,8 @@
       "reason": "main() at line 122-126 attaches adapter_valid/adapter_errors/adapter_warnings to the payload, and line 155-156 prints 'adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.' when adapter_valid is False -- the degraded test_file_discovery default is disclosed, not silent, and this advisory script always returns 0."
     },
     "skills/public/quality/scripts/measure_startup_probes.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "evaluate() at line 159-161 calls load_adapter(repo_root) and immediately does `adapter['data'].get('startup_probes', [])` with no read of adapter['errors']/['valid'] anywhere in the file; confirmed matches the task's pre-listed known-unguarded example."
+      "verdict": "guarded",
+      "reason": "evaluate() now refuses before `adapter[\"data\"].get(\"startup_probes\")` is read. Base: `No startup probes matched the selected class.` over a repo that declared one, exit 0. Control at version 1: `OK probe-one: latest 15ms (standing, warm, direct)`. Guarded at the READ SITE and measured at 00c50ed3f against a repo declaring `output_dir: docs/mine-q`, a `startup_probes` entry and `runtime_budgets: {pytest: 70000}` in the shapes the contract actually reads. NOTE ON THE FIRST MEASUREMENT: the initial stimulus used field shapes this contract ignores, so the speakable-version control returned the same output as the refused one and the flip was UNPROVEN for two of the five; both arms were re-run. Probe record: charness-artifacts/probe/2026-08-19-quality-readers-version-refusal.md."
     },
     "skills/public/quality/scripts/nose_inventory_scope_lib.py": {
       "verdict": "safe-checks-errors",
@@ -398,20 +398,20 @@
       "reason": "build_declaration_lifecycle (line 295-326) loads the quality adapter, then at line 321 checks `if adapter.get(\"valid\") is not True:` and returns a `status: invalid` report with a gap entry *before* line 328 reads the raw YAML (`raw = yaml_lib.load_yaml_file(...)`) or computes any preset/command/surface routing from it. Since `valid = not errors` and a version refusal always appends to `errors`, this check catches the refused-version case correctly and short-circuits before acting on inferred defaults."
     },
     "skills/public/quality/scripts/render_runtime_summary.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "L190 hands `load_adapter` to the same runtime-budget evaluation; renders a summary against defaulted budgets with no indication the adapter was refused."
+      "verdict": "guarded",
+      "reason": "build_report() now refuses before handing `load_adapter` to `runtime_budget_lib`. Base: `runtime visibility: weak due to runtime_visibility_missing_budgets, runtime_visibility_missing_startup_probes`, exit 0. Control at version 1: `runtime visibility: configured.` Guarded at the READ SITE and measured at 00c50ed3f against a repo declaring `output_dir: docs/mine-q`, a `startup_probes` entry and `runtime_budgets: {pytest: 70000}` in the shapes the contract actually reads. NOTE ON THE FIRST MEASUREMENT: the initial stimulus used field shapes this contract ignores, so the speakable-version control returned the same output as the refused one and the flip was UNPROVEN for two of the five; both arms were re-run. Probe record: charness-artifacts/probe/2026-08-19-quality-readers-version-refusal.md."
     },
     "skills/public/quality/scripts/resolve_quality_artifact.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "payload_for (line 30-32) calls `load_adapter(repo_root)` then immediately does `output_dir = Path(adapter[\"data\"][\"output_dir\"])` with no check of `adapter[\"errors\"]`/`adapter[\"valid\"]` anywhere in the file, and `main()` never surfaces `errors` in the emitted payload either."
+      "verdict": "guarded",
+      "reason": "payload_for() now refuses before `output_dir` is read; every path it returns derives from that value, so an unhonored declaration RELOCATES the quality artifact. Base: `artifact_path: charness-artifacts/quality/latest.md`, exit 0. Control at version 1: `docs/mine-q/latest.md`. Guarded at the READ SITE and measured at 00c50ed3f against a repo declaring `output_dir: docs/mine-q`, a `startup_probes` entry and `runtime_budgets: {pytest: 70000}` in the shapes the contract actually reads. NOTE ON THE FIRST MEASUREMENT: the initial stimulus used field shapes this contract ignores, so the speakable-version control returned the same output as the refused one and the flip was UNPROVEN for two of the five; both arms were re-run. Probe record: charness-artifacts/probe/2026-08-19-quality-readers-version-refusal.md."
     },
     "skills/public/quality/scripts/runtime_budget_lib.py": {
       "verdict": "accepted-risk-unguarded",
-      "reason": "evaluate() (line 228-236) does `adapter = load_adapter(repo_root); adapter_data = adapter[\"data\"]` and immediately feeds `adapter_data` into `selected_runtime_profile` and `profile_budgets` (runtime ceilings) with no check of `adapter[\"errors\"]`/`adapter[\"valid\"]` anywhere in the module; `check_runtime_budget.py`'s main() (skills/public/quality/scripts/check_runtime_budget.py line 111-133) also never checks adapter validity, only `report[\"profile_config_errors\"]` (a different, profile-shape-only error list) and `report[\"violations\"]`."
+      "reason": "evaluate() (line 228-236) does `adapter = load_adapter(repo_root); adapter_data = adapter[\"data\"]` and immediately feeds `adapter_data` into `selected_runtime_profile` and `profile_budgets` (runtime ceilings) with no check of `adapter[\"errors\"]`/`adapter[\"valid\"]` anywhere in the module; `check_runtime_budget.py`'s main() (skills/public/quality/scripts/check_runtime_budget.py line 111-133) also never checks adapter validity, only `report[\"profile_config_errors\"]` (a different, profile-shape-only error list) and `report[\"violations\"]`. STILL UNGUARDED BY CONSTRUCTION, and deliberately not credited: this module takes its `load_adapter` INJECTED, so it cannot know which adapter it is reading or render a refusal naming that file. Slice 5 rows 14-18 guarded every production CALLER at the point the loader is handed over (`check_runtime_budget`, `render_runtime_summary`, `inventory_ci_recoverable_gates`), which closes the measured harm -- but the property is the callers', not this module's, and a future caller that forgets is unguarded again with nothing structural to stop it."
     },
     "skills/public/quality/scripts/runtime_budget_sizing_lib.py": {
       "verdict": "accepted-risk-unguarded",
-      "reason": "suggest_budgets() (line 134-162) does `adapter_data = load_adapter(repo_root)[\"data\"]` at line 153 with no error/valid check anywhere in the file, then uses `adapter_data` to select the runtime profile (`selected_runtime_profile`) and to derive/round proposed budget-ms ceilings via `suggest_profile_budgets`."
+      "reason": "suggest_budgets() (line 134-162) does `adapter_data = load_adapter(repo_root)[\"data\"]` at line 153 with no error/valid check anywhere in the file, then uses `adapter_data` to select the runtime profile (`selected_runtime_profile`) and to derive/round proposed budget-ms ceilings via `suggest_profile_budgets`. STILL UNGUARDED BY CONSTRUCTION, and deliberately not credited: this module takes its `load_adapter` INJECTED, so it cannot know which adapter it is reading or render a refusal naming that file. Slice 5 rows 14-18 guarded every production CALLER at the point the loader is handed over (`check_runtime_budget`, `render_runtime_summary`, `inventory_ci_recoverable_gates`), which closes the measured harm -- but the property is the callers', not this module's, and a future caller that forgets is unguarded again with nothing structural to stop it."
     },
     "skills/public/quality/scripts/scaffold_quality_artifact.py": {
       "verdict": "guarded",

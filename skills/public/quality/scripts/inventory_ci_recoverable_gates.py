@@ -39,6 +39,9 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_lib")
 _summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 
@@ -62,6 +65,23 @@ def _load_workflows(root: Path, glob_pattern, *, require_git: bool) -> list[dict
 
 
 def build_report(root: Path, *, glob_pattern: str, runtime_profile: str | None, require_git: bool) -> dict[str, Any]:
+    # GUARDED AT THE READ SITE, which for this family is where `load_adapter` is HANDED to
+    # `runtime_budget_lib`. The lib takes the loader injected -- that seam is deliberate,
+    # and it means the lib cannot know which adapter it is reading or refuse for it. So the
+    # guard belongs here, in each caller, and `runtime_budget_lib` / `runtime_budget_sizing_lib`
+    # stay classified unguarded rather than credited with a property their callers supply.
+    #
+    # WHAT IT COSTS TO BE UNGUARDED, measured at `00c50ed3f`: a repo declaring
+    # `runtime_budgets` and a `startup_probes` entry under `version: 9` was told
+    # `quality adapter has no effective runtime budget for the selected profile` and
+    # `quality adapter has no startup_probes`, exit 0 -- advisory-shaped findings asserting
+    # the OPPOSITE of what the repo declared, on the surface that decides whether a gate's
+    # cost is visible at all.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, root, adapter_name="quality-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     runtime_report = runtime_budget_lib.evaluate(root, load_adapter, runtime_profile=runtime_profile)
     gates = lens_lib.gates_from_runtime_report(runtime_report)
     workflows = _load_workflows(root, glob_pattern, require_git=require_git)

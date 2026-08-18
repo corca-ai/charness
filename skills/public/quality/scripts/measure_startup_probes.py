@@ -27,6 +27,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 DEFAULT_PROBE_TIMEOUT_SECONDS = 20
 
 
@@ -157,6 +160,15 @@ def _measure_probe(repo_root: Path, probe: dict[str, Any], *, record_runtime_sig
 
 
 def evaluate(repo_root: Path, *, probe_class: str, record_runtime_signals: bool) -> dict[str, Any]:
+    # GUARDED AT THE READ SITE. Measured on the real CLI at `00c50ed3f`: a repo declaring
+    # one `startup_probes` entry under `version: 9` printed
+    # `No startup probes matched the selected class.`, exit 0 -- the reader reporting the
+    # repo declared none, over a repo that declared one.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="quality-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     probes = adapter["data"].get("startup_probes", []) or []
     selected = _selected_probes(probes, probe_class)
