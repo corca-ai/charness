@@ -593,6 +593,10 @@ def test_the_census_names_every_caller_of_the_shared_check() -> None:
     # docstring cites the producer it pairs with. Its own driving test is
     # `tests/quality_gates/test_adapter_version_refusal_is_loud.py`.
     named.add("scripts/adapter_version_verdict.py")
+    # Nor is the consumer CENSUS: it renders no version verdict either, it requires every
+    # file that reads a resolved payload to carry one in writing. It matches the name scan
+    # because its docstring cites the producer whose containment created the obligation.
+    named.add("scripts/check_adapter_consumer_classification.py")
 
     # BOTH entrypoint names. `declared_fields_after_version_check` is now the recommended
     # one and shares no substring with the other, so matching only the original left the

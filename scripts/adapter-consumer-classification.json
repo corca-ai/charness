@@ -1,0 +1,489 @@
+{
+  "schemaVersion": 1,
+  "consumers": {
+    "scripts/adapter_key_registry.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "Key REGISTRY, not a gate: L488 wraps `load_yaml_file` so the registry can report what an adapter literally declares. Reading raw is the point -- it inventories declared keys, including ones a refused version would hide."
+    },
+    "scripts/artifact_validator.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "resolve_adapter_line_budget (lines 59-91) calls load_adapter(repo_root) at line 82 and reads data.get(field) to return a numeric line ceiling without ever checking payload['errors']/['valid'] or calling adapter_version_verdict; its own docstring says this is deliberate."
+    },
+    "scripts/boundary_probe_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "resolve_probe_state (lines 218-289) loads the critique adapter at line 232, then at line 270 calls _adapter_lib.unreadable_reasons(adapter), which reads adapter.get('errors') (adapter_lib.py:420) — this list includes the 'version must be N' refusal string — and at lines 271-288 downgrades the probe state to PROBE_NOT_ESTABLISHED with an explanatory undetermined_reason whenever the adapter is unreadable and no hit was already found."
+    },
+    "scripts/build_debug_seam_risk_index.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "_load_debug_output_dir (lines 38-55) calls module.load_adapter(repo_root) at line 42 and reads adapter['data']['output_dir'] at line 52 with no reference to 'errors' or 'valid' anywhere in the file (grep confirms zero occurrences of either key)."
+    },
+    "scripts/build_retro_lesson_selection_index.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "_load_retro_paths (lines 49-57) calls module.load_adapter(repo_root) at line 55 and reads adapter['data']['output_dir']/['summary_path'] at line 57 with no check of 'errors' or 'valid' anywhere in the file (grep confirms zero occurrences)."
+    },
+    "scripts/capability_catalog_sources.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "Its own load_adapter (lines 208-233) calls validate_adapter_version(raw, {}, errors) at line 220 and only applies any declared field (repo/language/trusted_skill_roots/prefer_local_first/allow_external_registry) inside the `if not errors:` block at lines 221-232 — this reimplements the declared_fields_after_version_check pattern inline, so on a refused version `defaults` keeps the file's own built-in defaults dict (line 209) rather than any repo-declared value, and build_inventory (line 238+) consumes that already-correct payload."
+    },
+    "scripts/capture_issue_source.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "run_capture (lines 73-93) checks `if not adapter['valid']:` at line 78 and raises CaptureRefusal before reading capability/backend fields; the issue skill's resolver (skills/public/issue/scripts/resolve_adapter.py:314-321) calls validate_adapter_version and returns early with valid:False, errors:[...] on any version error, before applying any declared field, so 'valid' correctly reflects a refused version here."
+    },
+    "scripts/cautilus_scenarios_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "Line 273-274: `if not adapter_payload['valid']: raise ValidationError(...)`. scripts/cautilus_adapter_lib.py calls declared_fields_after_version_check at line 165 and sets 'valid': not errors at line 214, so a refused version correctly yields valid=False before this file acts on the payload."
+    },
+    "scripts/check_cli_skill_surface.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "_load_adapter (lines 49-66) calls validate_adapter_version(raw, {}, errors) at line 65 and returns ({}, errors) on any error before any field is read; build_payload (lines 291-320) checks `if adapter_version_errors:` at line 299 and returns a 'blocked' status with the version errors quoted at lines 302-313, before selecting skill paths or probe commands, so nothing downstream reads charness defaults in place of a declared value."
+    },
+    "scripts/check_doc_authoring_preflight.py": {
+      "verdict": "guarded",
+      "reason": "adapter_load_failed (lines 110-131) calls _version_verdict.version_refused(payload.get('errors')) at line 131 (using scripts.adapter_version_verdict, imported at line 47), and its docstring explicitly names the exact 'surface_cap forecasts the shipped ceiling' bug this closes; per the task's already-guarded list."
+    },
+    "scripts/check_doc_links.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "load_canonical_markdown_surfaces (lines 197-203) calls load_quality_adapter(root) then checks `if payload.get('errors'):` at line 199 and raises ValidationError at line 201 before reading canonical_markdown_surfaces from data at line 202."
+    },
+    "scripts/check_js_mutation_score.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "mutation_config (lines 37-46) checks `if payload.get('errors'):` at line 39, writes the errors to stderr, and returns None at line 42 before reading the mutation_testing block; main() (line 164) checks `if config is None: return 2` before proceeding."
+    },
+    "scripts/check_mutation_score.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "load_mutation_config (lines 136-147) checks `if payload.get('errors'):` at line 138, prints the errors, and returns None at line 142 before reading score_break/report_paths; both call sites in main() (lines 295-296 and 325-326) check `if config is None: return 2` before acting on the config."
+    },
+    "scripts/check_runtime_budget_universe.py": {
+      "verdict": "no-version-validation",
+      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
+    },
+    "scripts/control_plane_lifecycle_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "disabled_by_cautilus_adapter() (lines 12-26) calls load_cautilus_adapter() and returns None (treated as 'not disabled') whenever `not adapter['valid']` (line 16), before ever reading `data.get('run_mode')`; a version-refused adapter (errors non-empty -> valid=False) is therefore never read for run_mode, and the caller falls back to running checks normally rather than acting on inferred defaults for the disable directive."
+    },
+    "scripts/critique_enforcement_scope.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "resolve_cross_surface_scope() (lines 341-411) loads the adapter at line 362 and, at lines 364-365, calls `_adapter_lib_module.unreadable_reasons(adapter)` (which reads `adapter['errors']`/dropped-field warnings) and returns CROSS_SURFACE_NOT_ESTABLISHED before ever reading `probe['globs']`/`probe['surfaces']` from the possibly-defaulted `adapter['data']`; the docstring (lines 355-361) explicitly documents this as the fix for exactly the refused-version discard scenario."
+    },
+    "scripts/dup_ratchet_edit_advisory.py": {
+      "verdict": "no-version-validation",
+      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
+    },
+    "scripts/inventory_quality_handoff.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "main() (lines 117-119) calls `adapter = load_adapter(repo_root)` (the quality resolve_adapter.py -> quality_adapter_lib.load_quality_adapter) and immediately does `artifact_path = repo_root / adapter['artifact_path']` with no check of `adapter['valid']`/`adapter['errors']`."
+    },
+    "scripts/manage_mutation_reports.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "managed_paths() (lines 48-66) calls `load_quality_adapter_strict(repo_root)` and at lines 52-54 does `if adapter.get('valid') is not True: raise SystemExit(...)` before reading `mutation_testing`/`changed_line_mutation_gate` fields from `adapter['data']`."
+    },
+    "scripts/plan_cautilus_proof.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "plan_cautilus_proof() (lines 133-227) calls `load_cautilus_adapter(repo_root)` and at lines 135-136 does `if not adapter_payload['valid']: raise SurfaceError(...)` before reading `data['prompt_affecting_patterns']`, `data['run_mode']`, etc."
+    },
+    "scripts/proof_mismatch.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "proof_mismatch_report() (lines 172-221) calls `load_adapter(Path(repo_root))` (proof_semantics_adapter_lib) and, at line 192, explicitly checks `if adapter['found'] and not adapter['valid']:` and returns a blocking `invalid-adapter` problem (fails closed) before ever scoring rows against `adapter['data']`; `acceptance_map_available(adapter)` (line 181) also degrades every row to 'no domain map' rather than silently trusting inferred defaults."
+    },
+    "scripts/public_skill_dogfood_lib.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "_resolve_artifact() (lines 139-158) calls each changed skill's own `load_adapter(repo_root)` (or subprocess+yaml.safe_load fallback) and `_artifact_path_from_payload()` reads `payload['artifact_path']`/`data['summary_path'|'output_dir'|'state_dir']` directly with no check of `payload['valid']`/`payload['errors']`; this feeds `build_matrix()`'s `expected_artifact` field used by `suggest_public_skill_dogfood.py`."
+    },
+    "scripts/quality_bootstrap_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "L203 `load_yaml_file_report` then `validate_adapter_version(raw, {}, version_errors)`; raises BootstrapValidationError rather than rewriting the adapter. Driven by tests/quality_gates/test_quality_bootstrap.py."
+    },
+    "scripts/quality_label_universe.py": {
+      "verdict": "no-version-validation",
+      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
+    },
+    "scripts/reconcile_usage_episodes_host_hooks.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "_load_adapter() (lines 30-39) does a raw `yaml.safe_load` of `.agents/usage-episodes-adapter.yaml` with no `version` field / `declared_fields_after_version_check` involvement at all; there is no `usage_episodes_adapter_lib.py`, and no other script in the repo runs this adapter through `scripts.adapter_lib`."
+    },
+    "scripts/record_quality_runtime.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "main() (line 340) calls `load_adapter(repo_root)` (quality resolve_adapter.py) but discards the return value entirely -- it is not assigned to a variable, and no other line in the file references `adapter`/`valid`/`errors`/`data`. `load_quality_adapter` is a pure function with no side effects (confirmed by reading `scripts/quality_adapter_lib.py:476-514`), so the call is a no-op."
+    },
+    "scripts/record_usage_feedback.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "L217 `load_validated_adapter(...)` returns `(adapter, adapter_error)` and the caller branches on `adapter_error`."
+    },
+    "scripts/refresh_current_pointer.py": {
+      "verdict": "guarded",
+      "reason": "main() (lines 179-185) calls `_version_verdict.refuse_unspeakable_version(lambda root: load_adapter(root, args.skill_id), repo_root, adapter_name=f'{args.skill_id}-adapter.yaml')` and returns the refusal exit code before ever calling `load_adapter()` again to read `output_dir`/`artifact_filename`. Matches the repo's own ALREADY-GUARDED list."
+    },
+    "scripts/report_usage_episodes.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "_load_adapter() (lines 63-67) does a raw `yaml.safe_load` and main() (lines 326-332) validates the result against `manifest.schema.json` via `jsonschema.validate`; there is no `version` field / `declared_fields_after_version_check` mechanism used anywhere in this file."
+    },
+    "scripts/report_usage_product_review.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "main() (lines 128-134) imports and reuses `_load_adapter`/jsonschema validation straight from `report_usage_episodes.py`; same raw-yaml + jsonschema-manifest mechanism, no `version`/`declared_fields_after_version_check` involvement."
+    },
+    "scripts/resolve_artifact_path.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "load_adapter() (lines 45-73) shells out to the skill's resolve_adapter.py and returns `yaml.safe_load(completed.stdout)` unconditionally (only checking the subprocess's own returncode, never the adapter payload's `valid`/`errors`); payload_for() (lines 91-157) then calls `load_adapter(repo_root, skill_id)` at line 101 and immediately reads `data['output_dir']` (line 108) to build `current_path`, `record_path`, `write_path`, and even `refresh_current_pointer_argv`/`refresh_current_pointer_command` (lines 126-127) -- a command line meant to be executed later. No `valid`/`errors`/`adapter_version_verdict` reference exists anywhere in this file (confirmed by grep)."
+    },
+    "scripts/retro_output_dir_lib.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "retro_artifact_prefix() (lines 104-121) reads adapter.load_adapter(repo_root).get('data',{}).get('output_dir') and silently falls back to DEFAULT_RETRO_ARTIFACT_PREFIX with no check of adapter['errors']/['valid']; skills/public/retro/scripts/plan_retro_run.py:237-249 calls validate_retro_artifact.date_activated_rules -> retro_floor_scope_lib.date_activated_rules (line 174) -> this function with NO preflight version check anywhere in plan_retro_run.py's call path (unlike scripts/validate_retro_artifact.py, which IS guarded via its own separate `_unspeakable_adapter_version` preflight before calling the same function)."
+    },
+    "scripts/risk_interrupt_lib.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "_load_debug_adapter (lines 32-50) calls the debug skill's resolve_adapter.py load_adapter() (which uses adapter_lib.declared_fields_after_version_check) and returns the raw payload with no check of ['errors']/['valid']; current_debug_artifact_path (53-61) and plan_risk_interrupt (237-333) act directly on adapter['data']['output_dir'] with no version guard anywhere in the file (confirmed: no 'errors'/'valid'/adapter_version_verdict reference in the whole module)."
+    },
+    "scripts/run_evals.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "Eval harness: every `safe_load` here parses the STDOUT of a resolver CLI it just ran (L83/L120/L156/L171), not an adapter file. It asserts on what the resolver reported."
+    },
+    "scripts/scaffold_artifact_lib.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "size_budget() (lines 396-427) takes an already-resolved `adapter: dict` from its caller and calls `validator.resolve_adapter_line_budget(lambda _repo_root: adapter, ..., field=validator.LINE_BUDGET_FIELD, default=default)` with no check of adapter['errors']/['valid'] before using it; only an `Exception` (a cross-tree import failure) is caught to fall back to `source: default`. Consumers include skills/public/quality/scripts/scaffold_quality_artifact.py and skills/public/debug/scripts/scaffold_debug_artifact.py."
+    },
+    "scripts/session_start_routing.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "L164 parses the stdout of a routing command, not an adapter file."
+    },
+    "scripts/setup_critique_adapter_inspection.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "_detect_critique_adapter_normalization (lines 70-198) calls scripts.critique_adapter_lib.load_adapter and reads only `found`, `path`, and `data.reviewer_tiers` (via `.get('reviewer_tiers', {})`, line 80) without checking `errors`/`valid`, but forwards `valid: bool(adapter.get('valid'))` in its own returned payload (line 186) for the caller to act on."
+    },
+    "scripts/setup_inspect_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "L141 `load_setup_adapter` returns `(data, path, warnings)`; setup's resolver refuses an unsupported version before surface overrides, driven by tests/quality_gates/test_setup_inspect_adapters.py."
+    },
+    "scripts/skill_t_inventory_lib.py": {
+      "verdict": "no-version-validation",
+      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
+    },
+    "scripts/slice_closeout_usage_episode.py": {
+      "verdict": "no-version-validation",
+      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
+    },
+    "scripts/t_events_emit_lib.py": {
+      "verdict": "no-version-validation",
+      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
+    },
+    "scripts/usage_episode_session_start.py": {
+      "verdict": "no-version-validation",
+      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
+    },
+    "scripts/validate_adapters.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "_require_declared_version (lines 278-297) explicitly calls `validate_adapter_version(data, {}, errors, required=True)` and raises ValidationError on any error, run BEFORE the per-adapter early returns in validate_adapter_yaml (line 300); validate_adapter_yaml also checks `payload['valid']` for cautilus/critique/retro/quality adapters (lines 303-318) and raises on invalidity; validate_adapter_integration_schema (lines 244-275) runs jsonschema.validate against each adapter's integration schema (catching e.g. t-events/usage-episodes version mismatches) and raises ValidationError on rejection."
+    },
+    "scripts/validate_debug_artifact.py": {
+      "verdict": "guarded",
+      "reason": "Already on the pre-classified guarded list; confirmed by reading: line 405 calls `_adapter_version_verdict.unspeakable_version_message(...)` as a preflight before `resolve_adapter_line_budget` (line 502) is used to enforce the line ceiling."
+    },
+    "scripts/validate_handoff_artifact.py": {
+      "verdict": "guarded",
+      "reason": "Already on the pre-classified guarded list; confirmed by reading: line 471 calls `_adapter_version_verdict.refuse_unspeakable_version(...)`."
+    },
+    "scripts/validate_quality_artifact.py": {
+      "verdict": "guarded",
+      "reason": "Already on the pre-classified guarded list; confirmed by reading: line 624 calls `_adapter_version_verdict.refuse_unspeakable_version(...)` before `resolve_adapter_line_budget` is used at line 589."
+    },
+    "scripts/validate_retro_artifact.py": {
+      "verdict": "guarded",
+      "reason": "`_unspeakable_adapter_version` is passed as `preflight=` to run_changed_artifact_validator, so a refused version refuses before any scoping. Enumerated only once the census matched loader REFERENCES: this file never calls its loader, it hands `_output_dir.load_retro_adapter` to the verdict helper."
+    },
+    "scripts/validate_usage_episodes.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "main() loads the adapter (`_load_adapter`, line 130) and immediately runs `jsonschema.validate(adapter, manifest_schema)` (line 131) against integrations/usage-episodes/manifest.schema.json, which declares `version: {const: 1}` and `additionalProperties: false`; a version mismatch raises `jsonschema.ValidationError`, caught at line 132, producing `status: 'invalid_adapter', valid: False` and exit code 1 (lines 133-142) before any records_path resolution or record validation runs."
+    },
+    "skills/public/achieve/scripts/achieve_adapter_policy.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "This module IS the achieve adapter's resolver (load_adapter/validate_adapter_data at lines 235-306) and correctly sets `valid: not errors` via `declared_fields_after_version_check` (line 239) -- that part is a proper resolver. But its own downstream helpers `resolve_discussion_deploy_vocab` (309-315) and `resolve_release_surface_tokens` (318-332) call `load_adapter(repo_root).get('data')` and read a field directly with no check of `errors`/`valid`, and their known callers (skills/public/achieve/scripts/goal_artifact_coordination_floors.py:160, skills/public/achieve/scripts/check_goal_artifact.py:165) also call them with no valid/errors check."
+    },
+    "skills/public/achieve/scripts/goal_artifact_closeout_evidence.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "Calls `achieve_adapter_policy.closeout_policy_report` (L289); the adapter read and its risk belong to that module's row, not this one."
+    },
+    "skills/public/achieve/scripts/goal_artifact_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "upsert_goal() (lines 302-305) calls `_policy.load_adapter(repo_root)` and explicitly checks `if adapter['found'] and not adapter['valid']:` and returns a `refused` result (naming `adapter['errors']`) BEFORE any consequential action (mkdir, template render with adapter['data']['scaffold']..., or path.write_text at lines 306-326) is taken."
+    },
+    "skills/public/announcement/scripts/preflight_sources.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "Lines 38-46 call load_announcement_adapter() and pass adapter_data straight into preflight_sources() with no check of adapter['valid']/adapter['errors']; announcement_preflight_lib.py:66-72 short-circuits to {ok: True, delivery_blocked: False, surfaces: []} whenever sources is empty."
+    },
+    "skills/public/announcement/scripts/record_announcement.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "Line 61: `adapter_delivery_kind = load_announcement_adapter(repo_root)['data']['delivery_kind']` is read with no check of the adapter's errors/valid fields (only a bare `except Exception` around the whole lookup)."
+    },
+    "skills/public/critique/scripts/prepare_packet.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "Line 78-81: `adapter = load_adapter(repo_root); if not adapter['valid']: yaml_output.emit_yaml({'ok': False, 'error': 'critique adapter invalid', 'adapter': adapter}); return 1` — refuses before using adapter data further; critique_adapter_lib.load_adapter sets valid = not errors (scripts/critique_adapter_lib.py:182,273) so a version refusal is included."
+    },
+    "skills/public/critique/scripts/scaffold_critique_artifact.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "Already reported/known per task background as unguarded+consequential; not re-derived here."
+    },
+    "skills/public/debug/scripts/plan_debug_run.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "build_plan() sets `ok=bool(adapter.get('valid'))` (line 352) and main() returns `0 if payload['ok'] else 1` (line 381); gate_packets also echoes adapter['errors']/['warnings'] (lines 164-167) and ENVELOPE.adapter_echo surfaces errors (run_plan_envelope.py:206-221). resolve_adapter.load_adapter (skills/public/debug/scripts/resolve_adapter.py) runs declared_fields_after_version_check and reports errors, so a version refusal correctly drives ok=False/exit 1 even though the plan payload internally still computed some fields from defaults."
+    },
+    "skills/public/debug/scripts/scaffold_debug_artifact.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "payload_for() at lines 301-316 calls load_adapter(repo_root) and immediately feeds it into _scaffold_lib.size_budget(...) and _resolve_artifact_path.payload_for(..., adapter=adapter) with no check of adapter['valid']/adapter['errors'] anywhere in the file (only a doc-comment string containing the word 'valid')."
+    },
+    "skills/public/gather/scripts/advise_google_workspace_path.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "L45 `load_gather_adapter(repo_root)[\"data\"]` with no `errors` check: on a refused version the advice is computed from gather's shipped defaults rather than the repo's declaration."
+    },
+    "skills/public/gather/scripts/gather_plan.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "build_plan() sets `ok=bool(adapter.get('valid'))` (line 206) and main() returns `0 if payload['ok'] else 1` (line 249); the adapter-readiness gate_packet also reports status pass/fail off adapter['valid'] (lines 194-198). gather's resolve_adapter.load_adapter runs declared_fields_after_version_check (skills/public/gather/scripts/resolve_adapter.py:105), so version refusal correctly drives ok=False/exit 1."
+    },
+    "skills/public/gather/scripts/write_record.py": {
+      "verdict": "guarded",
+      "reason": "Already in the given already-guarded list; confirmed via `_version_verdict.version_refused(payload.get('errors'))` at line 59, imported from scripts.adapter_version_verdict at line 47."
+    },
+    "skills/public/handoff/scripts/chunked_routing_agentic_policy.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "load_chunk_policy_config() at lines 84-92: `adapter = resolve.load_adapter(repo_root); if not adapter.get('valid', False): config['_adapter_report'] = {...}; return config` — degrades to defaults but surfaces the invalid report rather than silently applying declared-looking values; handoff resolve_adapter.load_adapter -> load_simple_adapter runs declared_fields_after_version_check (scripts/simple_skill_adapter_lib.py:169) so version refusal sets valid=False here."
+    },
+    "skills/public/handoff/scripts/chunked_routing_issue_config.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "load_issue_source_config() at lines 72-75: `adapter = _load_sibling('resolve_adapter').load_adapter(repo_root); if adapter.get('valid') is False: config['enabled'] = False; return config, adapter_report(adapter)` — disables the issue source entirely and returns a report rather than silently using a defaulted config as if declared."
+    },
+    "skills/public/handoff/scripts/chunked_routing_issue_source.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "build_issue_entries() at lines 229-239 loads the issue skill's adapter and checks `if adapter.get('valid') is False:` before using adapter_data, returning [] with a typed InvalidAdapter diagnostic instead of proceeding with defaulted backend/target data; also delegates load_issue_source_config() to the already-checked handoff adapter helper (chunked_routing_issue_config.py)."
+    },
+    "skills/public/handoff/scripts/chunked_routing_staleness.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "resolve_states_for_repo() at lines 210-218 checks `if adapter.get('valid') is False:` immediately after loading the issue adapter and returns an empty states map plus a diagnostic instead of resolving issue states against defaulted backend/target data; callers treat the diagnostic as 'check not run' rather than 'nothing is closed'."
+    },
+    "skills/public/handoff/scripts/parse_handoff_entries.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "Lines 57-59: `_resolve_handoff_path` calls resolve_adapter.load_adapter(repo_root) and returns `(repo_root / adapter['artifact_path']).resolve()` with no check of adapter['valid'] or adapter['errors'] anywhere in the function or its caller."
+    },
+    "skills/public/handoff/scripts/plan_handoff_run.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "_artifact_summary (line 156-157) and _resolved_max_content_lines (line 100-117) act on adapter[\"artifact_path\"]/adapter[\"data\"] unconditionally; the errors check at line 279 only adds an advisory reference read and echoes errors in the output envelope (line 397-403), it never gates the artifact_path or next_action that get built from the defaulted data."
+    },
+    "skills/public/handoff/scripts/scaffold_handoff_artifact.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "payload_for (line 163-177) reads adapter[\"artifact_path\"] and max_content_lines(adapter) with no errors/valid check, and scripts/scaffold_artifact_lib.py (checked, no errors/valid handling) writes write_artifact_path unconditionally; this matches the task's pre-listed 'already known unguarded+consequential' set."
+    },
+    "skills/public/hitl/scripts/bootstrap_review.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "bootstrap_review (line 98-99) reads `adapter[\"data\"].get(\"require_explicit_apply\", True)` and writes it straight into state.yaml/queue.json (lines 110-168) with no reference anywhere in the file to adapter[\"errors\"] or adapter[\"valid\"]."
+    },
+    "skills/public/hitl/scripts/check_review_state.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "load_session (scripts/hitl_review_artifact_lib.py line 25-26) uses adapter[\"runtime_dir\"], which resolve_adapter.py's `_runtime_dir(output_dir)` (skills/public/hitl/scripts/resolve_adapter.py) hard-codes to `.charness/hitl/runtime` and ignores its `output_dir` argument entirely."
+    },
+    "skills/public/hitl/scripts/render_report.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "main() (line 37-45) passes `adapter[\"runtime_dir\"]` into render_report(); same `_runtime_dir()` hard-coded constant as check_review_state.py, unaffected by output_dir or by version-refusal reverting data to defaults."
+    },
+    "skills/public/hitl/scripts/sync_review_artifact.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "Line 44 `artifact_path = repo_root / adapter[\"artifact_path\"]` is used unconditionally to write_current_pointer_text (line 46-47) or check staleness (line 45); no check of adapter[\"errors\"]/adapter[\"valid\"] anywhere in the file, unlike runtime_dir this field DOES depend on data[\"output_dir\"] via `_add_artifact_payload`."
+    },
+    "skills/public/impl/scripts/survey_verification.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "main() (line 265-296) calls `_group_specs(adapter[\"data\"])` and reads `adapter[\"data\"].get(\"verification_install_proposals\")` unconditionally; `adapter[\"valid\"]` is only echoed into the output dict (line 291) and never branched on to change behavior or add a warning."
+    },
+    "skills/public/issue/scripts/issue_create.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "_resolve_backend (line 257-262): `if not adapter[\"valid\"]: return {..., \"adapter_ok\": False}`; command_create/command_verify_create (line 265-270, 299-304) check `resolved[\"adapter_ok\"]` and emit `{\"ok\": False, \"adapter\": resolved[\"adapter\"]}` with exit code 1 before touching `adapter[\"data\"]`."
+    },
+    "skills/public/issue/scripts/issue_plan.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "command_plan (line 233-236): `adapter = adapter_module.load_adapter(repo_root); if not adapter[\"valid\"]: emit({...}); return 1` runs before any use of `adapter[\"data\"]` for target resolution or plan building."
+    },
+    "skills/public/issue/scripts/issue_tool.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "`_resolve_backend` (line 39-44) and its callers `_run_backend_command` (line 47-51) / `_run_adapter_payload` (line 62-66) all check `adapter[\"valid\"]`/`adapter_ok` and refuse (exit 1) before using `adapter[\"data\"]`; `command_preflight` (line 76-81) relies on `build_preflight_payload`'s `ok = resolved[\"adapter_ok\"] and backend_ok(selected)` (skills/public/issue/scripts/issue_backend.py line 334) so an invalid adapter still surfaces `ok: false` and exit 1 even though the backend used for the probe silently falls back to the default."
+    },
+    "skills/public/narrative/scripts/map_sources.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "main() (line 83-101) reads `adapter[\"data\"]` for source_documents/mutable_documents/remote_name with no reference anywhere in the file to `adapter[\"errors\"]` or `adapter[\"valid\"]`, and the emitted payload does not even include an adapter validity field."
+    },
+    "skills/public/quality/references/find_inline_prompt_bulk.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "main() (line 117-136) uses `adapter_policy` from `_adapter_prompt_policy` (line 71-75, reading `adapter[\"data\"].get(\"prompt_asset_policy\")`) to set source_globs/exemption_globs/min_chars unconditionally when `--from-adapter` is passed; `adapter_payload.get(\"valid\")`/`errors` are only copied into the output `adapter` block (line 179-186), never checked to change scan behavior."
+    },
+    "skills/public/quality/scripts/check_changed_line_coverage.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "run() (line 111-114): `adapter_errors = list(adapter.get(\"errors\") or []); if adapter_errors: return {\"ok\": False, \"adapter_errors\": adapter_errors, \"inert\": False, \"blocking\": []}` runs before `config = adapter[\"data\"].get(\"changed_line_mutation_gate\")` is read; main() then returns exit 1 when `report.get(\"adapter_errors\")` (line 210-211), and verdict() renders `verdict: adapter-invalid` (line 164-169)."
+    },
+    "skills/public/quality/scripts/check_dup_ratchet.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "run() at line 231-235 calls load_quality_adapter_strict then checks adapter.get('errors') BEFORE touching adapter['data'], returning status 'adapter-invalid' with the errors surfaced; main() at line 324 returns 1 because report.get('ok') is falsy in that branch, so it fails closed rather than falling back to defaults."
+    },
+    "skills/public/quality/scripts/check_regenerable_facts.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "main() at line 162-166 checks `not adapter.get('valid', True)` and discards the adapter (sets refusal, adapter=None) rather than scanning with its data; line 186-193 marks the run failed (`report.get('adapter_refusal')`) and main() returns 1, so it never substitutes defaults for a declared-but-unspeakable version."
+    },
+    "skills/public/quality/scripts/check_runtime_budget.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "L95/L113 pass `load_adapter` into runtime_budget_lib; main() branches only on `profile_config_errors`, never on the adapter's own `errors`. On a refused version the declared `runtime_budgets` ceiling is absent and the run reports nothing to check. Same root cause as the runtime_budget_lib row."
+    },
+    "skills/public/quality/scripts/check_standing_doc_provenance.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "run() at line 55-65 checks adapter.get('errors') and returns early (ok=False, findings=[]) before reading config['standing_doc_provenance']; main() at line 116-118 exits 1 with 'standing-doc provenance check skipped: repair the quality adapter.'"
+    },
+    "skills/public/quality/scripts/inventory_ci_recoverable_gates.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "L65 hands `load_adapter` to runtime_budget_lib.evaluate with no `errors` check; inherits the same defaulted-budget answer and reports it as an inventory fact."
+    },
+    "skills/public/quality/scripts/inventory_cli_ergonomics.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "main() at line 91-114 uses load_quality_adapter_permissive and, although it proceeds to scan with whatever vendored_paths the (possibly-defaulted) data yields, it surfaces adapter_valid/adapter_errors/adapter_warnings in the emitted structured payload and explicitly prints 'adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.' at line 125-126 -- an advisory-only inventory that discloses degradation rather than silently claiming a clean/authoritative scan."
+    },
+    "skills/public/quality/scripts/inventory_cli_side_effect_probes.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "Same disclosure pattern as inventory_cli_ergonomics.py: adapter_valid/adapter_errors are placed in the payload at line 81-85 and printed at line 89-90. Note: contract_paths for --execute-probes come from explicit --contract-file CLI args (line 71), not from adapter data, and each probe entry additionally requires its own declared safe_to_execute:true (cli_side_effect_probe_lib.py) before anything runs, so an unspeakable adapter version only widens auto-discovery of candidate contract files (vendored_filter becomes None when vendored==[]), not which commands actually execute."
+    },
+    "skills/public/quality/scripts/inventory_command_dominance.py": {
+      "verdict": "no-version-validation",
+      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
+    },
+    "skills/public/quality/scripts/inventory_lint_ignores.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "main() at line 58-71 reads adapter.get('valid')/errors and folds them into the payload; line 84-85 prints 'adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.' when adapter_valid is False -- disclosed degradation, not a silent default swap, and this script never gates (always returns 0)."
+    },
+    "skills/public/quality/scripts/inventory_skill_ergonomics.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "main() at line 226-230 puts adapter_valid/adapter_errors/adapter_warnings into payload, and line 246-247 prints the same 'advisory inventory is best-effort' disclosure when adapter_valid is False before continuing with defaulted skill_ergonomics_skill_paths/vendored_paths."
+    },
+    "skills/public/quality/scripts/inventory_standing_test_economics.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "main() at line 122-126 attaches adapter_valid/adapter_errors/adapter_warnings to the payload, and line 155-156 prints 'adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.' when adapter_valid is False -- the degraded test_file_discovery default is disclosed, not silent, and this advisory script always returns 0."
+    },
+    "skills/public/quality/scripts/measure_startup_probes.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "evaluate() at line 159-161 calls load_adapter(repo_root) and immediately does `adapter['data'].get('startup_probes', [])` with no read of adapter['errors']/['valid'] anywhere in the file; confirmed matches the task's pre-listed known-unguarded example."
+    },
+    "skills/public/quality/scripts/nose_inventory_scope_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "_adapter_inventory_paths() at line 24-30 collects payload.get('errors'); payload_for_args() at line 106-114 checks `if adapter_errors:` and returns status='error', exit_code=1, notes=['quality adapter scope is invalid; inventory not run.'] BEFORE resolving nose_bin or scanning any roots -- refuses rather than falling back to DEFAULT_PATHS."
+    },
+    "skills/public/quality/scripts/propose_mutation_testing.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "classify() at line 79-81 returns 'blocked' when adapter_payload.get('errors') is truthy, before reading the mutation_testing block; main() at line 193 only runs _execute_install when `status == 'missing'`, so a 'blocked' status (adapter errors) never triggers --execute, and _recommendation() at line 121 reports 'adapter validation failed with N errors; resolve them before proposing.'"
+    },
+    "skills/public/quality/scripts/public_spec_adapter_policy.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "load_quality_adapter_data() at line 45-49 checks `not payload.get('valid', True)` and raises ValueError('Invalid quality adapter: ...') instead of returning payload['data'] (the inferred-defaults dict) to the caller."
+    },
+    "skills/public/quality/scripts/public_spec_inventory_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "inventory() at line 55 calls load_quality_adapter_data(repo_root) from public_spec_adapter_policy, which raises on an invalid adapter (see that file's line 46-49); the sole caller, skills/public/quality/scripts/inventory_public_spec_quality.py line 55-57, wraps that call in try/except ValueError, so the refusal propagates rather than being swallowed into a default scan."
+    },
+    "skills/public/quality/scripts/quality_declaration_lifecycle.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "build_declaration_lifecycle (line 295-326) loads the quality adapter, then at line 321 checks `if adapter.get(\"valid\") is not True:` and returns a `status: invalid` report with a gap entry *before* line 328 reads the raw YAML (`raw = yaml_lib.load_yaml_file(...)`) or computes any preset/command/surface routing from it. Since `valid = not errors` and a version refusal always appends to `errors`, this check catches the refused-version case correctly and short-circuits before acting on inferred defaults."
+    },
+    "skills/public/quality/scripts/render_runtime_summary.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "L190 hands `load_adapter` to the same runtime-budget evaluation; renders a summary against defaulted budgets with no indication the adapter was refused."
+    },
+    "skills/public/quality/scripts/resolve_quality_artifact.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "payload_for (line 30-32) calls `load_adapter(repo_root)` then immediately does `output_dir = Path(adapter[\"data\"][\"output_dir\"])` with no check of `adapter[\"errors\"]`/`adapter[\"valid\"]` anywhere in the file, and `main()` never surfaces `errors` in the emitted payload either."
+    },
+    "skills/public/quality/scripts/runtime_budget_lib.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "evaluate() (line 228-236) does `adapter = load_adapter(repo_root); adapter_data = adapter[\"data\"]` and immediately feeds `adapter_data` into `selected_runtime_profile` and `profile_budgets` (runtime ceilings) with no check of `adapter[\"errors\"]`/`adapter[\"valid\"]` anywhere in the module; `check_runtime_budget.py`'s main() (skills/public/quality/scripts/check_runtime_budget.py line 111-133) also never checks adapter validity, only `report[\"profile_config_errors\"]` (a different, profile-shape-only error list) and `report[\"violations\"]`."
+    },
+    "skills/public/quality/scripts/runtime_budget_sizing_lib.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "suggest_budgets() (line 134-162) does `adapter_data = load_adapter(repo_root)[\"data\"]` at line 153 with no error/valid check anywhere in the file, then uses `adapter_data` to select the runtime profile (`selected_runtime_profile`) and to derive/round proposed budget-ms ceilings via `suggest_profile_budgets`."
+    },
+    "skills/public/quality/scripts/scaffold_quality_artifact.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "payload_for() (line 246-248) does `adapter = load_adapter(repo_root); output_dir = Path(adapter[\"data\"][\"output_dir\"])` with no error/valid check anywhere in the file -- matches the already-known-unguarded classification given for this file."
+    },
+    "skills/public/quality/scripts/validate_skill_ergonomics.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "evaluate() (line 253-272) uses `load_quality_adapter_strict`, computes `adapter_errors = adapter.get(\"errors\", []) if adapter.get(\"valid\") is not True else []` at line 255, then at line 262 `if adapter_errors:` returns a `discovery_skipped_reason: \"adapter_invalid\"` result with `checked_skills: []`, before any rules/paths are actually applied to discover or check skills."
+    },
+    "skills/public/release/scripts/audit_public_release_narrative.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "build_payload() (line 318-332) calls `adapter = load_adapter(repo_root)` then at line 326 `if not adapter[\"valid\"]:` returns a `status: \"blocked\"` payload listing `adapter[\"errors\"]`, before line 332 reads `adapter[\"data\"][\"output_dir\"]` to resolve the release-artifact path."
+    },
+    "skills/public/release/scripts/bump_version.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "main() (line 95-98) does `adapter = load_adapter(repo_root)` then `if not adapter[\"valid\"]: raise SystemExit(...)` at line 97-98, before line 99-100 reads `data[\"packaging_manifest_path\"]` or later `data[\"sync_command\"]` to write the manifest and run the sync command."
+    },
+    "skills/public/release/scripts/check_fresh_checkout_probes.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "build_payload() (line 121-131) does `adapter = load_adapter(repo_root)` then `if not adapter[\"valid\"]:` at line 123 returns `status: \"blocked\"` with the adapter's errors, before line 131 reads `adapter[\"data\"].get(\"fresh_checkout_probes\", [])`."
+    },
+    "skills/public/release/scripts/check_real_host_proof.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "build_payload() (line 135-139) does `adapter = load_adapter(repo_root)` then immediately reads `adapter[\"data\"].get(\"real_host_required_surfaces\", [])` etc. with no error/valid check -- matches the already-known-unguarded description given (repo declaring `real_host_required_surfaces` gets told 'this repo declares no release-time real-host proof triggers', exit 0)."
+    },
+    "skills/public/release/scripts/check_requested_review_gate.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "build_payload() (line 64-75) does `adapter = load_adapter(repo_root); data = adapter[\"data\"]` with no error/valid check anywhere in the file, then reads `data.get(\"requested_review_commands\", [])` and executes them via `_run_review_commands` (subprocess.run with shell=True) at line 75."
+    },
+    "skills/public/release/scripts/current_release.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "build_payload() (line 169-174) does `adapter = load_adapter(repo_root); data = adapter[\"data\"]` with no error/valid check gating any of the path resolution, then computes `manifest_path`, `package_id`, `plugin_root` from `data[\"packaging_manifest_path\"]`, `data[\"package_id\"]`, `data[\"checked_in_plugin_root\"]` and later the `drift`/`absence_corroboration` verdict at line 245-286 that `plan_release_run.py` routes on (per the file's own comment at line 209: \"drift is the gate ... plan_release_run_packets routes on\")."
+    },
+    "skills/public/release/scripts/plan_release_run.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "build_plan() (line 179-236) does `adapter = load_adapter(repo_root); data = adapter.get(\"data\")` and gates only two consumers on validity -- `real_host_payload` (line 213) and `review_payload` (line 234) are each behind `if adapter.get(\"valid\"):` -- but `record_path = _prepared_stop.release_record_path(data)` (line 236), `update_blocker = update_instructions_version_blocker(data.get(\"update_instructions\"), ...)` (line 205-209), and `drafted_notes_candidates(repo_root, data, ...)` (line 251-254) all read `data` unconditionally, and `release_payload = build_release_payload(repo_root)` (line 186, i.e. current_release.build_payload) is called unconditionally and is itself unguarded (see current_release.py finding)."
+    },
+    "skills/public/release/scripts/publish_release_cli.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "`_valid_adapter_data` (lines 276-281) calls `load_adapter(repo_root)` then does `if not adapter[\"valid\"]: raise SystemExit(f\"release adapter is invalid: {adapter['errors']}\")` before any caller (`_load_adapter_and_gate`, `run_prep_update_instructions`) reads adapter data, so a version-refused adapter (valid=False) stops the run instead of silently using inferred defaults."
+    },
+    "skills/public/release/scripts/publish_release_narrative_gate.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "Every load_adapter call gates on validity before using `adapter[\"data\"]`: `_drafted_notes_for` (line 60) returns [] when `not adapter[\"valid\"]`, `derived_claims_required` (line 73) defaults to the fail-safe True, and `_known_versions` (line 98) only reads `packaging_manifest_path` when `adapter[\"valid\"]` is true."
+    },
+    "skills/public/release/scripts/publish_release_preflight.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "FALSE POSITIVE of the call-site rule: `_load_adapter_preflight_helper()` (L25) imports a sibling PYTHON MODULE whose name contains `adapter`. It loads no adapter payload. Recorded rather than special-cased, because a name-shaped matcher that over-matches fails safe and a narrowed one hides consumers."
+    },
+    "skills/public/release/scripts/publish_release_retro.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "L169 loads the retro adapter and fails closed on `adapter[\"valid\"]` before deriving `output_dir`."
+    },
+    "skills/public/retro/scripts/check_auto_trigger.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "`no_config_payload` (line 112) and `build_payload` (line 318) both call `adapter_unreadable_reasons(adapter)`, which is `scripts.adapter_lib.unreadable_reasons` and starts from `adapter.get(\"errors\")` (adapter_lib.py:420) — so a version-refusal error forces `unreadable` truthy, `intentional_empty=False`, `configuration_status=\"adapter-unreadable\"` (line 164-165), `state=not-established`, and exit code `UNDETERMINED_EXIT=3` instead of a silent `triggered:false`."
+    },
+    "skills/public/retro/scripts/persist_retro_artifact.py": {
+      "verdict": "guarded",
+      "reason": "Line 73: `if _version_verdict.version_refused(adapter.get(\"errors\")):` prints a refusal naming the unspeakable version and `return 1` before `output_dir`/`summary_path` are read from `adapter[\"data\"]` (already on the ALREADY-GUARDED list; re-confirmed by reading)."
+    },
+    "skills/public/retro/scripts/plan_retro_run.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "`build_plan` sets `ok=bool(adapter.get(\"valid\"))` (line 386) so `main()` exits 1 on an invalid adapter (line 438); the `adapter-readiness` gate_packet reports `status=\"fail\"` with `errors=adapter.get(\"errors\", [])` (lines 283-289); and `_required_reads` (lines 200-201) adds an explicit `references/adapter-contract.md` read with reason \"adapter is missing or invalid; repair before relying on adapter paths\" whenever `not adapter.get(\"valid\")`. The plan still computes `scaffold[\"write_artifact_path\"]` via the (unguarded) scaffold module regardless, but that value is presented alongside an unambiguous fail signal (ok=False, exit 1, fail status, errors, explicit repair-first advisory) rather than silently as success."
+    },
+    "skills/public/retro/scripts/prepare_packet.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "Line 85: `if not adapter[\"valid\"]: yaml_output.emit_yaml({...\"error\": \"retro adapter invalid\"...}); return 1` — this precedes the line-99 `output_dir = repo_root / adapter[\"data\"].get(\"output_dir\", ...)` used to write the packet, so a version-refused adapter never reaches the write."
+    },
+    "skills/public/retro/scripts/refresh_recent_lessons.py": {
+      "verdict": "guarded",
+      "reason": "Lines 58-62: `refused = _version_verdict.refuse_unspeakable_version(load_adapter, repo_root, adapter_name=\"retro-adapter.yaml\"); if refused is not None: return refused` runs before `summary_path`/`output_dir` are read from `adapter[\"data\"]` (line 63-64) (already on the ALREADY-GUARDED list; re-confirmed by reading, including its own comment citing the exact shadow-digest harm this guard prevents)."
+    },
+    "skills/public/retro/scripts/scaffold_retro_artifact.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "`payload_for` (lines 206-207) does `adapter = load_adapter(repo_root); output_dir = str(adapter[\"data\"][\"output_dir\"])` with no check of `adapter[\"valid\"]` or `adapter[\"errors\"]` anywhere in the file (already on the ALREADY-KNOWN-UNGUARDED list; re-confirmed by reading — this is the file `plan_retro_run.py` also calls unguarded)."
+    },
+    "skills/public/setup/scripts/inspect_repo.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "L31 delegates to `setup_inspect_lib` with setup's own `load_setup_adapter`; that resolver refuses an unsupported version before surface overrides, driven by tests/quality_gates/test_setup_inspect_adapters.py."
+    },
+    "skills/public/setup/scripts/setup_adapter.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "L25 `load_yaml_file` then the shared version check; refuses an unsupported version before applying surface overrides."
+    },
+    "skills/support/web-fetch/scripts/route_public_fetch_routes.py": {
+      "verdict": "accepted-risk-unguarded",
+      "reason": "`resolve_github_mode` (lines 184-202) does `payload = module.load_adapter(repo_root)` then `provider = payload.get(\"data\", {}).get(\"gather_provider\") or {}` with no check of `payload.get(\"valid\")` or `payload.get(\"errors\")` — only a bare `except Exception` around the import/call, which a version-refused adapter does not raise (load_adapter returns a normal dict with valid=False)."
+    }
+  }
+}

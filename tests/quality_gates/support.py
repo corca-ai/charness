@@ -384,6 +384,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-test-completeness", "check_test_completeness.py"),
     ("check-test-production-ratio", "check_test_production_ratio.py"),
     ("check-boundary-bypass-ratchet", "check_boundary_bypass_ratchet.py"),
+    ("check-adapter-consumer-classification", "check_adapter_consumer_classification.py"),
     ("run-evals", "run_evals.py"),
 )
 QUALITY_RUNTIME_STUBS = (
