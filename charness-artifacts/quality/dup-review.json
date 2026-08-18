@@ -4661,6 +4661,20 @@
       "note": "scan rotation, not new duplication: BOTH members (skills/public/quality/scripts/structural_waste_lib.py, skills/support/markdown-preview/scripts/markdown_preview_render.py) are untouched by this slice and neither imports the other; the family surfaced because the line-budget slice changed the surrounding corpus. Same rotation class as 004895e66d5b4132.",
       "reviewed_at": "2026-08-18",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0881f83d0bbe63d9",
+      "note": "scan rotation, not new duplication: BOTH members (scripts/check_doc_authoring_preflight.py's LengthSurface dataclass block, scripts/inventory_current_pointer_layouts.py) are untouched-by-content in the sense that matters -- the shared span is a frozen dataclass declaration plus its field list, and the two dataclasses describe unrelated subjects (a capped doc surface vs a current-pointer layout). The family surfaced because the line-budget repair added a `resolver_attr` field, changing the block's length enough to hash against its neighbour. Collapsing two unrelated dataclasses into one would be a shared shape with no shared meaning.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "87176166d16a600c",
+      "note": "the `Optional size budget:` block repeated across the three per-skill references/adapter-contract.md files (debug, quality, handoff). Per-skill adapter contracts are SELF-CONTAINED by construction -- a consuming repo reads exactly one of them and must find the field's semantics, minimum, unbounded-above rule and refusal behaviour there, not behind a cross-skill link. The genuinely divergent half is already written per file: handoff's block documents CONTENT-line counting and states explicitly that its `max_content_lines` is not interchangeable with debug/quality's `max_artifact_lines`, and only the debug/quality pair share the raw-file-line wording. Same class as the sequence-discipline.md per-skill reference copies already accepted in this file.",
+      "reviewed_at": "2026-08-18",
+      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

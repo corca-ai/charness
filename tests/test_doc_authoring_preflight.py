@@ -16,6 +16,7 @@ import os
 import shutil
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -501,12 +502,37 @@ def test_rules_mode_answers_with_no_target_at_all() -> None:
 
 
 def test_rules_mode_renders_the_length_cap_live(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Drift proof: move the owning constant and the rendered rule must follow.
-    monkeypatch.setattr(_handoff, "MAX_CONTENT_LINES", 4321)
+    """Drift proof: move the owning DEFAULT and the rendered rule must follow.
+
+    Patches the RESOLVER, not the constant it falls back to. Patching
+    `MAX_CONTENT_LINES` used to be equivalent and stopped being so when the cap
+    became adapter-resolvable: the assertion then held only because this repo's own
+    `.agents/handoff-adapter.yaml` happens to declare no `max_content_lines`, and
+    would have failed -- naming constant drift -- the day the repo raised its own
+    budget. Round-2 review caught the test measuring something its comment did not
+    describe.
+    """
+    monkeypatch.setattr(_handoff, "resolved_max_content_lines", lambda _repo_root: 4321)
     rules = _rules.build_rules(ROOT, "handoff")
 
     assert rules["length"]["cap"] == 4321
     assert "4321" in _rules_text(rules)
+
+
+def test_rules_mode_falls_back_to_the_default_when_a_surface_has_no_resolver(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The `resolver_attr is None` arm still reads the owning constant.
+
+    `surface_cap` has two arms and only one had a named contract; a surface that
+    never gains a resolver must keep forecasting its validator's live constant
+    rather than silently reporting nothing.
+    """
+    surfaces = _pf._length_surfaces(ROOT)
+    handoff = next(s for s in surfaces if s.name == "handoff")
+    monkeypatch.setattr(_handoff, "MAX_CONTENT_LINES", 4321)
+
+    assert _pf.surface_cap(ROOT, replace(handoff, resolver_attr=None)) == 4321
 
 
 def test_rules_mode_renders_the_regenerable_classes_live(monkeypatch: pytest.MonkeyPatch) -> None:

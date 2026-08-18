@@ -391,3 +391,37 @@ def emit_payload_main(
     payload = payload_for(args.repo_root.resolve(), title=args.title, subject=args.subject)
     emit_yaml(payload)
     return 0
+
+
+def size_budget(validator, default: int | None, adapter: dict, *, guidance: str) -> dict | None:
+    """The `size_budget` block a scaffold publishes, resolved the way the GATE resolves it.
+
+    One owner for both raw-file-line families (debug, quality). The forecast is the
+    operational half of an adapter-configurable ceiling: a number discovered only after
+    writing long is the wasted draft the field exists to end, so this must never report
+    a ceiling the gate does not enforce.
+
+    Three outcomes, each named rather than collapsed:
+
+    - `None` -- the validator never loaded (a consuming repo without the repo-root
+      `scripts/` tree). There is no ceiling this install can enforce, so asserting one
+      would be worse than publishing none.
+    - `source: resolved` -- the adapter was consulted; this IS the gate's number.
+    - `source: default (adapter ceiling unresolvable)` -- the validator loaded but its
+      resolver could not be reached (a cross-tree version skew). Said, not swallowed:
+      returning the default silently would hand a repo that declared 300 a forecast of
+      the shipped default with nothing red, re-entering the exact defect the field closes.
+    """
+    if validator is None or default is None:
+        return None
+    try:
+        cap = validator.resolve_adapter_line_budget(
+            lambda _repo_root: adapter,
+            Path("."),
+            field=validator.LINE_BUDGET_FIELD,
+            default=default,
+        )
+        source = "resolved"
+    except Exception:
+        cap, source = default, "default (adapter ceiling unresolvable)"
+    return {"max_lines": cap, "source": source, "guidance": guidance}

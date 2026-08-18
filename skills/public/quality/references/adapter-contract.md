@@ -22,6 +22,9 @@ Optional size budget:
   to keep the validator's shipped default. Both the gate and the scaffold's
   `size_budget.max_lines` forecast resolve the same value. Must be a positive
   integer; a refused value is an adapter error and leaves the default enforced.
+  When the scaffold cannot reach the gate's resolver at all (a cross-tree
+  version skew), it forecasts the shipped default and says so in
+  `size_budget.source`.
   There is no upper bound: the ceiling is this repo's to set.
 
 Optional deliberate-absence declaration:

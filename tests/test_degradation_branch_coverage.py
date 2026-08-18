@@ -23,6 +23,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -502,3 +503,161 @@ def test_pin_run_state_survives_a_git_failure_in_the_fingerprint(monkeypatch, tm
 
     assert pinned["pool_fingerprint"] == ""
     assert pinned["resolved_head_sha"] == "cafebabe"
+
+
+# --- the artifact line budget must degrade to its DEFAULT, never to "unlimited" ---
+# The changed-line gate named every branch below by path:line after the #640 slice.
+# They are hardening arms by construction: each one exists because the ceiling is now
+# resolved across a seam (adapter file, or a validator loaded from a separate tree),
+# and a seam that can fail must produce a number the gate agrees with rather than a
+# traceback or a silently disarmed budget.
+
+
+def test_an_unreadable_adapter_degrades_the_ceiling_to_the_default(tmp_path) -> None:
+    """Failing OPEN here would disarm the budget entirely, which is the worse arm.
+
+    `resolve_adapter_line_budget` swallows any `load_adapter` failure. The
+    conservative result is the shipped default: the adapter failure is already
+    reported by the caller's own artifact discovery, and inventing no ceiling would
+    turn one broken YAML line into a gate that accepts anything.
+    """
+
+    def boom(_repo_root):
+        raise RuntimeError("adapter unreadable")
+
+    assert (
+        artifact_validator.resolve_adapter_line_budget(
+            boom, tmp_path, field="max_artifact_lines", default=180
+        )
+        == 180
+    )
+
+
+@pytest.mark.parametrize(
+    "declared",
+    [True, "240", 0, -1, None],
+    ids=["bool", "string", "zero", "negative", "absent"],
+)
+def test_a_value_the_resolver_should_have_refused_still_yields_the_default(tmp_path, declared) -> None:
+    """The isinstance re-check is not redundant with the resolver.
+
+    A consuming repo can vendor a resolver older than its validator, so this module
+    must not turn that skew into a ceiling of `True` (which `isinstance(True, int)`
+    would otherwise make 1, refusing every artifact past its title line).
+    """
+    adapter = {"data": {} if declared is None else {"max_artifact_lines": declared}}
+
+    assert (
+        artifact_validator.resolve_adapter_line_budget(
+            lambda _repo_root: adapter, tmp_path, field="max_artifact_lines", default=180
+        )
+        == 180
+    )
+
+
+def test_a_scaffold_says_so_when_it_cannot_reach_the_gates_resolver(monkeypatch) -> None:
+    """The forecast degrades to the default AND marks itself, rather than lying.
+
+    Round-2 review found the first version of this guard silently returning the
+    default, which re-enters the exact defect the adapter field exists to close: a repo
+    declaring 300 would be handed a forecast of 180 with nothing red, and would write
+    to fit a number its own gate does not enforce.
+    """
+    from scripts import scaffold_artifact_lib
+
+    def boom(*_args, **_kwargs):
+        raise AttributeError("resolver missing from a stale vendored validator")
+
+    validator = SimpleNamespace(resolve_adapter_line_budget=boom, LINE_BUDGET_FIELD="max_artifact_lines")
+    budget = scaffold_artifact_lib.size_budget(validator, 180, {"data": {}}, guidance="g")
+
+    assert budget == {
+        "max_lines": 180,
+        "source": "default (adapter ceiling unresolvable)",
+        "guidance": "g",
+    }
+
+
+def test_a_scaffold_publishes_no_budget_at_all_when_the_validator_never_loaded() -> None:
+    """A consuming repo without the repo-root `scripts/` tree has no ceiling to name.
+
+    Distinct from the arm above: there the validator loaded and its resolver failed, so
+    a default exists to fall back to. Here nothing loaded, and publishing the shipped
+    literal would assert a ceiling this install cannot enforce.
+    """
+    from scripts import scaffold_artifact_lib
+
+    assert scaffold_artifact_lib.size_budget(None, 180, {}, guidance="g") is None
+    assert scaffold_artifact_lib.size_budget(object(), None, {}, guidance="g") is None
+
+
+def test_read_lines_names_the_missing_artifact_rather_than_raising_oserror(tmp_path) -> None:
+    """The gate's own error type, so a missing path reports as a violation, not a crash.
+
+    `report_validation_failure` catches `ValidationError` and adds the scaffold hint; an
+    `OSError` escaping here would bypass both and print a traceback where the author
+    expects "start from the owning scaffold".
+    """
+    with pytest.raises(artifact_validator.ValidationError) as excinfo:
+        artifact_validator.read_lines(tmp_path / "nope.md")
+
+    assert "nope.md" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    ("scaffold_rel", "validator_module", "attr"),
+    [
+        (
+            "skills/public/debug/scripts/scaffold_debug_artifact.py",
+            "scripts.validate_debug_artifact",
+            "_debug_validator",
+        ),
+        (
+            "skills/public/quality/scripts/scaffold_quality_artifact.py",
+            "scripts.validate_quality_artifact",
+            "_quality_validator",
+        ),
+    ],
+    ids=["debug", "quality"],
+)
+def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
+    monkeypatch, scaffold_rel, validator_module, attr
+) -> None:
+    """An installed skill tree without the repo-root `scripts/` tree must still scaffold.
+
+    This is the IMPORT-time arm of the degradation, distinct from a resolver that fails
+    at call time: the whole module must load, because a consumer whose install ships
+    only `skills/` would otherwise get a traceback instead of a template. The budget is
+    additive guidance, so its absence must cost the budget and nothing else.
+
+    Forced with a `meta_path` finder rather than by filtering `sys.path`: the loader is
+    `importlib.import_module` after the scaffold puts the repo root on the path itself,
+    so a path filter would be undone by the module under test. A finder refuses the one
+    name regardless of how the path is arranged, which is the local fact being asserted.
+    """
+    import importlib.util
+
+    class _Refuse:
+        def find_spec(self, name, path=None, target=None):
+            if name == validator_module:
+                raise ImportError(f"no {name} in this layout")
+            return None
+
+    monkeypatch.setitem(sys.modules, validator_module, None)
+    monkeypatch.delitem(sys.modules, validator_module, raising=False)
+    monkeypatch.setattr(sys, "meta_path", [_Refuse(), *sys.meta_path])
+
+    path = ROOT / scaffold_rel
+    spec = importlib.util.spec_from_file_location(f"probe_{attr}", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert getattr(module, attr) is None
+    assert module._MAX_ARTIFACT_LINES is None
+    # And the consequence the arm exists for: a payload with no ceiling claim at all,
+    # rather than the shipped literal asserted against a gate this install cannot run.
+    from scripts import scaffold_artifact_lib
+
+    assert scaffold_artifact_lib.size_budget(
+        getattr(module, attr), module._MAX_ARTIFACT_LINES, {"data": {}}, guidance="g"
+    ) is None

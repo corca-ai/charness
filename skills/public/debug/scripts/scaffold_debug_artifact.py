@@ -33,31 +33,6 @@ except Exception:
     _MAX_ARTIFACT_LINES = None
 
 
-def _resolved_max_artifact_lines(adapter: dict) -> int | None:
-    """The ceiling THIS repo's adapter declares, else the validator default.
-
-    Resolved from the adapter payload already loaded by `payload_for` rather than by
-    re-reading it, and through the validator's own resolver rather than a second
-    `data.get`: a scaffold that forecast a different ceiling than the gate enforces
-    would send the author to write-to-fit against a number that then refuses them,
-    which is worse than publishing no budget at all.
-    """
-    if _debug_validator is None or _MAX_ARTIFACT_LINES is None:
-        return None
-    # Guarded, not just the import above: the try/except at import time only proves the
-    # validator MODULE loaded. A validator older than this scaffold loads fine (it has
-    # MAX_ARTIFACT_LINES) and then has no resolver, and an unguarded call would kill the
-    # scaffold over a field its own comment calls additive guidance, never load-bearing.
-    try:
-        return _debug_validator.resolve_adapter_line_budget(
-            lambda _repo_root: adapter,
-            Path("."),
-            field=_debug_validator.LINE_BUDGET_FIELD,
-            default=_MAX_ARTIFACT_LINES,
-        )
-    except Exception:
-        return _MAX_ARTIFACT_LINES
-
 # The recurring overflow in real captures is ## Sibling Search (a rich structural
 # scan that enumerates many siblings). The budget guidance routes the run to the
 # abstraction rule that keeps it tight, instead of writing long then trim-looping.
@@ -328,11 +303,8 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     date_text = artifact_date.isoformat()
     resolved_title = default_title(title)
     subject_key = invocation_subject_key(title=title, subject=subject)
-    resolved_max_lines = _resolved_max_artifact_lines(adapter)
-    size_budget = (
-        {"max_lines": resolved_max_lines, "guidance": SIZE_GUIDANCE}
-        if resolved_max_lines is not None
-        else None
+    size_budget = _scaffold_lib.size_budget(
+        _debug_validator, _MAX_ARTIFACT_LINES, adapter, guidance=SIZE_GUIDANCE
     )
     payload = _resolve_artifact_path.payload_for(
         repo_root,

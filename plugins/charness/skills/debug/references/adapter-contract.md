@@ -29,6 +29,9 @@ Optional size budget:
   scaffold's `size_budget.max_lines` forecast resolve the same value, so raising
   it never leaves the author writing to a stale number. Must be a positive
   integer; a refused value is an adapter error and leaves the default enforced.
+  When the scaffold cannot reach the gate's resolver at all (a cross-tree
+  version skew), it forecasts the shipped default and says so in
+  `size_budget.source`, rather than presenting a stale number as resolved.
   There is no upper bound: the ceiling is this repo's to set.
 
 ## Artifact Rule
