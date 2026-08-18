@@ -31,8 +31,8 @@
   the `accepted-risk-unguarded` rows are the ones that would still use a charness default.
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .` prints that count
   on every run so it stays decided rather than forgotten.
-- **The standing lane is RED on a flake, not on this work.** In
-  [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py),
+- **The standing lane is RED on a flake, not on this work.** The web-fetch cleanup tests
+  in [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) hold it:
   `test_acquire_closes_session_on_sigterm_mid_render` waits 10s for a fake agent-browser
   subprocess to log; it fails only under the full parallel lane and passes in isolation,
   under partial parallelism, and on the pre-session base tree. It blocks pre-push.
