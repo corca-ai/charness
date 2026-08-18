@@ -141,7 +141,7 @@
       "verdicts": [
         {
           "verdict": "accepted-risk-unguarded",
-          "reason": "_load_debug_adapter (lines 32-50) calls the debug skill's resolve_adapter.py load_adapter() (which uses adapter_lib.declared_fields_after_version_check) and returns the raw payload with no check of ['errors']/['valid']; current_debug_artifact_path (53-61) and plan_risk_interrupt (237-333) act directly on adapter['data']['output_dir'] with no version guard anywhere in the file (confirmed: no 'errors'/'valid'/adapter_version_verdict reference in the whole module)."
+          "reason": "_load_debug_adapter (lines 32-50) calls the debug skill's resolve_adapter.py load_adapter() (which uses adapter_lib.declared_fields_after_version_check) and returns the raw payload with no check of ['errors']/['valid']; current_debug_artifact_path (53-61) and plan_risk_interrupt (237-333) act directly on adapter['data']['output_dir'] with no version guard anywhere in the file (confirmed: no 'errors'/'valid'/adapter_version_verdict reference in the whole module). SCOPED, after this row gained its second verdict: the parenthetical above covers the RESOLVER path only. It reads as completeness and is not -- see this row's `no-version-validation` verdict for the raw-line-scan fallback, which is why that class was invisible here."
         },
         {
           "verdict": "no-version-validation",
@@ -275,7 +275,7 @@
     },
     "skills/public/handoff/scripts/parse_handoff_entries.py": {
       "verdict": "guarded",
-      "reason": "_resolve_handoff_path now refuses via `_adapter_version_verdict.unspeakable_version_message(...)` before `adapter[\"artifact_path\"]` is read. The guard sits AFTER the explicit-path arm on purpose: `parse_handoff_entries.py <path>` asks the adapter nothing. Measured flip at 97dfc881a: a repo declaring `output_dir: docs/mine` under `version: 9` returned `handoff_path: <repo>/docs/handoff.md` with `ok: true` and a real `entry_count` -- a confident, well-formed answer about a file the repo does not use. Controls: version 1 returns `docs/mine/handoff.md`; no adapter returns the default; the explicit-path arm still works under version 9. Probe record: charness-artifacts/probe/2026-08-19-handoff-hitl-version-refusal.md."
+      "reason": "_resolve_handoff_path now refuses via `_adapter_version_verdict.unspeakable_version_message(...)` before `adapter[\"artifact_path\"]` is read. The guard sits AFTER the explicit-path arm on purpose: `parse_handoff_entries.py <path>` asks the adapter nothing FOR THE PATH IT PARSES. A round-2 bounded review narrowed that: `<path> --with-issues` DOES reach this adapter via `chunked_routing_issue_source.build_issue_entries`, and is safe only because THAT helper checks `adapter.get(\"valid\") is False` and returns `enabled: False` -- the helper's property, not this exemption's. Now held by `test_the_explicit_path_arm_with_issues_does_not_act_on_a_charness_default`. Measured flip at 97dfc881a: a repo declaring `output_dir: docs/mine` under `version: 9` returned `handoff_path: <repo>/docs/handoff.md` with `ok: true` and a real `entry_count` -- a confident, well-formed answer about a file the repo does not use. Controls: version 1 returns `docs/mine/handoff.md`; no adapter returns the default; the explicit-path arm still works under version 9. Probe record: charness-artifacts/probe/2026-08-19-handoff-hitl-version-refusal.md."
     },
     "skills/public/handoff/scripts/plan_handoff_run.py": {
       "verdict": "guarded",

@@ -136,7 +136,9 @@ def test_a_parser_refusal_refuses_at_the_same_place(
     else:
         assert "could not be parsed" in result.stderr, result.stderr
         assert "Traceback" not in result.stderr, result.stderr
-    assert default not in result.stdout
+    # Empty, not merely free of the default path: the refusal raises before any emit, so
+    # `default not in stdout` was near-vacuous against a blank stream.
+    assert result.stdout.strip() == "", result.stdout
 
 
 @pytest.mark.parametrize(("skill", "declared", "default"), SCAFFOLDS, ids=[s[0] for s in SCAFFOLDS])
@@ -217,15 +219,22 @@ def test_the_planner_behavior_change_this_slice_caused_is_pinned(
     """
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True, exist_ok=True)
-    (repo / ".agents" / f"{skill}-adapter.yaml").write_text(
-        f"version: 9\nrepo: demo\noutput_dir: docs/mine-{skill}\n", encoding="utf-8"
-    )
-    result = subprocess.run(
-        [sys.executable, str(ROOT / planner), "--repo-root", str(repo)],
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 1, result.stdout
-    assert "does not speak" in result.stderr
-    assert "adapter-readiness" not in result.stdout
-    assert "write_artifact_path" not in result.stdout
+    for version, expected in (("9", "does not speak"), ("!!int 9", "could not be parsed")):
+        (repo / ".agents" / f"{skill}-adapter.yaml").write_text(
+            f"version: {version}\nrepo: demo\noutput_dir: docs/mine-{skill}\n", encoding="utf-8"
+        )
+        result = subprocess.run(
+            [sys.executable, str(ROOT / planner), "--repo-root", str(repo)],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 1, result.stdout
+        assert expected in result.stderr, result.stderr
+        # `stdout.strip() == ""` rather than two absent tokens. A round-2 bounded review
+        # pointed out that asserting `"adapter-readiness" not in stdout` is satisfied by a
+        # degraded plan that merely drops that packet — so the published claim ("no plan at
+        # all") was weaker than its pin. `build_plan` raises before `emit_yaml`, so the
+        # exact claim is directly assertable.
+        assert result.stdout.strip() == "", result.stdout
+    # Both doors, because the collateral-change claim is stated unconditionally in the
+    # census reasons, the probe non-claim and the operator decision queue.

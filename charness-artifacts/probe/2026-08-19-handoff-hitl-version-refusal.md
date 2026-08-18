@@ -19,8 +19,14 @@ Head ref: working tree at 97dfc881a
 Base arm: base-observed
 Call sites unproven: none — each file holds ONE adapter-payload call site reached from
   its own entrypoint, and the guard sits above it. `parse_handoff_entries` additionally
-  has an EXPLICIT-PATH arm that never asks the adapter; the guard is placed after it, and
-  a test asserts that arm still works under a refused version
+  has an EXPLICIT-PATH arm placed before the guard; it asks the adapter nothing FOR THE
+  PATH IT PARSES, and a test asserts it still works under a refused version. A round-2
+  bounded review found the unqualified version of that sentence false — `<path>
+  --with-issues` reaches this adapter through
+  `chunked_routing_issue_source.build_issue_entries` — and the field said `none` while
+  the body below named that path as untested. It is now MEASURED rather than argued: the
+  helper's own `valid` check makes it contribute nothing, and
+  `test_the_explicit_path_arm_with_issues_does_not_act_on_a_charness_default` holds it
 
 ## Source text
 
@@ -111,8 +117,11 @@ no file at the default location.
   handoff adapter, through `chunked_routing_issue_source.build_issue_entries` and its
   `issue_source:` block. That path is safe today because the helper checks
   `adapter.get("valid") is False` and returns `enabled: False`, so no charness default is
-  acted on — but the safety is the helper's, not this exemption's, and no test covers
-  `<path> --with-issues` under `version: 9`.
+  acted on — the safety is the helper's, not this exemption's. That gap is now closed by
+  measurement rather than left as prose:
+  `test_the_explicit_path_arm_with_issues_does_not_act_on_a_charness_default` runs `<path>
+  --with-issues` under `version: 9` and asserts the named file is still parsed while
+  `issue_entry_count: 0`.
 
 ## Non-claims
 

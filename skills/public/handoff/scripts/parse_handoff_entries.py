@@ -67,8 +67,17 @@ def _resolve_handoff_path(args: argparse.Namespace) -> Path:
     # `docs/mine/handoff.md`.
     #
     # The explicit-path arm above is deliberately BEFORE this: a caller that named the
-    # file is not asking the adapter anything, and refusing it would break
-    # `parse_handoff_entries.py docs/handoff.md`.
+    # file is not asking the adapter anything FOR THE PATH IT PARSES, and refusing it
+    # would break `parse_handoff_entries.py docs/handoff.md`.
+    #
+    # NARROWED by a round-2 bounded review, which found the unqualified sentence false:
+    # `<path> --with-issues` DOES reach this adapter, through
+    # `chunked_routing_issue_source.build_issue_entries` ->
+    # `chunked_routing_issue_config.load_issue_source_config`, which loads it by repo
+    # root. That path is safe because THAT helper checks `adapter.get("valid") is False`
+    # and returns `enabled: False` -- the helper's property, not this exemption's -- and
+    # `test_the_explicit_path_arm_with_issues_does_not_act_on_a_charness_default` now
+    # holds it.
     refusal = _adapter_version_verdict.unspeakable_version_message(
         resolve_adapter.load_adapter, repo_root, adapter_name="handoff-adapter.yaml"
     )

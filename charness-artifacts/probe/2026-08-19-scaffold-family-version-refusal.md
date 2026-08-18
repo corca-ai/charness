@@ -34,12 +34,15 @@ specific of the five.
     },
 ```
 
-TWO of the other four say the same thing about their own `payload_for`, and each was read
-before its guard was placed. The remaining two are weaker as SOURCES and this record names
-them rather than quoting them as if they were equal: `scaffold_critique_artifact.py`'s
-reason is `"Already reported/known per task background as unguarded+consequential; not
-re-derived here"`, and `scaffold_handoff_artifact.py`'s cites the same pre-listed set. The
-census row is not the evidence for those two — the measurement below is.
+THREE of the other four derive their own finding the same way. Verified verbatim at the
+pinned revision rather than characterised: `scaffold_handoff_artifact.py`'s reason names
+`payload_for (line 163-177)` and `scripts/scaffold_artifact_lib.py` explicitly, and merely
+CITES the pre-listed set as corroboration — an earlier draft of this record called it a
+weak source alongside critique, which was an overclaim in the record's own direction and
+is corrected here. Exactly ONE row is genuinely non-derived:
+`scaffold_critique_artifact.py`'s reason is `"Already reported/known per task background as
+unguarded+consequential; not re-derived here"`. For that one the census row is not the
+evidence — the measurement below is.
 
 ## Stimulus
 
@@ -135,9 +138,11 @@ single generalized run could not produce:
   reading a number off this line.
 - The claim is about the write TARGET only. Nothing here asserts the scaffolds are correct
   in any other respect, or that the artifacts they produce are well-formed.
-- Two of the five census rows quoted above did not derive their own finding
-  (`critique`, `handoff` — both say "already known", one explicitly "not re-derived
-  here"). The measurement is the evidence for those two, not the row.
+- ONE of the five census rows did not derive its own finding: `critique`, whose reason
+  says "not re-derived here". The measurement is the evidence for that row. An earlier
+  draft of this record said TWO and named `handoff` as the second; checked verbatim at the
+  pinned revision, that row does derive its own finding and only cites the pre-listed set
+  beside it.
 - The base and head observables were captured by running the CLIs, not derived from the
   diff. The record cannot prove that to a reader; a distinct observer re-running the
   stimuli above can.

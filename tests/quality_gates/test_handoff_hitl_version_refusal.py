@@ -111,11 +111,15 @@ def test_a_speakable_version_reads_and_writes_where_the_repo_said(tmp_path: Path
 
 
 def test_an_explicitly_named_file_is_not_refused(tmp_path: Path) -> None:
-    """`parse_handoff_entries.py <path>` asks the adapter nothing.
+    """`parse_handoff_entries.py <path>` asks the adapter nothing FOR THE PATH IT PARSES.
 
     The guard sits AFTER the explicit-path arm on purpose. Refusing here would break the
     natural direct invocation over a repo whose adapter happens to be broken — and that
-    caller is not relying on the declaration at all.
+    caller is not relying on the declaration for the file it named.
+
+    The qualifier is load-bearing and was added by a round-2 bounded review:
+    `--with-issues` DOES reach the adapter. See
+    `test_the_explicit_path_arm_with_issues_does_not_act_on_a_charness_default`.
     """
     repo = _repo(tmp_path, handoff=DECLARED_HANDOFF.format(v="9"), hitl=None)
     result = _run(PARSE_ENTRIES, str(repo / "docs" / "mine" / "handoff.md"))
@@ -133,3 +137,31 @@ def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path) -> None:
     synced = _run(SYNC_REVIEW, "--repo-root", str(repo), "--session-id", "s1")
     assert synced.returncode == 0, synced.stderr
     assert "charness-artifacts/hitl/latest.md" in synced.stdout
+
+
+def test_the_explicit_path_arm_with_issues_does_not_act_on_a_charness_default(
+    tmp_path: Path,
+) -> None:
+    """The gap a round-2 bounded review found, closed by measurement rather than prose.
+
+    `parse_handoff_entries.py <path>` was exempted from the guard on the ground that a
+    caller naming the file "asks the adapter nothing". That is true FOR THE PATH IT
+    PARSES and false in general: `--with-issues` reaches the handoff adapter through
+    `chunked_routing_issue_source.build_issue_entries` ->
+    `chunked_routing_issue_config.load_issue_source_config`, which loads it by repo root.
+
+    The outcome is safe, and this pins WHY: that helper checks `adapter.get("valid") is
+    False` and returns `enabled: False`, so `build_issue_entries` yields nothing and no
+    charness default is acted on. The safety is the helper's property, not the
+    exemption's, and before this test nothing held it. The record's `Call sites unproven:
+    none` was resolving `covers_all_call_sites: true` while the record's own body named
+    this path as untested.
+    """
+    repo = _repo(tmp_path, handoff=DECLARED_HANDOFF.format(v="9"), hitl=None)
+    result = _run(PARSE_ENTRIES, str(repo / "docs" / "mine" / "handoff.md"),
+                  "--repo-root", str(repo), "--with-issues")
+    assert result.returncode == 0, result.stderr
+    # The named file is still parsed — the exemption holds for what it covers.
+    assert "docs/mine/handoff.md" in result.stdout
+    # And the adapter-derived issue source contributed nothing.
+    assert "issue_entry_count: 0" in result.stdout
