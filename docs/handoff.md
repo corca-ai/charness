@@ -19,8 +19,8 @@
   the current posture: gates, runtime signals, the pytest budget breach, and the
   recommended next quality moves.
 - The [digest](../charness-artifacts/retro/recent-lessons.md) holds what a session reads
-  before work. Main is pushed through the #640 closeout; the release commit and its
-  tag are NOT — they wait on the claims round. Version: `git describe --tags --abbrev=0`.
+  before work. The release is published and verified through a distinct channel; remote
+  and local are in sync. Version: `git describe --tags --abbrev=0`.
 
 ## Current State
 
@@ -33,10 +33,13 @@
 - **The pytest budget bar is RED and this session pushed past it with `--no-verify`**,
   on an explicitly re-authorized grant. Not a regression: isolated A/B on one machine
   read base 87.4s vs head 85.8s, ~40s under the in-gate figure, so most of the gap is
-  contention. The trigger's named work was then DONE and measured not to move the bar
-  (in-gate median 126645 -> 125850 after a 12% standing-set cut), so it was releveled
-  to 155000 on that refutation. [#668](https://github.com/corca-ai/charness/issues/668)
-  now owes the real fix: reduce what pytest competes with inside the gate.
+  contention, and the relevel that unblocked the release treated a symptom. OPERATOR
+  RULING: the bar should probably not block on wall time at all — it can block a
+  correct release and cannot block an incorrect one, and three separate release
+  blockers this session all measured machine load rather than code.
+  [#668](https://github.com/corca-ai/charness/issues/668) carries the two candidate
+  shapes (CPU time, or a multiple contention cannot explain) and is the NEXT session's
+  slice, deliberately not folded into a release.
 - **The resume lane deliberately runs NO surface gate and NO focused preflight**; the
   three reasons sit at the [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py) call site.
 - **The [#548 single-owner pointer resolver](../scripts/scaffold_artifact_lib.py) raises on a
@@ -51,12 +54,11 @@
 
 ## Next Session
 
-1. **#640's two stated non-claims owe small slices.** No test drives
-   `plugins/charness/` against a synthetic consumer, so the installed half rests on a
-   byte-identical mirror plus a static import trace. And a handoff adapter with an
-   UNSUPPORTED `version` drops `max_content_lines` via the early return in
-   [simple_skill_adapter_lib](../scripts/simple_skill_adapter_lib.py), while debug does
-   not — a real divergence, left alone because that return binds nine skills.
+1. **A handoff adapter with an UNSUPPORTED `version` drops `max_content_lines`** via
+   the early return in [simple_skill_adapter_lib](../scripts/simple_skill_adapter_lib.py),
+   while debug honors its ceiling in the same situation. Left alone during #640 because
+   that return binds nine skills. The installed-layout half was measured by hand this
+   session but still has no test driving `plugins/charness/`.
 2. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
    `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/`; a
    `scripts/`-only sweep misses
