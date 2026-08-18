@@ -19,6 +19,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 load_adapter = _resolve_adapter.load_adapter
 REQUESTED_REVIEW_TIMEOUT_SECONDS = 300
 
@@ -62,6 +65,25 @@ def _run_review_commands(repo_root: Path, commands: list[str]) -> list[dict[str,
 
 
 def build_payload(repo_root: Path, *, artifact_path: Path | None = None, run_commands: bool = True) -> dict[str, Any]:
+    # GUARDED AT THE READ SITE, not at `main()`. This gate has THREE entrypoints -- its own
+    # CLI, and `plan_release_run` and `publish_release_cli`, which both import
+    # `build_payload` directly -- so a refusal in `main()` alone would leave two of them
+    # reading charness defaults. Guarding where the payload is read covers all three by
+    # construction rather than by remembering to repeat it.
+    #
+    # WHAT IT COSTS TO BE UNGUARDED, measured on the real CLI rather than argued: with
+    # `version: 9` and a declared `requested_review_commands`, this gate printed
+    # `configuration status: not_configured` and `requested_review_commands is empty;
+    # requested-review enforcement is advisory-only for this release`, exit 0. The repo
+    # declared a command and a `block-if-unconfigured` policy; the gate reported the
+    # OPPOSITE of what the repo said and downgraded its own enforcement to advisory.
+    # Falling back to a charness default here is not the conservative arm -- it is a
+    # charness-chosen answer wearing the repo's name, on the surface that gates a publish.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="release-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     data = adapter["data"]
     resolved_artifact = artifact_path or (repo_root / adapter["artifact_path"])
