@@ -24,8 +24,10 @@
 ## Current State
 
 - **#640 is CLOSED**: `max_artifact_lines` (debug, quality) and `max_content_lines`
-  (handoff) are adapter fields; seven surfaces resolve them through
-  [resolve_adapter_line_budget](../scripts/artifact_validator.py). Inventory:
+  (handoff) are adapter fields. Five surfaces resolve them through
+  [resolve_adapter_line_budget](../scripts/artifact_validator.py); handoff's scaffold
+  and run planner apply the same rule from their own copies, because both must forecast
+  in an install with no repo-root `scripts/`. Inventory:
   `gh issue list --repo corca-ai/charness --state open`.
 - **The pytest budget bar is RED and this session pushed past it with `--no-verify`**,
   on an explicitly re-authorized grant. Not a regression: isolated A/B on one machine

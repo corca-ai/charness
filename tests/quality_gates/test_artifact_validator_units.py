@@ -126,3 +126,23 @@ def test_a_flattened_shared_path_is_still_not_a_skill_id() -> None:
         "skills/support/markdown-preview/scripts/markdown_preview_render.py",
     ):
         assert _artifact_validator._skill_id_from_scaffold(scaffold) is None, scaffold
+
+
+def test_an_absolute_installed_scaffold_path_still_names_its_owner() -> None:
+    """The installed hint emits an ABSOLUTE path so the printed command is runnable.
+
+    Anchoring the skill name on `parts[0] == "skills"` therefore dropped it for the one
+    reader the flattened arm was added for. Located, not positional.
+    """
+    assert (
+        _artifact_validator._skill_id_from_scaffold(
+            "/home/someone/.agents/plugins/charness/skills/handoff/scripts/scaffold_handoff_artifact.py"
+        )
+        == "charness:handoff"
+    )
+    assert (
+        _artifact_validator._skill_id_from_scaffold(
+            "/opt/charness/skills/shared/scripts/reviewer_boundary_fingerprint.py"
+        )
+        is None
+    )

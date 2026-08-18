@@ -36,11 +36,22 @@ def _scaffold_rel(artifact_type: str) -> str | None:
         registry = importlib.import_module("check_artifact_surface_preflight").REGISTRY
     except Exception:
         return None
+    tree_root = scripts_dir.parent
     for surface in registry:
         if surface.artifact_type == artifact_type and surface.scaffold:
             for candidate in _layout_spellings(surface.scaffold):
-                if (scripts_dir.parent / candidate).is_file():
-                    return candidate
+                resolved = tree_root / candidate
+                if not resolved.is_file():
+                    continue
+                # RELATIVE only when the reader's cwd can resolve it. In an installed
+                # layout `tree_root` is the PLUGIN root, not the consumer's repo, so a
+                # bare `skills/<id>/scripts/...` names a file that does not exist from
+                # where the reader is standing -- a hint naming an unrunnable command is
+                # worse than no hint, which is exactly the bar this arm was added under.
+                # Absolute is what `scaffold_artifact_lib.validator_command` already
+                # emits for the same reason; the `--repo-root .` the caller appends
+                # stays correct either way.
+                return candidate if candidate == surface.scaffold else str(resolved)
     return None
 
 
@@ -87,7 +98,13 @@ def _skill_id_from_scaffold(scaffold: str) -> str | None:
     that matters to a consumer was untestable while the rule lived inline.
     """
     parts = Path(scaffold).parts
-    if len(parts) < 3 or parts[0] != "skills":
+    # `skills` located rather than assumed at index 0: the installed layout emits an
+    # ABSOLUTE path (so the printed command is runnable from the consumer's cwd), and
+    # anchoring on position dropped the skill name for exactly that reader.
+    if "skills" not in parts:
+        return None
+    parts = parts[parts.index("skills") :]
+    if len(parts) < 3:
         return None
     if parts[1] == "public":
         return f"charness:{parts[2]}"

@@ -248,7 +248,19 @@ def collect_length(
             # default: the checker ships to consumers with the default baked in, and
             # a forecast that let it re-derive the number would reintroduce exactly
             # the disagreement this call site exists to prevent.
-            getattr(module, surface.check_attr)(lines, cap)
+            #
+            # Positional, with a TypeError fallback, because the checker gained its
+            # second parameter in the same release as this call: a mixed-version
+            # install (new preflight, vendored older validator) would otherwise raise
+            # an uncaught TypeError where the surrounding `except` only catches
+            # ValidationError -- a traceback instead of a forecast. The fallback loses
+            # the resolved cap for that install, which is the old behavior, not a new
+            # wrong one.
+            check = getattr(module, surface.check_attr)
+            try:
+                check(lines, cap)
+            except TypeError:
+                check(lines)
         else:
             _artifact_validator.validate_max_lines(lines, max_lines=cap, artifact_label=surface.label)
     except _artifact_validator.ValidationError as exc:
