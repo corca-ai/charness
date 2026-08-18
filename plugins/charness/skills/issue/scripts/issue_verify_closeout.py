@@ -264,7 +264,8 @@ def verify_closeout(
     hotl_dispositions = evaluate_hotl_dispositions(body, classification, numbers)
     ai_provenance = evaluate_ai_provenance(body, classification)
     probe_record = evaluate_probe_record(body, classification, numbers, repo_root=repo_root)
-    missing_fields.extend(_PROBE_FLOOR.probe_record_problems(probe_record))
+    if _PROBE_FLOOR.probe_record_blocks():
+        missing_fields.extend(_PROBE_FLOOR.probe_record_problems(probe_record))
     if carrier == "manual-fallback":
         reason_value = _first_field(_body_fields(body), ("manual close reason", "manual fallback reason"))
         if not _has_substantive_value(reason_value):
@@ -348,7 +349,7 @@ def verify_closeout(
         and behavioral_verdict["ok"]
         and hotl_dispositions["ok"]
         and ai_provenance["ok"]
-        and probe_record["ok"]
+        and (probe_record["ok"] or not _PROBE_FLOOR.probe_record_blocks())
     )
     status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
     # Additive migration: the bare status tokens sound terminal,
@@ -379,11 +380,17 @@ def verify_closeout(
     # already owned and surfaced by each carrier (`issue_close.py`, the commit-msg
     # hook), and duplicating it here would double-report it.
     review_advisory = list(resolution_critique_check.get("review_advisory", []))
+    # Its OWN key, not appended to `review_advisory`. That list is documented three lines
+    # up as carrying the critique-skip advisory ONLY, and widening it would both break the
+    # contract its own tests assert and bury the critique line this carrier exists to keep
+    # visible -- which is the exact defect (B2) the comment above records paying for.
+    probe_record_advisory = _PROBE_FLOOR.probe_record_advisory(probe_record)
     result = {
         "ok": ok,
         "status": status,
         "confirmation": confirmation,
         "review_advisory": review_advisory,
+        "probe_record_advisory": probe_record_advisory,
         "repo": repo,
         "numbers": numbers,
         "classification": classification,

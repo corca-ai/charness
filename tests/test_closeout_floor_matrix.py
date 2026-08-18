@@ -303,8 +303,11 @@ def test_a_bug_close_is_refused_by_every_body_floor(world: ProbeWorld) -> None:
         "resolution_critique": "fires",
         "consolidation_readback": "inert",
         # One rung below `behavioral_verdict`: that floor refuses silence about behavior,
-        # this one refuses a behavioral CLAIM that no probe record establishes.
-        "probe_record": "fires",
+        # this one reports a behavioral CLAIM that no probe record establishes. `inert`
+        # because it is held at REVIEW severity by operator ruling until slice 5 reports
+        # the 45-row cost -- the floor RUNS here, it just does not veto. Flip this cell
+        # when `PROBE_RECORD_SEVERITY` flips.
+        "probe_record": "inert",
     }
 
 

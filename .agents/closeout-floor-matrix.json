@@ -1,7 +1,7 @@
 {
   "schema": "closeout-floor-matrix/v1",
   "issue": "https://github.com/corca-ai/charness/issues/586",
-  "measured_on": "2026-08-18",
+  "measured_on": "2026-08-19",
   "how_to_read": [
     "Rows are (carrier, classification) pairs; cells are floors.",
     "`baseline: refused` means the carrier does not accept this classification at all, so no floor there is observable; `refusal_signature` pins WHICH refusal was seen.",
@@ -78,8 +78,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -111,8 +111,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -144,8 +144,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -178,7 +178,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -211,7 +211,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -248,8 +248,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -281,8 +281,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -314,8 +314,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -348,7 +348,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -381,7 +381,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -418,8 +418,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -451,8 +451,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -484,8 +484,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -518,7 +518,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -551,7 +551,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -583,8 +583,8 @@
           "reason": "with a `Consolidated into:` anchor present, moving the destination to CLOSED refuses the close. Only that one of the four tracker facts is probed; see `not_measured`."
         },
         "probe_record": {
-          "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "state": "input-refused",
+          "reason": "input-refused: this disposition asserts a move, not a fix, so the carrier refuses a `Probe record:` line outright as a repair claim before the floor can read it. `issue_consolidated_closeout._TARGETED_CLAIM_NAMES` carries it beside `Behavior`, `HOTL` and `Critique` for the reason that applies verbatim to all four."
         }
       }
     },
@@ -616,8 +616,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -649,8 +649,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -682,8 +682,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -716,7 +716,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -749,7 +749,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -781,8 +781,8 @@
           "reason": "with a `Consolidated into:` anchor present, moving the destination to CLOSED refuses the close. Only that one of the four tracker facts is probed; see `not_measured`."
         },
         "probe_record": {
-          "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "state": "input-refused",
+          "reason": "input-refused: this disposition asserts a move, not a fix, so the carrier refuses a `Probe record:` line outright as a repair claim before the floor can read it. `issue_consolidated_closeout._TARGETED_CLAIM_NAMES` carries it beside `Behavior`, `HOTL` and `Critique` for the reason that applies verbatim to all four."
         }
       }
     },
@@ -814,8 +814,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -847,8 +847,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -880,8 +880,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -914,7 +914,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -947,7 +947,7 @@
         },
         "probe_record": {
           "state": "skipped-by-design",
-          "reason": "skipped-by-design: this classification has no user-facing behavior to confirm, so its carrier carries no verification claim for a probe record to back. The obligation is triggered by the CLAIM, not by the classification, so a carrier that claims nothing owes nothing -- and the `BEHAVIORAL_VERDICT_CLASSIFICATIONS` reason genuinely transfers here, which was checked against this floor's subject rather than inherited from the neighbour."
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -984,8 +984,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -1017,8 +1017,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -1050,8 +1050,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -1084,8 +1084,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },
@@ -1118,8 +1118,8 @@
           "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
         },
         "probe_record": {
-          "state": "fires",
-          "reason": "this classification closes by changing user-facing behavior, so its `Behavior #N:` line CLAIMS a verification -- and a claim owes a `Probe record #N:` naming a record that resolves `evaluated`, or a typed disposition saying why no probe applies. One rung below `behavioral_verdict`: that floor refuses silence about behavior, this one refuses a claim no measurement establishes. It fires on every carrier that accepts the pair, including `close-with-comment` -- the carrier that mutates GitHub directly, and the one three earlier floors reached only after this same matrix read them inert there."
+          "state": "skipped-by-design",
+          "reason": "skipped-by-design BY OPERATOR RULING, not by the floor's own applicability. The probe-record floor RUNS on every accepting pair -- it resolves the named record and reports what it found -- and is held at REVIEW severity (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until slice 5 reports what a probe record costs across 45 real rows. So breaking its input does not flip the carrier's verdict and this cell reads inert. Flipping the constant to `block` is the whole change and both severities are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`; re-measure this column when it flips. NOT a claim that the floor is inapplicable here."
         }
       }
     },

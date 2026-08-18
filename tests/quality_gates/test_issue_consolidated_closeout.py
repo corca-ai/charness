@@ -144,6 +144,10 @@ def test_a_carrier_that_claims_a_repair_is_refused() -> None:
         "Resolution brief: what we delivered",
         "Prevention: a new gate",
         "Behavior #600: verified against the hosted run",
+        # A probe record ASSERTS the repair was measured, which is the one thing a
+        # consolidated close -- a move, not a fix -- may not say. The floor matrix already
+        # declared it a repair claim; the claim list had not been extended to match.
+        "Probe record #600: charness-artifacts/probe/x.md",
     ):
         report = evaluate(_GOOD + field + "\n")
         assert report["ok"] is False, field

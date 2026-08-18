@@ -27,19 +27,22 @@ the pre-implementation critique passes.
   produced substantial repairs and round 2 found one of those repairs shipping the class it
   repaired. Round-2 repairs are ACCEPTED-UNREVIEWED under the two-round cap. Full ledger in
   `## Slice Log`.
-- Current slice: 2 — wire the record into its two readers.
-- Current slice intent: make the probe record REQUIRED where a wrong claim escapes, not
-  merely produced — the issue-closeout rung-1 floor and the release publication floor —
-  and prove each refuses a carrier that omits it. Paying down debt rows is slice 5 and is
-  NOT in this intent.
-- Next action: add the issue-side floor as a NEW sibling module (do not put it in
-  `issue_closeout_rung1_floors.py`, whose docstring states it never imports repo-internal
-  `scripts/`; `issue_resolution_critique.py` is the precedent for a sibling that does).
-  Measured wiring points: `issue_verify_closeout.py:258` and `issue_close_comment_floor.py:68`
-  reach the issue side, and `release_issue_closeout.py:176` reuses the same floor; the
-  release PUBLICATION floor is the blocker family in `publish_release_preflight.py`.
-  **The floor must key on `state != evaluated`** — see Fixed Decision 3's
-  inverted-consumer-rule note, which exists because the sibling's rule is the opposite.
+- Slice 2 — the two readers: **COMPLETE**, held at REVIEW severity by operator ruling.
+  Round 1 found three ways to land an unbacked close, a vacuous guard on the second release
+  entrypoint, and a `consolidated` contract hole; all are repaired and pinned. Round-1
+  repairs plus the severity downgrade are ACCEPTED-UNREVIEWED under the two-round cap.
+  Full ledger in `## Slice Log`.
+- Current slice: 3 — measure `what_reads_this.py`'s residual for the adapter-loader shape.
+- Current slice intent: answer Open Question 3 on the surface that owns it, name the
+  enumeration step in implementation-discipline's Change Discipline, and disposition `#599`.
+  Paying down debt rows is slice 5 and is NOT in this intent.
+- Next action: slice 3. GROUNDWORK ALREADY MEASURED, so do not re-derive it —
+  `what_reads_this.py` takes only literal-name targets (`--symbol`/`--path`/`--config-key`)
+  and cannot express the adapter-loader SHAPE (`_is_adapter_loader_name`: underscore-stripped,
+  contains `CALL_TOKEN`, starts with `CALL_PREFIXES`), while the census already ships
+  `consumer_files()` at module level, unprefixed and importable, doing exactly that AST
+  enumeration. The answer is therefore documentation plus an implementation-discipline step,
+  NOT a new capability — cheaper than the goal assumed.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line
@@ -426,29 +429,39 @@ corpus stays the commitment. The residual risk this leaves live is recorded unde
 
 ## Operator Decision Queue
 
-- Decision: **slice 2 adds a standing per-close obligation to this repo, and the cost was
-  measured rather than estimated.** The probe-record floor now fires on every carrier that
-  accepts a behavioral classification — five issue carriers plus the release-draft lane —
-  so any close whose `Behavior #N:` line claims a verification owes a `Probe record #N:`
-  naming a record that resolves `evaluated`, or a typed disposition. Migrating the existing
-  suite to it took 67 failing tests across 15 files, and it added an operator-facing CLI
-  flag (`--close-issue-probe-record`) to `publish_release`. The obligation is triggered by
-  the CLAIM, not the classification, so an honest non-verifying close is untouched.
-  Owner: repo operator. Why deferred: the goal's `## User Acceptance` requires the floor to
-  REFUSE a missing field, so it is built and landed as specified; what is NOT settled is
-  whether the standing tax is worth it before slice 5 proves the mechanism on 45 real rows.
-  Unblock action: keep, or downgrade the floor to REVIEW severity until slice 5 reports.
-  Revisit trigger: the slice-5 five-row cost recount.
-- Decision: **public-skill validation for the `issue`, `quality` and `release` semantic
-  change was NOT performed this session.** `run_slice_closeout.py` reports `issue` as
-  `evaluator-required` and asks whether `evals/cautilus/scenarios.json` coverage should
-  change; Cautilus is eval-only and ask-before-run, and no grant exists, so it was not run
-  and the closeout was acknowledged with the decision recorded here rather than with a
-  silent pass. The consumer contract in `docs/public-skill-dogfood.json` is likewise NOT
-  refrozen. Owner: repo operator. Why deferred: running an evaluator is a granted action.
-  Unblock action: grant a Cautilus evaluation, or rule that scenario coverage is unchanged.
-  Revisit trigger: before any release that publishes these skills.
-
+- **DECIDED 2026-08-19 by the operator — the probe-record floor is held at REVIEW
+  severity, not blocking, pending slice 5.** The floor was built blocking, as
+  `## User Acceptance` bullet 2 specifies, and migrating the existing suite to it measured
+  the cost: 67 failing tests across 15 files, a standing obligation on every
+  verification-claiming close, and a new operator-facing flag on `publish_release`. The
+  operator chose to wait for slice 5's report across 45 real rows before paying that
+  standing. Implemented as ONE constant,
+  `issue_probe_record_floor.PROBE_RECORD_SEVERITY = "review"`, read by every carrier and by
+  the release side, so the two boundaries cannot drift apart on severity. Both severities
+  are pinned by `test_the_severity_switch_is_the_only_thing_that_decides_vetoing`, so the
+  flip after slice 5 is a proven one-line change. **Consequence recorded rather than
+  softened: `## User Acceptance` bullet 2 is NOT satisfied and cannot be while this holds** —
+  the floor is produced and read, not required. Revisit trigger: slice 5's five-row cost
+  recount, then the whole-corpus report.
+- **DECIDED 2026-08-19 by the operator — the `local-only-by-contract` escape stays.** A
+  close may satisfy the floor with a typed disposition instead of a record. The escape is
+  one line, and slice 2's review measured what that means: of the ~67 migrated tests, ZERO
+  exercise the record-reading path — every one takes the disposition branch. So the floor's
+  teeth on a claiming close rest on the rung-2 critique, not on the mechanism. Kept by
+  ruling, and made VISIBLE rather than silent: `claim_rests_on_disposition` names every
+  issue whose claim rests on a word rather than a measurement, and the carriers surface it
+  as a REVIEW line. What was NOT kept is the genuine contradiction — a disposition
+  asserting impossibility (`blocked-needs-operator`, `no-behavior-change`) beside a
+  verification claim is refused, because one of the two statements is false.
+- **DECIDED 2026-08-19 by the operator — Cautilus public-skill validation is skipped for
+  this slice.** `run_slice_closeout.py` reports `issue` as `evaluator-required` and asks
+  whether `evals/cautilus/scenarios.json` coverage should change. The operator ruled pass;
+  the closeout is acknowledged with `--ack-cautilus-skill-review` and this record, not with
+  a silent green. NOT done, and stated so: the consumer contract in
+  `docs/public-skill-dogfood.json` is not refrozen, and no evaluator scenario was reviewed.
+  Revisit trigger: before any release that publishes `issue`, `quality` or `release`.
+- **DECIDED 2026-08-19 by the operator — push happens after the retro**, not before. Every
+  commit in this run is local until then.
 - Decision: does quality's same-day scaffold overwrite stay (continue-in-place, as debug
   documents) or go (the defect `#628` reports)? The families currently disagree.
   Owner: repo operator. Why deferred: it is a design call, not a defect fix, and closing
@@ -501,7 +514,7 @@ decisions surfaced by the pre-implementation critique.
 
 ## Slice Log
 
-Not started.
+Slices 1 and 2 are complete, each with the two bounded review rounds the proof-surface rule requires.
 
 ### Slice 1: Slice 1 — the probe record
 
@@ -516,6 +529,20 @@ Not started.
 - Off-goal findings: None filed. Two facts measured that belong to later slices and are recorded rather than acted on: `what_reads_this.py` takes only literal-name targets (`--symbol`/`--path`/`--config-key`) and cannot express the adapter-loader SHAPE, while the census already ships `consumer_files()` at module level, unprefixed and importable — so Open Question 3's answer is documentation plus an implementation-discipline step, not a new capability. And `check_documented_command_flags.py` passes VACUOUSLY for the new CLI, because it reads documented invocations and no doc invokes it yet.
 - Lessons carried forward: The two defects no reviewer found were found by WRITING THE FIRST REAL RECORD: a quote cited against a living document rots the moment that document is edited (hence `Source revision:` and `git show`), and a field value the markdown gate forces to wrap was silently truncated to its first line — the `line-anchored-ledger-fields` hazard re-shipped on a brand-new surface. Both argue for producing one real artifact before reviewing the mechanism that consumes it. Second: `green-test-is-not-covered-line` paid off twice — the coverage read found four unreached branches, and two repaired tests were passing on an EARLIER refusal than the one they were named for, which only re-running after the repair exposed. Third: for slice 2, `boundary_probe_lib` warns callers not to key on `state != PROBE_EVALUATED`; probe records invert that, so the floors MUST key on `state != evaluated`. Same words, opposite consumer rule. Fourth, and the sharpest: a repair round is itself a slice that can carry the class it repairs. Round 1's `local` gate and round 2's blocker are the same defect at two depths. The cheap detector is to ask, of every refusal added, "what is the CHEAPEST mutation that still gets past this?" -- for a path-shaped gate the answer was not a longer typo but a shorter one.
 - Metrics: Per-record authoring cost, recorded because slice 5's checkpoint is specified to measure against what slice 1 predicted: the one worked example took roughly 15 minutes end to end — drafting, two resolver runs to fix a wrapped-field truncation and a call-site grammar miss, and one edit to drop the arm labels. Estimate for a debt row, which additionally needs the base/HEAD captures actually RUN in a temp repo under the row's stated conditions and a call-site enumeration per file: materially more than the worked example, and the 5-row recount is the first honest measurement. No host token/time telemetry is claimed here.
+
+### Slice 2: Slice 2 — wire the record into its two readers
+
+- Objective: Make the probe record REQUIRED where a wrong claim escapes rather than merely produced — the issue-closeout rung-1 floor and the release close-issue boundary — and prove each reacts to a carrier that omits it. Held at REVIEW severity by operator ruling before landing; the mechanism, the wiring and the proof are complete, the veto is not armed.
+- Why this approach: The obligation is triggered by the CLAIM, not the classification, which is the goal's own thesis: a `Behavior #N:` line leading with a typed non-verifying status asserts no measurement and owes nothing, while one that says `confirmed via the CLI` asserts one and owes a record. Gating on classification instead would tax every honest non-verifying close for a claim it never made. The issue-side floor is a NEW sibling module rather than an addition to `issue_closeout_rung1_floors`, whose docstring states it never imports repo-internal `scripts/` — a property worth keeping, and `issue_resolution_critique` is the precedent for a sibling that reaches one.
+- Commits: `dc26d4cca` (the floors and their wiring), `d8437e0c0` (mapping and branch coverage), plus the review-round repair commit and the severity downgrade.
+- What changed: NEW `skills/public/issue/scripts/issue_probe_record_floor.py`, NEW `skills/public/release/scripts/release_closeout_floors.py` (holds BOTH release rung-1 floors; the behavioral-verdict floor moved here when `release_issue_closeout.py` crossed its 360-line gate), NEW `tests/quality_gates/test_probe_record_floor.py`. Wired into `issue_verify_closeout.py`, `issue_close_comment_floor.py`, and both release entrypoints in `release_issue_closeout.py`. Operator surface: `--close-issue-probe-record` on `publish_release`, threaded through publish and resume. Declared in `.agents/closeout-floor-matrix.json` with `closeout_floor_matrix_lib.py` taught the new floor's attribution. `issue_consolidated_closeout._TARGETED_CLAIM_NAMES` gained `probe record`. ~15 test files migrated.
+- Alternatives rejected: Rejected: putting the floor in `issue_closeout_rung1_floors` (erodes its stated no-repo-import property). Rejected: classification-triggered obligation (taxes honest non-verifying closes). Rejected in round 1's fold: refusing EVERY disposition beside a claim — `local-only-by-contract` means 'verified locally and the contract accepts local', which is coherent with a claim rather than a contradiction; only impossibility-asserting dispositions are refused. Rejected: appending the probe advisory to the shared `review_advisory` list, whose own comment reserves it for the critique-skip line and whose tests assert that.
+- Targeted verification: 10251 standing tests pass; `-m release_only` 102 pass; floor matrix `ok: true` across all 36 pairs, re-measured after the severity change; changed-line proof `clean`; dup ratchet clean; lengths, ergonomics and attention-state gates clean. The floor's reach is proven by INPUT BREAKAGE rather than by reading: the matrix deletes each floor's input per carrier and observes whether that carrier's own verdict flips and whether it attributes the refusal to that floor. Both severities are pinned by test, so the post-slice-5 flip is proven rather than hoped.
+- Test duplication pressure: `check_dup_ratchet.py` run at each boundary. Two families I introduced were REAL and were fixed rather than classified — two near-identical cross-skill loaders inside one file, and two copies of the target-binding rule inside another. Seven idiom families remain, classified with per-member reasoning; the largest has ~130 pre-existing members and is the repo's own bootstrap convention.
+- Critique: TWO bounded rounds. Round 1 found THREE ways to land a close or a publish asserting a verification nothing measured, all reproduced by the parent before folding. (1) `issues?\b` was mirrored from the sibling as a flat alternant and DROPPED the tracker-ref conjunct the sibling documents — so `Behavior #42: issues with the stale cache are gone; confirmed via a fresh checkout` led with an ordinary English word, owed nothing, and closed unbacked. The commonest way to start a bug sentence was a universal escape. (2) A typed disposition on the probe line discharged ANY claim, so the floor's refusal set never actually included 'a claim with no measurement'. (3) A record could live outside the repo, unreadable by the reviewer it exists for. Round 1 also found the second release entrypoint's guard VACUOUS: `--close-issue-behavior` defaults to `[]`, the probe floor is inert on silence by design, so the cheapest possible input reached `gh issue close` — the guard fired only when the caller volunteered something to check. And it found a contract hole: `consolidated`, the disposition whose whole point is claiming nothing about the defect, could carry a `Probe record:` line asserting the repair was measured, while the floor matrix had already declared that line a repair claim. The second round-1 reviewer enumerated all 31 migration sites and found ZERO weakened assertions, but measured that of ~67 migrated tests, ZERO exercise the record-reading path — every one takes the disposition branch — and found the resume lane hard-requiring a flag the primary lane never needed, which makes recovery stricter than the publish it recovers.
+- Off-goal findings: None filed. Two facts recorded for later slices: the release PUBLICATION floor named in the frame (`publish_release_preflight.py`) is not where this landed — the wiring is the release CLOSE-ISSUE boundary, and a publish that closes no issue owes no record, which is defensible but is not what the acceptance sentence says. And the standing lane covers the matrix at one cell; the whole-grid observation is `slow_corpus` and the end-to-end gate is `release_only`, both deselected there.
+- Lessons carried forward: The wiring reproduced the very class it answers, TWICE, and both were found by mechanisms this repo already had rather than by me. The closeout floor matrix read `inert` for `close-with-comment` — a file whose own comments name that asymmetry three times, mine being the fourth instance of a floor landing on `verify_closeout` and never reaching the carrier that mutates GitHub directly. And `ensure_release_issues_closed` reaches `gh issue close` with resume able to skip the preflight entirely; its own comment says so, beside an authorization call re-run for exactly that reason. Second lesson: a repair round is itself a slice that can carry the class it repairs — round 2 of slice 1 proved that, and round 1 of slice 2 proved it again when my `issues?\b` mirror dropped the conjunct the source it mirrored had documented. The cheap detector both times was asking 'what is the CHEAPEST mutation that still gets past this?' — for a path gate the answer was a SHORTER typo, for a status vocabulary it was an ordinary English word.
+- Metrics: Migration cost measured rather than estimated: 67 failing tests across 15 files, from a starting point of zero. That figure is what the operator's REVIEW-severity ruling was made against. No host token/time telemetry is claimed.
 
 ## Context Sources
 

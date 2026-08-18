@@ -164,6 +164,18 @@ def evaluate_release_probe_record(
     )
 
 
+def release_probe_record_blocks() -> bool:
+    """Whether a failing probe-record floor vetoes a publish.
+
+    Read from the ISSUE skill's floor rather than restated, so the two boundaries cannot
+    drift apart on severity. When the issue floor is absent the answer is False -- absence
+    already produces a refusal payload with `library_unavailable`, and a second refusal
+    keyed on a severity nobody could read would be a guess.
+    """
+    floor = _load_probe_floor()
+    return bool(floor is not None and floor.probe_record_blocks())
+
+
 def fail_release_probe_record_floor(verdict: dict[str, Any]) -> None:
     floor = _load_probe_floor()
     detail = "\n".join(floor.probe_record_problems(verdict)) if floor is not None else str(verdict)

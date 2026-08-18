@@ -123,7 +123,7 @@ def evaluate_close_comment_floor(
         and hotl_dispositions["ok"]
         and ai_provenance["ok"]
         and resolution_critique.get("ok", True)
-        and probe_record["ok"]
+        and (probe_record["ok"] or not _PROBE_FLOOR.probe_record_blocks())
         and not consolidated_ledger
     )
     return {
@@ -152,8 +152,8 @@ def format_close_comment_floor_failure(report: dict[str, Any]) -> str:
             "  missing behavioral verdict: add a `Behavior: <distinct evidence channel>` line, "
             "or a typed non-verified disposition (HOTL status or local-only-by-contract)."
         )
-    for problem in _PROBE_FLOOR.probe_record_problems(report.get("probe_record", {})):
-        lines.append(f"  {problem}")
+    for line in _PROBE_FLOOR.probe_record_advisory(report.get("probe_record", {})):
+        lines.append(f"  {line}")
     hotl = report["hotl_dispositions"]
     for entry in hotl.get("undispositioned", []):
         target = entry.get("target") or f"#{report['number']}"

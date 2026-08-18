@@ -74,7 +74,7 @@ _REPAIR_ASSERTION_ALIASES = (
 # by a target segment before the colon (`Behavior <anchors>:`, `HOTL <anchor>:`). A
 # plain field pattern cannot see them, which is how a previous comment came to assert
 # `hotl`/`critique` coverage that no derivation could actually reach.
-_TARGETED_CLAIM_NAMES = ("behaviou?r", "hotl", "critique")
+_TARGETED_CLAIM_NAMES = ("behaviou?r", "hotl", "critique", "probe record")
 
 
 def _claim_field_names(ledger) -> tuple[str, ...]:

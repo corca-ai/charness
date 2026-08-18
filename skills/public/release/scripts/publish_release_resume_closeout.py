@@ -19,7 +19,6 @@ def _require_closeout_resume_inputs(args: Any) -> None:
         "--close-issue-classification": bool(args.close_issue_classification),
         "--close-issue-carrier-file": bool(args.close_issue_carrier_file),
         "--close-issue-behavior": bool(args.close_issue_behavior),
-        "--close-issue-probe-record": bool(args.close_issue_probe_record),
     }
     missing = [flag for flag, present in required.items() if not present]
     if not missing:
@@ -29,7 +28,8 @@ def _require_closeout_resume_inputs(args: Any) -> None:
         "closeout inputs; missing " + ", ".join(missing) + ". Re-run with "
         "--resume --publish-current plus the exact original --close-issue, "
         "--close-issue-classification, --close-issue-carrier-file, and "
-        "--close-issue-behavior and --close-issue-probe-record flags (and --close-issue-repo when it was explicit). "
+        "--close-issue-behavior flags, plus --close-issue-probe-record where the behavioral verdict "
+        "claims a verification (and --close-issue-repo when it was explicit). "
         "Recovery never infers or omits issue-close context."
     )
 

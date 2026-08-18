@@ -4738,6 +4738,13 @@
       "note": "`preflight_release_issues` and `ensure_release_issues_closed` in `release_issue_closeout`. Their overlap GREW this slice because both now run the probe-record floor -- and that is the point, not an accident: the module's own comment records that `ensure_release_issues_closed` reaches `gh issue close` directly and that resume/recovery can invoke it with NO preflight in the process. Guarding only one would leave one of two entrypoints to an irreversible boundary unguarded, which is the third of the three 2026-08-18 refutations this floor exists to answer. The repeated authorization call above it is the same deliberate redundancy for the same reason. Collapsing them would re-open the gap.",
       "reviewed_at": "2026-08-18",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8d1cc1a6935faa3f",
+      "note": "ROTATION of e9727b64a8140447, same two members and same reasoning: `preflight_release_issues` and `ensure_release_issues_closed` in `release_issue_closeout`. Their overlap grew again because BOTH now run BOTH rung-1 floors -- and that growth is the repair, not the defect. A round-1 review measured that re-running only the probe floor at the second entrypoint left a vacuous guard: `--close-issue-behavior` defaults to `[]`, the probe floor is inert on silence by design because the behavioral-verdict floor owns that refusal, so the cheapest possible input reached `gh issue close` with neither floor having said anything. The module's own comment records why the authorization call is likewise repeated there: this function reaches the irreversible call directly and resume/recovery can invoke it with no preflight in the process. Collapsing the two would re-open a gap at an irreversible boundary to save a few lines.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

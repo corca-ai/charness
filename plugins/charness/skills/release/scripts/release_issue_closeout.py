@@ -174,6 +174,9 @@ evaluate_release_probe_record = _delegate(
     "evaluate_release_probe_record", issue_index=2, absent=_probe_absent
 )
 fail_release_probe_record_floor = _delegate("fail_release_probe_record_floor")
+# `False` when the floors module is absent: that path already returns a refusal payload
+# naming what to install, and inventing a veto on a severity nobody could read is a guess.
+probe_record_blocks = _delegate("release_probe_record_blocks", absent=lambda *_a: False)
 
 
 def github_repo_slug(repo_root: Path, backend: dict[str, Any], *, run) -> str | None:
@@ -313,7 +316,7 @@ def preflight_release_issues(
         list(behavior_lines or []), list(probe_record_lines or []), issue_numbers, repo_root
     )
     payload["issue_closeout_probe_record"] = probe_record
-    if not probe_record["ok"]:
+    if not probe_record["ok"] and probe_record_blocks():
         fail_release_probe_record_floor(probe_record)
     if repo is None:
         raise SystemExit(
@@ -382,11 +385,21 @@ def ensure_release_issues_closed(
     # of two entrypoints to an irreversible boundary unguarded -- which is, precisely, the
     # third of the three 2026-08-18 refutations this floor exists to answer, reproduced in
     # the wiring of its own countermeasure.
+    # BOTH floors, not just the probe one. The probe floor is deliberately inert on silence
+    # -- an issue with no behavior line owes nothing HERE, because the behavioral-verdict
+    # floor already refuses that silence. Re-running only the probe floor therefore left the
+    # cheapest possible input (`behavior_lines=[]`, which is the argparse default) passing
+    # straight through to `gh issue close`: a guard that fires only when the caller
+    # volunteers something to check is not a guard.
+    behavioral_verdict = evaluate_release_behavioral_verdict(list(behavior_lines or []), issue_numbers)
+    payload["issue_closeout_behavioral_verdict"] = behavioral_verdict
+    if not behavioral_verdict["ok"]:
+        fail_release_behavioral_verdict_floor(behavioral_verdict)
     probe_record = evaluate_release_probe_record(
         list(behavior_lines or []), list(probe_record_lines or []), issue_numbers, repo_root
     )
     payload["issue_closeout_probe_record"] = probe_record
-    if not probe_record["ok"]:
+    if not probe_record["ok"] and probe_record_blocks():
         fail_release_probe_record_floor(probe_record)
     if repo is None:
         raise SystemExit("release close issue verification needs a GitHub repo; pass --close-issue-repo")

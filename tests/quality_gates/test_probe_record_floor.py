@@ -25,6 +25,7 @@ def _load(path: Path):
 _FLOOR_MOD = _load(_ISSUE_SCRIPTS / "issue_probe_record_floor.py")
 evaluate_probe_record = _FLOOR_MOD.evaluate_probe_record
 probe_record_problems = _FLOOR_MOD.probe_record_problems
+probe_record_advisory = _FLOOR_MOD.probe_record_advisory
 _FLOORS_MOD = _load(_RELEASE_SCRIPTS / "release_closeout_floors.py")
 _CLOSEOUT_MOD = _load(_RELEASE_SCRIPTS / "release_issue_closeout.py")
 _RELEASE_FLOORS = {
@@ -217,29 +218,46 @@ def test_the_release_floor_is_not_applicable_with_no_issues() -> None:
 # --- degraded installs, and the refusal text an operator actually reads --------
 
 
-def test_the_close_comment_carrier_names_the_probe_problem_in_its_refusal(tmp_path: Path) -> None:
-    # The carrier that mutates GitHub directly must SAY why it refused, or the floor is a
-    # silent no. This reaches the failure formatter, not just the verdict.
+def _claiming_body() -> str:
+    return _body(
+        "Classification: bug", "JTBD: x", "Root cause: y", "Debug artifact: z",
+        "Siblings: s", "Prevention: p",
+        "Critique: blocked synthetic-test-harness: no reviewer is spawned here",
+        "AI-provenance: agent-drafted",
+        "Behavior #42: confirmed via the CLI (distinct channel from CLOSED)",
+    )
+
+
+def test_the_close_comment_carrier_surfaces_the_probe_finding_without_vetoing(tmp_path: Path) -> None:
+    # At REVIEW severity the carrier must still SAY what the floor found. A floor that is
+    # advisory and silent is not advisory, it is absent.
     floor = runpy.run_path(str(_ISSUE_SCRIPTS / "issue_close_comment_floor.py"))
     report = floor["evaluate_close_comment_floor"](
-        repo_root=tmp_path,
-        body=_body(
-            "Classification: bug",
-            "JTBD: x",
-            "Root cause: y",
-            "Debug artifact: z",
-            "Siblings: s",
-            "Prevention: p",
-            "Critique: blocked synthetic-test-harness: no reviewer is spawned here",
-            "AI-provenance: agent-drafted",
-            "Behavior #42: confirmed via the CLI (distinct channel from CLOSED)",
-        ),
-        classification="bug",
-        number=42,
+        repo_root=tmp_path, body=_claiming_body(), classification="bug", number=42
     )
-    assert report["ok"] is False
-    text = floor["format_close_comment_floor_failure"](report)
-    assert "probe_record:#42" in text
+    assert report["probe_record"]["ok"] is False
+    assert report["ok"] is True, "REVIEW severity must not veto the close"
+    assert any("probe_record:#42" in line for line in probe_record_advisory(report["probe_record"]))
+
+
+def test_the_severity_switch_is_the_only_thing_that_decides_vetoing(tmp_path: Path, monkeypatch) -> None:
+    """Both severities pinned, so flipping the constant after slice 5 is a proven one-line
+    change rather than a hopeful one.
+
+    Held at `review` by operator ruling: the floor was built blocking as the goal's
+    acceptance specifies, the migration measured the cost, and the operator chose to wait
+    for slice 5's 45-row report before paying it standing.
+    """
+    assert _FLOOR_MOD.PROBE_RECORD_SEVERITY == "review"
+    assert _FLOOR_MOD.probe_record_blocks() is False
+
+    floor = runpy.run_path(str(_ISSUE_SCRIPTS / "issue_close_comment_floor.py"))
+    monkeypatch.setattr(floor["_PROBE_FLOOR"], "PROBE_RECORD_SEVERITY", "block")
+    blocked = floor["evaluate_close_comment_floor"](
+        repo_root=tmp_path, body=_claiming_body(), classification="bug", number=42
+    )
+    assert blocked["ok"] is False, "at `block` severity the same body must be refused"
+    assert "probe_record:#42" in floor["format_close_comment_floor_failure"](blocked)
 
 
 def test_the_release_floors_report_absence_rather_than_passing(monkeypatch) -> None:
@@ -315,28 +333,112 @@ def test_the_issue_floor_refuses_when_the_probe_library_is_unresolvable(monkeypa
     assert probe_record_problems(result) == [f"probe_record:{result['library_unavailable']}"]
 
 
-def test_the_second_release_entrypoint_refuses_an_unbacked_claim(tmp_path: Path) -> None:
+def test_the_second_release_entrypoint_records_an_unbacked_claim(tmp_path: Path) -> None:
     """`ensure_release_issues_closed` reaches `gh issue close` DIRECTLY.
 
-    The module's own comment records that resume/recovery can invoke it with no preflight
-    in the process, which is why the authorization check is re-run there. The probe floor
-    is re-run for the same reason: guarding only the preflight would leave one of two
-    entrypoints to an irreversible boundary unguarded. This test is that guarantee -- it
-    calls the second entrypoint alone and asserts it refuses BEFORE any backend call.
+    At REVIEW severity it records the finding into the payload rather than refusing; the
+    wiring at BOTH entrypoints is what matters, because resume/recovery can reach this one
+    with no preflight and a floor wired at one call site is guarded at one call site.
+    """
+    payload: dict = {}
+
+    def run(*_args, **_kwargs):
+        raise SystemExit("backend reached; this test only needs the floors' payload")
+
+    try:
+        _CLOSEOUT_MOD.ensure_release_issues_closed(
+            tmp_path, repo="example/demo", issue_numbers=[44], payload=payload,
+            run=run,
+            behavior_lines=["Behavior #44: confirmed via fresh checkout install"],
+            probe_record_lines=[], carrier_source="probe-floor-test",
+        )
+    except SystemExit:
+        pass  # the synthetic backend stops the run AFTER both floors have recorded
+    assert payload["issue_closeout_probe_record"]["ok"] is False
+    assert payload["issue_closeout_probe_record"]["missing"] == [44]
+    assert payload["issue_closeout_behavioral_verdict"]["ok"] is True
+
+
+def test_an_ordinary_english_issue_lead_is_not_a_defer() -> None:
+    # `issue`/`issues` is the one status token that is also a common English word, and the
+    # sibling floor splits it out with a tracker-ref conjunct FOR THAT REASON. Mirroring it
+    # as a flat alternant dropped the conjunct and made the commonest way to start a bug
+    # sentence a universal escape.
+    for claim in (
+        "issues with the stale cache are gone; confirmed via a fresh checkout install",
+        "Issue reproduced at base, verified via the CLI at HEAD",
+    ):
+        result = evaluate_probe_record(_body(f"Behavior #42: {claim}"), "bug", [42], repo_root=ROOT)
+        assert result["ok"] is False, claim
+        assert result["owing"] == [42], claim
+
+
+def test_a_defer_that_carries_its_tracker_ref_still_owes_nothing() -> None:
+    result = evaluate_probe_record(_body("Behavior #42: #99 tracks the residual"), "bug", [42], repo_root=ROOT)
+    assert result["ok"] is True
+    assert result["owing"] == []
+
+
+def test_a_typed_status_may_not_be_a_sentence_opener() -> None:
+    # `out-of-scope drift aside, verified via CLI` leads with a typed token and then makes
+    # a claim. The separator requirement is what splits a status from a sentence.
+    result = evaluate_probe_record(
+        _body("Behavior #42: out-of-scope drift aside, verified via CLI"), "bug", [42], repo_root=ROOT
+    )
+    assert result["ok"] is False
+    assert result["owing"] == [42]
+
+
+def test_an_impossibility_disposition_beside_a_claim_is_refused() -> None:
+    # "I measured this" and "measuring was impossible" cannot both be true; the floor
+    # refuses rather than picking one.
+    result = evaluate_probe_record(
+        _body("Behavior #42: confirmed via a fresh checkout install",
+              "Probe record #42: blocked-needs-operator"),
+        "bug", [42], repo_root=ROOT,
+    )
+    assert result["ok"] is False
+    assert "CLAIMS a verification" in " ".join(result["failed"][0]["reasons"])
+
+
+def test_a_claim_backed_only_by_a_disposition_is_reported_to_the_reviewer() -> None:
+    # `local-only-by-contract` is coherent with a claim, so it is accepted -- and it is the
+    # one-line escape from producing a record, so it is REPORTED. A reviewer who has to go
+    # looking for these is a reviewer who will not.
+    result = evaluate_probe_record(
+        _body("Behavior #42: confirmed via a fresh checkout install",
+              "Probe record #42: local-only-by-contract"),
+        "bug", [42], repo_root=ROOT,
+    )
+    assert result["ok"] is True
+    assert result["claim_rests_on_disposition"] == [42]
+
+
+def test_a_claim_backed_by_a_real_record_rests_on_no_disposition() -> None:
+    result = evaluate_probe_record(
+        _body(_CLAIM, "Probe record #42: charness-artifacts/probe/2026-08-18-standing-lane-flake-bar.md"),
+        "bug", [42], repo_root=ROOT,
+    )
+    assert result["ok"] is True
+    assert result["claim_rests_on_disposition"] == []
+
+
+def test_the_second_release_entrypoint_refuses_silence_too(tmp_path: Path) -> None:
+    """The guard that only fires when the caller volunteers something to check.
+
+    `--close-issue-behavior` defaults to `[]`, and the probe floor is deliberately inert on
+    silence because the behavioral-verdict floor owns that refusal. Re-running only the
+    probe floor at this entrypoint therefore let the CHEAPEST possible input reach
+    `gh issue close`. Both floors run here now.
     """
     import pytest
 
     def run_must_not_be_called(*_args, **_kwargs):
         raise AssertionError("refused before any backend call, or the guard is too late")
 
-    with pytest.raises(SystemExit, match="no probe record establishes"):
+    with pytest.raises(SystemExit, match="behavioral-verdict"):
         _CLOSEOUT_MOD.ensure_release_issues_closed(
-            tmp_path,
-            repo="example/demo",
-            issue_numbers=[44],
-            payload={},
-            run=run_must_not_be_called,
-            behavior_lines=["Behavior #44: confirmed via fresh checkout install"],
-            probe_record_lines=[],
+            tmp_path, repo="example/demo", issue_numbers=[44], payload={},
+            run=run_must_not_be_called, behavior_lines=[], probe_record_lines=[],
             carrier_source="probe-floor-test",
         )
