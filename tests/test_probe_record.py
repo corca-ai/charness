@@ -297,8 +297,15 @@ def test_call_sites_unproven_may_not_be_silent(tmp_path: Path) -> None:
     assert "`call_sites_unproven`" in _reasons(result)
 
 
-def test_named_unproven_call_sites_are_reported_not_hidden(tmp_path: Path) -> None:
+def test_named_unproven_call_sites_block_the_claim(tmp_path: Path) -> None:
+    # The STATE assertion is the point and it was missing: the two reporting keys below
+    # were already true before the repair, so the whole `reasons.append` could be deleted
+    # with all 59 tests still green -- a verdict change on a proof surface that the suite
+    # could not see. This is the third 2026-08-18 refutation's countermeasure; it is pinned
+    # here or it is not pinned.
     result = _resolve(_record(call_sites_unproven="adapter.py:41 reads the payload through a helper"), tmp_path)
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "remain unproven" in _reasons(result)
     assert result["covers_all_call_sites"] is False
     assert result["call_sites_unproven"].startswith("adapter.py:41")
 
@@ -374,12 +381,72 @@ def test_a_bad_revision_pin_may_not_be_excused_as_degraded(tmp_path: Path) -> No
 
 
 def test_a_source_outside_the_repo_is_never_verified(tmp_path: Path) -> None:
-    # Self-verifying provenance: a file the author wrote and no reviewer can open.
-    outside = tmp_path.parent / "outside-notes.txt"
-    outside.write_text(SOURCE_BODY, encoding="utf-8")
-    result = probe_record_lib.verify_source_quote(tmp_path, f"../{outside.name}", QUOTED)
+    # Self-verifying provenance: a file the author wrote and no reviewer can open. The
+    # containment check runs BEFORE any read, so this deliberately writes nothing outside
+    # `tmp_path` -- an earlier version created a decorative file there and implied a
+    # dependency the assertion does not have.
+    inner = tmp_path / "repo"
+    inner.mkdir()
+    (tmp_path / "outside-notes.txt").write_text(SOURCE_BODY, encoding="utf-8")
+    result = probe_record_lib.verify_source_quote(inner, "../outside-notes.txt", QUOTED)
     assert result["status"] == "unresolvable"
     assert "outside the repo" in result["reason"]
+    assert result["local"] is True, "an outside-repo ref must be refused, never excused as degraded"
+
+
+def test_an_extensionless_ref_is_not_excused_as_degraded(tmp_path: Path) -> None:
+    # Round 2's blocker: the previous repair keyed `local` on the PATH GRAMMAR, which
+    # requires a dot-extension -- so `adapterTYPO.py` was refused while `adapterTYPO` was
+    # excused. Deleting three characters was cheaper than the typo the repair had just
+    # closed. The repair shipped the class it repaired.
+    result = _resolve(
+        _record(source_ref="adapterTYPO", source_degraded_reason="quoted from the file as of today"),
+        tmp_path,
+    )
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert result["source_quote"]["local"] is True
+    assert "does not cover this" in _reasons(result)
+
+
+def test_a_prose_source_ref_is_not_excused_as_degraded(tmp_path: Path) -> None:
+    result = _resolve(
+        _record(source_ref="the vocabulary docstring", source_degraded_reason="paraphrased"),
+        tmp_path,
+    )
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+
+
+def test_only_an_inherently_unreadable_source_opens_the_degraded_escape(tmp_path: Path) -> None:
+    # The escape must stay OPEN for its real case, or the mechanism is unusable at the
+    # boundary it exists for -- `#599`/`#628` provenance is a GitHub issue body.
+    for ref in ("#628", "https://github.com/corca-ai/charness/issues/628", "issue #628"):
+        result = probe_record_lib.verify_source_quote(tmp_path, ref, QUOTED)
+        assert result["local"] is False, ref
+
+
+def test_a_one_sided_arm_label_does_not_manufacture_a_disagreement(tmp_path: Path) -> None:
+    # The asymmetric paste -- one transcript kept its arm banner line, the other retyped --
+    # left `["", "exit 1"]` against `["exit 1"]`, unequal, on two identical readings.
+    result = _resolve(
+        _record(base_observable="exit 1 (refusing)", head_observable="head\nexit 1 (refusing)"),
+        tmp_path,
+    )
+    assert result["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert "measured nothing" in _reasons(result)
+
+
+def test_an_unreadable_record_result_carries_the_full_shape(tmp_path: Path) -> None:
+    # `_result` exists so no branch can omit a key a consumer branches on; a second,
+    # hand-rolled construction of the same shape defeats exactly that, and the CLI's copy
+    # had already drifted past two keys. Compared against a REAL result rather than
+    # spot-checked, so a future key addition cannot skip this path either.
+    unreadable = probe_record_lib.unreadable_record_result("could not read it")
+    resolved = _resolve(_record(), tmp_path)
+    assert set(unreadable) == set(resolved)
+    assert set(unreadable["source_quote"]) == set(resolved["source_quote"])
+    assert unreadable["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert unreadable["residual_judgment"] == []
+    assert unreadable["source_quote"]["local"] is False
 
 
 def test_a_flattened_quote_does_not_verify_against_a_nested_source(tmp_path: Path) -> None:

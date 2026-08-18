@@ -31,11 +31,16 @@
   the `accepted-risk-unguarded` rows are the ones that would still use a charness default.
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .` prints that count
   on every run so it stays decided rather than forgotten.
-- **The standing lane is RED on a flake, not on this work.** The web-fetch cleanup tests
-  in [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) hold it:
-  `test_acquire_closes_session_on_sigterm_mid_render` waits 10s for a fake agent-browser
-  subprocess to log; it fails only under the full parallel lane and passes in isolation,
-  under partial parallelism, and on the pre-session base tree. It blocks pre-push.
+- **The standing-lane flake's BAR is repaired**, so the lane no longer blocks pre-push.
+  `test_acquire_closes_session_on_sigterm_mid_render` in
+  [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) bounded its readiness
+  wait with a 10s wall deadline, which measured the MACHINE — everything the child does
+  before the `open` call is unbounded work sized by how many xdist workers run beside it.
+  It now waits on the child's process state and fails fast and distinguishably if the
+  child exits. Proven on the bound observable rather than by a green run: against a child
+  reaching its `open` line at 12s, the old loop raises `AssertionError` at 10.0s and the
+  new one passes at 12.1s. Residual: a wall clock remains at 120s as a HANG BACKSTOP, so
+  a red there means investigate a hang — it is NOT an expected red to absorb.
 - **Issue triage ran against current HEAD.** Over half of the open set still reproduces;
   four are closeable with commit-level evidence (`#629`, `#628`, `#608`, `#528`) and three
   umbrellas (`#582`, `#583`, `#584`) are ready for an owner readback because their tracked
@@ -51,10 +56,12 @@
 
 ## Next Session
 
-1. **Fix the flake that blocks pre-push**, or the next slice cannot be pushed. The 10s
-   deadline in [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) is the
-   suspect; a load-dependent wait is a bar that measures the machine, which is the same
-   class `#668` already carries for the pytest budget.
+1. **Continue the active goal.** The current slice, the next action, and the discharged
+   precondition all live in the goal's own `## Active Operating Frame`, which is the
+   surface to read rather than this list while it is active:
+   the [probe-provenance and adapter-consumer-debt goal](../charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md)
+   holds that frame plus the slice log. Slice 1 (the probe record) has landed with two
+   bounded review rounds. The pre-push flake that used to head this list is discharged.
 2. **Pay down `accepted-risk-unguarded` in severity order, not file order.** The sharpest
    class is a gate that reports the OPPOSITE of truth — a declared trigger read back as
    "this repo declares none", exit 0. Release gates lead that class. Each row's consequence

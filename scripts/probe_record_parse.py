@@ -83,6 +83,7 @@ def parse_probe_record(text: str) -> dict:
     fields: dict[str, str] = {}
     duplicated: list[str] = []
     sections: dict[str, str] = {}
+    filled: set[str] = set()
     last_key: str | None = None
     heading: str | None = None
     fence: str | None = None
@@ -102,7 +103,12 @@ def parse_probe_record(text: str) -> dict:
                     # both arms led with the same command that made base==head fire on a
                     # real measurement.
                     body = "\n".join(buffer)
-                    sections[heading] = f"{sections[heading]}\n{body}".strip("\n") if sections.get(heading) else body
+                    # Keyed on `filled`, NOT on the truthiness of the stored value: a
+                    # heading seeds `""`, and an EMPTY first fence is still a fence that
+                    # ran, so a truthiness guard silently overwrote it instead of
+                    # appending the second -- the one case the append was added for.
+                    sections[heading] = f"{sections[heading]}\n{body}".strip("\n") if heading in filled else body
+                    filled.add(heading)
                 fence = None
                 buffer = []
             else:
@@ -129,9 +135,13 @@ def parse_probe_record(text: str) -> dict:
             if key in fields:
                 if key not in duplicated:
                     duplicated.append(key)
+                # The record is refused as ambiguous either way, but leaving `last_key`
+                # pointed at the duplicate glues its indented wrap onto the FIRST
+                # occurrence's value -- corrupting the very value the refusal reports.
+                last_key = None
             else:
                 fields[key] = match.group("value").strip()
-            last_key = key
+                last_key = key
             continue
         # INDENTED CONTINUATION. Field values here are prose that cites paths and node
         # ids, and the markdown gate wraps long lines -- so without this, a value that
@@ -258,14 +268,32 @@ def verify_source_quote(
     render as one, but it is not a verification either, and the record owes a degraded
     reason for it exactly as `evaluate_source_preservation` requires.
     """
+    # `local` DRIVES THE DEGRADED-REASON ESCAPE in `resolve_probe_record`, so it is set from
+    # the POSITIVE nonlocal test and never from "we fell off the end of the path grammar".
+    # A round-2 review measured why that distinction is the whole rule: keyed the other way,
+    # `local` was False for anything `_LOCAL_REF_RE` failed to match, and that regex requires
+    # a dot-extension -- so `Source ref: adapterTYPO` was EXCUSED while `adapterTYPO.py` was
+    # refused. Deleting three characters was cheaper than the typo the previous repair had
+    # just closed, and an author who hits "Fix the ref" reaches the escape by SHORTENING the
+    # thing they were told to fix. Extension-less real files (`Makefile`, `LICENSE`) sat in
+    # the same excused bucket. The repair shipped the class it repaired; this is round 2
+    # catching it, which is what the two-round rule on a proof surface is for.
     ref = (source_ref or "").strip().strip("`")
+    nonlocal_ref = bool(_NONLOCAL_REF_RE.match(ref))
     if not ref or not _substantive(source_text):
-        return {"status": "unresolvable", "reason": "no source ref or no quoted source text", "path": None, "local": False}
-    if _NONLOCAL_REF_RE.match(ref):
+        return {"status": "unresolvable", "reason": "no source ref or no quoted source text",
+                "path": None, "local": not nonlocal_ref}
+    if nonlocal_ref:
         return {"status": "unresolvable", "reason": f"`{ref}` is not a path this repo can open", "path": None, "local": False}
     match = _LOCAL_REF_RE.match(ref)
     if match is None:
-        return {"status": "unresolvable", "reason": f"`{ref}` does not name a readable path", "path": None, "local": False}
+        return {
+            "status": "unresolvable",
+            "reason": f"`{ref}` does not name a readable path, and is not one of the forms this "
+            "repo cannot read by nature (an issue ref, a URL)",
+            "path": None,
+            "local": True,
+        }
     rel = match.group("path")
     # A ref must resolve INSIDE the repo. `Path.__truediv__` lets an absolute ref replace
     # the root outright, so `/tmp/my-notes.txt` -- a file the author wrote themselves and

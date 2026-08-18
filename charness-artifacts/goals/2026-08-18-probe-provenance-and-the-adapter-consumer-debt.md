@@ -13,19 +13,28 @@ the pre-implementation critique passes.
   on 2026-08-18 (four bounded angles plus a counterweight pass) and its blockers are
   folded below; reshape mid-run only through `## Discuss Before Activation`.
 - Precondition DISCHARGED (logged outside the Slice Plan, not this goal's work): the
-  standing-lane flake is fixed at `8527936fd`. `test_acquire_closes_session_on_sigterm_mid_render`
-  now waits on the child's process state instead of a 10s wall deadline. Proven on the
-  bound observable, not by a green run: against a child reaching its `open` line at 12s,
-  HEAD~ raises `AssertionError` at 10.0s and HEAD passes at 12.1s. The standing lane is
-  green at this tree (10156 passed, 72.6s), recorded as context, never as the proof.
-  There is now NO expected-red baseline: any red in the standing lane stops the run.
-- Current slice: 1 — the probe record.
+  standing-lane flake's BAR is repaired at `8527936fd` — the 10s load-sensitive deadline in
+  `test_acquire_closes_session_on_sigterm_mid_render` is replaced by a liveness wait on the
+  child's process state. Proven on the bound observable, not by a green run: against a
+  child reaching its `open` line at 12s, HEAD~ raises `AssertionError` at 10.0s and HEAD
+  passes at 12.1s. The standing lane is green at this tree (10156 passed, 72.6s), recorded
+  as context, never as the proof. **Residual, matching the probe record's own non-claim
+  rather than overrunning it**: a wall clock remains at `_HANG_BACKSTOP_SECONDS = 120`, so
+  the load-dependent arm is rare and legible, not eliminated. No node is quarantined and
+  there is NO expected-red baseline: any red in the standing lane stops the run, and a red
+  on that node means investigate a hang.
+- Current slice: 1 — the probe record. COMPLETE pending round-2 fold; two bounded review
+  rounds ran, round 1 produced substantial repairs, round 2 read the repaired surface.
 - Current slice intent: build the probe record library and its resolver — quoted stimulus
   provenance, a base/HEAD pair bound to a named observable, in `boundary_probe_lib`'s
   typed vocabulary, with the no-base and no-build arms answered and written back into
   Fixed Decision 2. Wiring it into its two readers is slice 2 and is NOT in this intent.
-- Next action: answer Open Question 1's arms, then land `scripts/probe_record_lib.py`
-  with its tests, then the slice-1 fresh-eye round.
+- Next action: slice 2 — wire the record into the issue-closeout rung-1 floor and the
+  release publication floor. Measured wiring points: `issue_verify_closeout.py:258` and
+  `issue_close_comment_floor.py:68` reach the issue side (and `release_issue_closeout.py:176`
+  reuses the same floor); the release PUBLICATION floor is the blocker family in
+  `publish_release_preflight.py`. The floor must key on `state != evaluated` — see Fixed
+  Decision 3's inverted-consumer-rule note before writing it.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line
@@ -87,8 +96,22 @@ reach. A stimulus that flatly contradicts the stated conditions still resolves
 `evaluated`, and there is a test pinning that so it cannot be forgotten. The honest
 reading of row 2 is: **the conditions and the stimulus are placed side by side in one
 record for a distinct observer to compare.** That is a real P4 legibility tooth and it is
-not a mechanical one. Row 1 and row 3 stand — row 3 only after slice 1's review round,
-which found the call-site answer was reported and then ignored by the verdict.
+not a mechanical one.
+
+**Row 3 needs the same two-part treatment, and giving row 2 the correction while blessing
+row 3 was this very failure recurring one paragraph later.** Mechanised half, shipped: a
+record that NAMES an unproven call site can no longer resolve `evaluated` — slice 1's review
+found that answer was computed, printed, and then ignored by the verdict. Non-mechanised
+half: call-site coverage is SELF-REPORTED, and the round-2 agent that produced this
+refutation *believed* the file had one entrypoint. Such an author writes `none` in good
+faith and the record resolves `evaluated`. Slice 1 catches only the author who already
+knew. The countermeasure this table names for row 3 is enumeration (Fixed Decision 7,
+`consumer_files()`), which is **slice 3 and unshipped**, so row 3 does not stand on slice 1
+alone.
+
+Row 1 stands, and understates itself: the `#528` shape is caught twice, by base==HEAD
+disagreement and independently by the relative-indent preservation that refuses a
+flattened-mapping quote.
 
 The same review found the quote check crediting itself with `#528` in its own docstring,
 which is the "remedy set covers two failures and reports three" failure this section warns
@@ -136,13 +159,29 @@ first would reproduce the 2026-08-18 error 45 times.
 
   A `refusal` claim resolves `not-configured` — the vocabulary's word for "there is
   genuinely no question here" — and never `evaluated`, so a recorded refusal cannot be
-  read as evidence of a repair it never claimed. It owes a `Refusal reason:`.
+  read as evidence of a repair it never claimed. It owes a `Refusal reason:`, and it owes
+  the `base-not-applicable` arm (the reservation runs both ways).
+  The table gives each ARM's disposition, not the record's outcome: a differing arm still
+  lands `not-established` on a duplicated field, an unverified quote, an unknown claim
+  kind, or an unproven call site.
+  **Shipped in three files, all of which slice 2 needs**: `scripts/probe_record_lib.py`
+  (the judging half), `scripts/probe_record_parse.py` (the markdown grammar and the quote
+  verification), and `scripts/check_probe_record.py` — the command surface, whose
+  `--require-evaluated` mode is the tooth a floor calls. Default mode reports and exits 0
+  by design, so a floor that calls it without the flag gates nothing.
 - **A probe that measured nothing says so in the repo's existing typed vocabulary.**
   `scripts/boundary_probe_lib.py` already owns `evaluated` / `not-configured` /
   `not-established` plus `undetermined_reasons`, and carries an explicit comment that a
   further private spelling of "we could not tell" is how the concept drifts back apart. A
   base==HEAD probe resolves to `not-established` with an `undetermined_reasons` entry. Do
   not invent a new phrase.
+  **Same words, OPPOSITE consumer rule — slice 2 must not copy the sibling's.**
+  `boundary_probe_lib` keys its verdict on `hit`, and its own comment warns callers NOT to
+  key on `state != PROBE_EVALUATED`, because there `evaluated`/`hit=False` is a real
+  answer. A probe record inverts that deliberately: `evaluated` is reserved for "the
+  measurement backs the claim", so the floors slice 2 writes MUST key on
+  `state != evaluated`. Recorded here and not only in a docstring, because the shared
+  vocabulary is exactly what would make a floor author reach for the sibling's rule.
 - **Stimulus provenance is quoted, not summarized**: an issue body line, a spec docstring, or
   a shipped test fixture, reproduced verbatim, together with the conditions the source names.
 - **A row's probe covers every adapter-payload call site in the file, or names the ones it
@@ -228,22 +267,29 @@ first would reproduce the 2026-08-18 error 45 times.
 
 ## Boundaries
 
-- **Precondition, with a named owner and a stop condition**: the standing lane is red on a
-  load-dependent flake in `tests/test_web_fetch_cleanup.py`, node id
-  `test_acquire_closes_session_on_sigterm_mid_render`, which blocks pre-push. It is
-  [handoff](../../docs/handoff.md) Next Session item 1. The activating session clears it —
-  or deselects that node id with a recorded reason and a linked issue — before slice 1's
-  first push; the work is logged outside the Slice Plan and is not counted as this goal's
-  work. That node id is the expected-red baseline: any OTHER red in the standing lane stops
-  the run rather than being absorbed. If it is still red at the first push boundary, the run
-  lands locally, does not push, and hands the flake back as its own goal.
+- **Precondition — DISCHARGED 2026-08-18 at `8527936fd`**, by repair rather than by
+  deselection, so no node id is quarantined and there is no expected-red baseline. The
+  standing lane WAS red on a load-dependent flake in `tests/test_web_fetch_cleanup.py`,
+  node id `test_acquire_closes_session_on_sigterm_mid_render`, which blocked pre-push and
+  was [handoff](../../docs/handoff.md) Next Session item 1. Its 10s wall deadline is
+  replaced by a liveness wait on the child's process state. **Residual, stated because the
+  frame must not carry a stronger claim than the record it cites**: a wall clock still
+  exists at `_HANG_BACKSTOP_SECONDS = 120`, so the test is not load-independent — the
+  load-dependent arm is rare and legible rather than common and silent, which is what both
+  the test comment and the probe record's own `## Non-claims` say. A red on that node is
+  therefore a signal to investigate a hang, NOT an expected red to absorb.
+  The work is logged outside the Slice Plan and is not counted as this goal's work.
 - Issue close, release publish, and proof-surface authoring are irreversible boundaries.
   Each needs its own phase-scoped grant; none is inferred from a green gate.
 - Every slice that changes verdict logic on a proof surface owes the second bounded review
   round over the repaired surface, capped at two rounds per triggering slice. A first round
   producing no repairs discharges the obligation.
 - The census manifest is the row-level contract. A row's disposition changes only with a
-  behavioral probe attached, covering every call site in the file or naming the unproven ones.
+  behavioral probe attached, **covering every call site in the file**. A probe that NAMES
+  an unproven site is a complete, honest record and resolves `not-established`; it does not
+  move the row. The earlier phrasing here offered "or naming the unproven ones" as an equal
+  alternative, which is the permissive reading Fixed Decision 5's disambiguation exists to
+  kill and which the code no longer implements.
 
 ## User Acceptance
 
@@ -294,12 +340,21 @@ Ordered; the order is load-bearing.
   immediately after each slice commit and BEFORE the broad lane. A `noop`, `unproven`, or
   `partial` result on a debt commit is recorded as UNPROVEN for that row, not accepted.
 - `python3 scripts/check_documented_command_flags.py --repo-root .` whenever a slice adds or
-  documents a command flag.
+  documents a command flag. Note the gate reads DOCUMENTED invocations, so a command no doc
+  invokes yet passes it vacuously; that is its shape, not a green to lean on.
+- `python3 scripts/check_probe_record.py --repo-root . --record charness-artifacts/probe/2026-08-18-standing-lane-flake-bar.md --require-evaluated`
+  at commit boundaries once slice 1 has landed. The shipped exemplar is what every later
+  record is written by copying, and it resolves through a pinned revision, so an exemplar
+  that quietly stopped resolving would teach the wrong shape to all of them.
 
 ### High-Confidence Checks
 
 - `python3 scripts/run_standing_pytest.py` at slice and bundle boundaries, never at every
-  commit. Expected-red baseline is the one quarantined node id named in `## Boundaries`.
+  commit. **No expected-red baseline: any red stops the run.** This line previously named a
+  "quarantined node id" that never existed — the precondition flake was repaired, not
+  deselected — and instructing a future session to absorb a red on exactly the node whose
+  120s backstop is where a genuine hang would surface was the dangerous direction to be
+  wrong in.
 - `python3 -m pytest -q -m release_only`, mandatory for any slice-5 commit touching a release
   surface — release gates lead the severity order and the standing lane deselects them.
 - `python3 skills/shared/scripts/reviewer_boundary_fingerprint.py snapshot` before each
@@ -420,6 +475,20 @@ decisions surfaced by the pre-implementation critique.
 
 Not started.
 
+### Slice 1: Slice 1 — the probe record
+
+- Objective: Make a behavioral probe unable to claim more than it measured, as a populated evidence record with a typed outcome: a claim and its KIND, the observable named before the measurement, a stimulus quoted verbatim with provenance and the conditions its source names, and a base/HEAD reading of that one observable. Answer Open Question 1's arms before the rule is wired anywhere. Wiring into the two floors is slice 2 and was deliberately excluded.
+- Why this approach: The record is a separate artifact rather than carrier-body fields because the issue closeout floors read a carrier through `_strip_code_fences`, so verbatim stimulus and quoted source text — which need a fence to survive — are exactly the content those readers discard. `state` is imported from `boundary_probe_lib` rather than respelled, per Fixed Decision 3. One divergence is deliberate and recorded: base==HEAD resolves `not-established` here, where the sibling would call that `evaluated`/`hit=False`.
+- Commits: `8527936fd` (precondition, outside the Slice Plan), `57cde798e` (slice 1), `d9d9bb89b` (round-1 review repairs), plus the round-2 repair commit.
+- What changed: NEW `scripts/probe_record_lib.py` (judging: vocabulary, base arms, claim kinds, resolution), NEW `scripts/probe_record_parse.py` (reading: markdown grammar + quote verification; split out when the library crossed its 480-line limit, on the concept boundary `issue_closeout_rung1_floors` already names), NEW `scripts/check_probe_record.py` (the command surface; `--require-evaluated` is the gating mode a floor calls, default mode reports and exits 0 by design), NEW `tests/test_probe_record.py`, NEW `charness-artifacts/probe/2026-08-18-standing-lane-flake-bar.md` (the worked example, on real work rather than a fixture). Also `tests/test_web_fetch_cleanup.py` (precondition), `docs/handoff.md`, and `charness-artifacts/quality/dup-review.json` (two idiom families classified intentional).
+- Alternatives rejected: Rejected: carrier-body fields (the fence-stripping readers destroy the verbatim content). Rejected: a fourth private spelling of "we could not tell" (Fixed Decision 3). Rejected: a probe RUNNER in this slice — the record is an evidence record, not a gate that re-derives, and a runner is slice 5's affordance. Rejected in round 1's fold: a path-token heuristic on `Call sites unproven:` to detect a named site — too clever, and it false-positived on the repo's own exemplar; the anchored `none` grammar with a dash-only separator does the job.
+- Targeted verification: 64 tests, after round 2 (59 before). Mutation-proved rather than assumed for the call-site verdict gate: deleting the repaired lines fails `test_named_unproven_call_sites_block_the_claim` and passes everything else, which is what the pre-repair test could not do. 100% line coverage of BOTH modules MEASURED with coverage.py, not inferred from green — the first measurement found four uncovered branches that green tests had not reached. Changed-line proof `clean` (not `noop`) at both slice commits. Standing lane green at the slice boundary: 10215 passed in 75.8s, up exactly the 59 new tests from the 10156 baseline. `run_slice_closeout.py --skip-broad-pytest` green at each commit. Plugin mirror byte-identical for all three scripts. The precondition repair was proven on its bound observable rather than by a green run: against a child reaching its `open` line at 12s, the old loop raises `AssertionError` at 10.0s and the new one passes at 12.1s.
+- Test duplication pressure: `check_dup_ratchet.py --summary` run at each commit boundary. Two new code families surfaced, both idiom-sized guard clauses spanning unrelated predicates (`if not x: return False` across four members, `if not x: return []` across six). Both classified `intentional` in `dup-review.json` with the per-member reasoning rather than baselined; `status: clean` after each. Note the first classification pass reordered the whole file by sorting on id — reverted, and the entry appended in place, because incidental churn in a review ledger hides the entry being added.
+- Critique: TWO bounded review rounds, as the proof-surface rule requires; round 1 produced substantial repairs so round 2 was owed and ran. Round 1 (two reviewers, unnamed, `bounded-reviewer`, read-only) found the mechanism renderable `evaluated` by ALL THREE failure shapes it was built for. Every finding was re-measured by the parent before folding — each reproduced as a record exiting 0 under `--require-evaluated`, and all now exit 1. Blockers: `base-absent`+`existence` established the claim without reading either capture, so a record with NO observable sections passed; a record honestly NAMING an unprobed entrypoint still passed, because `covers_all_call_sites` was computed, printed and ignored by the verdict; the degraded-reason escape fired on any `unresolvable`, so a fabricated quote plus a one-letter path typo was accepted where the fabricated quote alone was refused; a quote flattened to column zero verified against a nested source — `#528`'s own mapping-vs-list confusion passing the check written for `#528`; an out-of-repo source ref read back `verified`; `Call sites unproven: TBD` passed completeness; the `none` separator class admitted `,` `;` `.` `-`, which continue a sentence; and captures differing only by a `base`/`head` label defeated base==HEAD — which the exemplar itself was teaching. Grammar defects: indented sub-lists parsed as phantom fields that stole the real field's value, repeated fields resolved first-wins so a record's own format EXAMPLE could win over the values a human reads, multi-token fence info strings cascaded into a whole-record mis-parse, and a four-backtick fence closed on its first inner three. Honesty defects: the quote check credited itself with `#528` in its own docstring AND its test encoded the same wrong model — the blind spot in the code and in its test being the same blind spot; the blind class both over- and under-claimed. Round 2 ran a code angle over the repaired surface plus a GOAL-CLAIMS audit, which found the artifact overclaiming in four places, including my own `#628` correction blessing row 3 in the same breath — the covered-two-reported-three failure recurring one paragraph after the correction that fixed it. Boundary fingerprint snapshot/verify around each round; round 1 verified `ok: true` / `parent-attributed` (only the declared parent commit). ROUND 2 WAS NOT CLEAN, and its blocker is the reason the two-round rule exists: repair 3 SHIPPED THE CLASS IT REPAIRED. Round 1 had closed a degraded-reason escape by gating it on a `local` flag, but the flag was derived from the PATH GRAMMAR, which requires a dot-extension -- so `Source ref: adapterTYPO.py` was refused while `Source ref: adapterTYPO` was excused, with a wholly fabricated quote, resolving `evaluated`. Deleting three characters was cheaper than the typo the repair had just closed, and an author hitting the "Fix the ref" refusal reached the escape by SHORTENING the thing they were told to fix; extension-less real files (`Makefile`, `LICENSE`) sat in the same excused bucket. `local` is now set from the POSITIVE nonlocal test. Round 2 also found repair 2 -- the call-site verdict gate, the countermeasure for the third 2026-08-18 refutation -- carrying NO test: its only test asserted two keys that were already true before the repair, so the four repaired lines could be deleted with all 59 tests green. A verdict change on a proof surface that the suite could not see is the class this repo keeps paying for; the test now asserts the state and the reason, and the mutant was run and KILLED rather than assumed. Third, `_ARM_LABEL_RE` replaced a whole-line arm banner with `""` instead of dropping the line, so the ASYMMETRIC paste (one transcript kept its banner, the other retyped) manufactured exactly the disagreement the strip prevents. Fourth, the CLI hand-built a second copy of the result shape whose single owner exists so no branch can omit a key -- and it had already drifted past `residual_judgment` and the `local` flag; there is now one construction site. Per the operating contract's two-round cap, these round-2 repairs are recorded as ACCEPTED-UNREVIEWED: no third round read them.
+- Off-goal findings: None filed. Two facts measured that belong to later slices and are recorded rather than acted on: `what_reads_this.py` takes only literal-name targets (`--symbol`/`--path`/`--config-key`) and cannot express the adapter-loader SHAPE, while the census already ships `consumer_files()` at module level, unprefixed and importable — so Open Question 3's answer is documentation plus an implementation-discipline step, not a new capability. And `check_documented_command_flags.py` passes VACUOUSLY for the new CLI, because it reads documented invocations and no doc invokes it yet.
+- Lessons carried forward: The two defects no reviewer found were found by WRITING THE FIRST REAL RECORD: a quote cited against a living document rots the moment that document is edited (hence `Source revision:` and `git show`), and a field value the markdown gate forces to wrap was silently truncated to its first line — the `line-anchored-ledger-fields` hazard re-shipped on a brand-new surface. Both argue for producing one real artifact before reviewing the mechanism that consumes it. Second: `green-test-is-not-covered-line` paid off twice — the coverage read found four unreached branches, and two repaired tests were passing on an EARLIER refusal than the one they were named for, which only re-running after the repair exposed. Third: for slice 2, `boundary_probe_lib` warns callers not to key on `state != PROBE_EVALUATED`; probe records invert that, so the floors MUST key on `state != evaluated`. Same words, opposite consumer rule. Fourth, and the sharpest: a repair round is itself a slice that can carry the class it repairs. Round 1's `local` gate and round 2's blocker are the same defect at two depths. The cheap detector is to ask, of every refusal added, "what is the CHEAPEST mutation that still gets past this?" -- for a path-shaped gate the answer was not a longer typo but a shorter one.
+- Metrics: Per-record authoring cost, recorded because slice 5's checkpoint is specified to measure against what slice 1 predicted: the one worked example took roughly 15 minutes end to end — drafting, two resolver runs to fix a wrapped-field truncation and a call-site grammar miss, and one edit to drop the arm labels. Estimate for a debt row, which additionally needs the base/HEAD captures actually RUN in a temp repo under the row's stated conditions and a call-site enumeration per file: materially more than the worked example, and the 5-row recount is the first honest measurement. No host token/time telemetry is claimed here.
+
 ## Context Sources
 
 - [The design north star](../../docs/design-north-star.md) — P4, P5, and the proof-surface
@@ -477,8 +546,9 @@ four bins. Fresh-Eye Satisfaction: parent-delegated. Packet consumed:
 - The census classifies FILES, not call sites, so a row could flip on one guarded site — the
   third 2026-08-18 refutation, replicated 45 times. Folded into Fixed Decisions and
   Behavioral Proof.
-- The acceptance set did not bind the goal's work: all five bullets passed with zero rows
-  repaid, bullet 4 was already satisfied today because the gate refuses an empty `reason`, the
+- The acceptance set did not bind the goal's work: all five bullets AS THEY THEN STOOD
+  passed with zero rows repaid, the then-bullet-4 (a dup-ratchet precedent, since replaced)
+  was already satisfied today because the gate refuses an empty `reason`, the
   real-close bullet was unsatisfiable, and the dup-ratchet precedent does not transfer (its
   accept validates an ID against a scanned universe with a regenerated baseline; a census
   verdict is authored). `## User Acceptance` was rewritten; the mis-named precedent was

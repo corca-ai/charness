@@ -265,7 +265,14 @@ def _observable_lines(text: str) -> list[str]:
     example did exactly that, so the one exemplar every later record copies would have
     made the module's central rule unfalsifiable.
     """
-    return [_ARM_LABEL_RE.sub("", line) for line in _normalized_lines(text)]
+    # EMPTIED LINES ARE DROPPED, not kept as `""`. `re.sub` replaces a whole-line label
+    # with the empty string rather than removing the line, so a capture pasted WITH its
+    # arm banner and the other retyped without one compared as `["", "exit 1"]` versus
+    # `["exit 1"]` -- unequal, `evaluated`, on two readings that are identical once the
+    # label is gone. The symmetric case the strip was written for worked; the asymmetric
+    # paste, which is the likelier one, manufactured exactly the disagreement the strip
+    # exists to prevent.
+    return [stripped for line in _normalized_lines(text) if (stripped := _ARM_LABEL_RE.sub("", line))]
 
 
 def resolve_probe_record(record: dict, *, repo_root: Path) -> dict:
@@ -403,6 +410,27 @@ def _result(
         "covers_all_call_sites": covers_all_call_sites,
         "call_sites_unproven": call_sites_unproven,
     }
+
+
+def unreadable_record_result(reason: str) -> dict:
+    """The result for a record that could not be read at all, built through `_result`.
+
+    It lives here rather than at the CLI because `_result` exists so no branch can omit a
+    key a consumer branches on -- and a SECOND, hand-rolled construction of the same shape
+    defeats that exactly. The CLI's copy was written before `residual_judgment` and
+    `source_quote["local"]` existed and silently never gained either, so a consumer written
+    against the documented contract would raise `KeyError` on precisely the could-not-read
+    path. One construction site is the only version of this guarantee that holds.
+    """
+    return _result(
+        PROBE_NOT_ESTABLISHED,
+        [reason],
+        {"status": "unresolvable", "reason": reason, "path": None, "local": False},
+        "",
+        "",
+        False,
+        "",
+    )
 
 
 def resolve_probe_record_text(text: str, *, repo_root: Path) -> dict:

@@ -42,16 +42,14 @@ def evaluate(repo_root: Path, record_path: Path) -> dict:
         # An unreadable record is `not-established` rather than a crash: "the record could
         # not be read" is exactly the kind of could-not-tell this vocabulary exists to say,
         # and a traceback at a closeout boundary reads as a broken tool, not as a refusal.
-        return {
-            "state": _probe_record.PROBE_NOT_ESTABLISHED,
-            "supports_claim": False,
-            "undetermined_reasons": [f"could not read the probe record at `{record_path}`: {exc}"],
-            "source_quote": {"status": "unresolvable", "reason": "record unreadable", "path": None},
-            "base_arm": "",
-            "claim_kind": "",
-            "covers_all_call_sites": False,
-            "call_sites_unproven": "",
-        }
+        #
+        # Built by the LIBRARY, not here. This used to be a hand-rolled dict, which is a
+        # second construction of a shape whose single owner exists so no branch can omit a
+        # key -- and it had already drifted, missing both `residual_judgment` and the
+        # `local` flag the degraded-reason gate reads.
+        return _probe_record.unreadable_record_result(
+            f"could not read the probe record at `{record_path}`: {exc}"
+        )
     return _probe_record.resolve_probe_record_text(text, repo_root=repo_root)
 
 
