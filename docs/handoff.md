@@ -36,8 +36,7 @@
   it; a gate witness its own repair's COMMENT satisfied; and a narrowing that landed in one
   of five surfaces. The cheap detector each time was the same question — what is the
   cheapest input that still gets past this — plus grepping the phrase rather than the file.
-  Per-round ledger:
-  [the goal's `## Slice Log`](../charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md).
+  The per-round ledger lives in [the goal's `## Slice Log`](../charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md).
 - **A behavioral probe can now say it measured NOTHING, and two boundaries read it.**
   The [probe record library](../scripts/probe_record_lib.py) types a record in
   `boundary_probe_lib`'s existing
