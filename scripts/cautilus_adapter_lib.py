@@ -5,8 +5,8 @@ from typing import Any
 
 from scripts.adapter_field_application import apply_optional_fields
 from scripts.adapter_lib import (
+    declared_fields_after_version_check,
     load_yaml_file,
-    validate_adapter_version,
 )
 
 ADAPTER_PATH = Path(".agents/cautilus-adapter.yaml")
@@ -162,7 +162,7 @@ def validate_cautilus_adapter_data(
     warnings: list[str] = []
     validated = infer_cautilus_defaults(repo_root, run_mode="adaptive")
 
-    validate_adapter_version(data, validated, errors)
+    data = declared_fields_after_version_check(data, validated, errors)
 
     apply_optional_fields(data, validated, errors, string_fields=STRING_FIELDS, list_fields=LIST_FIELDS)
 

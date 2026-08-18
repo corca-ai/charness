@@ -85,13 +85,33 @@ def test_validate_adapter_rejects_malformed_proof_surface(tmp_path: Path) -> Non
 
 
 def test_validate_adapter_rejects_non_list_proof_commands_and_bad_fields(tmp_path: Path) -> None:
-    data = {"proof_commands": "run-everything", "version": "one", "ledger_path": 3}
+    # `version: 1` is load-bearing, not decoration: a version this reader cannot speak
+    # stops it from reading the siblings at all, so declaring one here would satisfy this
+    # test with a single version error and prove nothing about the field validators.
+    data = {"proof_commands": "run-everything", "version": 1, "ledger_path": 3}
 
     _validated, errors, _warnings = resolve_adapter.validate_adapter_data(data, tmp_path)
 
     assert "proof_commands must be a list of mappings" in errors
-    assert "version must be an integer" in errors
     assert "ledger_path must be a string" in errors
+
+
+def test_an_unsupported_version_is_the_only_error_and_nothing_else_is_read(tmp_path: Path) -> None:
+    """The other half of the case above, split out when the containment repair landed.
+
+    The two were one call because a bad version was a convenient extra refusal to bundle.
+    They cannot be: the version verdict decides whether the siblings are read at all, so
+    bundling them made a single assertion list unable to distinguish "every field was
+    refused" from "no field was read". Census-wide coverage lives in
+    `tests/quality_gates/test_adapter_version_reconciliation.py`; this row is the local
+    proof for hotl's own field vocabulary.
+    """
+    data = {"proof_commands": "run-everything", "version": "one", "ledger_path": 3}
+
+    validated, errors, _warnings = resolve_adapter.validate_adapter_data(data, tmp_path)
+
+    assert errors == ["version must be an integer"]
+    assert validated == resolve_adapter.validate_adapter_data({"version": "one"}, tmp_path)[0]
 
 
 def test_validate_adapter_warns_on_placeholder_and_empty_proof_surface(tmp_path: Path) -> None:

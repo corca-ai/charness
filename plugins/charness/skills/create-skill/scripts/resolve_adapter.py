@@ -21,7 +21,7 @@ _adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scrip
 load_yaml_file = _adapter_lib.load_yaml_file
 list_field_state = _adapter_lib.list_field_state
 optional_string = _adapter_lib.optional_string
-validate_adapter_version = _adapter_lib.validate_adapter_version
+declared_fields_after_version_check = _adapter_lib.declared_fields_after_version_check
 optional_string_list = _adapter_lib.optional_string_list
 
 ADAPTER_CANDIDATES = (
@@ -58,7 +58,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     warnings: list[str] = []
     validated = infer_repo_defaults(repo_root)
 
-    validate_adapter_version(data, validated, errors)
+    data = declared_fields_after_version_check(data, validated, errors)
 
     for field in STRING_FIELDS:
         value = optional_string(data.get(field), field, errors)

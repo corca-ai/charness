@@ -5,10 +5,10 @@ from typing import Any, Callable
 
 from scripts.adapter_field_application import apply_optional_fields
 from scripts.adapter_lib import (
+    declared_fields_after_version_check,
     load_yaml_file_report,
     parse_failure_error,
     uninterpreted_warnings,
-    validate_adapter_version,
 )
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 
@@ -152,9 +152,13 @@ def validate_simple_adapter_data(
     warnings: list[str] = []
     validated = infer_simple_adapter_defaults(repo_root, output_dir=output_dir)
 
-    validate_adapter_version(data, validated, errors)
-    if errors:
-        return validated, errors, warnings
+    # This site already contained its siblings, by early return; it now says so with the
+    # same construct the other 15 families adopted, so "which arm is the contract" is
+    # readable from one name instead of inferred from a control-flow difference. The two
+    # are equivalent here only because every key this function derives is already seeded
+    # by `infer_simple_adapter_defaults` -- which is NOT true at the sites that had to
+    # take the empty-mapping form.
+    data = declared_fields_after_version_check(data, validated, errors)
 
     # Numeric fields are OPT-IN per skill, unlike STRING_FIELDS. Nine skills share this
     # loader; accepting a numeric field for all of them would advertise a knob that only

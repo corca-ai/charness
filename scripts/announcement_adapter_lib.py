@@ -8,10 +8,10 @@ from typing import Any
 
 from scripts.adapter_field_application import apply_optional_fields
 from scripts.adapter_lib import (
+    declared_fields_after_version_check,
     list_field_state,
     load_yaml_file,
     optional_string,
-    validate_adapter_version,
 )
 from scripts.artifact_naming_lib import RECORD_PATTERN
 
@@ -198,8 +198,15 @@ def infer_announcement_defaults(repo_root: Path) -> dict[str, Any]:
 
 def _apply_simple_fields(
     data: dict[str, Any], validated: dict[str, Any], errors: list[str]
-) -> None:
-    validate_adapter_version(data, validated, errors)
+) -> dict[str, Any]:
+    """Returns the declared fields the REST of this validator may honor.
+
+    The return value is the containment: on a refused version it is empty, and the
+    structured/delivery passes that run after this one must read it rather than the
+    caller's original `data`, or they would honor a delivery seam declared under a
+    schema no reader here speaks.
+    """
+    data = declared_fields_after_version_check(data, validated, errors)
     apply_optional_fields(data, validated, errors, string_fields=STRING_FIELDS, list_fields=LIST_FIELDS)
     # INT_FIELDS keeps its own loop: its refusal carries field-specific operator
     # guidance ("0 disables splitting") that the shared vocabulary's generic message
@@ -212,6 +219,7 @@ def _apply_simple_fields(
             errors.append(f"{field} must be a non-negative integer (0 disables splitting)")
             continue
         validated[field] = raw_value
+    return data
 
 
 def _apply_structured_fields(
@@ -337,7 +345,7 @@ def validate_announcement_adapter_data(
     errors: list[str] = []
     warnings: list[str] = []
     validated = infer_announcement_defaults(repo_root)
-    _apply_simple_fields(data, validated, errors)
+    data = _apply_simple_fields(data, validated, errors)
     _apply_structured_fields(data, validated, errors)
     _delivery_warnings(data, validated, warnings, errors)
     _apply_public_body_shape(data, validated, errors)

@@ -439,7 +439,11 @@ def validate_quality_adapter_data(
     errors: list[str] = []
     warnings: list[str] = []
     validated = infer_quality_defaults(repo_root)
-    adapter_validators.validate_version_field(data, validated, errors)
+    # Rebinding `data` is the containment: every pass below reads it, and quality's
+    # adapter carries the widest trust surface in the repo (`gate_commands`,
+    # `cli_skill_surface_probe_commands`), so a version this reader cannot interpret
+    # must leave none of it selectable.
+    data = adapter_validators.validate_version_field(data, validated, errors)
     adapter_validators.apply_string_fields(data, validated, errors)
     configured_artifact_class = data.get("artifact_class")
     if configured_artifact_class is None:

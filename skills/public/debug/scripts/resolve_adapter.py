@@ -31,7 +31,7 @@ load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_co
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 optional_int = _scripts_adapter_lib_module.optional_int
 optional_string = _scripts_adapter_lib_module.optional_string
-validate_adapter_version = _scripts_adapter_lib_module.validate_adapter_version
+declared_fields_after_version_check = _scripts_adapter_lib_module.declared_fields_after_version_check
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 # Raw FILE lines, matching what `validate_debug_artifact.py` counts. Named for the
@@ -58,7 +58,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     warnings: list[str] = []
     validated = infer_repo_defaults(repo_root)
 
-    validate_adapter_version(data, validated, errors)
+    data = declared_fields_after_version_check(data, validated, errors)
 
     for field in STRING_FIELDS:
         value = optional_string(data.get(field), field, errors)

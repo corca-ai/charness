@@ -43,6 +43,27 @@ Anything beyond this needs a concrete justification tied to repeated work.
 Adapters may record capability ids, provider preferences, or env var names when
 those are genuinely repo-local defaults. They must not carry secret values.
 
+### `version` gates the whole document
+
+A resolver reconciles `version` against the one it speaks, and on a version it
+does not speak it honors **none** of the declared siblings — the resolved payload
+is the inferred defaults, and the only error is the version refusal. Absent is
+still legal and leaves the defaults in place; the commit-time adapter gate is the
+stricter reader that requires one.
+
+Write it that way in a new resolver:
+`data = declared_fields_after_version_check(data, validated, errors)` from
+`scripts/adapter_lib`, rebinding `data` so the passes below it read the contained
+mapping. The reason it is a mapping rather than an early return: most validators
+derive keys their `infer_defaults` never seeds, and a bare `return` hands
+consumers a payload missing keys they index directly.
+
+A version the reader cannot interpret says nothing about what its siblings
+*mean*, so honoring them lets a declaration steer a gate through a schema no
+reader read. `<authoring-repo>/tests/quality_gates/test_adapter_version_reconciliation.py`
+holds this for every resolver family; a new one is covered there the day it is
+added.
+
 ## Location
 
 Use the single repo-owned path `<repo-root>/.agents/<skill-id>-adapter.yaml`.

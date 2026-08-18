@@ -12,9 +12,21 @@ that only asserted "some error was raised" would pass on a resolver that refused
 unrelated reason, and one that only asserted the error string would pass on a resolver
 that errored and echoed the bad version anyway.
 
+The second defect, measured later: refusing the version and then honoring its SIBLINGS.
+15 of the 18 sites did, so a `version: 9` adapter still selected the artifact directory a
+gate reads, the repo identity it reports, and the line ceilings #640 made adapter-owned --
+a declaration steering a reader through a schema no reader read. Two families had a
+bespoke test for this; the parametrized containment pair below is the census-wide form,
+with a liveness control so a row cannot pass by sharing no field with the probe.
+
 One row is weaker than the rest and says so at its call site: the `validate_adapters_gate`
 row drives a gate that RAISES rather than returning a payload, so its payload assertions
 are satisfied by values the harness synthesizes. Its error assertions are real.
+
+Blind class: this measures RESOLVERS. It says nothing about a consumer that reads a
+correctly-contained payload and then ignores the `valid` flag beside it -- those readers
+are named in `VERDICT_CONSUMERS` rather than driven here -- and nothing about an adapter
+whose version this reader speaks but whose fields mean something else.
 """
 from __future__ import annotations
 
@@ -141,29 +153,46 @@ def _module(path: str) -> Any:
     return _LOADED[path]
 
 
-def _resolve(label: str, path: str, entry: str, version: Any, tmp_path: Path) -> tuple[dict[str, Any], list[str]]:
-    """Run one resolver family against a declaration of ``version`` and return
+def _scalar(value: Any) -> str:
+    """One declared value as YAML. The rendering is load-bearing: a bare `1` legitimately
+    parses back as an int, so the string case must be written quoted or the fixture tests
+    the loader's coercion instead of the resolver's version contract. Scalars only --
+    this repo's YAML reader is hand-rolled, and a flow sequence here would measure the
+    parser rather than the contract under test."""
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, str):
+        return f'"{value}"'
+    return str(value)
+
+
+def _render(declared: dict[str, Any]) -> str:
+    return "".join(f"{key}: {_scalar(value)}\n" for key, value in declared.items())
+
+
+def _resolve_declared(
+    label: str, path: str, entry: str, declared: dict[str, Any], tmp_path: Path
+) -> tuple[dict[str, Any], list[str]]:
+    """Run one resolver family against a whole DECLARED mapping and return
     ``(resolved payload, errors)``. The three call shapes below are the resolvers' own
-    signatures; nothing about the version contract varies with them."""
+    signatures; nothing about the version contract varies with them.
+
+    Takes the mapping rather than a bare version because the version verdict and what the
+    reader may honor ALONGSIDE it are one contract, and the sibling half cannot be
+    exercised through a version-only fixture."""
     module = _module(path)
     function: Callable[..., Any] = getattr(module, entry)
     if entry == "load_adapter":
         # This site validates only through a real file, so the declaration has to be
-        # rendered as YAML. The rendering is load-bearing: a bare `1` legitimately parses
-        # back as an int, so the string case must be written quoted or the fixture tests
-        # the loader's coercion instead of the resolver's version contract.
-        if version is True:
-            scalar = "true"
-        elif isinstance(version, str):
-            scalar = f'"{version}"'
-        else:
-            scalar = str(version)
+        # rendered as YAML.
         agents_dir = tmp_path / ".agents"
         agents_dir.mkdir(parents=True, exist_ok=True)
         # The filename is per-site, not per-entrypoint: two resolver families share the
         # `load_adapter` name and read different adapter files, so writing one hardcoded
         # name would leave the other reading an absent file and passing vacuously.
-        (agents_dir / _ADAPTER_FILENAMES[label]).write_text(f"version: {scalar}\n", encoding="utf-8")
+        (agents_dir / _ADAPTER_FILENAMES[label]).write_text(_render(declared), encoding="utf-8")
         report = function(tmp_path)
         return report["data"], report["errors"]
     if entry == "validate_adapter_yaml":
@@ -171,15 +200,9 @@ def _resolve(label: str, path: str, entry: str, version: Any, tmp_path: Path) ->
         # file. It is included here because it renders a version verdict on adapters --
         # and for `.agents/cautilus-adapters/*.yaml` it is the ONLY one that does.
         module_error = getattr(module, "ValidationError")
-        if version is True:
-            scalar = "true"
-        elif isinstance(version, str):
-            scalar = f'"{version}"'
-        else:
-            scalar = str(version)
         probe = tmp_path / ".agents" / "probe-adapter.yaml"
         probe.parent.mkdir(parents=True, exist_ok=True)
-        probe.write_text(f"version: {scalar}\nrepo: probe\n", encoding="utf-8")
+        probe.write_text(_render({"repo": "probe", **declared}), encoding="utf-8")
         # NOTE: for THIS row the payload half of each assertion is synthesized below,
         # not observed. The gate raises instead of returning a payload, so it has no
         # resolved dict to echo a bad version into; only the error half is real evidence.
@@ -189,12 +212,16 @@ def _resolve(label: str, path: str, entry: str, version: Any, tmp_path: Path) ->
             # Strip the `<path>: ` prefix so the wording assertions read the same message
             # every other site produces.
             return {}, [part.strip() for part in str(exc).split(":", 1)[-1].split(";")]
-        return {"version": version}, []
+        return dict(declared), []
     if label == "simple_skill":
-        resolved, errors, _ = function({"version": version}, repo_root=ROOT, output_dir="charness-artifacts/probe")
+        resolved, errors, _ = function(dict(declared), repo_root=ROOT, output_dir="charness-artifacts/probe")
         return resolved, errors
-    resolved, errors, _ = function({"version": version}, ROOT)
+    resolved, errors, _ = function(dict(declared), ROOT)
     return resolved, errors
+
+
+def _resolve(label: str, path: str, entry: str, version: Any, tmp_path: Path) -> tuple[dict[str, Any], list[str]]:
+    return _resolve_declared(label, path, entry, {"version": version}, tmp_path)
 
 
 def _version_errors(errors: list[str]) -> list[str]:
@@ -224,6 +251,81 @@ def test_simple_adapter_does_not_honor_sibling_fields_after_version_refusal(tmp_
     assert errors == ["version must be 1"]
     assert resolved["repo"] == tmp_path.name
     assert resolved["output_dir"] == "safe-output"
+
+
+# The fields a misversioned -- or hostile -- adapter would use to STEER a reader rather
+# than merely misdescribe itself: the artifact directory a gate reads and refuses paths
+# under, the repo identity every artifact reports, the issue backend's target org, and
+# the two line ceilings #640 made adapter-owned. Scalars only, for the reason `_scalar`
+# records.
+CONTAINMENT_PROBE: dict[str, Any] = {
+    "repo": "attacker-selected-repo",
+    "language": "attacker-selected-language",
+    "output_dir": "attacker-selected-output",
+    "artifact_dir": "attacker-selected-artifact-dir",
+    "default_org": "attacker-selected-org",
+    "max_artifact_lines": 4321,
+    "max_content_lines": 4321,
+}
+
+# Every SITES row except the commit-time gate, which raises instead of returning a
+# resolved payload -- the harness synthesizes its dict, so a containment assertion there
+# would be an assertion about the fixture. Its own containment is that it refuses the
+# whole file, proven by the wording tests above.
+CONTAINMENT_SITES = tuple(site for site in SITES if site[0] != "validate_adapters_gate")
+
+
+@pytest.mark.parametrize(
+    ("label", "path", "entry"), CONTAINMENT_SITES, ids=[site[0] for site in CONTAINMENT_SITES]
+)
+def test_no_declared_sibling_survives_a_version_refusal(label, path, entry, tmp_path) -> None:
+    """The census-wide half of the version contract, which the two bespoke tests around it
+    could only assert for their own family.
+
+    Measured when this was written: 15 of the 18 reconciling sites refused the version and
+    then honored every sibling anyway, so a `version: 9` adapter still selected
+    `output_dir`, `repo`, `language` and the debug/quality line ceilings. Only
+    `simple_skill`, `issue` and `capability_catalog` contained. A version the reader cannot
+    interpret says nothing about what its siblings MEAN, so honoring them is a declaration
+    steering a gate through a schema no reader read.
+
+    Asserted as equality against the version-only payload rather than field by field: that
+    is schema-agnostic, so a resolver that grows a new steering field is covered the day it
+    is added instead of the day someone remembers to extend a field list here. The
+    liveness test below is what keeps this from passing vacuously.
+    """
+    contained, errors = _resolve_declared(
+        label, path, entry, {"version": 9, **CONTAINMENT_PROBE}, tmp_path
+    )
+    bare, _ = _resolve_declared(label, path, entry, {"version": 9}, tmp_path)
+
+    assert _version_errors(errors) == ["version must be 1"], f"{label} accepted version 9: {errors}"
+    honored = {key: value for key, value in contained.items() if bare.get(key) != value}
+    assert not honored, f"{label} honored declared fields after refusing the version: {honored}"
+
+
+@pytest.mark.parametrize(
+    ("label", "path", "entry"), CONTAINMENT_SITES, ids=[site[0] for site in CONTAINMENT_SITES]
+)
+def test_the_containment_probe_actually_steers_every_site_it_covers(label, path, entry, tmp_path) -> None:
+    """The polarity control for the containment test, and the reason it is not vacuous.
+
+    Nothing in the containment assertion distinguishes "this site refused the probe" from
+    "none of these field names exist in this site's schema". A row whose schema shares no
+    field with the probe would pass containment forever while proving nothing, and would
+    keep passing after the containment was removed. So each row must show at least one
+    probe field reaching its resolved payload on a version it DOES speak. A failure here
+    means the probe needs that site's own steering field added -- not that the site is
+    contained.
+    """
+    steered, _ = _resolve_declared(label, path, entry, {"version": 1, **CONTAINMENT_PROBE}, tmp_path)
+    bare, _ = _resolve_declared(label, path, entry, {"version": 1}, tmp_path)
+
+    reached = {key: value for key, value in steered.items() if bare.get(key) != value}
+    assert reached, (
+        f"no CONTAINMENT_PROBE field reaches {label}'s resolved payload on a supported "
+        "version, so its containment row proves nothing; add a field this site honors"
+    )
 
 
 def test_issue_adapter_does_not_honor_backend_or_target_after_version_refusal(tmp_path: Path) -> None:

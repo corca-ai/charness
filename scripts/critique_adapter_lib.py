@@ -14,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file, optional_string, validate_adapter_version
+from scripts.adapter_lib import declared_fields_after_version_check, load_yaml_file, optional_string
 
 DEFAULT_OUTPUT_DIR = "charness-artifacts/critique"
 ADAPTER_CANDIDATES = (
@@ -179,7 +179,7 @@ def validate_adapter_data(
     warnings: list[str] = []
     validated = infer_repo_defaults(repo_root)
 
-    validate_adapter_version(data, validated, errors)
+    data = declared_fields_after_version_check(data, validated, errors)
 
     for field in STRING_FIELDS:
         value = optional_string(data.get(field), field, errors)

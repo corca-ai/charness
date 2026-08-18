@@ -44,7 +44,7 @@ def _load_adapter_lib():
 _adapter_lib = _load_adapter_lib()
 optional_bool = _adapter_lib.optional_bool
 optional_string = _adapter_lib.optional_string
-validate_adapter_version = _adapter_lib.validate_adapter_version
+declared_fields_after_version_check = _adapter_lib.declared_fields_after_version_check
 optional_string_list = _adapter_lib.optional_string_list
 
 _scaffold = None
@@ -236,7 +236,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     errors: list[str] = []
     warnings: list[str] = []
     validated = _defaults(repo_root)
-    validate_adapter_version(data, validated, errors)
+    data = declared_fields_after_version_check(data, validated, errors)
     for field in ("repo", "language", "artifact_dir"):
         value = optional_string(data.get(field), field, errors)
         if value is not None:
