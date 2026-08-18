@@ -36,7 +36,11 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
         env={},
     )
 
-    assert command[:6] == [sys.executable, "-m", "pytest", "-q", "-m", "not release_only"]
+    # Both full-lane markers, in ONE expression: `slow_corpus` rides the same switch as
+    # `release_only` so the two cannot drift into a lane that runs neither (#668).
+    assert command[:6] == [
+        sys.executable, "-m", "pytest", "-q", "-m", "not release_only and not slow_corpus",
+    ]
     assert "-n" in command
     assert "16" in command
     assert ["--maxschedchunk", "1"] == command[command.index("--maxschedchunk") : command.index("--maxschedchunk") + 2]

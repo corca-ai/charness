@@ -432,6 +432,7 @@ def test_the_commit_msg_carrier_reports_a_non_json_verdict_as_an_engine_failure(
         _commit_msg(world, "bug", "Closes #77\n", None)
 
 
+@pytest.mark.slow_corpus
 def test_the_cli_reports_agreement_and_can_emit_the_observed_grid(tmp_path: Path, capsys) -> None:
     """The `main()` path: exit 0, the operator summary, and `--emit-observed`."""
     out = tmp_path / "observed.json"
@@ -517,6 +518,7 @@ def _repo_with_declaration(tmp_path: Path, mutate) -> Path:
     return tmp_path
 
 
+@pytest.mark.slow_corpus
 def test_the_cli_reports_disagreements_with_their_finding_summary_and_remedy(
     tmp_path: Path, capsys
 ) -> None:

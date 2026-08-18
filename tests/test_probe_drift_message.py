@@ -34,6 +34,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.probe_drift_support import (
@@ -348,6 +349,7 @@ def test_each_command_carries_the_flags_that_make_it_the_command_it_is_paired_wi
         assert "--repo-root ." in command, command
 
 
+@pytest.mark.slow_corpus
 def test_the_recorded_floor_commands_actually_run() -> None:
     """EXECUTE them. Every other pin in this file is an existence predicate.
 

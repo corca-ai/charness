@@ -166,6 +166,7 @@ def test_focused_command_is_instrumentable_and_keeps_broad_marker_policy(gate) -
     assert gate._producer.is_instrumentable_pytest_command(command)
 
 
+@pytest.mark.slow_corpus
 def test_focused_command_excludes_a_release_only_execution_path(gate, tmp_path) -> None:
     """Execute the real child command, not only its token shape.
 

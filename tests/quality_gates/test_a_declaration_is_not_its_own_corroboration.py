@@ -14,6 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.probe_drift_support import FLOOR_PROBE, probe_drift_message
@@ -355,6 +356,7 @@ MEASURE = _load_script_module(
 PROBE = ROOT / "charness-artifacts" / "probe" / "2026-08-01-inventory-consumption-floor.json"
 
 
+@pytest.mark.slow_corpus
 def test_the_recorded_probe_still_matches_todays_tree():
     import json
 
@@ -402,6 +404,7 @@ def test_the_measurement_refuses_an_empty_corpus(tmp_path, monkeypatch, capsys):
     assert "not a measurement" in capsys.readouterr().err
 
 
+@pytest.mark.slow_corpus
 def test_the_measurement_floor_is_overridable_without_editing_the_gate():
     # The docstring's own rule is that a threshold is defended by a number that can be
     # re-run; the counterfactual floor was not re-runnable until `--floor` existed.

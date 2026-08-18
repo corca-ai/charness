@@ -10,6 +10,20 @@ tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"
 markers = [
   "release_only: excluded from standing pre-push but included in full local release/update quality gates",
+  # Added for #668, when the standing lane's runtime budget went red and the label's own
+  # REVISIT TRIGGER forbade a third relevel, naming "per-test profiling or a smaller
+  # standing set" instead. This is the smaller standing set.
+  #
+  # The line is WHAT THE TEST DRIVES, not how long it takes: a test that runs a real CLI
+  # over this repo's WHOLE corpus or its real export answers "does today's tree still
+  # pass", which is a regression question the full lane owns. A test that pins a rule
+  # against a seeded fixture answers "is the rule right", and that has to stay in front
+  # of every commit. Marking a test for its duration alone is how a standing lane
+  # quietly stops proving anything.
+  #
+  # These still RUN -- `run-quality.sh --release` includes them, and the release lane
+  # cannot pass without them. They move lanes; they are not deleted.
+  "slow_corpus: real-corpus or real-export CLI probe; runs in the full/release lane, not the standing one",
 ]
 
 [tool.ruff]

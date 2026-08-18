@@ -171,6 +171,7 @@ def test_a_partial_run_says_so_in_its_own_output(clean_repo: Path) -> None:
     assert "UNCHECKED, not proven clean" in payload["scope_note"]
 
 
+@pytest.mark.slow_corpus
 def test_the_clean_tree_passes_and_says_what_it_covered(clean_repo: Path) -> None:
     """The other half of the same rule: a FULL run states its denominator too, so `ok`
     is a claim about a number rather than an unqualified all-clear."""

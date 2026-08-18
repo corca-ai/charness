@@ -553,6 +553,7 @@ def test_block_the_blank_fires_when_auto_retro_holds_only_the_placeholder(tmp_pa
 # --- corpus invariant: grandfather never retroactively refuses -------------
 
 
+@pytest.mark.slow_corpus
 def test_live_corpus_pre_rule_goals_are_never_rung1a_refused() -> None:
     """No pre-rule (Created < rule date) completed goal is block-the-blank refused.
 
@@ -589,6 +590,7 @@ def _live_corpus_summary() -> tuple[dict, list[dict]]:
     return runner.summarize(rows), rows
 
 
+@pytest.mark.slow_corpus
 def test_live_corpus_summary_states_the_dated_denominator() -> None:
     """`in_scope` alone does not say what population it selected.
 
@@ -629,6 +631,7 @@ def test_live_corpus_summary_states_the_dated_denominator() -> None:
     assert named == actually_undatable
 
 
+@pytest.mark.slow_corpus
 def test_live_corpus_dated_denominator_does_not_collapse() -> None:
     """Fails if the dated population collapses into the undatable remainder.
 

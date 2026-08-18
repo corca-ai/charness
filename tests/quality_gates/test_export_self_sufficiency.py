@@ -31,6 +31,7 @@ _gate = import_repo_module(_ANCHOR, "scripts.check_export_self_sufficiency")
 # --- against the real export tree ---------------------------------------------
 
 
+@pytest.mark.slow_corpus
 def test_no_documented_entrypoint_crashes_on_a_bare_import() -> None:
     """The reported failure, asserted on the artifact a consumer installs: they
     followed a SKILL.md, ran the command, and got a bare ModuleNotFoundError."""
@@ -82,6 +83,7 @@ def test_a_third_party_name_that_collides_with_an_exported_entry_is_still_checke
     assert "scripts" in local, "a directory that contains Python is still local"
 
 
+@pytest.mark.slow_corpus
 def test_consumer_owned_roots_are_not_reported_against_the_real_export() -> None:
     """The negative case that decides whether the check is usable at all.
 
@@ -100,6 +102,7 @@ def test_consumer_owned_roots_are_not_reported_against_the_real_export() -> None
         assert _lib.CONSUMER_OWNED_ROOTS[owned], "every exemption carries its reason"
 
 
+@pytest.mark.slow_corpus
 def test_the_real_export_passes_its_own_gate() -> None:
     payload = _gate.run_check(ROOT)
     assert payload["status"] == "pass", payload

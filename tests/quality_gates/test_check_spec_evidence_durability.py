@@ -150,6 +150,7 @@ def test_skips_paths_inside_fenced_code_blocks(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
+@pytest.mark.slow_corpus
 def test_real_repo_passes(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[2]
     result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo_root))

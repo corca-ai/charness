@@ -137,6 +137,7 @@ def test_the_flags_exit_path_turns_that_detection_into_a_failure(
     assert audit.main() == 0
 
 
+@pytest.mark.slow_corpus
 def test_the_real_corpus_still_reports_a_clean_grandfather(audit) -> None:
     """The tripwire being armed must not mean it is tripping today."""
     rows = [audit.audit_goal(ROOT, p) for p in sorted((ROOT / audit.GOAL_DIR).glob("*.md"))]

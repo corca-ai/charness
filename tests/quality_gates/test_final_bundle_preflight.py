@@ -418,6 +418,7 @@ def test_final_bundle_private_error_and_render_branches(
     assert "Blockers: none" in lib.render_text(rich)
 
 
+@pytest.mark.slow_corpus
 def test_this_repo_is_currently_bundle_ready() -> None:
     """The single test that answers "is this repo bundle-ready right now".
 

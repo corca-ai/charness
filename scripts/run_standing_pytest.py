@@ -317,7 +317,11 @@ def build_pytest_command(
     env = os.environ if env is None else env
     command = [*choose_pytest_command(env), "-q"]
     if not include_release_only:
-        command.extend(["-m", "not release_only"])
+        # `slow_corpus` rides the same switch as `release_only` rather than getting its
+        # own flag: both name "runs in the FULL lane, not the standing one", and the
+        # release lane already turns this switch off. A second flag would let the two
+        # drift into a lane that runs neither.
+        command.extend(["-m", "not release_only and not slow_corpus"])
     command.extend(["--basetemp", str(basetemp)])
     if has_xdist(command[:3], env):
         command.extend(["-n", choose_xdist_workers(env)])
