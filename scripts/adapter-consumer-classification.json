@@ -302,8 +302,8 @@
       "reason": "The adapter read now refuses before `adapter[\"artifact_path\"]` is resolved, and this surface WRITES: without `--check` it calls `write_current_pointer_text` at that path. Measured flip at 97dfc881a: a repo declaring `output_dir: docs/mine-hitl` under `version: 9` reported `artifact_path: charness-artifacts/hitl/latest.md`, `status: synced`, exit 0 -- a review pointer written where the repo does not keep them while the one it does keep goes stale. Controls: version 1 returns `docs/mine-hitl/latest.md`; no adapter returns the default; the refusal leaves no file behind. Probe record: charness-artifacts/probe/2026-08-19-handoff-hitl-version-refusal.md."
     },
     "skills/public/impl/scripts/survey_verification.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "main() (line 265-296) calls `_group_specs(adapter[\"data\"])` and reads `adapter[\"data\"].get(\"verification_install_proposals\")` unconditionally; `adapter[\"valid\"]` is only echoed into the output dict (line 291) and never branched on to change behavior or add a warning."
+      "verdict": "guarded",
+      "reason": "main() now refuses before `_group_specs(adapter[\"data\"])`. This is the row's own 'a read is not a check' shape at runtime: `adapter[\"valid\"]` was ALREADY in the emitted payload and never branched on. Measured at 724fe8a55: a repo declaring `verification_tools: [mytool]` under `version: 9` emitted `adapter_valid: false` BESIDE `tool_checks: []`, exit 0 -- the survey reporting the repo configured no verification tools in the same breath as reporting it could not read the file that says otherwise. At version 1: `spec: mytool` and `adapter_valid: true`. `impl` routes through `simple_skill_adapter_lib`, so both doors render the same refusal here. Probe record: charness-artifacts/probe/2026-08-19-narrative-impl-version-refusal.md."
     },
     "skills/public/issue/scripts/issue_create.py": {
       "verdict": "safe-checks-errors",
@@ -318,8 +318,8 @@
       "reason": "`_resolve_backend` (line 39-44) and its callers `_run_backend_command` (line 47-51) / `_run_adapter_payload` (line 62-66) all check `adapter[\"valid\"]`/`adapter_ok` and refuse (exit 1) before using `adapter[\"data\"]`; `command_preflight` (line 76-81) relies on `build_preflight_payload`'s `ok = resolved[\"adapter_ok\"] and backend_ok(selected)` (skills/public/issue/scripts/issue_backend.py line 334) so an invalid adapter still surfaces `ok: false` and exit 1 even though the backend used for the probe silently falls back to the default."
     },
     "skills/public/narrative/scripts/map_sources.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "main() (line 83-101) reads `adapter[\"data\"]` for source_documents/mutable_documents/remote_name with no reference anywhere in the file to `adapter[\"errors\"]` or `adapter[\"valid\"]`, and the emitted payload does not even include an adapter validity field."
+      "verdict": "guarded",
+      "reason": "main() now refuses before `adapter[\"data\"]` is read for source_documents/mutable_documents/remote_name. This command's whole output is a MAP of the repo's own narrative sources, so an unhonored declaration substitutes a different document set rather than degrading the answer -- and the emitted payload carries no adapter validity field, so no consumer could tell. Measured at 724fe8a55: a repo declaring `source_documents: [docs/mine-narrative.md]` under `version: 9` reported `path: README.md` (the inferred default), exit 0; at version 1 it reports the declared path. RESIDUAL: `narrative` is one of six resolvers that let a PARSER refusal's ValueError out, so that door refuses with a raw traceback; filed as #673. Probe record: charness-artifacts/probe/2026-08-19-narrative-impl-version-refusal.md."
     },
     "skills/public/quality/references/find_inline_prompt_bulk.py": {
       "verdict": "accepted-risk-unguarded",

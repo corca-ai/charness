@@ -18,6 +18,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 
@@ -80,6 +83,18 @@ def main() -> None:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    # GUARDED AT THE READ SITE. This command's whole output is a map OF THE REPO'S OWN
+    # narrative sources, so an unhonored declaration does not degrade it -- it maps a
+    # different set of documents and says nothing about the substitution. Measured on the
+    # real CLI at `724fe8a55`: a repo declaring `source_documents: [docs/mine-narrative.md]`
+    # under `version: 9` reported `source_documents: [README.md]`, the inferred default,
+    # exit 0. The census row notes the emitted payload does not even carry an adapter
+    # validity field, so no consumer of this map could tell.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="narrative-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     data = adapter["data"]
     source_documents = list(data.get("source_documents", []))

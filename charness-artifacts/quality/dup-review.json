@@ -4843,6 +4843,13 @@
       "note": "The read-site version-refusal guard across the six quality-skill readers, including `scaffold_quality_artifact` (UNTOUCHED by this slice \u2014 it gained its copy in rows 6-10, which is the evidence this is the idiom's own shape rather than duplication these rows introduced). Same accepted class as 3271ee812f709043, d9fa0dc749dbb5ca and 4f4051badcdc7e4c: the extractable half is already extracted into `scripts.adapter_version_verdict`, and the five-line call-and-raise has to sit at the read site because that is the property the census verdict is about. Two placements in this family are deliberately DIFFERENT despite the identical lines: `check_runtime_budget` wraps its copy in `_refuse_unhonored_adapter` because it has TWO points where the loader is handed to a lib, and `render_runtime_summary` / `inventory_ci_recoverable_gates` guard where the loader is HANDED OVER rather than at a payload read of their own, since `runtime_budget_lib` takes it injected and cannot refuse for an adapter it cannot name.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f45b32a4d08b8c18",
+      "note": "The skill-runtime module-alias preamble shared by `impl/survey_verification.py` and `hitl/bootstrap_review.py`, now including the `scripts.adapter_version_verdict` binding each gained when its row was paid down (hitl in row 5, impl in row 20). The hitl member is UNTOUCHED by this batch, which is the evidence the family is the preamble's own shape rather than duplication these rows introduced. Same accepted class as 068446cbb9f180bf and 4a4598447944cc7b: an alias block is an import statement in this repo's no-ordinary-imports runtime and cannot be factored out without the shared loader it exists to reach.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

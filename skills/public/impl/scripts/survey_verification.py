@@ -30,6 +30,9 @@ yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "script
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 
 SKILL_DIR_CANDIDATES = (
     Path(".agents/skills"),
@@ -262,6 +265,18 @@ def main() -> None:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    # GUARDED AT THE READ SITE, and this row is the "a read is not a check" shape stated
+    # as plainly as it gets: `adapter["valid"]` was ALREADY in the emitted payload and
+    # never branched on. Measured at `724fe8a55`: a repo declaring
+    # `verification_tools: [mytool]` under `version: 9` emitted `adapter_valid: false`
+    # beside `tool_checks: []`, exit 0 -- the survey reporting the repo configured no
+    # verification tools, in the same breath as reporting that it could not read the file
+    # that says otherwise. The flag was printed, not used.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="impl-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     grouped = _group_specs(adapter["data"])
     checks = [_check_tool(spec, groups, repo_root) for spec, groups in grouped.items()]
