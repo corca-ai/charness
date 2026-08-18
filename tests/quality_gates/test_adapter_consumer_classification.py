@@ -425,3 +425,23 @@ def test_the_real_repo_carries_the_measured_multi_class_row() -> None:
     entry = rows["scripts/build_retro_lesson_selection_index.py"]
     classes = {row["verdict"] for row in GATE.row_verdicts(entry)}
     assert classes == {"accepted-risk-unguarded", "no-version-validation"}
+
+
+def test_the_cli_names_how_many_files_carry_more_than_one_class(tmp_path: Path) -> None:
+    # The line that makes a moved count vector legible. Without it a reader seeing
+    # `122 across 121` has to work out where the extra classification came from, and the
+    # most available wrong answer is "the debt grew".
+    repo = _tree(
+        tmp_path,
+        {"scripts/two.py": CALLS_LOADER},
+        {"scripts/two.py": {"verdicts": [
+            {"verdict": "accepted-risk-unguarded", "reason": "unguarded loader call"},
+            {"verdict": "no-version-validation", "reason": "also reads the yaml raw"},
+        ]}},
+    )
+    result = run_loaded_script_main(
+        "check_adapter_consumer_classification.py", GATE, "--repo-root", str(repo)
+    )
+    assert result.returncode == 0, result.stderr
+    assert "total classifications: 2 across 1 file(s)" in result.stdout
+    assert "1 file(s) carry more than one defect class" in result.stdout

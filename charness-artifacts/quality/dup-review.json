@@ -4759,6 +4759,20 @@
       "note": "the same argparse `main()` idiom, at repo scale: `parity_harness`, `check_plugin_doc_links`, `check_probe_record`, `check_export_self_sufficiency` and `check_adapter_consumer_classification` all build a parser with `--repo-root`, parse, and dispatch. This is the convention every repo-owned gate follows, not duplication one of them introduced; slice 3 added a member to a shape that predates it. The invariant tail that COULD be shared already was -- `skill_runtime_bootstrap.run_adapter_cli` -- and it covers the resolvers whose mains are genuinely identical. These are not: each owns different flags, a different verdict, and a different exit contract.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b30153c683df671e",
+      "note": "ROTATION of d96a0323bd018d8b -- same members, same reasoning, line numbers shifted because slice 4 added `row_verdicts` above the main. The repo-wide argparse `main()` convention; the invariant tail that could be shared already is (`run_adapter_cli`).",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d8644c3b7462aa46",
+      "note": "ROTATION of 04fc34c123ef7b4e -- same two members (`check_adapter_consumer_classification`, `prepush_focused_changed_line_coverage`), same reasoning, line numbers shifted by the same insertion. Different flags, different dispatch targets, different exit semantics.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
