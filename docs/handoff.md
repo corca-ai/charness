@@ -12,9 +12,9 @@
 
 - The [release record](../charness-artifacts/release/latest.md) holds the published
   version, its verification state, and the distinct-channel readback.
-- The [session retro](../charness-artifacts/retro/2026-08-18-session-retro-second.md)
-  holds this run's window: five verified issue closes, two reviewed verdict-surface
-  fixes, and the foreign-helper declare failure.
+- The [#640 critique](../charness-artifacts/critique/2026-08-18-issue-640-resolution.md)
+  holds this run's window: the artifact line budget became a consuming repo's adapter
+  setting, over six bounded reviewer spawns across four rounds.
 - The [quality record](../charness-artifacts/quality/2026-08-18-quality-review.md) holds
   the current posture: gates, runtime signals, the pytest budget breach, and the
   recommended next quality moves.
@@ -23,12 +23,14 @@
 
 ## Current State
 
-- **#633/#632/#631/#630/#636 are CLOSED with verified readback**, each on executed
-  reproductions with a bound critique artifact; #638 and #639 are FILED. Inventory:
+- **#640 is CLOSED**: `max_artifact_lines` (debug, quality) and `max_content_lines`
+  (handoff) are adapter fields; seven surfaces resolve them through
+  [resolve_adapter_line_budget](../scripts/artifact_validator.py). Inventory:
   `gh issue list --repo corca-ai/charness --state open`.
-- **The pytest lane has breached its 120s budget in five recent samples** (max 130.9s,
-  all passing); the [quality record](../charness-artifacts/quality/2026-08-18-quality-review.md)
-  Weak section holds the numbers and the recommended move.
+- **The pytest budget breach is NOT a #640 regression** — measured A/B on one machine,
+  base 87.4s vs head 85.8s isolated, while the in-gate samples ran under a concurrent
+  foreign suite. Do NOT relevel the bar: the adapter's own REVISIT TRIGGER says the
+  next red owes per-test profiling or a smaller standing set, not a third number.
 - **The resume lane deliberately runs NO surface gate and NO focused preflight**; the
   three reasons sit at the [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py) call site.
 - **The [#548 single-owner pointer resolver](../scripts/scaffold_artifact_lib.py) raises on a
@@ -43,12 +45,12 @@
 
 ## Next Session
 
-1. **The release is published and verified** — the [release record](../charness-artifacts/release/latest.md)
-   holds the version (`git describe --tags --abbrev=0`), claims review, distinct-channel
-   readback, and verbatim bump rationale. Remaining half of the resume proof: the
-   OMISSION case — a resume that forgets `--bump-rationale` on the non-claims lane
-   still loses it silently; only the planner's
-   [repeat_original_arguments](../skills/public/release/scripts/plan_release_run_packets.py) packet names it.
+1. **#640's two stated non-claims owe small slices.** No test drives
+   `plugins/charness/` against a synthetic consumer, so the installed half rests on a
+   byte-identical mirror plus a static import trace. And a handoff adapter with an
+   UNSUPPORTED `version` drops `max_content_lines` via the early return in
+   [simple_skill_adapter_lib](../scripts/simple_skill_adapter_lib.py), while debug does
+   not — a real divergence, left alone because that return binds nine skills.
 2. **Migrate the lesson-ledger directory in ONE slice, or not at all.** Scope it with
    `grep -rln "charness-artifacts/retro" scripts/ skills/ tests/ .agents/ plugins/`; a
    `scripts/`-only sweep misses
