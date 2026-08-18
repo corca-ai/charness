@@ -528,6 +528,39 @@ def test_prefix_resolution_returns_a_verdict_when_the_consumer_resolver_raises(
     )
 
 
+def test_the_adapter_loader_raises_when_no_resolver_is_reachable(tmp_path: Path, monkeypatch) -> None:
+    """`load_retro_adapter` is the version preflight's loader, and its no-resolver arm is
+    a RAISE where `retro_artifact_prefix` falls back.
+
+    The two answers are deliberately different. A missing resolver means this validator
+    cannot say anything about that repo's adapter, and `unspeakable_version_message`
+    reads that raise as "not a version refusal" -- the arm asserted below. Falling back
+    to a message here instead would refuse every run in a repo with no retro skill
+    installed, which is a legitimate no-op, not an error.
+
+    `_retro_resolver_path` is patched rather than fixtured because it searches THIS
+    repo's tree as its second root, which always has a resolver: no temp-directory layout
+    can make it return None.
+    """
+    output_dir_lib = load_script_module(
+        "retro_output_dir_lib_no_resolver", ROOT / "scripts" / "retro_output_dir_lib.py"
+    )
+    verdict = load_script_module(
+        "adapter_version_verdict_no_resolver", ROOT / "scripts" / "adapter_version_verdict.py"
+    )
+    monkeypatch.setattr(output_dir_lib, "_retro_resolver_path", lambda _repo_root: None)
+
+    with pytest.raises(FileNotFoundError, match="no retro resolve_adapter.py reachable"):
+        output_dir_lib.load_retro_adapter(tmp_path)
+
+    assert (
+        verdict.unspeakable_version_message(
+            output_dir_lib.load_retro_adapter, tmp_path, adapter_name="retro-adapter.yaml"
+        )
+        is None
+    )
+
+
 def test_the_emitted_opt_in_writes_where_the_floor_probe_reads(tmp_path: Path) -> None:
     """The announcement's remedy must be able to close what the announcement describes.
 
