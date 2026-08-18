@@ -27,10 +27,12 @@
   (handoff) are adapter fields; seven surfaces resolve them through
   [resolve_adapter_line_budget](../scripts/artifact_validator.py). Inventory:
   `gh issue list --repo corca-ai/charness --state open`.
-- **The pytest budget breach is NOT a #640 regression** — measured A/B on one machine,
-  base 87.4s vs head 85.8s isolated, while the in-gate samples ran under a concurrent
-  foreign suite. Do NOT relevel the bar: the adapter's own REVISIT TRIGGER says the
-  next red owes per-test profiling or a smaller standing set, not a third number.
+- **The pytest budget bar is RED and this session pushed past it with `--no-verify`**,
+  on an explicitly re-authorized grant. Not a regression: isolated A/B on one machine
+  read base 87.4s vs head 85.8s, ~40s under the in-gate figure, so most of the gap is
+  contention. Do NOT relevel — the adapter's REVISIT TRIGGER fired and is filed as
+  [#668](https://github.com/corca-ai/charness/issues/668), which owes profiling or a
+  smaller standing set. The next push should not repeat the bypass.
 - **The resume lane deliberately runs NO surface gate and NO focused preflight**; the
   three reasons sit at the [publish_release_resume_publish.py](../skills/public/release/scripts/publish_release_resume_publish.py) call site.
 - **The [#548 single-owner pointer resolver](../scripts/scaffold_artifact_lib.py) raises on a
