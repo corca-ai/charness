@@ -14,6 +14,16 @@ _artifact_validator = import_repo_module(
     ROOT / "scripts" / "artifact_validator.py",
     "scripts.artifact_validator",
 )
+# Bound by its own DOTTED path even though every call below goes through the
+# re-exports above: the changed-line coverage mapper resolves a changed file to its
+# tests by dotted module path, so without this line the gate reported these very lines
+# as covered by nothing while this file was exercising them. Measured, not assumed --
+# `coverage report -m` over this file alone shows the arms hit either way; what changes
+# is whether the GATE can see it.
+_violation_report = import_repo_module(
+    ROOT / "scripts" / "artifact_violation_report.py",
+    "scripts.artifact_violation_report",
+)
 
 # The registry is imported by NAME inside `_scaffold_rel`, so binding it here through
 # the same top-level import is what makes the monkeypatch land on the object the lazy
@@ -125,7 +135,7 @@ def test_a_flattened_shared_path_is_still_not_a_skill_id() -> None:
         "skills/shared/scripts/reviewer_boundary_fingerprint.py",
         "skills/support/markdown-preview/scripts/markdown_preview_render.py",
     ):
-        assert _artifact_validator._skill_id_from_scaffold(scaffold) is None, scaffold
+        assert _violation_report._skill_id_from_scaffold(scaffold) is None, scaffold
 
 
 def test_an_absolute_installed_scaffold_path_still_names_its_owner() -> None:
@@ -158,8 +168,8 @@ def test_a_registered_scaffold_that_ships_in_neither_layout_yields_no_hint(regis
     """
     register_surface("probe-absent-everywhere", "skills/public/nope/scripts/scaffold_nope.py")
 
-    assert _artifact_validator._scaffold_rel("probe-absent-everywhere") is None
-    assert _artifact_validator.scaffold_hint("probe-absent-everywhere") is None
+    assert _violation_report._scaffold_rel("probe-absent-everywhere") is None
+    assert _violation_report.scaffold_hint("probe-absent-everywhere") is None
 
 
 def test_a_path_with_no_skill_segment_after_skills_yields_no_owner() -> None:
@@ -169,4 +179,4 @@ def test_a_path_with_no_skill_segment_after_skills_yields_no_owner() -> None:
     filename, at the moment the reader is already looking at a refusal.
     """
     for scaffold in ("skills/scaffold_handoff_artifact.py", "skills", "/opt/x/skills/only.py"):
-        assert _artifact_validator._skill_id_from_scaffold(scaffold) is None, scaffold
+        assert _violation_report._skill_id_from_scaffold(scaffold) is None, scaffold
