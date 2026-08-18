@@ -22,6 +22,17 @@ Optional shared provenance:
 - `preset_version`
 - `customized_from`
 
+Optional size budget:
+
+- `max_content_lines` — CONTENT lines the handoff may occupy. Blank lines, the
+  required `##` headings and the whole `## References` block are NOT counted, so
+  this is a different measurement from debug/quality's `max_artifact_lines` and
+  the two numbers are not interchangeable. Omit it to keep the shipped default.
+  The gate, the scaffold, the run planner's `over_limit`/`near_limit` status and
+  the doc-authoring preflight all resolve the same value. Must be a positive
+  integer; a refused value is an adapter error and leaves the default enforced.
+  There is no upper bound: the ceiling is this repo's to set.
+
 Optional chunk policy:
 
 - `chunk_policy.max_package_sources`: positive integer; default `5`

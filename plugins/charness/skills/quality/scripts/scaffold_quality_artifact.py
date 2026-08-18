@@ -58,12 +58,19 @@ def _resolved_max_artifact_lines(adapter: dict) -> int | None:
     """
     if _quality_validator is None or _MAX_ARTIFACT_LINES is None:
         return None
-    return _quality_validator.resolve_adapter_line_budget(
-        lambda _repo_root: adapter,
-        Path("."),
-        field=_quality_validator.LINE_BUDGET_FIELD,
-        default=_MAX_ARTIFACT_LINES,
-    )
+    # Guarded, not just the import above: the try/except at import time only proves the
+    # validator MODULE loaded. A validator older than this scaffold loads fine (it has
+    # MAX_ARTIFACT_LINES) and then has no resolver, and an unguarded call would kill the
+    # scaffold over a field its own comment calls additive guidance, never load-bearing.
+    try:
+        return _quality_validator.resolve_adapter_line_budget(
+            lambda _repo_root: adapter,
+            Path("."),
+            field=_quality_validator.LINE_BUDGET_FIELD,
+            default=_MAX_ARTIFACT_LINES,
+        )
+    except Exception:
+        return _MAX_ARTIFACT_LINES
 
 # Budget guidance routes the run to write-to-fit instead of writing long then
 # trim-looping. It names the judgment-heavy sections that run largest in the real

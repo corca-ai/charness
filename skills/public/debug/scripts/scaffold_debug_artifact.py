@@ -44,12 +44,19 @@ def _resolved_max_artifact_lines(adapter: dict) -> int | None:
     """
     if _debug_validator is None or _MAX_ARTIFACT_LINES is None:
         return None
-    return _debug_validator.resolve_adapter_line_budget(
-        lambda _repo_root: adapter,
-        Path("."),
-        field=_debug_validator.LINE_BUDGET_FIELD,
-        default=_MAX_ARTIFACT_LINES,
-    )
+    # Guarded, not just the import above: the try/except at import time only proves the
+    # validator MODULE loaded. A validator older than this scaffold loads fine (it has
+    # MAX_ARTIFACT_LINES) and then has no resolver, and an unguarded call would kill the
+    # scaffold over a field its own comment calls additive guidance, never load-bearing.
+    try:
+        return _debug_validator.resolve_adapter_line_budget(
+            lambda _repo_root: adapter,
+            Path("."),
+            field=_debug_validator.LINE_BUDGET_FIELD,
+            default=_MAX_ARTIFACT_LINES,
+        )
+    except Exception:
+        return _MAX_ARTIFACT_LINES
 
 # The recurring overflow in real captures is ## Sibling Search (a rich structural
 # scan that enumerates many siblings). The budget guidance routes the run to the

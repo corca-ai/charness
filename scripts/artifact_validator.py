@@ -40,9 +40,6 @@ __all__ = [
 
 H2_RE = re.compile(r"^##\s+.+$")
 
-
-
-
 # The violation-reporting surface (the scaffold hint and the failure printer) lives in
 # its own module; re-exported here so every validator keeps its single import point.
 _violation_report = import_repo_module(__file__, "scripts.artifact_violation_report")

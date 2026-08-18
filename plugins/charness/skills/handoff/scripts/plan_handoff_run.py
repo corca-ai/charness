@@ -89,9 +89,12 @@ try:
 except Exception:
     MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
 # "near" = within 8 content lines of the ceiling: enough room to add a fact, not
-# enough to add a section, which is the point at which a refresh should prune.
+# enough to add a section, which is the point at which a refresh should prune. Only the
+# MARGIN is a module constant; the near-limit line itself is derived per run from the
+# resolved ceiling. A precomputed `NEAR_LIMIT_LINES` used to sit here and was deleted
+# rather than left dead: derived from the DEFAULT, it would have warned "near limit" at
+# 70 in a repo whose adapter set 120.
 NEAR_LIMIT_MARGIN = 8
-NEAR_LIMIT_LINES = MAX_CONTENT_LINES - NEAR_LIMIT_MARGIN
 
 
 def _resolved_max_content_lines(adapter: dict[str, Any]) -> int:

@@ -22,6 +22,15 @@ Optional shared provenance:
 - `preset_version`
 - `customized_from`
 
+Optional size budget:
+
+- `max_artifact_lines` — raw FILE lines the debug artifact may occupy.
+  Omit it to keep the validator's shipped default. Both the gate and the
+  scaffold's `size_budget.max_lines` forecast resolve the same value, so raising
+  it never leaves the author writing to a stale number. Must be a positive
+  integer; a refused value is an adapter error and leaves the default enforced.
+  There is no upper bound: the ceiling is this repo's to set.
+
 ## Artifact Rule
 
 The durable debug artifact filename is fixed:

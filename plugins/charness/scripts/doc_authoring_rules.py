@@ -154,13 +154,21 @@ def collect_length_rule(repo_root: Path, as_surface: str | None) -> dict[str, An
     known = [s.name for s in surfaces]
     if surface is None:
         return {"surface": None, "cap": None, "counted_by": None, "known_surfaces": known}
-    module = _preflight._surface_module(surface)
+    # The adapter-resolved ceiling, not the shipped default: this is the FIRST cap
+    # number the authoring agent sees, before a draft exists, so a default here sends
+    # a repo that raised its budget to write to a number nothing enforces.
+    cap = _preflight.surface_cap(repo_root, surface)
+    source = (
+        f"{surface.module}.{surface.resolver_attr}"
+        if surface.resolver_attr
+        else f"{surface.module}.{surface.constant}"
+    )
     return {
         "surface": surface.name,
-        "cap": int(getattr(module, surface.constant)),
+        "cap": cap,
         "counted_by": surface.count_attr or "raw file lines",
         "label": surface.label,
-        "source": f"{surface.module}.{surface.constant}",
+        "source": source,
         "known_surfaces": known,
     }
 

@@ -86,13 +86,17 @@ validate_title = _scripts_artifact_validator_module.validate_title
 # in `.agents/handoff-adapter.yaml`; read it through `resolved_max_content_lines`, not
 # directly, so the gate and the run planner's forecast cannot disagree.
 MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
-LINE_BUDGET_FIELD = _handoff_resolve_adapter.LINE_BUDGET_FIELD
+# Guarded for the same reason debug's is: a stale vendored resolver must degrade to the
+# default field name, never crash this gate at import.
+LINE_BUDGET_FIELD = getattr(_handoff_resolve_adapter, "LINE_BUDGET_FIELD", "max_content_lines")
 
 
 def resolved_max_content_lines(repo_root: Path) -> int:
     return _scripts_artifact_validator_module.resolve_adapter_line_budget(
         load_adapter, repo_root, field=LINE_BUDGET_FIELD, default=MAX_CONTENT_LINES
     )
+
+
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 # Addresses are not claims: an artifact path or release URL may legitimately carry
 # a version, and the doc-link gate already keeps repo paths resolvable. All three

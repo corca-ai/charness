@@ -64,8 +64,12 @@ class PreflightError(Exception):
 class LengthSurface:
     """A doc surface that carries an enforced line cap.
 
-    ``module``/``constant`` name the OWNING validator's live cap constant so the
-    forecast reads the same number the gate enforces (no hand-copied limit), and
+    ``module``/``constant`` name the OWNING validator's live DEFAULT cap, and
+    ``resolver_attr`` names its adapter-aware resolver. Reading the constant alone
+    was correct only while the ceiling was fixed: once a consuming repo could raise
+    it, this forecast kept rendering `blocked` against a number the gate no longer
+    enforced, sending the author to prune lines the gate would have accepted. Prefer
+    the resolver; the constant stays the fallback for a surface that has none.
     ``matches`` resolves the surface from a repo-relative path.
 
     ``count_attr``/``check_attr`` name the validator's own counting and checking
@@ -82,6 +86,15 @@ class LengthSurface:
     matches: Callable[[str], bool]
     count_attr: str | None = None
     check_attr: str | None = None
+    resolver_attr: str | None = None
+
+
+def surface_cap(repo_root: Path, surface: "LengthSurface") -> int:
+    """The ceiling THIS repo enforces for the surface, not the shipped default."""
+    module = _surface_module(surface)
+    if surface.resolver_attr:
+        return int(getattr(module, surface.resolver_attr)(repo_root))
+    return int(getattr(module, surface.constant))
 
 
 def _handoff_rel(repo_root: Path) -> str | None:
@@ -123,6 +136,7 @@ def _length_surfaces(repo_root: Path) -> tuple[LengthSurface, ...]:
                 matches=lambda rel, _h=handoff_rel: rel == _h,
                 count_attr="content_lines",
                 check_attr="validate_max_content_lines",
+                resolver_attr="resolved_max_content_lines",
             )
         )
     return tuple(surfaces)
@@ -224,13 +238,17 @@ def collect_length(
     if surface is None:
         return {"surface": None, "cap": None, "current": None, "over": False, "detail": None}
     module = _surface_module(surface)
-    cap = int(getattr(module, surface.constant))
+    cap = surface_cap(repo_root, surface)
     lines = doc.read_text(encoding="utf-8").splitlines()
     counted = getattr(module, surface.count_attr)(lines) if surface.count_attr else lines
     detail: str | None = None
     try:
         if surface.check_attr:
-            getattr(module, surface.check_attr)(lines)
+            # The resolved cap is passed IN rather than left to the checker's own
+            # default: the checker ships to consumers with the default baked in, and
+            # a forecast that let it re-derive the number would reintroduce exactly
+            # the disagreement this call site exists to prevent.
+            getattr(module, surface.check_attr)(lines, cap)
         else:
             _artifact_validator.validate_max_lines(lines, max_lines=cap, artifact_label=surface.label)
     except _artifact_validator.ValidationError as exc:

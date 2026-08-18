@@ -87,7 +87,13 @@ FALSIFIABLE_SOURCE_REFERENCE = "skills/public/debug/references/disconfirmer-firs
 # exported: the scaffold, this module's tests and the drift guard all name the DEFAULT,
 # and only the default.
 MAX_ARTIFACT_LINES = 180
-LINE_BUDGET_FIELD = _debug_resolve_adapter.LINE_BUDGET_FIELD
+# `getattr` with the literal default, not a bare attribute read: the two halves are
+# loaded from separate trees (the resolver by PATH, honoring CHARNESS_REPO_ROOT), so a
+# consumer can pair a stale resolver with this validator. A bare read turns that skew
+# into an AttributeError at IMPORT -- a traceback and no verdict on a proof surface,
+# outside the ValidationError handler. The literal is the same one the resolver
+# declares; quality already spells its field locally for this reason.
+LINE_BUDGET_FIELD = getattr(_debug_resolve_adapter, "LINE_BUDGET_FIELD", "max_artifact_lines")
 REQUIRED_SECTIONS = (
     "## Problem",
     "## Correct Behavior",

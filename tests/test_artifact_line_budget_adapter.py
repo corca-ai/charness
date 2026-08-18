@@ -12,10 +12,13 @@ per-run binding IS the wiring under test (debug resolves its ceiling once in
 adding a process boundary the ratchet would rightly call convertible.
 
 Blind class: these prove the resolved number reaches the gate and the forecast. They
-prove nothing about whether any particular ceiling is a good one, and nothing about the
-`__main__` entrypoint block or a repo that vendors a resolver older than its validator
--- that skew is guarded by the isinstance re-check in `resolve_adapter_line_budget` and
-unit-tested in test_adapter_lib.
+prove nothing about whether any particular ceiling is a good one, nothing about the
+`__main__` entrypoint block, and -- the one a fresh-eye round had to point out -- nothing
+about a repo that pairs a STALE vendored resolver with a new validator. Two guards cover
+that skew and neither is exercised here: the isinstance re-check in
+`resolve_adapter_line_budget` (unit-tested in test_adapter_lib) for a bad VALUE, and the
+`getattr(..., LINE_BUDGET_FIELD, <literal>)` reads in the debug/handoff validators for a
+missing field NAME. Reproducing it needs two trees, which this fixture does not build.
 """
 
 from __future__ import annotations
@@ -126,6 +129,42 @@ def test_handoff_content_ceiling_follows_the_adapter_in_gate_scaffold_and_planne
     assert "content lines (limit" not in raised_gate.stderr
     assert "max_lines: 120" in raised_forecast.stdout
     assert "status: over_limit" not in raised_plan.stdout
+
+
+def test_the_doc_authoring_forecasts_read_the_adapter_ceiling_not_the_default(tmp_path: Path) -> None:
+    """The pre-write rules and the preflight verdict are the fourth and fifth surfaces.
+
+    Round-1 review found both still reading `MAX_CONTENT_LINES`: the preflight rendered
+    `status: blocked` against 78 for an artifact the gate accepted, and the rules mode --
+    the FIRST cap an authoring agent sees, before a draft exists -- published 78 as the
+    number to write to. The handoff run planner emits both commands, so one run computed
+    the resolved ceiling and then told the author to run a command that contradicted it.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    artifact = repo / "docs" / "handoff.md"
+    artifact.write_text(_handoff_artifact(25), encoding="utf-8")
+    base = ["version: 1", "repo: demo", "output_dir: docs"]
+    # One entrypoint, two modes: `--path` renders the verdict, omitting it renders the
+    # pre-write rules (owned by doc_authoring_rules, imported there).
+    preflight = "scripts/check_doc_authoring_preflight.py"
+
+    write_adapter(repo, "handoff-adapter.yaml", base)
+    default_preflight = run_main(preflight, "--repo-root", str(repo), "--path", "docs/handoff.md")
+    default_rules = run_main(preflight, "--repo-root", str(repo), "--as-surface", "handoff")
+
+    write_adapter(repo, "handoff-adapter.yaml", [*base, "max_content_lines: 120"])
+    raised_preflight = run_main(preflight, "--repo-root", str(repo), "--path", "docs/handoff.md")
+    raised_rules = run_main(preflight, "--repo-root", str(repo), "--as-surface", "handoff")
+
+    assert "cap: 78" in default_preflight.stdout
+    assert "over: true" in default_preflight.stdout
+    assert "cap: 78" in default_rules.stdout
+    # Same 101-content-line artifact, byte for byte. Only the adapter differs, so the
+    # forecast flipping to `over: false` can have no other cause.
+    assert "cap: 120" in raised_preflight.stdout
+    assert "over: false" in raised_preflight.stdout
+    assert "cap: 120" in raised_rules.stdout
 
 
 def test_a_refused_ceiling_is_an_adapter_error_and_leaves_the_default_enforced(tmp_path: Path) -> None:
