@@ -143,3 +143,42 @@ def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path, rel: str) -> None:
     correct answer for it — they are only wrong over a repo that declared."""
     result = _run(rel, _repo(tmp_path, None))
     assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize("rel", READERS, ids=[Path(r).stem for r in READERS])
+def test_an_ordinary_invalid_field_is_not_refused(tmp_path: Path, rel: str) -> None:
+    """The polarity a bounded review noted this module did not pin.
+
+    `valid: false` from one bad field beside honored ones must NOT refuse — that is the
+    distinction `adapter_version_verdict`'s docstring exists to make, and widening the
+    predicate to `not valid` would break every consumer with a typo'd unrelated key. The
+    release-family tests pinned it; this family did not.
+    """
+    adapter = DECLARED.format(v="1").replace(
+        "output_dir: docs/mine-q", "output_dir: docs/mine-q\npreset_version: 3"
+    )
+    result = _run(rel, _repo(tmp_path, adapter))
+    assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize("rel", READERS, ids=[Path(r).stem for r in READERS])
+def test_a_silently_dropped_declaration_is_the_documented_blind_arm(
+    tmp_path: Path, rel: str
+) -> None:
+    """The THIRD state, pinned as a known gap rather than left to make the claim read
+    wider than it is.
+
+    `quality_adapter_lib` calls `adapter_lib.load_yaml_file`, which discards the
+    uninterpreted-line sink `load_yaml_file_report` returns. So an over-indented line is
+    dropped with `errors: []` and `valid: True`, and no predicate over `errors` — which is
+    what `declarations_unhonored` is — can see it. Measured: one stray indent restores the
+    charness default at exit 0, with the guard in place.
+
+    This test asserts the CURRENT behavior so the gap is visible and so closing it
+    (#673) is a deliberate test change rather than a silent one. It is NOT an assertion
+    that the current behavior is correct.
+    """
+    repo = _repo(tmp_path, "version: 1\nrepo: demo\n  output_dir: docs/mine-q\n")
+    result = _run(rel, repo)
+    assert result.returncode == 0, result.stderr
+    assert "docs/mine-q" not in result.stdout

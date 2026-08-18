@@ -31,8 +31,9 @@ _summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_outpu
 
 
 def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.date) -> dict[str, object]:
-    # GUARDED AT THE READ SITE. Every path this function returns is derived from
-    # `output_dir`, so an unhonored declaration relocates the quality artifact rather than
+    # GUARDED AT THE READ SITE. Every ARTIFACT path this function returns is derived from
+    # `output_dir` (the `refresh_current_pointer_argv` entry is not, and a bounded review
+    # was right that the universal was overstated), so an unhonored declaration relocates the quality artifact rather than
     # degrading the answer. Measured at `00c50ed3f`: a repo declaring
     # `output_dir: docs/mine-q` under `version: 9` returned
     # `artifact_path: charness-artifacts/quality/latest.md`, exit 0.

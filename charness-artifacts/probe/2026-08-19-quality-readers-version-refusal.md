@@ -4,8 +4,8 @@ Debt rows 14-18 of slice 5. Three of these five do not degrade their answer unde
 unhonored declaration — they emit ADVISORY-SHAPED FINDINGS asserting the repo configured
 nothing, on the surface that decides whether a gate's cost is visible at all.
 
-Claim: the five quality-skill readers refuse when the reader honored nothing the adapter
-  declared, instead of reporting the opposite of what the repo declared
+Claim: the five quality-skill readers refuse when the adapter declares a `version` this
+  reader cannot speak, instead of reporting the opposite of what the repo declared
 Claim kind: change
 Observable: each CLI's own first lines — the probe roster, the resolved `artifact_path`,
   the runtime-budget findings, the visibility verdict, the cost-ranked gate count — and
@@ -17,11 +17,10 @@ Source conditions: the adapter's declared version is one this reader does not sp
 Base ref: 00c50ed3f
 Head ref: working tree at 00c50ed3f
 Base arm: base-observed
-Call sites unproven: none — each of the five holds ONE point where the payload enters,
+Call sites unproven: none — four of the five hold ONE point where the payload enters,
   and the guard sits above it. For `check_runtime_budget`, `render_runtime_summary` and
   `inventory_ci_recoverable_gates` that point is where `load_adapter` is HANDED to
-  `runtime_budget_lib`, not a payload read of their own; `check_runtime_budget` has two
-  such points and both are guarded
+  `runtime_budget_lib`, not a payload read of their own; `check_runtime_budget` holds TWO such points and both are guarded
 
 ## Source text
 
@@ -52,7 +51,10 @@ repo: demo
 output_dir: docs/mine-q
 startup_probes:
   - label: probe-one
-    command: [python3, "-c", "pass"]
+    command:
+      - python3
+      - "-c"
+      - "pass"
     class: standing
     startup_mode: warm
     surface: direct
@@ -91,20 +93,34 @@ the thing the operator configured.
 exit 1
 ```
 
-Measured on all five.
+Measured on all five, in the working tree that became `724fe8a55`. The `Head ref`
+above names the parent because that is the tree the base arm was captured against;
+the head arm is the same content, uncommitted at capture time.
 
 ## Polarity controls
 
 - speakable version (`version: 1`), same declarations → each reports the declaration:
-  `OK probe-one: latest 15ms ... (standing, warm, direct)`;
+  `OK             probe-one: latest 16ms, median 16ms (standing, warm, direct)`;
   `artifact_path: docs/mine-q/latest.md`; `WARN pytest: no sample yet (budget 70000ms)`;
   `runtime visibility: configured.`; `1 cost-ranked gate(s) ... keep-local pytest`.
   All exit 0.
 - no adapter file at all → each exits 0. The `missing_budgets` /
   `missing_startup_probes` advisories are the CORRECT answer for a repo that declared
   nothing; they are only wrong over a repo that declared.
-- **A CONTROL THAT COULD NOT FAIL, found and re-measured — the second time in this
-  slice.** The first stimulus declared `startup_probes: [{id, command: <string>}]` and a
+- **A CONTROL THAT COULD NOT FAIL, found TWICE in this one record, and the second time
+  by a bounded review reading the published stimulus rather than the fixture.** The first
+  correction fixed `id` -> `label` and added `class`/`startup_mode`/`surface`, and left
+  `command: [python3, "-c", "pass"]` — a FLOW SEQUENCE. This repo parses its own adapters
+  with `adapter_lib`, not PyYAML, and `_mapping_value` dispatches only on `""`, `"[]"`,
+  `"{}"` and block scalars; anything else becomes a plain string. So
+  `adapter_validators.startup_probes` dropped the probe and the speakable-version arm of
+  the PUBLISHED stimulus reproduced the base observable byte-for-byte for
+  `measure_startup_probes`, and `weak due to runtime_visibility_missing_startup_probes`
+  for `render_runtime_summary`. Reproduced before fixing. The test fixture always used
+  the block form and was right; the record and the test disagreed and only the test was
+  correct, which is the sharper lesson: the section offered for INDEPENDENT REPLAY is the
+  one that was wrong.
+- **The earlier control-that-could-not-fail, kept for the trend line.** The first stimulus declared `startup_probes: [{id, command: <string>}]` and a
   bare `runtime_budgets` label, shapes this contract does not honor. The speakable-version
   control therefore produced the SAME output as the refused one for
   `measure_startup_probes` and `check_runtime_budget`, so their "flip" was unproven. Both
@@ -113,6 +129,27 @@ Measured on all five.
 
 ## Non-claims
 
+- **THE CLAIM IS NARROWER THAN "the reader honored nothing the repo declared", and it is
+  written that way after a bounded review measured why.** These guards ask
+  `adapter_version_verdict.declarations_unhonored`, which is `version_refused or
+  parse_refused` — and BOTH read `errors`. Quality's resolver calls
+  `adapter_lib.load_yaml_file`, which DISCARDS the uninterpreted-line sink that
+  `load_yaml_file_report` returns. So a THIRD state exists that no predicate over `errors`
+  can see. Measured at `5ecf7575f` with the guard installed:
+
+  ```
+  version: 1
+    output_dir: docs/mine-q
+  ```
+
+  One stray indent. `_parse_block` drops the line, `errors: []`, `valid: True`, and
+  `resolve_quality_artifact` emits `artifact_path: charness-artifacts/quality/latest.md`
+  at exit 0 — the base observable above, at HEAD. Swept across all sixteen public
+  resolvers: the SAME SIX that raise on a parser refusal (achieve, announcement,
+  create-skill, critique, narrative, quality) also drop silently; the other ten report.
+  Filed on [#673](https://github.com/corca-ai/charness/issues/673). It is a resolver gap,
+  not a guard-placement error in these five, and it is named here rather than left to make
+  the claim read wider than it is.
 - **The two libraries these rows read through are NOT paid down and are not credited.**
   `runtime_budget_lib.evaluate` and `runtime_budget_sizing_lib.suggest_budgets` take their
   loader INJECTED, so they cannot know which adapter they are reading or refuse for it.
