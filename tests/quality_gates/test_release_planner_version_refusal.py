@@ -87,10 +87,21 @@ def test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee(
     """
     from tests.script_main import load_script_module
 
-    module = load_script_module("plan_release_run_for_guard_test", PLANNER)
-    module.build_release_payload = lambda repo_root: {"surface_versions": {"packaging_manifest": "1.2.3"}}
-    module.build_real_host_payload = lambda repo_root, paths: {}
-    module.build_review_gate_payload = lambda repo_root, run_commands=True: {}
+    # A UNIQUE module name, and the stubs installed through monkeypatch so they are undone.
+    # The first cut used `plan_release_run_for_guard_test` — the same name
+    # `test_requested_review_gate_version_refusal.py` loads the planner under — and stubbed
+    # the module in place. That made the sibling's `plan_release_run` case DID NOT RAISE
+    # whenever this file ran first: a green suite in one order and red in another, which
+    # the standing lane missed and the changed-line producer's xdist run caught.
+    module = load_script_module("plan_release_run_for_own_guard_isolation_test", PLANNER)
+    monkeypatch.setattr(
+        module, "build_release_payload",
+        lambda repo_root: {"surface_versions": {"packaging_manifest": "1.2.3"}},
+    )
+    monkeypatch.setattr(module, "build_real_host_payload", lambda repo_root, paths: {})
+    monkeypatch.setattr(
+        module, "build_review_gate_payload", lambda repo_root, run_commands=True: {}
+    )
     repo = _repo(tmp_path, "version: 9\n" + DECLARED)
     monkeypatch.setattr(sys, "argv", ["plan_release_run.py", "--repo-root", str(repo)])
     args = module.parse_args()
