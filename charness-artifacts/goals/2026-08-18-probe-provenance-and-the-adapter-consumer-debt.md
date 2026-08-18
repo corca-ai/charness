@@ -240,15 +240,44 @@ first would reproduce the 2026-08-18 error 45 times.
   read through `git show`; and a field value the markdown gate forces to WRAP was
   silently truncated to its first line, so an indented continuation is now part of the
   grammar. Both were found by writing the first real record, not by review.
-- Is `safe-checks-errors` decidable by AST? **Baseline correction: it has no mechanical
-  witness today at all.** `VERDICTS` maps it to `None`; only `guarded` carries a marker, and
-  the gate's own failure text says so. The trial's falsifier is pre-registered: a witness
-  phrased as "branches on `errors`/`valid` between the loader call and the first
-  consequential read" must separate `skills/public/impl/scripts/survey_verification.py`
-  (`accepted-risk-unguarded`) from `skills/public/quality/scripts/inventory_lint_ignores.py`
-  (`safe-checks-errors`). **Stop rule: if it cannot, the trial's output is a recorded
-  negative finding and the trial ends.** It does not escalate into designing a better
-  witness, and the answer is not pre-decided here. Slice 4 records the result.
+- ~~Is `safe-checks-errors` decidable by AST?~~ **TRIALLED in slice 4. Answer: NO, and the
+  reason is more specific than the plan's guess.** The trial ran exactly as pre-registered
+  and the result is recorded whole, including the part that went the other way.
+
+  **The falsifier did NOT fire.** The witness — a branch (`if`/`ternary`/`assert`/boolop/
+  comprehension guard) whose test reads `errors`/`valid` — separates the named pair:
+  `survey_verification.py` (`accepted-risk-unguarded`) yields no witness,
+  `inventory_lint_ignores.py` (`safe-checks-errors`) witnesses at line 84. Under the stop
+  rule as written the trial therefore continued rather than ending there.
+
+  **Continuing it is what produced the negative.** Run across the whole census the witness
+  agrees on ~89% of both classes — `safe-checks-errors` 49 witness / 6 not,
+  `accepted-risk-unguarded` 33 not / 4 witness — and the 10 disagreements were read
+  individually. They are not noise and they are not mis-seeding; they are two structural
+  failure modes:
+
+  1. **Per-file versus per-call-site.** A file may branch on `errors` at one site and read
+     the payload unconditionally at another. `plan_release_run.py` gates two consumers on
+     `if adapter.get("valid")` and a third not at all; `plan_handoff_run.py`'s check only
+     adds an advisory read while the consequential reads stay unconditional. The witness
+     sees the branch and calls the file safe — **the third 2026-08-18 refutation,
+     reproduced by the very witness proposed to mechanise the class.**
+  2. **Name collision.** `errors` is an ordinary variable name.
+     `hitl/scripts/sync_review_artifact.py` witnesses on `errors` from
+     `_sync_lib.check_artifact(...)` — artifact-validation errors, unrelated to any
+     adapter — while `adapter["artifact_path"]` is used unconditionally one line above.
+
+  So 89% is a CORRELATION, not decidability, and it fails on exactly the class that
+  matters. **No blocking rule is built and no better witness is designed** — the plan
+  forbade that escalation and the measurement does not license it. The plan guessed the
+  discriminator would be "whether degradation was disclosed to a reader — human judgment";
+  the measurement is sharper: the property is per-call-site, and ANY per-file witness is
+  structurally blind to it, human judgment or not. This is the census's own stated blind
+  class, now quantified.
+
+  **Carried into slice 5:** the 4 partially-guarded files above are the per-call-site
+  problem in concrete form, and each is a debt row whose probe must cover every call site
+  or name the ones it leaves unproven.
 - ~~Who owns the "who reads this producer" question for the adapter-loader *shape*?~~
   **ANSWERED in slice 3, by measurement rather than by taste.** The two surfaces own two
   halves and neither should grow the other's. `what_reads_this.py` owns a LITERAL name;
