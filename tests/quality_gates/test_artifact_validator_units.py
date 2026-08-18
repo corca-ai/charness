@@ -91,3 +91,38 @@ def test_a_public_skill_scaffold_still_names_its_owner(register_surface) -> None
 
     assert _artifact_validator._skill_id("probe-public-owned") == "charness:handoff"
     assert "`charness:handoff` skill" in _artifact_validator.scaffold_hint("probe-public-owned")
+
+
+def test_the_exported_flattened_layout_still_names_its_owner() -> None:
+    """The consumer's spelling: the export flattens `skills/public/<id>/` to `skills/<id>/`.
+
+    Reading only the source spelling returned None for every artifact type in an
+    installed repo, so the one audience that cannot read this repo's source lost the
+    entire hint -- including the clause naming the ceiling as adapter-configurable.
+    Found by an adversarial installed-layout round.
+    """
+    assert (
+        _artifact_validator._skill_id_from_scaffold("skills/handoff/scripts/scaffold_handoff_artifact.py")
+        == "charness:handoff"
+    )
+    # The source spelling keeps working, so this is an addition, not a swap.
+    assert (
+        _artifact_validator._skill_id_from_scaffold(
+            "skills/public/handoff/scripts/scaffold_handoff_artifact.py"
+        )
+        == "charness:handoff"
+    )
+
+
+def test_a_flattened_shared_path_is_still_not_a_skill_id() -> None:
+    """Discriminating control for the arm above.
+
+    Accepting the flattened spelling positionally would read `skills/shared/...` as the
+    skill `charness:shared`. The export flattens ONLY `skills/public/`, so `shared` and
+    `support` keep their names in both layouts and must stay refused in both.
+    """
+    for scaffold in (
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "skills/support/markdown-preview/scripts/markdown_preview_render.py",
+    ):
+        assert _artifact_validator._skill_id_from_scaffold(scaffold) is None, scaffold

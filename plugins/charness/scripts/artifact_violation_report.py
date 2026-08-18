@@ -38,9 +38,29 @@ def _scaffold_rel(artifact_type: str) -> str | None:
         return None
     for surface in registry:
         if surface.artifact_type == artifact_type and surface.scaffold:
-            if (scripts_dir.parent / surface.scaffold).is_file():
-                return surface.scaffold
+            for candidate in _layout_spellings(surface.scaffold):
+                if (scripts_dir.parent / candidate).is_file():
+                    return candidate
     return None
+
+
+def _layout_spellings(scaffold: str) -> tuple[str, ...]:
+    """The registry spelling, then the EXPORTED one.
+
+    The export flattens `skills/public/<id>/` to `skills/<id>/`, and the registry only
+    ever declares the source spelling. Checking one spelling meant `_scaffold_rel`
+    returned None for every artifact type in an installed consumer repo -- so the one
+    audience that cannot read this repo's source lost the whole hint, including the
+    clause that tells them the ceiling is adapter-configurable and where it is
+    forecast. Found by an adversarial installed-layout round.
+
+    Order matters: the source spelling wins where both exist, so a dev checkout keeps
+    emitting the path its own operator runs.
+    """
+    parts = Path(scaffold).parts
+    if len(parts) > 2 and parts[0] == "skills" and parts[1] == "public":
+        return (scaffold, Path(*parts[:1], *parts[2:]).as_posix())
+    return (scaffold,)
 
 
 def _skill_id(artifact_type: str) -> str | None:
@@ -49,16 +69,35 @@ def _skill_id(artifact_type: str) -> str | None:
     `skills/public/<id>/scripts/scaffold_*.py` already declares the owner, so a
     second mapping here would be a registry that rots independently of the one it
     duplicates -- the failure this module's `_scaffold_rel` docstring already
-    refuses. Anything not under `skills/public/` yields no name rather than a
-    guessed one.
+    refuses. Both layout spellings are accepted for the same reason `_scaffold_rel`
+    checks both: the export flattens `skills/public/<id>/` to `skills/<id>/`, and
+    reading only the source spelling silently dropped the "load the owning skill"
+    clause for every installed consumer. Anything not under `skills/` yields no name
+    rather than a guessed one.
     """
     scaffold = _scaffold_rel(artifact_type)
-    if scaffold is None:
-        return None
+    return None if scaffold is None else _skill_id_from_scaffold(scaffold)
+
+
+def _skill_id_from_scaffold(scaffold: str) -> str | None:
+    """The parsing half, split out so BOTH layout spellings can be asserted directly.
+
+    `_skill_id` can only be driven through a registry entry whose file exists, and the
+    exported spelling by definition does not exist in a source checkout -- so the arm
+    that matters to a consumer was untestable while the rule lived inline.
+    """
     parts = Path(scaffold).parts
-    if len(parts) < 3 or parts[0] != "skills" or parts[1] != "public":
+    if len(parts) < 3 or parts[0] != "skills":
         return None
-    return f"charness:{parts[2]}"
+    if parts[1] == "public":
+        return f"charness:{parts[2]}"
+    # `shared`/`support` sit exactly where a flattened `<id>` sits, so a purely
+    # positional read would invite the author to load `charness:shared` -- a skill that
+    # does not exist -- at the moment they are already looking at a refusal. The export
+    # flattens ONLY `skills/public/`; those two keep their own names under it.
+    if parts[1] in {"shared", "support"}:
+        return None
+    return f"charness:{parts[1]}"
 
 
 def scaffold_hint(artifact_type: str) -> str | None:

@@ -45,6 +45,7 @@ H2_RE = re.compile(r"^##\s+.+$")
 _violation_report = import_repo_module(__file__, "scripts.artifact_violation_report")
 _scaffold_rel = _violation_report._scaffold_rel
 _skill_id = _violation_report._skill_id
+_skill_id_from_scaffold = _violation_report._skill_id_from_scaffold
 scaffold_hint = _violation_report.scaffold_hint
 report_validation_failure = _violation_report.report_validation_failure
 

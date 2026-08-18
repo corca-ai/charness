@@ -105,7 +105,13 @@ def _resolved_max_content_lines(adapter: dict[str, Any]) -> int:
     author to prune content the gate would have accepted -- the same content-free
     trimming this override exists to end.
     """
-    declared = (adapter or {}).get("data", {}).get(resolve_adapter.LINE_BUDGET_FIELD)
+    # `getattr` with the literal default, matching validate_handoff_artifact: this
+    # planner ships inside the skill package and can be paired with a stale vendored
+    # resolver, and a bare attribute read would turn that skew into an AttributeError
+    # and no plan at all. An adversarial round found this copy still unguarded after
+    # the validators were fixed -- the cost of resolving the rule twice.
+    field = getattr(resolve_adapter, "LINE_BUDGET_FIELD", "max_content_lines")
+    declared = (adapter or {}).get("data", {}).get(field)
     if isinstance(declared, bool) or not isinstance(declared, int) or declared < 1:
         return MAX_CONTENT_LINES
     return declared
@@ -199,6 +205,12 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         "exists": True,
         "line_count": len(lines),
         "content_line_count": content_line_count,
+        # The ceiling this forecast used, published rather than left implicit. Without
+        # it the only observable is the derived `status`, so a resolver returning ANY
+        # number above the count looks identical to one returning the repo's declared
+        # ceiling -- which is how an adversarial round found the planner's resolver
+        # free to forecast a number the gate does not enforce, with the suite green.
+        "content_line_budget": ceiling,
         # Diagnosis, not a new blocking floor: the gate owns the verdict. Line
         # numbers so a refresh can go straight to the entry that needs a pointer.
         "unowned_entries": [

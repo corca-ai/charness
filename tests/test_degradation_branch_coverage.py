@@ -525,20 +525,24 @@ def test_an_unreadable_adapter_degrades_the_ceiling_to_the_default(tmp_path) -> 
     def boom(_repo_root):
         raise RuntimeError("adapter unreadable")
 
+    # `999`, not the shipped `180`: with the real default these tests could not tell
+    # "returned the caller's default" from "returned a hardcoded 180".
     assert (
         artifact_validator.resolve_adapter_line_budget(
-            boom, tmp_path, field="max_artifact_lines", default=180
+            boom, tmp_path, field="max_artifact_lines", default=999
         )
-        == 180
+        == 999
     )
 
 
 @pytest.mark.parametrize(
-    "declared",
-    [True, "240", 0, -1, None],
-    ids=["bool", "string", "zero", "negative", "absent"],
+    ("declared", "expected"),
+    [(True, 999), ("240", 999), (0, 999), (-1, 999), (None, 999), (240, 240)],
+    ids=["bool", "string", "zero", "negative", "absent", "honored"],
 )
-def test_a_value_the_resolver_should_have_refused_still_yields_the_default(tmp_path, declared) -> None:
+def test_a_value_the_resolver_should_have_refused_still_yields_the_default(
+    tmp_path, declared, expected
+) -> None:
     """The isinstance re-check is not redundant with the resolver.
 
     A consuming repo can vendor a resolver older than its validator, so this module
@@ -547,11 +551,14 @@ def test_a_value_the_resolver_should_have_refused_still_yields_the_default(tmp_p
     """
     adapter = {"data": {} if declared is None else {"max_artifact_lines": declared}}
 
+    # The last arm is the POSITIVE control: without it, deleting adapter resolution
+    # entirely (`return default`) passes every case above, which is exactly the
+    # both-tests-green-only-one-exercises-the-branch class this file exists for.
     assert (
         artifact_validator.resolve_adapter_line_budget(
-            lambda _repo_root: adapter, tmp_path, field="max_artifact_lines", default=180
+            lambda _repo_root: adapter, tmp_path, field="max_artifact_lines", default=999
         )
-        == 180
+        == expected
     )
 
 
@@ -643,7 +650,11 @@ def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
                 raise ImportError(f"no {name} in this layout")
             return None
 
-    monkeypatch.setitem(sys.modules, validator_module, None)
+    # `delitem` alone. A preceding `setitem(..., None)` sentinel would be deleted on
+    # the next line before any import runs -- inert today, and a hazard the day someone
+    # reorders the two: the sentinel would make `import` fail via `sys.modules`, the
+    # finder would never be consulted, and the test would still pass while asserting
+    # the degradation for a mechanism it no longer exercises.
     monkeypatch.delitem(sys.modules, validator_module, raising=False)
     monkeypatch.setattr(sys, "meta_path", [_Refuse(), *sys.meta_path])
 

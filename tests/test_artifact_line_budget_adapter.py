@@ -25,6 +25,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,10 +64,11 @@ def test_debug_ceiling_follows_the_adapter_in_both_gate_and_forecast(tmp_path: P
     raised_gate = run_main(gate, "--repo-root", str(repo), "--all")
     raised_forecast = run_main(scaffold, "--repo-root", str(repo), "--title", "probe")
 
-    assert "get back under 180" in default_gate.stderr
-    assert "max_lines: 180" in default_forecast.stdout
-    assert "get back under 240" in raised_gate.stderr
-    assert "max_lines: 240" in raised_forecast.stdout
+    assert "debug artifact is 251 lines" in default_gate.stderr
+    assert "get back under 180 " in default_gate.stderr
+    assert "max_lines: 180\n" in default_forecast.stdout
+    assert "get back under 240 " in raised_gate.stderr
+    assert "max_lines: 240\n" in raised_forecast.stdout
 
 
 def test_quality_ceiling_follows_the_adapter_in_both_gate_and_forecast(tmp_path: Path) -> None:
@@ -86,10 +89,11 @@ def test_quality_ceiling_follows_the_adapter_in_both_gate_and_forecast(tmp_path:
     raised_gate = run_main(gate, "--repo-root", str(repo))
     raised_forecast = run_main(scaffold, "--repo-root", str(repo), "--title", "probe")
 
-    assert "get back under 140" in default_gate.stderr
-    assert "max_lines: 140" in default_forecast.stdout
-    assert "get back under 200" in raised_gate.stderr
-    assert "max_lines: 200" in raised_forecast.stdout
+    assert "quality artifact is 211 lines" in default_gate.stderr
+    assert "get back under 140 " in default_gate.stderr
+    assert "max_lines: 140\n" in default_forecast.stdout
+    assert "get back under 200 " in raised_gate.stderr
+    assert "max_lines: 200\n" in raised_forecast.stdout
 
 
 def _handoff_artifact(entries_per_section: int) -> str:
@@ -119,16 +123,26 @@ def test_handoff_content_ceiling_follows_the_adapter_in_gate_scaffold_and_planne
     raised_forecast = run_main(scaffold, "--repo-root", str(repo))
     raised_plan = run_main(planner, "--repo-root", str(repo), "--intent", "refresh")
 
-    assert "content lines (limit 78)" in default_gate.stderr
-    assert "max_lines: 78" in default_forecast.stdout
+    # The COUNT, not just the ceiling: raw file length is 116 and content length is
+    # 101, and both sit between 78 and 120 -- so without this the mutation "count raw
+    # lines instead of content lines" survives every other assertion here.
+    assert "handoff artifact has 101 content lines (limit 78)" in default_gate.stderr
+    assert "max_lines: 78\n" in default_forecast.stdout
+    assert "content_line_budget: 78" in default_plan.stdout
     assert "status: over_limit" in default_plan.stdout
-    # The 101-content-line artifact is now UNDER the ceiling, so the budget rule stops
-    # firing and the planner drops to its next-ranked status. Asserting the ABSENCE of
-    # the limit message is the point: the artifact is byte-identical across both halves,
-    # so only the adapter can account for the difference.
+
+    # The artifact is byte-identical across both halves, so only the adapter can
+    # account for any difference. Absence alone is too weak a raised-half assertion --
+    # it holds for ANY ceiling above 101, which leaves a resolver free to forecast a
+    # number the gate does not enforce. So pin the number wherever a surface publishes
+    # one, and keep a POSITIVE assertion on the gate so "the rule passed" stays
+    # distinguishable from "the gate exited early and printed nothing".
     assert "content lines (limit" not in raised_gate.stderr
-    assert "max_lines: 120" in raised_forecast.stdout
-    assert "status: over_limit" not in raised_plan.stdout
+    assert raised_gate.returncode == 1
+    assert "at least one" in raised_gate.stderr or "reference" in raised_gate.stderr.lower()
+    assert "max_lines: 120\n" in raised_forecast.stdout
+    assert "content_line_budget: 120" in raised_plan.stdout
+    assert "status: unowned_entries" in raised_plan.stdout
 
 
 def test_the_doc_authoring_forecasts_read_the_adapter_ceiling_not_the_default(tmp_path: Path) -> None:
@@ -157,14 +171,65 @@ def test_the_doc_authoring_forecasts_read_the_adapter_ceiling_not_the_default(tm
     raised_preflight = run_main(preflight, "--repo-root", str(repo), "--path", "docs/handoff.md")
     raised_rules = run_main(preflight, "--repo-root", str(repo), "--as-surface", "handoff")
 
-    assert "cap: 78" in default_preflight.stdout
+    assert "cap: 78\n" in default_preflight.stdout
+    assert "current: 101" in default_preflight.stdout
     assert "over: true" in default_preflight.stdout
-    assert "cap: 78" in default_rules.stdout
+    assert "cap: 78\n" in default_rules.stdout
     # Same 101-content-line artifact, byte for byte. Only the adapter differs, so the
     # forecast flipping to `over: false` can have no other cause.
-    assert "cap: 120" in raised_preflight.stdout
+    assert "cap: 120\n" in raised_preflight.stdout
+    assert "current: 101" in raised_preflight.stdout
     assert "over: false" in raised_preflight.stdout
-    assert "cap: 120" in raised_rules.stdout
+    assert "cap: 120\n" in raised_rules.stdout
+
+
+def test_the_handoff_planner_refuses_the_same_values_its_gate_does(tmp_path: Path) -> None:
+    """The planner resolves the ceiling with its OWN copy of the rule, by necessity.
+
+    It ships inside the skill package and must forecast in an install with no repo-root
+    `scripts/` tree, so it cannot import the validator's resolver. That copy therefore
+    needs its own refusal proof: an adversarial round found that deleting its bool guard
+    survived the entire suite, which would let `max_content_lines: yes` forecast a
+    ceiling of 1 while the gate enforced 78.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "handoff.md").write_text(_handoff_artifact(25), encoding="utf-8")
+    base = ["version: 1", "repo: demo", "output_dir: docs"]
+    planner = "skills/public/handoff/scripts/plan_handoff_run.py"
+
+    # The bool arm is deliberately NOT here: measured, the resolver strips a refused
+    # value before the planner ever sees it, so no adapter file can reach that guard.
+    # It is defense-in-depth against a stale vendored resolver and is asserted directly
+    # below, the same way the validator's isinstance re-check is.
+    for value in ("yes", "0", "-5", "'120'"):
+        write_adapter(repo, "handoff-adapter.yaml", [*base, f"max_content_lines: {value}"])
+        plan = run_main(planner, "--repo-root", str(repo), "--intent", "refresh")
+
+        # The conservative arm is the DEFAULT, never "unlimited" and never the
+        # bool-coerced 1 that would refuse every possible handoff.
+        assert "content_line_budget: 78" in plan.stdout, value
+        assert "status: over_limit" in plan.stdout, value
+
+
+@pytest.mark.parametrize(
+    ("declared", "expected"),
+    [(True, 78), ("120", 78), (0, 78), (-1, 78), (None, 78), (120, 120)],
+    ids=["bool", "string", "zero", "negative", "absent", "honored"],
+)
+def test_the_planners_own_guard_survives_a_resolver_that_did_not_refuse(declared, expected) -> None:
+    """Reached only by handing the planner a payload directly, which is the point.
+
+    A current resolver strips every bad value before the planner sees it, so this guard
+    exists for the stale-resolver skew alone -- and a guard no adapter file can reach is
+    a guard no CLI-level test can kill a mutant on. `isinstance(True, int)` is True, so
+    without the bool arm `max_content_lines: true` would forecast a ceiling of 1 while
+    the gate enforced 78. The honored arm is the positive control.
+    """
+    planner = load_script_module("plan_handoff_run", ROOT / "skills/public/handoff/scripts/plan_handoff_run.py")
+    adapter = {"data": {} if declared is None else {"max_content_lines": declared}}
+
+    assert planner._resolved_max_content_lines(adapter) == expected
 
 
 def test_a_refused_ceiling_is_an_adapter_error_and_leaves_the_default_enforced(tmp_path: Path) -> None:
