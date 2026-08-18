@@ -325,7 +325,34 @@ runtime_budget_profiles:
       # it again on the same reasoning. Two relevels inside a month is the counted-limit
       # retry loop this repo already records, and the answer at that point is per-test
       # profiling or a smaller standing set, not a third number.
-      pytest: 120000
+      #
+      # 2026-08-18 (#668): the trigger FIRED, its named work was done, and the work was
+      # MEASURED not to move the bar. Both remedies were tried:
+      #   - per-test profiling: no hotspot. `-n 12 --durations=40` shows a flat tail,
+      #     the top entry at 18.1s and the fortieth at 3.5s.
+      #   - smaller standing set: sixteen real-corpus / real-export CLI probes moved to
+      #     the `slow_corpus` lane. Isolated, the standing lane went 85.8s -> 75.6s.
+      #     In-gate, three samples AFTER that cut read 128196, 126939, 135892 and the
+      #     recent median moved 126645 -> 125850. A 12% cut in test CPU bought 0.6% of
+      #     in-gate wall.
+      # That is the refutation this relevel rests on, and it is a DIFFERENT reason from
+      # the one the trigger forbade repeating. The label does not measure suite growth;
+      # it measures wall time under `run-quality.sh`'s ~95-way concurrency, which pytest
+      # shares CPU with. Shrinking the suite cannot move a contention-bound number, so
+      # holding this bar at a value the tree cannot reach makes it what this file's own
+      # note two blocks down calls a gate the next session learns to route around --
+      # and it already trained one bypass (#640's push went out with --no-verify).
+      #
+      # 155000, not the suggester's 193000: that is this block's uniform ~1.4x-worst
+      # convention, and the previous relevel's note explicitly refused it for this label
+      # to keep the teeth where the maintainer feels time. 155000 is ~1.12x the observed
+      # worst (137823) over the recent 20-sample window, so a genuine regression still
+      # trips while ordinary contention variance does not.
+      #
+      # NOT CLAIMED: that the suite is as fast as it should be, or that the contention
+      # is acceptable. The real fix is #668's remaining half -- reduce what pytest
+      # competes with inside the gate -- and this number does not do it.
+      pytest: 155000
       # 2026-07-25: the release-path variants were the slowest observed labels on
       # this profile and the only unbudgeted ones, so a 2x regression on the gate
       # that actually precedes a release would not have tripped anything. Same
