@@ -1647,6 +1647,38 @@
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "changed-an-action",
       "anchor": "Gave the census gate's 'guarded' verdict a STRUCTURAL witness (the file must reference adapter_version_verdict) instead of trusting the written reason, and said in the failure text that the other four verdicts are prose. Otherwise all five verdicts would have been unverifiable strings and the strongest one would have been the cheapest to claim falsely."
+    },
+    {
+      "event_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac-green-test-is-not-covered-line",
+      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "After 30 green tests on scripts/probe_record_lib.py I ran coverage report -m instead of accepting the pass, and it named four unreached branches (193, 216, 221, 272) including the base-observed empty-capture refusal. Later the same habit caught two REPAIRED tests passing on an earlier refusal than the one their names claimed. Otherwise: slice 1 ships with four untested branches and two tests that assert nothing they are named for, into a mechanism whose whole subject is a green that measured nothing."
+    },
+    {
+      "event_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran prepush_focused_changed_line_coverage.py immediately after each of the six slice commits and BEFORE the standing lane, every time. It returned blocked twice and named the exact uncovered lines, which I fixed before the broad run. Otherwise: the handoff records four broad reruns paid for the reverse order last session, and this session would have paid the same for two blocked results at roughly 80s per broad lane."
+    },
+    {
+      "event_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac-line-anchored-ledger-fields",
+      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro.md",
+      "lesson_id": "line-anchored-ledger-fields",
+      "outcome": "changed-an-action",
+      "anchor": "Writing the first REAL probe record, a wrapped 'Call sites unproven:' value was silently truncated to its first line. I recognised the class from this lesson and made indented continuation part of the parser grammar rather than re-typing the record on one line. Otherwise: the record gets 'fixed' and the parser ships the same hazard to all 45 slice-5 rows and to every closeout carrier that later copies the exemplar."
+    },
+    {
+      "event_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac-detector-blind-class-unstated",
+      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Wrote the BLIND CLASS section into probe_record_lib's module docstring before its first test, naming what the mechanism cannot see. Both bounded rounds then audited that list against the code and found it over- AND under-claiming, which is a cheap correction loop. Otherwise: the reviewers have nothing to check the claims against, and the docstring's false credit for #528 -- which round 1 did catch by reading the stated blind class -- ships as the mechanism's own account of itself."
     }
   ],
   "lessons": {
@@ -1938,10 +1970,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -2,
-      "score_count": 10,
+      "score_total": -1,
+      "score_count": 11,
       "outcome_counts": {
-        "changed-an-action": 4,
+        "changed-an-action": 5,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -1983,10 +2015,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 3,
-      "score_count": 3,
+      "score_total": 4,
+      "score_count": 4,
       "outcome_counts": {
-        "changed-an-action": 3,
+        "changed-an-action": 4,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2013,10 +2045,10 @@
     "line-anchored-ledger-fields": {
       "source_retro": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
       "transition_id": "seed-line-anchored-ledger-fields",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2148,10 +2180,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 3,
-      "score_count": 9,
+      "score_total": 4,
+      "score_count": 10,
       "outcome_counts": {
-        "changed-an-action": 6,
+        "changed-an-action": 7,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,

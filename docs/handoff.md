@@ -21,6 +21,13 @@
 
 ## Current State
 
+- **A behavioral probe can now say it measured NOTHING, and two boundaries read it.**
+  The [probe record library](../scripts/probe_record_lib.py) types a record in
+  `boundary_probe_lib`'s existing
+  vocabulary; the issue-close and release close-issue floors read it. Held at REVIEW
+  severity by operator ruling (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until
+  slice 5 reports what a record costs across 45 real rows — the mechanism and its proof
+  are complete, the veto is not armed, and both severities are pinned by test.
 - **A reader that cannot speak an adapter's `version` now honors NOTHING it declares**, and
   the surfaces that act on a payload REFUSE instead of silently using a charness default.
   Before this, a declared mandatory release review reported `not_configured`, the retro
@@ -31,16 +38,11 @@
   the `accepted-risk-unguarded` rows are the ones that would still use a charness default.
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .` prints that count
   on every run so it stays decided rather than forgotten.
-- **The standing-lane flake's BAR is repaired**, so the lane no longer blocks pre-push.
-  `test_acquire_closes_session_on_sigterm_mid_render` in
-  [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) bounded its readiness
-  wait with a 10s wall deadline, which measured the MACHINE — everything the child does
-  before the `open` call is unbounded work sized by how many xdist workers run beside it.
-  It now waits on the child's process state and fails fast and distinguishably if the
-  child exits. Proven on the bound observable rather than by a green run: against a child
-  reaching its `open` line at 12s, the old loop raises `AssertionError` at 10.0s and the
-  new one passes at 12.1s. Residual: a wall clock remains at 120s as a HANG BACKSTOP, so
-  a red there means investigate a hang — it is NOT an expected red to absorb.
+- **The standing-lane flake's BAR is repaired**, so the lane no longer blocks pre-push:
+  [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) now waits on the child's
+  process state, not a 10s wall clock. A wall clock remains at 120s as a HANG BACKSTOP, so
+  a red there means investigate a hang — it is NOT an expected red to absorb. The measured
+  base/HEAD pair is in the goal's probe record.
 - **Issue triage ran against current HEAD.** Over half of the open set still reproduces;
   four are closeable with commit-level evidence (`#629`, `#628`, `#608`, `#528`) and three
   umbrellas (`#582`, `#583`, `#584`) are ready for an owner readback because their tracked
@@ -60,21 +62,16 @@
    precondition all live in the goal's own `## Active Operating Frame`, which is the
    surface to read rather than this list while it is active:
    the [probe-provenance and adapter-consumer-debt goal](../charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md)
-   holds that frame plus the slice log. Slice 1 (the probe record) has landed with two
-   bounded review rounds. The pre-push flake that used to head this list is discharged.
-2. **Pay down `accepted-risk-unguarded` in severity order, not file order.** The sharpest
-   class is a gate that reports the OPPOSITE of truth — a declared trigger read back as
-   "this repo declares none", exit 0. Release gates lead that class. Each row's consequence
-   is in the [census manifest](../scripts/adapter-consumer-classification.json).
-3. **The [`no-version-validation`](../scripts/adapter-consumer-classification.json) rows
-   need a DIFFERENT fix**: they read
-   `.agents/*-adapter.yaml` with a raw YAML load and never reconcile a version, so there is
-   no `errors` for anyone to check. Wire them onto the shared resolver rather than adding a
-   check they have nothing to check.
-4. **Close `#629`, `#628`, `#608` and `#528` through the `issue` closeout floor**, not in
-   bulk — one triage row cited a commit date that was wrong while its conclusion held, and
-   a close that lands is not undoable by pushing again.
-5. **[#668](https://github.com/corca-ai/charness/issues/668) is still an operator ruling**,
+   holds that frame plus the slice log. Slices 1 and 2 have landed, each with the two
+   bounded review rounds the proof-surface rule requires; slice 3 is next and its
+   groundwork is already measured in the frame, so do not re-derive it. The pre-push
+   flake that used to head this list is discharged.
+2. **The debt rows are the goal's slice 5** — severity order, release gates first, and
+   the `no-version-validation` rows need the shared resolver rather than a check they have
+   nothing to check. Each row's consequence is in the
+   [census manifest](../scripts/adapter-consumer-classification.json); count them with
+   `python3 scripts/check_adapter_consumer_classification.py --repo-root .`.
+3. **[#668](https://github.com/corca-ai/charness/issues/668) is still an operator ruling**,
    not a code fix: should the pytest bar measure wall time at all. `#546` sits in the same
    file and should be read in the same sitting.
 
