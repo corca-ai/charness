@@ -125,3 +125,27 @@ def test_no_adapter_at_all_is_not_a_refusal(
     result = _run(skill, repo)
     assert result.returncode == 0, result.stderr
     assert default in result.stdout, result.stdout
+
+
+@pytest.mark.parametrize(("skill", "declared", "default"), SCAFFOLDS, ids=[s[0] for s in SCAFFOLDS])
+def test_payload_for_itself_raises_in_process(
+    tmp_path: Path, skill: str, declared: str, default: str
+) -> None:
+    """The same refusal, IN PROCESS.
+
+    The four tests above drive each real CLI through `subprocess`, which is the right
+    shape for a behavioral claim and the wrong shape for coverage: the changed-line proof
+    reported `status: blocked` with `raise SystemExit(refusal)` uncovered in all five
+    files, because nothing it can see ever executed that line. A guard whose refusal line
+    the suite cannot observe is a guard a refactor can delete quietly.
+
+    This also proves the guard is inside `payload_for` rather than `main()`, which is what
+    the importers of `payload_for` depend on.
+    """
+    from tests.script_main import load_script_module
+
+    module = load_script_module(f"scaffold_{skill}_for_refusal_coverage", _script(skill))
+    repo = _repo(tmp_path, skill, f"version: 9\nrepo: demo\noutput_dir: {declared}\n")
+    with pytest.raises(SystemExit) as excinfo:
+        module.payload_for(repo, title="probe")
+    assert "does not speak" in str(excinfo.value)
