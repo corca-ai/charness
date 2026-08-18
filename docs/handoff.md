@@ -21,6 +21,23 @@
 
 ## Current State
 
+- **The adapter-consumer debt is being paid down row by row, each by a MEASURED
+  behavioral flip.** Thirteen rows are `guarded`; the guard refuses on the CONDITION
+  ("this reader honored nothing the repo declared"), which has two doors — an unspeakable
+  `version` and a document the parser refused. Keying on only the first was measured as an
+  escape: `version: !!int 9` walked past every guard in the repo and wrote two durable
+  files to a directory the repo never named. Recount with
+  `python3 scripts/check_adapter_consumer_classification.py --repo-root .`; never read a
+  count off this file.
+- **Every batch has owed and received two bounded review rounds, and NOT ONE has been
+  clean.** The rounds have caught, in order: a guard keyed on one check's wording instead
+  of the condition; a read-site rationale published into eight surfaces that the code
+  refutes; a repair applied to the shared helper and not to three consumers that bypass
+  it; a gate witness its own repair's COMMENT satisfied; and a narrowing that landed in one
+  of five surfaces. The cheap detector each time was the same question — what is the
+  cheapest input that still gets past this — plus grepping the phrase rather than the file.
+  Per-round ledger:
+  [the goal's `## Slice Log`](../charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md).
 - **A behavioral probe can now say it measured NOTHING, and two boundaries read it.**
   The [probe record library](../scripts/probe_record_lib.py) types a record in
   `boundary_probe_lib`'s existing
@@ -28,25 +45,12 @@
   severity by operator ruling (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until
   slice 5 reports what a record costs across 45 real rows — the mechanism and its proof
   are complete, the veto is not armed, and both severities are pinned by test.
-- **A reader that cannot speak an adapter's `version` now honors NOTHING it declares**, and
-  the surfaces that act on a payload REFUSE instead of silently using a charness default.
-  Before this, a declared mandatory release review reported `not_configured`, the retro
-  gate printed `Validated 0 retro artifact(s).` exit 0 over an artifact it was handed by
-  name, and the debug gate enforced its shipped ceiling over a repo that declared a lower
-  one. All three were reproduced on the real CLIs, not argued.
-- **The remaining debt is COUNTED, not fixed.** Every consumer carries a written verdict;
-  the `accepted-risk-unguarded` rows are the ones that would still use a charness default.
-  `python3 scripts/check_adapter_consumer_classification.py --repo-root .` prints that count
-  on every run so it stays decided rather than forgotten.
-- **The standing-lane flake's BAR is repaired**, so the lane no longer blocks pre-push:
-  [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) now waits on the child's
-  process state, not a 10s wall clock. A wall clock remains at 120s as a HANG BACKSTOP, so
-  a red there means investigate a hang — it is NOT an expected red to absorb. The measured
-  base/HEAD pair is in the goal's probe record.
-- **Issue triage ran against current HEAD.** Over half of the open set still reproduces;
-  four are closeable with commit-level evidence (`#629`, `#628`, `#608`, `#528`) and three
-  umbrellas (`#582`, `#583`, `#584`) are ready for an owner readback because their tracked
-  children are reported fixed. Inventory:
+- **The standing-lane flake's BAR is repaired**; a 120s wall clock remains as a HANG
+  BACKSTOP, so a red on
+  [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) means investigate a
+  hang — it is NOT an expected red to absorb.
+- **Issue triage ran against current HEAD**; `#628` and three umbrellas
+  (`#582`/`#583`/`#584`) await an owner readback. Inventory:
   `gh issue list --repo corca-ai/charness --state open`.
 - Re-prove with `python3 scripts/run_standing_pytest.py` after
   `python3 scripts/sync_root_plugin_manifests.py`, then
@@ -58,14 +62,14 @@
 
 ## Next Session
 
-1. **Continue the active goal.** The current slice, the next action, and the discharged
-   precondition all live in the goal's own `## Active Operating Frame`, which is the
-   surface to read rather than this list while it is active:
+1. **Continue the active goal.** The current slice, the next action, and the review state
+   all live in the goal's own `## Active Operating Frame`, which is the surface to read
+   rather than this list while it is active:
    the [probe-provenance and adapter-consumer-debt goal](../charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md)
-   holds that frame plus the slice log. Slices 1 and 2 have landed, each with the two
-   bounded review rounds the proof-surface rule requires; slice 3 is next and its
-   groundwork is already measured in the frame, so do not re-derive it. The pre-push
-   flake that used to head this list is discharged.
+   holds that frame plus the slice log. Slices 1-3 have landed; slice 4 part 1 landed and
+   PART 2 IS BLOCKED on an operator ruling; slice 5 has paid down thirteen rows in three
+   batches, each with both bounded rounds. Do not re-derive what the frame already
+   measured.
 2. **The debt rows are the goal's slice 5** — severity order, release gates first, and
    the `no-version-validation` rows need the shared resolver rather than a check they have
    nothing to check. Each row's consequence is in the
