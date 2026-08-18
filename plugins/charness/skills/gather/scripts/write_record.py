@@ -43,9 +43,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gather_writer_lib as wlib  # noqa: E402
 import resolve_adapter as gather_adapter  # noqa: E402
 
+_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
+
 
 def _resolve_output_dir(repo_root: Path) -> Path:
     payload = gather_adapter.load_adapter(repo_root)
+    # A version this reader cannot speak leaves `output_dir` at the shipped default, so
+    # the dated record AND the `latest.md` pointer would be written under a directory
+    # the repo never named -- the repo's real pointer left stale while a shadow one
+    # appears elsewhere, reported as `status: updated`, exit 0. Refuse instead: this
+    # writes a durable knowledge asset, and writing it to the wrong place is worse than
+    # not writing it.
+    if _version_verdict.version_refused(payload.get("errors")):
+        raise wlib.WriteError(
+            "gather adapter declares a `version` this reader does not speak "
+            f"({'; '.join(payload.get('errors') or [])}); nothing it declares is honored, "
+            "so `output_dir` would be the charness default rather than this repo's. "
+            "Set `version: 1` in `.agents/gather-adapter.yaml` and re-run."
+        )
     data = payload.get("data") or {}
     output_dir = data.get("output_dir")
     if not isinstance(output_dir, str):

@@ -39,6 +39,9 @@ def _copy_installed_runtime(tmp_path: Path) -> None:
         # `simple_skill_adapter_lib` imports the shared typed-field applier, so a fake
         # layout without it fails at import for the same reason `yaml_output.py` does.
         "scripts/adapter_field_application.py",
+        # Same reason, second import: the loader reads the version verdict to contain
+        # `extra_payload`'s view of a refused document.
+        "scripts/adapter_version_verdict.py",
         # Shipped by the installed layout too (plugins/charness/scripts/yaml_output.py):
         # every migrated handoff script resolves the renderer through it, so a fake
         # layout without it fails at import, not at the behavior under test.

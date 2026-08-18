@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import re
 import sys
 from pathlib import Path
@@ -53,6 +52,7 @@ OWNED_SECTIONS = _ownership.OWNED_SECTIONS
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+_adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
 add_artifact_path_arg = _scripts_artifact_validator_module.add_artifact_path_arg
@@ -460,16 +460,19 @@ def validate_handoff_artifact(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    add_artifact_path_arg(parser, surface="handoff")
-    add_one_pass_args(
-        parser,
-        fail_fast_help="Stop at the first rule violation instead of reporting every violation in one pass.",
+    args = _scripts_artifact_validator_module.parse_single_artifact_validator_args(
+        surface="handoff", default_repo_root=REPO_ROOT
     )
-    args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    # Before either branch: `resolved_max_content_lines` reads the adapter even when
+    # `--artifact-path` names the file, so an unspeakable version would silently enforce
+    # the shipped ceiling over a repo that declared its own.
+    refused = _adapter_version_verdict.refuse_unspeakable_version(
+        load_adapter, repo_root, adapter_name="handoff-adapter.yaml"
+    )
+    if refused is not None:
+        return refused
     if args.artifact_path is not None:
         artifact_path = args.artifact_path
         if not artifact_path.is_absolute():

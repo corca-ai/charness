@@ -321,6 +321,28 @@ def validate_sibling_followups(
         )
 
 
+def parse_single_artifact_validator_args(*, surface: str, default_repo_root: Path):
+    """The argument surface every SINGLE-artifact validator parses.
+
+    `run_changed_artifact_validator` already owns this for the changed-path family; the
+    two validators that resolve exactly one artifact (quality, handoff) hand-rolled the
+    same parser, down to a copy of the `--fail-fast` help string. A duplication gate
+    caught it the moment a fourth shared line was added to both. Argument plumbing only:
+    it parses nothing new and changes no verdict, which is why the two mains keep their
+    own bodies below it.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", type=Path, default=default_repo_root)
+    add_artifact_path_arg(parser, surface=surface)
+    add_one_pass_args(
+        parser,
+        fail_fast_help="Stop at the first rule violation instead of reporting every violation in one pass.",
+    )
+    return parser.parse_args()
+
+
 def run_changed_artifact_validator(
     *,
     default_repo_root: Path,
@@ -337,6 +359,7 @@ def run_changed_artifact_validator(
     owned_prefix: str | Callable[[Path], str | None] | None = None,
     error_cls: type[Exception] = ValidationError,
     on_complete: Callable[[ChangedArtifactRun, Sequence[Path]], None] | None = None,
+    preflight: Callable[[Path], str | None] | None = None,
 ) -> int:
     """The whole `main()` for a changed-path artifact validator, in one place.
 
@@ -365,6 +388,13 @@ def run_changed_artifact_validator(
       construction; a validator whose enforcement varies by mode, date or probe
       config uses this to name its scope. Called only on success — a failing run
       already carries a signal. Reporting only: it changes no verdict.
+    - `preflight` refuses BEFORE any scoping, returning a message or None. It runs
+      first because the condition it reports is the one that makes every later answer
+      meaningless: a validator whose adapter could not be read at its declared version
+      resolves its output directory AND its line ceiling from charness defaults, so it
+      scopes itself to a directory the repo does not write to and reports
+      `Validated 0 <label>(s).` as a pass. That refusal must precede discovery, not
+      follow it.
     """
     import argparse
 
@@ -376,6 +406,14 @@ def run_changed_artifact_validator(
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    if preflight is not None and (refusal := preflight(repo_root)) is not None:
+        # Exits 1 DIRECTLY rather than raising `error_cls`, for the reason
+        # `_debug_artifacts` records about its own two hard errors: this is not an
+        # artifact rule violation, so routing it through `report_validation_failure`
+        # would append the "start from the owning scaffold" hint — advice to author a
+        # stub when the real fix is one line in an adapter.
+        print(refusal, file=sys.stderr)
+        return 1
     selected_paths = (
         selected_changed_paths(args, repo_root, changed_paths_fn=changed_paths_fn)
         if changed_paths_fn is not None

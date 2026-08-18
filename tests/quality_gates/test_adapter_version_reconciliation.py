@@ -23,10 +23,22 @@ One row is weaker than the rest and says so at its call site: the `validate_adap
 row drives a gate that RAISES rather than returning a payload, so its payload assertions
 are satisfied by values the harness synthesizes. Its error assertions are real.
 
-Blind class: this measures RESOLVERS. It says nothing about a consumer that reads a
-correctly-contained payload and then ignores the `valid` flag beside it -- those readers
-are named in `VERDICT_CONSUMERS` rather than driven here -- and nothing about an adapter
-whose version this reader speaks but whose fields mean something else.
+Blind class, measured rather than guessed:
+
+* This measures RESOLVERS. A consumer that reads a correctly-contained payload and then
+  acts on the defaults in it is a different failure, and it was a real one -- the retro
+  gate reported `Validated 0` exit 0, the debug gate raised a ceiling it was told to
+  lower. `tests/quality_gates/test_adapter_version_refusal_is_loud.py` drives the six
+  surfaces repaired for it; `VERDICT_CONSUMERS` below names readers that honor someone
+  else's verdict and is an inventory, not a coverage claim.
+* `CONTAINMENT_PROBE` declares no MAPPING-typed field, so `proof_semantics` -- whose
+  whole surface is `proof_levels`, `acceptance_map`, `gap_policy` -- is covered here only
+  for `repo` and `language`. `issue`'s backend and `capability_catalog`'s registry flag
+  are covered by bespoke tests instead (in this file, and in
+  `tests/test_capability_catalog.py`). A row's containment is only as strong as what the
+  probe can express at it, which is why the liveness test prints what it reached.
+* Nothing here sees an adapter whose version this reader SPEAKS but whose fields mean
+  something else.
 """
 from __future__ import annotations
 
@@ -42,9 +54,14 @@ from .support import ADAPTER_LIB, ROOT
 sys.path.insert(0, str(ROOT))
 
 # (label, module path, entrypoint name). The label is the resolver family; the number of
-# rows here is the "how many sites are covered" count. 19 sites driven here, 5 exempt --
+# rows here is the "how many sites are covered" count. 20 sites driven here, 4 exempt --
 # 24 reconciling sites in total. The exemptions are listed in EXEMPT_SITES with the test
 # that drives each instead; none of them is absent.
+#
+# Both numbers are ASSERTED below rather than left as prose. They were already wrong when
+# this was read fresh -- the comment said 19+5 while EXEMPT_SITES held 4, so the stated
+# total was never either sum. On the file whose own thesis is "a count is only as honest
+# as its denominator", the denominator had rotted with nothing to catch it.
 SITES: tuple[tuple[str, str, str], ...] = (
     ("announcement", "scripts/announcement_adapter_lib.py", "validate_announcement_adapter_data"),
     ("cautilus", "scripts/cautilus_adapter_lib.py", "validate_cautilus_adapter_data"),
@@ -60,6 +77,13 @@ SITES: tuple[tuple[str, str, str], ...] = (
     ("hotl", "skills/public/hotl/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("impl", "skills/public/impl/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("issue", "skills/public/issue/scripts/resolve_adapter.py", "load_adapter"),
+    # Driven through its OWN `load_adapter`, not through the `simple_skill` row it shares
+    # a loader with: `max_content_lines` is opted in via `int_fields=INT_FIELDS` at this
+    # call site, and `validate_simple_adapter_data`'s default `int_fields=()` discards it.
+    # So the simple_skill row could never reach the handoff half of the two ceilings
+    # #640 made adapter-owned, and handoff appeared in neither list -- the absent-row vs
+    # exempt-row distinction this census exists to keep honest.
+    ("handoff", "skills/public/handoff/scripts/resolve_adapter.py", "load_adapter"),
     ("capability_catalog", "scripts/capability_catalog_sources.py", "load_adapter"),
     ("quality", "scripts/quality_adapter_lib.py", "validate_quality_adapter_data"),
     ("release", "skills/public/release/scripts/resolve_adapter.py", "validate_adapter_data"),
@@ -137,6 +161,7 @@ VERDICT_CONSUMERS: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
 _ADAPTER_FILENAMES: dict[str, str] = {
     "issue": "issue-adapter.yaml",
     "capability_catalog": "capability-catalog-adapter.yaml",
+    "handoff": "handoff-adapter.yaml",
 }
 
 _LOADED: dict[str, Any] = {}
@@ -169,7 +194,16 @@ def _scalar(value: Any) -> str:
 
 
 def _render(declared: dict[str, Any]) -> str:
-    return "".join(f"{key}: {_scalar(value)}\n" for key, value in declared.items())
+    """The declaration as YAML. Lists render as block sequences, which is the shape a
+    real adapter uses and the shape this repo's hand-rolled reader parses -- a flow
+    sequence would measure the parser instead of the contract."""
+    rendered: list[str] = []
+    for key, value in declared.items():
+        if isinstance(value, list):
+            rendered.append(f"{key}:\n" + "".join(f"  - {_scalar(item)}\n" for item in value))
+        else:
+            rendered.append(f"{key}: {_scalar(value)}\n")
+    return "".join(rendered)
 
 
 def _resolve_declared(
@@ -202,7 +236,11 @@ def _resolve_declared(
         module_error = getattr(module, "ValidationError")
         probe = tmp_path / ".agents" / "probe-adapter.yaml"
         probe.parent.mkdir(parents=True, exist_ok=True)
-        probe.write_text(_render({"repo": "probe", **declared}), encoding="utf-8")
+        # `repo` LAST, so a probe carrying its own `repo` cannot displace the harness's
+        # required field. The other order reads fine today only because this row is
+        # excluded from the containment probe; it would silently hand the gate the
+        # attacker string the moment anyone included it.
+        probe.write_text(_render({**declared, "repo": "probe"}), encoding="utf-8")
         # NOTE: for THIS row the payload half of each assertion is synthesized below,
         # not observed. The gate raises instead of returning a payload, so it has no
         # resolved dict to echo a bad version into; only the error half is real evidence.
@@ -254,10 +292,20 @@ def test_simple_adapter_does_not_honor_sibling_fields_after_version_refusal(tmp_
 
 
 # The fields a misversioned -- or hostile -- adapter would use to STEER a reader rather
-# than merely misdescribe itself: the artifact directory a gate reads and refuses paths
-# under, the repo identity every artifact reports, the issue backend's target org, and
-# the two line ceilings #640 made adapter-owned. Scalars only, for the reason `_scalar`
-# records.
+# than merely misdescribe itself.
+#
+# The identity/path block came first and is the weakest half: at three rows it was the
+# ONLY thing live, so `cautilus` proved that `repo` was contained on a resolver whose
+# real surface is command templates this repo shells out to. The command-list and
+# boolean block below exists because of that -- a probe that reaches only identity
+# strings is a probe that cannot see the fields worth containing. Two booleans in
+# particular disarm a gate by being present: `require_derived_release_claims` and
+# `require_explicit_apply` both default TRUE, so `false` is the value that matters.
+#
+# Deliberately no MAPPING-typed fields (`issue_backend`, `gather_provider`,
+# `packet_sections`, `scaffold`). They are covered by the bespoke tests in this file and
+# in `tests/test_capability_catalog.py`; expressing them here would need per-family
+# shapes, and a wrong shape measures a type refusal rather than containment.
 CONTAINMENT_PROBE: dict[str, Any] = {
     "repo": "attacker-selected-repo",
     "language": "attacker-selected-language",
@@ -266,6 +314,16 @@ CONTAINMENT_PROBE: dict[str, Any] = {
     "default_org": "attacker-selected-org",
     "max_artifact_lines": 4321,
     "max_content_lines": 4321,
+    "eval_test_command": "attacker-selected-eval-command",
+    "gate_commands": ["attacker-selected-gate-command"],
+    "preflight_commands": ["attacker-selected-preflight-command"],
+    "cli_skill_surface_probe_commands": ["attacker-selected-probe-command"],
+    "required_release_surfaces": ["attacker-selected-surface"],
+    "trusted_skill_roots": ["attacker-selected-root"],
+    "discussion_deploy_vocab": ["attacker-selected-vocab"],
+    "landing_danger_checks": ["attacker-selected-check"],
+    "require_derived_release_claims": False,
+    "require_explicit_apply": False,
 }
 
 # Every SITES row except the commit-time gate, which raises instead of returning a
@@ -289,17 +347,25 @@ def test_no_declared_sibling_survives_a_version_refusal(label, path, entry, tmp_
     interpret says nothing about what its siblings MEAN, so honoring them is a declaration
     steering a gate through a schema no reader read.
 
-    Asserted as equality against the version-only payload rather than field by field: that
-    is schema-agnostic, so a resolver that grows a new steering field is covered the day it
-    is added instead of the day someone remembers to extend a field list here. The
-    liveness test below is what keeps this from passing vacuously.
+    Asserted as equality against the version-only payload rather than field by field, so
+    a field the site DERIVES into a differently-named key is covered too. That is
+    schema-agnostic on the OUTPUT side only: a field this probe never declares cannot
+    appear in either payload, so `CONTAINMENT_PROBE` still has to name a site's steering
+    fields, and the liveness test below is what forces that to stay true.
+
+    The error list is asserted EXACTLY, not filtered through `_version_errors`. Filtering
+    let a resolver refuse the version and then go on reading and type-checking every
+    sibling -- reporting `output_dir must be a string` about a schema it just said it
+    could not read. Exact equality is available here precisely because containment means
+    no sibling is read, and it is what makes the documented "the only error is the
+    version refusal" an assertion rather than a claim.
     """
     contained, errors = _resolve_declared(
         label, path, entry, {"version": 9, **CONTAINMENT_PROBE}, tmp_path
     )
     bare, _ = _resolve_declared(label, path, entry, {"version": 9}, tmp_path)
 
-    assert _version_errors(errors) == ["version must be 1"], f"{label} accepted version 9: {errors}"
+    assert errors == ["version must be 1"], f"{label} read siblings past the version refusal: {errors}"
     honored = {key: value for key, value in contained.items() if bare.get(key) != value}
     assert not honored, f"{label} honored declared fields after refusing the version: {honored}"
 
@@ -464,6 +530,12 @@ def test_every_repo_local_adapter_declares_the_supported_version() -> None:
     assert set(declared.values()) == {"1"}, f"not every adapter declares version 1: {declared}"
 
 
+def test_the_stated_census_counts_match_the_lists() -> None:
+    """The denominator, pinned. Prose counts beside a list rot silently, and this file's
+    entire claim is a census."""
+    assert (len(SITES), len(EXEMPT_SITES)) == (20, 4)
+
+
 def test_exempt_sites_carry_a_reason() -> None:
     """Presence-only rows are how an exemption list rots into a hiding place."""
     for label, _paths, _tests, reason in EXEMPT_SITES:
@@ -512,12 +584,24 @@ def test_the_census_names_every_caller_of_the_shared_check() -> None:
     named.add("skills/public/quality/scripts/adapter_validators.py")
     # The definition itself is not a caller.
     named.add("scripts/adapter_lib.py")
+    # Nor is the CONSUMER-side reader of the verdict: it renders none, it reads the
+    # errors a resolver already rendered. It matches the name scan only because its
+    # docstring cites the producer it pairs with. Its own driving test is
+    # `tests/quality_gates/test_adapter_version_refusal_is_loud.py`.
+    named.add("scripts/adapter_version_verdict.py")
 
+    # BOTH entrypoint names. `declared_fields_after_version_check` is now the recommended
+    # one and shares no substring with the other, so matching only the original left the
+    # twelve rows that reach the check through it outside `callers` entirely -- a new
+    # resolver written the documented way would render a version verdict, appear in
+    # neither list, and this test would stay green. That is the precise failure this
+    # census exists to make impossible.
+    entrypoints = ("validate_adapter_version", "declared_fields_after_version_check")
     callers = {
         str(path.relative_to(ROOT))
         for root in ("scripts", "skills")
         for path in (ROOT / root).rglob("*.py")
-        if "validate_adapter_version" in path.read_text(encoding="utf-8")
+        if any(name in path.read_text(encoding="utf-8") for name in entrypoints)
     }
 
     absent = sorted(callers - named)

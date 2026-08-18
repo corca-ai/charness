@@ -29,6 +29,7 @@ _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artif
 # because nothing forced them to agree, and the role test below is where a seventh
 # would have gone.
 _scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
+_adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
 run_changed_artifact_validator = _scripts_artifact_validator_module.run_changed_artifact_validator
@@ -392,6 +393,20 @@ def _selected_artifacts(args, repo_root: Path, output_dir: Path) -> list[Path] |
     return scoped or None
 
 
+def _unspeakable_adapter_version(repo_root: Path) -> str | None:
+    """Refuse before scoping when the debug adapter declares an unreadable version.
+
+    Without it this validator would resolve BOTH halves of its own scope from charness
+    defaults: `_owned_prefix` would invent `charness-artifacts/debug/` for a repo that
+    declared elsewhere -- exactly the "prefix this repo never declared" its own docstring
+    refuses -- and `resolve_adapter_line_budget` would enforce the shipped 180 over a
+    repo that declared 60, silently raising a ceiling it was told to lower.
+    """
+    return _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="debug-adapter.yaml"
+    )
+
+
 def _adapter_output_dir(repo_root: Path) -> str | None:
     """The output directory, read exactly as `_debug_artifacts` reads it."""
     # Deliberately NOT keyed on the adapter's `valid` flag, which the first repair tried
@@ -403,11 +418,18 @@ def _adapter_output_dir(repo_root: Path) -> str | None:
     # refusing a directory that does not exist, which fired before any of this.
     # * In the direction it DID bite, it disarmed the repair it was part of. Debug's
     # `validate_adapter_data` still populates a perfectly good `output_dir` when the
-    # adapter is invalid for an unrelated reason (`version: 9`, a bad `repo` type), so a
-    # one-line adapter typo made this return None -- which silently turned the
-    # named-path refusal back off AND left every artifact on the legacy ruleset, with
-    # nothing printed, because `_debug_artifacts` never inspects `valid` either. A
-    # refusal disabled by a typo is the exact class this whole slice exists to close.
+    # adapter is invalid for an unrelated reason (a bad `repo` type), so a one-line
+    # adapter typo made this return None -- which silently turned the named-path refusal
+    # back off AND left every artifact on the legacy ruleset, with nothing printed,
+    # because `_debug_artifacts` never inspects `valid` either. A refusal disabled by a
+    # typo is the exact class this whole slice exists to close.
+    #
+    # `version: 9` USED to be an example in that second bullet and no longer is: a
+    # version this reader cannot speak now honors no declared field at all, so this
+    # would read the shipped default rather than the repo's directory. That case is
+    # refused by `_unspeakable_adapter_version` before any scoping runs, which is why
+    # `valid` is still the wrong predicate here and a refused VERSION is a different
+    # question from an invalid adapter.
     #
     # Reading the same value `_debug_artifacts` uses is what keeps the two paths from
     # disagreeing about one adapter. The blank guard below stays, because that one is real.
@@ -510,6 +532,7 @@ def main() -> int:
         # adapter failure is reported by `_debug_artifacts`, and inventing a prefix here
         # would refuse paths against a directory this repo never declared.
         owned_prefix=_owned_prefix,
+        preflight=_unspeakable_adapter_version,
         artifacts_fn=_debug_artifacts,
         validate_factory=_validate_factory,
         no_scope_message="No debug artifacts in scope.",

@@ -106,12 +106,22 @@ def test_an_unsupported_version_is_the_only_error_and_nothing_else_is_read(tmp_p
     `tests/quality_gates/test_adapter_version_reconciliation.py`; this row is the local
     proof for hotl's own field vocabulary.
     """
-    data = {"proof_commands": "run-everything", "version": "one", "ledger_path": 3}
+    # `completion_audit_command` is WELL-TYPED and honored on a supported version. Both
+    # other siblings here are ill-typed, so they can never reach the payload and the
+    # comparison below would hold under any regression -- a tautology dressed as a
+    # containment assertion. This one is the arm that can actually fail.
+    data = {
+        "proof_commands": "run-everything",
+        "version": "one",
+        "ledger_path": 3,
+        "completion_audit_command": "attacker-selected-command",
+    }
 
     validated, errors, _warnings = resolve_adapter.validate_adapter_data(data, tmp_path)
 
     assert errors == ["version must be an integer"]
     assert validated == resolve_adapter.validate_adapter_data({"version": "one"}, tmp_path)[0]
+    assert validated.get("completion_audit_command") != "attacker-selected-command"
 
 
 def test_validate_adapter_warns_on_placeholder_and_empty_proof_surface(tmp_path: Path) -> None:

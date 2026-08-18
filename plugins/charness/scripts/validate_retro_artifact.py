@@ -30,6 +30,17 @@ _lesson_records = import_repo_module(__file__, "scripts.lesson_evaluation_record
 _output_dir = import_repo_module(__file__, "scripts.retro_output_dir_lib")
 DEFAULT_RETRO_ARTIFACT_PREFIX = _output_dir.DEFAULT_RETRO_ARTIFACT_PREFIX
 retro_artifact_prefix = _output_dir.retro_artifact_prefix
+_adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
+
+
+def _unspeakable_adapter_version(repo_root: Path) -> str | None:
+    """Refuse before scoping when this repo's retro adapter declares an unreadable
+    version. Without it, `retro_artifact_prefix` silently resolves to the shipped
+    default, `candidate_paths` filters every named artifact out as unowned, and the run
+    reports `Validated 0 retro artifact(s).` exit 0 over a retro it was handed."""
+    return _adapter_version_verdict.unspeakable_version_message(
+        _output_dir.load_retro_adapter, repo_root, adapter_name="retro-adapter.yaml"
+    )
 # Which dated floors are switched on for this repo, and how a run announces that.
 # Re-exported because `plan_retro_run` and `seed_retro_memory` load THIS module, and
 # because the enforcement below and the announcement there must read one owner: they
@@ -452,6 +463,7 @@ def main() -> int:
         # this file was written in.
         owned_prefix=retro_artifact_prefix,
         on_complete=report_enforcement_scope,
+        preflight=_unspeakable_adapter_version,
     )
 
 

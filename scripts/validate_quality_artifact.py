@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import re
 import sys
 from pathlib import Path
@@ -27,6 +26,7 @@ _quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver
 load_adapter = _quality_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
+_adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 _surface_contract = import_repo_module(__file__, "scripts.quality_surface_contract")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
@@ -612,16 +612,20 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    add_artifact_path_arg(parser, surface="quality")
-    add_one_pass_args(
-        parser,
-        fail_fast_help="Stop at the first rule violation instead of reporting every violation in one pass.",
+    args = _scripts_artifact_validator_module.parse_single_artifact_validator_args(
+        surface="quality", default_repo_root=REPO_ROOT
     )
-    args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    # Before resolving the artifact path or the line ceiling: on a version this reader
+    # cannot speak, both come from charness defaults rather than from what the repo
+    # declared, so the run would validate a file at a path the repo never named and
+    # enforce a ceiling it never chose.
+    refused = _adapter_version_verdict.refuse_unspeakable_version(
+        load_adapter, repo_root, adapter_name="quality-adapter.yaml"
+    )
+    if refused is not None:
+        return refused
     adapter = load_adapter(repo_root)
     artifact_path = resolve_artifact_override(args, repo_root, adapter["artifact_path"])
     validate_quality_artifact(artifact_path, repo_root=repo_root, collect_all=not args.fail_fast)

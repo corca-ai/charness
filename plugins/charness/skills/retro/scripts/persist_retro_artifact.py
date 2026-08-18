@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -24,6 +25,9 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 
 _scripts_retro_persistence_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.retro_persistence_lib")
 persist_retro_artifact = _scripts_retro_persistence_lib_module.persist_retro_artifact
@@ -61,6 +65,20 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     SKILL_RUNTIME.require_repo_local_helper(__file__, repo_root)
     adapter = load_adapter(repo_root)
+    # Both paths below are adapter-declared, and a version this reader cannot speak
+    # leaves both at the charness defaults: the retro would be persisted outside the
+    # directory the repo keeps retros in, and a SECOND lessons digest would appear at
+    # the default `summary_path` while the repo's own stopped being refreshed -- on the
+    # surface every session reads before work.
+    if _version_verdict.version_refused(adapter.get("errors")):
+        print(
+            "retro adapter declares a `version` this reader does not speak "
+            f"({'; '.join(adapter.get('errors') or [])}); nothing it declares is honored, "
+            "so this retro would be written to the charness default directory rather "
+            "than this repo's. Set `version: 1` in `.agents/retro-adapter.yaml`.",
+            file=sys.stderr,
+        )
+        return 1
     output_dir = repo_root / adapter["data"]["output_dir"]
     summary_rel = adapter["data"].get("summary_path")
     markdown_text = args.markdown_file.read_text(encoding="utf-8")

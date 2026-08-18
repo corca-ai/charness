@@ -62,6 +62,22 @@ def _retro_resolver_path(repo_root: Path) -> Path | None:
     return None
 
 
+def load_retro_adapter(repo_root: Path) -> dict:
+    """The retro adapter payload for ``repo_root``, read through the repo's OWN resolver.
+
+    Exposed so the validator's version preflight asks the same resolver
+    `retro_artifact_prefix` asks. Reading it a second way is how a prefix and a verdict
+    about that prefix come to disagree about one adapter. Raises when no resolver is
+    reachable or the resolver itself fails; the caller decides whether that is fatal --
+    `unspeakable_version_message` treats it as "not a version refusal", which is right,
+    because a repo with no retro skill reachable is not an error for this validator.
+    """
+    resolver_path = _retro_resolver_path(repo_root)
+    if resolver_path is None:
+        raise FileNotFoundError("no retro resolve_adapter.py reachable")
+    return load_path_module("retro_validator_resolve_adapter", resolver_path).load_adapter(repo_root)
+
+
 def retro_artifact_prefix(repo_root: Path) -> str:
     """The retro output directory THIS repo declares, as a trailing-slash prefix.
 

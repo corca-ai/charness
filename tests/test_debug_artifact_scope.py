@@ -220,17 +220,23 @@ def test_an_adapter_typo_does_not_silently_disarm_the_refusal(tmp_path: Path) ->
 
     Keying the resolvers on the adapter's `valid` flag looked conservative and was not.
     Debug's `validate_adapter_data` still populates a perfectly good `output_dir` when
-    the adapter is invalid for an UNRELATED reason, so `version: 9` made both resolvers
-    return None -- which turned the named-path refusal back off and left every artifact
-    on the legacy ruleset, with nothing printed, because nothing on this path inspects
-    `valid`. A refusal a one-line typo can disable is the class this slice exists to
-    close. Both resolvers now read the same `output_dir` the batch resolver reads.
+    the adapter is invalid for an UNRELATED reason, so both resolvers returned None --
+    which turned the named-path refusal back off and left every artifact on the legacy
+    ruleset, with nothing printed, because nothing on this path inspects `valid`. A
+    refusal a one-line typo can disable is the class this slice exists to close. Both
+    resolvers now read the same `output_dir` the batch resolver reads.
+
+    The typo used to be `version: 9`, and that is no longer an UNRELATED one: a version
+    this reader cannot speak now honors no declared field, so `output_dir` would be the
+    shipped default rather than this repo's, and the run is refused before scoping
+    (asserted in the sibling test below). A bad `repo` TYPE is the case this test was
+    always about -- one field refused, `output_dir` untouched.
     """
     module = _load_validator("validate_debug_artifact_adapter_typo")
 
     repo = seed_repo(tmp_path, valid_current_artifact())
     (repo / ".agents" / "debug-adapter.yaml").write_text(
-        "version: 9\nrepo: demo\nlanguage: en\noutput_dir: charness-artifacts/debug\n",
+        "version: 1\nrepo: 3\nlanguage: en\noutput_dir: charness-artifacts/debug\n",
         encoding="utf-8",
     )
     assert module.load_adapter(repo)["valid"] is False, "premise: this adapter is invalid"
@@ -244,6 +250,33 @@ def test_an_adapter_typo_does_not_silently_disarm_the_refusal(tmp_path: Path) ->
     )
     assert missing.returncode == 1, missing.stdout + missing.stderr
     assert "resolve to nothing" in missing.stdout + missing.stderr
+
+
+def test_an_unspeakable_version_refuses_before_it_can_mis_scope(tmp_path: Path) -> None:
+    """The other half, and the reason the test above changed its fixture.
+
+    `version: 9` leaves NOTHING declared honored, so `_owned_prefix` would invent
+    `charness-artifacts/debug/` for a repo that declared elsewhere and `_current_pointer`
+    would name a `latest.md` that repo never writes -- silently dropping every artifact
+    to the legacy ruleset. The preflight refuses first, so neither resolver runs.
+    """
+    module = _load_validator("validate_debug_artifact_unspeakable_version")
+
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    (repo / ".agents" / "debug-adapter.yaml").write_text(
+        "version: 9\nrepo: demo\nlanguage: en\noutput_dir: charness-artifacts/debug\n",
+        encoding="utf-8",
+    )
+    assert module._unspeakable_adapter_version(repo) is not None
+
+    refused = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all",
+    )
+    combined = refused.stdout + refused.stderr
+    assert refused.returncode == 1, combined
+    assert "does not speak" in combined, combined
+    # Not merely non-zero: it must not read as a validated run either.
+    assert "Validated" not in combined, combined
 
 
 def test_a_blank_declared_output_dir_owns_nothing(tmp_path: Path) -> None:
