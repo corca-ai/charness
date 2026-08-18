@@ -157,8 +157,16 @@ def test_an_ordinary_invalid_field_is_not_refused(tmp_path: Path, rel: str) -> N
     adapter = DECLARED.format(v="1").replace(
         "output_dir: docs/mine-q", "output_dir: docs/mine-q\npreset_version: 3"
     )
-    result = _run(rel, _repo(tmp_path, adapter))
+    repo = _repo(tmp_path, adapter)
+    result = _run(rel, repo)
     assert result.returncode == 0, result.stderr
+    # NOT exit 0 alone. A round-2 bounded review pointed out that changing
+    # `adapter_lib.declared_fields_after_version_check` to discard declarations on ANY
+    # error would keep an exit-0 assertion green while restoring the exact
+    # acting-on-charness-defaults harm this slice is about. The honored value has to be
+    # asserted, so this arm proves the other half of the polarity too.
+    if rel == READERS[1]:
+        assert "docs/mine-q/latest.md" in result.stdout, result.stdout
 
 
 @pytest.mark.parametrize("rel", READERS, ids=[Path(r).stem for r in READERS])

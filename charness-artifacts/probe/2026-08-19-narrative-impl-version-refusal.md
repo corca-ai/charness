@@ -3,9 +3,9 @@
 Debt rows 19-20 of slice 5. One surveys the wrong document set; the other prints the flag
 that would have stopped it and does not read it.
 
-Claim: `map_sources` and `survey_verification` refuse when the reader honored nothing the
-  adapter declared, instead of surveying the reader's own defaults and reporting the
-  result as fact
+Claim: `map_sources` and `survey_verification` refuse when the adapter declares a
+  `version` this reader cannot speak, instead of surveying the reader's own defaults and
+  reporting the result as fact
 Claim kind: change
 Observable: the `source_documents` list `map_sources` prints, the `tool_checks` list and
   `adapter_valid` flag `survey_verification` prints, and each process exit code
@@ -16,9 +16,12 @@ Source conditions: the adapter's declared version is one this reader does not sp
 Base ref: 724fe8a55
 Head ref: working tree at 724fe8a55
 Base arm: base-observed
-Call sites unproven: none — each file holds ONE adapter read, in `main()`, and the guard
-  sits above it; neither module is imported by any other module under `scripts/` or
-  `skills/`, so `main()` and the read site coincide
+Call sites unproven: none — each file makes ONE `load_adapter` CALL, in `main()`, and
+  every payload read is downstream of the guard above it (`survey_verification` reads
+  `adapter["data"]` three times and `found`/`valid`/`path` besides, all after it); neither
+  module is imported by any other module under `scripts/` or `skills/`, so `main()` and
+  the read site coincide. An earlier draft said "ONE adapter read", which was false for
+  `survey_verification`
 
 ## Source text
 
@@ -36,9 +39,19 @@ The source states the row exactly, and the measurement below is the same fact at
 
 ## Stimulus
 
-Two temp repos, each declaring a value in the shape its contract reads
-(`optional_string_list` in both cases — an earlier stimulus in this slice guessed richer
-mapping forms twice and produced controls that could not fail).
+Two temp repos, each declaring a value in the shape its contract reads.
+
+**CORRECTED after a round-1 bounded review — the FOURTH control-that-could-not-fail in
+this slice, and the second one published in a probe record while the matching test fixture
+was right.** The first version of this block wrote `source_documents:
+[docs/mine-narrative.md]` and `verification_tools: [mytool]` — FLOW SEQUENCES. This repo
+parses its own adapters with `adapter_lib`, whose `_mapping_value` dispatches only on
+`""`, `"[]"`, `"{}"` and block scalars; anything else becomes a plain string, so
+`optional_string_list` rejected it and the inferred default stood. Replaying that stimulus
+at `version: 1` returned `path: README.md` and `adapter_valid: false` / `tool_checks: []`
+— byte-for-byte the base observable below. The preamble even NAMED `optional_string_list`
+as the validator and still wrote a form it cannot accept. Reproduced before fixing; both
+arms re-run on the block form.
 
 ```
 mkdir -p $D/.agents
@@ -46,13 +59,16 @@ cat > $D/.agents/narrative-adapter.yaml <<'YAML'
 version: 9
 repo: demo
 remote_name: upstream
-source_documents: [docs/mine-narrative.md]
-mutable_documents: [docs/mine-narrative.md]
+source_documents:
+  - docs/mine-narrative.md
+mutable_documents:
+  - docs/mine-narrative.md
 YAML
 cat > $D/.agents/impl-adapter.yaml <<'YAML'
 version: 9
 repo: demo
-verification_tools: [mytool]
+verification_tools:
+  - mytool
 YAML
 python3 skills/public/narrative/scripts/map_sources.py --repo-root $D
 python3 skills/public/impl/scripts/survey_verification.py --repo-root $D
@@ -97,6 +113,26 @@ Measured on both, each naming its own adapter file.
 
 ## Non-claims
 
+- **THE CLAIM IS NARROWER THAN "the reader honored nothing the repo declared", corrected
+  after a bounded review measured why — and for `survey_verification` the gap was a
+  REGRESSION this batch introduced.** `adapter_lib._parse_block` silently drops an
+  over-indented line and records it in WARNINGS, not errors, so a predicate over `errors`
+  answers False while `errors: []`, `valid: True`, and the declaration is gone. Measured
+  at `9fc1164db` with the guard installed: `survey_verification` printed
+  `adapter_valid: true` beside `tool_checks: []` at exit 0 — WORSE than the pre-guard base
+  recorded above, which at least printed `false`.
+
+  This half is now CLOSED rather than filed: `adapter_version_verdict.declarations_dropped`
+  reads the uninterpreted-line warnings and renders its own message (naming the lines and
+  the fix, not `version:`), and the same input now exits 1. Only the warning half counts —
+  keying on `adapter_lib.unreadable_reasons`, which also returns every error, would refuse
+  an ordinarily-invalid adapter, the polarity that module's docstring forbids.
+
+  `map_sources` is NOT closed by that. Narrative is one of the six resolvers that call
+  `adapter_lib.load_yaml_file` bare and discard the sink, so there are no warnings for the
+  new predicate to read and the door stays open there. That residual is
+  [#673](https://github.com/corca-ai/charness/issues/673), and it is named here rather
+  than left to make the claim read wider than it is.
 - **The parse door behaves differently for these two, and the difference is the
   RESOLVER's, not the guard's.** Measured across all sixteen public resolvers with
   `version: !!int 9`: ten record the failure in `errors` (debug, gather, handoff, hitl,

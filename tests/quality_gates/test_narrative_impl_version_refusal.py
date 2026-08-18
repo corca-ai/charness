@@ -128,3 +128,55 @@ def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path) -> None:
     declared something else."""
     assert _run(MAP_SOURCES, _repo(tmp_path / "n", "narrative", None)).returncode == 0
     assert _run(SURVEY_VERIFICATION, _repo(tmp_path / "i", "impl", None)).returncode == 0
+
+
+@pytest.mark.parametrize(
+    ("rel", "name", "adapter", "honored"),
+    [
+        (MAP_SOURCES, "narrative", NARRATIVE, "docs/mine-narrative.md"),
+        (SURVEY_VERIFICATION, "impl", IMPL, "spec: mytool"),
+    ],
+    ids=["map_sources", "survey_verification"],
+)
+def test_an_ordinary_invalid_field_is_not_refused(
+    tmp_path: Path, rel: str, name: str, adapter: str, honored: str
+) -> None:
+    """The polarity a round-1 bounded review found unpinned for these two rows.
+
+    `valid: false` from one bad field beside honored ones must NOT refuse — widening the
+    predicate to `not valid` would break every consumer with a typo'd unrelated key. The
+    honored value is asserted too, so the test cannot pass by a guard that refuses nothing
+    AND a resolver that honors nothing.
+    """
+    text = adapter.format(v="1").replace("repo: demo", "repo: demo\npreset_version: 3")
+    result = _run(rel, _repo(tmp_path, name, text))
+    assert result.returncode == 0, result.stderr
+    assert honored in result.stdout, result.stdout
+
+
+@pytest.mark.parametrize(
+    ("rel", "name"),
+    [(MAP_SOURCES, "narrative"), (SURVEY_VERIFICATION, "impl")],
+    ids=["map_sources", "survey_verification"],
+)
+def test_a_silently_dropped_declaration_splits_on_the_resolver(
+    tmp_path: Path, rel: str, name: str
+) -> None:
+    """The third door, and the two rows land on opposite sides of it.
+
+    `impl` routes through `simple_skill_adapter_lib`, which records a dropped line in
+    WARNINGS, so `adapter_version_verdict.declarations_dropped` sees it and the run
+    REFUSES. `narrative` calls `adapter_lib.load_yaml_file` bare and discards that sink,
+    so nothing sees it and the run proceeds on the inferred default — the residual filed
+    as #673.
+
+    Both arms are asserted so closing #673 is a deliberate test change rather than a
+    silent one, and so the `impl` fix cannot regress unnoticed.
+    """
+    repo = _repo(tmp_path, name, "version: 1\nrepo: demo\n  remote_name: upstream\n")
+    result = _run(rel, repo)
+    if name == "impl":
+        assert result.returncode == 1, result.stdout
+        assert "could not interpret" in result.stderr, result.stderr
+    else:
+        assert result.returncode == 0, result.stderr

@@ -93,8 +93,26 @@ the pre-implementation critique passes.
   `covers_all_call_sites: true` over a path the record's own body called untested. That
   gap is closed by measurement, not prose. Ledger in `## Slice Log`.
 - Round-2 repairs for rows 6-13 are ACCEPTED-UNREVIEWED under the two-round cap.
-- Next action: rows 14+. 24 `accepted-risk-unguarded` and 10 `no-version-validation`
-  remain; recount rather than reading those numbers off this line.
+- Rows 14-20 landed in three batches: five quality-skill readers (`724fe8a55`), the
+  narrative mapper and the impl survey (`5ecf7575f`), with both bounded rounds run over
+  14-18 and one over 19-20. NEITHER round was clean, and the class is now stable enough to
+  name: FOUR separate probe records shipped a polarity control that could not fail, each
+  time because the published stimulus declared a field in a shape `adapter_lib` does not
+  parse while the matching TEST fixture used the right one. The section offered for
+  independent replay was the wrong one, four times.
+- A THIRD DOOR into "the reader honored nothing" was found and half-closed. A silently
+  dropped line lands in `warnings`, not `errors`, so the guard's `errors`-only predicate
+  answered False -- and `survey_verification` printed `adapter_valid: true` beside
+  `tool_checks: []` at exit 0, WORSE than before its guard.
+  `adapter_version_verdict.declarations_dropped` now reads that channel. It closes the door
+  only for the ten resolvers that report it; the other six discard the sink, which is
+  `#673`, filed with both sweeps.
+- Round-2 repairs for rows 14-18 and round-1 repairs for 19-20 are ACCEPTED-UNREVIEWED
+  under the two-round cap.
+- Next action: rows 21+. Recount with
+  `python3 scripts/check_adapter_consumer_classification.py --repo-root .` rather than
+  reading a number off this line; measured bases for `inventory_quality_handoff` and
+  `advise_google_workspace_path` are already in hand.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line

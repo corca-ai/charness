@@ -23,8 +23,10 @@
 
 - **The adapter-consumer debt is being paid down row by row, each by a MEASURED
   behavioral flip.** Thirteen rows are `guarded`; the guard refuses on the CONDITION
-  ("this reader honored nothing the repo declared"), which has two doors — an unspeakable
-  `version` and a document the parser refused. Keying on only the first was measured as an
+  ("this reader honored nothing the repo declared") through the channels a resolver
+  REPORTS — a refused `version`, a refused parse, a silently dropped line — and six of
+  sixteen resolvers report none of them ([#673](https://github.com/corca-ai/charness/issues/673)),
+  so it is not a biconditional and the records say so. Keying on only the first was measured as an
   escape: `version: !!int 9` walked past every guard in the repo and wrote two durable
   files to a directory the repo never named. Recount with
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .`; never read a
@@ -48,9 +50,8 @@
   BACKSTOP, so a red on
   [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) means investigate a
   hang — it is NOT an expected red to absorb.
-- **Issue triage ran against current HEAD**; `#628` and three umbrellas
-  (`#582`/`#583`/`#584`) await an owner readback. Inventory:
-  `gh issue list --repo corca-ai/charness --state open`.
+- **Issue triage ran against current HEAD**; `#628`, `#673` and three umbrellas await an
+  owner readback. Inventory: `gh issue list --repo corca-ai/charness --state open`.
 - Re-prove with `python3 scripts/run_standing_pytest.py` after
   `python3 scripts/sync_root_plugin_manifests.py`, then
   `python3 -m ruff check --no-cache scripts skills tests`, then

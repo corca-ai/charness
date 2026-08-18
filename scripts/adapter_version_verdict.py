@@ -13,7 +13,9 @@ refusal while `output_dir` is perfectly good.
 
 `valid` is the wrong predicate for that job and a REFUSED VERSION is the right one. They
 are different questions: `valid: false` can mean one bad field beside fifteen honored
-ones, while a refused version means the reader honored NOTHING the repo declared. Acting
+ones, while a refused version means the reader honored NOTHING the repo declared -- a
+state this module detects through the ERROR and WARNING channels a resolver reports, and
+not at all where a resolver reports neither (#673). Acting
 on the defaults in that state is what turned a legible refusal into a silent one --
 measured, not theorised: with `version: 9` and a declared `output_dir`, the retro
 validator scoped itself to a directory the repo does not write to and reported
@@ -55,6 +57,7 @@ from typing import Any
 __all__ = [
     "version_refused",
     "parse_refused",
+    "declarations_dropped",
     "declarations_unhonored",
     "unhonored_cause",
     "unhonored_remedy",
@@ -87,6 +90,25 @@ _REFUSAL_PREFIXES = ("version must be", "version is required")
 # acting on charness defaults with the repo's name on them.
 _PARSE_FAILURE_PREFIX = "adapter could not be parsed:"
 
+# `adapter_lib.UNINTERPRETED_WARNING_MARKER`, duplicated as a literal rather than imported
+# because this module is loaded by skill scripts that reach `scripts.` through a runtime
+# bootstrap and by repo scripts that import it directly; a hard dependency here would make
+# the consumer guard fail to load in the layout where it matters most. The literal is
+# pinned against the producer by `test_adapter_version_refusal_is_loud.py`.
+#
+# THE THIRD DOOR, and the one this module denied having. A round-2 bounded review measured
+# it: `adapter_lib._parse_block` silently drops an over-indented line, and the resolvers
+# that route through `simple_skill_adapter_lib` record that in WARNINGS, not errors -- so a
+# predicate over `errors` alone answers False while `errors: []`, `valid: True`, and the
+# repo's declaration is gone. Measured on the real CLI at `9fc1164db`, with the guard
+# installed: `survey_verification` printed `adapter_valid: true` beside `tool_checks: []`,
+# exit 0. That is WORSE than the pre-guard base, which at least printed `false`.
+#
+# Only the uninterpreted-line warnings count. Widening to `unreadable_reasons`, which also
+# returns every ERROR, would refuse an adapter that is merely invalid in an ordinary way --
+# the polarity this module's docstring exists to forbid.
+_UNINTERPRETED_WARNING_MARKER = " was not interpreted ("
+
 
 def version_refused(errors: Any) -> bool:
     """True when this reader could not speak the adapter's declared version."""
@@ -98,12 +120,38 @@ def parse_refused(errors: Any) -> bool:
     return _any_error_starting_with(errors, (_PARSE_FAILURE_PREFIX,))
 
 
+def declarations_dropped(adapter: Any) -> bool:
+    """True when the loader silently DISCARDED a line the repo wrote.
+
+    Takes the whole payload, not `errors`, because the evidence lives in `warnings`. The
+    six resolvers that call `adapter_lib.load_yaml_file` bare discard that sink too, so
+    this answers False for them and their consumers keep the blind arm -- tracked on
+    #673, and named rather than papered over.
+    """
+    if not isinstance(adapter, dict):
+        return False
+    warnings = adapter.get("warnings")
+    if not isinstance(warnings, list):
+        return False
+    return any(
+        isinstance(warning, str) and _UNINTERPRETED_WARNING_MARKER in warning
+        for warning in warnings
+    )
+
+
 def declarations_unhonored(errors: Any) -> bool:
     """True when the reader honored NOTHING the repo declared.
 
-    The predicate this module is actually about. `version_refused` and `parse_refused`
-    are the two doors into that state; a caller wanting the state should ask this rather
-    than either door, so a third door added later does not silently bypass every guard.
+    `version_refused` and `parse_refused` are two doors into that state; a caller wanting
+    the state should ask this rather than either door, so a door added later does not
+    silently bypass every guard.
+
+    NOT A BICONDITIONAL, and an earlier draft of this docstring read like one. This is a
+    predicate over `errors` ONLY. A declaration the parser silently DROPPED leaves
+    `errors: []` and is invisible here -- that is `declarations_dropped`, which reads
+    `warnings`, and the two are deliberately separate because only the caller with the
+    whole payload can ask the second. For the six resolvers that discard the warning sink
+    (#673) neither predicate can see a dropped line at all.
     """
     return version_refused(errors) or parse_refused(errors)
 
@@ -167,9 +215,22 @@ def unspeakable_version_message(
     defaults is the "a read is not a check" shape those consumers exist to stop.
     """
     try:
-        errors = load_adapter(repo_root).get("errors")
+        adapter = load_adapter(repo_root)
     except Exception:  # noqa: BLE001 - a verdict, never a traceback; see docstring
         return None
+    errors = adapter.get("errors") if isinstance(adapter, dict) else None
+    if declarations_dropped(adapter) and not declarations_unhonored(errors):
+        dropped = "; ".join(
+            warning
+            for warning in adapter.get("warnings", [])
+            if isinstance(warning, str) and _UNINTERPRETED_WARNING_MARKER in warning
+        )
+        return (
+            f"`.agents/{adapter_name}` has lines this reader could not interpret, so what "
+            f"they declared is serving an inferred default instead ({dropped}). Refusing "
+            "rather than acting on a charness default wearing this repo's name. Fix the "
+            "indentation or the syntax on those lines, then re-run."
+        )
     if not declarations_unhonored(errors):
         return None
     detail = "; ".join(error for error in errors if isinstance(error, str))

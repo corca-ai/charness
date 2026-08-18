@@ -366,3 +366,57 @@ def test_an_ordinary_invalid_field_is_still_not_a_refusal() -> None:
     assert VERDICT.parse_refused(ordinary) is False
     assert VERDICT.parse_refused(None) is False
     assert VERDICT.parse_refused("adapter could not be parsed: x") is False
+
+
+def test_a_silently_dropped_line_is_the_third_door(tmp_path: Path) -> None:
+    """The door this module's own docstring denied having, closed where the resolver
+    reports it.
+
+    `adapter_lib._parse_block` discards an over-indented line and records it in WARNINGS,
+    not errors. A predicate over `errors` alone therefore answers False while `errors: []`,
+    `valid: True`, and the repo's declaration is gone. Measured at `9fc1164db` with the
+    slice-5 guard installed: `survey_verification` printed `adapter_valid: true` beside
+    `tool_checks: []`, exit 0 — WORSE than the pre-guard base, which printed `false`.
+
+    The message must be its OWN, not the version one: sending an operator to edit
+    `version:` in a file whose `version:` is fine is the wrong instruction.
+    """
+    dropped = {
+        "errors": [],
+        "warnings": [
+            "line 3 was not interpreted (over-indented line): 'verification_tools:'. "
+            "Any field it meant to set is serving an inferred default instead."
+        ],
+        "data": {},
+    }
+    assert VERDICT.declarations_dropped(dropped) is True
+    assert VERDICT.declarations_unhonored(dropped["errors"]) is False
+
+    message = VERDICT.unspeakable_version_message(
+        lambda _repo_root: dropped, tmp_path, adapter_name="impl-adapter.yaml"
+    )
+    assert message is not None
+    assert "could not interpret" in message
+    assert "Set `version: 1`" not in message
+    assert "could not be parsed" not in message
+
+
+def test_the_dropped_line_marker_matches_the_producer() -> None:
+    """This module holds the marker as a LITERAL rather than importing it, because a hard
+    dependency on `adapter_lib` would break the consumer guard in the skill-script layout
+    that reaches `scripts.` through a runtime bootstrap. The literal must therefore be
+    pinned against the producer, or the third door silently reopens on a reword."""
+    assert VERDICT._UNINTERPRETED_WARNING_MARKER == ADAPTER_LIB.UNINTERPRETED_WARNING_MARKER
+
+
+def test_an_ordinary_invalid_adapter_is_still_not_a_dropped_declaration() -> None:
+    """The polarity that decides the shape of the fix. `adapter_lib.unreadable_reasons`
+    returns errors AND uninterpreted warnings; keying on it would refuse an adapter that
+    is merely invalid in an ordinary way, which this module's docstring forbids. Only the
+    warning half counts."""
+    ordinary = {"errors": ["preset_version must be a string"], "warnings": [], "data": {}}
+    assert VERDICT.declarations_dropped(ordinary) is False
+    assert VERDICT.declarations_dropped({"warnings": "not a list"}) is False
+    assert VERDICT.declarations_dropped(None) is False
+    no_adapter = {"errors": [], "warnings": ["No adapter found. Using defaults."], "data": {}}
+    assert VERDICT.declarations_dropped(no_adapter) is False
