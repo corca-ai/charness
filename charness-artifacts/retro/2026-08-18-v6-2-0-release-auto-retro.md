@@ -17,7 +17,7 @@ session retro is still owed and this record is not a substitute for it.
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: none.
-- Evaluated changed paths: 91.
+- Evaluated changed paths: 94.
 
 ## Waste
 
