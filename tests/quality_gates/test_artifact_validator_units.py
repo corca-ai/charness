@@ -146,3 +146,27 @@ def test_an_absolute_installed_scaffold_path_still_names_its_owner() -> None:
         )
         is None
     )
+
+
+def test_a_registered_scaffold_that_ships_in_neither_layout_yields_no_hint(register_surface) -> None:
+    """Both spellings miss, so the hint is withheld rather than naming a missing file.
+
+    The two-spelling loop exists because the export flattens `skills/public/<id>/`; a
+    surface whose file is absent from BOTH layouts must fall through every candidate.
+    A hint is decoration and must never name a command the reader cannot run — the
+    same bar that made the installed path absolute.
+    """
+    register_surface("probe-absent-everywhere", "skills/public/nope/scripts/scaffold_nope.py")
+
+    assert _artifact_validator._scaffold_rel("probe-absent-everywhere") is None
+    assert _artifact_validator.scaffold_hint("probe-absent-everywhere") is None
+
+
+def test_a_path_with_no_skill_segment_after_skills_yields_no_owner() -> None:
+    """`skills/<file>` indexes far enough to find `skills` and not far enough to name an id.
+
+    Without the length arm a positional read would raise, or invent an owner from a
+    filename, at the moment the reader is already looking at a refusal.
+    """
+    for scaffold in ("skills/scaffold_handoff_artifact.py", "skills", "/opt/x/skills/only.py"):
+        assert _artifact_validator._skill_id_from_scaffold(scaffold) is None, scaffold
