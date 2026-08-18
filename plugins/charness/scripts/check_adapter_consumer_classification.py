@@ -245,11 +245,58 @@ def check(repo_root: Path) -> tuple[list[str], dict[str, int]]:
     return problems, counts
 
 
+# The blind class travels WITH the answer, never only in this module's docstring. A reader
+# who runs the query and gets a list has to be told, at that moment, what the list cannot
+# contain -- an enumeration that looks complete is worse than no enumeration, because the
+# reader stops looking.
+LIST_CONSUMERS_BLIND_CLASS = (
+    "a file that reads an adapter through a HELPER in another module, holding no adapter-file "
+    "literal and parsing no YAML itself, is invisible here",
+    "this enumerates FILES, not call sites: a file with one guarded and one unguarded call "
+    "site appears once, and which of its sites are guarded is not answered",
+    "a consumer added since the last scan of a path outside SCAN_ROOTS is invisible",
+)
+
+
+def _list_consumers(repo_root: Path) -> int:
+    """Answer "who reads this producer" for the adapter-loader SHAPE, in one call.
+
+    `#599`'s question has two halves and they belong to two surfaces. `what_reads_this.py`
+    owns a LITERAL name and answers it well. It cannot express a shape, and the gap is not
+    a matter of taste: measured on this tree, `_is_adapter_loader_name` matches 27 distinct
+    loader names, so the shape question via `--symbol` is 27 calls -- and one of them,
+    `load_adapter`, returns 443 references across 5970 files, overwhelmingly prose in
+    artifacts. The same question here is one call returning 121 files, every one holding a
+    real adapter-payload call site.
+
+    So this is not a new capability. `consumer_files()` already did the work; it had no
+    command surface, which is why the question kept being answered by grep.
+    """
+    files = consumer_files(repo_root)
+    print(f"adapter-payload consumers ({len(files)}):")
+    for rel in files:
+        print(f"  {rel}")
+    print("")
+    print("BLIND CLASS -- what this enumeration CANNOT see:")
+    for line in LIST_CONSUMERS_BLIND_CLASS:
+        print(f"  - {line}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--list-consumers",
+        action="store_true",
+        help="Read-only: list every file holding an adapter-payload call site, plus what the "
+        "enumeration cannot see. Run this BEFORE changing a shared adapter output contract -- "
+        "enumeration is cheap and prevents, refusal is expensive and only detects.",
+    )
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
+    if args.list_consumers:
+        return _list_consumers(repo_root)
 
     problems, counts = check(repo_root)
     print("adapter consumer classification:")

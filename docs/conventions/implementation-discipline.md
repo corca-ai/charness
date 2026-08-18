@@ -121,6 +121,22 @@ the root instruction file but still apply to Charness maintenance work.
   premise check is a file read as often as a command, and reaching for a command
   first is how a mutating script gets run mid-review. Tracked as
   [#468](https://github.com/corca-ai/charness/issues/468).
+- **Enumerate the consumers BEFORE changing a shared output contract, not after.**
+  Enumeration is cheap and PREVENTS; a runtime refusal is expensive and only
+  DETECTS. The question is "who reads this producer", and which command answers it
+  depends on the shape of what you are changing:
+  - a LITERAL name — a function, constant, config key, or path —
+    `python3 scripts/what_reads_this.py --repo-root . --symbol <name>` (also
+    `--path` / `--config-key`), which carries its own `unscanned_surfaces` list so a
+    zero result never reads as "nobody".
+  - a SHAPE or family that no literal name expresses — the adapter-loader family is
+    the live case —
+    `python3 scripts/check_adapter_consumer_classification.py --repo-root . --list-consumers`.
+    Measured 2026-08-19 and recorded so the choice is not re-derived: the loader
+    shape matches 27 distinct names on this tree, so asking it literally is 27 calls,
+    and one of them (`load_adapter`) returns 443 references dominated by prose in
+    artifacts. The shape query is one call over 121 real call sites. Both commands
+    print what they CANNOT see; read that before treating a list as complete.
 - The edit-time half of that discipline — assert a scripted replace landed, grep
   for a superseded number — lives with the rest of claim fidelity in
   [operating-contract.md](./operating-contract.md) *Critique Discipline*.

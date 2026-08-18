@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import runpy
+import subprocess
 import sys
 from pathlib import Path
 from unittest import mock
@@ -276,3 +277,56 @@ def test_the_real_repo_is_fully_classified() -> None:
     assert sum(counts.values()) == len(
         json.loads((ROOT / GATE.MANIFEST_REL).read_text(encoding="utf-8"))["consumers"]
     )
+
+
+# --- `--list-consumers`: the enumeration that PREVENTS (#599) --------------------
+
+
+def test_list_consumers_answers_the_shape_question_in_one_call() -> None:
+    """`#599` asks "who reads this producer" for the adapter-loader SHAPE.
+
+    Two surfaces own two halves of that question and this is the shape half.
+    `what_reads_this.py` owns a LITERAL name and cannot express a shape -- measured on
+    this tree, `_is_adapter_loader_name` matches 27 distinct loader names, so asking it
+    literally is 27 calls, one of which alone returns 443 references dominated by prose.
+    This is one call over the real call sites, and it is not a new capability:
+    `consumer_files()` already did the work and simply had no command surface.
+    """
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_adapter_consumer_classification.py"),
+         "--repo-root", str(ROOT), "--list-consumers"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    listed = [line.strip() for line in result.stdout.splitlines() if line.startswith("  scripts/")]
+    assert listed, result.stdout
+    assert set(listed) <= set(GATE.consumer_files(ROOT))
+
+
+def test_list_consumers_carries_its_blind_class_in_its_own_output() -> None:
+    """An enumeration that LOOKS complete is worse than none, because the reader stops
+    looking. The limits travel with the answer, not only in the module docstring."""
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_adapter_consumer_classification.py"),
+         "--repo-root", str(ROOT), "--list-consumers"],
+        capture_output=True, text=True,
+    )
+    assert "BLIND CLASS" in result.stdout
+    for line in GATE.LIST_CONSUMERS_BLIND_CLASS:
+        assert line in result.stdout
+    # The two the goal's acceptance names explicitly.
+    assert "HELPER in another module" in result.stdout
+    assert "FILES, not call sites" in result.stdout
+
+
+def test_list_consumers_is_read_only_and_does_not_run_the_gate() -> None:
+    # The query must be safe to run BEFORE a change, including on a tree the gate would
+    # currently refuse; a preventing query that first fails the thing it precedes is one
+    # nobody runs.
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_adapter_consumer_classification.py"),
+         "--repo-root", str(ROOT), "--list-consumers"],
+        capture_output=True, text=True,
+    )
+    assert "adapter consumer classification:" not in result.stdout
+    assert "ACCEPTED RISK" not in result.stdout

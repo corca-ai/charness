@@ -4745,6 +4745,20 @@
       "note": "ROTATION of e9727b64a8140447, same two members and same reasoning: `preflight_release_issues` and `ensure_release_issues_closed` in `release_issue_closeout`. Their overlap grew again because BOTH now run BOTH rung-1 floors -- and that growth is the repair, not the defect. A round-1 review measured that re-running only the probe floor at the second entrypoint left a vacuous guard: `--close-issue-behavior` defaults to `[]`, the probe floor is inert on silence by design because the behavioral-verdict floor owns that refusal, so the cheapest possible input reached `gh issue close` with neither floor having said anything. The module's own comment records why the authorization call is likewise repeated there: this function reaches the irreversible call directly and resume/recovery can invoke it with no preflight in the process. Collapsing the two would re-open a gap at an irreversible boundary to save a few lines.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "04fc34c123ef7b4e",
+      "note": "the argparse `main()` shape shared by `check_adapter_consumer_classification` and `prepush_focused_changed_line_coverage`: build a parser, add `--repo-root` plus this gate's own flags, resolve the root, dispatch, return an exit code. The matched span is the parser construction and the dispatch tail; the FLAGS, the dispatch targets and the exit semantics are entirely different (one lists adapter consumers or checks the census, the other measures changed-line coverage). Surfaced as new because slice 3 added the `--list-consumers` arm and its early dispatch; the other member is untouched. Extracting a shared main would make every repo-root gate depend on one entrypoint helper for the sake of four structural lines, and the repo already rejected that shape -- `run_adapter_cli` exists for the SIMPLE resolvers precisely because their tails were invariant, and these two are not.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d96a0323bd018d8b",
+      "note": "the same argparse `main()` idiom, at repo scale: `parity_harness`, `check_plugin_doc_links`, `check_probe_record`, `check_export_self_sufficiency` and `check_adapter_consumer_classification` all build a parser with `--repo-root`, parse, and dispatch. This is the convention every repo-owned gate follows, not duplication one of them introduced; slice 3 added a member to a shape that predates it. The invariant tail that COULD be shared already was -- `skill_runtime_bootstrap.run_adapter_cli` -- and it covers the resolvers whose mains are genuinely identical. These are not: each owns different flags, a different verdict, and a different exit contract.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

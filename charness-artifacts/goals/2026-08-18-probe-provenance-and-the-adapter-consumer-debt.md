@@ -245,10 +245,20 @@ first would reproduce the 2026-08-18 error 45 times.
   (`safe-checks-errors`). **Stop rule: if it cannot, the trial's output is a recorded
   negative finding and the trial ends.** It does not escalate into designing a better
   witness, and the answer is not pre-decided here. Slice 4 records the result.
-- Who owns the "who reads this producer" question for the adapter-loader *shape*
-  (`_is_adapter_loader_name`, which a line-based scanner cannot express) — a shape/family
-  target kind on `what_reads_this.py`, or exporting the census's `consumer_files()` as an
-  importable helper? Slice 3 answers with the two files open, and dispositions `#599`.
+- ~~Who owns the "who reads this producer" question for the adapter-loader *shape*?~~
+  **ANSWERED in slice 3, by measurement rather than by taste.** The two surfaces own two
+  halves and neither should grow the other's. `what_reads_this.py` owns a LITERAL name;
+  it cannot express a shape, and the gap is quantified: `_is_adapter_loader_name` matches
+  **27 distinct loader names** on this tree, so the shape question via `--symbol` is 27
+  calls — and one of them, `load_adapter`, returns **443 references across 5970 files**,
+  overwhelmingly prose in artifacts. The census answers the same question in **one call
+  over 121 real call sites**. So the census owns the shape; a shape/family target kind on
+  `what_reads_this.py` was NOT built, and neither was a new helper export —
+  `consumer_files()` already did the work and simply had no command surface. Shipped as
+  `check_adapter_consumer_classification.py --list-consumers`, read-only, printing its own
+  blind class beside the list, and named in
+  [implementation-discipline](../../docs/conventions/implementation-discipline.md)
+  *Change Discipline* so the query runs BEFORE a shared output contract changes.
 - Is quality's same-day scaffold overwrite the defect `#628` reports, or the designed
   continue-in-place its debug sibling documents? This is an operator design call and Slice 6
   brings it to the queue rather than deciding it.
