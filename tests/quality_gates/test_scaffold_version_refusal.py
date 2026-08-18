@@ -41,8 +41,33 @@ SCAFFOLDS = (
 )
 
 
+# The five paths, LITERAL. Not decoration: `suggest_mutation_coverage_command` maps a
+# source file to the standing tests that reference it BY NAME, and the first cut of this
+# file built every path from an f-string. It referenced none of them, so the mapper could
+# not see it, so the changed-line producer ran a test subset that excluded it and reported
+# all five `raise SystemExit(refusal)` lines uncovered — while the suite was green and the
+# lines were, in fact, exercised. A test the mapper cannot see is a test the coverage lane
+# does not have. `test_the_script_table_matches_the_derived_paths` keeps this honest.
+SCRIPT_PATHS = {
+    "quality": "skills/public/quality/scripts/scaffold_quality_artifact.py",
+    "retro": "skills/public/retro/scripts/scaffold_retro_artifact.py",
+    "debug": "skills/public/debug/scripts/scaffold_debug_artifact.py",
+    "critique": "skills/public/critique/scripts/scaffold_critique_artifact.py",
+    "handoff": "skills/public/handoff/scripts/scaffold_handoff_artifact.py",
+}
+
+
 def _script(skill: str) -> Path:
-    return ROOT / "skills" / "public" / skill / "scripts" / f"scaffold_{skill}_artifact.py"
+    return ROOT / SCRIPT_PATHS[skill]
+
+
+def test_the_script_table_matches_the_derived_paths() -> None:
+    """The table above exists so a name-based mapper can see this file, so it must stay
+    true. Deriving the paths instead would restore the invisibility it fixes."""
+    for skill in SCRIPT_PATHS:
+        assert _script(skill).is_file(), skill
+        assert _script(skill).name == f"scaffold_{skill}_artifact.py"
+    assert set(SCRIPT_PATHS) == {row[0] for row in SCAFFOLDS}
 
 
 def _repo(tmp_path: Path, skill: str, adapter: str | None) -> Path:
