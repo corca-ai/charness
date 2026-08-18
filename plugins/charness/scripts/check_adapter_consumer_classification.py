@@ -101,9 +101,7 @@ VERDICTS = {
 }
 
 
-def _is_adapter_loader_name(name: object) -> bool:
-    if not isinstance(name, str):
-        return False
+def _is_adapter_loader_name(name: str) -> bool:
     # A leading underscore is a visibility marker, not a different act: eight consumers
     # were lost to `_load_adapter` / `_load_quality_adapter` before this strip.
     name = name.lstrip("_")

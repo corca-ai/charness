@@ -17,7 +17,10 @@ load-bearing. Nothing here can tell a real refusal from an echoed field.
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -182,6 +185,28 @@ def test_an_unparseable_file_is_a_hard_error_not_a_skip(tmp_path: Path) -> None:
 
     with pytest.raises(SystemExit, match="could not be parsed"):
         GATE.check(repo)
+
+
+def test_the_module_runs_as_a_script(tmp_path: Path) -> None:
+    """Covers the `__main__` block in-process rather than through a subprocess.
+
+    The line is one `sys.exit(main())`, and it is the only thing standing between a
+    correct `main()` and a gate that cannot be invoked. `runpy` with `run_name="__main__"`
+    executes it without adding a process boundary the bypass ratchet would rightly count.
+    """
+    repo = _tree(
+        tmp_path,
+        {"scripts/known.py": CALLS_LOADER},
+        {"scripts/known.py": {"verdict": "safe-checks-errors", "reason": "checks errors at L1"}},
+    )
+    argv = ["check_adapter_consumer_classification.py", "--repo-root", str(repo)]
+
+    with mock.patch.object(sys, "argv", argv), pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(
+            str(ROOT / "scripts/check_adapter_consumer_classification.py"), run_name="__main__"
+        )
+
+    assert excinfo.value.code == 0
 
 
 def test_a_call_whose_target_is_not_a_name_is_not_a_loader(tmp_path: Path) -> None:
