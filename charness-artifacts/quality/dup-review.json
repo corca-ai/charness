@@ -4808,6 +4808,27 @@
       "note": "Intra-file, between `applied_rewrite_review_policy`'s returned dict literal and a window inside `bootstrap_review`'s body. Both are literal payload constructions for DIFFERENT durable artifacts -- one queue item's review policy, and the `state.yaml` mapping -- and they share the shape of a mapping literal, not a single key. Neither region's content changed in this slice; the family surfaced because the version-refusal guard and its comment entered the file and reshaped the window. Extracting a shared builder here would put an indirection over two unrelated schemas whose whole value is being readable as the artifact they produce.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "05648069e2513071",
+      "note": "Whole-module similarity between `scaffold_critique_artifact.py` and `scaffold_retro_artifact.py`. The records-only scaffold shape already classified at 9b344dba944af0db (critique, retro, ideation): same `default_title` / `_slug` / `validator_command` / `payload_for` skeleton over different templates, different validators, and different subject-identity rules. The genuinely shared RULE was already extracted to `scaffold_artifact_lib.dated_record_payload`. Neither module's body changed in this slice beyond the five-line version-refusal guard each gained; the family surfaced because that guard reshaped both windows at once.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4a4598447944cc7b",
+      "note": "The skill-runtime bootstrap and module-alias preamble shared by `scaffold_critique_artifact.py` and `scaffold_debug_artifact.py`, now including the `scripts.adapter_version_verdict` binding this slice added to both. Same accepted class as 068446cbb9f180bf: an alias block is an import statement in this repo's no-ordinary-imports runtime and cannot be factored out without the shared loader it exists to reach.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "59c34cfe4503ad3c",
+      "note": "Four members across `scaffold_critique_artifact.py`, `scaffold_debug_artifact.py`, `scaffold_ideation_artifact.py` (UNTOUCHED by this slice) and `scaffold_retro_artifact.py`: the `validator_command` delegation binding each skill's own `VALIDATOR_SCRIPT_NAMES` plus the dated-record payload tail. Pre-existing and already classified in the same terms at ba8a0440c9106e3f; the untouched ideation member is the evidence that this is the family's own shape rather than duplication this slice introduced. Each member binds a DIFFERENT validator script set, which is the one thing that must not be shared.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

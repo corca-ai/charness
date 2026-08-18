@@ -226,16 +226,16 @@
       "reason": "Line 78-81: `adapter = load_adapter(repo_root); if not adapter['valid']: yaml_output.emit_yaml({'ok': False, 'error': 'critique adapter invalid', 'adapter': adapter}); return 1` \u2014 refuses before using adapter data further; critique_adapter_lib.load_adapter sets valid = not errors (scripts/critique_adapter_lib.py:182,273) so a version refusal is included."
     },
     "skills/public/critique/scripts/scaffold_critique_artifact.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "Already reported/known per task background as unguarded+consequential; not re-derived here."
+      "verdict": "guarded",
+      "reason": "payload_for() now calls `_adapter_version_verdict.unspeakable_version_message(load_adapter, repo_root, adapter_name=\"critique-adapter.yaml\")` and raises SystemExit before the write target is read from the payload. Guarded at the READ SITE, not `main()`, because `payload_for` is the imported symbol in this skill. Measured flip on the real CLI at 0bcb6b227: a repo declaring `output_dir: docs/mine-critique` under `version: 9` got back `artifact_path: charness-artifacts/critique/2026-08-19-probe.md`, exit 0 -- an unhonored declaration RELOCATES this family's artifact rather than degrading its answer. Both polarity controls run: version 1 returns the declared path, no adapter returns the default. Probe record: charness-artifacts/probe/2026-08-19-scaffold-family-version-refusal.md. RESIDUAL, named rather than absorbed: this skill's resolver lets a PARSER refusal's ValueError out, so `version: !!int 9` refuses with a raw traceback instead of a rendered verdict. It stops and does not relocate; the operator experience is the defect."
     },
     "skills/public/debug/scripts/plan_debug_run.py": {
       "verdict": "safe-checks-errors",
       "reason": "build_plan() sets `ok=bool(adapter.get('valid'))` (line 352) and main() returns `0 if payload['ok'] else 1` (line 381); gate_packets also echoes adapter['errors']/['warnings'] (lines 164-167) and ENVELOPE.adapter_echo surfaces errors (run_plan_envelope.py:206-221). resolve_adapter.load_adapter (skills/public/debug/scripts/resolve_adapter.py) runs declared_fields_after_version_check and reports errors, so a version refusal correctly drives ok=False/exit 1 even though the plan payload internally still computed some fields from defaults."
     },
     "skills/public/debug/scripts/scaffold_debug_artifact.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "payload_for() at lines 301-316 calls load_adapter(repo_root) and immediately feeds it into _scaffold_lib.size_budget(...) and _resolve_artifact_path.payload_for(..., adapter=adapter) with no check of adapter['valid']/adapter['errors'] anywhere in the file (only a doc-comment string containing the word 'valid')."
+      "verdict": "guarded",
+      "reason": "payload_for() now calls `_adapter_version_verdict.unspeakable_version_message(load_adapter, repo_root, adapter_name=\"debug-adapter.yaml\")` and raises SystemExit before the write target is read from the payload. Guarded at the READ SITE, not `main()`, because `payload_for` is the imported symbol in this skill. Measured flip on the real CLI at 0bcb6b227: a repo declaring `output_dir: docs/mine-debug` under `version: 9` got back `artifact_path: charness-artifacts/debug/latest.md`, exit 0 -- an unhonored declaration RELOCATES this family's artifact rather than degrading its answer. Both polarity controls run: version 1 returns the declared path, no adapter returns the default. Probe record: charness-artifacts/probe/2026-08-19-scaffold-family-version-refusal.md."
     },
     "skills/public/gather/scripts/advise_google_workspace_path.py": {
       "verdict": "accepted-risk-unguarded",
@@ -274,8 +274,8 @@
       "reason": "_artifact_summary (line 156-157) and _resolved_max_content_lines (line 100-117) act on adapter[\"artifact_path\"]/adapter[\"data\"] unconditionally; the errors check at line 279 only adds an advisory reference read and echoes errors in the output envelope (line 397-403), it never gates the artifact_path or next_action that get built from the defaulted data."
     },
     "skills/public/handoff/scripts/scaffold_handoff_artifact.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "payload_for (line 163-177) reads adapter[\"artifact_path\"] and max_content_lines(adapter) with no errors/valid check, and scripts/scaffold_artifact_lib.py (checked, no errors/valid handling) writes write_artifact_path unconditionally; this matches the task's pre-listed 'already known unguarded+consequential' set."
+      "verdict": "guarded",
+      "reason": "payload_for() now calls `_adapter_version_verdict.unspeakable_version_message(load_adapter, repo_root, adapter_name=\"handoff-adapter.yaml\")` and raises SystemExit before the write target is read from the payload. Guarded at the READ SITE, not `main()`, because `payload_for` is the imported symbol in this skill. Measured flip on the real CLI at 0bcb6b227: a repo declaring `output_dir: docs/mine` under `version: 9` got back `artifact_path: docs/handoff.md`, exit 0 -- an unhonored declaration RELOCATES this family's artifact rather than degrading its answer. Both polarity controls run: version 1 returns the declared path, no adapter returns the default. Probe record: charness-artifacts/probe/2026-08-19-scaffold-family-version-refusal.md. The first cut of this probe declared `artifact_path`, which this resolver ignores (it derives the path from `output_dir` plus a fixed filename), so the speakable-version control could not distinguish honored from fell-back. Re-measured on `output_dir`."
     },
     "skills/public/hitl/scripts/bootstrap_review.py": {
       "verdict": "guarded",
@@ -406,8 +406,8 @@
       "reason": "suggest_budgets() (line 134-162) does `adapter_data = load_adapter(repo_root)[\"data\"]` at line 153 with no error/valid check anywhere in the file, then uses `adapter_data` to select the runtime profile (`selected_runtime_profile`) and to derive/round proposed budget-ms ceilings via `suggest_profile_budgets`."
     },
     "skills/public/quality/scripts/scaffold_quality_artifact.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "payload_for() (line 246-248) does `adapter = load_adapter(repo_root); output_dir = Path(adapter[\"data\"][\"output_dir\"])` with no error/valid check anywhere in the file -- matches the already-known-unguarded classification given for this file."
+      "verdict": "guarded",
+      "reason": "payload_for() now calls `_adapter_version_verdict.unspeakable_version_message(load_adapter, repo_root, adapter_name=\"quality-adapter.yaml\")` and raises SystemExit before the write target is read from the payload. Guarded at the READ SITE, not `main()`, because `payload_for` is the imported symbol in this skill. Measured flip on the real CLI at 0bcb6b227: a repo declaring `output_dir: docs/mine-quality` under `version: 9` got back `artifact_path: charness-artifacts/quality/latest.md`, exit 0 -- an unhonored declaration RELOCATES this family's artifact rather than degrading its answer. Both polarity controls run: version 1 returns the declared path, no adapter returns the default. Probe record: charness-artifacts/probe/2026-08-19-scaffold-family-version-refusal.md. RESIDUAL, named rather than absorbed: this skill's resolver lets a PARSER refusal's ValueError out, so `version: !!int 9` refuses with a raw traceback instead of a rendered verdict. It stops and does not relocate; the operator experience is the defect."
     },
     "skills/public/quality/scripts/validate_skill_ergonomics.py": {
       "verdict": "safe-checks-errors",
@@ -478,8 +478,8 @@
       "reason": "Lines 58-62: `refused = _version_verdict.refuse_unspeakable_version(load_adapter, repo_root, adapter_name=\"retro-adapter.yaml\"); if refused is not None: return refused` runs before `summary_path`/`output_dir` are read from `adapter[\"data\"]` (line 63-64) (already on the ALREADY-GUARDED list; re-confirmed by reading, including its own comment citing the exact shadow-digest harm this guard prevents)."
     },
     "skills/public/retro/scripts/scaffold_retro_artifact.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "`payload_for` (lines 206-207) does `adapter = load_adapter(repo_root); output_dir = str(adapter[\"data\"][\"output_dir\"])` with no check of `adapter[\"valid\"]` or `adapter[\"errors\"]` anywhere in the file (already on the ALREADY-KNOWN-UNGUARDED list; re-confirmed by reading \u2014 this is the file `plan_retro_run.py` also calls unguarded)."
+      "verdict": "guarded",
+      "reason": "payload_for() now calls `_adapter_version_verdict.unspeakable_version_message(load_adapter, repo_root, adapter_name=\"retro-adapter.yaml\")` and raises SystemExit before the write target is read from the payload. Guarded at the READ SITE, not `main()`, because `payload_for` is the imported symbol in this skill. Measured flip on the real CLI at 0bcb6b227: a repo declaring `output_dir: docs/mine-retro` under `version: 9` got back `artifact_path: charness-artifacts/retro/2026-08-19-probe.md`, exit 0 -- an unhonored declaration RELOCATES this family's artifact rather than degrading its answer. Both polarity controls run: version 1 returns the declared path, no adapter returns the default. Probe record: charness-artifacts/probe/2026-08-19-scaffold-family-version-refusal.md."
     },
     "skills/public/setup/scripts/inspect_repo.py": {
       "verdict": "safe-checks-errors",

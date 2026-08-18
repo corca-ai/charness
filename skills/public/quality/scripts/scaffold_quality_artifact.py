@@ -17,6 +17,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 _resolve_quality_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_quality_artifact")
 
@@ -244,6 +247,20 @@ def target_subject_key(write_path: str) -> str | None:
 
 
 def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
+    # GUARDED AT THE READ SITE. Every scaffold in this family reads its write TARGET out
+    # of the adapter, so an unhonored declaration does not degrade the answer -- it
+    # relocates the artifact. Measured on the real CLI at `0bcb6b227`: a repo declaring
+    # `output_dir: docs/mine-quality` under `version: 9` got back `artifact_path: charness-artifacts/quality/latest.md`, exit 0, and the scaffold
+    # would have written there.
+    #
+    # `payload_for` rather than `main()` because that is where the target is resolved and
+    # because this module's `payload_for` is imported elsewhere; a refusal at the
+    # entrypoint would cover one caller.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="quality-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     output_dir = Path(adapter["data"]["output_dir"])
     artifact_date = dt.date.today()

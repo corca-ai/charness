@@ -17,6 +17,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 # The same budget module `validate_handoff_artifact.py` loads, so
 # `size_budget.max_lines` cannot disagree with the ceiling the gate enforces.
@@ -160,6 +163,26 @@ def invocation_subject_key(artifact_path: str) -> str:
 
 
 def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
+    # GUARDED AT THE READ SITE. Every scaffold in this family reads its write TARGET out
+    # of the adapter, so an unhonored declaration does not degrade the answer -- it
+    # relocates the artifact. Measured on the real CLI at `0bcb6b227`: a repo declaring
+    # `output_dir: docs/mine` under `version: 9` got back
+    # `artifact_path: docs/handoff.md`, exit 0, and the scaffold would have written there.
+    #
+    # `output_dir`, not `artifact_path`: this adapter derives the path from a directory
+    # plus a fixed `handoff.md`. The first cut of this probe declared `artifact_path`,
+    # which this resolver ignores -- so the speakable-version CONTROL returned the default
+    # too and could not tell "honored" from "fell back". Re-measured on the field the
+    # contract actually reads, and the control now returns `docs/mine/handoff.md`.
+    #
+    # `payload_for` rather than `main()` because that is where the target is resolved and
+    # because this module's `payload_for` is imported elsewhere; a refusal at the
+    # entrypoint would cover one caller.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="handoff-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     artifact_path = str(adapter["artifact_path"])
     date_text = dt.date.today().isoformat()
