@@ -12,7 +12,7 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-18",
-  "source_artifact_count": 530,
+  "source_artifact_count": 531,
   "candidate_count": 2154,
   "top_candidates": [
     {
@@ -1840,150 +1840,20 @@
       ]
     },
     {
-      "candidate_id": "current_focus:7112f15c0bc7",
-      "kind": "current_focus",
-      "lesson": "`2026-08-16-s9` was opened by a prior session and never claimed by a retro.",
-      "normalized_key": "2026 08 16 s9 was opened by a prior session and never claimed by",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
-          "date": "2026-08-17",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "`2026-08-16-s9` was opened by a prior session and never claimed by a retro."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a482c388d016",
-      "kind": "current_focus",
-      "lesson": "The operator asked for a plan for autonomous repo improvement from the handoff, open issues, and recent lessons, then said to execute it.",
-      "normalized_key": "the operator asked for a plan for autonomous repo improvement from the handoff open",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
-          "date": "2026-08-17",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The operator asked for a plan for autonomous repo improvement from the handoff, open issues, and recent lessons, then said to execute it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:8295e9058f76",
-      "kind": "next_improvement",
-      "lesson": "before concluding a refusal is untested, ask which LANE proves it. Two lines here read as uncovered because their only proof was `release_only` and the coverage producer runs `-m 'not release_only'`; the same shape hides any guard proven solely by a spawned subprocess.",
-      "normalized_key": "before concluding a refusal is untested ask which lane proves it two lines here",
-      "recurrence_class": "lane-scoped-proof",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
-          "date": "2026-08-17",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "before concluding a refusal is untested, ask which LANE proves it. Two lines here read as uncovered because their only proof was `release_only` and the coverage producer runs `-m 'not release_only'`; the same shape hides any guard proven solely by a spawned subprocess."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:6294f0fd7961",
-      "kind": "next_improvement",
-      "lesson": "never write a count into a durable artifact without enumerating the members first, and prefer naming the members to naming the number. Three unenumerated counts landed this session; each was cheap to enumerate and none was enumerated. A count transcribed from another artifact is the worst case, because it reads as measured and is not.",
-      "normalized_key": "never write a count into a durable artifact without enumerating the members first and",
-      "recurrence_class": "uncounted-count",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
-          "date": "2026-08-17",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "never write a count into a durable artifact without enumerating the members first, and prefer naming the members to naming the number. Three unenumerated counts landed this session; each was cheap to enumerate and none was enumerated. A count transcribed from another artifact is the worst case, because it reads as measured and is not."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:1dfa7860d37b",
-      "kind": "next_improvement",
-      "lesson": "when a test removes an input to make a flag the only route, check where the REMAINING fallback lands. Doing so here would have caught that the mutation under test would write into the live repo's `.charness/usage-episodes/sessions/`, in the one subtree the leak guard exempts.",
-      "normalized_key": "when a test removes an input to make a flag the only route check",
-      "recurrence_class": "fallback-aimed-at-production",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
-          "date": "2026-08-17",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "when a test removes an input to make a flag the only route, check where the REMAINING fallback lands. Doing so here would have caught that the mutation under test would write into the live repo's `.charness/usage-episodes/sessions/`, in the one subtree the leak guard exempts."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 142,
+      "source_count": 143,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-v6-1-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-v6-1-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -3120,6 +2990,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-v6-1-0-release-auto-retro.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -3129,15 +3007,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 22,
+      "source_count": 23,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-v6-1-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-v6-1-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3310,6 +3188,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-17-v6-1-0-release-auto-retro.md",
           "date": "2026-08-17",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-v6-1-0-release-auto-retro.md",
+          "date": "2026-08-18",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -3323,15 +3209,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 22,
+      "source_count": 23,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-v6-1-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-v6-1-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3508,6 +3394,178 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-v6-1-0-release-auto-retro.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a8ddf180ca49",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v6.1.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v6 1 0",
+      "recurrence_class": null,
+      "source_count": 2,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-v6-1-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-v6-1-0-release-auto-retro.md",
+          "date": "2026-08-17",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v6.1.0`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-v6-1-0-release-auto-retro.md",
+          "date": "2026-08-18",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v6.1.0`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7112f15c0bc7",
+      "kind": "current_focus",
+      "lesson": "`2026-08-16-s9` was opened by a prior session and never claimed by a retro.",
+      "normalized_key": "2026 08 16 s9 was opened by a prior session and never claimed by",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
+          "date": "2026-08-17",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "`2026-08-16-s9` was opened by a prior session and never claimed by a retro."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a482c388d016",
+      "kind": "current_focus",
+      "lesson": "The operator asked for a plan for autonomous repo improvement from the handoff, open issues, and recent lessons, then said to execute it.",
+      "normalized_key": "the operator asked for a plan for autonomous repo improvement from the handoff open",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+          "date": "2026-08-17",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The operator asked for a plan for autonomous repo improvement from the handoff, open issues, and recent lessons, then said to execute it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:8295e9058f76",
+      "kind": "next_improvement",
+      "lesson": "before concluding a refusal is untested, ask which LANE proves it. Two lines here read as uncovered because their only proof was `release_only` and the coverage producer runs `-m 'not release_only'`; the same shape hides any guard proven solely by a spawned subprocess.",
+      "normalized_key": "before concluding a refusal is untested ask which lane proves it two lines here",
+      "recurrence_class": "lane-scoped-proof",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+          "date": "2026-08-17",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "before concluding a refusal is untested, ask which LANE proves it. Two lines here read as uncovered because their only proof was `release_only` and the coverage producer runs `-m 'not release_only'`; the same shape hides any guard proven solely by a spawned subprocess."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:6294f0fd7961",
+      "kind": "next_improvement",
+      "lesson": "never write a count into a durable artifact without enumerating the members first, and prefer naming the members to naming the number. Three unenumerated counts landed this session; each was cheap to enumerate and none was enumerated. A count transcribed from another artifact is the worst case, because it reads as measured and is not.",
+      "normalized_key": "never write a count into a durable artifact without enumerating the members first and",
+      "recurrence_class": "uncounted-count",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+          "date": "2026-08-17",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "never write a count into a durable artifact without enumerating the members first, and prefer naming the members to naming the number. Three unenumerated counts landed this session; each was cheap to enumerate and none was enumerated. A count transcribed from another artifact is the worst case, because it reads as measured and is not."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:1dfa7860d37b",
+      "kind": "next_improvement",
+      "lesson": "when a test removes an input to make a flag the only route, check where the REMAINING fallback lands. Doing so here would have caught that the mutation under test would write into the live repo's `.charness/usage-episodes/sessions/`, in the one subtree the leak guard exempts.",
+      "normalized_key": "when a test removes an input to make a flag the only route check",
+      "recurrence_class": "fallback-aimed-at-production",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "latest_source_date": "2026-08-17",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+          "date": "2026-08-17",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when a test removes an input to make a flag the only route, check where the REMAINING fallback lands. Doing so here would have caught that the mutation under test would write into the live repo's `.charness/usage-episodes/sessions/`, in the one subtree the leak guard exempts."
         }
       ]
     },
@@ -3534,32 +3592,6 @@
           "generator": "release-trigger",
           "kind": "current_focus",
           "lesson": "Release publish triggered a configured automatic session retro for `v6.0.1`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a8ddf180ca49",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v6.1.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v6 1 0",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-17-v6-1-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-17",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-17-v6-1-0-release-auto-retro.md",
-          "date": "2026-08-17",
-          "section": "Context",
-          "generator": "release-trigger",
-          "kind": "current_focus",
-          "lesson": "Release publish triggered a configured automatic session retro for `v6.1.0`."
         }
       ]
     },
