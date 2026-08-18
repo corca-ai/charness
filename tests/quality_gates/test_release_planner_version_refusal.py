@@ -8,9 +8,12 @@ at `dd5b6dee9`, the planner did not go silent under a refused version: it printe
 `package_id: <the temp directory's own name>`, two paths under `packaging/` and `plugins/`
 that do not exist, and `blockers: []`.
 
-The rows for `current_release` and `check_real_host_proof` already made this exit 1, by
-inheritance: `build_release_payload` runs before the three unconditional `data` reads and
-its `SystemExit` escapes the `except Exception` around it. That inheritance is real and
+The row for `current_release` ALONE already made this exit 1, by inheritance:
+`build_release_payload` runs before the three unconditional `data` reads and its
+`SystemExit` escapes the `except Exception` around it. The `check_real_host_proof` row
+cannot have contributed — its call here is behind `if adapter.get("valid")` and inside
+`except SystemExit`, which demotes a refusal to a payload field — and a round-1 bounded
+review caught three surfaces crediting it. That inheritance is real and
 was measured — and it is POSITIONAL. `test_the_refusal_is_this_file_s_own` is the test
 that separates the two, by proving the refusal survives a callee that does not refuse.
 """

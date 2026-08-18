@@ -17,10 +17,14 @@ Source conditions: the adapter's declared version is one this reader does not sp
 Base ref: dd5b6dee9
 Head ref: working tree at f7d3fb70e
 Base arm: base-observed
-Call sites unproven: none — `build_plan` has no production importer (`grep` over
-  `scripts/`, `skills/` and `tests/` finds only its own `main()` and one test module), so
-  the read site and the entrypoint coincide here; the guard is still placed at the read
-  site so the row's verdict does not depend on `main()` staying the only caller
+Call sites unproven: none — `build_plan` has no production importer under `scripts/` or
+  `skills/`, so the read site and the entrypoint coincide here; the guard is still placed
+  at the read site so the row's verdict does not depend on `main()` staying the only
+  caller. A round-1 bounded review corrected this line's parenthetical, which said "one
+  test module": there are THREE (`test_release_run_planner.py`,
+  `test_release_real_host.py`, and this row's own), which changes nothing about the
+  load-bearing half and is fixed because a miscount published as a count is this goal's
+  own class
 
 ## Source text
 
@@ -100,6 +104,14 @@ exit 1
 
 ## Non-claims
 
+- **The guard this record measured keyed on ONE door, and a round-1 bounded review found a
+  second.** `version: !!int 9` — one token added to this record's own stimulus — makes the
+  parser refuse the document, and `simple_skill_adapter_lib` answers that with
+  `infer_repo_defaults(...)` plus a `parse_failure_error`, the same "nothing declared is
+  honored" state by a different door. At this record's `Head ref` that input still reached
+  the base behavior. It is closed in a later commit, by keying
+  `adapter_version_verdict` on the CONDITION rather than on one check's wording; the
+  base/head pair recorded above is unaffected and was not re-measured for the second door.
 - **This row's CLI-level behavior was already fixed by row 2 before this guard existed.**
   What this record establishes is narrower: that the refusal is now a property of this
   file rather than of the order its callees happen to be called in. Reading the exit code

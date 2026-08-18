@@ -41,7 +41,13 @@ def _run(repo: Path) -> subprocess.CompletedProcess:
     )
 
 
-DECLARED = 'requested_review_commands:\n  - echo declared\nrequested_review_policy: block-if-unconfigured\n'
+# `advisory-only`, not `block-if-unconfigured`. A round-1 bounded review found the
+# latter is not a value this schema accepts (`resolve_adapter` validates against exactly
+# `{warn-if-unconfigured, advisory-only}`), so the polarity control below was passing over
+# a repo that was `valid: false` for a reason unrelated to the version — and the recorded
+# harm described a configuration the adapter never honors. The measured half stands: a
+# DECLARED COMMAND read back as `not_configured`.
+DECLARED = 'requested_review_commands:\n  - echo declared\nrequested_review_policy: advisory-only\n'
 
 
 def test_an_unspeakable_version_refuses_rather_than_reporting_not_configured(tmp_path: Path) -> None:
@@ -74,11 +80,15 @@ def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("importer", ["plan_release_run", "publish_release_cli"])
 def test_every_importer_of_build_payload_inherits_the_guard(tmp_path: Path, importer: str) -> None:
-    """The call-site coverage this row's probe record claims.
+    """Each importer's BOUND SYMBOL carries the guard — which is less than call-site
+    coverage, and a round-1 bounded review was right to say so.
 
     `build_payload` has three entrypoints and the guard is inside it, so the two modules
-    that import it directly cannot be guarded at one call site and unguarded at another —
-    which is the failure class the census's own blind note names.
+    that import it cannot be guarded at one call site and unguarded at another. What this
+    does NOT show is that either importer would otherwise have reached the read: both stop
+    earlier under an unhonored declaration, `publish_release_cli` at `_valid_adapter_data`
+    and `plan_release_run` behind `if adapter.get("valid")`. The property proven here is
+    positional independence, not a removed live harm at those two sites.
     """
     from tests.script_main import load_script_module
 
@@ -90,3 +100,23 @@ def test_every_importer_of_build_payload_inherits_the_guard(tmp_path: Path, impo
     with pytest.raises(SystemExit) as excinfo:
         module.build_review_gate_payload(repo)
     assert "does not speak" in str(excinfo.value)
+
+
+def test_a_parser_refusal_reaches_the_same_guard(tmp_path: Path) -> None:
+    """The round-1 review's blocker, at a real CLI.
+
+    `version: !!int 9` is one token added to the input above. The parser refuses the
+    document, the resolver hands back `infer_repo_defaults(...)`, and before the guard
+    keyed on the CONDITION rather than on one check's wording this printed
+    `configuration status: not_configured` at exit 0 — byte-identical to the pre-repair
+    harm this file exists to stop.
+
+    Only this gate and `bootstrap_review` carry a consumer-level test for the second
+    door; the other three wire the identical call and are covered by
+    `test_adapter_version_refusal_is_loud.py`, which pins the predicate itself. That is a
+    deliberate stopping point, recorded rather than left as an implied "all five proven".
+    """
+    result = _run(_repo(tmp_path, "version: !!int 9\n" + DECLARED))
+    assert result.returncode == 1, result.stdout
+    assert "could not be parsed" in result.stderr
+    assert "not_configured" not in result.stdout

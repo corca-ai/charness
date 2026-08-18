@@ -137,8 +137,16 @@ def surface_error_payload(error: str) -> dict[str, object]:
 
 def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object]:
     # GUARDED AT THE READ SITE. Three modules import this `build_payload` directly
-    # (`publish_release_cli`, `publish_release_plan`, `plan_release_run`), so a refusal in
-    # `main()` would leave all three evaluating triggers this reader invented.
+    # (`publish_release_cli`, `publish_release_plan`, `plan_release_run`).
+    #
+    # A round-1 bounded review REFUTED the "all three" harm claim this comment used to
+    # carry, and it is corrected rather than dropped. Under an unhonored declaration
+    # `publish_release_cli` stops at `_valid_adapter_data` and `plan_release_run`'s call
+    # is behind `if adapter.get("valid")` -- which additionally wraps it in `except
+    # SystemExit`, demoting a refusal to a payload field. The count of importers measured
+    # to reach a charness default here is ZERO. What read-site placement buys is
+    # positional independence: the refusal is this function's property rather than a
+    # consequence of two callers' validity gates staying where they are.
     #
     # WHAT IT COSTS TO BE UNGUARDED, measured on the real CLI: a repo declaring
     # `real_host_required_path_globs: ["src/**"]` and a checklist under a refused version,

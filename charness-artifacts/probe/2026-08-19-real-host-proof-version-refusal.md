@@ -85,6 +85,14 @@ were run on the same HEAD and both are part of the evidence:
 
 ## Non-claims
 
+- **The guard this record measured keyed on ONE door, and a round-1 bounded review found a
+  second.** `version: !!int 9` — one token added to this record's own stimulus — makes the
+  parser refuse the document, and `simple_skill_adapter_lib` answers that with
+  `infer_repo_defaults(...)` plus a `parse_failure_error`, the same "nothing declared is
+  honored" state by a different door. At this record's `Head ref` that input still reached
+  the base behavior. It is closed in a later commit, by keying
+  `adapter_version_verdict` on the CONDITION rather than on one check's wording; the
+  base/head pair recorded above is unaffected and was not re-measured for the second door.
 - This record establishes ONE file. It says nothing about the 33 `accepted-risk-unguarded`
   rows that remain.
 - The base and head observables were captured by running the CLI, not derived from the

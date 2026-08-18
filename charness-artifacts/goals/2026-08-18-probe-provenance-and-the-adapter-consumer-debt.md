@@ -47,15 +47,25 @@ the pre-implementation critique passes.
   ratcheting over a mis-seeded row freezes the mis-seeding. Recorded as BLOCKED on an
   operator ruling rather than skipped.
 - Current slice: 5 — pay down the debt rows, in severity order, release gates first.
-- Rows paid down so far, each by a MEASURED behavioral flip with its own probe record and
-  polarity controls: `check_requested_review_gate.py` (`90348df50`), `current_release.py`
-  (`f7d3fb70e`), and — uncommitted at this writing — `check_real_host_proof.py` and
-  `plan_release_run.py`. Census ACCEPTED RISK 37 -> 33. Recount, never read off this line:
+- FIVE rows paid down, each by a measured behavioral flip with its own probe record and
+  polarity controls: `check_requested_review_gate.py` (`90348df50` + `bda87440c`),
+  `current_release.py` (`f7d3fb70e`), `check_real_host_proof.py` and `plan_release_run.py`
+  (`529486982`), `bootstrap_review.py` (`e5abdd333`). Census ACCEPTED RISK 37 -> 32.
+  Recount, never read off this line:
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .`.
-- Next action: commit rows 3 and 4, run the changed-line proof, then run the FIRST bounded
-  review round over all four rows as one packet — the two-round rule's trigger is met
-  (every row changes what verdict a release gate renders) and the review boundary for a
-  45-row slice is the five-row cost checkpoint, not each row. Then the cost recount.
+  **Row 4 (`plan_release_run`) carries the carve-out its own record writes**: its CLI flip
+  came from row 2 by inheritance, and its own contribution is isolated only by a
+  callee-stub control. Reading the five as five independent flips overstates it by one.
+- Round 1 of the bounded review RAN over all five rows as one packet (two reviewers,
+  unnamed, `bounded-reviewer`, read-only; boundary fingerprint `ok: true` /
+  `verdict: clean`). It was NOT clean. Findings and repairs are in `## Slice Log`; the
+  headline is that a one-token input (`version: !!int 9`) walked past every consumer
+  guard in the repo, and that the read-site rationale published into eight surfaces was
+  an argued harm the code refutes.
+- Next action: ROUND 2 over the repairs — the two-round rule's trigger is met and round 1
+  produced substantial repairs, including a change to `scripts/adapter_version_verdict.py`,
+  which is the proof surface every one of these guards calls. Then the five-row cost
+  recount the Slice Plan specifies, then rows 6+.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line

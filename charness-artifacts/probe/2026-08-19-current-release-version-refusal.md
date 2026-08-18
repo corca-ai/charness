@@ -13,14 +13,18 @@ Source revision: bda87440c
 Source conditions: the adapter's declared version is one this reader does not speak, so
   every field the repo declared is replaced by the reader's inferred defaults
 Base ref: bda87440c
-Head ref: working tree at the commit that lands this record
+Head ref: f7d3fb70e
 Base arm: base-observed
 Call sites unproven: none — one adapter-payload call site (`load_adapter` in
   `build_payload`), guarded at that read site, so the three modules importing
   `build_payload` directly (`publish_release_cli`, `publish_release_plan`,
-  `plan_release_run`) inherit it rather than each needing their own guard
+  `plan_release_run`) inherit it rather than each needing their own guard; a round-1
+  bounded review verified all three importers and refuted the harm claim recorded in the
+  non-claims below, not the coverage claim recorded here
 
 ## Source text
+
+Verbatim from the manifest at the pinned revision.
 
 ```
     "skills/public/release/scripts/current_release.py": {
@@ -54,7 +58,9 @@ python3 skills/public/release/scripts/current_release.py --repo-root $D
 
 ## Base observable
 
-The repo declared `acme-harness` and `vendor/mypkg`. What it got back:
+The repo declared `acme-harness` and `vendor/mypkg`. EXCERPTED at the four fields this
+row is about — the full payload carries ~12 top-level keys, and the omitted ones are not
+evidence either way:
 
 ```
   valid: false
@@ -83,6 +89,22 @@ exit 1
   design survives: declaring nothing is not the same as declaring something unreadable.
 
 ## Non-claims
+
+- **The guard this record measured keyed on ONE door, and a round-1 bounded review found a
+  second.** `version: !!int 9` — one token added to this record's own stimulus — makes the
+  parser refuse the document, and `simple_skill_adapter_lib` answers that with
+  `infer_repo_defaults(...)` plus a `parse_failure_error`, the same "nothing declared is
+  honored" state by a different door. At this record's `Head ref` that input still reached
+  the base behavior. It is closed in a later commit, by keying
+  `adapter_version_verdict` on the CONDITION rather than on one check's wording; the
+  base/head pair recorded above is unaffected and was not re-measured for the second door.
+- **The read-site rationale is narrower than this record first implied, corrected after a
+  round-1 bounded review.** Under an unhonored declaration `publish_release_cli` and
+  `publish_release_plan` stop earlier, at `_valid_adapter_data`. ONE importer genuinely
+  reached a charness default here: `plan_release_run`, which calls `build_payload`
+  unconditionally ahead of its own validity gates. So read-site placement removed one
+  measured live harm and bought positional independence for the other two — not three
+  live harms.
 
 - One file. It says nothing about the other 35 `accepted-risk-unguarded` rows.
 - Captured by running the CLI, not read off the diff. A distinct observer re-running the

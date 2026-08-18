@@ -171,8 +171,14 @@ def _absence_verdict(
 
 def build_payload(repo_root: Path) -> dict[str, object]:
     # GUARDED AT THE READ SITE. Three modules import `build_payload` directly
-    # (`publish_release_cli`, `publish_release_plan`, `plan_release_run`), so a refusal in
-    # `main()` would leave all three resolving release IDENTITY from charness defaults.
+    # (`publish_release_cli`, `publish_release_plan`, `plan_release_run`).
+    #
+    # A round-1 bounded review REFUTED the "all three" harm claim this comment used to
+    # carry. Under an unhonored declaration the first two stop earlier, at
+    # `publish_release_cli._valid_adapter_data`. ONE genuinely reached a charness default
+    # here: `plan_release_run` calls this function UNCONDITIONALLY, ahead of its own
+    # validity gates. So read-site placement removes one measured live harm, and buys
+    # positional independence for the rest.
     #
     # WHAT IT COSTS TO BE UNGUARDED, measured on the real CLI: a repo declaring
     # `package_id: acme-harness`, `packaging_manifest_path: vendor/mypkg/manifest.json`

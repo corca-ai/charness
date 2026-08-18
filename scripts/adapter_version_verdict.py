@@ -25,9 +25,19 @@ module first and REFUSES. Falling back to a charness default is not the conserva
 when the repo declared something else; it is a charness-chosen answer wearing the repo's
 name.
 
+TWO error states put a reader in that condition, not one, and keying on only the first
+was measured as an escape rather than argued. A version this reader cannot speak is the
+first. The second is an adapter the parser REFUSES outright: `simple_skill_adapter_lib`
+returns `data=infer_repo_defaults(...)` with `errors=[parse_failure_error(exc)]`, which
+is the same "nothing declared is honored" state reached by a different door. A round-1
+bounded review found `version: !!int 9` -- one token added to the very input the
+version guard refuses -- walking straight past this module, and the pre-repair harm was
+reproduced on three release CLIs at exit 0. So this module's predicate is the CONDITION,
+not the wording of one check that detects it.
+
 Blind class: this reads the resolver's ERROR STRINGS. It cannot see a consumer that
 never calls it, it says nothing about any other adapter error, and it is coupled to
-`validate_adapter_version`'s message wording -- which is why
+`validate_adapter_version`'s and `parse_failure_error`'s message wording -- which is why
 `tests/quality_gates/test_adapter_version_refusal_is_loud.py` drives the real check
 rather than asserting these literals against themselves.
 """
@@ -39,7 +49,13 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-__all__ = ["version_refused", "unspeakable_version_message", "refuse_unspeakable_version"]
+__all__ = [
+    "version_refused",
+    "parse_refused",
+    "declarations_unhonored",
+    "unspeakable_version_message",
+    "refuse_unspeakable_version",
+]
 
 # The wording `validate_adapter_version` emits. A prefix rather than an equality set
 # because the supported version is interpolated into `version must be {supported}`.
@@ -59,14 +75,38 @@ __all__ = ["version_refused", "unspeakable_version_message", "refuse_unspeakable
 # spurious refusal, which is the worse direction for a guard that stops a run.
 _REFUSAL_PREFIXES = ("version must be", "version is required")
 
+# `adapter_lib.parse_failure_error`'s wording. Its own docstring is the argument for
+# treating it as this module's second door: "A refusal is not a drop and must not read
+# like one." A parser refusal leaves the resolver returning `infer_repo_defaults(...)` --
+# the same state a refused version leaves -- so a consumer acting on that payload is
+# acting on charness defaults with the repo's name on them.
+_PARSE_FAILURE_PREFIX = "adapter could not be parsed:"
+
 
 def version_refused(errors: Any) -> bool:
     """True when this reader could not speak the adapter's declared version."""
+    return _any_error_starting_with(errors, _REFUSAL_PREFIXES)
+
+
+def parse_refused(errors: Any) -> bool:
+    """True when the parser refused the adapter document outright."""
+    return _any_error_starting_with(errors, (_PARSE_FAILURE_PREFIX,))
+
+
+def declarations_unhonored(errors: Any) -> bool:
+    """True when the reader honored NOTHING the repo declared.
+
+    The predicate this module is actually about. `version_refused` and `parse_refused`
+    are the two doors into that state; a caller wanting the state should ask this rather
+    than either door, so a third door added later does not silently bypass every guard.
+    """
+    return version_refused(errors) or parse_refused(errors)
+
+
+def _any_error_starting_with(errors: Any, prefixes: tuple[str, ...]) -> bool:
     if not isinstance(errors, list):
         return False
-    return any(
-        isinstance(error, str) and error.startswith(_REFUSAL_PREFIXES) for error in errors
-    )
+    return any(isinstance(error, str) and error.startswith(prefixes) for error in errors)
 
 
 def unspeakable_version_message(
@@ -79,23 +119,48 @@ def unspeakable_version_message(
     and routing them through one exception here would put an artifact-rule hint on a
     failure that is not an artifact rule violation.
 
-    An unreadable adapter answers None: whatever is wrong with it is not a version this
-    reader refused, and the caller's own discovery already reports it. Swallowing the
-    loader failure matches `resolve_adapter_line_budget`, which runs the resolver of the
-    repo UNDER validation and must render a verdict rather than a traceback.
+    Named for the first of the two doors and kept that way because fifteen consumers call
+    it under this name; it answers `declarations_unhonored`, which is the condition. The
+    message BRANCHES, because the remediation differs: one is an adapter line, the other
+    is a YAML document the parser would not read at all.
+
+    A loader that RAISES still answers None. That is a different thing from a parse
+    failure recorded in `errors`: the resolver caught the latter and handed back defaults,
+    which is the state this module refuses, while the former produced no payload for
+    anyone to act on. Swallowing the raise matches `resolve_adapter_line_budget`, which
+    runs the resolver of the repo UNDER validation and must render a verdict rather than
+    a traceback.
+
+    An earlier draft of this docstring justified answering None on a recorded parse
+    failure with "the caller's own discovery already reports it". A bounded review
+    measured that clause false: of the five release/hitl consumers guarded here, only
+    `current_release` echoes `adapter["errors"]` at all, and echoing while acting on the
+    defaults is the "a read is not a check" shape those consumers exist to stop.
     """
     try:
         errors = load_adapter(repo_root).get("errors")
     except Exception:  # noqa: BLE001 - a verdict, never a traceback; see docstring
         return None
-    if not version_refused(errors):
+    if not declarations_unhonored(errors):
         return None
+    detail = "; ".join(error for error in errors if isinstance(error, str))
+    lead = (
+        f"`.agents/{adapter_name}` could not be parsed ({detail})."
+        if parse_refused(errors)
+        else (
+            f"`.agents/{adapter_name}` declares a `version` this reader does not speak "
+            f"({detail})."
+        )
+    )
+    fix = (
+        "Fix the YAML so the document parses, then re-run."
+        if parse_refused(errors)
+        else "Set `version: 1`, or upgrade the reader, then re-run."
+    )
     return (
-        f"`.agents/{adapter_name}` declares a `version` this reader does not speak "
-        f"({'; '.join(error for error in errors if isinstance(error, str))}). "
-        "Nothing the adapter declares is being honored, so this run would fall back to "
-        "charness defaults rather than to what the repo declared -- refusing instead. "
-        "Set `version: 1`, or upgrade the reader, then re-run."
+        f"{lead} Nothing the adapter declares is being honored, so this run would fall "
+        f"back to charness defaults rather than to what the repo declared -- refusing "
+        f"instead. {fix}"
     )
 
 

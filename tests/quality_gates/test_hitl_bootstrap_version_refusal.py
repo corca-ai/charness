@@ -80,3 +80,18 @@ def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     state = (repo / ".charness" / "hitl" / "runtime" / "ctl" / "state.yaml").read_text(encoding="utf-8")
     assert "require_explicit_apply: true" in state
+
+
+def test_a_parser_refusal_reaches_the_same_guard_before_any_write(tmp_path: Path) -> None:
+    """The write case for the round-1 review's blocker.
+
+    `version: !!int 9` makes the parser refuse the document; the resolver answers with
+    charness defaults, and before the guard keyed on the condition this wrote
+    `require_explicit_apply: true` into `state.yaml` at exit 0 over a repo declaring
+    `false`. The session directory must be absent for the same reason as above.
+    """
+    repo = _repo(tmp_path, "version: !!int 9\nrequire_explicit_apply: false\n")
+    result = _run(repo, "parsefail")
+    assert result.returncode == 1, result.stdout
+    assert "could not be parsed" in result.stderr
+    assert not (repo / ".charness" / "hitl" / "runtime" / "parsefail").exists()

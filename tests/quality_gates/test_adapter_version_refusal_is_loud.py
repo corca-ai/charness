@@ -270,3 +270,57 @@ def test_a_non_list_errors_payload_does_not_read_as_refused() -> None:
     assert VERDICT.version_refused(None) is False
     assert VERDICT.version_refused("version must be 1") is False
     assert VERDICT.version_refused([None, 3]) is False
+
+
+def test_a_parser_refusal_is_the_second_door_into_the_same_state(tmp_path: Path) -> None:
+    """A round-1 bounded review found the guard keyed on the WORDING of one check rather
+    than on the condition that check detects.
+
+    `simple_skill_adapter_lib` answers a parser refusal with
+    `data=infer_repo_defaults(...)` and `errors=[parse_failure_error(exc)]` — the same
+    "nothing declared is honored" state a refused version leaves, reached by a different
+    door. Before this, `version: !!int 9` (one token added to the very input the version
+    guard refuses) walked past every consumer guard, and the pre-repair harm was
+    reproduced at exit 0 on `check_requested_review_gate`, `check_real_host_proof` and
+    `bootstrap_review`.
+
+    The messages must stay DISTINCT: the remediation for one is an adapter line and for
+    the other is a YAML document that would not parse, and sending an operator to edit
+    `version:` in a file the parser never read is the wrong instruction.
+    """
+    parse_errors = ["adapter could not be parsed: unsupported YAML construct in scalar: '!!int 9'"]
+    assert VERDICT.parse_refused(parse_errors) is True
+    assert VERDICT.version_refused(parse_errors) is False
+    assert VERDICT.declarations_unhonored(parse_errors) is True
+
+    message = VERDICT.unspeakable_version_message(
+        lambda _repo_root: {"errors": parse_errors, "data": {}},
+        tmp_path,
+        adapter_name="release-adapter.yaml",
+    )
+    assert message is not None
+    assert "could not be parsed" in message
+    assert "Fix the YAML" in message
+    assert "Set `version: 1`" not in message
+
+    version_message = VERDICT.unspeakable_version_message(
+        lambda _repo_root: {"errors": ["version must be 1"], "data": {}},
+        tmp_path,
+        adapter_name="release-adapter.yaml",
+    )
+    assert version_message is not None
+    assert "does not speak" in version_message
+    assert "Set `version: 1`" in version_message
+    assert "could not be parsed" not in version_message
+
+
+def test_an_ordinary_invalid_field_is_still_not_a_refusal() -> None:
+    """The polarity control on the widened predicate. `valid: false` from one bad field
+    beside fifteen honored ones is the case this module's docstring is explicit must NOT
+    refuse — widening the condition to `not valid` would refuse it, which is why the
+    condition is the two doors and not the flag."""
+    ordinary = ["requested_review_policy must be 'warn-if-unconfigured' or 'advisory-only'"]
+    assert VERDICT.declarations_unhonored(ordinary) is False
+    assert VERDICT.parse_refused(ordinary) is False
+    assert VERDICT.parse_refused(None) is False
+    assert VERDICT.parse_refused("adapter could not be parsed: x") is False

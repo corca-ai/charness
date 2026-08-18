@@ -54,12 +54,18 @@ cat $D/.charness/hitl/runtime/probe/state.yaml
 
 ## Base observable
 
+EXCERPTED, and labelled as such after a round-1 bounded review caught it presented as a
+verbatim capture: the capture command piped stdout through `head -5`, so the sixth key the
+CLI prints (`apply_mode: explicit-after-all-chunks`, the same value the written
+`state.yaml` carries below) was cut off. Nothing else is omitted.
+
 ```
 session_dir: .charness/hitl/runtime/probe
 scratchpad: .charness/hitl/runtime/probe/hitl-scratchpad.md
 state_file: .charness/hitl/runtime/probe/state.yaml
 queue_file: .charness/hitl/runtime/probe/queue.json
 require_explicit_apply: true
+[apply_mode: explicit-after-all-chunks — cut off by the capture's own `head -5`]
 exit 0
 ```
 
@@ -94,6 +100,14 @@ session an operator has to tell apart from a real one.
 
 ## Non-claims
 
+- **The guard this record measured keyed on ONE door, and a round-1 bounded review found a
+  second.** `version: !!int 9` — one token added to this record's own stimulus — makes the
+  parser refuse the document, and `simple_skill_adapter_lib` answers that with
+  `infer_repo_defaults(...)` plus a `parse_failure_error`, the same "nothing declared is
+  honored" state by a different door. At this record's `Head ref` that input still reached
+  the base behavior. It is closed in a later commit, by keying
+  `adapter_version_verdict` on the CONDITION rather than on one check's wording; the
+  base/head pair recorded above is unaffected and was not re-measured for the second door.
 - **This row's harm runs in the SAFE direction and the record does not pretend otherwise.**
   The read is `.get("require_explicit_apply", True)`, so an unspeakable version always
   lands on the STRICTER apply policy. It cannot weaken this control. What it does is

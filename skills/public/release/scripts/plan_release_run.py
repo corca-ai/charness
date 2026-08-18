@@ -189,9 +189,13 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     # asserting `package_id: <the temp directory's own name>` and two paths under
     # `packaging/` and `plugins/` that do not exist, with `blockers: []`.
     #
-    # Rows 2 and 3 already made this exit 1 by inheritance: `build_release_payload` is
-    # called before the three unconditional `data` reads (`update_instructions`,
-    # `release_record_path`, `drafted_notes_candidates`) and its `SystemExit` is not
+    # ROW 2 ALONE already made this exit 1 by inheritance -- row 3 cannot have
+    # contributed, and a round-1 bounded review caught this comment crediting it.
+    # `build_real_host_payload` is behind `if adapter.get("valid")` below AND wrapped in
+    # `except SystemExit`, so its refusal becomes a payload field, never an exit.
+    # `build_release_payload` is what refuses: it is called before the three
+    # unconditional `data` reads (`update_instructions`, `release_record_path`,
+    # `drafted_notes_candidates`) and its `SystemExit` is not
     # caught by the `except Exception` around it. That inheritance is REAL and was
     # measured, but it is positional -- reordering this function, or widening that
     # `except` to `BaseException`, restores the old behavior with no test failing. The

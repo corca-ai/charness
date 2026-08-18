@@ -65,18 +65,34 @@ def _run_review_commands(repo_root: Path, commands: list[str]) -> list[dict[str,
 
 
 def build_payload(repo_root: Path, *, artifact_path: Path | None = None, run_commands: bool = True) -> dict[str, Any]:
-    # GUARDED AT THE READ SITE, not at `main()`. This gate has THREE entrypoints -- its own
-    # CLI, and `plan_release_run` and `publish_release_cli`, which both import
-    # `build_payload` directly -- so a refusal in `main()` alone would leave two of them
-    # reading charness defaults. Guarding where the payload is read covers all three by
-    # construction rather than by remembering to repeat it.
+    # GUARDED AT THE READ SITE, not at `main()`. Three entrypoints reach this function:
+    # its own CLI, and `plan_release_run` and `publish_release_cli`, which both import it.
+    #
+    # A round-1 bounded review REFUTED the harm claim this comment used to carry ("a
+    # refusal in `main()` would leave two of them reading charness defaults") and it is
+    # corrected rather than quietly dropped. Under an unhonored declaration `adapter`
+    # is `valid: false`, and both importers already stop on that: `publish_release_cli`
+    # at `_valid_adapter_data`, whose docstring calls itself "the one place an invalid
+    # release adapter stops a run", and `plan_release_run` behind `if
+    # adapter.get("valid")`. So the count of importers measured to reach a charness
+    # default here is ZERO, not two. The read-site placement buys POSITIONAL
+    # INDEPENDENCE -- the refusal is a property of this function rather than of two
+    # callers' validity gates staying where they are -- which is a real property and a
+    # smaller claim than the one it replaces.
     #
     # WHAT IT COSTS TO BE UNGUARDED, measured on the real CLI rather than argued: with
     # `version: 9` and a declared `requested_review_commands`, this gate printed
     # `configuration status: not_configured` and `requested_review_commands is empty;
     # requested-review enforcement is advisory-only for this release`, exit 0. The repo
-    # declared a command and a `block-if-unconfigured` policy; the gate reported the
-    # OPPOSITE of what the repo said and downgraded its own enforcement to advisory.
+    # declared a command; the gate reported the OPPOSITE of what the repo said.
+    #
+    # A round-1 bounded review deleted the second half of that narrative, which used to
+    # add "and a `block-if-unconfigured` policy ... downgraded its own enforcement to
+    # advisory". `block-if-unconfigured` is not a value this schema accepts -- see
+    # `resolve_adapter`, which validates against exactly `{warn-if-unconfigured,
+    # advisory-only}` -- so that clause described a configuration no repo can hold. The
+    # measured half is the whole finding.
+    #
     # Falling back to a charness default here is not the conservative arm -- it is a
     # charness-chosen answer wearing the repo's name, on the surface that gates a publish.
     refusal = _adapter_version_verdict.unspeakable_version_message(

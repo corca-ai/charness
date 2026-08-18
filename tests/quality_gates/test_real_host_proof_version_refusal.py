@@ -78,11 +78,16 @@ def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path) -> None:
     "importer", ["plan_release_run", "publish_release_cli", "publish_release_plan"]
 )
 def test_every_importer_of_build_payload_inherits_the_guard(tmp_path: Path, importer: str) -> None:
-    """The call-site coverage this row's probe record claims.
+    """Each importer's BOUND SYMBOL carries the guard — which is less than call-site
+    coverage, and a round-1 bounded review was right to say so.
 
-    All three re-export `build_payload` as `build_real_host_payload`, so a refusal in
-    `main()` would have covered one entrypoint and left three. The guard is inside the
-    read site, which covers them by construction rather than by remembering to repeat it.
+    All three re-export `build_payload` as `build_real_host_payload`, and this asserts the
+    object each of them bound refuses. It does NOT drive any importer's own code path. For
+    two of the three that gap is empty (they stop earlier, at
+    `publish_release_cli._valid_adapter_data`). For `plan_release_run` it is not: its call
+    is behind `if adapter.get("valid")` and inside `except SystemExit`, which would demote
+    a refusal to a payload field — so the planner is covered by its OWN guard, pinned in
+    `test_release_planner_version_refusal.py`, not by this test.
     """
     from tests.script_main import load_script_module
 
