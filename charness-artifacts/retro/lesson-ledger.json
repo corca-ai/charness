@@ -1547,6 +1547,46 @@
       "lesson_id": "graduation-is-proposal",
       "outcome": "changed-an-action",
       "anchor": "The quality record recommends graduating changed-line-proof-before-broad-quality THROUGH record_contract_graduation_proposal.py with its two-evidence-session floor, rather than writing the rule into the always-loaded contract directly — which is where the recommendation would have gone without the lesson, since two anchored cost sessions looked sufficient to just ship it."
+    },
+    {
+      "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-detector-blind-class-unstated",
+      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
+      "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Wrote the BLIND CLASS section into check_adapter_consumer_classification.py's module docstring BEFORE its first acceptance test, and it named the limit a reviewer later confirmed (cannot tell a load-bearing check from a mention). Otherwise I would have written the gate and its tests from one mental model and met that limit in review, as the HTML guard did over three rounds."
+    },
+    {
+      "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-green-test-is-not-covered-line",
+      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
+      "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "When the changed-line proof named retro_output_dir_lib.py:77, I ran coverage and read the missing-lines report instead of trusting the passing test; the read showed 77 covered and 78 not, which is what let me commit honestly. Otherwise I would have recorded 'test added, proof green' on a line I had not measured."
+    },
+    {
+      "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
+      "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran prepush_focused_changed_line_coverage.py immediately after each of five slice commits and before run-quality.sh, every time. Otherwise the broad lane would have run first and each uncovered-line discovery would have cost a full broad rerun, which is the four reruns the lesson records."
+    },
+    {
+      "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-keyword-in-prose-is-a-directive",
+      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
+      "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "lesson_id": "keyword-in-prose-is-a-directive",
+      "outcome": "changed-an-action",
+      "anchor": "Scanned the push range's stored commit messages for close-keyword grammar and ran prepush_close_keyword_guard.py --range before pushing, specifically because my messages and the rewritten handoff both name #629/#628/#608/#528. Otherwise I would have pushed a range whose prose mentions four issue ids without checking whether the host reads any of them as a directive."
+    },
+    {
+      "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-bar-recorded-as-prose",
+      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
+      "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "changed-an-action",
+      "anchor": "Gave the census gate's 'guarded' verdict a STRUCTURAL witness (the file must reference adapter_version_verdict) instead of trusting the written reason, and said in the failure text that the other four verdicts are prose. Otherwise all five verdicts would have been unverifiable strings and the strongest one would have been the cheapest to claim falsely."
     }
   ],
   "lessons": {
@@ -1838,10 +1878,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -3,
-      "score_count": 9,
+      "score_total": -2,
+      "score_count": 10,
       "outcome_counts": {
-        "changed-an-action": 3,
+        "changed-an-action": 4,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -1883,10 +1923,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 2,
-      "score_count": 2,
+      "score_total": 3,
+      "score_count": 3,
       "outcome_counts": {
-        "changed-an-action": 2,
+        "changed-an-action": 3,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2018,10 +2058,10 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 4,
-      "score_count": 6,
+      "score_total": 5,
+      "score_count": 7,
       "outcome_counts": {
-        "changed-an-action": 5,
+        "changed-an-action": 6,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
@@ -2048,10 +2088,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 2,
-      "score_count": 8,
+      "score_total": 3,
+      "score_count": 9,
       "outcome_counts": {
-        "changed-an-action": 5,
+        "changed-an-action": 6,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,
@@ -2168,10 +2208,10 @@
     "keyword-in-prose-is-a-directive": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "transition_id": "seed-keyword-in-prose-is-a-directive",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,

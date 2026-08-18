@@ -3,7 +3,7 @@
 ## Current Focus
 
 - `2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861` was opened by a prior session and never claimed by a retro. (source: `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`)
-- A handoff pickup that took three named items — a bump-rationale field on the release record, two unbound record claims bound to executed checks, and an adapter-derived retro prefix — and then spent most of its length on five critique rounds over its own output. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`)
+- A handoff pickup that started as one named residual and became a contract change across every adapter resolver, a consumer census gate, and an issue-closeout pass. (source: `charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md`)
 
 ## Repeat Traps
 
@@ -48,4 +48,5 @@
 - `charness-artifacts/retro/2026-08-16-session-retro.md`
 - `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`
 - `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`
+- `charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md`
 - `charness-artifacts/retro/2026-08-18-session-retro.md`

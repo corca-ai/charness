@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-18",
-  "source_artifact_count": 532,
-  "candidate_count": 2155,
+  "source_artifact_count": 533,
+  "candidate_count": 2163,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1528,6 +1528,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:4175dc809580",
+      "kind": "current_focus",
+      "lesson": "A handoff pickup that started as one named residual and became a contract change across every adapter resolver, a consumer census gate, and an issue-closeout pass.",
+      "normalized_key": "a handoff pickup that started as one named residual and became a contract change",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+          "date": "2026-08-18",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "A handoff pickup that started as one named residual and became a contract change across every adapter resolver, a consumer census gate, and an issue-closeout pass."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c12b73a4bb82",
       "kind": "current_focus",
       "lesson": "A handoff pickup that took three named items — a bump-rationale field on the release record, two unbound record claims bound to executed checks, and an adapter-derived retro prefix — and then spent most of its length on five critique rounds over its own output.",
@@ -1606,6 +1632,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:fd3041478724",
+      "kind": "next_improvement",
+      "lesson": "add `--impact <loader-symbol>` to the consumer census so it answers \"who reads this producer\" BEFORE a shared output contract changes, and move `mutate -> sync -> verify -> publish` to `enumerate-consumers -> mutate -> sync -> verify -> publish` for shared-producer changes.",
+      "normalized_key": "add impact loader symbol to the consumer census so it answers who reads this",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "add `--impact <loader-symbol>` to the consumer census so it answers \"who reads this producer\" BEFORE a shared output contract changes, and move `mutate -> sync -> verify -> publish` to `enumerate-consumers -> mutate -> sync -> verify -> publish` for shared-producer changes."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6d469012c306",
       "kind": "next_improvement",
       "lesson": "before adding a gate, grep the surface for a comment that already declined it. Two of this session's blockers were decisions the repo had deliberated and recorded, one of them a comment one function from the edit.",
@@ -1654,6 +1706,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "`critique_enforcement_scope.PACKET_ABSENT_VALUES` omits `blocked`, the value `charness:critique` teaches for an honestly skipped packet, so writing the taught value demands SHAs for a packet just declared absent. Structural pattern: a validator and its own skill disagreeing on a vocabulary. Triggering instance(s): this session's critique artifact. Destination: issue."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:ba34804aba47",
+      "kind": "next_improvement",
+      "lesson": "every probe that will support a close, a release, or a handoff claim states its stimulus verbatim with provenance, and runs on the pre-fix baseline before HEAD; when base and HEAD agree, report \"this probe measured nothing\" rather than its output.",
+      "normalized_key": "every probe that will support a close a release or a handoff claim states",
+      "recurrence_class": "probe-stimulus-from-model-not-source",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "every probe that will support a close, a release, or a handoff claim states its stimulus verbatim with provenance, and runs on the pre-fix baseline before HEAD; when base and HEAD agree, report \"this probe measured nothing\" rather than its output."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:83c23081fd91",
+      "kind": "next_improvement",
+      "lesson": "give the census a `no-increase` seam — it prints the accepted-risk count and compares it to nothing, so a 38th accepted row lands green, and four of its five verdicts are editable by the party reporting them.",
+      "normalized_key": "give the census a no increase seam it prints the accepted risk count and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "give the census a `no-increase` seam — it prints the accepted-risk count and compares it to nothing, so a 38th accepted row lands green, and four of its five verdicts are editable by the party reporting them."
         }
       ]
     },
@@ -1710,6 +1814,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:3b8a57dbf08d",
+      "kind": "next_improvement",
+      "lesson": "the census must express more than one defect class per file, or seed rows that carry two classes will be repaid wrongly. Destination: folded into the goal below.",
+      "normalized_key": "the census must express more than one defect class per file or seed rows",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the census must express more than one defect class per file, or seed rows that carry two classes will be repaid wrongly. Destination: folded into the goal below."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:bbb84e7ca398",
       "kind": "next_improvement",
       "lesson": "when a hook or handoff prints a helper command, check whether the spelled copy is the target repo's own before running it verbatim; the provenance guard exists on write paths but the declare path proved reachable through the installed copy.",
@@ -1762,6 +1892,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:cec40e47558c",
+      "kind": "repeat_trap",
+      "lesson": "Four broad-lane and standing-lane reruns paid for a flaky test that is not mine, and two gate registrations (timing-layer table, runner fixture stub) were discovered by failure rather than by reading the surface I was joining.",
+      "normalized_key": "four broad lane and standing lane reruns paid for a flaky test that is",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Four broad-lane and standing-lane reruns paid for a flaky test that is not mine, and two gate registrations (timing-layer table, runner fixture stub) were discovered by failure rather than by reading the surface I was joining."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:a5cf47ba2c5b",
       "kind": "repeat_trap",
       "lesson": "Planner/scaffold disagreement: `plan_retro_run.py` routes today's second retro to `-second.md` while `scaffold_retro_artifact.py` routes to a session-id-suffixed name. Score events already cited the planner's name, so this artifact follows the planner.",
@@ -1784,6 +1940,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Planner/scaffold disagreement: `plan_retro_run.py` routes today's second retro to `-second.md` while `scaffold_retro_artifact.py` routes to a session-id-suffixed name. Score events already cited the planner's name, so this artifact follows the planner."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8b1190a9e029",
+      "kind": "repeat_trap",
+      "lesson": "The cost was not rework — each was caught. The cost was that I told the user \"verified\" twice before a distinct observer had read anything, and one of those reports was wrong.",
+      "normalized_key": "the cost was not rework each was caught the cost was that i told",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The cost was not rework — each was caught. The cost was that I told the user \"verified\" twice before a distinct observer had read anything, and one of those reports was wrong."
         }
       ]
     },
@@ -1836,6 +2018,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The quality record paid three shrink-to-fit cycles** against the 140-line budget plus two advisory-marker grammar cycles (`prose review result:` must open the physical line; evidence markers are matched on the bullet's FIRST line only). The validator reports all rule violations in one pass, but each length trim was still a separate edit-validate loop."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b965b9e76b3a",
+      "kind": "repeat_trap",
+      "lesson": "**Three of my own measurements were wrong, and all three share one generator**: the probe's stimulus came from my model of the mechanism rather than from the source that defines the claim. `#528` was probed with `deliberately_absent` as a YAML list when the vocabulary is a mapping, so it measured the unfixed baseline and I reported \"half the issue is still open\" to the user as a fact. `#628` was probed with `--title \"a different cohort\"` when the reported case is the scaffold run with no arguments; under the reported conditions one family is still broken. Round 2 found I had guarded one of two entrypoints causing a harm my own guard comment described in words.",
+      "normalized_key": "three of my own measurements were wrong and all three share one generator the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "latest_source_date": "2026-08-18",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+          "date": "2026-08-18",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Three of my own measurements were wrong, and all three share one generator**: the probe's stimulus came from my model of the mechanism rather than from the source that defines the claim. `#528` was probed with `deliberately_absent` as a YAML list when the vocabulary is a mapping, so it measured the unfixed baseline and I reported \"half the issue is still open\" to the user as a fact. `#628` was probed with `--title \"a different cohort\"` when the reported case is the scaffold run with no arguments; under the reported conditions one family is still broken. Round 2 found I had guarded one of two entrypoints causing a harm my own guard comment described in words."
         }
       ]
     },
