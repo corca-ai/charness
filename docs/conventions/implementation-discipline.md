@@ -132,11 +132,17 @@ the root instruction file but still apply to Charness maintenance work.
   - a SHAPE or family that no literal name expresses — the adapter-loader family is
     the live case —
     `python3 scripts/check_adapter_consumer_classification.py --repo-root . --list-consumers`.
-    Measured 2026-08-19 and recorded so the choice is not re-derived: the loader
-    shape matches 27 distinct names on this tree, so asking it literally is 27 calls,
-    and one of them (`load_adapter`) returns 443 references dominated by prose in
-    artifacts. The shape query is one call over 121 real call sites. Both commands
-    print what they CANNOT see; read that before treating a list as complete.
+    Why the split, measured rather than asserted — and recounted by these same two
+    commands, so no figure is pinned here to go stale. Asking the loader SHAPE
+    literally means one call per spelling, and each answer spans far more files than
+    a reader will read — run
+    `python3 scripts/what_reads_this.py --repo-root . --symbol load_adapter --detail`
+    to see the current breadth, and note it is mostly source, not prose. The shape
+    query is a single call, and `--list-consumers` prints its own breadth today. Pass
+    `--detail` when the KIND matters: without it a consumer that ASSERTS on a value is
+    reported only as a per-file count
+    ([#672](https://github.com/corca-ai/charness/issues/672)). Both commands print what
+    they CANNOT see; read that before treating a list as complete.
 - The edit-time half of that discipline — assert a scripted replace landed, grep
   for a superseded number — lives with the rest of claim fidelity in
   [operating-contract.md](./operating-contract.md) *Critique Discipline*.

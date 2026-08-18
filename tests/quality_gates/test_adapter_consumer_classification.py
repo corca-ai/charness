@@ -287,9 +287,10 @@ def test_list_consumers_answers_the_shape_question_in_one_call() -> None:
 
     Two surfaces own two halves of that question and this is the shape half.
     `what_reads_this.py` owns a LITERAL name and cannot express a shape -- measured on
-    this tree, `_is_adapter_loader_name` matches 27 distinct loader names, so asking it
-    literally is 27 calls, one of which alone returns 443 references dominated by prose.
-    This is one call over the real call sites, and it is not a new capability:
+    this tree, `_is_adapter_loader_name` matches ~27 distinct loader names, so asking it
+    literally is many calls, one of which (`load_adapter`) alone returns 446 references
+    across 157 files, dominated by SOURCE rather than prose (96 source, 38 test, 19 doc).
+    This is one call over the classified files, and it is not a new capability:
     `consumer_files()` already did the work and simply had no command surface.
     """
     result = subprocess.run(

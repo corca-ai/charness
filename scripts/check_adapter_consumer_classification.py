@@ -254,7 +254,18 @@ LIST_CONSUMERS_BLIND_CLASS = (
     "literal and parsing no YAML itself, is invisible here",
     "this enumerates FILES, not call sites: a file with one guarded and one unguarded call "
     "site appears once, and which of its sites are guarded is not answered",
-    "a consumer added since the last scan of a path outside SCAN_ROOTS is invisible",
+    f"only {' and '.join(SCAN_ROOTS)}/ are scanned, and only *.py within them: a consumer "
+    "elsewhere in the repo, or a non-Python one (a shell gate reading an adapter) inside "
+    "them, is invisible",
+    "rule 2 requires a YAML call from a hand-enumerated name list, so a file holding an "
+    "adapter-file literal and parsing it under any other spelling (`yaml.load(...)`, a "
+    "module-local reader) is invisible -- the same enumerate-the-names shape rule 1 "
+    "deliberately avoids",
+    "files matching EXCLUDED_NAMES/EXCLUDED_SUFFIXES are unclassified BY CONSTRUCTION and "
+    "never appear here; the compensating control is "
+    "tests/quality_gates/test_adapter_version_reconciliation.py",
+    "a loader reached through an ALIASED import or getattr does not match the AST rule, so "
+    "its file can be absent from this list entirely",
 )
 
 
@@ -263,11 +274,18 @@ def _list_consumers(repo_root: Path) -> int:
 
     `#599`'s question has two halves and they belong to two surfaces. `what_reads_this.py`
     owns a LITERAL name and answers it well. It cannot express a shape, and the gap is not
-    a matter of taste: measured on this tree, `_is_adapter_loader_name` matches 27 distinct
-    loader names, so the shape question via `--symbol` is 27 calls -- and one of them,
-    `load_adapter`, returns 443 references across 5970 files, overwhelmingly prose in
-    artifacts. The same question here is one call returning 121 files, every one holding a
-    real adapter-payload call site.
+    a matter of taste: measured on this tree, `_is_adapter_loader_name` matches ~27 distinct
+    loader names -- the predicate over-matches deliberately, so a human guessing spellings
+    would try fewer -- and one of them, `load_adapter`, returns 446 references across 157
+    files (96 source, 38 test, 19 doc, 4 config). That is a real answer and a wide one, for
+    one name of ~27. The same question here is one call returning 121 files, each holding at
+    least one adapter-payload call site.
+
+    A first version of this docstring said those references were "overwhelmingly prose in
+    artifacts". That was false -- they are dominated by source -- and it had been forwarded
+    into a convention doc, a test, and the goal artifact before a bounded review recounted
+    it. Corrected here rather than quietly dropped, because publishing an unverified
+    measurement is the exact class the goal that produced this command exists to stop.
 
     So this is not a new capability. `consumer_files()` already did the work; it had no
     command surface, which is why the question kept being answered by grep.

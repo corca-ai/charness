@@ -32,17 +32,21 @@ the pre-implementation critique passes.
   entrypoint, and a `consolidated` contract hole; all are repaired and pinned. Round-1
   repairs plus the severity downgrade are ACCEPTED-UNREVIEWED under the two-round cap.
   Full ledger in `## Slice Log`.
-- Current slice: 3 — measure `what_reads_this.py`'s residual for the adapter-loader shape.
-- Current slice intent: answer Open Question 3 on the surface that owns it, name the
-  enumeration step in implementation-discipline's Change Discipline, and disposition `#599`.
-  Paying down debt rows is slice 5 and is NOT in this intent.
-- Next action: slice 3. GROUNDWORK ALREADY MEASURED, so do not re-derive it —
-  `what_reads_this.py` takes only literal-name targets (`--symbol`/`--path`/`--config-key`)
-  and cannot express the adapter-loader SHAPE (`_is_adapter_loader_name`: underscore-stripped,
-  contains `CALL_TOKEN`, starts with `CALL_PREFIXES`), while the census already ships
-  `consumer_files()` at module level, unprefixed and importable, doing exactly that AST
-  enumeration. The answer is therefore documentation plus an implementation-discipline step,
-  NOT a new capability — cheaper than the goal assumed.
+- Slice 3 — who reads this producer: **COMPLETE at `66116e14a` + the review fold.** One
+  bounded round (the two-round trigger was not met: `--list-consumers` is read-only and no
+  verdict logic changed). The round caught this slice publishing a FALSE measurement into
+  four surfaces; corrected and recounted. `#599` stays OPEN — see `## User Acceptance`.
+- Current slice: 4 — the census gate's own contract.
+- Current slice intent: multi-class rows, the no-increase seam over the full per-verdict
+  vector with a GENERATED baseline, and the AST witness trial with its falsifier
+  pre-registered and its stop rule armed. Paying rows down is slice 5, not this.
+- Next action: slice 4. Read `## Operator Decision Queue` FIRST — the contestable seeded
+  verdict pair (`reconcile_usage_episodes_host_hooks.py` vs `quality_label_universe.py`)
+  has a revisit trigger of "before slice 4 ratchets any baseline", and ratcheting over a
+  mis-seeded row freezes the mis-seeding. Fixed Decision 8's multi-class premise is already
+  verified against the file: `scripts/build_retro_lesson_selection_index.py` carries BOTH
+  classes (line 55 `load_adapter` unchecked, line 33 a raw `.agents/retro-adapter.yaml`
+  read).
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line
@@ -249,10 +253,16 @@ first would reproduce the 2026-08-18 error 45 times.
   **ANSWERED in slice 3, by measurement rather than by taste.** The two surfaces own two
   halves and neither should grow the other's. `what_reads_this.py` owns a LITERAL name;
   it cannot express a shape, and the gap is quantified: `_is_adapter_loader_name` matches
-  **27 distinct loader names** on this tree, so the shape question via `--symbol` is 27
-  calls — and one of them, `load_adapter`, returns **443 references across 5970 files**,
-  overwhelmingly prose in artifacts. The census answers the same question in **one call
-  over 121 real call sites**. So the census owns the shape; a shape/family target kind on
+  **~27 distinct loader names** on this tree (the predicate over-matches deliberately, so a
+  human guessing spellings would try fewer), and one of them, `load_adapter`, returns
+  **446 references across 157 files — 96 source, 38 test, 19 doc, 4 config**. The census
+  answers the same question in **one call over 121 files**, each holding at least one call
+  site. **Correction, from slice 3's bounded review:** the first version of this bullet said
+  those references were "overwhelmingly prose in artifacts", which was false — they are
+  dominated by source — and the wrong figure had already been forwarded into a convention
+  doc, a docstring and a test before a recount caught it. Publishing an unverified
+  measurement is the class this goal exists to stop, committed by the slice that shipped
+  the enumeration command. So the census owns the shape; a shape/family target kind on
   `what_reads_this.py` was NOT built, and neither was a new helper export —
   `consumer_files()` already did the work and simply had no command surface. Shipped as
   `check_adapter_consumer_classification.py --list-consumers`, read-only, printing its own
@@ -319,6 +329,17 @@ first would reproduce the 2026-08-18 error 45 times.
   phase-scoped grant arrives, or the residual does not close, acceptance records
   `real close: not demonstrated` as a stated non-claim rather than substituting a fixture or
   reaching for a different issue.
+  **RESULT after slice 3: `real close: not demonstrated`.** Both fallback conditions hold,
+  and either alone is sufficient. (1) No phase-scoped grant for an issue close exists in
+  this run. (2) The residual does NOT fully close: a bounded review judged `#599`
+  NOT-CLOSEABLE because two of the four grouping kinds it names are not kinds the tool
+  emits, and `#599` says the grouping is the point. What DID close is the fatal half —
+  both inverse traps it names now report their real consumers
+  (`listed_skill_ids` → `scripts/eval_setup.py`; the Cautilus fixture →
+  `glob-consumption: 4`), verified by running both queries. The readability half is filed
+  as [#672](https://github.com/corca-ai/charness/issues/672) with acceptance written.
+  `#599` stays OPEN with its residual named. Closing it on a partial answer is the move
+  this goal was chartered to stop, and the review said so in those words.
 - The probe record is REQUIRED by the issue-closeout rung-1 floor and by the release
   publication floor — not merely produced. Proven by running each floor against a carrier
   missing the field and showing it refuses.
@@ -553,6 +574,20 @@ Slices 1 and 2 are complete, each with the two bounded review rounds the proof-s
 - Off-goal findings: None filed. Two facts recorded for later slices: the release PUBLICATION floor named in the frame (`publish_release_preflight.py`) is not where this landed — the wiring is the release CLOSE-ISSUE boundary, and a publish that closes no issue owes no record, which is defensible but is not what the acceptance sentence says. And the standing lane covers the matrix at one cell; the whole-grid observation is `slow_corpus` and the end-to-end gate is `release_only`, both deselected there.
 - Lessons carried forward: The wiring reproduced the very class it answers, TWICE, and both were found by mechanisms this repo already had rather than by me. The closeout floor matrix read `inert` for `close-with-comment` — a file whose own comments name that asymmetry three times, mine being the fourth instance of a floor landing on `verify_closeout` and never reaching the carrier that mutates GitHub directly. And `ensure_release_issues_closed` reaches `gh issue close` with resume able to skip the preflight entirely; its own comment says so, beside an authorization call re-run for exactly that reason. Second lesson: a repair round is itself a slice that can carry the class it repairs — round 2 of slice 1 proved that, and round 1 of slice 2 proved it again when my `issues?\b` mirror dropped the conjunct the source it mirrored had documented. The cheap detector both times was asking 'what is the CHEAPEST mutation that still gets past this?' — for a path gate the answer was a SHORTER typo, for a status vocabulary it was an ordinary English word.
 - Metrics: Migration cost measured rather than estimated: 67 failing tests across 15 files, from a starting point of zero. That figure is what the operator's REVIEW-severity ruling was made against. No host token/time telemetry is claimed.
+
+### Slice 3: Slice 3 — who reads this producer
+
+- Objective: Answer Open Question 3 on the surface that owns it, name the enumeration step in implementation-discipline's Change Discipline, and disposition `#599`. The slice's own thesis: measure which surface owns the question before building anything on either.
+- Why this approach: Two surfaces own two halves and neither should grow the other's. `what_reads_this.py` owns a LITERAL name and answers it well; it cannot express a SHAPE. The census already shipped `consumer_files()` at module level, unprefixed and importable, doing exactly that AST enumeration — it simply had no command surface, which is why the question kept being answered by grep. So the slice built a flag and a doc bullet, not a capability.
+- Commits: `66116e14a` (the enumeration command, the Change Discipline step, three tests), plus the review-fold commit.
+- What changed: `scripts/check_adapter_consumer_classification.py` gains `--list-consumers` (read-only; it does NOT run the gate, because a preventing query that first fails the thing it precedes is one nobody runs) and `LIST_CONSUMERS_BLIND_CLASS`. `docs/conventions/implementation-discipline.md` Change Discipline names both commands and how to choose. `tests/quality_gates/test_adapter_consumer_classification.py` gains three tests. Filed `#672` for the residual.
+- Alternatives rejected: Rejected: a shape/family target kind on `what_reads_this.py` — the census already answers shapes and giving the literal-name tool a second axis would put one question on two surfaces. Rejected: exporting `consumer_files()` as an importable helper — it already is one; the gap was a command, not an export. Rejected in the review fold: keeping the measured figures in the convention doc, because the regenerable-facts gate is right that a pinned count goes stale in place; the commands that recount them are named instead.
+- Targeted verification: 10258 standing tests. Three new tests pin the one-call answer, the blind-class output, and the read-only property. `check_documented_command_flags` now has a real documented invocation for the new flag and passes on it — previously it passed VACUOUSLY over this slice's surfaces. Changed-line proof `clean`. The two inverse-trap cases `#599` names were run, not read: `listed_skill_ids` surfaces its assertion consumer `scripts/eval_setup.py`, and the Cautilus fixture surfaces `glob-consumption: 4`.
+- Test duplication pressure: Two new dup families, both the repo-wide argparse `main()` convention this flag joined rather than duplication it introduced; classified with the note that the invariant tail which COULD be shared already is (`run_adapter_cli`, for the resolvers whose mains are genuinely identical).
+- Critique: ONE bounded round. The two-round rule's trigger — a slice changing VERDICT LOGIC on a proof surface — was NOT met: `--list-consumers` is read-only and the gate's `check()` is untouched, so no verdict moved. The round returned NOT-CLOSEABLE on `#599` and, more importantly, caught the slice publishing a FALSE MEASUREMENT. I had written that `load_adapter` returns '443 references across 5970 files, overwhelmingly prose in artifacts' and forwarded it into a convention doc, a module docstring, a test docstring and the goal artifact. Recounted with the tool's own `--detail`: 446 references across 157 files, of which 96 are source, 38 test, 19 doc and 4 config. Dominated by SOURCE, not prose. The conclusion survives — asking a shape literally is impractically wide — but the characterisation was wrong and it was already in four places. The review also found the printed blind class understating itself: `YAML_CALLS` is a hand-enumerated name list (the same enumerate-the-names shape rule 1 deliberately avoids), `EXCLUDED_NAMES`/`EXCLUDED_SUFFIXES` files are unclassified by construction, an aliased import or `getattr` defeats the AST rule, and the SCAN_ROOTS line conflated two limits while claiming a 'last scan' that does not exist. All five are now printed beside the list.
+- Off-goal findings: `#672` filed: `what_reads_this.py` reports a consumer that ASSERTS on a value with the same kind as a passing mention, and `_symbol_kind` lacks the `lookup` arm its `_config_key_hits` sibling has. Acceptance is written into the issue. Two smaller residuals folded in: no AST-scanned-literal unscanned-surface line, and the aliased-import blind case.
+- Lessons carried forward: The slice that shipped an enumeration command published an unverified measurement about that enumeration — this goal's own class, committed by the goal's own work, and caught only because a reviewer recounted rather than read. The cheap detector is the one the regenerable-facts gate already encodes: a number in a durable doc either carries the command that recounts it or does not belong there. Second: `#599` is NOT closed and stays open with its residual named. Its fatal half — the false zero — is genuinely closed and was verified by running both inverse traps; its readability half is not, and `#599` said the grouping was the point. Closing it on the half that landed is the move this goal exists to stop.
+- Metrics: One bounded review round rather than two, because the trigger was not met — recorded so a later reader does not read a missing second round as an omission. No host token/time telemetry is claimed.
 
 ## Context Sources
 
