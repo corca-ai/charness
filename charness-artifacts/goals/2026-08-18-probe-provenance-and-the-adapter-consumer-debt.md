@@ -9,15 +9,25 @@ the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current disposition: real draft/backlog awaiting activation. The pre-implementation
-  critique ran on 2026-08-18 (four bounded angles plus a counterweight pass) and its
-  blockers are folded below; reshape before activating if the acceptance boundary changes.
-- Current slice: none. Slice 1 begins at activation.
-- Current slice intent: not started. Once active, this names the reviewable-intent unit in
-  progress and the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent.
-- Next action: activate with
-  `/goal @charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md`.
+- Current disposition: ACTIVE, activated 2026-08-18. The pre-implementation critique ran
+  on 2026-08-18 (four bounded angles plus a counterweight pass) and its blockers are
+  folded below; reshape mid-run only through `## Discuss Before Activation`.
+- Precondition DISCHARGED (logged outside the Slice Plan, not this goal's work): the
+  standing-lane flake is fixed at `8527936fd`. `test_acquire_closes_session_on_sigterm_mid_render`
+  now waits on the child's process state instead of a 10s wall deadline. Proven on the
+  bound observable, not by a green run: against a child reaching its `open` line at 12s,
+  HEAD~ raises `AssertionError` at 10.0s and HEAD passes at 12.1s. The standing lane is
+  green at this tree (10156 passed, 72.6s), recorded as context, never as the proof.
+  There is now NO expected-red baseline: any red in the standing lane stops the run.
+- Current slice: 1 — the probe record.
+- Current slice intent: build the probe record library and its resolver — quoted stimulus
+  provenance, a base/HEAD pair bound to a named observable, in `boundary_probe_lib`'s
+  typed vocabulary, with the no-base and no-build arms answered and written back into
+  Fixed Decision 2. Wiring it into its two readers is slice 2 and is NOT in this intent.
+- Next action: answer Open Question 1's arms, then land `scripts/probe_record_lib.py`
+  with its tests, then the slice-1 fresh-eye round.
+- Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
+  count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line
   proof immediately after each slice commit; fresh-eye review at slice boundaries; broad
   and release-lane proof at the bundle boundary and at closeout.
@@ -94,6 +104,22 @@ first would reproduce the 2026-08-18 error 45 times.
   change behavior on the convenient path while the reported case stayed broken. When base
   and HEAD agree on the bound observable, the honest output is that the probe measured
   nothing, never the result.
+  **Per-arm disposition, measured in slice 1 and answering Open Question 1.** The rule
+  survives, but only because the arms are dispositioned separately — collapsing them is
+  how "base and HEAD differ" gets satisfied by a base that merely crashed. The arm alone
+  does not decide; it is read against the claim's KIND (`change` / `existence` /
+  `refusal`). Shipped in `scripts/probe_record_lib.py` and enumerated there:
+
+  | Base arm | Disposition |
+  | --- | --- |
+  | `base-observed` | Compare. Differ → `evaluated`. Agree → `not-established` ("measured nothing"). Either capture empty → `not-established`. |
+  | `base-absent` | Establishes an `existence` claim ("this surface now refuses"). Refuses a `change` claim: with no surface at base there is no prior behavior for a change to be measured against. |
+  | `base-unrunnable` | Always `not-established`. **A base that could not run is not a base that disagreed** — this is the `#528` shape, where a crashed base "differs" from HEAD for a reason that has nothing to do with the fix. |
+  | `base-not-applicable` | Reserved for a `refusal` claim. On any behavioral claim it is refused outright, because it is otherwise the escape hatch: declare no base applies while still claiming a flip. |
+
+  A `refusal` claim resolves `not-configured` — the vocabulary's word for "there is
+  genuinely no question here" — and never `evaluated`, so a recorded refusal cannot be
+  read as evidence of a repair it never claimed. It owes a `Refusal reason:`.
 - **A probe that measured nothing says so in the repo's existing typed vocabulary.**
   `scripts/boundary_probe_lib.py` already owns `evaluated` / `not-configured` /
   `not-established` plus `undetermined_reasons`, and carries an explicit comment that a
@@ -128,9 +154,16 @@ first would reproduce the 2026-08-18 error 45 times.
 
 ## Open Questions
 
-- Does the base-vs-HEAD rule survive contact with probes whose base does not build, or whose
-  fix is a new file with no base at all? Slice 1 answers before the rule is wired anywhere,
-  and writes the answer back into Fixed Decision 2 as a named disposition per arm.
+- ~~Does the base-vs-HEAD rule survive contact with probes whose base does not build, or
+  whose fix is a new file with no base at all?~~ **ANSWERED in slice 1**, before the rule
+  was wired anywhere. It survives, conditioned on the claim kind; the per-arm disposition
+  table is folded into Fixed Decision 2 and shipped in `scripts/probe_record_lib.py`.
+  Two things the answering turned up that the question did not anticipate, both now
+  mechanism rather than prose: a quote cited against a LIVING document rots the moment
+  that document is edited, so a record may pin `Source revision:` and the quote is then
+  read through `git show`; and a field value the markdown gate forces to WRAP was
+  silently truncated to its first line, so an indented continuation is now part of the
+  grammar. Both were found by writing the first real record, not by review.
 - Is `safe-checks-errors` decidable by AST? **Baseline correction: it has no mechanical
   witness today at all.** `VERDICTS` maps it to `None`; only `guarded` carries a marker, and
   the gate's own failure text says so. The trial's falsifier is pre-registered: a witness

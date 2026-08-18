@@ -4675,6 +4675,13 @@
       "note": "the `Optional size budget:` block repeated across the three per-skill references/adapter-contract.md files (debug, quality, handoff). Per-skill adapter contracts are SELF-CONTAINED by construction -- a consuming repo reads exactly one of them and must find the field's semantics, minimum, unbounded-above rule and refusal behaviour there, not behind a cross-skill link. The genuinely divergent half is already written per file: handoff's block documents CONTENT-line counting and states explicitly that its `max_content_lines` is not interchangeable with debug/quality's `max_artifact_lines`, and only the debug/quality pair share the raw-file-line wording. Same class as the sequence-discipline.md per-skill reference copies already accepted in this file.",
       "reviewed_at": "2026-08-18",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "f1aa7272dbfe0a06",
+      "note": "idiom-sized `def <name>(...) -> bool:` + `if not <arg>: return False` guard-clause shape shared by four unrelated predicates: `probe_record_lib._contains_block` (an empty quote must never report containment, because the empty-slice identity would otherwise verify a record for having quoted nothing), `check_cli_skill_surface._relevant_change` (an empty changed set means EVERYTHING is relevant -- the opposite polarity), `vendored_path_lib.is_vendored_relative` (no configured prefixes means nothing is vendored), and `dup_ratchet_git`'s own helper. The matched tokens are the def line and a two-token early return; the guarded conditions, the argument meanings, and even the SENSE of the empty case differ per member. There is nothing to extract but `if not x: return False`, and routing four independently-owned predicates through a shared helper would couple them while hiding which one owns its empty-case decision. Surfaced as new because slice 1 of the probe-provenance goal added `_contains_block`; the other three members are untouched.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
