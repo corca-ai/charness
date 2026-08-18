@@ -11,19 +11,27 @@
     },
     "scripts/boundary_probe_lib.py": {
       "verdict": "safe-checks-errors",
-      "reason": "resolve_probe_state (lines 218-289) loads the critique adapter at line 232, then at line 270 calls _adapter_lib.unreadable_reasons(adapter), which reads adapter.get('errors') (adapter_lib.py:420) — this list includes the 'version must be N' refusal string — and at lines 271-288 downgrades the probe state to PROBE_NOT_ESTABLISHED with an explanatory undetermined_reason whenever the adapter is unreadable and no hit was already found."
+      "reason": "resolve_probe_state (lines 218-289) loads the critique adapter at line 232, then at line 270 calls _adapter_lib.unreadable_reasons(adapter), which reads adapter.get('errors') (adapter_lib.py:420) \u2014 this list includes the 'version must be N' refusal string \u2014 and at lines 271-288 downgrades the probe state to PROBE_NOT_ESTABLISHED with an explanatory undetermined_reason whenever the adapter is unreadable and no hit was already found."
     },
     "scripts/build_debug_seam_risk_index.py": {
       "verdict": "accepted-risk-unguarded",
       "reason": "_load_debug_output_dir (lines 38-55) calls module.load_adapter(repo_root) at line 42 and reads adapter['data']['output_dir'] at line 52 with no reference to 'errors' or 'valid' anywhere in the file (grep confirms zero occurrences of either key)."
     },
     "scripts/build_retro_lesson_selection_index.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "_load_retro_paths (lines 49-57) calls module.load_adapter(repo_root) at line 55 and reads adapter['data']['output_dir']/['summary_path'] at line 57 with no check of 'errors' or 'valid' anywhere in the file (grep confirms zero occurrences)."
+      "verdicts": [
+        {
+          "verdict": "accepted-risk-unguarded",
+          "reason": "_load_retro_paths (lines 49-57) calls module.load_adapter(repo_root) at line 55 and reads adapter['data']['output_dir']/['summary_path'] at line 57 with no check of 'errors' or 'valid' anywhere in the file (grep confirms zero occurrences)."
+        },
+        {
+          "verdict": "no-version-validation",
+          "reason": "_load_yamlish_retro_paths (lines 32-51) reads `.agents/retro-adapter.yaml` DIRECTLY at line 33 -- not through the resolver -- and never reconciles a version, so there is no `errors` for anyone to check on that path. This is a SECOND defect class in the same file, needing a different repair from the unguarded `load_adapter` call at line 55: wire it onto the shared resolver rather than adding a check it has nothing to check. Filed as a second verdict because under one-verdict-per-file it was recorded as `accepted-risk-unguarded` alone, and paying that down would have left this half live under a row reading `done`."
+        }
+      ]
     },
     "scripts/capability_catalog_sources.py": {
       "verdict": "safe-checks-errors",
-      "reason": "Its own load_adapter (lines 208-233) calls validate_adapter_version(raw, {}, errors) at line 220 and only applies any declared field (repo/language/trusted_skill_roots/prefer_local_first/allow_external_registry) inside the `if not errors:` block at lines 221-232 — this reimplements the declared_fields_after_version_check pattern inline, so on a refused version `defaults` keeps the file's own built-in defaults dict (line 209) rather than any repo-declared value, and build_inventory (line 238+) consumes that already-correct payload."
+      "reason": "Its own load_adapter (lines 208-233) calls validate_adapter_version(raw, {}, errors) at line 220 and only applies any declared field (repo/language/trusted_skill_roots/prefer_local_first/allow_external_registry) inside the `if not errors:` block at lines 221-232 \u2014 this reimplements the declared_fields_after_version_check pattern inline, so on a refused version `defaults` keeps the file's own built-in defaults dict (line 209) rather than any repo-declared value, and build_inventory (line 238+) consumes that already-correct payload."
     },
     "scripts/capture_issue_source.py": {
       "verdict": "safe-checks-errors",
@@ -215,7 +223,7 @@
     },
     "skills/public/critique/scripts/prepare_packet.py": {
       "verdict": "safe-checks-errors",
-      "reason": "Line 78-81: `adapter = load_adapter(repo_root); if not adapter['valid']: yaml_output.emit_yaml({'ok': False, 'error': 'critique adapter invalid', 'adapter': adapter}); return 1` — refuses before using adapter data further; critique_adapter_lib.load_adapter sets valid = not errors (scripts/critique_adapter_lib.py:182,273) so a version refusal is included."
+      "reason": "Line 78-81: `adapter = load_adapter(repo_root); if not adapter['valid']: yaml_output.emit_yaml({'ok': False, 'error': 'critique adapter invalid', 'adapter': adapter}); return 1` \u2014 refuses before using adapter data further; critique_adapter_lib.load_adapter sets valid = not errors (scripts/critique_adapter_lib.py:182,273) so a version refusal is included."
     },
     "skills/public/critique/scripts/scaffold_critique_artifact.py": {
       "verdict": "accepted-risk-unguarded",
@@ -243,11 +251,11 @@
     },
     "skills/public/handoff/scripts/chunked_routing_agentic_policy.py": {
       "verdict": "safe-checks-errors",
-      "reason": "load_chunk_policy_config() at lines 84-92: `adapter = resolve.load_adapter(repo_root); if not adapter.get('valid', False): config['_adapter_report'] = {...}; return config` — degrades to defaults but surfaces the invalid report rather than silently applying declared-looking values; handoff resolve_adapter.load_adapter -> load_simple_adapter runs declared_fields_after_version_check (scripts/simple_skill_adapter_lib.py:169) so version refusal sets valid=False here."
+      "reason": "load_chunk_policy_config() at lines 84-92: `adapter = resolve.load_adapter(repo_root); if not adapter.get('valid', False): config['_adapter_report'] = {...}; return config` \u2014 degrades to defaults but surfaces the invalid report rather than silently applying declared-looking values; handoff resolve_adapter.load_adapter -> load_simple_adapter runs declared_fields_after_version_check (scripts/simple_skill_adapter_lib.py:169) so version refusal sets valid=False here."
     },
     "skills/public/handoff/scripts/chunked_routing_issue_config.py": {
       "verdict": "safe-checks-errors",
-      "reason": "load_issue_source_config() at lines 72-75: `adapter = _load_sibling('resolve_adapter').load_adapter(repo_root); if adapter.get('valid') is False: config['enabled'] = False; return config, adapter_report(adapter)` — disables the issue source entirely and returns a report rather than silently using a defaulted config as if declared."
+      "reason": "load_issue_source_config() at lines 72-75: `adapter = _load_sibling('resolve_adapter').load_adapter(repo_root); if adapter.get('valid') is False: config['enabled'] = False; return config, adapter_report(adapter)` \u2014 disables the issue source entirely and returns a report rather than silently using a defaulted config as if declared."
     },
     "skills/public/handoff/scripts/chunked_routing_issue_source.py": {
       "verdict": "safe-checks-errors",
@@ -451,7 +459,7 @@
     },
     "skills/public/retro/scripts/check_auto_trigger.py": {
       "verdict": "safe-checks-errors",
-      "reason": "`no_config_payload` (line 112) and `build_payload` (line 318) both call `adapter_unreadable_reasons(adapter)`, which is `scripts.adapter_lib.unreadable_reasons` and starts from `adapter.get(\"errors\")` (adapter_lib.py:420) — so a version-refusal error forces `unreadable` truthy, `intentional_empty=False`, `configuration_status=\"adapter-unreadable\"` (line 164-165), `state=not-established`, and exit code `UNDETERMINED_EXIT=3` instead of a silent `triggered:false`."
+      "reason": "`no_config_payload` (line 112) and `build_payload` (line 318) both call `adapter_unreadable_reasons(adapter)`, which is `scripts.adapter_lib.unreadable_reasons` and starts from `adapter.get(\"errors\")` (adapter_lib.py:420) \u2014 so a version-refusal error forces `unreadable` truthy, `intentional_empty=False`, `configuration_status=\"adapter-unreadable\"` (line 164-165), `state=not-established`, and exit code `UNDETERMINED_EXIT=3` instead of a silent `triggered:false`."
     },
     "skills/public/retro/scripts/persist_retro_artifact.py": {
       "verdict": "guarded",
@@ -463,7 +471,7 @@
     },
     "skills/public/retro/scripts/prepare_packet.py": {
       "verdict": "safe-checks-errors",
-      "reason": "Line 85: `if not adapter[\"valid\"]: yaml_output.emit_yaml({...\"error\": \"retro adapter invalid\"...}); return 1` — this precedes the line-99 `output_dir = repo_root / adapter[\"data\"].get(\"output_dir\", ...)` used to write the packet, so a version-refused adapter never reaches the write."
+      "reason": "Line 85: `if not adapter[\"valid\"]: yaml_output.emit_yaml({...\"error\": \"retro adapter invalid\"...}); return 1` \u2014 this precedes the line-99 `output_dir = repo_root / adapter[\"data\"].get(\"output_dir\", ...)` used to write the packet, so a version-refused adapter never reaches the write."
     },
     "skills/public/retro/scripts/refresh_recent_lessons.py": {
       "verdict": "guarded",
@@ -471,7 +479,7 @@
     },
     "skills/public/retro/scripts/scaffold_retro_artifact.py": {
       "verdict": "accepted-risk-unguarded",
-      "reason": "`payload_for` (lines 206-207) does `adapter = load_adapter(repo_root); output_dir = str(adapter[\"data\"][\"output_dir\"])` with no check of `adapter[\"valid\"]` or `adapter[\"errors\"]` anywhere in the file (already on the ALREADY-KNOWN-UNGUARDED list; re-confirmed by reading — this is the file `plan_retro_run.py` also calls unguarded)."
+      "reason": "`payload_for` (lines 206-207) does `adapter = load_adapter(repo_root); output_dir = str(adapter[\"data\"][\"output_dir\"])` with no check of `adapter[\"valid\"]` or `adapter[\"errors\"]` anywhere in the file (already on the ALREADY-KNOWN-UNGUARDED list; re-confirmed by reading \u2014 this is the file `plan_retro_run.py` also calls unguarded)."
     },
     "skills/public/setup/scripts/inspect_repo.py": {
       "verdict": "safe-checks-errors",
@@ -483,7 +491,7 @@
     },
     "skills/support/web-fetch/scripts/route_public_fetch_routes.py": {
       "verdict": "accepted-risk-unguarded",
-      "reason": "`resolve_github_mode` (lines 184-202) does `payload = module.load_adapter(repo_root)` then `provider = payload.get(\"data\", {}).get(\"gather_provider\") or {}` with no check of `payload.get(\"valid\")` or `payload.get(\"errors\")` — only a bare `except Exception` around the import/call, which a version-refused adapter does not raise (load_adapter returns a normal dict with valid=False)."
+      "reason": "`resolve_github_mode` (lines 184-202) does `payload = module.load_adapter(repo_root)` then `provider = payload.get(\"data\", {}).get(\"gather_provider\") or {}` with no check of `payload.get(\"valid\")` or `payload.get(\"errors\")` \u2014 only a bare `except Exception` around the import/call, which a version-refused adapter does not raise (load_adapter returns a normal dict with valid=False)."
     }
   }
 }

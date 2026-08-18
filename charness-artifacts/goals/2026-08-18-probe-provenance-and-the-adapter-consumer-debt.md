@@ -223,6 +223,16 @@ first would reproduce the 2026-08-18 error 45 times.
   `accepted-risk-unguarded` and `no-version-validation` — which would have been repaid under
   the wrong remedy. Baseline pinned before the schema changes: 45 rows = 37 + 8, counted at
   goal creation under one-verdict-per-file, summing with the other classes to 121.
+  **SHIPPED in slice 4, and the vector moved — recorded here so the movement is not read as
+  the debt growing.** The schema now accepts `{"verdicts": [{verdict, reason}, ...]}` beside
+  the single-verdict form, which is left unchurched for the ~120 rows that use it; each
+  class carries its OWN reason, because a shared one would describe at most half the row.
+  The one measured multi-class row is re-seeded, so `no-version-validation` reads **9, not
+  8**, and the gate now prints **122 classifications across 121 files** with the multi-class
+  row named explicitly. **No new defect was found and no row was repaired: the same file is
+  now counted under both classes it always carried.** Debt is therefore 37 + 9 = 46
+  classifications across 45 files. Counting per verdict rather than per file is deliberate —
+  collapsing them would hide exactly the row this schema exists to make sayable.
 - **The no-increase seam covers the full per-verdict vector, not `accepted-risk-unguarded`
   alone**, and its baseline is generated, never hand-edited beside the increase it would
   authorize. Anchoring on one count creates a cheaper exit than fixing code: relabel the row

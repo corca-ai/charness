@@ -257,7 +257,7 @@ def test_the_cli_exits_zero_and_totals_when_everything_is_classified(tmp_path: P
     )
 
     assert result.returncode == 0
-    assert "total classified: 1" in result.stdout
+    assert "total classifications: 1 across 1 file(s)" in result.stdout
     # No accepted-risk rows here, so the line must be absent rather than printed as zero:
     # a standing "ACCEPTED RISK: 0" trains the reader to skip the line that matters.
     assert "ACCEPTED RISK" not in result.stdout
@@ -274,9 +274,15 @@ def test_the_real_repo_is_fully_classified() -> None:
     # The accepted-risk count is REPORTED, never asserted at a number: pinning it here
     # would make paying the debt down fail this test, and pinning it as a ceiling would
     # invite raising the ceiling. The gate prints it on every run instead.
-    assert sum(counts.values()) == len(
-        json.loads((ROOT / GATE.MANIFEST_REL).read_text(encoding="utf-8"))["consumers"]
-    )
+    #
+    # The invariant is per-CLASSIFICATION now, not per-file: a row may declare more than
+    # one defect class, so the vector sums to the number of declared classifications and
+    # sits at or above the file count. Asserting equality with the file count was right
+    # under one-verdict-per-file and would now silently forbid the multi-class row.
+    rows = json.loads((ROOT / GATE.MANIFEST_REL).read_text(encoding="utf-8"))["consumers"]
+    declared_classifications = sum(len(GATE.row_verdicts(entry)) for entry in rows.values())
+    assert sum(counts.values()) == declared_classifications
+    assert declared_classifications >= len(rows)
 
 
 # --- `--list-consumers`: the enumeration that PREVENTS (#599) --------------------
@@ -331,3 +337,91 @@ def test_list_consumers_is_read_only_and_does_not_run_the_gate() -> None:
     )
     assert "adapter consumer classification:" not in result.stdout
     assert "ACCEPTED RISK" not in result.stdout
+
+
+# --- multi-class rows: a file may carry more than one defect class ---------------
+
+
+def test_a_file_may_carry_two_defect_classes(tmp_path: Path) -> None:
+    """The measured instance this schema exists for.
+
+    `build_retro_lesson_selection_index.py` calls the loader unguarded AND separately
+    reads an adapter yaml raw with no version reconciliation. Under one-verdict-per-file
+    it was filed as the first only, and paying that down would have left the second half
+    live under a row reading `done` -- the two classes need different repairs.
+    """
+    repo = _tree(
+        tmp_path,
+        {"scripts/two_classes.py": CALLS_LOADER},
+        {"scripts/two_classes.py": {"verdicts": [
+            {"verdict": "accepted-risk-unguarded", "reason": "unguarded loader call at line 2"},
+            {"verdict": "no-version-validation", "reason": "also reads the yaml raw elsewhere"},
+        ]}},
+    )
+    problems, counts = GATE.check(repo)
+    assert problems == [], problems
+    assert counts["accepted-risk-unguarded"] == 1
+    assert counts["no-version-validation"] == 1
+    # Counted PER VERDICT, so the vector sums above the file count rather than hiding one.
+    assert sum(counts.values()) == 2
+
+
+def test_the_single_verdict_shape_still_works_unchanged(tmp_path: Path) -> None:
+    # Almost every row uses it and this change deliberately does not churn them.
+    repo = _tree(
+        tmp_path,
+        {"scripts/one_class.py": CALLS_LOADER},
+        {"scripts/one_class.py": {"verdict": "accepted-risk-unguarded", "reason": "unguarded"}},
+    )
+    problems, counts = GATE.check(repo)
+    assert problems == []
+    assert counts == {"accepted-risk-unguarded": 1}
+
+
+def test_a_repeated_class_in_one_row_is_refused(tmp_path: Path) -> None:
+    # Saying the same thing twice inflates the count vector the gate reports as its
+    # running measure, which is the one number slice 5 is judged against.
+    repo = _tree(
+        tmp_path,
+        {"scripts/dup.py": CALLS_LOADER},
+        {"scripts/dup.py": {"verdicts": [
+            {"verdict": "accepted-risk-unguarded", "reason": "one"},
+            {"verdict": "accepted-risk-unguarded", "reason": "two"},
+        ]}},
+    )
+    problems, _ = GATE.check(repo)
+    assert any("more than once" in p for p in problems), problems
+
+
+def test_each_class_in_a_multi_class_row_owes_its_own_reason(tmp_path: Path) -> None:
+    # A shared reason would describe at most half the row.
+    repo = _tree(
+        tmp_path,
+        {"scripts/thin.py": CALLS_LOADER},
+        {"scripts/thin.py": {"verdicts": [
+            {"verdict": "accepted-risk-unguarded", "reason": "unguarded"},
+            {"verdict": "no-version-validation", "reason": "  "},
+        ]}},
+    )
+    problems, _ = GATE.check(repo)
+    assert any("carries no reason" in p for p in problems), problems
+
+
+def test_an_empty_verdicts_list_is_refused(tmp_path: Path) -> None:
+    repo = _tree(
+        tmp_path,
+        {"scripts/empty.py": CALLS_LOADER},
+        {"scripts/empty.py": {"verdicts": []}},
+    )
+    problems, _ = GATE.check(repo)
+    assert any("non-empty list" in p for p in problems), problems
+
+
+def test_the_real_repo_carries_the_measured_multi_class_row() -> None:
+    """The live assertion. `build_retro_lesson_selection_index.py` was verified against the
+    file before the schema changed: line 55 calls `load_adapter` with no `errors` check, and
+    line 33 reads `.agents/retro-adapter.yaml` raw. Both classes, one file."""
+    rows = json.loads((ROOT / GATE.MANIFEST_REL).read_text(encoding="utf-8"))["consumers"]
+    entry = rows["scripts/build_retro_lesson_selection_index.py"]
+    classes = {row["verdict"] for row in GATE.row_verdicts(entry)}
+    assert classes == {"accepted-risk-unguarded", "no-version-validation"}

@@ -171,6 +171,30 @@ def _reads_adapter_file_directly(tree: ast.AST) -> bool:
     return named and bool(_call_names(tree) & YAML_CALLS)
 
 
+def row_verdicts(entry: dict) -> list[dict]:
+    """The (verdict, reason) pairs a row declares, as a list of ONE OR MORE.
+
+    A FILE MAY CARRY MORE THAN ONE DEFECT CLASS, and the single-verdict schema this
+    replaces could not say so. Measured instance:
+    `scripts/build_retro_lesson_selection_index.py` calls `load_adapter` at line 55 and
+    reads the payload with no `errors` check (`accepted-risk-unguarded`) AND separately
+    reads `.agents/retro-adapter.yaml` raw at line 33 with no version reconciliation
+    (`no-version-validation`). Under one-verdict-per-file it was filed as the first only,
+    which would have paid it down under the wrong remedy -- the two classes need
+    different repairs, and the row would have read "done" with half of it live.
+
+    Two shapes, one normalized answer. `{"verdict", "reason"}` stays the form for the
+    single-class rows, which is almost all of them and which this change deliberately does
+    not churn; `{"verdicts": [{"verdict", "reason"}, ...]}` is the multi-class form. Each
+    class carries its OWN reason, because the reasons differ per class and a shared one
+    would describe at most half the row.
+    """
+    if "verdicts" in entry:
+        rows = entry["verdicts"]
+        return list(rows) if isinstance(rows, list) else []
+    return [{"verdict": entry.get("verdict"), "reason": entry.get("reason")}]
+
+
 def consumer_files(repo_root: Path) -> list[str]:
     """Files with at least one adapter-payload call site, as repo-relative posix paths."""
     found: set[str] = set()
@@ -219,18 +243,29 @@ def check(repo_root: Path) -> tuple[list[str], dict[str, int]]:
                 "Add a row saying what it does when the adapter's version was refused."
             )
             continue
-        verdict = entry.get("verdict")
-        if verdict not in VERDICTS:
-            problems.append(f"{rel}: verdict {verdict!r} is not one of {sorted(VERDICTS)}")
+        declared_rows = row_verdicts(entry)
+        if not declared_rows:
+            problems.append(f"{rel}: `verdicts` must be a non-empty list of {{verdict, reason}}")
             continue
-        if not (entry.get("reason") or "").strip():
-            problems.append(f"{rel}: verdict `{verdict}` carries no reason")
-        marker = VERDICTS[verdict]
-        if marker and marker not in (repo_root / rel).read_text(encoding="utf-8"):
-            problems.append(
-                f"{rel}: classified `{verdict}` but does not reference `{marker}`. "
-                "This is the one verdict with a structural witness; the others are prose."
-            )
+        seen: set[str] = set()
+        for row in declared_rows:
+            verdict = row.get("verdict")
+            if verdict not in VERDICTS:
+                problems.append(f"{rel}: verdict {verdict!r} is not one of {sorted(VERDICTS)}")
+                continue
+            if verdict in seen:
+                # A repeated class is a row saying the same thing twice, which inflates the
+                # count vector this gate reports as its running measure.
+                problems.append(f"{rel}: declares verdict `{verdict}` more than once")
+            seen.add(verdict)
+            if not (row.get("reason") or "").strip():
+                problems.append(f"{rel}: verdict `{verdict}` carries no reason")
+            marker = VERDICTS[verdict]
+            if marker and marker not in (repo_root / rel).read_text(encoding="utf-8"):
+                problems.append(
+                    f"{rel}: classified `{verdict}` but does not reference `{marker}`. "
+                    "This is the one verdict with a structural witness; the others are prose."
+                )
 
     for rel in sorted(set(declared) - set(live)):
         problems.append(
@@ -238,10 +273,17 @@ def check(repo_root: Path) -> tuple[list[str], dict[str, int]]:
             "A stale row makes the census report coverage it no longer has."
         )
 
+    # COUNTED PER VERDICT, not per file, now that a file may carry more than one class.
+    # So the vector sums to at least the file count and the two numbers are reported
+    # separately -- collapsing them would hide exactly the multi-class row this schema
+    # exists to make sayable.
     counts: dict[str, int] = {}
     for rel in live:
-        verdict = (declared.get(rel) or {}).get("verdict", "UNCLASSIFIED")
-        counts[verdict] = counts.get(verdict, 0) + 1
+        entry = declared.get(rel)
+        rows = row_verdicts(entry) if entry else [{"verdict": "UNCLASSIFIED"}]
+        for row in rows or [{"verdict": "UNCLASSIFIED"}]:
+            verdict = row.get("verdict") or "UNCLASSIFIED"
+            counts[verdict] = counts.get(verdict, 0) + 1
     return problems, counts
 
 
@@ -330,7 +372,10 @@ def main() -> int:
         for problem in problems:
             print(f"FAIL {problem}", file=sys.stderr)
         return 1
-    print(f"  total classified: {sum(counts.values())}")
+    live_files = len(consumer_files(repo_root))
+    print(f"  total classifications: {sum(counts.values())} across {live_files} file(s)")
+    if sum(counts.values()) != live_files:
+        print(f"  ({sum(counts.values()) - live_files} file(s) carry more than one defect class)")
     return 0
 
 
