@@ -39,10 +39,15 @@ find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
 validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
+resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 
+# The DEFAULT ceiling; a consuming repo raises or lowers it with `max_artifact_lines`
+# in its quality adapter. Both this gate and the scaffold's `size_budget.max_lines`
+# forecast resolve it through `resolve_adapter_line_budget`, so they cannot disagree.
 MAX_ARTIFACT_LINES = 140
+LINE_BUDGET_FIELD = "max_artifact_lines"
 REQUIRED_SECTIONS = (
     "## Scope",
     "## Surface Contract Review",
@@ -579,7 +584,13 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
 
     checks = (
         _header,
-        lambda: validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="quality artifact"),
+        lambda: validate_max_lines(
+            lines,
+            max_lines=resolve_adapter_line_budget(
+                load_adapter, resolved_repo_root, field=LINE_BUDGET_FIELD, default=MAX_ARTIFACT_LINES
+            ),
+            artifact_label="quality artifact",
+        ),
         lambda: validate_date_line(lines),
         lambda: validate_date_channel_coherence(path, lines, resolved_repo_root),
         lambda: validate_section_order(normalized_recommended_heading_lines(lines), REQUIRED_SECTIONS),

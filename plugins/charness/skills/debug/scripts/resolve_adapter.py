@@ -29,10 +29,16 @@ _scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_s
 )
 load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_contract
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+optional_int = _scripts_adapter_lib_module.optional_int
 optional_string = _scripts_adapter_lib_module.optional_string
 validate_adapter_version = _scripts_adapter_lib_module.validate_adapter_version
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
+# Raw FILE lines, matching what `validate_debug_artifact.py` counts. Named for the
+# artifact rather than for "content" because handoff's neighbouring budget excludes
+# blank lines, required headings and the whole `## References` block -- one shared
+# `max_lines` name would have meant two different measurements.
+LINE_BUDGET_FIELD = "max_artifact_lines"
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
 
@@ -58,6 +64,14 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         value = optional_string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
+
+    # Absent means "use the validator's default"; the field is written into `validated`
+    # only when the repo declared one, so the validator's `data.get` fallback stays the
+    # single place the default number lives. `minimum=1` because a ceiling of 0 refuses
+    # every possible artifact, including the scaffold's own stub.
+    max_artifact_lines = optional_int(data.get(LINE_BUDGET_FIELD), LINE_BUDGET_FIELD, errors, minimum=1)
+    if max_artifact_lines is not None:
+        validated[LINE_BUDGET_FIELD] = max_artifact_lines
 
     configured_artifact_class = data.get("artifact_class")
     if configured_artifact_class is None:

@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
+from scripts.adapter_field_application import apply_optional_fields
 from scripts.adapter_lib import (
     load_yaml_file_report,
-    optional_string,
     parse_failure_error,
     uninterpreted_warnings,
     validate_adapter_version,
@@ -13,6 +13,8 @@ from scripts.adapter_lib import (
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
+# `(field_name, minimum)` pairs a skill opts into; see `validate_simple_adapter_data`.
+IntFields = tuple[tuple[str, int], ...]
 ValidateAdapter = Callable[[dict[str, Any], Path], tuple[dict[str, Any], list[str], list[str]]]
 InferDefaults = Callable[[Path], dict[str, Any]]
 ExtraPayload = Callable[[dict[str, Any], dict[str, Any], bool], dict[str, Any]]
@@ -144,7 +146,7 @@ def infer_simple_adapter_defaults(repo_root: Path, *, output_dir: str) -> dict[s
 
 
 def validate_simple_adapter_data(
-    data: dict[str, Any], *, repo_root: Path, output_dir: str
+    data: dict[str, Any], *, repo_root: Path, output_dir: str, int_fields: IntFields = ()
 ) -> tuple[dict[str, Any], list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -154,10 +156,12 @@ def validate_simple_adapter_data(
     if errors:
         return validated, errors, warnings
 
-    for field in STRING_FIELDS:
-        value = optional_string(data.get(field), field, errors)
-        if value is not None:
-            validated[field] = value
+    # Numeric fields are OPT-IN per skill, unlike STRING_FIELDS. Nine skills share this
+    # loader; accepting a numeric field for all of them would advertise a knob that only
+    # one skill's gate reads, and a repo that set it on the other eight would get a
+    # clean `valid: true` for a setting nothing enforces -- the silent-typo class this
+    # loader's own uninterpreted-line report exists to close.
+    apply_optional_fields(data, validated, errors, string_fields=STRING_FIELDS, int_fields=int_fields)
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
@@ -173,6 +177,7 @@ def load_simple_adapter(
     default_output_dir: str,
     artifact_class: str = "history",
     missing_warnings: tuple[str, ...],
+    int_fields: IntFields = (),
 ) -> dict[str, Any]:
     if artifact_class not in ARTIFACT_CLASSES:
         raise ValueError(f"artifact_class must be one of: {', '.join(sorted(ARTIFACT_CLASSES))}")
@@ -183,7 +188,7 @@ def load_simple_adapter(
 
     def validate(data: dict[str, Any], root: Path) -> tuple[dict[str, Any], list[str], list[str]]:
         validated, errors, warnings = validate_simple_adapter_data(
-            data, repo_root=root, output_dir=default_output_dir
+            data, repo_root=root, output_dir=default_output_dir, int_fields=int_fields
         )
         validated["artifact_class"] = artifact_class
         if errors:

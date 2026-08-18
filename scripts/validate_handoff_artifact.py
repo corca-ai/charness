@@ -82,7 +82,17 @@ validate_title = _scripts_artifact_validator_module.validate_title
 # spend: the operator's stated position is that a one-line link plus well-placed
 # content should still come in far under it, and the recurring fix remains spilling
 # durable detail to its owning artifact rather than filling the new headroom.
+# The DEFAULT ceiling. A consuming repo raises or lowers it with `max_content_lines`
+# in `.agents/handoff-adapter.yaml`; read it through `resolved_max_content_lines`, not
+# directly, so the gate and the run planner's forecast cannot disagree.
 MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
+LINE_BUDGET_FIELD = _handoff_resolve_adapter.LINE_BUDGET_FIELD
+
+
+def resolved_max_content_lines(repo_root: Path) -> int:
+    return _scripts_artifact_validator_module.resolve_adapter_line_budget(
+        load_adapter, repo_root, field=LINE_BUDGET_FIELD, default=MAX_CONTENT_LINES
+    )
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 # Addresses are not claims: an artifact path or release URL may legitimately carry
 # a version, and the doc-link gate already keeps repo paths resolvable. All three
@@ -391,13 +401,20 @@ def _display_path(path: Path, repo_root: Path) -> str:
         return str(path)
 
 
-def validate_max_content_lines(lines: list[str]) -> None:
+def validate_max_content_lines(lines: list[str], max_lines: int | None = None) -> None:
+    """`max_lines` None means the built-in default, NOT "unlimited".
+
+    Defaulted rather than required for the same reason `repo_root` is on the caller:
+    this validator ships to consumers, and a required parameter would break every
+    existing call site on upgrade.
+    """
+    ceiling = MAX_CONTENT_LINES if max_lines is None else max_lines
     counted = content_lines(lines)
-    if len(counted) <= MAX_CONTENT_LINES:
+    if len(counted) <= ceiling:
         return
     raise ValidationError(
-        f"handoff artifact has {len(counted)} content lines (limit {MAX_CONTENT_LINES}); "
-        f"cut ~{len(counted) - MAX_CONTENT_LINES}. Blank lines, the required `##` headings, "
+        f"handoff artifact has {len(counted)} content lines (limit {ceiling}); "
+        f"cut ~{len(counted) - ceiling}. Blank lines, the required `##` headings, "
         "and the whole `## References` block are NOT counted, so trimming formatting or "
         "shortening reference links will not help — drop state that does not change the "
         "next operator's first action, or spill durable detail to its owning artifact."
@@ -418,7 +435,7 @@ def validate_handoff_artifact(
             title_predicate=lambda line: line.startswith("# ") and "handoff" in line.lower(),
             error_message="handoff artifact must start with a `# ... Handoff` heading",
         ),
-        lambda: validate_max_content_lines(lines),
+        lambda: validate_max_content_lines(lines, resolved_max_content_lines(root)),
         lambda: validate_exact_h2_sections(
             lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS
         ),

@@ -127,14 +127,23 @@ def validator_command(repo_root: Path) -> str:
     return _scaffold_lib.validator_command(repo_root=repo_root, script_file=__file__, script_names=VALIDATOR_SCRIPT_NAMES)
 
 
-def max_content_lines() -> int:
+def max_content_lines(adapter: dict | None = None) -> int:
     """The validator's own ceiling, read rather than transcribed.
 
     A second copy of `78` here would be a number that goes stale silently the
     next time an operator re-bases the budget -- the class this repo's
     `regenerable-facts` gate exists for.
+
+    An adapter that declares `max_content_lines` overrides it, resolved with the same
+    rule the gate applies: a forecast that disagreed with the gate would send the
+    author to write-to-fit against a number that then refuses them. `adapter` stays
+    optional so the no-adapter callers keep the default.
     """
-    return int(_budget.DEFAULT_MAX_CONTENT_LINES)
+    default = int(_budget.DEFAULT_MAX_CONTENT_LINES)
+    declared = (adapter or {}).get("data", {}).get(_resolve_adapter.LINE_BUDGET_FIELD)
+    if isinstance(declared, bool) or not isinstance(declared, int) or declared < 1:
+        return default
+    return declared
 
 
 def invocation_subject_key(artifact_path: str) -> str:
@@ -164,7 +173,7 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
         "title": resolved_title,
         "template": render_template(title=resolved_title, date_text=date_text),
         "validator_command": validator_command(repo_root),
-        "size_budget": {"max_lines": max_content_lines(), "guidance": SIZE_GUIDANCE},
+        "size_budget": {"max_lines": max_content_lines(adapter), "guidance": SIZE_GUIDANCE},
     })
     return _scaffold_lib.with_subject_identity_facts(
         payload,

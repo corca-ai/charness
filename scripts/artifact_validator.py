@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib
 import re
 import sys
 from collections.abc import Callable, Sequence
@@ -44,93 +43,54 @@ H2_RE = re.compile(r"^##\s+.+$")
 
 
 
-def _scaffold_rel(artifact_type: str) -> str | None:
-    """Repo-relative scaffold script that owns an artifact type's shape.
-
-    The owning scaffold is declared once, in
-    `check_artifact_surface_preflight.REGISTRY`; read it from there rather than
-    re-declaring the mapping here. Imported lazily so a passing run never pays
-    for it, and any import failure degrades to "no hint" — a hint must never
-    change a verdict. The scaffold must exist in this layout (an installed
-    consumer repo may not ship the skill tree), otherwise the command would name
-    a file the author cannot run.
-    """
-    scripts_dir = Path(__file__).resolve().parent
-    try:
-        if str(scripts_dir) not in sys.path:
-            sys.path.insert(0, str(scripts_dir))
-        registry = importlib.import_module("check_artifact_surface_preflight").REGISTRY
-    except Exception:
-        return None
-    for surface in registry:
-        if surface.artifact_type == artifact_type and surface.scaffold:
-            if (scripts_dir.parent / surface.scaffold).is_file():
-                return surface.scaffold
-    return None
-
-
-def _skill_id(artifact_type: str) -> str | None:
-    """The skill that owns an artifact type, DERIVED from its scaffold path.
-
-    `skills/public/<id>/scripts/scaffold_*.py` already declares the owner, so a
-    second mapping here would be a registry that rots independently of the one it
-    duplicates -- the failure this module's `_scaffold_rel` docstring already
-    refuses. Anything not under `skills/public/` yields no name rather than a
-    guessed one.
-    """
-    scaffold = _scaffold_rel(artifact_type)
-    if scaffold is None:
-        return None
-    parts = Path(scaffold).parts
-    if len(parts) < 3 or parts[0] != "skills" or parts[1] != "public":
-        return None
-    return f"charness:{parts[2]}"
-
-
-def scaffold_hint(artifact_type: str) -> str | None:
-    """One trailing hint line naming the scaffold an author should start from.
-
-    Every artifact rule is a shape the owning scaffold already emits, so a
-    violation report that names only WHAT is wrong leaves the author to
-    rediscover the contract one failed run at a time. This names the command
-    instead. Hint only: no verdict, requirement, or exit code depends on it.
-    """
-    scaffold = _scaffold_rel(artifact_type)
-    if scaffold is None:
-        return None
-    # The SKILL is named alongside the scaffold, because they teach different
-    # halves and an author who follows only the scaffold gets only one. The
-    # scaffold emits shape; the skill body holds the disciplines an author
-    # otherwise meets one refusal at a time -- what the size budget charges for,
-    # why an owner must sit ON its entry, why paraphrasing a second artifact
-    # beside an owner still fills the budget. A session that hand-authored a
-    # handoff hit exactly those three, in a repo whose skill already documented
-    # all of them, because nothing in this refusal pointed at the skill.
-    skill = _skill_id(artifact_type)
-    invoke = f" Load the `{skill}` skill for the authoring discipline." if skill else ""
-    return (
-        f"hint: start from the owning scaffold instead of hand-authoring — "
-        f'`python3 {scaffold} --repo-root . --title "<title>"` emits a conforming '
-        f"stub plus the write path and validator command.{invoke}"
-    )
-
-
-def report_validation_failure(message: str, *, artifact_type: str) -> int:
-    """Print a validator's violations, then the scaffold hint ONCE per run.
-
-    Returns the failing exit code so callers can `return`/`raise SystemExit` it.
-    """
-    print(message, file=sys.stderr)
-    hint = scaffold_hint(artifact_type)
-    if hint:
-        print(hint, file=sys.stderr)
-    return 1
+# The violation-reporting surface (the scaffold hint and the failure printer) lives in
+# its own module; re-exported here so every validator keeps its single import point.
+_violation_report = import_repo_module(__file__, "scripts.artifact_violation_report")
+_scaffold_rel = _violation_report._scaffold_rel
+_skill_id = _violation_report._skill_id
+scaffold_hint = _violation_report.scaffold_hint
+report_validation_failure = _violation_report.report_validation_failure
 
 
 def read_lines(path: Path) -> list[str]:
     if not path.exists():
         raise ValidationError(f"missing artifact `{path}`")
     return path.read_text(encoding="utf-8").splitlines()
+
+
+def resolve_adapter_line_budget(
+    load_adapter: Callable[[Path], dict], repo_root: Path, *, field: str, default: int
+) -> int:
+    """The artifact's line ceiling as the CONSUMING repo declared it, else the default.
+
+    Every family that owns a ceiling resolves it through here, so a repo that raises
+    one gets the same behavior from the validator that enforces it and the scaffold
+    that forecasts it. The forecast is the point: a ceiling discovered only after
+    writing long is the wasted draft the issue reported.
+
+    Deliberately NOT keyed on the adapter's `valid` flag, for the reason
+    `_adapter_output_dir` records at length in the debug validator: a validator
+    populates the fields it could resolve even when an unrelated field failed, so
+    gating on `valid` would drop a perfectly good ceiling because of a typo'd
+    `repo`. A field the resolver REFUSED is absent from `data` -- the refusal is
+    reported by `resolve_adapter`, and falling back to the default here is the
+    conservative arm, never a silent honoring of the bad value.
+
+    The isinstance re-check is not redundant with the resolver: a consuming repo can
+    vendor a resolver older than its validator, and this module must not turn that
+    skew into a ceiling of `True`.
+    """
+    try:
+        data = load_adapter(repo_root).get("data") or {}
+    except Exception:
+        # An unreadable adapter is already reported by the caller's own artifact
+        # discovery; degrading to the default keeps the ceiling enforced rather than
+        # failing open, and never invents a number the repo did not declare.
+        return default
+    value = data.get(field)
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        return default
+    return value
 
 
 def validate_max_lines(

@@ -30,10 +30,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import artifact_validator  # noqa: E402
+import artifact_violation_report  # noqa: E402
 import check_doc_authoring_preflight as preflight  # noqa: E402
 import check_doc_links  # noqa: E402
 
-# --- artifact_validator: the scaffold hint must degrade, never raise -----------
+# --- artifact_violation_report: the scaffold hint must degrade, never raise ----
+# The hint machinery moved out of `artifact_validator` when that file hit its length
+# cap; these patch the OWNING module because monkeypatching a re-export leaves the
+# real callee untouched, which is a green test proving nothing.
 
 
 def test_scaffold_rel_returns_none_when_the_registry_import_fails(monkeypatch) -> None:
@@ -47,19 +51,19 @@ def test_scaffold_rel_returns_none_when_the_registry_import_fails(monkeypatch) -
     def boom(_name: str):
         raise ImportError("no registry here")
 
-    monkeypatch.setattr(artifact_validator.importlib, "import_module", boom)
-    assert artifact_validator._scaffold_rel("handoff") is None
+    monkeypatch.setattr(artifact_violation_report.importlib, "import_module", boom)
+    assert artifact_violation_report._scaffold_rel("handoff") is None
 
 
 def test_scaffold_hint_is_none_when_the_scaffold_is_unresolvable(monkeypatch) -> None:
-    monkeypatch.setattr(artifact_validator, "_scaffold_rel", lambda _t: None)
-    assert artifact_validator.scaffold_hint("handoff") is None
+    monkeypatch.setattr(artifact_violation_report, "_scaffold_rel", lambda _t: None)
+    assert artifact_violation_report.scaffold_hint("handoff") is None
 
 
 def test_report_validation_failure_still_exits_one_without_a_hint(monkeypatch, capsys) -> None:
     """The exit code is the verdict; the hint is decoration that may be absent."""
-    monkeypatch.setattr(artifact_validator, "_scaffold_rel", lambda _t: None)
-    assert artifact_validator.report_validation_failure("broken", artifact_type="nope") == 1
+    monkeypatch.setattr(artifact_violation_report, "_scaffold_rel", lambda _t: None)
+    assert artifact_violation_report.report_validation_failure("broken", artifact_type="nope") == 1
     err = capsys.readouterr().err
     assert "broken" in err
     assert "hint:" not in err
@@ -71,7 +75,7 @@ def test_scaffold_rel_puts_the_scripts_dir_on_sys_path(monkeypatch) -> None:
     Covers the branch by removing the entry first, so the insert line runs rather
     than being skipped by the `not in sys.path` check.
     """
-    scripts_dir = str(Path(artifact_validator.__file__).resolve().parent)
+    scripts_dir = str(Path(artifact_violation_report.__file__).resolve().parent)
     monkeypatch.setattr(sys, "path", [p for p in sys.path if p != scripts_dir])
     # handoff is a registered surface with a real scaffold in this layout.
     assert artifact_validator._scaffold_rel("handoff") is not None

@@ -45,7 +45,25 @@ try:
     _quality_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_quality_artifact")
     _MAX_ARTIFACT_LINES: int | None = int(_quality_validator.MAX_ARTIFACT_LINES)
 except Exception:
+    _quality_validator = None
     _MAX_ARTIFACT_LINES = None
+
+
+def _resolved_max_artifact_lines(adapter: dict) -> int | None:
+    """The ceiling THIS repo's adapter declares, else the validator default.
+
+    Resolved from the adapter payload `payload_for` already loaded, and through the
+    validator's own resolver: a forecast that disagreed with the gate would send the
+    author to write-to-fit against a number that then refuses them.
+    """
+    if _quality_validator is None or _MAX_ARTIFACT_LINES is None:
+        return None
+    return _quality_validator.resolve_adapter_line_budget(
+        lambda _repo_root: adapter,
+        Path("."),
+        field=_quality_validator.LINE_BUDGET_FIELD,
+        default=_MAX_ARTIFACT_LINES,
+    )
 
 # Budget guidance routes the run to write-to-fit instead of writing long then
 # trim-looping. It names the judgment-heavy sections that run largest in the real
@@ -248,9 +266,10 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     date_text = artifact_date.isoformat()
     resolved_title = default_title(title)
     subject_key = invocation_subject_key(title=title, subject=subject, date_text=date_text)
+    resolved_max_lines = _resolved_max_artifact_lines(adapter)
     size_budget = (
-        {"max_lines": _MAX_ARTIFACT_LINES, "guidance": SIZE_GUIDANCE}
-        if _MAX_ARTIFACT_LINES is not None
+        {"max_lines": resolved_max_lines, "guidance": SIZE_GUIDANCE}
+        if resolved_max_lines is not None
         else None
     )
     payload = _scaffold_lib.current_pointer_payload(

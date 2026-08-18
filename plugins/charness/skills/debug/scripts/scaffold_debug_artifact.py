@@ -29,7 +29,27 @@ try:
     _debug_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_debug_artifact")
     _MAX_ARTIFACT_LINES: int | None = int(_debug_validator.MAX_ARTIFACT_LINES)
 except Exception:
+    _debug_validator = None
     _MAX_ARTIFACT_LINES = None
+
+
+def _resolved_max_artifact_lines(adapter: dict) -> int | None:
+    """The ceiling THIS repo's adapter declares, else the validator default.
+
+    Resolved from the adapter payload already loaded by `payload_for` rather than by
+    re-reading it, and through the validator's own resolver rather than a second
+    `data.get`: a scaffold that forecast a different ceiling than the gate enforces
+    would send the author to write-to-fit against a number that then refuses them,
+    which is worse than publishing no budget at all.
+    """
+    if _debug_validator is None or _MAX_ARTIFACT_LINES is None:
+        return None
+    return _debug_validator.resolve_adapter_line_budget(
+        lambda _repo_root: adapter,
+        Path("."),
+        field=_debug_validator.LINE_BUDGET_FIELD,
+        default=_MAX_ARTIFACT_LINES,
+    )
 
 # The recurring overflow in real captures is ## Sibling Search (a rich structural
 # scan that enumerates many siblings). The budget guidance routes the run to the
@@ -301,9 +321,10 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     date_text = artifact_date.isoformat()
     resolved_title = default_title(title)
     subject_key = invocation_subject_key(title=title, subject=subject)
+    resolved_max_lines = _resolved_max_artifact_lines(adapter)
     size_budget = (
-        {"max_lines": _MAX_ARTIFACT_LINES, "guidance": SIZE_GUIDANCE}
-        if _MAX_ARTIFACT_LINES is not None
+        {"max_lines": resolved_max_lines, "guidance": SIZE_GUIDANCE}
+        if resolved_max_lines is not None
         else None
     )
     payload = _resolve_artifact_path.payload_for(

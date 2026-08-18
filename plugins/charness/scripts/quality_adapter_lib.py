@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file, optional_string, optional_string_list
+from scripts.adapter_lib import load_yaml_file, optional_int, optional_string, optional_string_list
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 from scripts.quality_bootstrap_absence import remove_nested_absences
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
@@ -69,16 +69,11 @@ def _float_value(value: Any, field: str, errors: list[str]) -> float | None:
     return None
 
 
-def _int_value(value: Any, field: str, errors: list[str]) -> int | None:
-    if value is None:
-        return None
-    if not isinstance(value, int) or isinstance(value, bool):
-        errors.append(f"{field} must be an integer")
-        return None
-    if value < 0:
-        errors.append(f"{field} must be greater than or equal to 0")
-        return None
-    return value
+def _int_value(value: Any, field: str, errors: list[str], *, minimum: int = 0) -> int | None:
+    # Delegates to the shared vocabulary rather than re-implementing it: this
+    # hand-rolled copy predated `optional_int` and is exactly the drift that made a
+    # numeric adapter field look like per-skill work instead of a missing primitive.
+    return optional_int(value, field, errors, minimum=minimum)
 
 
 def _artifact_path(output_dir: str) -> str:
@@ -171,6 +166,15 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     )
     if public_spec_implementation_ref_density_floor is not None:
         validated["public_spec_implementation_ref_density_floor"] = public_spec_implementation_ref_density_floor
+
+    # Raw FILE lines, matching what `validate_quality_artifact.py` counts -- named for
+    # the artifact rather than for "content" because handoff's neighbouring budget
+    # measures something else. Written only when the repo declared one, so the DEFAULT
+    # number keeps living in the validator that enforces it; `minimum=1` because a
+    # ceiling of 0 refuses every possible artifact.
+    max_artifact_lines = _int_value(data.get("max_artifact_lines"), "max_artifact_lines", errors, minimum=1)
+    if max_artifact_lines is not None:
+        validated["max_artifact_lines"] = max_artifact_lines
 
     public_spec_implementation_guard_min_lines = _int_value(
         data.get("public_spec_implementation_guard_min_lines"),

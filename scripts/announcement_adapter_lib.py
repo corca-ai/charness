@@ -6,11 +6,11 @@ import re
 from pathlib import Path
 from typing import Any
 
+from scripts.adapter_field_application import apply_optional_fields
 from scripts.adapter_lib import (
     list_field_state,
     load_yaml_file,
     optional_string,
-    optional_string_list,
     validate_adapter_version,
 )
 from scripts.artifact_naming_lib import RECORD_PATTERN
@@ -200,14 +200,10 @@ def _apply_simple_fields(
     data: dict[str, Any], validated: dict[str, Any], errors: list[str]
 ) -> None:
     validate_adapter_version(data, validated, errors)
-    for field in STRING_FIELDS:
-        value = optional_string(data.get(field), field, errors)
-        if value is not None:
-            validated[field] = value
-    for field in LIST_FIELDS:
-        items = optional_string_list(data.get(field), field, errors)
-        if items is not None:
-            validated[field] = items
+    apply_optional_fields(data, validated, errors, string_fields=STRING_FIELDS, list_fields=LIST_FIELDS)
+    # INT_FIELDS keeps its own loop: its refusal carries field-specific operator
+    # guidance ("0 disables splitting") that the shared vocabulary's generic message
+    # would drop.
     for field in INT_FIELDS:
         raw_value = data.get(field)
         if raw_value is None:

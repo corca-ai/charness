@@ -499,6 +499,36 @@ def optional_string_list(value: Any, field: str, errors: list[str]) -> list[str]
     return list(value)
 
 
+def optional_int(value: Any, field: str, errors: list[str], *, minimum: int = 0) -> int | None:
+    """The numeric member of this module's adapter-field vocabulary.
+
+    Its absence is why every numeric policy in the artifact-validator family --
+    `MAX_ARTIFACT_LINES` in debug/quality, `DEFAULT_MAX_CONTENT_LINES` in handoff --
+    was a module constant a consuming repo could not touch: the vocabulary offered
+    `optional_string`, `optional_string_list` and `optional_bool`, so a numeric field
+    had nowhere to land and each caller that needed one hand-rolled its own
+    `isinstance` check outside the vocabulary.
+
+    `isinstance(True, int)` is True, so the bool guard is load-bearing rather than
+    defensive: without it `max_artifact_lines: yes` parses to `True` and validates as
+    the integer 1, which refuses every artifact past its title line.
+
+    There is deliberately NO upper bound. A ceiling a repo sets on its own artifacts is
+    not an external boundary -- the same adapter already owns `output_dir` and
+    `artifact_class` -- and clamping it would reintroduce a charness-chosen number by
+    the back door, which is the defect this field exists to remove.
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int):
+        errors.append(f"{field} must be an integer")
+        return None
+    if value < minimum:
+        errors.append(f"{field} must be greater than or equal to {minimum}")
+        return None
+    return value
+
+
 def optional_bool(value: Any, field: str, errors: list[str]) -> bool | None:
     if value is None:
         return None

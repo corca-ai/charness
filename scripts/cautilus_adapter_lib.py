@@ -3,10 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from scripts.adapter_field_application import apply_optional_fields
 from scripts.adapter_lib import (
     load_yaml_file,
-    optional_string,
-    optional_string_list,
     validate_adapter_version,
 )
 
@@ -165,15 +164,7 @@ def validate_cautilus_adapter_data(
 
     validate_adapter_version(data, validated, errors)
 
-    for field in STRING_FIELDS:
-        value = optional_string(data.get(field), field, errors)
-        if value is not None:
-            validated[field] = value
-
-    for field in LIST_FIELDS:
-        value = optional_string_list(data.get(field), field, errors)
-        if value is not None:
-            validated[field] = value
+    apply_optional_fields(data, validated, errors, string_fields=STRING_FIELDS, list_fields=LIST_FIELDS)
 
     prompts = _validate_human_review_prompts(data.get("human_review_prompts"), errors, warnings)
     if prompts is not None:

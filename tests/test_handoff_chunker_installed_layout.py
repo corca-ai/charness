@@ -36,6 +36,9 @@ def _copy_installed_runtime(tmp_path: Path) -> None:
         "scripts/adapter_lib.py",
         "scripts/artifact_naming_lib.py",
         "scripts/simple_skill_adapter_lib.py",
+        # `simple_skill_adapter_lib` imports the shared typed-field applier, so a fake
+        # layout without it fails at import for the same reason `yaml_output.py` does.
+        "scripts/adapter_field_application.py",
         # Shipped by the installed layout too (plugins/charness/scripts/yaml_output.py):
         # every migrated handoff script resolves the renderer through it, so a fake
         # layout without it fails at import, not at the behavior under test.

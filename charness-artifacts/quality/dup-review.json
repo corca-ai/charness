@@ -4640,6 +4640,27 @@
       "note": "prefix-marker extraction idiom shared with validate_cautilus_proof.py:81-86 (untouched, six lines). Same reasoning as ddff0a325db1a074: the grammar copy carries the #636 collected-report semantics the idiom copies deliberately do not; extracting a shared helper for a six-line idiom would couple an eval-only proof validator to the debug grammar module.",
       "reviewed_at": "2026-08-18",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "bb8826145e24f266",
+      "note": "per-skill `resolve_adapter.py` validate/load boilerplate (validate_adapter_data plus the load_adapter contract call) copied across six public skills for PORTABILITY: each skill package must resolve its own adapter with no cross-skill import, which is the documented reason the nose advisory names resolve_adapter.py as its canonical intentional-duplication example. Five of seven members are untouched; the family surfaced because the adapter-configurable line budget added an int-field arm to debug's copy and to the shared simple_skill_adapter_lib loop it delegates to. The genuinely shared half WAS extracted this slice into scripts/adapter_field_application.apply_optional_fields, which the debug/quality/handoff/announcement/cautilus copies now all call; what remains per skill is the skill-specific field set and its contract wiring.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e9167517d18be3c6",
+      "note": "the `_load_skill_runtime_bootstrap` plus SKILL_RUNTIME preamble every skill script carries verbatim so it can locate skill_runtime_bootstrap.py from an installed layout with nothing on sys.path. Copied by construction: a shared import is precisely what the preamble exists to make unnecessary. Two of three members untouched; surfaced because the line-budget slice edited debug's copy.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0c3b7ccb345f8c97",
+      "note": "scan rotation, not new duplication: BOTH members (skills/public/quality/scripts/structural_waste_lib.py, skills/support/markdown-preview/scripts/markdown_preview_render.py) are untouched by this slice and neither imports the other; the family surfaced because the line-budget slice changed the surrounding corpus. Same rotation class as 004895e66d5b4132.",
+      "reviewed_at": "2026-08-18",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -37,6 +37,7 @@ read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
 validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h2_sections
 validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
+resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 validate_title = _scripts_artifact_validator_module.validate_title
@@ -79,7 +80,14 @@ HYPOTHESIS_BOUNDARY_HEADINGS = ("## Verification", "## Root Cause")
 DISCONFIRMER_MARKER = "disconfirmer:"
 FALSIFIABLE_SOURCE_REFERENCE = "skills/public/debug/references/disconfirmer-first.md"
 
+# The DEFAULT ceiling. A consuming repo raises or lowers it with
+# `max_artifact_lines` in `.agents/debug-adapter.yaml`; the run resolves it once in
+# `_validate_factory` via `resolve_adapter_line_budget`, so a repo whose investigations
+# are legitimately multi-cause is not forced into content-free re-wrapping. Kept
+# exported: the scaffold, this module's tests and the drift guard all name the DEFAULT,
+# and only the default.
 MAX_ARTIFACT_LINES = 180
+LINE_BUDGET_FIELD = _debug_resolve_adapter.LINE_BUDGET_FIELD
 REQUIRED_SECTIONS = (
     "## Problem",
     "## Correct Behavior",
@@ -283,8 +291,19 @@ def is_current_artifact(path: Path, current_pointer: Path | None = None) -> bool
 
 
 def validate_debug_artifact(
-    path: Path, *, collect_all: bool = False, current_pointer: Path | None = None
+    path: Path,
+    *,
+    collect_all: bool = False,
+    current_pointer: Path | None = None,
+    max_lines: int | None = None,
 ) -> None:
+    """`max_lines` None means the built-in default, NOT "unlimited".
+
+    The adapter-resolved ceiling is bound once per run by `_validate_factory`, the
+    same place `current_pointer` is bound, because resolving it per artifact would
+    re-read and re-parse the adapter for every file in the corpus.
+    """
+    ceiling = MAX_ARTIFACT_LINES if max_lines is None else max_lines
     lines = read_lines(path)
     base_checks = (
         lambda: validate_title(
@@ -294,7 +313,7 @@ def validate_debug_artifact(
         ),
         lambda: validate_date_line(lines),
         lambda: validate_max_lines(
-            lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact", artifact_type="debug"
+            lines, max_lines=ceiling, artifact_label="debug artifact", artifact_type="debug"
         ),
     )
     if is_current_artifact(path, current_pointer):
@@ -452,8 +471,11 @@ def _validate_factory(run):
     per-run state; the outer factory is where per-run state belongs.
     """
     current_pointer = _current_pointer(run.repo_root)
+    max_lines = resolve_adapter_line_budget(
+        load_adapter, run.repo_root, field=LINE_BUDGET_FIELD, default=MAX_ARTIFACT_LINES
+    )
     return lambda artifact: validate_debug_artifact(
-        artifact, collect_all=run.collect_all, current_pointer=current_pointer
+        artifact, collect_all=run.collect_all, current_pointer=current_pointer, max_lines=max_lines
     )
 
 

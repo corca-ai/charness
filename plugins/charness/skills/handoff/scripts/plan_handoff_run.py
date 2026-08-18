@@ -90,7 +90,22 @@ except Exception:
     MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
 # "near" = within 8 content lines of the ceiling: enough room to add a fact, not
 # enough to add a section, which is the point at which a refresh should prune.
-NEAR_LIMIT_LINES = MAX_CONTENT_LINES - 8
+NEAR_LIMIT_MARGIN = 8
+NEAR_LIMIT_LINES = MAX_CONTENT_LINES - NEAR_LIMIT_MARGIN
+
+
+def _resolved_max_content_lines(adapter: dict[str, Any]) -> int:
+    """The ceiling THIS repo declared, else the module default.
+
+    Read from the adapter payload the planner already loaded. A planner that
+    forecast `over_limit` against a ceiling the gate does not enforce would send the
+    author to prune content the gate would have accepted -- the same content-free
+    trimming this override exists to end.
+    """
+    declared = (adapter or {}).get("data", {}).get(resolve_adapter.LINE_BUDGET_FIELD)
+    if isinstance(declared, bool) or not isinstance(declared, int) or declared < 1:
+        return MAX_CONTENT_LINES
+    return declared
 
 
 def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict[str, Any]:
@@ -151,6 +166,8 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
     dated_sessions = sum(1 for line in h2_sections if line.startswith("## This Session ("))
     # Budget counts content, not file length (see handoff_content_budget).
     content_line_count = len(content_lines(lines))
+    ceiling = _resolved_max_content_lines(adapter)
+    near_limit = ceiling - NEAR_LIMIT_MARGIN
     unowned = unowned_entries(lines)
     if has_unclosed_fence(lines):
         # Ranked ABOVE unowned_entries because with an open fence the ownership
@@ -159,7 +176,7 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         # refuses this outright; a portable install without the repo validator
         # has only this surface, so the guard cannot live only there.
         status = "unscannable_fence"
-    elif content_line_count > MAX_CONTENT_LINES:
+    elif content_line_count > ceiling:
         status = "over_limit"
     elif unowned:
         # The gate blocks on this, so a plan that reported `ok` sent the author
@@ -170,7 +187,7 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         status = "diary_smell"
     elif missing or extra:
         status = "shape_issue"
-    elif content_line_count >= NEAR_LIMIT_LINES:
+    elif content_line_count >= near_limit:
         status = "near_limit"
     else:
         status = "ok"
