@@ -23,6 +23,9 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 _fresh_checkout_module = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 build_fresh_checkout_payload = _fresh_checkout_module.build_payload
 _yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
@@ -167,6 +170,24 @@ def _absence_verdict(
 
 
 def build_payload(repo_root: Path) -> dict[str, object]:
+    # GUARDED AT THE READ SITE. Three modules import `build_payload` directly
+    # (`publish_release_cli`, `publish_release_plan`, `plan_release_run`), so a refusal in
+    # `main()` would leave all three resolving release IDENTITY from charness defaults.
+    #
+    # WHAT IT COSTS TO BE UNGUARDED, measured on the real CLI: a repo declaring
+    # `package_id: acme-harness`, `packaging_manifest_path: vendor/mypkg/manifest.json`
+    # and `checked_in_plugin_root: vendor/mypkg` under a refused version got back
+    # `package_id: <its own directory name>` and two paths under `packaging/` and
+    # `plugins/` that do not exist -- exit 0. This surface answers "which package is this
+    # release, and where does it live", and it answered with a charness guess while
+    # printing `valid: false` in the same payload. Echoing the flag and acting on the
+    # defaults anyway is the exact shape the census's `safe-checks-errors` boundary is
+    # about: a read is not a check.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_adapter, repo_root, adapter_name="release-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     adapter = load_adapter(repo_root)
     data = adapter["data"]
     manifest_path = repo_root / data["packaging_manifest_path"]

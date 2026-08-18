@@ -4773,6 +4773,13 @@
       "note": "ROTATION of 04fc34c123ef7b4e -- same two members (`check_adapter_consumer_classification`, `prepush_focused_changed_line_coverage`), same reasoning, line numbers shifted by the same insertion. Different flags, different dispatch targets, different exit semantics.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "737db65b8360343d",
+      "note": "The read-site version-refusal guard slice 5 installs in each adapter consumer: `current_release.build_payload` and `check_requested_review_gate.build_payload`. The shared text is the five-line call-and-raise plus the `load_adapter`/`data` unpack; the extractable half is ALREADY extracted (`_adapter_version_verdict.unspeakable_version_message`). After those lines the two bodies share nothing -- one computes surface-version drift across five publish surfaces, the other runs requested-review commands and evaluates a policy. Folding the residue behind a decorator or wrapper would move the refusal off the read site, which is the one property the census verdict is about: the guard has to sit where the payload is read, because these functions have three importers each and a refusal anywhere else leaves those importers on charness defaults.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
