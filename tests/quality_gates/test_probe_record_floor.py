@@ -187,3 +187,77 @@ def test_the_release_floor_is_not_applicable_with_no_issues() -> None:
     verdict = _RELEASE_FLOORS["evaluate_release_probe_record"]([], [], [], ROOT)
     assert verdict["applies"] is False
     assert verdict["ok"] is True
+
+
+# --- degraded installs, and the refusal text an operator actually reads --------
+
+
+def test_the_close_comment_carrier_names_the_probe_problem_in_its_refusal(tmp_path: Path) -> None:
+    # The carrier that mutates GitHub directly must SAY why it refused, or the floor is a
+    # silent no. This reaches the failure formatter, not just the verdict.
+    floor = runpy.run_path(str(_ISSUE_SCRIPTS / "issue_close_comment_floor.py"))
+    report = floor["evaluate_close_comment_floor"](
+        repo_root=tmp_path,
+        body=_body(
+            "Classification: bug",
+            "JTBD: x",
+            "Root cause: y",
+            "Debug artifact: z",
+            "Siblings: s",
+            "Prevention: p",
+            "Critique: blocked synthetic-test-harness: no reviewer is spawned here",
+            "AI-provenance: agent-drafted",
+            "Behavior #42: confirmed via the CLI (distinct channel from CLOSED)",
+        ),
+        classification="bug",
+        number=42,
+    )
+    assert report["ok"] is False
+    text = floor["format_close_comment_floor_failure"](report)
+    assert "probe_record:#42" in text
+
+
+def test_the_release_floors_report_absence_rather_than_passing(tmp_path: Path) -> None:
+    # A vendored tree with `release` but not `issue`: the probe floor must REFUSE with a
+    # reason naming what to install. A check that could not run has not run.
+    import importlib.util
+    import shutil
+
+    scripts = tmp_path / "skills" / "public" / "release" / "scripts"
+    scripts.mkdir(parents=True)
+    shutil.copy2(_RELEASE_SCRIPTS / "release_closeout_floors.py", scripts / "release_closeout_floors.py")
+    spec = importlib.util.spec_from_file_location("floors_isolated", scripts / "release_closeout_floors.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    verdict = module.evaluate_release_probe_record(["Behavior #44: confirmed"], [], [44], tmp_path)
+    assert verdict["ok"] is False
+    assert "issue_probe_record_floor.py was not found" in verdict["library_unavailable"]
+    assert module.evaluate_release_behavioral_verdict([], []) == {"applies": False, "ok": True, "missing": []}
+
+
+def test_the_closeout_delegator_refuses_when_the_floors_module_is_absent(tmp_path: Path) -> None:
+    # `release_issue_closeout` reaches the floors through one delegator. When the sibling
+    # is absent the probe evaluator returns a refusal payload and the rest raise -- never a
+    # pass, which is the whole point of defaulting `absent` to a refusal.
+    import importlib.util
+    import shutil
+
+    import pytest
+
+    scripts = tmp_path / "skills" / "public" / "release" / "scripts"
+    scripts.mkdir(parents=True)
+    for name in ("release_issue_closeout.py", "release_issue_closeout_message.py"):
+        shutil.copy2(_RELEASE_SCRIPTS / name, scripts / name)
+    spec = importlib.util.spec_from_file_location("closeout_isolated", scripts / "release_issue_closeout.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module._release_closeout_floors() is None
+    verdict = module.evaluate_release_probe_record([], ["Probe record #44: x"], [44], tmp_path)
+    assert verdict["ok"] is False
+    assert "release_closeout_floors.py" in verdict["library_unavailable"]
+    with pytest.raises(SystemExit, match="release_closeout_floors.py"):
+        module.evaluate_release_behavioral_verdict(["Behavior #44: confirmed"], [44])
+    with pytest.raises(SystemExit, match="release_closeout_floors.py"):
+        module.fail_release_probe_record_floor(verdict)
