@@ -1,0 +1,16 @@
+{
+ "schema_version": "charness.release.claims-review.v2",
+ "prepared_commit": "e6d695e425d73ebf89eb7373f5dfa33ad19e02e7",
+ "release_record_path": "charness-artifacts/release/latest.md",
+ "release_record_sha256": "8eb33ad6f04419c6353098ff1265babdc80a8a769cc734caef84e7f975673081",
+ "target_version": "6.2.0",
+ "tag_name": "v6.2.0",
+ "verdict": "pass",
+ "preparer_context": "parent session operating the charness release skill; ran the pre-mutation release critique, resolved #640, releveled the pytest runtime bar on a measured refutation, and ran publish_release --execute to the prepared stage",
+ "reviewer_context": "one bounded read-only reviewer subagent context (Read/Grep/Glob only; no Bash, Edit, Write or Agent), spawned fresh against the prepared record and not told the preparer's verdict",
+ "observer_distinctness": {
+  "kind": "separate-agent-context",
+  "signal": "Spawned as a bounded-reviewer subagent whose envelope exposed only Read, Grep and Glob; it reported Bash/Edit/Write/Agent absent, named four evidence items it could not fetch rather than asserting them, and returned blockers-found with three record defects the preparer had not written down - the relevel inside the delta, the Review Proof artifact contradicting the tree, and the missing --no-verify non-claim. All three were repaired before publication and the prepared commit amended.",
+  "review_artifact": "charness-artifacts/release-review/2026-08-18-v6.2.0-prepared-claims-review.md"
+ }
+}
