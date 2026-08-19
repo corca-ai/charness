@@ -1709,6 +1709,46 @@
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
       "anchor": "Wrote the BLIND CLASS section into probe_record_lib's module docstring before its first test, naming what the mechanism cannot see. Both bounded rounds then audited that list against the code and found it over- AND under-claiming, which is a cheap correction loop. Otherwise: the reviewers have nothing to check the claims against, and the docstring's false credit for #528 -- which round 1 did catch by reading the stated blind class -- ships as the mechanism's own account of itself."
+    },
+    {
+      "event_id": "adtr-01",
+      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
+      "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "Measured coverage after every test addition instead of trusting the pass. It found scripts/probe_stimulus_replay.py:323 unreachable, adapter_lib read_declared_adapter's non-mapping arm dead, and a test exercising a COPY of adapter_lib in tmp_path rather than the real file the gate reads."
+    },
+    {
+      "event_id": "adtr-03",
+      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
+      "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Wrote probe_stimulus_replay's BLIND CLASS before its first acceptance test. Three review rounds then rewrote it; stating it early did not make it right, it made each correction a paragraph edit rather than a redesign."
+    },
+    {
+      "event_id": "adtr-04",
+      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
+      "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "lesson_id": "mutation-producer-selection",
+      "outcome": "changed-an-action",
+      "anchor": "Selected mutation producers explicitly per refusal rather than relying on the standing suggestion path: 32 mutations across the three slices, each naming its failing test, including two that proved a coverage-order print and its test were both unnecessary."
+    },
+    {
+      "event_id": "adtr-05",
+      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
+      "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "read-but-not-applied",
+      "anchor": "covering_rows was made a structural field rather than prose, which is the lesson's direction, and then FILLED from each row's own paragraph instead of the call graph. Two of five lists were wrong. The lesson was in view at the decision and only half landed."
+    },
+    {
+      "event_id": "adtr-02",
+      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
+      "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran prepush_focused_changed_line_coverage.py --refuse-unestablished immediately after each of the fifteen slice commits and BEFORE the broad lane, rather than running the broad suite first and re-running it after each fold. Without it the three slices would have paid the predecessor's four wasted broad reruns again."
     }
   ],
   "lessons": {
@@ -1880,10 +1920,10 @@
     "mutation-producer-selection": {
       "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
       "transition_id": "seed-mutation-producer-selection",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2000,10 +2040,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": -1,
-      "score_count": 11,
+      "score_total": 0,
+      "score_count": 12,
       "outcome_counts": {
-        "changed-an-action": 5,
+        "changed-an-action": 6,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -2045,10 +2085,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 4,
-      "score_count": 4,
+      "score_total": 5,
+      "score_count": 5,
       "outcome_counts": {
-        "changed-an-action": 4,
+        "changed-an-action": 5,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2180,13 +2220,13 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 5,
-      "score_count": 7,
+      "score_total": 4,
+      "score_count": 8,
       "outcome_counts": {
         "changed-an-action": 6,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 1,
+        "read-but-not-applied": 2,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -2210,10 +2250,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 4,
-      "score_count": 10,
+      "score_total": 5,
+      "score_count": 11,
       "outcome_counts": {
-        "changed-an-action": 7,
+        "changed-an-action": 8,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,

@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-19",
-  "source_artifact_count": 535,
-  "candidate_count": 2175,
+  "source_artifact_count": 536,
+  "candidate_count": 2179,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1528,6 +1528,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:f2e038184ff6",
+      "kind": "current_focus",
+      "lesson": "The goal was to build the mechanical detector thirteen bounded review rounds had paid for by hand, spend it on the resolver split that kept every consumer guard blind on two of three doors, give the census a verdict vocabulary that says what it means, and then finish the remaining nineteen adapter-consumer rows.",
+      "normalized_key": "the goal was to build the mechanical detector thirteen bounded review rounds had paid",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+          "date": "2026-08-19",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The goal was to build the mechanical detector thirteen bounded review rounds had paid for by hand, spend it on the resolver split that kept every consumer guard blind on two of three doors, give the census a verdict vocabulary that says what it means, and then finish the remaining nineteen adapter-consumer rows."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:3c21c9295c7c",
       "kind": "next_improvement",
       "lesson": "**capability — a floor that adds a required field ships its authoring surface.** `Probe record` reaches no template, no shape describer, and no reference doc, so an author's discovery path is the error message. Tracked issue, with the generalized pattern and destination below.",
@@ -1732,6 +1758,84 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Real waste: three length-gate collisions in one slice.** `release_issue_closeout.py` crossed its 360-line cap three times, and my first response was a split that removed code with real dedicated test coverage — reverted. Two of the three cuts were right (a floors module, one parameterized loader); the first was reaching for the nearest lines rather than the right concept boundary."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4e1dd8eba6b1",
+      "kind": "repeat_trap",
+      "lesson": "Slice 1: the variant generator emitted a YAML flow sequence — the exact malformed shape the detector exists to catch — so it measured nothing. Then it suffixed an inline comment the reader strips back off. Then it produced type-invalid values for booleans, floats and quoted scalars. Three in one repair.",
+      "normalized_key": "slice 1 the variant generator emitted a yaml flow sequence the exact malformed shape",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+          "date": "2026-08-19",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Slice 1: the variant generator emitted a YAML flow sequence — the exact malformed shape the detector exists to catch — so it measured nothing. Then it suffixed an inline comment the reader strips back off. Then it produced type-invalid values for booleans, floats and quoted scalars. Three in one repair."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3770c1114bec",
+      "kind": "repeat_trap",
+      "lesson": "Slice 2: the new consumer guard invented a third refusal wording where `unhonored_cause` exists so callers do not; its dropped-line arm then asserted a tail that is false for that arm; and the unregister-on-failure repair reproduced the second-error-hides-the-first shape its own comment names.",
+      "normalized_key": "slice 2 the new consumer guard invented a third refusal wording where unhonored cause",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+          "date": "2026-08-19",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Slice 2: the new consumer guard invented a third refusal wording where `unhonored_cause` exists so callers do not; its dropped-line arm then asserted a tail that is false for that arm; and the unregister-on-failure repair reproduced the second-error-hides-the-first shape its own comment names."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5431aa558f84",
+      "kind": "repeat_trap",
+      "lesson": "Slice 3: the level vocabulary mislabelled its own first row, and the gate forbade a legitimate two-hop chain — which did not produce a refusal, it produced a manifest that quietly omitted a real caller. **The second cost was claim defects on surfaces someone reads to decide.** Round 1 of slice 2 alone found twelve, including `adapter_version_verdict` telling readers in three places that six resolvers are blind when zero are, and a swallow-arm justification refuted by a live exit-0 bypass the slice had just closed and nobody had written down. **The avoidable waste specifically:** I wrote five `covering_rows` lists from each row's own PROSE rather than from the call graph, flagged them as the slice's weakest evidence, and two were wrong. Flagging a weakness is not the same as fixing it, and the flag cost a review round that could have read something else.",
+      "normalized_key": "slice 3 the level vocabulary mislabelled its own first row and the gate forbade",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
+          "date": "2026-08-19",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Slice 3: the level vocabulary mislabelled its own first row, and the gate forbade a legitimate two-hop chain — which did not produce a refusal, it produced a manifest that quietly omitted a real caller. **The second cost was claim defects on surfaces someone reads to decide.** Round 1 of slice 2 alone found twelve, including `adapter_version_verdict` telling readers in three places that six resolvers are blind when zero are, and a swallow-arm justification refuted by a live exit-0 bypass the slice had just closed and nobody had written down. **The avoidable waste specifically:** I wrote five `covering_rows` lists from each row's own PROSE rather than from the call graph, flagged them as the slice's weakest evidence, and two were wrong. Flagging a weakness is not the same as fixing it, and the flag cost a review round that could have read something else."
         }
       ]
     },

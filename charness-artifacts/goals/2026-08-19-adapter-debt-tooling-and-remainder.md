@@ -26,13 +26,12 @@ runs the activation command.
   They did — four bounded review rounds across seven reviewers, two of which found defects
   the repairs themselves introduced. Slice 4 (the remaining nineteen rows) and slice 5 are
   handed to a successor goal rather than started here.
-- Timebox: none set by the operator. Set one on activation if this should stop before the
-  full five slices; without one, the Slice Plan's own stop rule (halt BEFORE slice 4 if
-  slices 1-2 overrun) is the only bound.
-- Activation time: recorded on `/goal`.
-- Closeout reserve: one slice boundary's worth — the retro, the closeout binding, and the
-  push readback are work, not follow-up, and the predecessor measured them at roughly the
-  cost of a small slice.
+- No `Timebox:` field: the operator set no fixed duration, so the timebox clock does not
+  apply. The Slice Plan's own stop rule (halt BEFORE slice 4 if slices 1-2 overrun) was the
+  only bound, and it fired — slices 4 and 5 go to the successor goal.
+- Activation time: 2026-08-19T03:30Z
+- Closeout reserve: one slice boundary's worth, held and spent. The retro, the closeout
+  binding and the push readback are work, not follow-up.
 - Done-early policy: continue_next_improvement.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
@@ -194,18 +193,6 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
 RAISED BY THIS RUN:
 
 - Decision: 55 rows carry `safe-checks-errors`, and that token now covers materially
@@ -296,8 +283,21 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Phases: <declared phases, or n/a — why none were crossed>`
-- `Routing: <skill> — <why this phase needs it>`
+- `Phases: impl, quality, critique, retro`
+- `Routing: charness:achieve — the goal operator for the whole run; it coordinated impl for
+  the three slices, quality for the gate cadence and the duplicate ratchet, critique for the
+  six bounded rounds, and retro at closeout, without absorbing any of them.`
+- `Gather: n/a — this goal read no external URL, Slack, Notion, Doc or Drive source; every
+  input was a checked-in artifact, a GitHub issue body already quoted in the goal, or a
+  measurement this run made itself.`
+- `Release: n/a — no version bump, no install-manifest edit, no tag and no publish. The
+  Boundaries section forbids all four and none became necessary.`
+- `Issue closeout: #673, #674, #675 are RESOLVED but NOT CLOSED. Closing is not standing-
+  approved and this run has no phase-scoped grant for it, so no carrier was drafted and
+  issue_tool.py validate-closeout-draft / verify-closeout were not run. The resolutions and
+  their proof are in ## Slice Log; the close is the operator's to grant.`
+- `Successor goal: charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md (draft; it also
+  carries this goal's unfinished slices 4 and 5)`
 
 ## Discuss Before Activation
 
@@ -354,6 +354,20 @@ applies.
 - Critique: TWO bounded rounds, two reviewers in round 1 and one in round 2, all spawned UNNAMED and read-only as `bounded-reviewer`, with `reviewer_boundary_fingerprint.py` snapshot/verify around each window — both `ok: true` / `clean`. NEITHER ROUND WAS CLEAN, and round 1 found a REGRESSION THIS SLICE CAUSED: making five resolvers exit 0 instead of tracebacking removed `resolve_artifact_path`'s only protection, and it began resolving `charness-artifacts/quality/latest.md` over a repo that declared `docs/mine-q`. Round 1 also found twelve claim defects on surfaces someone reads to decide, including the consumer-guard module itself telling readers that six resolvers are blind when zero are. Round 2 then found THREE of those repairs carrying the class they repaired: the census row for the very file the slice repaired still said `accepted-risk-unguarded` with a reason the file refutes; the new guard's dropped-line message glued on a tail that is false for that arm; and the unregister arm's bare `del` reproduced the second-error-hides-the-first shape its own comment names. Round 2's repairs are ACCEPTED-UNREVIEWED per the two-round cap.
 - Off-goal findings: `refresh_current_pointer` is now protected by its loader rather than by itself, and the census has no token for that — recorded as `accepted-risk-unguarded` with the mechanism named, which inflates the accepted-risk count by one. That is `#675`'s subject with a live example, and slice 3 is where it gets a name and a witness that checks the level. `proof_semantics_adapter_lib` and `cautilus_adapter_lib` still call `load_yaml_file` bare; they are outside `#673`'s sixteen and are the residual surface.
 - Lessons carried forward: A repair that changes HOW a surface fails changes what its consumers can observe, and the exit code is an observable. Nothing in the slice plan asked `who was relying on the old failure mode`, and the answer was a guard whose only protection was a return code. The reusable move is to ask, before any change to a refusal's shape, which consumers key on the SHAPE rather than the condition — and the reusable proof is what the census now records: keyed on the condition, a resolver's exit convention can change again without disarming it.
+- Metrics:
+
+### Slice 3: Slice 3 — `#675`, a verdict per coverage level
+
+- Objective: Give the census a verdict per coverage level and a witness that checks the LEVEL, so "how much of this debt is actually closed" is answerable without reading prose reasons.
+- Why this approach: One `guarded` token covered materially different states and the gate saw one, so two rows with the same token could differ by whether a one-character typo bypassed them. Slice 2 had just produced a live example the vocabulary could not express.
+- Commits: `a21e0d0d3` (vocabulary and witness), `136d9b851` (round-1 fold), `d30d918e1` (coverage of the guards the changed-line gate named), and the round-2 fold.
+- What changed: `scripts/check_adapter_consumer_classification.py` gains `guarded-all-doors` / `guarded-errors-only` / `guarded-upstream`, `measured_guard_level`, `_guard_level_problems` and `_covers` (a chain walk with cycle detection); `row_verdicts` now refuses three manifest shapes that silently dropped a declared class. 35 `guarded` rows migrated to their measured level; six rows moved between accepted-risk and upstream coverage in both directions. Eight new tests. `docs/handoff.md` names the vocabulary.
+- Alternatives rejected: REJECTED: `#675`'s own proposal to key the level on whether the file's RESOLVER routes through the reporting loader. Slice 2 made all sixteen public resolvers report all three doors, so that axis is uniform across every guarded row and would measure nothing; keyed on what the CONSUMER asks it is real and was measured first. REJECTED: `#675`'s name `guarded-by-caller`, because the only live row is covered by its CALLEE — the field would have published a call-graph claim in the wrong direction. REJECTED: keeping a coverage-order print that is identical to alphabetical for these tokens, and the test that claimed to pin it.
+- Targeted verification: `run_slice_closeout.py --skip-broad-pytest` at every commit boundary; `run_standing_pytest.py` at each boundary, green; `prepush_focused_changed_line_coverage.py --refuse-unestablished` after each commit and before the broad lane, clean at the close. ELEVEN mutations across the two rounds. Two of them are the slice's own finding: the coverage-order code and its test both survived deletion, so both were removed rather than kept as an unprovable pair.
+- Test duplication pressure: `check_dup_ratchet.py` at each boundary. Four new families, all the argparse CLI-entrypoint family re-fingerprinting as `main()` changed — three times in this slice alone. That the identity is content-based, so a gate whose `main()` grows a line rejoins under a new id and owes a fresh classification, is recorded in the last note rather than absorbed.
+- Critique: TWO bounded rounds, one reviewer each, spawned UNNAMED and read-only as `bounded-reviewer`, with `reviewer_boundary_fingerprint.py` snapshot/verify around each window — both `ok: true` / `clean` at reviewer completion. NEITHER WAS CLEAN. Round 1: the gate's headline accepted-risk number was inflated by half (five rows already carried "every production caller is guarded" in their own reasons and sat in that class only because no token existed for them); the new token named the wrong direction; the level witness is call-presence and the BLIND CLASS did not say so; the previous fold's `row_verdicts` fix was one-sided. Round 2: TWO of the five `covering_rows` lists I wrote were wrong, both derived from prose rather than the call graph — one incomplete in both directions and one a row that should never have migrated, because it CAN guard itself and simply does not. The gate had also forbidden a legitimate two-hop chain, so the enumerated set was being shaped by what the checker accepts rather than by the call graph — `#675`'s own distortion, reproduced by `#675`'s own gate. Round-2 repairs are ACCEPTED-UNREVIEWED per the two-round cap.
+- Off-goal findings: 55 rows carry `safe-checks-errors`, which now covers materially different coverage exactly as `guarded` did — four of them read through `cautilus_adapter_lib` / `proof_semantics_adapter_lib`, which still call `load_yaml_file` bare, so two of three doors are dead for them. Raised in `## Operator Decision Queue` rather than split here. `scripts/retro_floor_scope_lib.py` is a real adapter consumer with NO census row, because it calls a helper rather than a `load_*adapter*` name and the AST enumerator cannot see it.
+- Lessons carried forward: A list derived from a paragraph is evidence about the paragraph, not about the code — I wrote five `covering_rows` lists out of prose, flagged them as the slice's weakest evidence, and two were wrong. The transferable rule is narrower than 'check your sources': when a token's whole value is that it publishes an ENUMERATED set, the enumeration owes the same measurement the verdict does, and prose that already lists members is the most tempting place to skip it. The second lesson is the gate shaping its own input: forbidding a legitimate two-hop chain did not produce a refusal, it produced a manifest that quietly omitted a real caller.
 - Metrics:
 
 ## Context Sources
@@ -451,9 +465,9 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md
+Host log probe: skipped: host-log-not-exposed: this host surfaces no per-turn token, wall-clock or tool-call log to the session, so any efficiency figure would be fabricated rather than measured; the goal's own proof is the gate receipts and the six reviewer reports instead
+Disposition review: charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder-disposition-review.md
 
 ## User Verification Instructions
 
@@ -462,5 +476,35 @@ the observable that answers it — not a summary of what was done.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied + accepted-risk — every surfaced improvement is dispositioned
+below, five as shipped changes and one as an accepted risk staged for the operator. No
+prose-only improvement remains.
+
+- `applied: tests/quality_gates/test_probe_record_corpus_replays.py` — the `#674` detector
+  was INERT until a bounded round grepped and found nothing ran it. A standing-lane sweep
+  over every checked-in probe record now does, so `#674`'s own premise ("thirteen review
+  rounds, no gate") stops being true for record fourteen.
+- `applied: scripts/resolve_artifact_path.py` `_refuse_unhonored_adapter` — the regression
+  slice 2 caused, closed on the CONDITION rather than the exit code, with a three-door test.
+- `applied: scripts/check_adapter_consumer_classification.py` — the level witness refuses in
+  BOTH directions, which is what makes an over-conservative row visible; the previous
+  witness never checked one, and one sat wrong through an entire slice.
+- `applied: scripts/adapter_lib.py` `_load_yaml_module` — fail-clean path loading, so a
+  missing parser reports its own cause instead of an `AttributeError` for every module in
+  the same process.
+- `applied: charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md` — the
+  successor goal, whose slice 1 is the structural answer to the transferable waste below.
+- `accepted-risk: 55 safe-checks-errors rows carry one token over materially different
+  coverage, exactly as guarded did before slice 3 split it — four of them read through
+  libraries that still call load_yaml_file bare, so two of three doors are dead for them.
+  Accepted for this goal and staged in ## Operator Decision Queue with its measured
+  evidence; splitting the largest class is a slice of its own.`
+
+Structural follow-up: `issue #N (recurs: six measured instances in one goal — a probe-record
+detector, an adapter loader contract, and a census gate)`
+
+The transferable waste is A REPAIR
+SHIPPING THE CLASS IT REPAIRS, and the answer this run recommends is an affordance rather
+than another review round: when a slice's diff adds a REFUSAL, emit the refused input class
+and ask whether the repair's own new code contains it. Designed as slice 1 of the successor
+goal; filing the issue is standing-approved and the design call is the operator's.
