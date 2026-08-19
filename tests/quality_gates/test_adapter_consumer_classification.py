@@ -570,19 +570,33 @@ def test_upstream_coverage_must_name_rows_that_are_themselves_guarded(tmp_path: 
     assert any("carries no census row" in p for p in problems), problems
 
 
-def test_the_counts_name_the_errors_only_bypass_and_print_in_coverage_order(tmp_path: Path) -> None:
-    """The class this vocabulary created to make a live bypass legible printed as a bare
-    number, sorted alphabetically into the middle. `accepted-risk-unguarded` has carried a
-    callout sentence since it existed, for the same reason: a risk that stops being named
-    stops being decided."""
+def test_the_counts_name_the_weak_levels_rather_than_printing_bare_numbers(tmp_path: Path) -> None:
+    """The two classes this vocabulary created to make weakness legible printed as bare
+    numbers. `accepted-risk-unguarded` has carried a callout since it existed, for the same
+    reason: a risk that stops being named stops being decided.
+
+    NO ORDERING ASSERTION, and its absence is the finding. The first cut asserted "coverage
+    order, not alphabetical" — but for these three tokens the two orders are IDENTICAL, so
+    the assertion passed with the ordering code deleted and the code claimed something it
+    did not do. Both were removed rather than kept as an unprovable pair."""
     errors_only = "def go(root):\n    p = load_adapter(root)\n    return declarations_unhonored(p['errors'])\n"
     all_doors = "def go(root):\n    return refuse_unspeakable_version(load_adapter, root, adapter_name='x')\n"
+    unguarded = "def go(root):\n    p = load_adapter(root)\n    return p['data']\n"
+    # `guarded-upstream` IS IN THE FIXTURE, and it has to be: it is the only pair where
+    # coverage order differs from alphabetical. The first cut asserted all-doors before
+    # errors-only, which is ALSO the alphabetical order — deleting the ordering entirely left
+    # the test green, so the guard it named was untested.
     repo = _tree(
         tmp_path / "counts",
-        {"scripts/weak.py": errors_only, "scripts/strong.py": all_doors},
+        {"scripts/weak.py": errors_only, "scripts/strong.py": all_doors, "scripts/up.py": unguarded},
         {
             "scripts/weak.py": {"verdict": "guarded-errors-only", "reason": "errors channel only"},
             "scripts/strong.py": {"verdict": "guarded-all-doors", "reason": "all three"},
+            "scripts/up.py": {
+                "verdict": "guarded-upstream",
+                "reason": "covered upstream",
+                "covering_rows": ["scripts/strong.py"],
+            },
         },
     )
     module = load_script_module("gate_cli_counts", ROOT / "scripts/check_adapter_consumer_classification.py")
@@ -594,7 +608,9 @@ def test_the_counts_name_the_errors_only_bypass_and_print_in_coverage_order(tmp_
     assert "one-typo bypass" in result.stdout
     # Coverage order, strongest first — not the alphabetical order that sorts the weakest
     # level into the middle.
-    assert result.stdout.index("guarded-all-doors") < result.stdout.index("guarded-errors-only")
+    # `guarded-upstream` is not a rank on the doors axis, and the output has to say so.
+    assert "UPSTREAM: 1 consumer(s)" in result.stdout
+    assert "NOT a rank on the doors axis" in result.stdout
 
 
 def test_a_malformed_verdicts_list_is_refused_rather_than_read_as_empty(tmp_path: Path) -> None:
@@ -604,7 +620,9 @@ def test_a_malformed_verdicts_list_is_refused_rather_than_read_as_empty(tmp_path
     repo = _tree(
         tmp_path / "shape",
         {"scripts/leaf.py": CALLS_LOADER},
-        {"scripts/leaf.py": {"verdicts": {"verdict": "guarded-all-doors", "reason": "a mapping, not a list"}}},
+        # A SCALAR, not a mapping. Iterating a mapping yields keys, which the non-dict arm
+        # already refuses — so the first cut passed with the list-shape guard deleted.
+        {"scripts/leaf.py": {"verdicts": 5}},
     )
     problems, _ = GATE.check(repo)
     assert any("must be a non-empty list" in p for p in problems), problems
@@ -655,6 +673,65 @@ def test_a_multi_verdict_row_keeps_the_entrys_covering_rows(tmp_path: Path) -> N
     )
     problems, _ = GATE.check(repo)
     assert problems == [], problems
+
+
+def test_a_two_hop_upstream_chain_is_accepted_and_a_cycle_is_not(tmp_path: Path) -> None:
+    """The first cut accepted only a DIRECTLY guarded covering row, and a round-2 review found
+    what that cost: the manifest had omitted a real caller because naming it would trip the
+    gate. The enumerated set was being shaped by what the checker accepts rather than by the
+    call graph — the distortion `#675` exists to stop, reproduced by its own gate."""
+    unguarded = "def go(root):\n    p = load_adapter(root)\n    return p['data']\n"
+    guard = "def go(root):\n    return refuse_unspeakable_version(load_adapter, root, adapter_name='x')\n"
+    repo = _tree(
+        tmp_path / "chain2",
+        {"scripts/leaf.py": unguarded, "scripts/mid.py": unguarded, "scripts/top.py": guard},
+        {
+            "scripts/leaf.py": {"verdict": "guarded-upstream", "reason": "two hops", "covering_rows": ["scripts/mid.py"]},
+            "scripts/mid.py": {"verdict": "guarded-upstream", "reason": "one hop", "covering_rows": ["scripts/top.py"]},
+            "scripts/top.py": {"verdict": "guarded-all-doors", "reason": "real"},
+        },
+    )
+    problems, _ = GATE.check(repo)
+    assert problems == [], problems
+
+    # A CYCLE is not coverage: two rows vouching for each other terminate in nothing, and
+    # without the `seen` set the walk would not terminate at all.
+    repo = _tree(
+        tmp_path / "cycle",
+        {"scripts/a.py": unguarded, "scripts/b.py": unguarded},
+        {
+            "scripts/a.py": {"verdict": "guarded-upstream", "reason": "a", "covering_rows": ["scripts/b.py"]},
+            "scripts/b.py": {"verdict": "guarded-upstream", "reason": "b", "covering_rows": ["scripts/a.py"]},
+        },
+    )
+    problems, _ = GATE.check(repo)
+    assert any("ending in nothing is not coverage" in p for p in problems), problems
+
+
+@pytest.mark.parametrize(
+    ("entry", "expected"),
+    [
+        pytest.param(
+            {"verdict": "guarded-all-doors", "reason": "one", "verdicts": [{"verdict": "no-version-validation", "reason": "two"}]},
+            "declares both",
+            id="both-shapes-drops-a-declared-class",
+        ),
+        pytest.param(
+            {"verdicts": [{"verdict": "guarded-all-doors", "reason": "one"}, "accepted-risk-unguarded"]},
+            "is not a mapping",
+            id="non-dict-element-was-silently-filtered",
+        ),
+        pytest.param("accepted-risk-unguarded", "must be a non-empty list", id="entry-is-not-a-mapping"),
+    ],
+)
+def test_a_manifest_shape_that_would_drop_a_declared_class_is_refused(tmp_path: Path, entry, expected: str) -> None:
+    """Each of these used to lose a declared class or traceback out of the gate. On a census
+    whose stated purpose is that a file may carry MORE than one defect class, a silently
+    ignored class is the exact failure mode — and the `covering_rows` element check added in
+    the same fold refuses by name for precisely this reason, while its siblings did not."""
+    repo = _tree(tmp_path / "shapes", {"scripts/leaf.py": CALLS_LOADER}, {"scripts/leaf.py": entry})
+    problems, _ = GATE.check(repo)
+    assert any(expected in p for p in problems), problems
 
 
 def test_a_file_that_guards_itself_may_not_claim_upstream_coverage(tmp_path: Path) -> None:

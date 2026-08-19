@@ -155,6 +155,21 @@ def measured_guard_level(called: set[str]) -> str | None:
     `unspeakable_version_message` covering all three doors is true on its RETURNING path only;
     its `except Exception` swallow arm answers None with every door dead, so `guarded-all-doors`
     is precise about which predicate is asked and not about whether a raising loader bypasses it.
+
+    THREE MORE LIMITS, added after a round-2 review pointed out that an enumeration reading
+    complete is the failure this paragraph exists to prevent:
+
+    - ORDERING is invisible. A file that guards AFTER acting on `data` measures the same as
+      one that guards before. That is not the dead-code case -- the guard is live and
+      load-bearing, just late -- and this repo already argues position matters
+      (`scaffold_quality_artifact`'s row: "guarded at the READ SITE, not `main()`").
+    - `covering_rows` IS UNVERIFIED IN BOTH DIRECTIONS. The gate checks each named row exists
+      and holds a guard, directly or up its own chain. It never checks the named row actually
+      CALLS the covered symbol, nor that the list is COMPLETE. Two of the first five lists
+      shipped wrong, both derived from prose rather than the call graph.
+    - A covering row's guard may sit in an ENTRYPOINT the real caller bypasses. `guarded` is
+      file-granular; coverage is call-site-granular. A caller importing a re-exported helper
+      never reaches the `main()` the covering row was credited for.
     """
     if set(ALL_DOOR_ENTRYPOINTS) & called:
         return GUARDED_ALL_DOORS
@@ -186,6 +201,35 @@ VERDICTS = {
     # Never reads a version at all -- a different defect wearing the same symptom.
     "no-version-validation": None,
 }
+
+
+def _covers(rel: str, declared: dict, seen: set[str]) -> bool:
+    """Does this row hold a guard, directly or through its OWN upstream rows?
+
+    TWO HOPS ARE LEGITIMATE and the first cut forbade them, which is worse than a missing
+    check: a round-2 review found the manifest had OMITTED a real caller
+    (`scaffold_artifact_lib`, itself `guarded-upstream` and chaining to two guarded
+    scaffolds) because naming it would have tripped the gate. The enumerated set was being
+    shaped by what the checker accepts rather than by the call graph -- which is the
+    measurement distortion `#675` exists to stop, reproduced one level up by its own gate.
+
+    `seen` closes the cycle A-covers-B-covers-A, which would otherwise recurse forever or,
+    read charitably, let two unguarded rows vouch for each other.
+    """
+    if rel in seen or rel not in declared:
+        return False
+    seen = seen | {rel}
+    for row in row_verdicts(declared[rel]):
+        verdict = row.get("verdict")
+        if verdict in (GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY):
+            return True
+        if verdict == GUARDED_UPSTREAM:
+            upstream = row.get("covering_rows")
+            if isinstance(upstream, list) and any(
+                isinstance(item, str) and _covers(item, declared, seen) for item in upstream
+            ):
+                return True
+    return False
 
 
 def _guard_level_problems(
@@ -230,10 +274,7 @@ def _guard_level_problems(
                 problems.append(
                     f"{rel}: names `{caller}` as a covering row, but it carries no census row"
                 )
-            elif not any(
-                item.get("verdict") in (GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY)
-                for item in row_verdicts(declared[caller])
-            ):
+            elif not _covers(caller, declared, seen={rel}):
                 problems.append(
                     f"{rel}: names `{caller}` as a covering row, but that row is not itself "
                     "guarded -- a chain of upstream coverage ending in nothing is not coverage"
@@ -351,6 +392,18 @@ def row_verdicts(entry: dict) -> list[dict]:
     class carries its OWN reason, because the reasons differ per class and a shared one
     would describe at most half the row.
     """
+    if not isinstance(entry, dict):
+        # A hand-edited manifest entry that is a string or a list used to reach `{**entry}`
+        # and raise `TypeError` uncaught -- the same class the `covering_rows` element check
+        # repaired, one level out, on the same proof surface.
+        return []
+    if "verdicts" in entry and "verdict" in entry:
+        # BOTH SHAPES is a row declaring a class the checker would silently drop: the
+        # `verdicts` branch wins and the top-level `verdict` vanishes from the problems loop
+        # AND from the count vector. On a census whose stated purpose is that a file may
+        # carry more than one defect class, a silently ignored declared class is the exact
+        # failure mode. Surfaced as a sentinel the caller refuses.
+        return [{"verdict": None, "reason": None, "__shape_error__": "declares both `verdict` and `verdicts`"}]
     if "verdicts" in entry:
         rows = entry["verdicts"]
         if not isinstance(rows, list):
@@ -361,7 +414,14 @@ def row_verdicts(entry: dict) -> list[dict]:
         # list it plainly carried. The identical defect, unfixed, in the other shape. A
         # sub-row's own keys win, so a per-verdict `covering_rows` still overrides.
         extra = {k: v for k, v in entry.items() if k not in ("verdicts", "verdict", "reason")}
-        return [{**extra, **row} for row in rows if isinstance(row, dict)]
+        # A non-dict ELEMENT is refused, not filtered. Filtering it was asymmetric with the
+        # `covering_rows` element check added in the same fold, which refuses by name for
+        # exactly the reason this one was silently lossy.
+        return [
+            {**extra, **row} if isinstance(row, dict)
+            else {"verdict": None, "reason": None, "__shape_error__": f"verdict entry {row!r} is not a mapping"}
+            for row in rows
+        ]
     # CARRIES THE WHOLE ENTRY's extra keys, not just verdict+reason. `guarded-upstream`
     # owes `covering_rows`, and rebuilding a two-key dict here dropped it -- the row was
     # written correctly and the gate reported it missing, which is a checker losing evidence
@@ -423,6 +483,9 @@ def check(repo_root: Path) -> tuple[list[str], dict[str, int]]:
             continue
         seen: set[str] = set()
         for row in declared_rows:
+            if shape_error := row.get("__shape_error__"):
+                problems.append(f"{rel}: {shape_error}")
+                continue
             verdict = row.get("verdict")
             if verdict not in VERDICTS:
                 problems.append(f"{rel}: verdict {verdict!r} is not one of {sorted(VERDICTS)}")
@@ -537,13 +600,21 @@ def main() -> int:
 
     problems, counts = check(repo_root)
     print("adapter consumer classification:")
-    # COVERAGE ORDER, not alphabetical. The point of the split is legibility, and
-    # `guarded-all-doors` / `guarded-by... / `guarded-errors-only` sorts the weakest level
-    # into the middle.
-    order = [GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY, GUARDED_UPSTREAM]
-    for verdict in order + [v for v in sorted(counts) if v not in order]:
-        if verdict in counts:
-            print(f"  {verdict}: {counts[verdict]}")
+    # ALPHABETICAL, and the ordering code that used to sit here is GONE. It claimed
+    # "coverage order, not alphabetical" and for the current token set the two are the SAME
+    # order -- `guarded-all-doors` < `guarded-errors-only` < `guarded-upstream` either way --
+    # so the code was unobservable and the test asserting it passed with the ordering deleted.
+    # A round-2 review named the ordering as untested and proposed the errors-only/upstream
+    # pair as the discriminating one; that pair does not discriminate either. What carries the
+    # meaning is the callouts below, which do fail when removed.
+    for verdict in sorted(counts):
+        print(f"  {verdict}: {counts[verdict]}")
+    if counts.get(GUARDED_UPSTREAM):
+        print(
+            f"  UPSTREAM: {counts[GUARDED_UPSTREAM]} consumer(s) hold no guard of their own -- the "
+            "property is their enumerated `covering_rows`, and a future caller that forgets is "
+            "unguarded again with nothing structural to stop it. NOT a rank on the doors axis."
+        )
     if counts.get(GUARDED_ERRORS_ONLY):
         print(
             f"  ERRORS-ONLY: {counts[GUARDED_ERRORS_ONLY]} consumer(s) refuse on `errors` and "
