@@ -129,6 +129,52 @@ def test_a_line_this_repos_own_reader_drops_is_refused():
     assert "does not interpret" in " ".join(result["reasons"])
 
 
+def test_a_construct_the_reader_refuses_outright_is_a_verdict_and_not_a_traceback():
+    """`adapter_lib` RAISES on `version: !!int 9` from the shared parser, so the first cut
+    of this module let the ValueError out -- tracebacking on precisely the input class
+    `#673` is filed about, which is the defect shape reproduced inside the detector for it.
+    Found by this test before review, and it is the reason the parse is guarded."""
+    result = _replay(_stimulus("quality-adapter.yaml", "version: !!int 9\nrepo: demo\n"))
+    assert result["state"] == replay.STIMULUS_NOT_ESTABLISHED
+    assert "refuses outright" in " ".join(result["reasons"])
+
+
+def test_a_resolver_that_never_answers_is_refused_rather_than_read_as_agreement():
+    """Both runs producing NOTHING must not compare equal and pass as "no inert key". A
+    resolver that times out is the reachable form of that, and treating its silence as
+    agreement is the exact `a read is not a check` shape this corpus is about."""
+    result = _replay(_stimulus("narrative-adapter.yaml", NARRATIVE_LIVE))
+    assert result["state"] == replay.STIMULUS_EVALUATED, "precondition: this document passes"
+    original = replay._RESOLVE_TIMEOUT_SECONDS
+    try:
+        replay._RESOLVE_TIMEOUT_SECONDS = 0.001
+        timed_out = _replay(_stimulus("narrative-adapter.yaml", NARRATIVE_LIVE))
+    finally:
+        replay._RESOLVE_TIMEOUT_SECONDS = original
+    assert timed_out["state"] == replay.STIMULUS_NOT_ESTABLISHED
+    assert "rendered no `data:` payload" in " ".join(timed_out["reasons"])
+
+
+def test_a_resolver_that_tracebacks_yields_no_data_block_to_compare():
+    """`_data_block` is what turns "the resolver answered" into a comparable value, so its
+    None arm is the one that must not silently become an empty string that equals itself."""
+    assert replay._data_block('Traceback (most recent call last):\n  File "x"\nValueError: no\n') is None
+    assert replay._data_block("found: true\ndata:\n  repo: demo\nerrors: []\n") == "data:\n  repo: demo"
+
+
+def test_a_heredoc_that_writes_something_other_than_an_adapter_is_passed_over():
+    """A stimulus may legitimately seed a fixture beside its adapter. Only the
+    `*-adapter.yaml` documents are this module's subject; the rest are not its business and
+    must not become a refusal."""
+    stimulus = (
+        "cat > $D/notes.txt <<'EOF'\nnot an adapter\nEOF\n"
+        + _stimulus("narrative-adapter.yaml", NARRATIVE_LIVE)
+    )
+    result = _replay(stimulus)
+    assert [document["document"] for document in result["documents"]] == ["narrative-adapter.yaml"]
+    assert result["state"] == replay.STIMULUS_EVALUATED, result["reasons"]
+
+
 @pytest.mark.parametrize(
     ("stimulus", "why"),
     [

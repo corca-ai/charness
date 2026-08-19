@@ -251,7 +251,21 @@ def _inspect_document(repo_root: Path, document: dict) -> dict:
             "body before it reaches disk; the document a reader replays is not the document "
             "printed in the record. Quote the delimiter"
         )
-    if dropped := uninterpreted_lines(document["text"]):
+    try:
+        dropped = uninterpreted_lines(document["text"])
+    except ValueError as exc:
+        # A construct this repo's reader REFUSES outright (`version: !!int 9` and friends).
+        # It has to be a verdict here, not a raise: `adapter_lib` throws from the shared
+        # parser, so a checker that let it out would traceback on exactly the input class
+        # `#673` is filed about -- the defect shape, reproduced inside the detector for it.
+        reasons.append(
+            f"the `{filename}` document the stimulus writes is one this repo's own reader "
+            f"refuses outright ({_adapter_lib.parse_failure_error(exc)}), so nothing in it "
+            "reaches any consumer and no arm contrasted against it was live"
+        )
+        report["reasons"] = reasons
+        return report
+    if dropped:
         reasons.append(
             f"the `{filename}` document the stimulus writes has lines this repo's own reader "
             f"does not interpret, so the stimulus declares less than it appears to: {'; '.join(dropped)}"
