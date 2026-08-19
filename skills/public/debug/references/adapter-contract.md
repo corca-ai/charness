@@ -24,14 +24,19 @@ Optional shared provenance:
 
 Optional size budget:
 
-- `max_artifact_lines` — raw FILE lines the debug artifact may occupy.
+- `max_artifact_words` — raw FILE words the debug artifact may occupy.
   Omit it to keep the validator's shipped default. Both the gate and the
-  scaffold's `size_budget.max_lines` forecast resolve the same value, so raising
+  scaffold's `size_budget.max_words` forecast resolve the same value, so raising
   it never leaves the author writing to a stale number. Must be a positive
   integer; a refused value is an adapter error and leaves the default enforced.
   When the scaffold cannot reach the gate's resolver at all (a cross-tree
   version skew), it forecasts the shipped default and says so in
   `size_budget.source`, rather than presenting a stale number as resolved.
+- `max_artifact_lines` — RETIRED on 2026-08-19 and now an adapter ERROR, not a
+  silently ignored key. A line count charged for the author's wrap width rather
+  than the reading load it named: across 146 checked-in debug artifacts the
+  180-line cap admitted between 276 and 1487 words. No automatic conversion
+  exists, so restate the bar in `max_artifact_words`.
   There is no upper bound: the ceiling is this repo's to set.
 
 ## Artifact Rule

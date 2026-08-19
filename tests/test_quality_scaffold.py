@@ -97,11 +97,11 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     assert "Delegated Review: not_applicable" in template
     assert "fixture-economics, parallel-critical-path, duplicated-proof" in template
     # size_budget surfaces the validator's line ceiling up front (single-sourced
-    # from MAX_ARTIFACT_LINES, drift-guarded here) so a run writes-to-fit instead
+    # from MAX_ARTIFACT_WORDS, drift-guarded here) so a run writes-to-fit instead
     # of trim-looping against a ceiling it cannot see until the validator rejects.
     # The cap rides the payload as the single source (no second literal that could
     # drift); SKILL.md step 8 routes the run to the --json payload that carries it.
-    assert payload["size_budget"]["max_lines"] == _validate_quality_artifact.MAX_ARTIFACT_LINES
+    assert payload["size_budget"]["max_words"] == _validate_quality_artifact.MAX_ARTIFACT_WORDS
     assert "Advisory" in str(payload["size_budget"]["guidance"])
     # Fill-time guards surface the conditional rules that only fire after the
     # TODO slots are filled (bullet prefixes, passive-because), so an author
@@ -234,10 +234,10 @@ def test_exported_quality_scaffold_validator_command_runs_from_consumer_repo(tmp
     assert "Title: Auth Migration\n" in payload["template"]
     assert str(plugin_root / "scripts") in payload["validator_command"]
     assert "validate_quality_artifact.py" in payload["validator_command"]
-    # The single-source line budget must survive the plugin layout: the exported
-    # scaffold single-sources MAX_ARTIFACT_LINES from the exported validator, so a
+    # The single-source size budget must survive the plugin layout: the exported
+    # scaffold single-sources MAX_ARTIFACT_WORDS from the exported validator, so a
     # consumer repo inherits the write-to-fit budget instead of falling back to none.
-    assert payload["size_budget"]["max_lines"] == _validate_quality_artifact.MAX_ARTIFACT_LINES
+    assert payload["size_budget"]["max_words"] == _validate_quality_artifact.MAX_ARTIFACT_WORDS
 
     artifact_path = consumer / payload["artifact_path"]
     artifact_path.parent.mkdir(parents=True)

@@ -346,7 +346,7 @@ def optional_int(value: Any, field: str, errors: list[str], *, minimum: int = 0)
     """The numeric member of this module's adapter-field vocabulary.
 
     Its absence is why every numeric policy in the artifact-validator family --
-    `MAX_ARTIFACT_LINES` in debug/quality, `DEFAULT_MAX_CONTENT_LINES` in handoff --
+    `MAX_ARTIFACT_WORDS` in debug/quality, `DEFAULT_MAX_CONTENT_WORDS` in handoff --
     was a module constant a consuming repo could not touch: the vocabulary offered
     `optional_string`, `optional_string_list` and `optional_bool`, so a numeric field
     had nowhere to land and each caller that needed one hand-rolled its own

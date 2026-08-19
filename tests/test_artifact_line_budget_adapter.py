@@ -17,7 +17,7 @@ prove nothing about whether any particular ceiling is a good one, nothing about 
 about a repo that pairs a STALE vendored resolver with a new validator. Two guards cover
 that skew and neither is exercised here: the isinstance re-check in
 `resolve_adapter_line_budget` (unit-tested in test_adapter_lib) for a bad VALUE, and the
-`getattr(..., LINE_BUDGET_FIELD, <literal>)` reads in the debug/handoff validators for a
+`getattr(..., WORD_BUDGET_FIELD, <literal>)` reads in the debug/handoff validators for a
 missing field NAME. Reproducing it needs two trees, which this fixture does not build.
 """
 
@@ -43,6 +43,13 @@ def write_adapter(repo: Path, name: str, lines: list[str]) -> None:
 
 
 def long_artifact(title: str, count: int) -> str:
+    """`count` filler lines of exactly TWO words each, plus a THREE-word title.
+
+    Three because `#` is its own whitespace-separated token -- the first draft of
+    this model said two and the assertions caught it, which is the point of keeping
+    an independent model instead of asking the counter under test what it counted.
+    So the artifact measures `2 * count + 3` words.
+    """
     return "\n".join([title, *(f"line {index}" for index in range(count))])
 
 
@@ -50,7 +57,7 @@ def test_debug_ceiling_follows_the_adapter_in_both_gate_and_forecast(tmp_path: P
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "debug").mkdir(parents=True)
     (repo / "charness-artifacts" / "debug" / "latest.md").write_text(
-        long_artifact("# Debug Review", 250), encoding="utf-8"
+        long_artifact("# Debug Review", 700), encoding="utf-8"
     )
     base = ["version: 1", "repo: demo", "output_dir: charness-artifacts/debug"]
     gate = "scripts/validate_debug_artifact.py"
@@ -60,22 +67,25 @@ def test_debug_ceiling_follows_the_adapter_in_both_gate_and_forecast(tmp_path: P
     default_gate = run_main(gate, "--repo-root", str(repo), "--all")
     default_forecast = run_main(scaffold, "--repo-root", str(repo), "--title", "probe")
 
-    write_adapter(repo, "debug-adapter.yaml", [*base, "max_artifact_lines: 240"])
+    write_adapter(repo, "debug-adapter.yaml", [*base, "max_artifact_words: 1300"])
     raised_gate = run_main(gate, "--repo-root", str(repo), "--all")
     raised_forecast = run_main(scaffold, "--repo-root", str(repo), "--title", "probe")
 
-    assert "debug artifact is 251 lines" in default_gate.stderr
-    assert "get back under 180 " in default_gate.stderr
-    assert "max_lines: 180\n" in default_forecast.stdout
-    assert "get back under 240 " in raised_gate.stderr
-    assert "max_lines: 240\n" in raised_forecast.stdout
+    # 2 * 700 + 3 words, from `long_artifact`'s own model -- not read back from the
+    # counter. The raw LINE count of the same file is 701, so a mutation that counted
+    # lines could not produce this number.
+    assert "debug artifact is 1403 words" in default_gate.stderr
+    assert "get back under 1200 " in default_gate.stderr
+    assert "max_words: 1200\n" in default_forecast.stdout
+    assert "get back under 1300 " in raised_gate.stderr
+    assert "max_words: 1300\n" in raised_forecast.stdout
 
 
 def test_quality_ceiling_follows_the_adapter_in_both_gate_and_forecast(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "quality").mkdir(parents=True)
     (repo / "charness-artifacts" / "quality" / "latest.md").write_text(
-        long_artifact("# Quality Review", 210), encoding="utf-8"
+        long_artifact("# Quality Review", 700), encoding="utf-8"
     )
     base = ["version: 1", "repo: demo", "output_dir: charness-artifacts/quality"]
     gate = "scripts/validate_quality_artifact.py"
@@ -85,15 +95,15 @@ def test_quality_ceiling_follows_the_adapter_in_both_gate_and_forecast(tmp_path:
     default_gate = run_main(gate, "--repo-root", str(repo))
     default_forecast = run_main(scaffold, "--repo-root", str(repo), "--title", "probe")
 
-    write_adapter(repo, "quality-adapter.yaml", [*base, "max_artifact_lines: 200"])
+    write_adapter(repo, "quality-adapter.yaml", [*base, "max_artifact_words: 1300"])
     raised_gate = run_main(gate, "--repo-root", str(repo))
     raised_forecast = run_main(scaffold, "--repo-root", str(repo), "--title", "probe")
 
-    assert "quality artifact is 211 lines" in default_gate.stderr
-    assert "get back under 140 " in default_gate.stderr
-    assert "max_lines: 140\n" in default_forecast.stdout
-    assert "get back under 200 " in raised_gate.stderr
-    assert "max_lines: 200\n" in raised_forecast.stdout
+    assert "quality artifact is 1403 words" in default_gate.stderr
+    assert "get back under 1100 " in default_gate.stderr
+    assert "max_words: 1100\n" in default_forecast.stdout
+    assert "get back under 1300 " in raised_gate.stderr
+    assert "max_words: 1300\n" in raised_forecast.stdout
 
 
 def _handoff_artifact(entries_per_section: int) -> str:
@@ -238,16 +248,16 @@ def test_a_refused_ceiling_is_an_adapter_error_and_leaves_the_default_enforced(t
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "debug").mkdir(parents=True)
     (repo / "charness-artifacts" / "debug" / "latest.md").write_text(
-        long_artifact("# Debug Review", 250), encoding="utf-8"
+        long_artifact("# Debug Review", 700), encoding="utf-8"
     )
     base = ["version: 1", "repo: demo", "output_dir: charness-artifacts/debug"]
 
     for value, expected in (
-        ("yes", "max_artifact_lines must be an integer"),
-        ("0", "max_artifact_lines must be greater than or equal to 1"),
-        ("'240'", "max_artifact_lines must be an integer"),
+        ("yes", "max_artifact_words must be an integer"),
+        ("0", "max_artifact_words must be greater than or equal to 1"),
+        ("'1500'", "max_artifact_words must be an integer"),
     ):
-        write_adapter(repo, "debug-adapter.yaml", [*base, f"max_artifact_lines: {value}"])
+        write_adapter(repo, "debug-adapter.yaml", [*base, f"max_artifact_words: {value}"])
         resolved = run_main("skills/public/debug/scripts/resolve_adapter.py", "--repo-root", str(repo))
         gate = run_main("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
 
@@ -255,4 +265,4 @@ def test_a_refused_ceiling_is_an_adapter_error_and_leaves_the_default_enforced(t
         assert expected in resolved.stdout, value
         # The refused value must never become the ceiling, and must never disarm it
         # either: the conservative arm is the built-in default, not "unlimited".
-        assert "get back under 180" in gate.stderr, value
+        assert "get back under 1200" in gate.stderr, value

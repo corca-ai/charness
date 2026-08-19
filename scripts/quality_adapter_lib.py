@@ -172,14 +172,25 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     if public_spec_implementation_ref_density_floor is not None:
         validated["public_spec_implementation_ref_density_floor"] = public_spec_implementation_ref_density_floor
 
-    # Raw FILE lines, matching what `validate_quality_artifact.py` counts -- named for
+    # Raw FILE words, matching what `validate_quality_artifact.py` counts -- named for
     # the artifact rather than for "content" because handoff's neighbouring budget
-    # measures something else. Written only when the repo declared one, so the DEFAULT
-    # number keeps living in the validator that enforces it; `minimum=1` because a
-    # ceiling of 0 refuses every possible artifact.
-    max_artifact_lines = _int_value(data.get("max_artifact_lines"), "max_artifact_lines", errors, minimum=1)
-    if max_artifact_lines is not None:
-        validated["max_artifact_lines"] = max_artifact_lines
+    # SELECTS different text (both charge words). Written only when the repo declared
+    # one, so the DEFAULT number keeps living in the validator that enforces it;
+    # `minimum=1` because a ceiling of 0 refuses every possible artifact.
+    max_artifact_words = _int_value(data.get("max_artifact_words"), "max_artifact_words", errors, minimum=1)
+    if max_artifact_words is not None:
+        validated["max_artifact_words"] = max_artifact_words
+    # Retired 2026-08-19. An ERROR, not a drop: a dropped key leaves a consuming repo's
+    # declared ceiling inert while the adapter still resolves `valid: true`, and 140 read
+    # as a word ceiling would refuse every real artifact.
+    if "max_artifact_lines" in data:
+        errors.append(
+            "`max_artifact_lines` was retired and is no longer read; use "
+            "`max_artifact_words` instead. The budget now charges WORDS, not lines, "
+            "because a line count measured the author's wrap width; a line ceiling "
+            "cannot be converted automatically (the old bar admitted a 7.5x spread of "
+            "words across this repo's own corpus), so restate the bar you want in words"
+        )
 
     public_spec_implementation_guard_min_lines = _int_value(
         data.get("public_spec_implementation_guard_min_lines"),

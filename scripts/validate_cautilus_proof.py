@@ -11,7 +11,13 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 _scripts_cautilus_adapter_lib_module = import_repo_module(__file__, "scripts.cautilus_adapter_lib")
 ARTIFACT_PATH = Path(_scripts_cautilus_adapter_lib_module.ARTIFACT_PATH)
-MAX_ARTIFACT_LINES = 120
+# WORDS since 2026-08-19, for the reason `artifact_words` records: a line ceiling
+# charged for wrap width, not reading load. 800 is scaled from the 120-line ceiling at
+# the ~6.6 words per line this repo's prose artifacts measure; this family has no
+# adapter field and no checked-in corpus to fit against, so the number is derived from
+# the sibling families rather than from its own history, and that is stated rather than
+# dressed up as a measurement.
+MAX_ARTIFACT_WORDS = 800
 REQUIRED_SECTIONS = (
     "## Trigger",
     "## Validation Goal",
@@ -57,7 +63,7 @@ find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
 validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h2_sections
-validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
+validate_max_words = _scripts_artifact_validator_module.validate_max_words
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
 _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
@@ -207,7 +213,7 @@ def validate_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> str:
 
     lines = read_lines(repo_root / ARTIFACT_PATH)
     validate_title(lines)
-    validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="cautilus proof artifact")
+    validate_max_words(lines, max_words=MAX_ARTIFACT_WORDS, artifact_label="cautilus proof artifact")
     validate_date_line(lines)
     validate_exact_h2_sections(lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS)
     validate_nonempty_sections(lines, REQUIRED_SECTIONS)

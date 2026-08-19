@@ -7,7 +7,7 @@ customized_from: portable-defaults
 # Optional. CONTENT words the handoff may occupy -- blank lines, the required `##`
 # headings and the whole `## References` block are not counted, and what remains is
 # charged per whitespace-separated token. Named apart from debug/quality's
-# `max_artifact_lines` because it measures a different thing in a different unit.
+# `max_artifact_words` because it SELECTS different text (both charge words).
 # `max_content_lines` was retired on 2026-08-19 and is now an adapter error.
 # max_content_words: 1200
 chunk_policy:

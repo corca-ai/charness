@@ -9,7 +9,7 @@ preset_lineage:
 # Optional. Raw FILE lines the quality artifact may occupy; omit to keep the
 # validator's default. Both the gate and the scaffold's `size_budget.max_lines`
 # forecast read it, so raising it never leaves the author writing to a stale number.
-# max_artifact_lines: 200
+# max_artifact_words: 1600
 coverage_fragile_margin_pp: 1.0
 coverage_floor_policy:
   min_statements_threshold: 30

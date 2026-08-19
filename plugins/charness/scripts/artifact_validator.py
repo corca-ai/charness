@@ -44,6 +44,13 @@ H2_RE = re.compile(r"^##\s+.+$")
 # its own module; re-exported here so every validator keeps its single import point.
 _violation_report = import_repo_module(__file__, "scripts.artifact_violation_report")
 _scaffold_rel = _violation_report._scaffold_rel
+# The size measurement and its refusal live in their own module: they are one
+# cohesive decision, and the reasoning that has to travel with the unit did not fit
+# under this file's code-length cap. Re-exported so every existing call site keeps
+# importing size enforcement from the validator it already loads.
+_size_budget = import_repo_module(__file__, "scripts.artifact_size_budget")
+artifact_words = _size_budget.artifact_words
+validate_max_words = _size_budget.validate_max_words
 _skill_id = _violation_report._skill_id
 _skill_id_from_scaffold = _violation_report._skill_id_from_scaffold
 scaffold_hint = _violation_report.scaffold_hint
@@ -89,23 +96,6 @@ def resolve_adapter_line_budget(
     if isinstance(value, bool) or not isinstance(value, int) or value < 1:
         return default
     return value
-
-
-def validate_max_lines(
-    lines: Sequence[str], *, max_lines: int, artifact_label: str, artifact_type: str | None = None
-) -> None:
-    if len(lines) > max_lines:
-        message = (
-            f"{artifact_label} is {len(lines)} lines; should stay concise — archive or move "
-            f"durable detail to get back under {max_lines} (cut ~{len(lines) - max_lines} lines)"
-        )
-        # A ceiling discovered only after writing long is a wasted draft; when the
-        # owning scaffold publishes it as `size_budget.max_lines`, say so here so
-        # the next author writes-to-fit up front.
-        scaffold = _scaffold_rel(artifact_type) if artifact_type else None
-        if scaffold:
-            message += f"; `python3 {scaffold} --repo-root .` reports this ceiling up front as `size_budget.max_lines`"
-        raise ValidationError(message)
 
 
 def validate_title(

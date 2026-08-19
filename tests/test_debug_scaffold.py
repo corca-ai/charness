@@ -92,9 +92,9 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert "- Non-Claims: n/a" in payload["template"]
 
     # size_budget surfaces the validator's line ceiling up front (single-sourced
-    # from MAX_ARTIFACT_LINES, drift-guarded here) so a run writes-to-fit instead
+    # from MAX_ARTIFACT_WORDS, drift-guarded here) so a run writes-to-fit instead
     # of trim-looping against a ceiling it cannot see until the validator rejects.
-    assert payload["size_budget"]["max_lines"] == _debug_validator.MAX_ARTIFACT_LINES
+    assert payload["size_budget"]["max_words"] == _debug_validator.MAX_ARTIFACT_WORDS
     assert "Sibling Search" in str(payload["size_budget"]["guidance"])
 
     artifact_path = repo / payload["artifact_path"]

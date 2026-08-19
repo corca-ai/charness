@@ -38,16 +38,20 @@ repo_relative = import_repo_module(__file__, "scripts.path_portability_lib").rep
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
-validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
+validate_max_words = _scripts_artifact_validator_module.validate_max_words
 resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 
-# The DEFAULT ceiling; a consuming repo raises or lowers it with `max_artifact_lines`
-# in its quality adapter. Both this gate and the scaffold's `size_budget.max_lines`
-# forecast resolve it through `resolve_adapter_line_budget`, so they cannot disagree.
-MAX_ARTIFACT_LINES = 140
-LINE_BUDGET_FIELD = "max_artifact_lines"
+# The DEFAULT ceiling, in WORDS since 2026-08-19; a consuming repo raises or lowers it
+# with `max_artifact_words` in its quality adapter. Both this gate and the scaffold's
+# `size_budget.max_words` forecast resolve it through `resolve_adapter_line_budget`, so
+# they cannot disagree. 1100 is chosen against the corpus, not converted from 140 lines:
+# across 161 checked-in quality artifacts the line cap admitted 229 to 1727 words, a 7.5x
+# spread, so no word number reproduces it. 1100 sits above this corpus's p90 of 933 and
+# admits 157 of the 161.
+MAX_ARTIFACT_WORDS = 1100
+WORD_BUDGET_FIELD = "max_artifact_words"
 REQUIRED_SECTIONS = (
     "## Scope",
     "## Surface Contract Review",
@@ -584,10 +588,10 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
 
     checks = (
         _header,
-        lambda: validate_max_lines(
+        lambda: validate_max_words(
             lines,
-            max_lines=resolve_adapter_line_budget(
-                load_adapter, resolved_repo_root, field=LINE_BUDGET_FIELD, default=MAX_ARTIFACT_LINES
+            max_words=resolve_adapter_line_budget(
+                load_adapter, resolved_repo_root, field=WORD_BUDGET_FIELD, default=MAX_ARTIFACT_WORDS
             ),
             artifact_label="quality artifact",
         ),

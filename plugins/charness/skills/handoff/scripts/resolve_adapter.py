@@ -24,11 +24,12 @@ load_simple_adapter = _scripts_simple_skill_adapter_lib_module.load_simple_adapt
 # CONTENT words, not file lines and no longer content LINES: the budget excludes blank
 # lines, the canonical `##` headings the validator itself requires, and the whole
 # `## References` block, then charges per whitespace-separated token of what remains.
-# Named apart from debug/quality's `max_artifact_lines` for the reason that name was
+# Named apart from debug/quality's `max_artifact_words` for the reason that name was
 # always separate -- one shared name across the two families would have meant two
 # different measurements, so a repo copying a number between adapters would silently get
-# a different ceiling than it read. That hazard is now sharper, not softer: the two
-# families no longer share a UNIT either.
+# a different ceiling than it read. Both families charge WORDS now; what still differs is
+# which text is SELECTED (this one excludes headings and `## References`, theirs counts
+# the raw file), so the names stay apart and the numbers stay non-interchangeable.
 WORD_BUDGET_FIELD = "max_content_words"
 # 1, not 0: a ceiling of 0 refuses every possible handoff, including the scaffold's stub.
 INT_FIELDS = ((WORD_BUDGET_FIELD, 1),)

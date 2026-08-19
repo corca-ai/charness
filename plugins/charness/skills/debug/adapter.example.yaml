@@ -7,4 +7,4 @@ customized_from: portable-defaults
 # Optional. Raw FILE lines the debug artifact may occupy; omit to keep the
 # validator's default. Raise it when this repo's investigations are legitimately
 # multi-cause, rather than trimming real content to fit a number set elsewhere.
-# max_artifact_lines: 240
+# max_artifact_words: 1600

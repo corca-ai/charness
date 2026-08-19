@@ -37,8 +37,14 @@ STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version"
 # Raw FILE lines, matching what `validate_debug_artifact.py` counts. Named for the
 # artifact rather than for "content" because handoff's neighbouring budget excludes
 # blank lines, required headings and the whole `## References` block -- one shared
-# `max_lines` name would have meant two different measurements.
-LINE_BUDGET_FIELD = "max_artifact_lines"
+# name would have meant two different measurements. Both charge WORDS now; the
+# SELECTION of which text counts still differs, so the names stay apart.
+WORD_BUDGET_FIELD = "max_artifact_words"
+# Retired 2026-08-19 when the budget changed unit. Refused, not ignored: a dropped key
+# leaves a consuming repo's declared ceiling inert under `valid: true`, and 180 read as
+# a word ceiling would refuse every real artifact. The parser cannot see this class --
+# a well-formed key the SCHEMA stopped reading parses perfectly.
+RETIRED_BUDGET_FIELD = "max_artifact_lines"
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
 
@@ -69,9 +75,17 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     # only when the repo declared one, so the validator's `data.get` fallback stays the
     # single place the default number lives. `minimum=1` because a ceiling of 0 refuses
     # every possible artifact, including the scaffold's own stub.
-    max_artifact_lines = optional_int(data.get(LINE_BUDGET_FIELD), LINE_BUDGET_FIELD, errors, minimum=1)
-    if max_artifact_lines is not None:
-        validated[LINE_BUDGET_FIELD] = max_artifact_lines
+    max_artifact_words = optional_int(data.get(WORD_BUDGET_FIELD), WORD_BUDGET_FIELD, errors, minimum=1)
+    if max_artifact_words is not None:
+        validated[WORD_BUDGET_FIELD] = max_artifact_words
+    if RETIRED_BUDGET_FIELD in data:
+        errors.append(
+            f"`{RETIRED_BUDGET_FIELD}` was retired and is no longer read; use "
+            f"`{WORD_BUDGET_FIELD}` instead. The budget now charges WORDS, not lines, "
+            "because a line count measured the author's wrap width; a line ceiling "
+            "cannot be converted automatically (the old bar admitted a 5.4x spread of "
+            "words across this repo's own corpus), so restate the bar you want in words"
+        )
 
     configured_artifact_class = data.get("artifact_class")
     if configured_artifact_class is None:

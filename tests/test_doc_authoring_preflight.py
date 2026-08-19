@@ -135,9 +135,9 @@ def test_clean_fixture_is_silent(tmp_path: Path) -> None:
     assert not report.length["over"]
 
 
-def test_raw_line_count_surface_forecasts_through_validate_max_lines(tmp_path: Path, monkeypatch) -> None:
+def test_raw_word_count_surface_forecasts_through_validate_max_words(tmp_path: Path, monkeypatch) -> None:
     # Every surface registered today declares its own counting/checking pair, so
-    # the raw-line fallback (`count_attr`/`check_attr` left None) has no live
+    # the raw-word fallback (`count_attr`/`check_attr` left None) has no live
     # caller. It is the default a NEW capped surface inherits, so it is pinned
     # here rather than left to be discovered by the first author who omits both.
     surface = _pf.LengthSurface(

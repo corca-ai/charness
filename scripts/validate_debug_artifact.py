@@ -37,7 +37,7 @@ find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
 validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h2_sections
-validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
+validate_max_words = _scripts_artifact_validator_module.validate_max_words
 resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
@@ -81,20 +81,24 @@ HYPOTHESIS_BOUNDARY_HEADINGS = ("## Verification", "## Root Cause")
 DISCONFIRMER_MARKER = "disconfirmer:"
 FALSIFIABLE_SOURCE_REFERENCE = "skills/public/debug/references/disconfirmer-first.md"
 
-# The DEFAULT ceiling. A consuming repo raises or lowers it with
-# `max_artifact_lines` in `.agents/debug-adapter.yaml`; the run resolves it once in
+# The DEFAULT ceiling, in WORDS since 2026-08-19. A consuming repo raises or lowers it
+# with `max_artifact_words` in `.agents/debug-adapter.yaml`; the run resolves it once in
 # `_validate_factory` via `resolve_adapter_line_budget`, so a repo whose investigations
-# are legitimately multi-cause is not forced into content-free re-wrapping. Kept
+# are legitimately multi-cause is not forced into content-free re-wrapping -- which the
+# LINE ceiling this replaces actively rewarded, since rewrapping was the cheapest way
+# under it. 1200 is chosen against the corpus, not converted: across 146 checked-in
+# debug artifacts the 180-line cap admitted 276 to 1487 words, a 5.4x spread, so no
+# word number reproduces it. 1200 sits just above this corpus's p90 of 1129. Kept
 # exported: the scaffold, this module's tests and the drift guard all name the DEFAULT,
 # and only the default.
-MAX_ARTIFACT_LINES = 180
+MAX_ARTIFACT_WORDS = 1200
 # `getattr` with the literal default, not a bare attribute read: the two halves are
 # loaded from separate trees (the resolver by PATH, honoring CHARNESS_REPO_ROOT), so a
 # consumer can pair a stale resolver with this validator. A bare read turns that skew
 # into an AttributeError at IMPORT -- a traceback and no verdict on a proof surface,
 # outside the ValidationError handler. The literal is the same one the resolver
 # declares; quality already spells its field locally for this reason.
-LINE_BUDGET_FIELD = getattr(_debug_resolve_adapter, "LINE_BUDGET_FIELD", "max_artifact_lines")
+WORD_BUDGET_FIELD = getattr(_debug_resolve_adapter, "WORD_BUDGET_FIELD", "max_artifact_words")
 REQUIRED_SECTIONS = (
     "## Problem",
     "## Correct Behavior",
@@ -302,15 +306,15 @@ def validate_debug_artifact(
     *,
     collect_all: bool = False,
     current_pointer: Path | None = None,
-    max_lines: int | None = None,
+    max_words: int | None = None,
 ) -> None:
-    """`max_lines` None means the built-in default, NOT "unlimited".
+    """`max_words` None means the built-in default, NOT "unlimited".
 
     The adapter-resolved ceiling is bound once per run by `_validate_factory`, the
     same place `current_pointer` is bound, because resolving it per artifact would
     re-read and re-parse the adapter for every file in the corpus.
     """
-    ceiling = MAX_ARTIFACT_LINES if max_lines is None else max_lines
+    ceiling = MAX_ARTIFACT_WORDS if max_words is None else max_words
     lines = read_lines(path)
     base_checks = (
         lambda: validate_title(
@@ -319,8 +323,8 @@ def validate_debug_artifact(
             error_message="debug artifact must start with a `# ... Debug ...` heading",
         ),
         lambda: validate_date_line(lines),
-        lambda: validate_max_lines(
-            lines, max_lines=ceiling, artifact_label="debug artifact", artifact_type="debug"
+        lambda: validate_max_words(
+            lines, max_words=ceiling, artifact_label="debug artifact", artifact_type="debug"
         ),
     )
     if is_current_artifact(path, current_pointer):
@@ -499,11 +503,11 @@ def _validate_factory(run):
     per-run state; the outer factory is where per-run state belongs.
     """
     current_pointer = _current_pointer(run.repo_root)
-    max_lines = resolve_adapter_line_budget(
-        load_adapter, run.repo_root, field=LINE_BUDGET_FIELD, default=MAX_ARTIFACT_LINES
+    max_words = resolve_adapter_line_budget(
+        load_adapter, run.repo_root, field=WORD_BUDGET_FIELD, default=MAX_ARTIFACT_WORDS
     )
     return lambda artifact: validate_debug_artifact(
-        artifact, collect_all=run.collect_all, current_pointer=current_pointer, max_lines=max_lines
+        artifact, collect_all=run.collect_all, current_pointer=current_pointer, max_words=max_words
     )
 
 

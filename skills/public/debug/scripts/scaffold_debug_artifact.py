@@ -25,22 +25,22 @@ _resolve_artifact_path = SKILL_RUNTIME.load_repo_module_from_skill_script(__file
 _scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 
 # Single-source the artifact line budget from the validator (the one authority
-# for MAX_ARTIFACT_LINES) so the scaffold surfaces the exact ceiling the gate
+# for MAX_ARTIFACT_WORDS) so the scaffold surfaces the exact ceiling the gate
 # enforces. If the validator module cannot load, degrade to no budget rather
 # than break the scaffold — the field is additive guidance, never load-bearing.
 try:
     _debug_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_debug_artifact")
-    _MAX_ARTIFACT_LINES: int | None = int(_debug_validator.MAX_ARTIFACT_LINES)
+    _MAX_ARTIFACT_WORDS: int | None = int(_debug_validator.MAX_ARTIFACT_WORDS)
 except Exception:
     _debug_validator = None
-    _MAX_ARTIFACT_LINES = None
+    _MAX_ARTIFACT_WORDS = None
 
 
 # The recurring overflow in real captures is ## Sibling Search (a rich structural
 # scan that enumerates many siblings). The budget guidance routes the run to the
 # abstraction rule that keeps it tight, instead of writing long then trim-looping.
 SIZE_GUIDANCE = (
-    "Write the whole artifact within max_lines. The usual overflow is "
+    "Write the whole artifact within max_words; the budget charges words, so rewrapping buys nothing. The usual overflow is "
     "## Sibling Search — abstract it to the mental-model + axis lines rather "
     "than enumerating every sibling verbatim (references/sibling-search.md)."
 )
@@ -323,7 +323,7 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     resolved_title = default_title(title)
     subject_key = invocation_subject_key(title=title, subject=subject)
     size_budget = _scaffold_lib.size_budget(
-        _debug_validator, _MAX_ARTIFACT_LINES, adapter, guidance=SIZE_GUIDANCE
+        _debug_validator, _MAX_ARTIFACT_WORDS, adapter, guidance=SIZE_GUIDANCE
     )
     payload = _resolve_artifact_path.payload_for(
         repo_root,

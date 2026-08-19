@@ -14,20 +14,20 @@ _artifact_validator = import_repo_module(
 )
 
 
-def test_validate_max_lines_reports_actual_count_and_overage() -> None:
+def test_validate_max_words_reports_actual_count_and_overage() -> None:
     # An over-budget artifact must name the actual line count and the overage so a
     # run trims in one pass instead of a manual wc-l loop against an unseen ceiling.
     with pytest.raises(_artifact_validator.ValidationError) as excinfo:
-        _artifact_validator.validate_max_lines(["x"] * 205, max_lines=180, artifact_label="debug artifact")
+        _artifact_validator.validate_max_words(["x"] * 205, max_words=180, artifact_label="debug artifact")
     message = str(excinfo.value)
     assert "should stay concise" in message  # substring other gates match on
-    assert "205 lines" in message
+    assert "205 words" in message
     assert "under 180" in message
     assert "cut ~25" in message
 
 
-def test_validate_max_lines_accepts_within_budget() -> None:
-    _artifact_validator.validate_max_lines(["x"] * 180, max_lines=180, artifact_label="debug artifact")
+def test_validate_max_words_accepts_within_budget() -> None:
+    _artifact_validator.validate_max_words(["x"] * 180, max_words=180, artifact_label="debug artifact")
 
 def test_scaffold_hint_names_the_owning_scaffold_command() -> None:
     # A violation report that names only WHAT is wrong makes the author rediscover
@@ -90,12 +90,12 @@ def test_report_validation_failure_emits_the_hint_once(capsys) -> None:
     assert err.count("hint: start from the owning scaffold") == 1
 
 
-def test_validate_max_lines_points_at_the_scaffold_budget() -> None:
+def test_validate_max_words_points_at_the_scaffold_budget() -> None:
     with pytest.raises(_artifact_validator.ValidationError) as excinfo:
-        _artifact_validator.validate_max_lines(
-            ["x"] * 240, max_lines=180, artifact_label="debug artifact", artifact_type="debug"
+        _artifact_validator.validate_max_words(
+            ["x"] * 240, max_words=180, artifact_label="debug artifact", artifact_type="debug"
         )
-    assert "`size_budget.max_lines`" in str(excinfo.value)
+    assert "`size_budget.max_words`" in str(excinfo.value)
 
 
 def _run_shared_runner(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, **kwargs: object) -> int:

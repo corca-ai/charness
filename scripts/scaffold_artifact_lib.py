@@ -396,7 +396,8 @@ def emit_payload_main(
 def size_budget(validator, default: int | None, adapter: dict, *, guidance: str) -> dict | None:
     """The `size_budget` block a scaffold publishes, resolved the way the GATE resolves it.
 
-    One owner for both raw-file-line families (debug, quality). The forecast is the
+    One owner for both raw-file families (debug, quality), which charge WORDS since
+    2026-08-19. The forecast is the
     operational half of an adapter-configurable ceiling: a number discovered only after
     writing long is the wasted draft the field exists to end, so this must never report
     a ceiling the gate does not enforce.
@@ -418,10 +419,10 @@ def size_budget(validator, default: int | None, adapter: dict, *, guidance: str)
         cap = validator.resolve_adapter_line_budget(
             lambda _repo_root: adapter,
             Path("."),
-            field=validator.LINE_BUDGET_FIELD,
+            field=validator.WORD_BUDGET_FIELD,
             default=default,
         )
         source = "resolved"
     except Exception:
         cap, source = default, "default (adapter ceiling unresolvable)"
-    return {"max_lines": cap, "source": source, "guidance": guidance}
+    return {"max_words": cap, "source": source, "guidance": guidance}

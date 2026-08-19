@@ -80,8 +80,8 @@ class LengthSurface:
     much. ``count_attr`` must return the COUNT as an int, not the counted items:
     the handoff budget charges words, and a call site that wrapped this in
     ``len()`` would have raised ``TypeError`` on an int the moment the unit
-    changed. Left None, the surface falls back to raw line count +
-    ``validate_max_lines``.
+    changed. Left None, the surface falls back to a raw word count +
+    ``validate_max_words``.
     """
 
     name: str
@@ -249,7 +249,7 @@ def collect_length(
     repo_root: Path, doc: Path, rel: str, as_surface: str | None
 ) -> dict[str, Any]:
     """Forecast the surface line cap by reusing the owning validator's constant
-    and ``validate_max_lines`` (the exact gate path), when the target maps to a
+    and ``validate_max_words`` (the exact gate path), when the target maps to a
     capped surface. A general doc with no registered cap reports no floor."""
     surface = _resolve_length_surface(repo_root, rel, as_surface)
     if surface is None:
@@ -279,7 +279,7 @@ def collect_length(
             except TypeError:
                 check(lines)
         else:
-            _artifact_validator.validate_max_lines(lines, max_lines=cap, artifact_label=surface.label)
+            _artifact_validator.validate_max_words(lines, max_words=cap, artifact_label=surface.label)
     except _artifact_validator.ValidationError as exc:
         detail = str(exc)
     return {

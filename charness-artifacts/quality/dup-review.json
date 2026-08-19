@@ -2,8 +2,29 @@
   "entries": [
     {
       "class": "intentional",
-      "id": "8dd1e4cb0ec86aad",
-      "note": "Two unrelated dataclass FIELD-DECLARATION blocks, matched on the shape every typed attribute list has: `name: type` lines with trailing `| None = None` defaults. `check_doc_authoring_preflight.LengthSurface` describes a doc surface's cap, counter and checker; `inventory_current_pointer_layouts`'s row describes a skill's on-disk pointer layout. They share no field, no type beyond `str`/`bool`/`None`, no caller and no concept. The family appeared only because the handoff budget changed unit on 2026-08-19 and `LengthSurface`'s docstring grew to record why `count_attr` must return an int -- the BLOCK crossed a size threshold; the code did not become more duplicated. Extracting a shared base for two unrelated dataclasses to satisfy this would couple a doc-length forecast to a pointer-layout inventory, which is worse than the duplication.",
+      "id": "caecde21613c2723",
+      "note": "The per-skill adapter `validate_adapter_data` field blocks -- the same class already accepted as 43ed9d7591d5f994, which states the reasoning: each adapter owns its own field tuples and its own post-validation rules, and the primitives they call (`optional_int`, `optional_string`, `optional_bool`) are ALREADY the shared layer. Surfaced as new because the debug resolver's block grew on 2026-08-19: `max_artifact_lines` was retired in favour of `max_artifact_words`, and refusing the retired key added lines to a block that was already at the threshold. No member other than the debug resolver was touched. NOTE for whoever revisits: #550 (`Adapter resolver bodies are near-identical`) tracks whether this whole family should collapse. This entry accepts the family as it stands TODAY and is not a ruling on #550.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6a30a3ac328cd205",
+      "note": "Quality-package CLI entrypoint shape -- argparse setup, repo-root resolution, adapter load, YAML emit, exit code -- shared by six independently-invocable quality commands. Same class as 0363443bac0d5b80: each is a directly executable operator command with its own accepted arguments and its own error domain, and a shared main wrapper would hide which schema each command accepts. Surfaced as new because `scaffold_quality_artifact` grew on 2026-08-19 when the artifact budget changed unit (line -> word), not because any command became more like its siblings.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cad897f5b9d83cf4",
+      "note": "A sub-span of 6a30a3ac328cd205 with one extra member (`inventory_quality_handoff`), matched because the same CLI entrypoint shape is present in a shorter window. Accepted for the same reason and with the same caveat: the members are separately invocable operator commands, and the family appeared because `scaffold_quality_artifact` grew during the 2026-08-19 budget-unit migration.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "aa1fbe0974b17945",
+      "note": "Two unrelated dataclass FIELD-DECLARATION blocks, matched on the shape every typed attribute list has: `name: type` lines with trailing `| None = None` defaults. `check_doc_authoring_preflight.LengthSurface` describes a doc surface's cap, counter and checker; `inventory_current_pointer_layouts`'s row describes a skill's on-disk pointer layout. They share no field, no type beyond `str`/`bool`/`None`, no caller and no concept. The family appeared only because the handoff budget changed unit on 2026-08-19 and `LengthSurface`'s docstring grew to record why `count_attr` must return an int -- the BLOCK crossed a size threshold; the code did not become more duplicated. ROTATED from 8dd1e4cb0ec86aad on the same day when the migration extended that docstring again; same two members, same reasoning. Extracting a shared base for two unrelated dataclasses to satisfy this would couple a doc-length forecast to a pointer-layout inventory, which is worse than the duplication.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     },

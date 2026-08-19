@@ -534,7 +534,7 @@ def test_an_unreadable_adapter_degrades_the_ceiling_to_the_default(tmp_path) -> 
     # "returned the caller's default" from "returned a hardcoded 180".
     assert (
         artifact_validator.resolve_adapter_line_budget(
-            boom, tmp_path, field="max_artifact_lines", default=999
+            boom, tmp_path, field="max_artifact_words", default=999
         )
         == 999
     )
@@ -554,14 +554,14 @@ def test_a_value_the_resolver_should_have_refused_still_yields_the_default(
     must not turn that skew into a ceiling of `True` (which `isinstance(True, int)`
     would otherwise make 1, refusing every artifact past its title line).
     """
-    adapter = {"data": {} if declared is None else {"max_artifact_lines": declared}}
+    adapter = {"data": {} if declared is None else {"max_artifact_words": declared}}
 
     # The last arm is the POSITIVE control: without it, deleting adapter resolution
     # entirely (`return default`) passes every case above, which is exactly the
     # both-tests-green-only-one-exercises-the-branch class this file exists for.
     assert (
         artifact_validator.resolve_adapter_line_budget(
-            lambda _repo_root: adapter, tmp_path, field="max_artifact_lines", default=999
+            lambda _repo_root: adapter, tmp_path, field="max_artifact_words", default=999
         )
         == expected
     )
@@ -580,11 +580,11 @@ def test_a_scaffold_says_so_when_it_cannot_reach_the_gates_resolver(monkeypatch)
     def boom(*_args, **_kwargs):
         raise AttributeError("resolver missing from a stale vendored validator")
 
-    validator = SimpleNamespace(resolve_adapter_line_budget=boom, LINE_BUDGET_FIELD="max_artifact_lines")
+    validator = SimpleNamespace(resolve_adapter_line_budget=boom, WORD_BUDGET_FIELD="max_artifact_words")
     budget = scaffold_artifact_lib.size_budget(validator, 180, {"data": {}}, guidance="g")
 
     assert budget == {
-        "max_lines": 180,
+        "max_words": 180,
         "source": "default (adapter ceiling unresolvable)",
         "guidance": "g",
     }
@@ -669,11 +669,11 @@ def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
     spec.loader.exec_module(module)
 
     assert getattr(module, attr) is None
-    assert module._MAX_ARTIFACT_LINES is None
+    assert module._MAX_ARTIFACT_WORDS is None
     # And the consequence the arm exists for: a payload with no ceiling claim at all,
     # rather than the shipped literal asserted against a gate this install cannot run.
     from scripts import scaffold_artifact_lib
 
     assert scaffold_artifact_lib.size_budget(
-        getattr(module, attr), module._MAX_ARTIFACT_LINES, {"data": {}}, guidance="g"
+        getattr(module, attr), module._MAX_ARTIFACT_WORDS, {"data": {}}, guidance="g"
     ) is None

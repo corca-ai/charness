@@ -40,16 +40,16 @@ _REDIRECTED_RECORD_KEYS = (
 # slots instead of rediscovering the contract by trial-and-error.
 
 # Single-source the artifact line budget from the validator (the one authority
-# for MAX_ARTIFACT_LINES) so the scaffold surfaces the exact ceiling the gate
+# for MAX_ARTIFACT_WORDS) so the scaffold surfaces the exact ceiling the gate
 # enforces, without a second literal that can drift. If the validator module
 # cannot load, degrade to no budget rather than break the scaffold — the field is
 # additive guidance, never load-bearing.
 try:
     _quality_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_quality_artifact")
-    _MAX_ARTIFACT_LINES: int | None = int(_quality_validator.MAX_ARTIFACT_LINES)
+    _MAX_ARTIFACT_WORDS: int | None = int(_quality_validator.MAX_ARTIFACT_WORDS)
 except Exception:
     _quality_validator = None
-    _MAX_ARTIFACT_LINES = None
+    _MAX_ARTIFACT_WORDS = None
 
 
 # Budget guidance routes the run to write-to-fit instead of writing long then
@@ -58,7 +58,7 @@ except Exception:
 # plus the structural rule for enumerate-prone sections, rather than asserting an
 # unproven "usual overflow" section the one captured artifact does not support.
 SIZE_GUIDANCE = (
-    "Write the whole artifact within max_lines. The judgment-heavy sections "
+    "Write the whole artifact within max_words; the budget charges words, so rewrapping buys nothing. The judgment-heavy sections "
     "(## Advisory, ## Recommended Next Quality Moves, ## Delegated Review) run "
     "largest — keep each finding to its evidence, and cite the inventory command "
     "rather than pasting every gate or command entry verbatim."
@@ -272,7 +272,7 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     resolved_title = default_title(title)
     subject_key = invocation_subject_key(title=title, subject=subject, date_text=date_text)
     size_budget = _scaffold_lib.size_budget(
-        _quality_validator, _MAX_ARTIFACT_LINES, adapter, guidance=SIZE_GUIDANCE
+        _quality_validator, _MAX_ARTIFACT_WORDS, adapter, guidance=SIZE_GUIDANCE
     )
     payload = _scaffold_lib.current_pointer_payload(
         repo_root=repo_root,
