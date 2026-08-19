@@ -51,16 +51,24 @@ that reaches a plan) and an adapter declaring a version this reader refuses besi
 `output_dir` and a real trigger glob. The real CLI is run against it.
 
 **CORRECTED after `check_probe_record.py --replay-stimulus`, the detector built for `#674`,
-refused this record on its first sweep of the corpus — the FIFTH control-that-could-not-fail
-in this family and the only one thirteen bounded review rounds did not find.** The first
-version of this block declared `release_record_path: charness-artifacts/release/mine.md`.
-No reader in this repo takes that key: `plan_release_prepared_stop.release_record_path`
-DERIVES the path from `output_dir` plus a fixed `latest.md`, precisely so a second copy of
-the constant cannot drift. Deleting the line changes nothing the release resolver honors.
-Re-measured: at HEAD with `version: 1`, the dead declaration and the corrected `output_dir`
-BOTH print `next_action=sync_release_surface`, so the polarity control below could not have
-distinguished honored from fell-back. Both arms were re-run on `output_dir`, which is the
-key the contract reads, and both reproduced the observables recorded here unchanged.
+refused this record on its first sweep of the corpus — the FIFTH RECORD in this family to
+ship a control that could not fail (the sixth INSTANCE; the quality record shipped two),
+and the only one thirteen bounded review rounds did not find.** The first version of this
+block declared `release_record_path: charness-artifacts/release/mine.md`. No ADAPTER
+consumer takes that key: both `plan_release_prepared_stop.release_record_path` and
+`publish_release_claims_review.release_record_path` DERIVE the path from `output_dir` plus a
+fixed filename, precisely so a second copy of the constant cannot drift. Deleting the line
+changes nothing the release resolver honors, and neither does varying it.
+
+Both arms were re-run on `output_dir` and both reproduced the observables recorded here
+unchanged. **That makes the declaration one the resolver honors, which is what the detector
+checks; it does NOT make the `next_action=` pair discriminating.** Measured at HEAD with
+`version: 1`: the dead declaration and the corrected `output_dir` both print
+`next_action=sync_release_surface` at exit 0. At the observable this record declares, the
+two speakable controls below still cannot tell honored from fell-back — the isolating
+control remains the only arm that can fail, and it is what carried this row. The stimulus
+repair removes a dead declaration from the published reproduction steps; it does not
+upgrade the row's evidence, and saying otherwise would be this record's own class again.
 
 ```
 git -C $D init -q

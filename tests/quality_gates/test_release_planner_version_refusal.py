@@ -29,7 +29,13 @@ from .support import ROOT
 
 PLANNER = ROOT / "skills" / "public" / "release" / "scripts" / "plan_release_run.py"
 
-DECLARED = 'release_record_path: charness-artifacts/release/mine.md\nreal_host_required_path_globs:\n  - "src/**"\n'
+# `output_dir`, NOT `release_record_path`. The latter is what this row's probe record first
+# declared and it is a key NO adapter consumer reads -- `plan_release_prepared_stop` and
+# `publish_release_claims_review` both DERIVE the record path from `output_dir`, so a second
+# copy of the constant cannot drift. `check_probe_record --replay-stimulus` refused the
+# record for it; this fixture carried the same dead key one commit longer, which is the
+# record-and-test-disagree shape this family has now produced in both directions.
+DECLARED = 'output_dir: charness-artifacts/release-mine\nreal_host_required_path_globs:\n  - "src/**"\n'
 
 
 def _repo(tmp_path: Path, adapter: str) -> Path:
@@ -65,7 +71,10 @@ def test_a_speakable_but_otherwise_invalid_adapter_still_plans(tmp_path: Path) -
     some other way still gets a plan and its own next action, which is what an operator
     runs this command to obtain.
     """
-    result = _run(_repo(tmp_path, "version: 1\nrelease_record_path: 12345\n"))
+    # `output_dir: 12345` is genuinely invalid (`output_dir must be a string`). The earlier
+    # `release_record_path: 12345` was not invalid at all -- the resolver drops the unknown
+    # key and reports zero errors -- so this test asserted its premise rather than testing it.
+    result = _run(_repo(tmp_path, "version: 1\noutput_dir: 12345\n"))
     assert result.returncode == 0, result.stderr
     assert "next_action=" in result.stdout
 
