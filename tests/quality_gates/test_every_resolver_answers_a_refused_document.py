@@ -163,9 +163,16 @@ def test_a_speakable_well_formed_document_is_honored(resolver: Path, tmp_path: P
 def test_the_exit_code_divergence_is_recorded_rather_than_asserted_uniform(resolver: Path, tmp_path: Path):
     """`#673`'s acceptance says "non-zero exit", and this repair did NOT deliver that half.
 
-    Fourteen resolvers exit 0 with `valid: false`; `critique` and `issue` exit 1. That
-    divergence predates the parse-refusal repair, is not what made a consumer guard blind,
-    and normalising it changes behavior for every caller that branches on the exit code.
+    Fourteen resolvers exit 0 with `valid: false`; `critique` and `issue` exit 1.
+
+    CORRECTED: an earlier version of this docstring said the divergence "predates the
+    parse-refusal repair". It does not — that repair MOVED four resolvers from non-zero to 0,
+    and a bounded review found `resolve_artifact_path` keyed on exactly that. The module
+    docstring above was fixed and this copy was not, which is a refuted sentence re-published
+    on a proof surface: the class this whole goal exists to kill, alive on the test that pins
+    the residual. What is true is that the SPLIT is not what made a consumer guard blind, and
+    that normalising sixteen exit codes changes behavior for every caller that branches on
+    them.
     Pinning the current split here means a change in either direction is a diff to
     `NON_ZERO_EXIT_SKILLS`, not a silence — which is the honest form of a residual.
     """

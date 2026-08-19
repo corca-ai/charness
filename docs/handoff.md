@@ -25,8 +25,8 @@
   behavioral flip.** The census records the COVERAGE LEVEL now, not one `guarded` token:
   `guarded-all-doors`, `guarded-errors-only` (blind to a silently dropped line — a one-typo
   bypass, 3 rows), and `guarded-upstream` (owes an enumerated `covering_rows` list). That
-  split halved the reported accepted risk, 10 to 5: half those rows were already covered
-  upstream and the token could not say so. The guard refuses on the CONDITION
+  split moved the reported accepted risk 11 to 6 — in BOTH directions during review, because
+  some rows were already covered upstream and one migrated that should not have. The guard refuses on the CONDITION
   ("this reader honored nothing the repo declared") through the channels a resolver
   REPORTS — a refused `version`, a refused parse, a silently dropped line. ALL SIXTEEN
   report all three since [#673](https://github.com/corca-ai/charness/issues/673); records
@@ -61,22 +61,21 @@
 
 ## Next Session
 
-1. **Continue the active goal.** The current slice, the next action, and the review state
-   all live in the goal's own `## Active Operating Frame`, which is the surface to read
-   rather than this list while it is active:
-   the [probe-provenance and adapter-consumer-debt goal](../charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md)
-   holds that frame plus the slice log. Slices 1-3 have landed; slice 4 part 1 landed and
-   PART 2 IS BLOCKED on an operator ruling; slice 5 has paid down thirteen rows in three
-   batches, each with both bounded rounds. Do not re-derive what the frame already
-   measured.
-2. **The debt rows are the goal's slice 5** — severity order, release gates first, and
-   the `no-version-validation` rows need the shared resolver rather than a check they have
-   nothing to check. Each row's consequence is in the
+1. **Start the successor goal**, drafted from what the last run MEASURED — its slice 1 is
+   the affordance for a repair shipping the class it repairs (six times, three surfaces,
+   every one caught by the second review round), and it carries the unfinished rows:
+   [repairs that carry their class](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md) holds that plan.
+2. **The last goal closed at three of five slices**, halted by its own stop rule, and
+   resolved `#673`, `#674`, `#675`; TWO of its five acceptance items are NOT met and one is
+   partial, with the per-item verdict and command in its `## User Verification Instructions`:
+   [adapter debt tooling and remainder](../charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder.md) holds that record.
+3. **Seventeen debt rows remain**, not the nineteen the old plan projected: slices 2 and 3
+   moved rows in both directions. Each row's consequence is in the
    [census manifest](../scripts/adapter-consumer-classification.json); count them with
-   `python3 scripts/check_adapter_consumer_classification.py --repo-root .`.
-3. **[#668](https://github.com/corca-ai/charness/issues/668) is still an operator ruling**,
-   not a code fix: should the pytest bar measure wall time at all. `#546` sits in the same
-   file and should be read in the same sitting.
+   `python3 scripts/check_adapter_consumer_classification.py --repo-root .` and never off
+   this file.
+4. **[#668](https://github.com/corca-ai/charness/issues/668) is still an operator ruling** —
+   should the pytest bar measure wall time at all. Read `#546` in the same sitting.
 
 ## Discuss
 

@@ -37,7 +37,7 @@ The thesis is the predecessor's own retro conclusion, one level up from where it
 
 Slice 1 is the affordance: when a slice's diff adds a REFUSAL, name the input class it refuses and ask, mechanically, whether the repair's own new code contains that class. Slice 2 spends it on the two known instances that are still open -- `covering_rows` is an enumerated set no witness verifies in either direction, and 55 `safe-checks-errors` rows carry one token over materially different coverage exactly as `guarded` did before it was split.
 
-Slices 3 and 4 are the predecessor's unfinished remainder: the nineteen adapter-consumer rows it stopped before rather than measuring under a half-built vocabulary, and its slice 6 (two-round bookkeeping as typed critique fields, `#628` to the operator queue). They come AFTER the tooling for the same reason the predecessor put its detector first: paying rows under a mechanism that cannot see its own defects buys another six rounds spent on repairs.
+Slices 3 and 4 are the predecessor's unfinished remainder: the SEVENTEEN adapter-consumer rows it stopped before rather than measuring under a half-built vocabulary (recounted with `check_adapter_consumer_classification.py`, not read off the predecessor's prose — which is that goal's own recorded lesson), and its slice 6 (two-round bookkeeping as typed critique fields, `#628` to the operator queue). They come AFTER the tooling for the same reason the predecessor put its detector first: paying rows under a mechanism that cannot see its own defects buys another six rounds spent on repairs.
 
 ## Non-Goals
 

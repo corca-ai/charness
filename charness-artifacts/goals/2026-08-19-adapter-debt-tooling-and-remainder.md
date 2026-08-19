@@ -1,6 +1,6 @@
 # Achieve Goal: Build the tool the review rounds paid for, then finish the adapter-consumer corpus
 
-Status: active
+Status: complete
 Created: 2026-08-19
 Activation: `/goal @charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder.md`
 
@@ -9,23 +9,23 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **slice 3 — `#675`, a census verdict vocabulary that distinguishes
-  coverage levels.** Slices 1 (`#674`) and 2 (`#673`) are landed with both bounded rounds
-  folded; see `## Slice Log`.
-- Current slice intent: give the census a verdict per coverage level and a witness that
-  checks the LEVEL, so "how much of this debt is actually closed" is answerable without
-  reading prose reasons. This names the reviewable-intent unit and the commits it spans.
-- Next action: add the level vocabulary and its structural witness, migrate the existing
-  rows with their measured evidence, then print per-level counts.
+- Current slice: **none — the run is closed.** Slices 1 (`#674`), 2 (`#673`) and 3 (`#675`)
+  landed, each with the two bounded rounds the proof-surface rule requires, all folded.
+- **Two of five `## User Acceptance` items are NOT met and one is partial.** The per-item
+  verdict and the command that answers each are in `## User Verification Instructions`.
 - **Slice 2 produced a live example rather than a hypothetical one.**
   `scripts/refresh_current_pointer.py` refuses through its loader and no longer guards
   itself, so it is recorded `accepted-risk-unguarded` with the mechanism in prose — which
   inflates the accepted-risk count by one and is exactly the measurement distortion `#675`
   reports. It is the migration's first test case.
-- **STOP RULE IN FORCE.** The Slice Plan says: if slices 1-2 overrun, halt BEFORE slice 4.
-  They did — four bounded review rounds across seven reviewers, two of which found defects
-  the repairs themselves introduced. Slice 4 (the remaining nineteen rows) and slice 5 are
-  handed to a successor goal rather than started here.
+- **HALTED BEFORE SLICE 4 under the Slice Plan's own stop rule.** Slices 1-2 overran: SIX
+  bounded rounds across NINE reviewer reports, and three of those rounds found defects the
+  repairs themselves introduced. Slice 4 and slice 5 go to
+  `charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`.
+- Recount, never read off this file:
+  `python3 scripts/check_adapter_consumer_classification.py --repo-root .` — SEVENTEEN rows
+  remain unpaid at closeout (`accepted-risk-unguarded: 6` + `no-version-validation: 11`), not
+  the nineteen the Slice Plan projected before slices 2 and 3 moved rows in both directions.
 - No `Timebox:` field: the operator set no fixed duration, so the timebox clock does not
   apply. The Slice Plan's own stop rule (halt BEFORE slice 4 if slices 1-2 overrun) was the
   only bound, and it fired — slices 4 and 5 go to the successor goal.
@@ -463,7 +463,17 @@ check proves shape only; closeout workflows prove the values and identities:
 
 ## Off-Goal Findings
 
-Issues or deferred findings discovered during the run.
+- **`#676` filed** (standing-approved): a repair shipping the class it repairs, six measured
+  instances across three surfaces. The retro's transferable waste.
+- **`scripts/retro_floor_scope_lib.py` is a live adapter consumer with NO census row.** It
+  calls `retro_artifact_prefix` rather than a `load_*adapter*` name, so the census's AST
+  enumerator cannot see it — a blind spot in the enumerator, not a missing classification.
+- **`scripts/adapter_key_registry.py` already answers "which readers read this key"** without
+  a subprocess; wiring it into the stimulus replay would close that module's stated gap
+  between "the resolver honors it" and "a consumer reads it". Unmade.
+- **`proof_semantics_adapter_lib` and `cautilus_adapter_lib` still call `load_yaml_file`
+  bare.** Outside `#673`'s sixteen, so routing them is a behavior change this goal did not
+  measure. They are the residual surface for `#550`.
 
 ## Final Verification
 
@@ -473,19 +483,47 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `TODO` / `<path>` / `TBD` until you do.
 
 Retro: charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md
-Host log probe: skipped: host-log-not-exposed: this host surfaces no per-turn token, wall-clock or tool-call log to the session, so any efficiency figure would be fabricated rather than measured; the goal's own proof is the gate receipts and the six reviewer reports instead
+Host log probe: skipped: host-log-not-exposed: this host surfaces no per-turn token, wall-clock or tool-call log to the session, so any efficiency figure would be fabricated rather than measured; the goal's own proof is the gate receipts and the nine reviewer reports instead
 Disposition review: charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder-disposition-review.md
 
 ## User Verification Instructions
 
-Filled at closeout. The shape: for each `## User Acceptance` item, the exact command and
-the observable that answers it — not a summary of what was done.
+TWO OF FIVE ARE NOT MET AND ONE IS PARTIAL. Stated here rather than left to inference,
+because an artifact reading `complete` above five acceptance items is read as five satisfied
+items.
+
+**1 — NOT MET as written; substantively partial.** The named command does not do it:
+`check_probe_record.py --require-evaluated` never replays, because the replay is gated on
+`--replay-stimulus`. Run instead
+`python3 scripts/check_probe_record.py --repo-root . --record charness-artifacts/probe/2026-08-19-release-planner-version-refusal.md --replay-stimulus`
+— it resolves `evaluated` today and resolved `not-established` before that record was
+corrected. The acceptance also asks for a DIFF against `## Base observable`; the shipped
+mechanism is declaration ablation, which catches the CAUSE of a dead control rather than the
+arms. Both deviations are in `## Operator Decision Queue`.
+
+**2 — MET.** `python3 -m pytest tests/quality_gates/test_every_resolver_answers_a_refused_document.py -q`
+— 81 cases over a roster pinned as a SET of sixteen skill ids.
+
+**3 — MET.** Same file, `test_the_dropped_line_door_is_reachable`, which asks
+`adapter_version_verdict.declarations_dropped(payload)` directly rather than matching text.
+
+**4 — PARTIALLY MET.** `python3 scripts/check_adapter_consumer_classification.py --repo-root .`
+answers it for the `guarded` family without reading a reason: 32 / 3 / 5 across three named
+levels, with callouts. It does NOT answer it for `safe-checks-errors` — 55 rows now carrying
+one token over materially different coverage, the same defect on the largest class, staged in
+`## Operator Decision Queue`. `guarded-upstream` also publishes an enumerated `covering_rows`
+the gate cannot verify in either direction.
+
+**5 — NOT MET.** Same command: `accepted-risk-unguarded: 6` plus `no-version-validation: 11`
+= 17 rows unpaid. Slice 4 never started. Carried by
+`charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`.
 
 ## Auto-Retro
 
-Retro dispositions: applied + accepted-risk — every surfaced improvement is dispositioned
-below, five as shipped changes and one as an accepted risk staged for the operator. No
-prose-only improvement remains.
+Retro dispositions: applied + issue + accepted-risk — each improvement the retro surfaced is
+dispositioned below: five shipped changes, one filed issue, two accepted risks staged for the
+operator. No prose-only improvement remains. The wording said "every ... dispositioned"
+before the closeout disposition review found one missing (the `covering_rows` guard).
 
 - `applied: tests/quality_gates/test_probe_record_corpus_replays.py` — the `#674` detector
   was INERT until a bounded round grepped and found nothing ran it. A standing-lane sweep
@@ -501,14 +539,19 @@ prose-only improvement remains.
   the same process.
 - `applied: charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md` — the
   successor goal, whose slice 1 is the structural answer to the transferable waste below.
+- `issue #676` — a repair shipping the class it repairs, six times across three unrelated
+  surfaces in this goal, every one caught by the second bounded round rather than by a gate.
+- `accepted-risk: covering_rows publishes an ENUMERATED set the gate cannot verify in either
+  direction — it checks the named rows are guarded, never that they are callers or that the
+  list is complete, and two of the first five lists shipped wrong. Recorded in that module's
+  blind class; a witness walking the call graph for the covered symbol would close it.`
 - `accepted-risk: 55 safe-checks-errors rows carry one token over materially different
   coverage, exactly as guarded did before slice 3 split it — four of them read through
   libraries that still call load_yaml_file bare, so two of three doors are dead for them.
   Accepted for this goal and staged in ## Operator Decision Queue with its measured
   evidence; splitting the largest class is a slice of its own.`
 
-Structural follow-up: `issue #N (recurs: six measured instances in one goal — a probe-record
-detector, an adapter loader contract, and a census gate)`
+Structural follow-up: issue #676 (recurs: six measured instances in one goal — a probe-record detector, an adapter loader contract, and a census gate)
 
 The transferable waste is A REPAIR
 SHIPPING THE CLASS IT REPAIRS, and the answer this run recommends is an affordance rather

@@ -31,8 +31,11 @@ budget that could not measure them honestly.
 - Proof at closeout: `run_slice_closeout.py --verification-lock` exit 0; standing suite
   10629 passed / 0 failed; `pytest -m release_only` 103 passed;
   `prepush_focused_changed_line_coverage.py --refuse-unestablished` clean.
-- Six bounded reviewers across six rounds, all spawned unnamed and read-only, each window
-  fingerprint-verified `ok: true` / `clean` at reviewer completion.
+- NINE bounded reviewer reports across SIX rounds (slice 1: 2+2, slice 2: 2+1, slice 3:
+  1+1), plus the closeout disposition review — all spawned unnamed and read-only, each
+  window fingerprint-verified `ok: true` / `clean` at reviewer completion. An earlier draft
+  of this line said six reviewers; the three resolution critiques and the Slice Log each
+  carry their own tally and the disposition review caught the undercount.
 
 ## Waste
 
@@ -115,6 +118,14 @@ repairs across three unrelated surfaces (a probe-record detector, a YAML loader 
 census gate), which makes it a property of how repairs are written here rather than of any
 one subsystem. Transferable waste; classified below.
 
+- decision: file it as a structural issue (`#676`) rather than absorb it into the successor's
+  prose | proof: six instances, each named in `## Waste` with the slice and surface it
+  occurred on, and each caught by the second bounded round rather than by any gate.
+
+- decision: file it as a structural issue rather than absorb it into the successor's prose |
+  proof: six instances, each named in `## Waste` with the slice and surface it occurred on,
+  and each caught by the second bounded round rather than by any gate.
+
 The gate-shapes-its-own-input pattern has one measured instance so far (the two-hop chain),
 but it is the same shape as the census's own `accepted-risk-unguarded` row for
 `refresh_current_pointer`, where the absence of an honest token produced a wrong record.
@@ -155,8 +166,8 @@ Lesson evaluation: {"score_event_count":5,"session_id":"2026-08-19-6de8b471-a44c
    witness never checked one.
 4. `applied: scripts/adapter_lib.py` `_load_yaml_module` — fail-clean path loading, so a
    missing parser reports its own cause rather than an `AttributeError` for every module.
-5. `tracked issue` — the repair-carries-its-class pattern needs a structural answer, not
-   more review rounds. See `## Persisted`.
+5. `tracked issue #676` — the repair-carries-its-class pattern needs a structural answer,
+   not more review rounds. Filed with the per-instance table. See `## Persisted`.
 6. `tracked issue` — 55 `safe-checks-errors` rows now carry one token over materially
    different coverage, exactly as `guarded` did. In the goal's decision queue.
 
@@ -165,7 +176,7 @@ Lesson evaluation: {"score_event_count":5,"session_id":"2026-08-19-6de8b471-a44c
 Structural follow-up: the transferable waste is **a repair shipping the class it repairs**,
 measured six times across three unrelated surfaces in one goal.
 
-Destination: `issue #N (recurs: six measured instances across probe-record detection, an
+Destination: `issue #676 (recurs: six measured instances across probe-record detection, an
 adapter loader contract, and a census gate — three subsystems, one goal)`. The candidate
 structural answer is a pre-commit affordance rather than a review round: when a slice's diff
 adds a REFUSAL, emit the refused input class and ask whether the repair's own new code
