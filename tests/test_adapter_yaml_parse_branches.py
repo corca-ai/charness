@@ -14,6 +14,11 @@ non-mapping arm `load_yaml` cannot produce).
 
 from __future__ import annotations
 
+import contextlib
+from pathlib import Path
+
+import pytest
+
 from scripts import adapter_yaml_parse as parse
 
 
@@ -70,3 +75,48 @@ def test_a_dropped_line_is_reported_without_changing_what_the_parser_returns():
     parsed, uninterpreted = parse.load_yaml_report(text)
     assert parsed == parse.load_yaml(text)
     assert [entry["line"] for entry in uninterpreted] == [3]
+
+
+def test_a_failed_parser_load_does_not_poison_every_later_load_in_the_process(tmp_path):
+    """`adapter_lib` loads its parser BY PATH and registers it in `sys.modules` before
+    executing it. Registered-then-failed, the empty module short-circuits every later load
+    in the process and each one dies with `AttributeError: no attribute
+    'SUPPORTED_BLOCK_SCALAR_RE'` — the second error hiding the first. CPython's own importer
+    unregisters on failure; this hand-rolled loader has to as well.
+
+    `plugin_import_smoke` execs every module in one process, so without this an install
+    missing the parser would have reported the wrong cause for every adapter module on a
+    packaging proof surface.
+    """
+    import importlib.util
+    import shutil
+    import sys
+
+    root = Path(__file__).resolve().parents[1]
+    shutil.copy2(root / "scripts" / "adapter_lib.py", tmp_path / "adapter_lib.py")
+    (tmp_path / "adapter_yaml_parse.py").write_text("raise RuntimeError('broken parser')\n", encoding="utf-8")
+    (tmp_path / "runtime_bootstrap.py").write_text(
+        "def import_repo_module(*_a, **_k):\n    raise AssertionError('unused')\n", encoding="utf-8"
+    )
+
+    def _load(name: str):
+        spec = importlib.util.spec_from_file_location(name, tmp_path / "adapter_lib.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+    before = set(sys.modules)
+    for attempt in ("first", "second"):
+        with pytest.raises(RuntimeError, match="broken parser"), _guard(sys, before):
+            _load(f"adapter_lib_poison_{attempt}")
+    assert not [key for key in sys.modules if key.startswith("charness_adapter_yaml_parse::")
+                and str(tmp_path) in key], "the failed parser stayed registered"
+
+
+@contextlib.contextmanager
+def _guard(sys_module, before):
+    try:
+        yield
+    finally:
+        for key in set(sys_module.modules) - before:
+            if key.startswith("adapter_lib_poison_"):
+                del sys_module.modules[key]
