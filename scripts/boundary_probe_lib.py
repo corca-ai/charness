@@ -254,19 +254,24 @@ def resolve_probe_state(
     # after round 1 caught the original; the retro sibling keys on the hit for the same
     # reason (`check_auto_trigger` establishes on `triggered or not undetermined`).
     #
-    # Measured 2026-08-14, so the next reader does not assume more cover than exists:
-    # of `unreadable_reasons`' two sources, only ERRORS can fire at THIS call site.
-    # `load_adapter` reads through `load_yaml_file`, not `load_yaml_file_report`, so it
-    # never produces an uninterpreted-line warning. The warnings arm stays in the shared
-    # helper because it IS live for the retro adapter, whose loader uses the report
-    # variant -- the two callers are not equally armed, and that is a fact about the
-    # loaders, not about the rule. THREE gaps remain, all pre-existing and NOT closed
-    # here: an unsupported scalar (`&anchor`) still RAISES out of `load_adapter` rather
-    # than becoming a typed state; a key the parser silently DROPS is invisible to this
-    # loader entirely; and a MISSPELLED key name (`boundary_cross_surface_glob:`) is
-    # neither an error nor a drop, because the validator has no unknown-key detection --
-    # it passes through to empty config and `not-configured`. That last one is the most
-    # likely operator typo and the least covered.
+    # Measured 2026-08-14 and CORRECTED after `#673`, because four of the five sentences
+    # the first version carried are now false and a stale comment on a proof surface tells
+    # the next reader the guard is blind where it is live.
+    #
+    # WAS: only ERRORS could fire here; `load_adapter` read through `load_yaml_file`, not
+    # the report variant, so it never produced an uninterpreted-line warning, and the two
+    # callers were not equally armed. An unsupported scalar RAISED out of `load_adapter`
+    # instead of becoming a typed state, and a silently DROPPED key was invisible entirely.
+    #
+    # IS: `critique_adapter_lib` routes through `adapter_lib.resolve_adapter_payload`, so
+    # BOTH sources of `unreadable_reasons` fire at this call site, both callers are armed
+    # the same way, and a refused scalar or a dropped key becomes a typed `not-established`
+    # rather than a traceback out of the critique validator's severity upgrade.
+    #
+    # ONE gap remains, pre-existing and still not closed: a MISSPELLED key name
+    # (`boundary_cross_surface_glob:`) is neither an error nor a drop, because the validator
+    # has no unknown-key detection -- it passes through to empty config and
+    # `not-configured`. That is the most likely operator typo and the least covered.
     unreadable = _adapter_lib.unreadable_reasons(adapter)
     if unreadable and not state["hit"]:
         state = _probe_state(

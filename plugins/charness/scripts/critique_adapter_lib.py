@@ -240,14 +240,6 @@ def validate_adapter_data(
     return validated, errors, warnings
 
 
-def find_adapter(repo_root: Path) -> Path | None:
-    for candidate in ADAPTER_CANDIDATES:
-        path = repo_root / candidate
-        if path.is_file():
-            return path
-    return None
-
-
 def load_adapter(repo_root: Path) -> dict[str, Any]:
     # `resolve_adapter_payload`, NOT a hand-written pair of branches around
     # `load_yaml_file`. The bare loader RAISES on a document the parser refuses and DISCARDS

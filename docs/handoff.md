@@ -24,9 +24,9 @@
 - **The adapter-consumer debt is being paid down row by row, each by a MEASURED
   behavioral flip.** Thirteen rows are `guarded`; the guard refuses on the CONDITION
   ("this reader honored nothing the repo declared") through the channels a resolver
-  REPORTS — a refused `version`, a refused parse, a silently dropped line — and six of
-  sixteen resolvers report none of them ([#673](https://github.com/corca-ai/charness/issues/673)),
-  so it is not a biconditional and the records say so. Keying on only the first was measured as an
+  REPORTS — a refused `version`, a refused parse, a silently dropped line. ALL SIXTEEN
+  report all three since [#673](https://github.com/corca-ai/charness/issues/673); records
+  written while five were blind are correct for their revision. Keying on only the first was measured as an
   escape: `version: !!int 9` walked past every guard in the repo and wrote two durable
   files to a directory the repo never named. Recount with
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .`; never read a

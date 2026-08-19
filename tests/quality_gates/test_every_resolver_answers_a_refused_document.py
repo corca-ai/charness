@@ -17,12 +17,19 @@ for its skill's consumers — the guard had a blind arm and no test could see it
 resolver never returned. These tests ask the predicates directly rather than matching
 message text, so a wording change cannot silently satisfy them.
 
-WHAT IT DELIBERATELY DOES NOT ASSERT: a uniform exit code. Measured at the repair,
-fourteen resolvers exit 0 with `valid: false` and two (`critique`, `issue`) exit 1, on the
-same input. That divergence predates this change, is not what made a consumer guard blind,
-and normalising sixteen CLI exit codes is a behavior change for every caller that branches
-on them. It is RECORDED below rather than asserted away — see
-`test_the_exit_code_divergence_is_recorded_rather_than_asserted_uniform`.
+WHAT IT DELIBERATELY DOES NOT ASSERT: a uniform exit code. Fourteen resolvers exit 0 with
+`valid: false` and two (`critique`, `issue`) exit 1, on the same input.
+
+AND THIS CHANGE MOVED FOUR OF THEM, which a first draft of this docstring wrongly called a
+divergence that "predates this change". Before `#673`, `achieve`, `create-skill`,
+`narrative` and `quality` exited NON-ZERO on a refused parse -- by tracebacking. Making them
+render a verdict made them exit 0, and a bounded review found that a consumer keyed on
+exactly that: `scripts/resolve_artifact_path.py` treated the subprocess return code as its
+only protection and began resolving a charness default over a repo that declared otherwise.
+That consumer is guarded on the CONDITION now. The exit codes themselves are still not
+normalised -- that is a behavior change for every caller that branches on them -- so the
+split is PINNED in `NON_ZERO_EXIT_SKILLS` and a move in either direction is a diff rather
+than a silence. See `test_the_exit_code_divergence_is_recorded_rather_than_asserted_uniform`.
 """
 
 from __future__ import annotations
@@ -80,11 +87,21 @@ def _resolve_without_adapter(resolver: Path, tmp_path: Path) -> tuple[dict, subp
     return (payload if isinstance(payload, dict) else {}), done
 
 
+# The SET, not a count. A `>= 16` floor does not deliver what a roster assertion must: there
+# are twenty public skills and sixteen resolvers, so a resolver renamed or moved out of
+# `skills/public/*/scripts/resolve_adapter.py` at the same time any new skill gains one keeps
+# the count at sixteen and silently drops the regressed row from every sweep below. Naming
+# them turns that into a diff, which is the same argument `NON_ZERO_EXIT_SKILLS` makes.
+EXPECTED_RESOLVER_SKILLS = frozenset({
+    "achieve", "announcement", "create-skill", "critique", "debug", "gather", "handoff",
+    "hitl", "hotl", "impl", "issue", "narrative", "quality", "release", "retro", "setup",
+})
+
+
 def test_the_resolver_roster_is_complete():
     """A glob that matched fewer resolvers would make every parametrized case below pass by
-    not existing. Sixteen is the count `#673` measured; the assertion is `>=` because adding
-    a public skill must not silently drop it from this sweep."""
-    assert len(RESOLVERS) >= 16, [str(path.relative_to(ROOT)) for path in RESOLVERS]
+    not existing."""
+    assert {_skill(path) for path in RESOLVERS} == EXPECTED_RESOLVER_SKILLS
 
 
 @pytest.mark.parametrize("resolver", RESOLVERS, ids=_skill)
@@ -119,8 +136,15 @@ def test_the_dropped_line_door_is_reachable(resolver: Path, tmp_path: Path):
 
 @pytest.mark.parametrize("resolver", RESOLVERS, ids=_skill)
 def test_a_speakable_well_formed_document_is_honored(resolver: Path, tmp_path: Path):
-    """The polarity control. Without it every assertion above is satisfied by a resolver
-    that refuses everything, which is the shape this repo has shipped before."""
+    """The polarity control, and it proves POLARITY only.
+
+    Without it every assertion above is satisfied by a resolver that refuses everything,
+    which is a shape this repo has shipped. What it does NOT prove is that any declared
+    value reached the payload: a resolver that reads the file and honors no key passes all
+    six sweep cases. That property is per-skill and is asserted per-skill --
+    `test_quality_readers_version_refusal` and `test_narrative_impl_version_refusal` both
+    check honored VALUES. Said out loud because the first version of this docstring read as
+    if the sweep covered it."""
     payload, done = _resolve(resolver, tmp_path, "version: 1\nrepo: demo\n")
     assert "Traceback" not in done.stderr, done.stderr
     assert payload["found"] is True

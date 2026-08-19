@@ -108,6 +108,14 @@ def validate_checked_in_plugin_tree(
     if (root / "scripts").is_dir():
         require_dir(plugin_root / "scripts", "checked_in_plugin.scripts")
         require_file(plugin_root / "scripts" / "adapter_lib.py", "checked_in_plugin.scripts.adapter_lib")
+        # `adapter_lib` loads this BY PATH at module scope since the YAML dialect moved
+        # out of it, so an installed plugin missing it fails at import of `adapter_lib` --
+        # strictly earlier than the `adapter_yaml_render_lib` case below, which earned its
+        # own entry for the same reason. Joined the list when the parser moved out.
+        require_file(
+            plugin_root / "scripts" / "adapter_yaml_parse.py",
+            "checked_in_plugin.scripts.adapter_yaml_parse",
+        )
         # adapter_init_lib imports this at module level, so an installed plugin missing it
         # fails at import, not at first render. It joined the list when the YAML emitter
         # moved out of adapter_lib.

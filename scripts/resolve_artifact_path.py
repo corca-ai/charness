@@ -14,6 +14,8 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
+_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
+
 _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
 _scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
 ArtifactClassError = _scripts_artifact_naming_lib_module.ArtifactClassError
@@ -70,7 +72,56 @@ def load_adapter(repo_root: Path, skill_id: str) -> dict[str, object]:
     )
     if completed.returncode != 0:
         raise SystemExit(completed.stderr.strip() or f"{resolver} failed")
-    return yaml.safe_load(completed.stdout)
+    adapter = yaml.safe_load(completed.stdout)
+    _refuse_unhonored_adapter(adapter, skill_id)
+    return adapter
+
+
+def _refuse_unhonored_adapter(adapter: object, skill_id: str) -> None:
+    """Refuse a resolved payload whose reader honored NOTHING the repo declared.
+
+    THE SUBPROCESS RETURN CODE WAS THIS FILE'S ONLY PROTECTION, and `#673` removed it. Five
+    resolvers used to let a parser refusal out as a traceback, so a non-zero exit stopped
+    this helper; now they render a verdict at exit 0 like the other eleven, and fourteen of
+    sixteen exit 0 on a refused document. Measured against
+    `version: !!int 9` beside a declared `output_dir: docs/mine-q`: before, a traceback and
+    a stop; after, `write_artifact_path: charness-artifacts/quality/latest.md` -- the
+    charness default, over a repo that declared something else, at exit 0. A bounded review
+    caught it, which is the second time this exact collateral has been found by review
+    rather than declared by the batch that caused it (the census records the first, for
+    `announcement`).
+
+    Keyed on the CONDITION rather than on the exit code, so a resolver's exit convention
+    can change again without silently disarming this. `declarations_dropped` is the third
+    door and is checked here too: it is now reachable for all sixteen, and a dropped
+    `output_dir` line lands on exactly the same default.
+    """
+    if not isinstance(adapter, dict):
+        raise SystemExit(f"the `{skill_id}` adapter resolver rendered no payload to read")
+    errors = adapter.get("errors")
+    if not (_verdict.declarations_unhonored(errors) or _verdict.declarations_dropped(adapter)):
+        return
+    adapter_name = f"{skill_id}-adapter.yaml"
+    if _verdict.declarations_unhonored(errors):
+        # `unhonored_cause` / `unhonored_remedy` exist so a caller can phrase its own
+        # refusal WITHOUT hand-rolling the version-versus-parse branch. Hand-rolling it is
+        # how four surfaces came to tell an operator to "set `version: 1`" for a document
+        # the parser never read; the first cut of this guard invented a third wording and a
+        # sibling test caught it for the same reason.
+        detail = "; ".join(str(item) for item in errors if isinstance(item, str))
+        lead = f"`.agents/{adapter_name}` {_verdict.unhonored_cause(errors)} ({detail})."
+        fix = _verdict.unhonored_remedy(errors, adapter_name)
+    else:
+        dropped = "; ".join(
+            str(warning) for warning in adapter.get("warnings", [])
+            if " was not interpreted (" in str(warning)
+        )
+        lead = f"`.agents/{adapter_name}` has lines this reader could not interpret ({dropped})."
+        fix = "Fix the indentation or the syntax on those lines, then re-run."
+    raise SystemExit(
+        f"{lead} Nothing it declares is being honored, so resolving an artifact path here "
+        f"would return a charness default wearing this repo's name -- refusing instead. {fix}"
+    )
 
 
 def _refresh_current_pointer_argv(skill_id: str, record_path: Path) -> list[str]:

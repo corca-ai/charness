@@ -28,17 +28,35 @@ from typing import Any
 # `load_yaml_report` arms one sink while `_parse_block` records into another, and the
 # report comes back empty while the parse silently drops lines -- the exact silence this
 # repo built the sink to end.
-_YAML_MODULE_KEY = "charness_adapter_yaml_parse"
+# KEYED ON THE RESOLVED PATH, not on a bare name. A bare key means the FIRST `adapter_lib`
+# loaded in a process binds the parser for every later one from any tree -- so a vendored or
+# stale charness beside a fresh one would silently share a parser, which is the wrong answer
+# rendered as agreement. Same file therefore still means one instance and one sink; a
+# different tree gets its own, which is what a different tree should get.
+_YAML_PATH = Path(__file__).resolve().parent / "adapter_yaml_parse.py"
+_YAML_MODULE_KEY = f"charness_adapter_yaml_parse::{_YAML_PATH}"
 if (_yaml := sys.modules.get(_YAML_MODULE_KEY)) is None:
-    _yaml_spec = importlib.util.spec_from_file_location(
-        _YAML_MODULE_KEY, Path(__file__).resolve().parent / "adapter_yaml_parse.py"
-    )
+    _yaml_spec = importlib.util.spec_from_file_location(_YAML_MODULE_KEY, _YAML_PATH)
     _yaml = importlib.util.module_from_spec(_yaml_spec)
     sys.modules[_YAML_MODULE_KEY] = _yaml
-    _yaml_spec.loader.exec_module(_yaml)
+    try:
+        _yaml_spec.loader.exec_module(_yaml)
+    except BaseException:
+        # UNREGISTER ON FAILURE, as CPython's own importer does. Left registered, the empty
+        # module short-circuits every later load in the process and each one dies with
+        # `AttributeError: no attribute 'SUPPORTED_BLOCK_SCALAR_RE'` -- the second error
+        # hiding the first. `plugin_import_smoke` execs every module in one process, so an
+        # install missing this file would report the wrong cause for every adapter module.
+        del sys.modules[_YAML_MODULE_KEY]
+        raise
 
-# Re-exported so the split stays an implementation detail: `adapter_lib` remains the one
-# import site for anything that reads or resolves an adapter.
+# Re-exported so `adapter_lib` remains the one import site for anything that reads or
+# resolves an adapter. NOT fully transparent, and the difference is worth knowing before it
+# bites: these are name BINDINGS, so `adapter_lib.load_yaml_file` is now
+# `adapter_yaml_parse.load_yaml_file` and resolves `load_yaml` from THAT module's globals. A
+# test that monkeypatches `adapter_lib.load_yaml` no longer reaches the file readers. No
+# current seam depends on it -- every patcher in the suite calls the patched name directly --
+# but "implementation detail" would overclaim.
 SUPPORTED_BLOCK_SCALAR_RE = _yaml.SUPPORTED_BLOCK_SCALAR_RE
 strip_inline_comment = _yaml.strip_inline_comment
 inline_comment_start = _yaml.inline_comment_start
@@ -121,7 +139,13 @@ def read_declared_adapter(path: Path) -> tuple[dict[str, Any], list[str], list[s
     lets each caller keep its own payload shape: it feeds `{}` to its own validator, gets its
     own inferred defaults, and prepends these. That is the same end state
     `simple_skill_adapter_lib` produces -- defaults plus `parse_failure_error` in `errors` --
-    reached without every caller re-deciding what a refused document should return.
+    reached without every caller re-deciding what a refused document should return -- with one
+    measured DIFFERENCE, stated rather than left silent: the five run their own validator over
+    `{}` on the refusal path, so they emit that validator's absent-field WARNINGS (quality's
+    "No gate_commands configured", achieve's audit-only default) where
+    `simple_skill_adapter_lib` returns `warnings=[]`. Harmless for `declarations_dropped`,
+    which is marker-keyed, and more informative for an operator; not identical, so the
+    sentence above says "the same end state" about `data` and `errors`, not about `warnings`.
     """
     try:
         raw, uninterpreted = load_yaml_file_report(path)

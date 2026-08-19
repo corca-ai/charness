@@ -4924,21 +4924,21 @@
     {
       "class": "intentional",
       "id": "23a91b662846af37",
-      "note": "the found=False early return in `cautilus_adapter_lib` and `proof_semantics_adapter_lib`, BOTH UNTOUCHED by this slice. Neither routes through `resolve_adapter_payload` because neither returns the seven-key shape: cautilus gates on an `enabled` flag and proof_semantics resolves a semantics table, so the payloads diverge past `found`/`valid`/`path`. Re-fingerprinted rather than newly written. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "note": "The found=False early return in `cautilus_adapter_lib` and `proof_semantics_adapter_lib`, BOTH UNTOUCHED by this slice and re-fingerprinted rather than newly written. CORRECTED after a bounded review: the first note claimed neither returns the seven-key payload shape, and `proof_semantics_adapter_lib.load_adapter` returns EXACTLY those seven keys -- it is the closest match in the repo to `resolve_adapter_payload`. The real reason both stay out is that neither is in `#673`'s repaired set: both still call `load_yaml_file` bare, so routing them is a behavior change this slice did not measure, and it is remaining `#550` surface.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     },
     {
       "class": "intentional",
       "id": "c044134fc8023896",
-      "note": "the `searched_paths` + `find_adapter` preamble in `cautilus_adapter_lib` and `proof_semantics_adapter_lib`, BOTH UNTOUCHED. Same two modules and same reason as 23a91b662846af37: three structural lines whose callers keep different payload shapes. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "note": "CORRECTED after a bounded review refuted the first note, which claimed this family was the `searched_paths` + `find_adapter` preamble in `cautilus_adapter_lib` and `proof_semantics_adapter_lib`. `cautilus_adapter_lib` contains NEITHER construct -- it uses `adapter_path = repo_root / ADAPTER_PATH` with no `searched_paths` key at all -- so the note described code its named member does not hold. What the two DO share is the found=False early return: build the inferred defaults, return `valid: True` with an opt-in warning. Neither routes through `adapter_lib.resolve_adapter_payload`, and the honest reason is not payload shape but that neither is in `#673`'s repaired set -- both still call `load_yaml_file` bare, which is remaining `#550` / `#673` surface rather than something this slice decided to leave alone.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     },
     {
       "class": "intentional",
       "id": "28a430c3ed94f75c",
-      "note": "the per-skill DERIVED artifact keys \u2014 `artifact_filename` / `artifact_class` / `artifact_path` / `record_artifact_pattern` \u2014 in `narrative_adapter_lib._narrative_derived` and `announcement_adapter_lib`. Four lines each, computed from three DIFFERENT module-level functions per skill (`_artifact_path`, `_record_artifact_pattern`, `ARTIFACT_FILENAME`), so a shared helper would take three callables as parameters to save four lines. narrative already computes them in ONE place instead of once per branch, which is the drift this family's shape used to hide. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "note": "the per-skill DERIVED artifact keys \u2014 `artifact_filename` / `artifact_class` / `artifact_path` / `record_artifact_pattern` \u2014 in `narrative_adapter_lib._narrative_derived` and `announcement_adapter_lib`. Four lines each, computed from two DIFFERENT module-level functions and one constant per skill (`_artifact_path`, `_record_artifact_pattern`, `ARTIFACT_FILENAME`), so a shared helper would take three callables as parameters to save four lines. narrative already computes them in ONE place instead of once per branch, which is the drift this family's shape used to hide. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     },
@@ -4966,7 +4966,28 @@
     {
       "class": "intentional",
       "id": "92f186956bf2358d",
-      "note": "`_parse_list_items` and `_parse_block` in `adapter_yaml_parse`, the parser's TWO loops. BOTH UNTOUCHED by this slice; the family surfaced because the module was split out of `adapter_lib` and re-fingerprinted, and because deleting a dead empty-item arm shortened one span into range. The shared run is the loop preamble -- `_line_shape`, skip ignorable, break on dedent -- which is already extracted as far as it goes: `_line_shape` IS the extraction, and `_is_ignorable`'s own docstring records why the remaining line cannot be shared (`_DOCUMENT_MARKERS` are skipped in the mapping loop and END the list in the sequence loop, so folding the check into the helper would be a behavior change in one of the two callers). Past that point the loops diverge completely: one accumulates a list keyed on `- `, the other a mapping keyed on a quote-aware separator.",
+      "note": "`_parse_list_items` and `_parse_block` in `adapter_yaml_parse`, the parser's TWO loops. `_parse_block` is UNTOUCHED; `_parse_list_items` LOST ITS DEAD EMPTY-ITEM ARM in this slice, which shortened its span into range -- an earlier version of this note called both untouched, which is exactly the wrong thing to tell a reviewer deciding what to re-read. The family also surfaced because the module was split out of `adapter_lib` and re-fingerprinted. The shared run is the loop preamble -- `_line_shape`, skip ignorable, break on dedent -- which is already extracted as far as it goes: `_line_shape` IS the extraction, and `_is_ignorable`'s own docstring records why the remaining line cannot be shared (`_DOCUMENT_MARKERS` are skipped in the mapping loop and END the list in the sequence loop, so folding the check into the helper would be a behavior change in one of the two callers). Past that point the loops diverge completely: one accumulates a list keyed on `- `, the other a mapping keyed on a quote-aware separator.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ca5a76e4b2be8129",
+      "note": "the module-preamble import block shared by `resolve_artifact_path` and `eval_cautilus_chatbot_compare`: `from __future__`, stdlib imports, `from runtime_bootstrap import import_repo_module, repo_root_from_script`, `REPO_ROOT = repo_root_from_script(__file__)`, then one or more `import_repo_module(__file__, ...)` bindings. That preamble IS this repo's module bootstrap contract -- `check_bootstrap_shim_consistency.py` validates its shape across 119 files -- so the duplication is the contract being followed, and extracting it would mean a module that bootstraps the bootstrap. `resolve_artifact_path` entered the family by gaining one `import_repo_module` line for the consumer guard `#673` made necessary.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3a454eab3c6bf754",
+      "note": "`load_adapter` in `create-skill/scripts/resolve_adapter.py` and `proof_semantics_adapter_lib`, BOTH UNTOUCHED in this fold. Re-fingerprinted because the `#673` repair reshaped the spans around them. Neither routes through `adapter_lib.resolve_adapter_payload`: create-skill assembles `errors` itself (a `_mapping_shape_error` that re-reads the FILE, which `derive`'s data-only hook cannot reach) and proof_semantics still calls `load_yaml_file` bare, so it is remaining `#673` / `#550` surface rather than a decision to leave it alone.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "74d62d4bf676616d",
+      "note": "`load_adapter` in `issue/scripts/resolve_adapter.py` and `proof_semantics_adapter_lib`, BOTH UNTOUCHED. Same family and same reason as 3a454eab3c6bf754, with one addition: `issue` maps validity to an exit code in its own `main` (one of the two skills pinned in `NON_ZERO_EXIT_SKILLS`), so its resolver is deliberately not the shared shape.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     }

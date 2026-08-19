@@ -14,8 +14,8 @@ refusal while `output_dir` is perfectly good.
 `valid` is the wrong predicate for that job and a REFUSED VERSION is the right one. They
 are different questions: `valid: false` can mean one bad field beside fifteen honored
 ones, while a refused version means the reader honored NOTHING the repo declared -- a
-state this module detects through the ERROR and WARNING channels a resolver reports, and
-not at all where a resolver reports neither (#673). Acting
+state this module detects through the ERROR and WARNING channels a resolver reports. Every
+public resolver reports both since `#673`; before it, five reported neither. Acting
 on the defaults in that state is what turned a legible refusal into a silent one --
 measured, not theorised: with `version: 9` and a declared `output_dir`, the retro
 validator scoped itself to a directory the repo does not write to and reported
@@ -123,10 +123,13 @@ def parse_refused(errors: Any) -> bool:
 def declarations_dropped(adapter: Any) -> bool:
     """True when the loader silently DISCARDED a line the repo wrote.
 
-    Takes the whole payload, not `errors`, because the evidence lives in `warnings`. The
-    six resolvers that call `adapter_lib.load_yaml_file` bare discard that sink too, so
-    this answers False for them and their consumers keep the blind arm -- tracked on
-    #673, and named rather than papered over.
+    Takes the whole payload, not `errors`, because the evidence lives in `warnings`.
+
+    CLOSED. Five resolvers used to call `adapter_lib.load_yaml_file` bare and discard that
+    sink, so this answered False for them and their consumers kept a blind arm. `#673`
+    routed all five through `adapter_lib.read_declared_adapter`; the door is reachable for
+    all sixteen and `tests/quality_gates/test_every_resolver_answers_a_refused_document.py`
+    asserts it per resolver rather than in prose.
     """
     if not isinstance(adapter, dict):
         return False
@@ -150,8 +153,9 @@ def declarations_unhonored(errors: Any) -> bool:
     predicate over `errors` ONLY. A declaration the parser silently DROPPED leaves
     `errors: []` and is invisible here -- that is `declarations_dropped`, which reads
     `warnings`, and the two are deliberately separate because only the caller with the
-    whole payload can ask the second. For the six resolvers that discard the warning sink
-    (#673) neither predicate can see a dropped line at all.
+    whole payload can ask the second. Both are reachable for all sixteen resolvers since
+    `#673`; before it, five discarded the warning sink and neither predicate could see a
+    dropped line there at all.
     """
     return version_refused(errors) or parse_refused(errors)
 
@@ -201,12 +205,19 @@ def unspeakable_version_message(
     message BRANCHES, because the remediation differs: one is an adapter line, the other
     is a YAML document the parser would not read at all.
 
-    A loader that RAISES still answers None. That is a different thing from a parse
-    failure recorded in `errors`: the resolver caught the latter and handed back defaults,
-    which is the state this module refuses, while the former produced no payload for
-    anyone to act on. Swallowing the raise matches `resolve_adapter_line_budget`, which
-    runs the resolver of the repo UNDER validation and must render a verdict rather than
-    a traceback.
+    A loader that RAISES still answers None, and the justification an earlier draft gave
+    for that -- "the former produced no payload for anyone to act on" -- was FALSE and is
+    corrected here rather than deleted. The raise stopped the GUARD, not the CALLER:
+    `validate_quality_artifact` called `refuse_unspeakable_version`, got None because the
+    quality resolver raised, and then CONTINUED to resolve its own `output_dir` from
+    charness defaults. That was a live exit-0 bypass, and `#673` closed it by making the
+    resolver return instead of raise.
+
+    The swallow arm stays, matching `resolve_adapter_line_budget`, which runs the resolver
+    of the repo UNDER validation and must render a verdict rather than a traceback. Its
+    remaining reach is UNMEASURED: no `skills/public/*/scripts/resolve_adapter.py` raises
+    on a refused parse now, and whether any production caller still reaches this arm was
+    not established by the slice that made it rarer.
 
     An earlier draft of this docstring justified answering None on a recorded parse
     failure with "the caller's own discovery already reports it". A bounded review
