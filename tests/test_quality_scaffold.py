@@ -96,7 +96,7 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     # Delegated Review default is a fillable not_applicable that names the slow-gate lenses.
     assert "Delegated Review: not_applicable" in template
     assert "fixture-economics, parallel-critical-path, duplicated-proof" in template
-    # size_budget surfaces the validator's line ceiling up front (single-sourced
+    # size_budget surfaces the validator's word ceiling up front (single-sourced
     # from MAX_ARTIFACT_WORDS, drift-guarded here) so a run writes-to-fit instead
     # of trim-looping against a ceiling it cannot see until the validator rejects.
     # The cap rides the payload as the single source (no second literal that could

@@ -1,6 +1,7 @@
-"""The artifact line ceiling is a CONSUMING repo's setting, not a charness constant.
+"""The artifact size ceiling is a CONSUMING repo's setting, not a charness constant.
 
-Three families own a ceiling -- debug and quality count raw file LINES, handoff counts
+Three families own a ceiling -- all three charge WORDS since 2026-08-19; debug and
+quality count the raw file, handoff counts
 content lines -- and each one enforces it in a validator and forecasts it in a scaffold
 or planner. The forecast is the half that matters operationally: a ceiling discovered
 only after writing long is the wasted draft this override exists to end, so every family

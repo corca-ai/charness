@@ -267,7 +267,7 @@ def test_no_drift_broken_fixture_matches_real_gate_verdicts(tmp_path: Path) -> N
     # wrapped-inline forecast fires iff the real inline-code gate fails.
     assert bool(report.wrapped_inline_code) == (_real_gate_inline_code(repo) != 0)
     # length forecast fires iff the file exceeds the gate's live cap, counted
-    # the way the gate counts it (content lines, not raw file length).
+    # the way the gate counts it (content WORDS -- not lines, not raw file length).
     lines = (repo / "docs" / "handoff.md").read_text(encoding="utf-8").splitlines()
     counted = _handoff.content_words(lines)
     assert report.length["current"] == counted

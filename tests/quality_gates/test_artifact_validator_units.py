@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import sys
+from datetime import date
 from types import SimpleNamespace
 
 import pytest
@@ -205,3 +206,89 @@ def test_a_path_with_no_skill_segment_after_skills_yields_no_owner() -> None:
     """
     for scaffold in ("skills/scaffold_handoff_artifact.py", "skills", "/opt/x/skills/only.py"):
         assert _violation_report._skill_id_from_scaffold(scaffold) is None, scaffold
+
+
+def test_the_word_ceiling_grandfather_charges_and_exempts_by_date(tmp_path) -> None:
+    """BOTH arms, because only one of them was reachable by any checked-in test.
+
+    The migration added `word_ceiling_enforced` with a fixture corpus that carries no
+    date at all, so the only sub-condition ever taken was `observed is None`. A round-2
+    reviewer showed that mutating the body to `return observed is None` kept the whole
+    repo green -- pytest passes (every fixture is undated), the debug corpus sweep passes
+    (every real artifact IS dated, so all become exempt), and the quality gate passes --
+    while the word budget is silently off for every artifact that exists. That is the
+    fail-open direction the module was written to close, and nothing could see it.
+
+    `rule_date` is passed explicitly rather than patching `WORD_CEILING_RULE_DATE`: the
+    constant binds as a default at def time, so patching it would not reach the function.
+    """
+    rule = date(2026, 8, 19)
+    dated_before = tmp_path / "2026-08-18-old.md"
+    dated_after = tmp_path / "2026-08-19-new.md"
+    for path in (dated_before, dated_after):
+        path.write_text("# X\n", encoding="utf-8")
+
+    # Filename channel alone.
+    assert _size_budget.word_ceiling_enforced(dated_before, ["# X"], rule_date=rule) is False
+    assert _size_budget.word_ceiling_enforced(dated_after, ["# X"], rule_date=rule) is True
+
+    # Body channel alone: an undated NAME must not buy the exemption on its own, and an
+    # undated name with a current body date must stay charged.
+    undated_name = tmp_path / "latest-copy.md"
+    undated_name.write_text("# X\n", encoding="utf-8")
+    assert _size_budget.word_ceiling_enforced(
+        undated_name, ["# X", "Date: 2026-08-18"], rule_date=rule
+    ) is False
+    assert _size_budget.word_ceiling_enforced(
+        undated_name, ["# X", "Date: 2026-08-19"], rule_date=rule
+    ) is True
+
+    # Neither channel parses -> ENFORCED, never exempt. Stripping the date off a file
+    # must not be a way out of the ceiling.
+    assert _size_budget.word_ceiling_enforced(undated_name, ["# X"], rule_date=rule) is True
+
+    # The two channels disagree: `max()` means exemption needs BOTH to say old.
+    assert _size_budget.word_ceiling_enforced(
+        dated_before, ["# X", "Date: 2026-08-20"], rule_date=rule
+    ) is True
+
+
+def test_the_grandfather_reads_through_a_pointer_symlink(tmp_path) -> None:
+    """A pointer's own name carries no date; the record it points at does.
+
+    Without resolution the body `Date:` line decides alone -- the single author-written
+    channel `observed_date`'s `max()` rule exists to stop from deciding anything alone.
+    On the byte-copy pointer layout there is no second channel at all, so this is the
+    arm that keeps one back-dated line from disarming the ceiling.
+    """
+    record = tmp_path / "2026-08-19-record.md"
+    record.write_text("# X\n", encoding="utf-8")
+    pointer = tmp_path / "latest.md"
+    pointer.symlink_to(record.name)
+
+    # Body says old, the resolved record name says current -> charged.
+    assert _size_budget.word_ceiling_enforced(
+        pointer, ["# X", "Date: 2026-08-18"], rule_date=date(2026, 8, 19)
+    ) is True
+
+
+def test_the_dated_entry_point_skips_only_the_grandfathered_artifact(tmp_path) -> None:
+    """`validate_max_words_when_dated_in_scope` is the single owner of the policy.
+
+    Pinned end to end so a future edit cannot quietly turn the skip into a skip-always
+    or drop it: the same over-budget body refuses under a current date and passes under
+    an old one.
+    """
+    over = ["# Title"] + ["word " * 10 for _ in range(200)]
+    rule = date(2026, 8, 19)
+
+    with pytest.raises(_artifact_validator.ValidationError):
+        _size_budget.validate_max_words_when_dated_in_scope(
+            tmp_path / "2026-08-19-new.md", over, max_words=50,
+            artifact_label="demo artifact", rule_date=rule,
+        )
+
+    _size_budget.validate_max_words_when_dated_in_scope(
+        tmp_path / "2026-08-18-old.md", over, max_words=50,
+        artifact_label="demo artifact", rule_date=rule,
+    )

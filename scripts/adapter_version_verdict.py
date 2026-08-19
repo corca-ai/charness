@@ -6,7 +6,7 @@
 cannot speak an adapter's `version` honors none of its declared fields, so the resolved
 payload is the reader's inferred defaults. That containment is only half a contract. The
 other half lives here, because the surfaces that ACT on a resolved payload -- the ones
-that scope a gate to an artifact directory, enforce a line ceiling, or write a durable
+that scope a gate to an artifact directory, enforce a size ceiling, or write a durable
 record -- deliberately do not key on the payload's `valid` flag, for the reason
 `validate_debug_artifact._adapter_output_dir` records: a typo'd `repo` must not disarm a
 refusal while `output_dir` is perfectly good.

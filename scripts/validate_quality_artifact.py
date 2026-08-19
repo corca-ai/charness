@@ -48,9 +48,14 @@ run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 # with `max_artifact_words` in its quality adapter. Both this gate and the scaffold's
 # `size_budget.max_words` forecast resolve it through `resolve_adapter_line_budget`, so
 # they cannot disagree. 1100 is chosen against the corpus, not converted from 140 lines:
-# across 161 checked-in quality artifacts the line cap admitted 229 to 1727 words, a 7.5x
-# spread, so no word number reproduces it. 1100 sits above this corpus's p90 of 933 and
-# admits 157 of the 161.
+# of 160 checked-in quality artifacts the 140-line cap admitted 153, and those ranged 229
+# to 1727 words -- a 7.5x spread, so no word number reproduces the old bar. 1100 sits
+# just above the corpus p90 of 997 and admits 150 of the 160; the ten it does not are
+# grandfathered as dated records. (An earlier version of this comment said `admits 157 of
+# the 161`. 157 was an AGREEMENT count -- how often the word verdict matched the line
+# verdict -- reported as an admission count, and 161 counted the `latest.md` symlink as a
+# second artifact. A bounded reviewer caught the contradiction against the `ten above
+# 1100` figure two files away.)
 MAX_ARTIFACT_WORDS = 1100
 WORD_BUDGET_FIELD = "max_artifact_words"
 REQUIRED_SECTIONS = (
@@ -598,7 +603,7 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
             max_words=resolve_adapter_line_budget(
                 load_adapter, resolved_repo_root, field=WORD_BUDGET_FIELD, default=MAX_ARTIFACT_WORDS
             ),
-            artifact_label="quality artifact",
+            artifact_label="quality artifact", artifact_type="quality",
         ),
         lambda: validate_date_line(lines),
         lambda: validate_date_channel_coherence(path, lines, resolved_repo_root),

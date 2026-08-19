@@ -89,9 +89,10 @@ FALSIFIABLE_SOURCE_REFERENCE = "skills/public/debug/references/disconfirmer-firs
 # `_validate_factory` via `resolve_adapter_line_budget`, so a repo whose investigations
 # are legitimately multi-cause is not forced into content-free re-wrapping -- which the
 # LINE ceiling this replaces actively rewarded, since rewrapping was the cheapest way
-# under it. 1200 is chosen against the corpus, not converted: across 146 checked-in
-# debug artifacts the 180-line cap admitted 276 to 1487 words, a 5.4x spread, so no
-# word number reproduces it. 1200 sits just above this corpus's p90 of 1129. Kept
+# under it. 1200 is chosen against the corpus, not converted: all 145 checked-in debug
+# artifacts fit the 180-line cap and they range 276 to 1487 words, a 5.4x spread, so no
+# word number reproduces the old bar. 1200 sits just above this corpus's p90 of 1129,
+# and the seven above it are grandfathered as dated records. Kept
 # exported: the scaffold, this module's tests and the drift guard all name the DEFAULT,
 # and only the default.
 MAX_ARTIFACT_WORDS = 1200

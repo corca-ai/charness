@@ -248,7 +248,7 @@ def collect_doc_links(repo_root: Path, doc: Path) -> list[dict[str, Any]]:
 def collect_length(
     repo_root: Path, doc: Path, rel: str, as_surface: str | None
 ) -> dict[str, Any]:
-    """Forecast the surface line cap by reusing the owning validator's constant
+    """Forecast the surface size cap by reusing the owning validator's constant
     and ``validate_max_words`` (the exact gate path), when the target maps to a
     capped surface. A general doc with no registered cap reports no floor."""
     surface = _resolve_length_surface(repo_root, rel, as_surface)

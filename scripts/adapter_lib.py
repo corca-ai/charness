@@ -312,7 +312,7 @@ def declared_fields_after_version_check(
     """The declared fields a reader may honor: the adapter's own on a version this reader SPEAKS,
     an EMPTY mapping on one it does not. The question every caller of `validate_adapter_version`
     answers next, and 15 of 18 answered wrong -- a `version: 9` adapter still selected
-    `output_dir`, `repo` and the debug/quality line ceilings. A version the reader cannot
+    `output_dir`, `repo` and the debug/quality word ceilings. A version the reader cannot
     interpret says nothing about what its siblings MEAN, so honoring them is the "silent
     honoring of the bad value" `apply_optional_fields` refuses for a single refused FIELD. An
     EMPTY mapping, not an early return: these validators derive keys `infer_defaults` never

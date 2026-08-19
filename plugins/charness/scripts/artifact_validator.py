@@ -68,7 +68,11 @@ def read_lines(path: Path) -> list[str]:
 def resolve_adapter_line_budget(
     load_adapter: Callable[[Path], dict], repo_root: Path, *, field: str, default: int
 ) -> int:
-    """The artifact's line ceiling as the CONSUMING repo declared it, else the default.
+    """The artifact's size ceiling as the CONSUMING repo declared it, else the default.
+
+    Generic over the unit: callers pass `field` and `default`, and every prose family
+    now declares WORDS. Only the function NAME still says line -- it is a named row in
+    the adapter-consumer census, so renaming it would churn a proof surface.
 
     Every family that owns a ceiling resolves it through here, so a repo that raises
     one gets the same behavior from the validator that enforces it and the scaffold
@@ -383,7 +387,7 @@ def run_changed_artifact_validator(
     - `preflight` refuses BEFORE any scoping, returning a message or None. It runs
       first because the condition it reports is the one that makes every later answer
       meaningless: a validator whose adapter could not be read at its declared version
-      resolves its output directory AND its line ceiling from charness defaults, so it
+      resolves its output directory AND its size ceiling from charness defaults, so it
       scopes itself to a directory the repo does not write to and reports
       `Validated 0 <label>(s).` as a pass. That refusal must precede discovery, not
       follow it.

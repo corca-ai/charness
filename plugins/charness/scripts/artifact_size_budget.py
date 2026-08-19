@@ -10,9 +10,10 @@ resolves both from here.
 WHY WORDS AND NOT LINES. A line count charged for the author's WRAP WIDTH, not
 for the reading load it named, and nothing in this repo enforces a width at all
 (`.markdownlint-cli2.jsonc` sets `MD013: false`). Measured on the repo's own
-corpora, one line ceiling admitted a 5.4x spread of words (debug: 276-1487
-across 146 artifacts at the 180-line cap) and a 7.5x spread (quality: 229-1727
-across 161 at 140). So the cheapest way under a line ceiling was to rewrap
+corpora, one line ceiling admitted a 5.4x spread of words (debug: 276-1487 across
+all 145 checked-in artifacts, every one of which fit the 180-line cap) and a 7.5x
+spread (quality: 229-1727 across the 153 of 160 that fit the 140-line cap; the
+other seven were already over it). So the cheapest way under a line ceiling was to rewrap
 wider, which shortens nothing and makes the artifact harder to read while the
 gate goes green.
 
@@ -110,8 +111,8 @@ def word_ceiling_enforced(
     validator states: these are dated, append-only records that nobody may now
     rewrite, while the handoff is one rolling document whose next rewrite is its
     migration. Measured at the cutover: seven checked-in debug artifacts sat
-    between 1210 and 1487 words under the new 1200 ceiling, and ten quality
-    artifacts sat above 1100.
+    between 1210 and 1487 words under the new 1200 ceiling, and ten of the 160
+    quality artifacts sat above 1100.
 
     `observed_date` takes the LATER of filename and body date, so an artifact
     cannot date itself out of the ceiling with one author-written line. `None`
@@ -123,7 +124,17 @@ def word_ceiling_enforced(
     at all. `validate_cautilus_diagnostics` is exactly that shape and therefore
     sets a ceiling above its corpus maximum instead of calling this.
     """
-    observed = _enforcement_scope.observed_date(Path(path), "\n".join(lines))
+    # RESOLVE a pointer before reading the filename channel. `latest.md` carries no
+    # date, so an unresolved read leaves the body `Date:` line -- the single
+    # author-written channel -- deciding alone, which is precisely what `observed_date`'s
+    # `max()` rule exists to prevent. `validate_quality_artifact.validate_date_channel_coherence`
+    # already resolves for the same reason; this used to and did not, so on a byte-COPY
+    # pointer layout (a first-class layout in this repo) one back-dated line disarmed the
+    # ceiling with nothing refusing it. Same idiom as that check, deliberately.
+    target = Path(path)
+    if target.is_symlink():
+        target = target.resolve()
+    observed = _enforcement_scope.observed_date(target, "\n".join(lines))
     return observed is None or observed >= rule_date
 
 

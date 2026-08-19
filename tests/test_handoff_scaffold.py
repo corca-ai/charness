@@ -16,7 +16,7 @@ SCAFFOLD = "skills/public/handoff/scripts/scaffold_handoff_artifact.py"
 
 # Headings the scaffold must emit so an author starts from a validator-passing
 # skeleton instead of rediscovering scripts/validate_handoff_artifact.py (which
-# enforces an exact H2 set, a `# ... Handoff` title, and a <=70 line ceiling) by
+# enforces an exact H2 set, a `# ... Handoff` title, and a CONTENT-WORD ceiling) by
 # trial-and-error.
 REQUIRED_HEADINGS = (
     "## Workflow Trigger",
@@ -74,7 +74,10 @@ def test_handoff_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     # against the content ceiling. A consumer repo cannot fix that locally: the
     # next handoff run rewrites the stub.
     assert "## References\n\n- [TODO pickup doc](./handoff.md) —" in template
-    # Stay under the strict 70-line ceiling out of the box.
+    # Stay short out of the box. This 70 is a TEMPLATE assertion, not a validator
+    # rule: the gate charges content WORDS (900 by default) and has never enforced a
+    # 70-line cap since the raw-line era. Calling it 'the ceiling' attributed it to a
+    # rule that does not exist, which a bounded reviewer caught.
     assert len(template.splitlines()) <= 70
 
     # Dogfood: the emitted skeleton must pass the real validator unedited.

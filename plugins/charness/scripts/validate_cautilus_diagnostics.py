@@ -89,6 +89,7 @@ INTERPRETATION_MARKERS = (
 
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
+_validate_max_words = _scripts_artifact_validator_module.validate_max_words
 _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 normalize_repo_path = _scripts_surfaces_lib_module.normalize_repo_path
@@ -238,12 +239,16 @@ def _validate_finding(bundle_abs: Path) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or not lines[0].startswith("# "):
         raise ValidationError(f"`{path}` must start with an H1 title")
-    counted = sum(len(line.split()) for line in lines)
-    if counted > MAX_FINDING_WORDS:
-        raise ValidationError(
-            f"`{path}` is {counted} words (limit {MAX_FINDING_WORDS}); move raw logs to "
-            "sibling files. Rewrapping cannot help: the budget charges words, not lines."
-        )
+    # Through the shared measurement, not a local re-expression of it. The first cut
+    # hand-rolled `sum(len(line.split()) ...)` AND re-typed the "Rewrapping cannot help"
+    # sentence, one file away from the module that owns both -- the same duplicate-paste
+    # class this slice had already shipped once and had caught by the dup gate.
+    # `validate_max_words` is used rather than the dated wrapper: a finding lives in a
+    # dated DIRECTORY, so `observed_date` cannot date `finding.md` and the grandfather is
+    # unavailable here. That is why this ceiling sits above the corpus maximum instead.
+    _validate_max_words(
+        lines, max_words=MAX_FINDING_WORDS, artifact_label=f"`{path}`"
+    )
     text = "\n".join(lines)
     if not _contains_any(text, SOURCE_MARKERS):
         raise ValidationError(f"`{path}` must name the behavior source or fixture (`## What ran` or `## Fixture`)")

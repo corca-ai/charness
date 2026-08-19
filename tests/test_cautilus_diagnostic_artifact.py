@@ -272,7 +272,10 @@ def test_validate_cautilus_diagnostics_rejects_oversized_finding(tmp_path: Path)
     result = run_diagnostic_validator(repo, "charness-artifacts/cautilus/demo-diagnostic/finding.md")
 
     assert result.returncode == 1
-    assert "words (limit 1200)" in result.stderr
+    # The SHARED refusal wording, which is the point of the change: this gate used to
+    # re-type its own copy of both the counter and this sentence.
+    assert "is 1418 words; should stay concise" in result.stderr
+    assert "get back under 1200" in result.stderr
     assert "Rewrapping cannot help" in result.stderr
 
 
