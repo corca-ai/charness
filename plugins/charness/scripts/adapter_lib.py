@@ -15,24 +15,6 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
-# LOADED BY PATH WITH STDLIB ONLY, and that is a hard constraint rather than a style
-# choice. This module is imported three ways: as `scripts.adapter_lib`, as a bare
-# `adapter_lib` from a seeded test repo, and by absolute PATH from a skill script whose
-# loader puts nothing on `sys.path`. The first cut of this split used
-# `runtime_bootstrap.import_repo_module` and broke the third: every achieve and handoff
-# skill script that reaches `adapter_lib` died with `No module named 'runtime_bootstrap'`.
-# The pre-split file had no repo imports at all, which is why it worked everywhere.
-#
-# Registered in `sys.modules` under a stable key so the three load paths SHARE one
-# instance. `_UNINTERPRETED_SINK` is a ContextVar living in that module: two copies means
-# `load_yaml_report` arms one sink while `_parse_block` records into another, and the
-# report comes back empty while the parse silently drops lines -- the exact silence this
-# repo built the sink to end.
-# KEYED ON THE RESOLVED PATH, not on a bare name. A bare key means the FIRST `adapter_lib`
-# loaded in a process binds the parser for every later one from any tree -- so a vendored or
-# stale charness beside a fresh one would silently share a parser, which is the wrong answer
-# rendered as agreement. Same file therefore still means one instance and one sink; a
-# different tree gets its own, which is what a different tree should get.
 _YAML_PATH = Path(__file__).resolve().parent / "adapter_yaml_parse.py"
 
 
@@ -74,7 +56,13 @@ def _load_yaml_module(path: Path):
     try:
         spec.loader.exec_module(module)
     except BaseException:
-        del sys.modules[key]
+        # GUARDED, as CPython's `_bootstrap._load` guards it. A bare `del` raises `KeyError`
+        # from inside the except block when the entry is already gone -- a parser body that
+        # touched `sys.modules`, a re-entrant load -- and that `KeyError` becomes the surfaced
+        # error while the real `ImportError` is demoted to `__context__`. Which is "the second
+        # error hiding the first", two lines above: the repair carrying its own class until a
+        # round-2 review read it.
+        sys.modules.pop(key, None)
         raise
     return module
 

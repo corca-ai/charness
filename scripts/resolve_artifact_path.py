@@ -95,6 +95,12 @@ def _refuse_unhonored_adapter(adapter: object, skill_id: str) -> None:
     can change again without silently disarming this. `declarations_dropped` is the third
     door and is checked here too: it is now reachable for all sixteen, and a dropped
     `output_dir` line lands on exactly the same default.
+
+    ONE DOOR IT DOES NOT COVER, named because the sentence above is about the exit-code door
+    only: `payload_for(adapter=...)` skips `load_adapter` and therefore skips this. The one
+    production caller that passes it (`scaffold_debug_artifact`) is guarded upstream on all
+    three doors, so there is no live escape -- but a new caller inherits nothing here, and no
+    test pins that parameter's contract.
     """
     if not isinstance(adapter, dict):
         raise SystemExit(f"the `{skill_id}` adapter resolver rendered no payload to read")
@@ -111,17 +117,30 @@ def _refuse_unhonored_adapter(adapter: object, skill_id: str) -> None:
         detail = "; ".join(str(item) for item in errors if isinstance(item, str))
         lead = f"`.agents/{adapter_name}` {_verdict.unhonored_cause(errors)} ({detail})."
         fix = _verdict.unhonored_remedy(errors, adapter_name)
+        tail = (
+            "Nothing it declares is being honored, so resolving an artifact path here would "
+            "return a charness default wearing this repo's name -- refusing instead."
+        )
     else:
+        # A DIFFERENT SENTENCE, because the dropped-line arm is a different fact and the
+        # shared tail was FALSE for it. A dropped line leaves the rest of the document
+        # honored: with a stray indent on an unrelated key, `output_dir` is still read and
+        # resolution would NOT have returned a charness default. Round 2 caught the first cut
+        # gluing the unhonored tail onto this arm -- the same overclaim
+        # `unspeakable_version_message` words carefully ("what THEY declared is serving an
+        # inferred default"), reproduced by the repair that cited it.
         dropped = "; ".join(
             str(warning) for warning in adapter.get("warnings", [])
-            if " was not interpreted (" in str(warning)
+            if _verdict.UNINTERPRETED_WARNING_MARKER in str(warning)
         )
         lead = f"`.agents/{adapter_name}` has lines this reader could not interpret ({dropped})."
+        tail = (
+            "Whatever those lines meant to declare is serving an inferred default instead, so "
+            "an artifact path resolved here may not be the one this repo declared -- refusing "
+            "rather than guessing which."
+        )
         fix = "Fix the indentation or the syntax on those lines, then re-run."
-    raise SystemExit(
-        f"{lead} Nothing it declares is being honored, so resolving an artifact path here "
-        f"would return a charness default wearing this repo's name -- refusing instead. {fix}"
-    )
+    raise SystemExit(f"{lead} {tail} {fix}")
 
 
 def _refresh_current_pointer_argv(skill_id: str, record_path: Path) -> list[str]:

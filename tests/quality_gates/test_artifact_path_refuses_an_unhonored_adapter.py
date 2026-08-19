@@ -53,15 +53,29 @@ def _run(repo: Path) -> subprocess.CompletedProcess:
     )
 
 
+# The message each door owes, keyed to the door. Round 2 found the first cut gluing the
+# UNHONORED tail onto the dropped-line arm, where it is false: a dropped line leaves the rest
+# of the document honored, so `output_dir` is still read and resolution would NOT have
+# returned a charness default. Asserting per-arm is what keeps the two from re-merging.
+DOOR_CLAUSE = {
+    "version-refused": "charness default wearing this repo's name",
+    "parse-refused": "charness default wearing this repo's name",
+    "line-dropped": "serving an inferred default instead",
+}
+
+
 @pytest.mark.parametrize("adapter", UNHONORED)
-def test_an_unhonored_adapter_refuses_instead_of_resolving_a_charness_default(tmp_path: Path, adapter: str):
+def test_an_unhonored_adapter_refuses_instead_of_resolving_a_charness_default(
+    tmp_path: Path, adapter: str, request: pytest.FixtureRequest
+):
     result = _run(_repo(tmp_path, adapter))
     assert result.returncode != 0, result.stdout
     # The wording has ONE owner (`adapter_version_verdict.unhonored_cause` /
-    # `unhonored_remedy`), so this asserts the shared clause rather than a phrase invented
+    # `unhonored_remedy`), so this asserts that owner's clause rather than a phrase invented
     # here -- the first cut of the guard invented a third wording and a sibling test caught
     # it, which is the same drift `unhonored_cause` exists to prevent.
-    assert "charness default wearing this repo's name" in result.stderr, result.stderr
+    door = request.node.callspec.id
+    assert DOOR_CLAUSE[door] in result.stderr, result.stderr
     assert "quality-adapter.yaml" in result.stderr, result.stderr
     # The precise defect: the charness default emitted as this repo's write target.
     assert "charness-artifacts/quality" not in result.stdout

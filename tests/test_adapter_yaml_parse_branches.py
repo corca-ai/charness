@@ -102,7 +102,7 @@ def test_a_failed_parser_load_does_not_poison_every_later_load_in_the_process(tm
         assert key not in sys.modules, "the failed parser stayed registered"
 
 
-def test_the_parser_is_loaded_once_per_path_and_its_sink_is_internally_consistent(tmp_path):
+def test_the_parser_is_loaded_once_per_path_and_its_sink_is_internally_consistent():
     """One instance PER PATH, and the sink consistent within it.
 
     Written first as "one instance per process", which is FALSE and the test found it:

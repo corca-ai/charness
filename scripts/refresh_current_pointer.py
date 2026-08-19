@@ -14,7 +14,6 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _resolve_artifact_path = import_repo_module(__file__, "scripts.resolve_artifact_path")
 load_adapter = _resolve_artifact_path.load_adapter
-_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 
 _artifact_naming = import_repo_module(__file__, "scripts.artifact_naming_lib")
 ArtifactClassError = _artifact_naming.ArtifactClassError
@@ -176,13 +175,17 @@ def main() -> int:
     # the skill output directory`, which points the operator at the record path when the
     # wrong line is in the adapter; and when the CALLER resolved from the same
     # misversioned adapter, both paths are the default and nothing catches it at all.
-    refused = _version_verdict.refuse_unspeakable_version(
-        lambda root: load_adapter(root, args.skill_id),
-        repo_root,
-        adapter_name=f"{args.skill_id}-adapter.yaml",
-    )
-    if refused is not None:
-        return refused
+    # NO SECOND GUARD HERE, and its absence is the repair rather than a gap. This file used
+    # to call `refuse_unspeakable_version` with `resolve_artifact_path.load_adapter` as the
+    # loader. Since `#673` that loader REFUSES by raising `SystemExit`, which is a
+    # `BaseException` and so is not caught by `unspeakable_version_message`'s `except
+    # Exception` -- so the refusal propagates and `refused` could only ever be None. The
+    # block was unreachable, its AST call still satisfied the census witness, and deleting
+    # it left all 39 assertions in `test_adapter_version_refusal_is_loud.py` green: a guard
+    # nothing could prove load-bearing. It also ran the resolver subprocess twice per call.
+    #
+    # The surface still refuses -- `load_adapter` below does it, with one owner for the
+    # wording -- and that IS pinned, by this surface's own case in that test file.
     adapter = load_adapter(repo_root, args.skill_id)
     try:
         artifact_class = artifact_class_from_adapter(adapter)

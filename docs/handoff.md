@@ -22,7 +22,7 @@
 ## Current State
 
 - **The adapter-consumer debt is being paid down row by row, each by a MEASURED
-  behavioral flip.** Thirteen rows are `guarded`; the guard refuses on the CONDITION
+  behavioral flip.** Recount with the command below -- the manifest holds more `guarded` rows than slice 5 paid; the guard refuses on the CONDITION
   ("this reader honored nothing the repo declared") through the channels a resolver
   REPORTS — a refused `version`, a refused parse, a silently dropped line. ALL SIXTEEN
   report all three since [#673](https://github.com/corca-ai/charness/issues/673); records

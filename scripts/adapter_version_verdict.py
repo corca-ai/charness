@@ -63,6 +63,7 @@ __all__ = [
     "unhonored_remedy",
     "unspeakable_version_message",
     "refuse_unspeakable_version",
+    "UNINTERPRETED_WARNING_MARKER",
 ]
 
 # The wording `validate_adapter_version` emits. A prefix rather than an equality set
@@ -108,6 +109,11 @@ _PARSE_FAILURE_PREFIX = "adapter could not be parsed:"
 # returns every ERROR, would refuse an adapter that is merely invalid in an ordinary way --
 # the polarity this module's docstring exists to forbid.
 _UNINTERPRETED_WARNING_MARKER = " was not interpreted ("
+# PUBLIC, because a consumer that renders its own dropped-line message needs the marker to
+# quote the evidence and a round-2 review found `resolve_artifact_path` hardcoding a fifth
+# copy. Exported rather than re-duplicated: this module already owns the literal for the
+# reason above it, and one more private copy is one more place for the wording to drift.
+UNINTERPRETED_WARNING_MARKER = _UNINTERPRETED_WARNING_MARKER
 
 
 def version_refused(errors: Any) -> bool:
@@ -215,9 +221,13 @@ def unspeakable_version_message(
 
     The swallow arm stays, matching `resolve_adapter_line_budget`, which runs the resolver
     of the repo UNDER validation and must render a verdict rather than a traceback. Its
-    remaining reach is UNMEASURED: no `skills/public/*/scripts/resolve_adapter.py` raises
-    on a refused parse now, and whether any production caller still reaches this arm was
-    not established by the slice that made it rarer.
+    remaining reach is UNMEASURED, and the scope of that statement matters: no
+    `skills/public/*/scripts/resolve_adapter.py` raises on a refused parse now, but the
+    loaders actually HANDED to this function are repo scripts and skill-local callables, and
+    `#673` made one of those (`resolve_artifact_path.load_adapter`) raise. It does not reach
+    this arm only because it raises `SystemExit`, a `BaseException`. A future change making
+    that guard raise an ordinary exception would silently activate the swallow arm at a
+    write surface.
 
     An earlier draft of this docstring justified answering None on a recorded parse
     failure with "the caller's own discovery already reports it". A bounded review
@@ -245,19 +255,13 @@ def unspeakable_version_message(
     if not declarations_unhonored(errors):
         return None
     detail = "; ".join(error for error in errors if isinstance(error, str))
-    lead = (
-        f"`.agents/{adapter_name}` could not be parsed ({detail})."
-        if parse_refused(errors)
-        else (
-            f"`.agents/{adapter_name}` declares a `version` this reader does not speak "
-            f"({detail})."
-        )
-    )
-    fix = (
-        "Fix the YAML so the document parses, then re-run."
-        if parse_refused(errors)
-        else "Set `version: 1`, or upgrade the reader, then re-run."
-    )
+    # THROUGH THE HELPERS, so "one owner rather than four" is true rather than aspirational.
+    # A round-2 review measured that it was not: this function inlined its own copies and
+    # they DIFFERED from `unhonored_remedy` -- the parse door omitted the adapter path, the
+    # version door added "or upgrade the reader" -- so the same input got a different
+    # instruction depending on which entrypoint a consumer used. Two owners in one module.
+    lead = f"`.agents/{adapter_name}` {unhonored_cause(errors)} ({detail})."
+    fix = unhonored_remedy(errors, adapter_name)
     return (
         f"{lead} Nothing the adapter declares is being honored, so this run would fall "
         f"back to charness defaults rather than to what the repo declared -- refusing "

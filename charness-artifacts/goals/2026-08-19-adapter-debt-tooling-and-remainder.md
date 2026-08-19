@@ -9,25 +9,30 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **slice 2 — `#673`, route the bare-loader resolvers through the reporting
-  loader.** Slice 1 landed at `a12ba86f5` with both bounded rounds folded; see `## Slice Log`.
-- Current slice intent: make all sixteen public resolvers answer a parser-refused document
-  the same way, so `adapter_version_verdict.parse_refused` and `declarations_dropped` stop
-  being structurally dead for the skills whose libs call `load_yaml_file` bare. This names
-  the reviewable-intent unit in progress and the commits it spans; critique and broad proof
-  do not re-fire within one unchanged intent (meaningful-slice-cadence).
-- Next action: add the shared reporting-loader helper to `adapter_lib`, route the five
-  remaining bare call sites through it, then one test that drives all sixteen resolvers.
-- **Measured before starting, and it corrects the issue's own count: FIVE resolvers
-  traceback today, not six.** `announcement` was repaired by the predecessor goal ahead of
-  `#673`. Sweep at `a12ba86f5` over `version: !!int 9`: TRACEBACK on achieve, create-skill,
-  critique, narrative, quality; recorded on the other eleven. The exit codes are a THIRD
-  inconsistency the issue does not name — ten record at exit 0, `issue` records at exit 1 —
-  so `#673`'s "non-zero exit" acceptance is wider than its "six resolvers" diagnosis.
-- Bare `load_yaml_file` call sites to route: `scripts/quality_adapter_lib.py:498`,
-  `scripts/critique_adapter_lib.py:264`, `scripts/narrative_adapter_lib.py:176`,
-  `skills/public/achieve/scripts/achieve_adapter_policy.py:291`,
-  `skills/public/create-skill/scripts/resolve_adapter.py:147`.
+- Current slice: **slice 2 — `#673` — landed at `e54132c47` and its follow-ups; TWO bounded
+  rounds owed, round 1 folded, round 2 next.** Slice 1 (`#674`) landed at `a12ba86f5` with
+  both rounds folded. See `## Slice Log`.
+- Current slice intent: all sixteen public resolvers answer a malformed adapter the same
+  way, so `parse_refused` and `declarations_dropped` stop being structurally dead for the
+  five skills whose libraries called `load_yaml_file` bare. This names the reviewable-intent
+  unit and the commits it spans; critique and broad proof do not re-fire within one
+  unchanged intent (meaningful-slice-cadence).
+- Next action: round 2 of the bounded review, reading the round-1 repairs — then slice 3
+  (`#675`, the census verdict vocabulary).
+- **Corrected the issue's own count before starting: FIVE resolvers tracebacked, not six.**
+  `announcement` was repaired by the predecessor ahead of `#673`. The exit codes are a THIRD
+  inconsistency `#673` does not name and this slice did NOT normalise: fourteen exit 0 with
+  `valid: false`, `critique` and `issue` exit 1, pinned in `NON_ZERO_EXIT_SKILLS`.
+- **Round 1 found a regression this slice caused.** Making five resolvers exit 0 instead of
+  tracebacking removed `resolve_artifact_path`'s only protection — its subprocess return
+  code — and it began resolving `charness-artifacts/quality/latest.md` over a repo that
+  declared `docs/mine-q`. Guarded on the CONDITION now, with the three-door test at
+  `tests/quality_gates/test_artifact_path_refuses_an_unhonored_adapter.py`.
+- **`#550` narrowed, not closed.** `adapter_lib.resolve_adapter_payload` owns the payload
+  and both branches for quality, narrative, critique and achieve. announcement, create-skill,
+  proof_semantics, cautilus and issue stay out, each for a recorded reason in
+  `charness-artifacts/quality/dup-review.json`. The remaining bare `load_yaml_file` callers
+  (`proof_semantics_adapter_lib`, `cautilus_adapter_lib`) are the residual surface.
 - Timebox: none set by the operator. Set one on activation if this should stop before the
   full five slices; without one, the Slice Plan's own stop rule (halt BEFORE slice 4 if
   slices 1-2 overrun) is the only bound.

@@ -512,6 +512,13 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path() -> None:
     than cloning a seeded repo, so it runs in the STANDING lane. The release-marked sibling
     below proves the same requirement end-to-end; this one is what the changed-line gate can
     see, and a requirement no standing test covers can be deleted with every gate green.
+
+    NOT CHEAP, despite the contrast above: that call also runs
+    `validate_checked_in_plugin_tree_matches_generated`, which exports the whole plugin tree
+    to a tempdir and byte-compares it. So unrelated mirror drift fails this test with a
+    `RuntimeError` before either assertion, attributing a sync problem to the parser
+    requirement. Kept because the byte comparison is the thing that makes the assertions
+    meaningful; said out loud so the failure mode is not a surprise.
     """
     from scripts import validate_packaging_install_surface as surface
     required: list[str] = []
