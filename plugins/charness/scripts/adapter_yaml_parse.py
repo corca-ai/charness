@@ -278,11 +278,14 @@ def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[A
         if current_indent == indent:
             if not stripped.startswith("- "):
                 break
+            # `item_body` cannot be empty here, and the empty-item branch that used to
+            # follow was dead. `stripped` is `raw.strip()`, so if it starts with `- ` there
+            # is a non-space character after that space -- a trailing one would have been
+            # stripped. A bare `-` therefore fails `startswith("- ")` and ENDS the list at
+            # the check above, which is the real behavior and is pinned by
+            # `test_a_bare_dash_ends_the_list_rather_than_adding_an_empty_item`. Found when
+            # the module split made the changed-line gate read these lines as new.
             item_body = stripped[2:].strip()
-            if not item_body:
-                items.append("")
-                index += 1
-                continue
             if _is_quoted_scalar(item_body):
                 items.append(_coerce_scalar(item_body))
                 index += 1

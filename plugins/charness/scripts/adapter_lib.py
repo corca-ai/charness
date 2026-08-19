@@ -127,12 +127,12 @@ def read_declared_adapter(path: Path) -> tuple[dict[str, Any], list[str], list[s
         raw, uninterpreted = load_yaml_file_report(path)
     except ValueError as exc:
         return {}, [parse_failure_error(exc)], []
-    warnings = uninterpreted_warnings(uninterpreted)
-    if not isinstance(raw, dict):
-        # `load_yaml` always returns a dict today, so this cannot fire; kept because removing
-        # it would be a behavior claim about every caller that this change has not proven.
-        return {}, [], [*warnings, "Adapter file did not contain a mapping. Using inferred defaults."]
-    return raw, [], warnings
+    # NO non-mapping arm. `load_yaml` returns `_parse_block(...)[0]`, which is always a
+    # dict, so the guard the four callers used to write here could not fire -- and the
+    # changed-line gate is what made that visible, because an unreachable branch has no
+    # covering test by construction. The shape those callers were guarding against is
+    # reported by the uninterpreted-line sink instead, which is what actually sees it.
+    return raw, [], uninterpreted_warnings(uninterpreted)
 
 
 def resolve_declared_adapter(
