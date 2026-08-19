@@ -104,3 +104,32 @@ def test_an_ordinary_invalid_field_is_not_refused(tmp_path: Path) -> None:
     module = _module("web_fetch_routes_ordinary_invalid")
     adapter = DECLARED.format(v="1", mode="none").replace("repo: demo", "repo: demo\npreset_version: 3")
     assert module.resolve_github_mode(_repo(tmp_path, adapter)) == "none"
+
+
+def test_the_ancestor_walk_returns_its_sentinel_when_nothing_is_found() -> None:
+    """The not-found arm of the single ancestor-walk owner.
+
+    Uncovered on its first landing — the changed-line proof returned `blocked` naming
+    this exact line. It is the arm that keeps `resolve_github_mode` degrading rather than
+    crashing in a checkout that ships neither the gather skill nor `scripts/`, so it is
+    load-bearing for the fallback this row deliberately preserves.
+    """
+    module = _module("web_fetch_routes_sentinel")
+    found = module._find_repo_script(
+        ("no", "such", "directory", "nope.py"), missing="__sentinel__.py"
+    )
+    assert found == Path("__sentinel__.py")
+    assert not found.is_file()
+
+
+def test_an_unloadable_module_path_answers_none(tmp_path: Path) -> None:
+    """The spec-failure arm of `_load_module`, likewise uncovered on first landing.
+
+    A path importlib cannot build a loader for must answer `None` rather than raise, so
+    the guard is skipped and the pre-existing fallback stands. That is the availability
+    gap this row's probe record names rather than assumes away.
+    """
+    module = _module("web_fetch_routes_unloadable")
+    not_python = tmp_path / "not-a-module.txt"
+    not_python.write_text("nope\n", encoding="utf-8")
+    assert module._load_module(not_python, "web_fetch_unloadable_probe") is None
