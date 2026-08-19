@@ -24,7 +24,7 @@ _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scri
 _resolve_artifact_path = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.resolve_artifact_path")
 _scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 
-# Single-source the artifact line budget from the validator (the one authority
+# Single-source the artifact word budget from the validator (the one authority
 # for MAX_ARTIFACT_WORDS) so the scaffold surfaces the exact ceiling the gate
 # enforces. If the validator module cannot load, degrade to no budget rather
 # than break the scaffold — the field is additive guidance, never load-bearing.

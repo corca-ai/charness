@@ -30,6 +30,10 @@ _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artif
 # would have gone.
 _scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
 _adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
+# The rule-date scope for the word ceiling, owned by the module that owns the
+# measurement so debug and quality cannot drift apart (they shipped as byte-identical
+# copies for one commit, and the duplicate gate caught it).
+_validate_size = _scripts_artifact_validator_module.validate_max_words_when_dated_in_scope
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
 run_changed_artifact_validator = _scripts_artifact_validator_module.run_changed_artifact_validator
@@ -37,7 +41,6 @@ find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
 validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h2_sections
-validate_max_words = _scripts_artifact_validator_module.validate_max_words
 resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
@@ -323,8 +326,11 @@ def validate_debug_artifact(
             error_message="debug artifact must start with a `# ... Debug ...` heading",
         ),
         lambda: validate_date_line(lines),
-        lambda: validate_max_words(
-            lines, max_words=ceiling, artifact_label="debug artifact", artifact_type="debug"
+        # Grandfathered on the unit change; `word_ceiling_enforced` owns why. Live, not
+        # latent: `run-quality.sh` runs this gate UNSCOPED over the whole corpus, and
+        # seven checked-in artifacts went red at the cutover.
+        lambda: _validate_size(
+            path, lines, max_words=ceiling, artifact_label="debug artifact", artifact_type="debug"
         ),
     )
     if is_current_artifact(path, current_pointer):

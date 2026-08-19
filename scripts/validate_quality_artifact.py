@@ -28,6 +28,8 @@ _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artif
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 _adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 _surface_contract = import_repo_module(__file__, "scripts.quality_surface_contract")
+# Shared with debug through the module that owns the measurement; see its docstring
+# for why dated artifacts are grandfathered and the handoff is not.
 ValidationError = _scripts_artifact_validator_module.ValidationError
 add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
 add_artifact_path_arg = _scripts_artifact_validator_module.add_artifact_path_arg
@@ -38,7 +40,6 @@ repo_relative = import_repo_module(__file__, "scripts.path_portability_lib").rep
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line
-validate_max_words = _scripts_artifact_validator_module.validate_max_words
 resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
@@ -588,7 +589,11 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
 
     checks = (
         _header,
-        lambda: validate_max_words(
+        # Grandfathered on the unit change; `word_ceiling_enforced` owns why. Latent
+        # rather than live here (this gate takes ONE artifact, not a corpus), but ten
+        # checked-in artifacts sit above 1100. Found by a bounded review, not a gate.
+        lambda: _scripts_artifact_validator_module.validate_max_words_when_dated_in_scope(
+            path,
             lines,
             max_words=resolve_adapter_line_budget(
                 load_adapter, resolved_repo_root, field=WORD_BUDGET_FIELD, default=MAX_ARTIFACT_WORDS

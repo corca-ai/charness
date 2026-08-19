@@ -109,10 +109,10 @@ def current_pointer_payload(
         "template": template,
         "validator_command": validator_command,
     }
-    # Surface the artifact's line budget as part of the canonical scaffold
+    # Surface the artifact's size budget as part of the canonical scaffold
     # contract so a run writes-to-fit up front instead of writing long and then
-    # burning a trim-to-fit edit/wc-l loop against a ceiling it could not see
-    # until the validator rejected it. Optional: skills without a line ceiling
+    # burning a trim-to-fit edit/re-measure loop against a ceiling it could not
+    # see until the validator rejected it. Optional: skills without a size ceiling
     # omit it entirely (no field), so existing scaffold consumers are unchanged.
     if size_budget is not None:
         payload["size_budget"] = size_budget

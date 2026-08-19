@@ -27,8 +27,10 @@ Optional size budget:
 - `max_content_words` — CONTENT words the handoff may occupy. Blank lines, the
   required `##` headings and the whole `## References` block are NOT counted, and
   what remains is charged per whitespace-separated token, so this is a different
-  measurement from debug/quality's `max_artifact_lines` (which counts LINES) and
-  the two numbers are not interchangeable in magnitude OR in unit. Omit it to keep
+  measurement from debug/quality's `max_artifact_words`, which charges the RAW FILE
+  rather than excluding headings and `## References`, so the two numbers are not
+  interchangeable. Both families charge words; only the selection differs.
+  (`max_artifact_lines` is itself retired and refused — see their contracts.) Omit it to keep
   the shipped default. The gate, the scaffold, the run planner's
   `over_limit`/`near_limit` status and the doc-authoring preflight all resolve the
   same value. Must be a positive integer; a refused value is an adapter error and

@@ -12,7 +12,16 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 CAUTILUS_DIR = Path("charness-artifacts/cautilus")
-MAX_FINDING_LINES = 180
+# WORDS since 2026-08-19, for the reason `scripts/artifact_size_budget` records: a
+# line count charged for the author's wrap width, not the reading load it named.
+#
+# 1200 is set ABOVE this corpus's observed maximum (1149 words), not at a percentile
+# like its debug/quality siblings, and deliberately so: a finding lives in a DATED
+# BUNDLE DIRECTORY rather than a dated file, so `observed_date` -- which reads a
+# filename or a body `Date:` line -- cannot date `finding.md` and the RULE_DATE
+# grandfather those siblings use is unavailable here. With no way to exempt frozen
+# records, the only honest choice is a ceiling no existing record breaches.
+MAX_FINDING_WORDS = 1200
 MACHINE_EVIDENCE_NAMES = (
     "observed.v1.json",
     "summary.v1.json",
@@ -229,8 +238,12 @@ def _validate_finding(bundle_abs: Path) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or not lines[0].startswith("# "):
         raise ValidationError(f"`{path}` must start with an H1 title")
-    if len(lines) > MAX_FINDING_LINES:
-        raise ValidationError(f"`{path}` should stay concise; move raw logs to sibling files")
+    counted = sum(len(line.split()) for line in lines)
+    if counted > MAX_FINDING_WORDS:
+        raise ValidationError(
+            f"`{path}` is {counted} words (limit {MAX_FINDING_WORDS}); move raw logs to "
+            "sibling files. Rewrapping cannot help: the budget charges words, not lines."
+        )
     text = "\n".join(lines)
     if not _contains_any(text, SOURCE_MARKERS):
         raise ValidationError(f"`{path}` must name the behavior source or fixture (`## What ran` or `## Fixture`)")

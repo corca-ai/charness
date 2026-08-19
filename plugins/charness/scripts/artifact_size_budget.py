@@ -25,17 +25,34 @@ BLIND CLASS -- what this measure CANNOT see:
 - A word is a whitespace-separated token, so a bare URL costs 1 and a fenced
   code block costs whatever its tokens happen to be, while either can dominate a
   screen. This is a READING-LOAD proxy, never a screen-space one.
-- Markdown punctuation counts. `# Title` is three tokens, not two; a table row
-  is priced by its cell contents plus its pipes.
+- Markdown punctuation counts as its own token when a space follows it. `# Title`
+  is TWO tokens (`#`, `Title`), and `# Debug Review` is three. An earlier draft of
+  this line said `# Title` was three; a bounded reviewer caught it, and one of this
+  slice's own test fixtures had the same off-by-one. A link is the opposite case:
+  `[label](path)` holds no space and costs one.
 - It cannot see repetition, hedging, or a paragraph that says nothing. No
   automatic measure can, which is why each family keeps an authoring TARGET well
   under its ceiling and treats the ceiling as a failure guard.
 - It is the WRONG unit for a budget that means "at most N ENTRIES" (a vocabulary
-  block, a reference list). Charge entries there. `charge the unit you mean` is
-  the rule; `always charge words` is not.
+  block, a reference list). `charge the unit you mean` is the rule; `always charge
+  words` is not.
+
+  Stated precisely, because the obvious reading of the sentence above is false of
+  this repo TODAY: `skill_core_density.PRESSURE_EXEMPT_BUDGET` is the entry-shaped
+  budget in question, and it charges NON-EMPTY LINES, not entries -- there is no
+  continuation-line merging in `split_pressure_exempt_sections`, so an entry that
+  soft-wraps costs two. A bounded reviewer measured the live case:
+  `skills/public/handoff/SKILL.md`'s `## Closeout Vocabulary` block holds two
+  entries across seven non-empty lines, spending seven of its twelve. So that
+  budget carries the same wrap-sensitivity this module removed elsewhere, in
+  miniature and bounded (overflow only charges density and never blocks). It was
+  NOT migrated with the prose budgets and it was not repaired here; this paragraph
+  records what is, not what ought to be.
 """
 from __future__ import annotations
 
+import datetime as _dt
+from pathlib import Path
 from typing import Sequence
 
 from runtime_bootstrap import import_repo_module
@@ -47,6 +64,7 @@ _run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
 ValidationError = _run_scope.ValidationError
 _violation_report = import_repo_module(__file__, "scripts.artifact_violation_report")
 _scaffold_rel = _violation_report._scaffold_rel
+_enforcement_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
 
 
 def artifact_words(lines: Sequence[str]) -> int:
@@ -72,3 +90,62 @@ def validate_max_words(
     if scaffold:
         message += f"; `python3 {scaffold} --repo-root .` reports this ceiling up front as `size_budget.max_words`"
     raise ValidationError(message)
+
+
+# The date every prose-artifact budget in this repo changed unit.
+WORD_CEILING_RULE_DATE = _dt.date(2026, 8, 19)
+
+
+def word_ceiling_enforced(
+    path: Path, lines: Sequence[str], *, rule_date: _dt.date = WORD_CEILING_RULE_DATE
+) -> bool:
+    """Whether a DATED artifact is in scope for the word ceiling.
+
+    One owner, because the two callers that needed it (debug, quality) had already
+    been written as byte-identical copies and the duplicate gate caught it in the
+    same slice -- a repair carrying the class it repairs, which is what this repo
+    spends its review rounds on.
+
+    Grandfathering exists here and NOT on the handoff for a reason the handoff
+    validator states: these are dated, append-only records that nobody may now
+    rewrite, while the handoff is one rolling document whose next rewrite is its
+    migration. Measured at the cutover: seven checked-in debug artifacts sat
+    between 1210 and 1487 words under the new 1200 ceiling, and ten quality
+    artifacts sat above 1100.
+
+    `observed_date` takes the LATER of filename and body date, so an artifact
+    cannot date itself out of the ceiling with one author-written line. `None`
+    (neither channel parses) is ENFORCED, never exempt -- otherwise stripping the
+    date off a current file would buy the exemption.
+
+    BLIND CLASS: an artifact whose date lives only in a containing DIRECTORY name
+    is undatable by this rule, so a family stored that way cannot be grandfathered
+    at all. `validate_cautilus_diagnostics` is exactly that shape and therefore
+    sets a ceiling above its corpus maximum instead of calling this.
+    """
+    observed = _enforcement_scope.observed_date(Path(path), "\n".join(lines))
+    return observed is None or observed >= rule_date
+
+
+def validate_max_words_when_dated_in_scope(
+    path: Path,
+    lines: Sequence[str],
+    *,
+    max_words: int,
+    artifact_label: str,
+    artifact_type: str | None = None,
+    rule_date: _dt.date = WORD_CEILING_RULE_DATE,
+) -> None:
+    """`validate_max_words`, skipped for a dated artifact that predates the ceiling.
+
+    One entry point rather than a `if word_ceiling_enforced(...) else None` ternary
+    at each call site: the debug and quality gates expressed exactly that ternary as
+    byte-identical copies, and the duplicate gate caught them in the slice that
+    introduced them. A policy re-expressed at every call site is a policy that will
+    diverge at one of them.
+    """
+    if not word_ceiling_enforced(path, lines, rule_date=rule_date):
+        return
+    validate_max_words(
+        lines, max_words=max_words, artifact_label=artifact_label, artifact_type=artifact_type
+    )

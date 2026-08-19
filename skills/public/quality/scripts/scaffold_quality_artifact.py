@@ -39,7 +39,7 @@ _REDIRECTED_RECORD_KEYS = (
 # emits a skeleton that passes that validator out of the box so an author fills
 # slots instead of rediscovering the contract by trial-and-error.
 
-# Single-source the artifact line budget from the validator (the one authority
+# Single-source the artifact word budget from the validator (the one authority
 # for MAX_ARTIFACT_WORDS) so the scaffold surfaces the exact ceiling the gate
 # enforces, without a second literal that can drift. If the validator module
 # cannot load, degrade to no budget rather than break the scaffold — the field is

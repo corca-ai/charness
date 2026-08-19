@@ -39,9 +39,12 @@ also formatting. The repair carried the class it repaired; a word count is
 wrap-invariant and does not.
 
 BLIND CLASS -- what this measure CANNOT see. A word is a whitespace-separated
-token, so a bare URL costs 1 and `[label](path)` costs 2 while both can occupy a
-full visual line. A handoff padded with inline links therefore grows on screen
-without growing against the ceiling. That is deliberate and consistent with the
+token, so `[label](path)` costs ONE -- there is no space inside it -- and a bare
+URL costs one too, while either can occupy most of a visual line. (An earlier
+draft of this paragraph said two; `"[label](path)".split()` returns one element,
+and a bounded reviewer caught the arithmetic in the sentence that justifies the
+`## References` exclusion.) A handoff padded with inline links therefore grows on
+screen without growing against the ceiling. That is deliberate and consistent with the
 `## References` exclusion (single-sourcing to an owning artifact is the behavior
 this skill asks for), but it means this budget is a READING-LOAD proxy, not a
 screen-space one. It also cannot see repetition, hedging, or a bullet that says
@@ -53,8 +56,8 @@ from __future__ import annotations
 
 from typing import Sequence
 
-# 900, translated from the 78-CONTENT-LINE ceiling it replaces on 2026-08-19.
-# There is no faithful translation and this is a new decision, stated as one: the
+# 900, REPLACING the 78-CONTENT-LINE ceiling on 2026-08-19 -- replacing, not
+# translating. There is no faithful translation and this is a new decision: the
 # line bar admitted 222-1240 words across the 156 revisions of its era, so no word
 # number reproduces it. 900 was chosen against that history rather than against the
 # current file -- it admits 153 of those 156 revisions unchanged, and leaves the
@@ -84,8 +87,14 @@ def content_lines(lines: Sequence[str]) -> list[str]:
 
     Kept as its own function because the selection rule (which lines are the
     author's prose rather than the gate's own scaffolding) is a separate decision
-    from the unit charged, and both the planner and the preflight need the
-    selection to explain a verdict line by line. `content_words` is the measure.
+    from the unit charged: `content_words` is defined in terms of it, and a caller
+    that wants to SHOW an author which lines were charged needs the list.
+
+    Honest state: no production caller uses the list today -- only `content_words`
+    and the tests do. An earlier version of this docstring claimed the planner and
+    the preflight needed it, which was an unearned claim on a proof surface; a
+    bounded reviewer refused it. It stays because the selection rule has to live
+    somewhere separable from the charge, not because something is calling it.
     """
     counted: list[str] = []
     in_references = False

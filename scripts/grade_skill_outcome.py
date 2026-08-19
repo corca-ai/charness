@@ -190,7 +190,7 @@ class Bundle:
 
     def _output_excerpts(self, max_files: int = 20, per_file: int = 8000, total_budget: int = 40000) -> str:
         # per_file must fit a full produced artifact's SUBSTANCE, not just its head:
-        # a debug artifact caps at ~180 lines (~7KB) and its load-bearing sections
+        # a debug artifact caps at 1200 words (~8KB) and its load-bearing sections
         # (Detection Gap / Sibling Search / Prevention) sit at the BOTTOM, so a small
         # window (the old 500 chars) truncated them and forced false-negative judge
         # verdicts on exactly the substance the assertion set exists to grade. The

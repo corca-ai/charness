@@ -234,7 +234,7 @@ def _descriptorless_reference_lines(lines: list[str], start: int) -> list[tuple[
 def validate_reference_descriptors(lines: list[str]) -> None:
     """Refuse a `## References` link that carries no context on its OWN line.
 
-    The section is exempt from the content-line ceiling and is required to hold a
+    The section is exempt from the content-word ceiling and is required to hold a
     link, so it is where links pool — a budget-free, link-required section is
     exactly where context-free links collect. Two consumer repos measured their
     `docs/handoff.md` as a leading contributor to a wiki linter's
@@ -474,7 +474,7 @@ def main() -> int:
     )
 
     repo_root = args.repo_root.resolve()
-    # Before either branch: `resolved_max_content_lines` reads the adapter even when
+    # Before either branch: `resolved_max_content_words` reads the adapter even when
     # `--artifact-path` names the file, so an unspeakable version would silently enforce
     # the shipped ceiling over a repo that declared its own.
     refused = _adapter_version_verdict.refuse_unspeakable_version(

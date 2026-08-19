@@ -262,13 +262,18 @@ def test_validate_cautilus_diagnostics_rejects_oversized_finding(tmp_path: Path)
     repo = seed_repo(tmp_path, None)
     bundle = repo / "charness-artifacts" / "cautilus" / "demo-diagnostic"
     bundle.mkdir()
-    write_diagnostic_finding(bundle, extra_lines=["- filler"] * 190)
+    # 700 filler bullets of two words each = 1400 words, past the 1200-word ceiling.
+    # The same fixture in LINES is 700, which the retired 180-line cap also breached --
+    # so the count is asserted by VALUE below, where a mutation back to line-counting
+    # would report 701 and fail.
+    write_diagnostic_finding(bundle, extra_lines=["- filler"] * 700)
     write_summary_evidence(bundle)
 
     result = run_diagnostic_validator(repo, "charness-artifacts/cautilus/demo-diagnostic/finding.md")
 
     assert result.returncode == 1
-    assert "should stay concise" in result.stderr
+    assert "words (limit 1200)" in result.stderr
+    assert "Rewrapping cannot help" in result.stderr
 
 
 def test_validate_cautilus_diagnostics_accepts_valid_trace_digest(tmp_path: Path) -> None:

@@ -4,7 +4,7 @@ language: en
 output_dir: charness-artifacts/debug
 preset_id: portable-defaults
 customized_from: portable-defaults
-# Optional. Raw FILE lines the debug artifact may occupy; omit to keep the
+# Optional. Raw FILE WORDS the debug artifact may occupy; omit to keep the
 # validator's default. Raise it when this repo's investigations are legitimately
 # multi-cause, rather than trimming real content to fit a number set elsewhere.
 # max_artifact_words: 1600

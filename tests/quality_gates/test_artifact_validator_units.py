@@ -24,6 +24,31 @@ _violation_report = import_repo_module(
     ROOT / "scripts" / "artifact_violation_report.py",
     "scripts.artifact_violation_report",
 )
+# Same binding, same reason, for the 2026-08-19 split: `artifact_words` and
+# `validate_max_words` moved into their own module and are exercised here only
+# through `artifact_validator`'s re-exports. A bounded reviewer flagged that this
+# repo had already paid for the missing binding once on the line above, and that
+# the new split shipped without it.
+_size_budget = import_repo_module(
+    ROOT / "scripts" / "artifact_size_budget.py",
+    "scripts.artifact_size_budget",
+)
+
+
+def test_the_size_budget_module_is_exercised_through_the_validator_reexports() -> None:
+    """Both re-exports resolve to the split module's own objects, not to copies.
+
+    Pins the split itself: if a later edit re-inlines either function into
+    `artifact_validator`, or binds a second module instance from a different
+    sys.path entry, this fails rather than leaving the coverage gate to notice.
+    """
+    assert _artifact_validator.artifact_words is _size_budget.artifact_words
+    assert _artifact_validator.validate_max_words is _size_budget.validate_max_words
+    # `# Title` is two tokens, `[label](path)` is one -- the two arithmetic claims the
+    # module docstrings make about what a "word" is, pinned so the prose cannot drift
+    # from the code again.
+    assert _size_budget.artifact_words(["# Title"]) == 2
+    assert _size_budget.artifact_words(["[label](path)"]) == 1
 
 # The registry is imported by NAME inside `_scaffold_rel`, so binding it here through
 # the same top-level import is what makes the monkeypatch land on the object the lazy

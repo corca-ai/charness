@@ -34,7 +34,7 @@ optional_string = _scripts_adapter_lib_module.optional_string
 declared_fields_after_version_check = _scripts_adapter_lib_module.declared_fields_after_version_check
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
-# Raw FILE lines, matching what `validate_debug_artifact.py` counts. Named for the
+# Raw FILE words, matching what `validate_debug_artifact.py` counts. Named for the
 # artifact rather than for "content" because handoff's neighbouring budget excludes
 # blank lines, required headings and the whole `## References` block -- one shared
 # name would have meant two different measurements. Both charge WORDS now; the

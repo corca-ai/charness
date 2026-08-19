@@ -39,9 +39,9 @@ on-demand reads, gate packets, and next action.
 
 Follow the planner's `next_action`. When it says to scaffold, use the scaffold
 helper JSON as the canonical artifact contract: it carries the safe write
-target, current-pointer role, required heading/section order, the line budget
+target, current-pointer role, required heading/section order, the word budget
 (`size_budget`), and validator command for the installed Charness layout.
-Write the artifact to fit `size_budget.max_lines` on the first pass and heed
+Write the artifact to fit `size_budget.max_words` on the first pass and heed
 its `guidance` on the overflow-prone section, instead of writing long and then
 trimming against a ceiling the validator only reveals at the end. Write the
 payload's `write_artifact_path`, never `latest.md` by habit. Continuing an

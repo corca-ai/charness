@@ -12,7 +12,7 @@ commit gate at a time:
   - doc-link / pathy-ref form (relative-link form, bare internal markdown refs,
     backticked file references, fenced commands naming a missing script), via
     ``check_doc_links``;
-  - the surface length cap (e.g. the handoff artifact's line cap), read live
+  - the surface length cap (e.g. the handoff artifact's word cap), read live
     from the owning validator's constant.
 
 It REUSES each real validator -- it never forks their logic, so the forecast
@@ -63,13 +63,13 @@ class PreflightError(Exception):
 
 @dataclass(frozen=True)
 class LengthSurface:
-    """A doc surface that carries an enforced line cap.
+    """A doc surface that carries an enforced size cap.
 
     ``module``/``constant`` name the OWNING validator's live DEFAULT cap, and
     ``resolver_attr`` names its adapter-aware resolver. Reading the constant alone
     was correct only while the ceiling was fixed: once a consuming repo could raise
     it, this forecast kept rendering `blocked` against a number the gate no longer
-    enforced, sending the author to prune lines the gate would have accepted. Prefer
+    enforced, sending the author to prune content the gate would have accepted. Prefer
     the resolver; the constant stays the fallback for a surface that has none.
     ``matches`` resolves the surface from a repo-relative path.
 
