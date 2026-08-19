@@ -83,11 +83,18 @@ another ten review rounds spent on prose.
   boundary: it does NOT authorize a per-slice push, and it is not re-usable if the goal
   stops early — an early stop needs its own grant. A distinct-channel hosted readback is
   required, as it was for the predecessor.
+  **RE-CONFIRMED by the operator on 2026-08-19 at the closeout phase**, after the stop rule
+  fired. The original grant was written for a five-slice completion; this run stops after
+  three, so the re-confirmation is what makes the push authorized rather than inherited.
 - **Everything before that boundary lands locally.** An ahead-of-origin count during the
   run is expected and is not a defect to fix.
 - **Issue filing is standing-approved. Issue CLOSING is not**, and this goal expects to
   close `#673`, `#674` and `#675` — each needs the `issue` closeout floor and a
   phase-scoped grant, never inferred from a green gate.
+  **GRANTED by the operator on 2026-08-19, at the closeout phase, for exactly these three
+  issue numbers.** Scoped to this closeout: it does not authorize closing any other issue,
+  and it does not survive into the successor goal. Each close still runs the `issue`
+  closeout floor first; the grant removes the approval blocker, not the proof floor.
 - **No release, no tag, no version bump, no Cautilus evaluation.** If any becomes
   necessary, it stops and asks.
 - Slice 1 changes `check_probe_record` — a PROOF SURFACE that renders a verdict about
