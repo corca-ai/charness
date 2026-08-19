@@ -33,6 +33,24 @@ Verbatim from the manifest at the pinned revision.
     },
 ```
 
+A bounded review noted that this record establishes TWO files and quotes ONE. The second
+row's text is below, and it is deliberately OUTSIDE the fence — which is itself the
+finding worth keeping:
+
+> `skills/public/gather/scripts/advise_google_workspace_path.py`,
+> `accepted-risk-unguarded`: "L45 `load_gather_adapter(repo_root)["data"]` with no
+> `errors` check: on a refused version the advice is computed from gather's shipped
+> defaults rather than the repo's declaration."
+
+`probe_record_parse` CONCATENATES every fence in this section and requires the result to
+appear as one contiguous block in the source. Two rows that are not adjacent in the
+manifest — and these are far apart under JSON key ordering — cannot both be verbatim-
+verified by that mechanism. Quoting both inside fences turns `verified` into `absent` and
+the record into `not-established`, which was measured before writing this. So the second
+row is transcribed and labelled unverified rather than smuggled into a block the checker
+would then wrongly refuse. The mechanism limit is real and is the honest thing to record;
+the alternative is a record that quotes one row while claiming two.
+
 ## Stimulus
 
 One temp repo, with a quality review at BOTH the declared and the default location
@@ -107,12 +125,28 @@ Measured on both, each naming its own adapter file.
 
 ## Non-claims
 
+- **`guarded` is ONE token for two materially different coverages here, and the census
+  gate cannot tell them apart.** Row 22 (`gather`) is covered on all three doors. Row 21
+  (`inventory_quality_handoff`, reading the quality adapter) is covered on ONE: the
+  cheapest input that still reaches a charness default at HEAD is
+  `version: 1` / `repo: demo` / one over-indented `output_dir` line — `errors: []`,
+  `valid: True`, `artifact: charness-artifacts/quality/latest.md`, `findings: []`, exit 0.
+  That is the pre-repair harm at one keystroke instead of `version: 9`. The gate's
+  `GUARDED_WITNESSES` is a per-file name check and sees only that the file calls the
+  helper. Recorded here because a reader comparing the two rows' verdicts would otherwise
+  read them as equal. #673 is the closure.
 - **The claim is the narrow one.** These guards ask
   `adapter_version_verdict.unspeakable_version_message`, which refuses on a refused
   `version`, a refused parse, and — since `1465689ac` — a line the resolver reports as
   uninterpreted. Quality's resolver reports NONE of the last two: it calls
-  `adapter_lib.load_yaml_file` bare, so a parser refusal raises before the guard and a
-  silently dropped line leaves `errors: []` and `valid: True`. `gather` routes through
+  `adapter_lib.load_yaml_file` bare. A bounded review corrected the mechanism this record
+  first stated: a parser refusal does NOT raise before the guard. The guard's own load
+  raises, `unspeakable_version_message` swallows it and answers `None`, and the run stops
+  on the CONSUMER's second, unguarded load — a traceback, not a refusal. That matters
+  because wrapping that second load in a `try` would make the door silent while this
+  record's original wording implied the guard was never involved. A silently dropped line
+  likewise leaves `errors: []` and `valid: True` with no warning for `declarations_dropped`
+  to read. `gather` routes through
   `simple_skill_adapter_lib` and is covered on all three. That split is
   [#673](https://github.com/corca-ai/charness/issues/673) and is why the Claim above says
   `version` rather than "honored nothing the repo declared".

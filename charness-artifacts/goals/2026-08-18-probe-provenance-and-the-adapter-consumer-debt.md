@@ -109,10 +109,21 @@ the pre-implementation critique passes.
   `#673`, filed with both sweeps.
 - Round-2 repairs for rows 14-18 and round-1 repairs for 19-20 are ACCEPTED-UNREVIEWED
   under the two-round cap.
-- Next action: rows 21+. Recount with
+- Rows 21-22 landed (`e6bd36a5c`) with one bounded round. That round found NO fifth dead
+  control — it hand-traced the published stimulus through `adapter_lib` and confirmed the
+  nested block mapping parses — and its sharpest finding was a guard comment that INVERTED
+  the branch it sits in, on the one row whose whole rationale is placement.
+- **Two rows carry the SAME `guarded` token for materially different coverage**, and the
+  census gate cannot tell them apart: `gather` routes through `simple_skill_adapter_lib`
+  and is covered on all three doors, while every consumer of the QUALITY adapter is covered
+  on one, because that resolver calls `adapter_lib.load_yaml_file` bare. Closure is `#673`.
+- Next action: rows 23+. Recount with
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .` rather than
-  reading a number off this line; measured bases for `inventory_quality_handoff` and
-  `advise_google_workspace_path` are already in hand.
+  reading a number off this line. Measured and in hand:
+  `skills/support/web-fetch/scripts/route_public_fetch_routes.py` (a ROUTING flip --
+  `github-host-mediated` becomes `github-grant-or-cli`), and a census correction for
+  `scripts/build_debug_seam_risk_index.py`, which carries the same raw-line-scan second
+  class as `risk_interrupt_lib` and is still recorded single-class.
 - Push status: NO push grant this session. Everything lands locally; the ahead-of-origin
   count is expected and is not a defect to fix.
 - Verification cadence: cheap deterministic checks at commit boundaries; the changed-line

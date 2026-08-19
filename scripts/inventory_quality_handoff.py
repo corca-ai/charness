@@ -118,9 +118,13 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     if args.artifact is None:
-        # GUARDED AT THE READ SITE, and INSIDE the `--artifact` branch: a caller that
-        # named the file is not asking the adapter anything, and refusing there would
-        # break the direct invocation this flag exists for.
+        # GUARDED AT THE READ SITE, and INSIDE the `args.artifact is None` branch --
+        # i.e. only where the path comes from the ADAPTER. A caller that passed
+        # `--artifact` is not asking the adapter anything, and refusing on that arm would
+        # break the direct invocation the flag exists for. (An earlier draft of this
+        # comment said "INSIDE the `--artifact` branch", which is the other arm; a bounded
+        # review caught the one comment a reader hits first inverting the placement this
+        # row's whole rationale is about.)
         #
         # WHAT IT COSTS TO BE UNGUARDED, measured at `1465689ac`: a repo declaring
         # `output_dir: docs/mine-q` under `version: 9` inventoried
