@@ -22,7 +22,10 @@
 ## Current State
 
 - **The adapter-consumer debt is being paid down row by row, each by a MEASURED
-  behavioral flip.** Recount with the command below -- the manifest holds more `guarded` rows than slice 5 paid; the guard refuses on the CONDITION
+  behavioral flip.** The census now records the COVERAGE LEVEL, not one `guarded` token for
+  four different states: `guarded-all-doors`, `guarded-errors-only` (blind to a silently
+  dropped line), and `guarded-by-caller` (owes an enumerated `covering_callers` list). The
+  guard refuses on the CONDITION
   ("this reader honored nothing the repo declared") through the channels a resolver
   REPORTS — a refused `version`, a refused parse, a silently dropped line. ALL SIXTEEN
   report all three since [#673](https://github.com/corca-ai/charness/issues/673); records
@@ -31,21 +34,16 @@
   files to a directory the repo never named. Recount with
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .`; never read a
   count off this file.
-- **Every batch has owed and received two bounded review rounds, and NOT ONE has been
-  clean.** The rounds have caught, in order: a guard keyed on one check's wording instead
-  of the condition; a read-site rationale published into eight surfaces that the code
-  refutes; a repair applied to the shared helper and not to three consumers that bypass
-  it; a gate witness its own repair's COMMENT satisfied; and a narrowing that landed in one
-  of five surfaces. The cheap detector each time was the same question — what is the
-  cheapest input that still gets past this — plus grepping the phrase rather than the file.
-  The per-round ledger lives in [the goal's `## Slice Log`](../charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md).
-- **A behavioral probe can now say it measured NOTHING, and two boundaries read it.**
-  The [probe record library](../scripts/probe_record_lib.py) types a record in
-  `boundary_probe_lib`'s existing
-  vocabulary; the issue-close and release close-issue floors read it. Held at REVIEW
-  severity by operator ruling (`issue_probe_record_floor.PROBE_RECORD_SEVERITY`) until
-  slice 5 reports what a record costs across 45 real rows — the mechanism and its proof
-  are complete, the veto is not armed, and both severities are pinned by test.
+- **Every batch owes two bounded review rounds and NOT ONE has been clean.** Round 2 keeps
+  finding that round 1's REPAIRS carry the class they repaired — three times in one slice.
+  The cheap detector is always the same question: what is the cheapest input that still
+  gets past this. Per-round ledgers live in each goal's `## Slice Log`.
+- **A probe record's reproduction steps are now MECHANICALLY checked.**
+  `check_probe_record.py --replay-stimulus` resolves each adapter declaration a record's
+  `## Stimulus` writes and refuses the ones no reader honors; the corpus sweep gate runs it
+  in the standing lane. It found a fifth dead control no review round had.
+  [probe_record_lib](../scripts/probe_record_lib.py) still types what a record ESTABLISHES;
+  its floor stays at REVIEW severity by operator ruling, pinned by test.
 - **The standing-lane flake's BAR is repaired**; a 120s wall clock remains as a HANG
   BACKSTOP, so a red on
   [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) means investigate a

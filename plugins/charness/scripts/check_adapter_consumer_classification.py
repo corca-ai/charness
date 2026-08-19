@@ -103,10 +103,59 @@ GUARDED_WITNESSES = (
     "refuse_unspeakable_version",
 )
 
+# THE COVERAGE LEVEL, which one `guarded` token could not say (#675). The predecessor's own
+# measurement: by the end of its slice 5 the single token covered four materially different
+# states, and this gate saw one of them -- so "how much of this debt is actually closed" was
+# only answerable by reading paragraphs, and two rows with the same token could differ by
+# whether a one-character typo bypassed them.
+#
+# The axis is what the CONSUMER asks, not what its resolver reports, and that is deliberate:
+# `#673` made all sixteen resolvers report all three doors, so a resolver-keyed level would
+# now be uniform and measure nothing. Keyed on the consumer it is real and was measured
+# before this vocabulary was written -- 32 rows cover all three doors, three cover only the
+# ERROR channel and are blind to a silently dropped line, which is a live one-typo bypass.
+#
+# `unspeakable_version_message` and `refuse_unspeakable_version` check `declarations_dropped`
+# themselves, so calling either covers all three doors. `declarations_unhonored` ALONE is a
+# predicate over `errors` and cannot see the third.
+ALL_DOOR_ENTRYPOINTS = ("unspeakable_version_message", "refuse_unspeakable_version")
+DROPPED_DOOR_WITNESS = "declarations_dropped"
+CONDITION_WITNESS = "declarations_unhonored"
+
+GUARDED_ALL_DOORS = "guarded-all-doors"
+GUARDED_ERRORS_ONLY = "guarded-errors-only"
+GUARDED_BY_CALLER = "guarded-by-caller"
+GUARDED_LEVELS = (GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY, GUARDED_BY_CALLER)
+
+
+def measured_guard_level(called: set[str]) -> str | None:
+    """The level a file's own calls establish, or None when it guards nothing itself.
+
+    Returned rather than compared so the gate can refuse a row that claims MORE than it
+    holds AND one that claims less -- the previous witness only checked membership, so an
+    over-conservative row was never checked at all and one sat wrong through a whole slice.
+    """
+    if set(ALL_DOOR_ENTRYPOINTS) & called:
+        return GUARDED_ALL_DOORS
+    if CONDITION_WITNESS in called:
+        return GUARDED_ALL_DOORS if DROPPED_DOOR_WITNESS in called else GUARDED_ERRORS_ONLY
+    return None
+
+
 VERDICTS = {
-    # Calls into `adapter_version_verdict` and refuses on the CONDITION, not on one
-    # door's wording. See GUARDED_WITNESSES.
-    "guarded": GUARDED_WITNESSES,
+    # Refuses on the CONDITION and covers all three doors -- a refused version, a refused
+    # parse, and a silently DROPPED line.
+    GUARDED_ALL_DOORS: GUARDED_WITNESSES,
+    # Refuses on the condition through `errors` only, so a line the parser silently drops
+    # walks past it. A real level, not a courtesy: `declarations_unhonored` is a predicate
+    # over `errors` and answers False while `errors: []`, `valid: True`, and the repo's
+    # declaration is gone.
+    GUARDED_ERRORS_ONLY: GUARDED_WITNESSES,
+    # Cannot guard itself -- an injected loader, or a loader that refuses upstream -- and
+    # every production caller is guarded. Owes `covering_callers`, because "every caller"
+    # is a claim about an enumerated set and the census's own blind class is that it
+    # classifies FILES, not call sites.
+    GUARDED_BY_CALLER: None,
     # Reads `errors`/`valid` itself and refuses or degrades deliberately.
     "safe-checks-errors": None,
     # Reads a payload but nothing it reads can mis-steer anything.
@@ -116,6 +165,67 @@ VERDICTS = {
     # Never reads a version at all -- a different defect wearing the same symptom.
     "no-version-validation": None,
 }
+
+
+def _guard_level_problems(
+    rel: str, verdict: str, row: dict, called: set[str], declared: dict
+) -> list[str]:
+    """Refuse a guarded row whose declared LEVEL is not the level its own calls establish.
+
+    BOTH DIRECTIONS, and the second is why this replaces a membership check. The previous
+    witness asked only "does this file call one of three names", so it could not tell an
+    all-doors guard from an errors-only one -- the state `#675` reports -- and it never
+    checked a non-`guarded` row at all, so an OVER-conservative row was invisible. One sat
+    wrong through an entire slice: `resolve_artifact_path` was recorded
+    `accepted-risk-unguarded` with a reason asserting the file references no verdict
+    predicate, while the file imported the module and called two of them.
+    """
+    problems: list[str] = []
+    measured = measured_guard_level(called)
+    if verdict == GUARDED_BY_CALLER:
+        if measured is not None:
+            problems.append(
+                f"{rel}: classified `{GUARDED_BY_CALLER}` but guards ITSELF ({measured}). "
+                f"A file that asks the condition is not caller-covered; record the level it holds."
+            )
+        callers = row.get("covering_callers")
+        if not isinstance(callers, list) or not callers:
+            problems.append(
+                f"{rel}: `{GUARDED_BY_CALLER}` owes a non-empty `covering_callers` list. "
+                "\"Every caller is guarded\" is a claim about an ENUMERATED set, and this "
+                "census's own blind class is that it classifies files rather than call sites."
+            )
+            return problems
+        for caller in callers:
+            if caller not in declared:
+                problems.append(
+                    f"{rel}: names `{caller}` as a covering caller, but it carries no census row"
+                )
+            elif not any(
+                item.get("verdict") in (GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY)
+                for item in row_verdicts(declared[caller])
+            ):
+                problems.append(
+                    f"{rel}: names `{caller}` as a covering caller, but that row is not itself "
+                    "guarded -- a chain of caller-coverage ending in nothing is not coverage"
+                )
+        return problems
+    if measured is None:
+        problems.append(
+            f"{rel}: classified `{verdict}` but references none of "
+            f"{', '.join(f'`{m}`' for m in GUARDED_WITNESSES)}. A bare `version_refused` does "
+            "NOT satisfy it: it answers False for a parser refusal, which leaves the same "
+            f"charness defaults in `data`. If the property comes from its callers, say "
+            f"`{GUARDED_BY_CALLER}` and name them."
+        )
+    elif measured != verdict:
+        problems.append(
+            f"{rel}: classified `{verdict}` but its own calls establish `{measured}`. "
+            f"`{GUARDED_ERRORS_ONLY}` asks a predicate over `errors` and cannot see a line the "
+            f"parser silently DROPPED; `{GUARDED_ALL_DOORS}` covers that door too, through "
+            f"`{'` or `'.join(ALL_DOOR_ENTRYPOINTS)}` or an explicit `{DROPPED_DOOR_WITNESS}`."
+        )
+    return problems
 
 
 def _is_adapter_loader_name(name: str) -> bool:
@@ -209,7 +319,11 @@ def row_verdicts(entry: dict) -> list[dict]:
     if "verdicts" in entry:
         rows = entry["verdicts"]
         return list(rows) if isinstance(rows, list) else []
-    return [{"verdict": entry.get("verdict"), "reason": entry.get("reason")}]
+    # CARRIES THE WHOLE ENTRY's extra keys, not just verdict+reason. `guarded-by-caller`
+    # owes `covering_callers`, and rebuilding a two-key dict here dropped it -- the row was
+    # written correctly and the gate reported it missing, which is a checker losing evidence
+    # rather than a row lacking it.
+    return [{**entry, "verdict": entry.get("verdict"), "reason": entry.get("reason")}]
 
 
 def consumer_files(repo_root: Path) -> list[str]:
@@ -277,8 +391,7 @@ def check(repo_root: Path) -> tuple[list[str], dict[str, int]]:
             seen.add(verdict)
             if not (row.get("reason") or "").strip():
                 problems.append(f"{rel}: verdict `{verdict}` carries no reason")
-            markers = VERDICTS[verdict]
-            if markers:
+            if verdict in GUARDED_LEVELS:
                 # AST, not a substring of the file text. The first cut of this tightening
                 # was a substring check and it was mutation-tested: reverting a consumer to
                 # the narrow `version_refused` left the gate GREEN, because the repair's own
@@ -286,14 +399,7 @@ def check(repo_root: Path) -> tuple[list[str], dict[str, int]]:
                 # can satisfy is the same defect one layer up, so this asks whether the
                 # file CALLS one of them.
                 called = _call_names(ast.parse((repo_root / rel).read_text(encoding="utf-8")))
-                if not any(marker in called for marker in markers):
-                    problems.append(
-                        f"{rel}: classified `{verdict}` but references none of "
-                        f"{', '.join(f'`{m}`' for m in markers)}. This is the one verdict "
-                        "with a structural witness; the others are prose. A bare "
-                        "`version_refused` does NOT satisfy it: it answers False for a "
-                        "parser refusal, which leaves the same charness defaults in `data`."
-                    )
+                problems.extend(_guard_level_problems(rel, verdict, row, called, declared))
 
     for rel in sorted(set(declared) - set(live)):
         problems.append(

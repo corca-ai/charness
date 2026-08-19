@@ -9,30 +9,23 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: **slice 2 — `#673` — landed at `e54132c47` and its follow-ups; TWO bounded
-  rounds owed, round 1 folded, round 2 next.** Slice 1 (`#674`) landed at `a12ba86f5` with
-  both rounds folded. See `## Slice Log`.
-- Current slice intent: all sixteen public resolvers answer a malformed adapter the same
-  way, so `parse_refused` and `declarations_dropped` stop being structurally dead for the
-  five skills whose libraries called `load_yaml_file` bare. This names the reviewable-intent
-  unit and the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent (meaningful-slice-cadence).
-- Next action: round 2 of the bounded review, reading the round-1 repairs — then slice 3
-  (`#675`, the census verdict vocabulary).
-- **Corrected the issue's own count before starting: FIVE resolvers tracebacked, not six.**
-  `announcement` was repaired by the predecessor ahead of `#673`. The exit codes are a THIRD
-  inconsistency `#673` does not name and this slice did NOT normalise: fourteen exit 0 with
-  `valid: false`, `critique` and `issue` exit 1, pinned in `NON_ZERO_EXIT_SKILLS`.
-- **Round 1 found a regression this slice caused.** Making five resolvers exit 0 instead of
-  tracebacking removed `resolve_artifact_path`'s only protection — its subprocess return
-  code — and it began resolving `charness-artifacts/quality/latest.md` over a repo that
-  declared `docs/mine-q`. Guarded on the CONDITION now, with the three-door test at
-  `tests/quality_gates/test_artifact_path_refuses_an_unhonored_adapter.py`.
-- **`#550` narrowed, not closed.** `adapter_lib.resolve_adapter_payload` owns the payload
-  and both branches for quality, narrative, critique and achieve. announcement, create-skill,
-  proof_semantics, cautilus and issue stay out, each for a recorded reason in
-  `charness-artifacts/quality/dup-review.json`. The remaining bare `load_yaml_file` callers
-  (`proof_semantics_adapter_lib`, `cautilus_adapter_lib`) are the residual surface.
+- Current slice: **slice 3 — `#675`, a census verdict vocabulary that distinguishes
+  coverage levels.** Slices 1 (`#674`) and 2 (`#673`) are landed with both bounded rounds
+  folded; see `## Slice Log`.
+- Current slice intent: give the census a verdict per coverage level and a witness that
+  checks the LEVEL, so "how much of this debt is actually closed" is answerable without
+  reading prose reasons. This names the reviewable-intent unit and the commits it spans.
+- Next action: add the level vocabulary and its structural witness, migrate the existing
+  rows with their measured evidence, then print per-level counts.
+- **Slice 2 produced a live example rather than a hypothetical one.**
+  `scripts/refresh_current_pointer.py` refuses through its loader and no longer guards
+  itself, so it is recorded `accepted-risk-unguarded` with the mechanism in prose — which
+  inflates the accepted-risk count by one and is exactly the measurement distortion `#675`
+  reports. It is the migration's first test case.
+- **STOP RULE IN FORCE.** The Slice Plan says: if slices 1-2 overrun, halt BEFORE slice 4.
+  They did — four bounded review rounds across seven reviewers, two of which found defects
+  the repairs themselves introduced. Slice 4 (the remaining nineteen rows) and slice 5 are
+  handed to a successor goal rather than started here.
 - Timebox: none set by the operator. Set one on activation if this should stop before the
   full five slices; without one, the Slice Plan's own stop rule (halt BEFORE slice 4 if
   slices 1-2 overrun) is the only bound.
@@ -333,6 +326,20 @@ applies.
 - Critique: TWO bounded rounds, two reviewers each, all spawned UNNAMED and read-only as `bounded-reviewer`; `reviewer_boundary_fingerprint.py` snapshot/verify around each window, both `ok: true` / `clean`. NEITHER ROUND WAS CLEAN. Round 1 found the detector defeatable five ways and INERT — nothing in the repo ran it, so `#674`'s own premise held for record fourteen — plus nine claim defects including a test corpus whose docstring claimed `verbatim` for a constant never published in any form. Round 2 found THREE of round 1's six repairs carrying the class they repaired: the variant generator emitted a flow sequence, then suffixed an inline comment the reader strips back off, then produced type-invalid values for booleans, floats, quoted and block scalars; and the per-line ablation the nesting repair introduced called YAML document markers declarations. It also found the demotion merge to be a THIRD hand-rolled construction of a shape whose single-owner rule is recorded forty lines above it. Per the two-round cap, the round-2 repairs are ACCEPTED-UNREVIEWED: no third round read them.
 - Off-goal findings: The detector measures whether the RESOLVER honors a declaration, not whether any consumer READS it. A field that passes nested keys through verbatim (`command_timing_log`, `host_extensions`) makes an unread key change the payload, so it reads live. `scripts/adapter_key_registry.py` already answers the reader question without a subprocess; wiring it in is unmade and is recorded in the module's blind class rather than filed, because slice 3 changes the census surface that would consume it.
 - Lessons carried forward: A detector's first version is a hypothesis about its own blind class, and the fastest way to test it is to hand a reviewer the mechanism and ask only `what is the cheapest input that still gets past this`. Both rounds answered with inputs the author could not see. The sharper one: EVERY generator this slice wrote — the variant, the ablation, the extraction — reproduced the defect class it was built to detect, three times in a row. A tool that constructs inputs for a reader must be checked against that reader's own parser, not against the author's model of it.
+- Metrics:
+
+### Slice 2: Slice 2 — `#673`, one answer from all sixteen resolvers
+
+- Objective: Make every public resolver answer a malformed adapter the same way, so `adapter_version_verdict.parse_refused` and `declarations_dropped` stop being structurally dead for the skills whose libraries called `load_yaml_file` bare.
+- Why this approach: Until this landed, two of the three doors every consumer guard reaches through were unreachable for five skills — the predicates answered False for exactly the inputs they were written to catch, and no test could see it because the resolver never returned.
+- Commits: `d6f19aab2` (the repair), `eedb6a540` (parser coverage, two dead branches deleted), `a776bd37d` (dup classification), `e54132c47` (round-1 fold), `21849d8e4` and two follow-ups (coverage of the guards the changed-line gate named), plus the round-2 fold.
+- What changed: `adapter_lib` gains `read_declared_adapter`, `resolve_declared_adapter` and `resolve_adapter_payload`, and loses this repo's YAML dialect to NEW `scripts/adapter_yaml_parse.py` (re-exported, so no call site changed). Five libraries routed through them. NEW `tests/quality_gates/test_every_resolver_answers_a_refused_document.py` sweeps all sixteen and replaces the per-family branches three files carried; NEW `tests/quality_gates/test_artifact_path_refuses_an_unhonored_adapter.py` and `tests/test_adapter_yaml_parse_branches.py`. Six tests that pinned the old blind behavior flipped; `RAW_TRACEBACK_SKILLS` deleted. Corrected across the repo: `adapter_version_verdict` (three stale docstrings plus a refuted justification), `boundary_probe_lib`'s measured comment, seven census rows, `docs/handoff.md`, and ten dup-review notes.
+- Alternatives rejected: REJECTED: normalising the sixteen exit codes, which `#673`'s acceptance asks for. Fourteen exit 0 with `valid: false` and two exit 1; that divergence is not what made a consumer guard blind, and changing it is a behavior change for every caller that branches on the code. Pinned in `NON_ZERO_EXIT_SKILLS` so a move in either direction is a diff. REJECTED: classifying the duplicate families `#673` surfaced instead of extracting them — the convergence IS `#550`'s subject, so `resolve_adapter_payload` was extracted and only the residue classified, each with its own reason. REJECTED: an adoption scan collapsing the two parser module instances, because it makes which instance wins depend on import order.
+- Targeted verification: `run_slice_closeout.py --skip-broad-pytest` at every commit boundary; `run_standing_pytest.py` at each slice-shaped boundary (final: 10601 passed, 0 failed); `prepush_focused_changed_line_coverage.py --refuse-unestablished` after each commit and before the broad lane, clean at the close; three mutations on the three doors and one on the unregister arm, each naming its failing test. The sixteen-resolver sweep asks `adapter_version_verdict`'s predicates directly rather than matching message text.
+- Test duplication pressure: `check_dup_ratchet.py` at each boundary. Ten new families, all classified `intentional` with per-family reasons: four are the `#550` residue this slice surfaced, four are untouched pairs re-fingerprinted by the module split, one is the parser's two loop preambles, one is the module bootstrap contract. Ratchet clean at the close.
+- Critique: TWO bounded rounds, two reviewers in round 1 and one in round 2, all spawned UNNAMED and read-only as `bounded-reviewer`, with `reviewer_boundary_fingerprint.py` snapshot/verify around each window — both `ok: true` / `clean`. NEITHER ROUND WAS CLEAN, and round 1 found a REGRESSION THIS SLICE CAUSED: making five resolvers exit 0 instead of tracebacking removed `resolve_artifact_path`'s only protection, and it began resolving `charness-artifacts/quality/latest.md` over a repo that declared `docs/mine-q`. Round 1 also found twelve claim defects on surfaces someone reads to decide, including the consumer-guard module itself telling readers that six resolvers are blind when zero are. Round 2 then found THREE of those repairs carrying the class they repaired: the census row for the very file the slice repaired still said `accepted-risk-unguarded` with a reason the file refutes; the new guard's dropped-line message glued on a tail that is false for that arm; and the unregister arm's bare `del` reproduced the second-error-hides-the-first shape its own comment names. Round 2's repairs are ACCEPTED-UNREVIEWED per the two-round cap.
+- Off-goal findings: `refresh_current_pointer` is now protected by its loader rather than by itself, and the census has no token for that — recorded as `accepted-risk-unguarded` with the mechanism named, which inflates the accepted-risk count by one. That is `#675`'s subject with a live example, and slice 3 is where it gets a name and a witness that checks the level. `proof_semantics_adapter_lib` and `cautilus_adapter_lib` still call `load_yaml_file` bare; they are outside `#673`'s sixteen and are the residual surface.
+- Lessons carried forward: A repair that changes HOW a surface fails changes what its consumers can observe, and the exit code is an observable. Nothing in the slice plan asked `who was relying on the old failure mode`, and the answer was a guard whose only protection was a return code. The reusable move is to ask, before any change to a refusal's shape, which consumers key on the SHAPE rather than the condition — and the reusable proof is what the census now records: keyed on the condition, a resolver's exit convention can change again without disarming it.
 - Metrics:
 
 ## Context Sources

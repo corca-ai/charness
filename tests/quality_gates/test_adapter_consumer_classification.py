@@ -82,7 +82,7 @@ def test_a_guarded_row_must_carry_its_structural_witness(tmp_path: Path) -> None
     repo = _tree(
         tmp_path,
         {"scripts/liar.py": CALLS_LOADER},
-        {"scripts/liar.py": {"verdict": "guarded", "reason": "trust me"}},
+        {"scripts/liar.py": {"verdict": "guarded-all-doors", "reason": "trust me"}},
     )
 
     problems, _counts = GATE.check(repo)
@@ -465,7 +465,7 @@ def test_the_guarded_witness_refuses_a_comment_and_the_narrow_predicate(tmp_path
     repo = _tree(
         tmp_path / "a",
         {"scripts/narrow.py": narrow},
-        {"scripts/narrow.py": {"verdict": "guarded", "reason": "asks the narrow predicate"}},
+        {"scripts/narrow.py": {"verdict": "guarded-all-doors", "reason": "asks the narrow predicate"}},
     )
     problems, _ = GATE.check(repo)
     assert any("references none of" in p for p in problems), problems
@@ -479,7 +479,7 @@ def test_the_guarded_witness_refuses_a_comment_and_the_narrow_predicate(tmp_path
     repo = _tree(
         tmp_path / "b",
         {"scripts/commented.py": commented},
-        {"scripts/commented.py": {"verdict": "guarded", "reason": "names it in a comment only"}},
+        {"scripts/commented.py": {"verdict": "guarded-all-doors", "reason": "names it in a comment only"}},
     )
     problems, _ = GATE.check(repo)
     assert any("references none of" in p for p in problems), problems
@@ -488,7 +488,86 @@ def test_the_guarded_witness_refuses_a_comment_and_the_narrow_predicate(tmp_path
     repo = _tree(
         tmp_path / "c",
         {"scripts/real.py": real},
-        {"scripts/real.py": {"verdict": "guarded", "reason": "asks the condition"}},
+        # `declarations_unhonored` ALONE is a predicate over `errors`, so this file is
+        # `guarded-errors-only` — the level `#675` split out. Claiming all-doors for it is
+        # refused below.
+        {"scripts/real.py": {"verdict": "guarded-errors-only", "reason": "asks the condition"}},
     )
     problems, _ = GATE.check(repo)
     assert problems == [], problems
+
+
+def test_the_witness_refuses_a_row_that_claims_a_level_its_calls_do_not_hold(tmp_path: Path) -> None:
+    """`#675`'s whole point: one `guarded` token covered materially different coverage, and
+    the witness saw membership only. A file asking `declarations_unhonored` cannot see a
+    line the parser silently DROPPED — `errors: []`, `valid: True`, declaration gone — so
+    recording it beside a file that routes through `unspeakable_version_message` made two
+    rows with the same token differ by whether a one-character typo bypassed them."""
+    errors_only = "def go(root):\n    p = load_adapter(root)\n    return declarations_unhonored(p['errors'])\n"
+    repo = _tree(
+        tmp_path / "over",
+        {"scripts/over.py": errors_only},
+        {"scripts/over.py": {"verdict": "guarded-all-doors", "reason": "claims more than it holds"}},
+    )
+    problems, _ = GATE.check(repo)
+    assert any("its own calls establish `guarded-errors-only`" in p for p in problems), problems
+
+    all_doors = "def go(root):\n    return refuse_unspeakable_version(load_adapter, root, adapter_name='x')\n"
+    repo = _tree(
+        tmp_path / "under",
+        {"scripts/under.py": all_doors},
+        {"scripts/under.py": {"verdict": "guarded-errors-only", "reason": "claims less than it holds"}},
+    )
+    problems, _ = GATE.check(repo)
+    # BOTH DIRECTIONS. The previous witness checked membership, so an over-conservative row
+    # was never checked at all — and one sat wrong through an entire slice.
+    assert any("its own calls establish `guarded-all-doors`" in p for p in problems), problems
+
+
+def test_caller_coverage_must_name_callers_that_are_themselves_guarded(tmp_path: Path) -> None:
+    """"Every caller is guarded" is a claim about an ENUMERATED set, and this census's own
+    blind class is that it classifies files rather than call sites. A chain of
+    caller-coverage ending in nothing is not coverage."""
+    unguarded = "def go(root):\n    p = load_adapter(root)\n    return p['data']\n"
+    repo = _tree(
+        tmp_path / "chain",
+        {"scripts/leaf.py": unguarded, "scripts/mid.py": unguarded},
+        {
+            "scripts/leaf.py": {
+                "verdict": "guarded-by-caller",
+                "reason": "covered upstream",
+                "covering_callers": ["scripts/mid.py"],
+            },
+            "scripts/mid.py": {"verdict": "accepted-risk-unguarded", "reason": "not guarded at all"},
+        },
+    )
+    problems, _ = GATE.check(repo)
+    assert any("is not itself guarded" in p for p in problems), problems
+
+    repo = _tree(
+        tmp_path / "bare",
+        {"scripts/leaf.py": unguarded},
+        {"scripts/leaf.py": {"verdict": "guarded-by-caller", "reason": "covered, somehow"}},
+    )
+    problems, _ = GATE.check(repo)
+    assert any("covering_callers" in p for p in problems), problems
+
+
+def test_a_file_that_guards_itself_may_not_claim_caller_coverage(tmp_path: Path) -> None:
+    """The token means "cannot guard itself". A file that asks the condition and records
+    caller coverage hides its own level behind someone else's."""
+    guards = "def go(root):\n    return refuse_unspeakable_version(load_adapter, root, adapter_name='x')\n"
+    repo = _tree(
+        tmp_path / "self",
+        {"scripts/self.py": guards, "scripts/caller.py": guards},
+        {
+            "scripts/self.py": {
+                "verdict": "guarded-by-caller",
+                "reason": "hiding its own level",
+                "covering_callers": ["scripts/caller.py"],
+            },
+            "scripts/caller.py": {"verdict": "guarded-all-doors", "reason": "real"},
+        },
+    )
+    problems, _ = GATE.check(repo)
+    assert any("guards ITSELF" in p for p in problems), problems
