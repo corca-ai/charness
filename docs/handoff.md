@@ -22,35 +22,39 @@
 ## Current State
 
 - **The adapter-consumer debt is paid down row by row, each by a MEASURED behavioral
-  flip.** The census records the COVERAGE LEVEL, not one `guarded` token, and the guard
-  refuses on the CONDITION ("this reader honored nothing the repo declared") through all
-  three channels a resolver REPORTS — a refused `version`, a refused parse, a silently
-  dropped line. Keying on only the first was measured as an escape: `version: !!int 9`
-  walked past every guard and wrote two durable files to a directory the repo never named.
-  Recount with `python3 scripts/check_adapter_consumer_classification.py --repo-root .`;
-  never read a count off this file — **nor off that gate's own comments, one of which
-  undercounts its blind consumers by one.**
+  flip.** The census records the COVERAGE LEVEL, and the guard refuses on the CONDITION
+  through all three channels a resolver REPORTS — refused `version`, refused parse,
+  silently dropped line. Keying on the first alone was a measured escape:
+  `version: !!int 9` walked past every guard. Recount with
+  `python3 scripts/check_adapter_consumer_classification.py --repo-root .`; never read a
+  count off this file — **nor off that gate's own comments, one of which undercounts its
+  blind consumers by one.**
 - **Every batch owes two bounded review rounds and NOT ONE has been clean.** Round 2 keeps
-  finding that round 1's REPAIRS carry the class they repaired — three times in one slice,
-  and three more on a PLANNING artifact. The cheap detector is always the same question:
-  what is the cheapest input that still gets past this. Per-round ledgers live in each
-  goal's `## Slice Log` or `## Plan Critique Findings`.
-- **A probe record's reproduction steps are MECHANICALLY checked**, but only under
-  `check_probe_record.py --replay-stimulus`; `--require-evaluated` alone does NOT replay,
-  and operator ruling 2026-08-19 keeps them unfolded. The corpus sweep gate runs the
-  replay in the standing lane.
+  finding that round 1's REPAIRS carry the class they repaired — most recently a
+  fail-open grandfather whose own branch no test took, so mutating it green-lit the whole
+  repo. The cheap detector is always: what is the cheapest input that still gets past
+  this. Per-round ledgers live in each goal's `## Slice Log` / `## Plan Critique Findings`.
+- **Every prose artifact budget charges WORDS, not lines** (handoff 900, debug 1200,
+  quality 1100, cautilus 800/1200); [artifact_size_budget](../scripts/artifact_size_budget.py)
+  owns why. A line count charged for wrap width — one bar admitted
+  a 5.4-7.5x spread of words — and `MD013` is off, so rewrapping was the cheapest way to
+  comply. `max_content_lines` / `max_artifact_lines` are REFUSED adapter keys, not ignored
+  ones. Dated records before 2026-08-19 are grandfathered; the rolling handoff is not.
+- **`check_probe_record.py --replay-stimulus` is the form that refuses**;
+  `--require-evaluated` alone does NOT replay, by operator ruling 2026-08-19.
 - **A red on [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) means
-  investigate a HANG** — the flake's bar is repaired and the 120s wall clock is only a
-  backstop. It is NOT an expected red to absorb.
+  investigate a HANG** — the 120s wall clock is only a backstop, not an expected red.
 - **Issue triage ran against current HEAD**; `#628`, `#673` and three umbrellas await an
   owner readback. Inventory: `gh issue list --repo corca-ai/charness --state open`.
-- **Nothing reads a `path:line` an artifact asserts** — one shaping session produced nine
-  citation defects, four load-bearing ([#677](https://github.com/corca-ai/charness/issues/677)).
-  Verify citations BEFORE spawning a reviewer; a round is a costly grep.
-- Re-prove with `python3 scripts/run_standing_pytest.py` after
+- **Nothing reads a `path:line` an artifact asserts**
+  ([#677](https://github.com/corca-ai/charness/issues/677)). Verify citations BEFORE
+  spawning a reviewer; a round is a costly grep.
+- **The standing and release lanes are NOT the broad lane.** `bash scripts/run-quality.sh`
+  runs corpus sweeps neither touches; a budget change went green on both while that lane
+  was red on seven artifacts. Re-prove with `python3 scripts/run_standing_pytest.py` after
   `python3 scripts/sync_root_plugin_manifests.py`, then
   `python3 -m ruff check --no-cache scripts skills tests`, then
-  `python3 -m pytest -q -m release_only`.
+  `python3 -m pytest -q -m release_only`, then the broad lane.
 - **COMMIT the slice, THEN run the changed-line proof** —
   `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --refuse-unestablished`
   reads `base..HEAD`, so a dirty pool proves nothing. Run it BEFORE the broad lane.
@@ -64,18 +68,21 @@
    `#676`'s table, no corpus, goal halts there.
 2. **Its round-2 repairs are `accepted-unreviewed`** under the two-round cap; the `## Goal`
    rewrite and the negative-control requirement are where a third instance would sit.
-3. **The consumer count behind the two blind libraries is FIVE, not four**, and the census
-   recount CANNOT evidence slice 2b (`safe-checks-errors` is outside `GUARDED_LEVELS`).
-   Sources: that goal's `## User Acceptance` item 8 and `## Off-Goal Findings`.
-4. **The last goal closed at three of five slices**, resolving `#673`, `#674`, `#675`; its
-   acceptance item 4 is PARTIAL and item 5 NOT met, with per-item verdicts in
-   [adapter debt tooling and remainder](../charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder.md) under `## User Verification Instructions`.
-5. **Seventeen debt rows remain**, not the old plan's nineteen — slices 2 and 3 moved rows
-   in both directions. Recount them; each row's consequence is one row of the
+3. **The blind-consumer count is FIVE, not four**, and the census recount CANNOT evidence
+   slice 2b. Sources: that goal's `## User Acceptance` item 8 and `## Off-Goal Findings`.
+4. **The last goal closed at three of five slices**; acceptance item 4 is PARTIAL, item 5
+   NOT met —
+   [adapter debt tooling and remainder](../charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder.md) holds the verdicts.
+5. **Seventeen debt rows remain**, not the old plan's nineteen. Recount them; each row's
+   consequence is one row of the
    [census manifest](../scripts/adapter-consumer-classification.json), never a number here.
 6. **[#668](https://github.com/corca-ai/charness/issues/668) is still an operator ruling** —
    should the pytest bar measure wall time at all. Read `#546` in the same sitting.
-7. **Reconcile [#677](https://github.com/corca-ai/charness/issues/677) with that goal's
+7. **The SKILL.md budgets are the last line-based prose caps** (200 total / 160 core), and
+   `PRESSURE_EXEMPT_BUDGET` means entries while charging lines. Neither is migrated. Also
+   open: [#678](https://github.com/corca-ai/charness/issues/678), where the key registry
+   cannot tell a key's reader from its refuser, so the retired keys report as live.
+8. **Reconcile [#677](https://github.com/corca-ai/charness/issues/677) with that goal's
    slice 1 before building either** — both ask whether a cited thing contains what the
    text claims, so shipping both is `one-engine-per-pattern` at the tooling layer.
 
