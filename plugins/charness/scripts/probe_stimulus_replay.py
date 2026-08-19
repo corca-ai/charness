@@ -7,12 +7,14 @@ observables." This module is that bullet's narrow repair, and it is narrow on pu
 read `WHAT THIS REPLAYS AND WHAT IT DOES NOT` below before assuming it covers more.
 
 THE DEFECT CLASS, measured rather than imagined (#674). Slice 5 of the probe-provenance
-goal published thirteen probe records. FOUR shipped a `## Polarity controls` arm that could
-not fail: the stimulus declared a field in a shape the owning reader does not honor, the
-declaration was inert, and the speakable-version control reproduced the base observable.
-Every one was found by a bounded reviewer hand-tracing the record's own stimulus through
-this repo's own reader -- `adapter_lib` for the two flow-sequence cases, the owning
-resolver's field list and validators for the other two. Thirteen review rounds; no gate.
+goal published thirteen probe records. FIVE shipped a `## Polarity controls` arm that could
+not fail -- six arms in all, since the quality record shipped two: the stimulus declared a
+field in a shape the owning reader does not honor, the declaration was inert, and the
+speakable-version control reproduced the base observable. Four of the five were found by
+hand, tracing the record's own stimulus through this repo's own reader (`adapter_lib` for
+the flow-sequence cases, the owning resolver's field list and validators for the rest);
+the fifth is the one this module found on its first sweep. Across every review round slice
+5 paid for, no gate saw any of it.
 
 The mechanized form of that hand-trace is a LEAVE-ONE-OUT ABLATION, PER DECLARATION LINE.
 Take each adapter document the stimulus writes, make its `version` speakable, and resolve
@@ -41,7 +43,9 @@ WHAT THIS REPLAYS AND WHAT IT DOES NOT.
   differ and a whole-output comparison passes it. It is defeated a second time by volatile
   bytes (timings, pids, temp paths) in the accepting direction. And it would mean executing
   a record's own shell at a proof surface. The ablation needs no shell and catches every
-  measured instance, including a fifth the review rounds did not find.
+  arm in the regression corpus beside `tests/test_probe_stimulus_replay.py` -- five of the
+  six measured arms, including the record no review round found. The quality record's FIRST
+  generation is not reproduced there and no claim is made about it.
 - So the recorded observables are NOT verified here at all. A record whose captured
   observables were transcribed rather than measured passes this module exactly as it passes
   `probe_record_lib`. The distinct observer remains the countermeasure for that.
@@ -54,24 +58,49 @@ could not see any renderer. Round 1 rewrote this list after defeating three of i
   This corpus is entirely adapter probes, so coverage is total today and would be zero for a
   probe of anything else. Moving the declaration out of a `cat` heredoc -- to `printf`, to
   `tee`, to a fixture file the stimulus copies -- is an escape hatch this cannot close.
-  What it DOES now close is spelling the same heredoc differently: quoted paths, `<<-`,
-  hyphenated delimiters and trailing comments are read, and an adapter-shaped target it
-  cannot resolve (`${s}-adapter.yaml`, a `.yml` no reader opens) is REFUSED rather than
-  dropped, because a silent drop renders `not-configured`, which does not demote.
+  Four MORE heredoc spellings are read than were (quoted paths, `<<-`, hyphenated
+  delimiters, trailing comments) and that is four, not a closed class: a redirect written
+  after the heredoc, a `$ ` transcript prompt, a trailing `&& echo ok`, a backslash-quoted
+  delimiter, a path
+  containing a space and `cat >>` all still fail the regex. Widening again only moves the
+  boundary, so the BOUNDARY reports -- an unmatched `cat` line that names an adapter
+  document is refused, as is an adapter-shaped target that resolves to no reader
+  (`${s}-adapter.yaml`, `.yml`, `Quality-Adapter.YAML`). A silent drop renders
+  `not-configured`, which does not demote, so every miss that stays silent is an escape.
+- IT MEASURES WHETHER THE RESOLVER HONORS A DECLARATION, NOT WHETHER ANY CONSUMER READS IT,
+  and that gap admits a real defect rather than merely limiting coverage. A field that
+  passes arbitrary nested keys through into `data:` verbatim -- `adapter_validators`
+  `command_timing_log` returns `dict(value)`, and `host_extensions` exists to carry keys
+  charness does not read -- makes an unread key CHANGE the payload when ablated, so it
+  reads live and the record passes. Reproduced: `command_timing_log` with an extra
+  `probe_one: x` resolves `evaluated`. `scripts/adapter_key_registry.py` already answers
+  "which readers read this key" without a subprocess; wiring it in is the repair this
+  module has not made. The converse (a key the resolver drops being called inert when a
+  direct file reader uses it) is the same gap from the other side and equally unclosed.
 - The ablation compares the resolver's `data:` block only, so it also drops `valid:`,
   `found:`, `errors:`, `warnings:` and every derived top-level key a resolver renders beside
   the payload. A declaration whose only honest effect is one of those -- the broken
   `startup_probes` case reports five errors and still resolves `startup_probes: []` -- is
   called inert. That is right for this corpus, whose consumers act on `data`; a declaration
   that legitimately only produced an error would be called inert wrongly.
-- The ablation is over the RESOLVER's rendered payload, which is what every consumer in
-  this repo acts on. A consumer that read the adapter file directly instead would be
-  invisible here -- and one that reached a key the resolver drops would be called inert
-  when it is live. No such consumer exists today; the census is what watches for one.
+- The VARIANT cannot preserve an ENUM. Booleans, integers, floats and quoted scalars vary
+  within their own type now, but a field the reader constrains to a member set has no
+  type-preserving variant this module can compute. No enum field in today's corpus has a
+  DEFAULT -- absence is an error -- so the ablation moves the payload and returns live
+  before any variant runs; a future enum field WITH a default would be refused wrongly.
 - Sandbox REUSE between a document's runs is load-bearing, not tidiness. Mutating it to a
   fresh temp dir per resolve was measured: the announcement and release payloads render the
   repo directory's own name inside `data:` (`product_name`, `repo`, `package_id`), so two
-  of the five dead controls stopped being detectable at all.
+  of the six dead controls in the regression corpus stopped being detectable at all.
+- Two heredocs writing the SAME filename are replayed independently, each in its own
+  sandbox. If a stimulus overwrites its own adapter, the superseded first write -- which
+  never existed on disk when the CLI ran -- is still resolved and can be refused. That is
+  the refusing direction, so it cannot hide a defect; it can still be a wrong answer about
+  what the record ran.
+- `with_mutated_value` splits a line on its first raw `:`, while `adapter_lib` finds the
+  separator quote-aware. For a quoted key containing a colon the emitted variant declares a
+  different KEY, so it is not guaranteed to be "the same declaration with a different
+  value" -- the property the whole discriminator rests on. No corpus case reaches it.
 - It checks WHERE the document was written only against `.agents/`, the one directory every
   adapter reader in this repo opens. A stimulus writing to five different repo roots is
   checked per basename, so a copy-paste slip BETWEEN two of those roots -- writing the retro
@@ -82,15 +111,29 @@ could not see any renderer. Round 1 rewrote this list after defeating three of i
 
 from __future__ import annotations
 
-import re
 import subprocess
 import sys
 import tempfile
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
+_documents = import_repo_module(__file__, "scripts.probe_stimulus_documents")
+
+# Re-exported so the split stays an implementation detail: `probe_stimulus_replay` remains
+# the one import site for anything that replays a stimulus.
+extract_adapter_documents = _documents.extract_adapter_documents
+declaration_lines = _documents.declaration_lines
+uninterpreted_lines = _documents.uninterpreted_lines
+with_supported_version = _documents.with_supported_version
+with_mutated_value = _documents.with_mutated_value
+without_line = _documents.without_line
+_indent_of = _documents._indent_of
+_SKILL_NAME_RE = _documents._SKILL_NAME_RE
+_ADAPTER_DIRECTORY = _documents._ADAPTER_DIRECTORY
+_UNREAD = _documents._UNREAD
+_RESTATED_DEFAULT = _documents._RESTATED_DEFAULT
 
 # Borrowed from the same vocabulary `probe_record_lib` borrows, for the same reason: a
 # fourth private spelling of "we could not tell" is how the concept drifts apart.
@@ -99,211 +142,7 @@ STIMULUS_EVALUATED = _boundary_probe.PROBE_EVALUATED
 STIMULUS_NOT_CONFIGURED = _boundary_probe.PROBE_NOT_CONFIGURED
 STIMULUS_NOT_ESTABLISHED = _boundary_probe.PROBE_NOT_ESTABLISHED
 
-# `cat > <path> <<'DELIM'`. Deliberately WIDE, because a heredoc this regex misses is
-# dropped silently and the record then renders `not-configured`, which does not demote --
-# so every shape it fails to match is an escape hatch, and a round-1 review enumerated six
-# of them. Quoted and unquoted paths, `<<-`, hyphenated delimiters and a trailing comment
-# are all accepted now. The quote around the DELIMITER stays significant: unquoted means
-# the shell expands the body, so the document on disk is not the document in the record.
-_HEREDOC_RE = re.compile(
-    r"""^\s*cat\s*>\s*(?P<pathquote>['"]?)(?P<path>[^'"\s]+)(?P=pathquote)\s*"""
-    r"""<<-?\s*(?P<quote>['"]?)(?P<delim>[\w-]+)(?P=quote)\s*(?:\#.*)?$"""
-)
-# `.yaml` ONLY, matching what every reader in this repo opens. Accepting `.yml` here made a
-# spelling no resolver reads resolve anyway, and it was refused only by the accident that
-# the sandbox then found no file and every declaration read inert -- a right answer with a
-# reason that names the wrong defect.
-_ADAPTER_NAME_RE = re.compile(r"^(?P<skill>[A-Za-z0-9_-]+)-adapter\.yaml$")
-# A heredoc target that LOOKS like an adapter but does not resolve to one. Matched so the
-# miss becomes a refusal instead of a silent drop: `${s}-adapter.yaml`, `<skill>-adapter.yaml`
-# and `quality-adapter.yml` all reach a reader in the record's prose and none reaches one here.
-_ADAPTER_ISH_RE = re.compile(r"adapter\.ya?ml|adapter\.yml", re.IGNORECASE)
-# A skill directory name. Template placeholders and shell expansions fail this deliberately:
-# a stimulus nobody can paste is not a reproduction step, which is the whole subject of #674.
-_SKILL_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
-_VERSION_LINE_RE = re.compile(r"^version\s*:.*$", re.MULTILINE)
-# The ONE directory every adapter reader in this repo looks in. Checked because the module
-# writes the document to `.agents/<basename>` in its sandbox, so a stimulus that wrote it
-# anywhere else describes a run where NOTHING was read -- and replaying it at the readable
-# path would report the declarations live and pass the record.
-_ADAPTER_DIRECTORY = ".agents"
-_COMMENT_LINE_RE = re.compile(r"^\s*#")
 _RESOLVE_TIMEOUT_SECONDS = 120
-
-
-def extract_adapter_documents(stimulus: str) -> list[dict]:
-    """Every adapter document the stimulus block writes, in order.
-
-    Returns ``{"filename", "skill", "text", "expanded"}`` per document. Parsing the shell
-    rather than executing it is the point: the record's readers are humans and this module,
-    and neither should have to run an arbitrary script to learn what the stimulus declares.
-    """
-    documents: list[dict] = []
-    lines = stimulus.splitlines()
-    index = 0
-    while index < len(lines):
-        match = _HEREDOC_RE.match(lines[index])
-        if match is None:
-            index += 1
-            continue
-        delimiter = match.group("delim")
-        body: list[str] = []
-        index += 1
-        while index < len(lines) and lines[index].strip() != delimiter:
-            body.append(lines[index])
-            index += 1
-        index += 1
-        written_to = PurePosixPath(match.group("path"))
-        filename = written_to.name
-        name_match = _ADAPTER_NAME_RE.match(filename)
-        if name_match is None:
-            # A target that looks like an adapter but does not resolve to one is REPORTED,
-            # not dropped. Dropping it renders `not-configured`, which does not demote the
-            # record -- so silence here is the cheapest escape in the whole module.
-            if _ADAPTER_ISH_RE.search(filename):
-                documents.append({"filename": filename, "skill": None, "text": "", "expanded": False, "directory": written_to.parent.name})
-            continue
-        documents.append(
-            {
-                "filename": filename,
-                "skill": name_match.group("skill"),
-                "text": "\n".join(body) + "\n",
-                # An unquoted heredoc delimiter lets the shell expand `$VAR` and backticks
-                # in the body, so what lands on disk is not what the record shows.
-                "expanded": match.group("quote") == "",
-                # The DIRECTORY the stimulus wrote to, which decides whether any reader saw
-                # the document at all. This module resolves from `.agents/`, so without this
-                # a stimulus that wrote elsewhere -- a run in which nothing was read --
-                # would have its declarations replayed at the one path that does read them.
-                "directory": written_to.parent.name,
-            }
-        )
-    return documents
-
-
-def declaration_lines(text: str) -> list[dict]:
-    """Every line of the document that DECLARES something, with its own indent.
-
-    PER LINE, not per top-level key, and a round-1 bounded review is why. Ablating only
-    the outer mapping's keys worked on the four measured records by accident of their
-    content: each dead declaration happened to be the sole entry under its key, so the key
-    collapsed to its default and the ablation saw it. Add one honest sibling and the dead
-    one disappears -- appending `id: probe-one` (the ORIGINAL defect key) to the corrected
-    quality probe leaves `startup_probes` live, so the top-level ablation reports the
-    document clean while the record's control still cannot fail. The reviewer built that
-    input; per-line ablation is the answer to it.
-
-    The version line is excluded because `with_supported_version` already owns it: it is
-    the arm being controlled FOR, not a declaration under test. Comments and blank lines
-    declare nothing.
-    """
-    declarations: list[dict] = []
-    for index, line in enumerate(text.splitlines()):
-        if not line.strip() or _COMMENT_LINE_RE.match(line) or _VERSION_LINE_RE.match(line):
-            continue
-        declarations.append({"index": index, "indent": _indent_of(line), "label": line.strip()})
-    return declarations
-
-
-def _indent_of(line: str) -> int:
-    """Indent width in SPACES ONLY, matching `adapter_lib._line_shape`.
-
-    Not `str.isspace()`. A tab-led line is a top-level key to this repo's parser and an
-    indented continuation to anything that asks `isspace()`, so the two disagreed about
-    what a block contains -- which made an honestly declared tab-indented key read as
-    inert, a false refusal on a proof surface.
-    """
-    return len(line) - len(line.lstrip(" "))
-
-
-def uninterpreted_lines(text: str) -> list[str]:
-    """The operator-facing warning for every line the reader could not interpret."""
-    _parsed, sink = _adapter_lib.load_yaml_report(text)
-    return _adapter_lib.uninterpreted_warnings(sink)
-
-
-def with_supported_version(text: str) -> str:
-    """The same document with its `version` made speakable, so the control arm can run.
-
-    A document that declares no version is returned unchanged: there is nothing to make
-    speakable, and inventing one would resolve a document the record never wrote.
-    """
-    return _VERSION_LINE_RE.sub(
-        f"version: {_adapter_lib.SUPPORTED_ADAPTER_VERSION}", text, count=1
-    )
-
-
-_MUTATION_TOKEN = "probe-mutation"
-_NUMERIC_RE = re.compile(r"-?\d+")
-# The two reasons a deletion can come back unchanged, kept as distinct words because only
-# one of them is a defect. `_UNREAD` refuses; `_RESTATED_DEFAULT` is reported.
-_UNREAD = "unread"
-_RESTATED_DEFAULT = "restated-default"
-
-
-def with_mutated_value(text: str, index: int) -> str | None:
-    """The document with one declaration's VALUE varied, or None when it owns no scalar.
-
-    This is the discriminator between the two reasons an ablation can come back unchanged,
-    and per-line ablation needs it or it refuses honest records. `exemption_globs: []` in
-    the prompt-bulk record deletes without effect because the declared value IS the
-    reader's default -- a no-op restatement, not a wrong shape. `id: probe-one` deletes
-    without effect because no reader reads the key at all. Varying the value separates
-    them: the first changes the payload, the second cannot.
-    """
-    lines = text.splitlines()
-    line = lines[index]
-    head, separator, value = line.partition(":")
-    if not separator:
-        stripped = line.strip()
-        if not stripped.startswith("- "):
-            return None
-        return "\n".join(
-            lines[:index] + [f"{line.rstrip()}-{_MUTATION_TOKEN}"] + lines[index + 1 :]
-        ) + "\n"
-    value = value.strip()
-    if not value:
-        # A block parent owns no scalar to vary. Its liveness is decided by its children,
-        # and if deleting the whole block changed nothing then nothing under it was read --
-        # which is the unread verdict, reached without needing a variant.
-        return None
-    return "\n".join(lines[:index] + _mutated_lines(head, value) + lines[index + 1 :]) + "\n"
-
-
-def _mutated_lines(head: str, value: str) -> list[str]:
-    """The declaration re-stated with a different value, IN A SHAPE THIS READER PARSES.
-
-    The first cut varied `[]` to the flow sequence `["probe-mutation"]` and measured
-    nothing: `adapter_lib._mapping_value` renders a flow sequence as a plain string, the
-    validator drops it, and the varied payload came back identical to the whole one -- so
-    every empty-list declaration was reported UNREAD when it was merely restating a
-    default. The discriminator emitted the exact malformed shape it exists to detect,
-    which is this corpus's own defect class reproduced one level up, again.
-    """
-    indent = " " * (_indent_of(head) + 2)
-    if value == "[]":
-        return [f"{head}:", f"{indent}- {_MUTATION_TOKEN}"]
-    if value == "{}":
-        return [f"{head}:", f"{indent}{_MUTATION_TOKEN}: 1"]
-    if _NUMERIC_RE.fullmatch(value):
-        return [f"{head}: {int(value) + 1}"]
-    return [f"{head}: {value}-{_MUTATION_TOKEN}"]
-
-
-def without_line(text: str, index: int) -> str:
-    """The document with one declaration line, and everything nested under it, removed.
-
-    Text-level rather than parse-and-re-render, because re-rendering would silently repair
-    exactly the malformed shapes this module exists to detect -- a flow sequence would come
-    back as a block sequence and the inert declaration would resolve as honored.
-    """
-    lines = text.splitlines()
-    indent = _indent_of(lines[index])
-    end = index + 1
-    while end < len(lines) and (not lines[end].strip() or _indent_of(lines[end]) > indent):
-        end += 1
-    return "\n".join(lines[:index] + lines[end:]) + "\n"
-
 
 def _resolver_for(repo_root: Path, skill: str) -> Path | None:
     if not _SKILL_NAME_RE.match(skill):
@@ -366,11 +205,19 @@ def _shape_refusal(document: dict) -> str | None:
     whole thing over the complexity bar with the two concerns tangled.
     """
     filename = document["filename"]
+    if document.get("unreadable_command"):
+        return (
+            f"the stimulus line `{filename}` names an adapter document in a shell form this "
+            "module cannot read, so what it writes is unknown. Refusing rather than dropping "
+            "it: a dropped document renders `not-configured`, which does not demote. Write it "
+            "as `cat > <path>/<skill>-adapter.yaml <<'DELIM'`"
+        )
     if document["skill"] is None:
         return (
             f"the stimulus writes `{filename}`, which reads as an adapter document and is not "
-            "one this module can resolve -- a shell-expanded name, a placeholder, or a "
-            "`.yml` spelling no reader opens. Write the literal `<skill>-adapter.yaml` name"
+            "a name any reader in this repo opens. Every resolver opens exactly "
+            f"`{_ADAPTER_DIRECTORY}/<skill>-adapter.yaml`, lowercase, literal, no shell "
+            "expansion and no `.yml`. Write that name"
         )
     if document["directory"] != _ADAPTER_DIRECTORY:
         # A run in which the document was written where no reader looks is a run in which
@@ -420,7 +267,12 @@ def _inspect_document(repo_root: Path, document: dict) -> dict:
             "body before it reaches disk; the document a reader replays is not the document "
             "printed in the record. Quote the delimiter"
         )
-    if dropped := uninterpreted_lines(document["text"]):
+    speakable = with_supported_version(document["text"])
+    # The SPEAKABLE text, not the raw one: the ablation resolves the speakable form, so
+    # reading dropped lines from the raw text let the two disagree -- `version: >` folds
+    # its following lines into a block scalar, `version: 1` leaves them over-indented and
+    # dropped. The ablation still failed closed; the operator was told the wrong reason.
+    if dropped := uninterpreted_lines(speakable):
         reasons.append(
             f"the `{filename}` document the stimulus writes has lines this repo's own reader "
             f"does not interpret, so the stimulus declares less than it appears to: {'; '.join(dropped)}"
@@ -435,7 +287,6 @@ def _inspect_document(repo_root: Path, document: dict) -> dict:
         report["reasons"] = reasons
         return report
 
-    speakable = with_supported_version(document["text"])
     with tempfile.TemporaryDirectory(prefix="probe-stimulus-") as scratch:
         sandbox = Path(scratch)
         whole = _resolve(repo_root, resolver, sandbox, filename, speakable)

@@ -412,6 +412,29 @@ def _result(
     }
 
 
+def demoted_result(result: dict, reasons: list[str]) -> dict:
+    """``result`` demoted to `not-established`, with ``reasons`` appended -- built by `_result`.
+
+    The third construction site this module's single-owner rule forbids was already being
+    written when a round-2 bounded review caught it: `check_probe_record._merge_stimulus_replay`
+    hand-set `state`, `supports_claim`, `undetermined_reasons` and `residual_judgment` in
+    place, forty lines below the comment recording that a previous hand-rolled copy had
+    drifted past `residual_judgment` and the `local` flag. The four values coincided with
+    `_result`'s today, so nothing was wrong yet -- and that is exactly the state the earlier
+    copy was in before it drifted. `_result` derives `supports_claim` and `residual_judgment`
+    FROM `state`, so any fifth state-dependent key it grows would be stale on this path only.
+    """
+    return _result(
+        PROBE_NOT_ESTABLISHED,
+        list(result.get("undetermined_reasons") or []) + list(reasons),
+        result.get("source_quote") or {},
+        result.get("base_arm") or "",
+        result.get("claim_kind") or "",
+        bool(result.get("covers_all_call_sites")),
+        result.get("call_sites_unproven") or "",
+    )
+
+
 def unreadable_record_result(reason: str) -> dict:
     """The result for a record that could not be read at all, built through `_result`.
 

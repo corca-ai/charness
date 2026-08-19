@@ -51,17 +51,19 @@ that reaches a plan) and an adapter declaring a version this reader refuses besi
 `output_dir` and a real trigger glob. The real CLI is run against it.
 
 **CORRECTED after `check_probe_record.py --replay-stimulus`, the detector built for `#674`,
-refused this record on its first sweep of the corpus — the FIFTH RECORD in this family to
-ship a control that could not fail (the sixth INSTANCE; the quality record shipped two),
-and the only one thirteen bounded review rounds did not find.** The first version of this
+refused this record on its first sweep of the corpus — the FIFTH RECORD in this family
+FOUND to have shipped a control that could not fail, and the FIRST to ship one, since this
+record predates the other four; the sixth such ARM in all, because the quality record
+shipped two; and the only one the review rounds did not find.** The first version of this
 block declared `release_record_path: charness-artifacts/release/mine.md`. No ADAPTER
 consumer takes that key: both `plan_release_prepared_stop.release_record_path` and
 `publish_release_claims_review.release_record_path` DERIVE the path from `output_dir` plus a
 fixed filename, precisely so a second copy of the constant cannot drift. Deleting the line
 changes nothing the release resolver honors, and neither does varying it.
 
-Both arms were re-run on `output_dir` and both reproduced the observables recorded here
-unchanged. **That makes the declaration one the resolver honors, which is what the detector
+Both arms were re-run on `output_dir` and both reproduced the observables recorded here,
+apart from the temp directory's own name, which differs per run and which the `--detail`
+excerpt below embeds. **That makes the declaration one the resolver honors, which is what the detector
 checks; it does NOT make the `next_action=` pair discriminating.** Measured at HEAD with
 `version: 1`: the dead declaration and the corrected `output_dir` both print
 `next_action=sync_release_surface` at exit 0. At the observable this record declares, the
@@ -116,10 +118,10 @@ exit 1
   `next_action=sync_release_surface`, exit 0.
 - **The control that could not fail, kept for the trend line.** With the original
   `release_record_path` declaration this pair was WORTHLESS: `next_action=` is identical
-  whether the reader honors the declaration or falls back, because no reader takes that key
-  at all. Neither speakable control distinguished anything until the declaration moved to
-  `output_dir`. The isolating control below is what carried this row, which is why the
-  defect survived thirteen review rounds — the dead arm was not the load-bearing one.
+  whether the reader honors the declaration or falls back, because no ADAPTER consumer reads
+  that key at all. Neither speakable control distinguished anything until the declaration
+  moved to `output_dir`. The isolating control below is what carried this row, which is why
+  the defect survived every review round — the dead arm was not the load-bearing one.
 - **The isolating control, and the one this row actually needs.** The CLI reading above is
   satisfied WITHOUT the guard, because `build_release_payload` (guarded in row 2) is called
   near the top of `build_plan` and its `SystemExit` escapes the surrounding

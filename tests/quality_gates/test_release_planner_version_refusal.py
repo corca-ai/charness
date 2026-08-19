@@ -14,7 +14,7 @@ The row for `current_release` ALONE already made this exit 1, by inheritance:
 cannot have contributed — its call here is behind `if adapter.get("valid")` and inside
 `except SystemExit`, which demotes a refusal to a payload field — and a round-1 bounded
 review caught three surfaces crediting it. That inheritance is real and
-was measured — and it is POSITIONAL. `test_the_refusal_is_this_file_s_own` is the test
+was measured — and it is POSITIONAL. `test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee` is the test
 that separates the two, by proving the refusal survives a callee that does not refuse.
 """
 from __future__ import annotations

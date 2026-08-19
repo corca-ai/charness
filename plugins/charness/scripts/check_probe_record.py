@@ -62,27 +62,30 @@ def evaluate(repo_root: Path, record_path: Path, *, replay_stimulus: bool = Fals
     parsed = _probe_record.parse_probe_record(text)
     result = _probe_record.resolve_probe_record(parsed, repo_root=repo_root)
     if replay_stimulus:
-        _merge_stimulus_replay(result, _stimulus_replay.replay_probe_stimulus(parsed, repo_root=repo_root))
+        return _merge_stimulus_replay(
+            result, _stimulus_replay.replay_probe_stimulus(parsed, repo_root=repo_root)
+        )
     return result
 
 
-def _merge_stimulus_replay(result: dict, replay: dict) -> None:
-    """Fold the replay verdict into the record's, IN PLACE and in the refusing direction only.
+def _merge_stimulus_replay(result: dict, replay: dict) -> dict:
+    """Fold the replay verdict into the record's, in the refusing direction only.
 
     A replay that resolves `not-established` demotes the record: its reproduction steps do
     not reproduce, so whatever the captured observables say, the record does not establish
     its claim. A replay that PASSES never promotes a record the static resolver refused --
     the two mechanisms answer different questions and only one of them can say `evaluated`.
+
+    The demotion is built by `probe_record_lib.demoted_result`, not here. The first cut set
+    the four state-dependent keys in place, which is the second-construction class this
+    file's own comment above records -- and that copy had already drifted.
     """
-    result["stimulus_replay"] = replay
     if replay["state"] != _stimulus_replay.STIMULUS_NOT_ESTABLISHED:
-        return
-    result["undetermined_reasons"] = list(result["undetermined_reasons"]) + [
-        f"the stimulus does not reproduce: {reason}" for reason in replay["reasons"]
-    ]
-    result["state"] = _probe_record.PROBE_NOT_ESTABLISHED
-    result["supports_claim"] = False
-    result["residual_judgment"] = []
+        return {**result, "stimulus_replay": replay}
+    demoted = _probe_record.demoted_result(
+        result, [f"the stimulus does not reproduce: {reason}" for reason in replay["reasons"]]
+    )
+    return {**demoted, "stimulus_replay": replay}
 
 
 def main() -> int:

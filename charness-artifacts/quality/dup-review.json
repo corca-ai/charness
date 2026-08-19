@@ -4913,6 +4913,13 @@
       "note": "argparse CLI-entrypoint boilerplate across seven unrelated repo gates (`parity_harness`, `check_adapter_consumer_classification`, `check_probe_record`, `check_plugin_doc_links`, `check_export_self_sufficiency`, `removed_name_consumers`, `check_plugin_asset_command_carriers`). The matched run is the preamble and tail only -- `def main() -> int`, `ArgumentParser(description=__doc__.splitlines()[0])`, a `--repo-root` argument, further per-gate arguments, `parse_args()`, `return 0` -- while every body diverges completely. CORRECTED after a bounded review: an earlier draft of this note listed `store_true` flags as part of the matched run and credited `check_probe_record`'s SECOND store_true flag with creating the family. Three members (`parity_harness`, `removed_name_consumers`, `check_export_self_sufficiency`) carry no store_true flag at all, so it cannot be an element matched across seven; what happened is that `check_probe_record`'s main() grew (`--replay-stimulus`, #674) and crossed the family's token threshold. Same family as the already-classified 04fc34c123ef7b4e and for the same reason: a shared main() parameterised by each gate's argument set and exit semantics is the boilerplate again with indirection on top, and `run_adapter_cli` exists for the SIMPLE resolvers precisely because their tails are invariant, which these are not.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1bca07c734ac01f8",
+      "note": "idiom-sized `if <mapping>.get(<key>): return <verdict>` guard-clause shape shared by four unrelated classifiers: the stimulus-replay unreadable-command refusal (`probe_stimulus_replay._shape_refusal`, #674), the seed-fixture footprint capability-gap status (`check_seed_fixture_budget`), the regenerable-facts adapter-refusal status (`check_regenerable_facts`) and the mutation-testing proposal status (`propose_mutation_testing`). Same family and same reason as the already-classified 003780cc89f2ccfd: the matched run is the two-line guard clause itself, the keys are different, the returned values are different types (a refusal sentence versus a status token), and the four live in unrelated subsystems. Extracting it would be a helper that takes a mapping, a key and a value and returns the value -- `dict.get` with extra steps.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

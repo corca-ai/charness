@@ -8,12 +8,19 @@ form. Publishing an unverified provenance claim inside the detector built to cat
 unverified claims is this goal's own class, so each constant now carries its source.
 
 - PUBLISHED, verbatim (`git show <sha>:<record>`): `QUALITY_DEAD` (`724fe8a55`),
-  `NARRATIVE_DEAD` / `IMPL_DEAD` (`5ecf7575f`), `RELEASE_DEAD` (`f7d3fb70e`, corrected in
-  this slice by this detector).
-- RECONSTRUCTED from the record's own prose account of a stimulus corrected before it was
-  ever committed: `HANDOFF_DEAD` (scaffold-family `## Polarity controls`) and
-  `ANNOUNCEMENT_DEAD` (announcement `## Stimulus` preamble). These are what the records SAY
-  they ran, not documents git can show.
+  `NARRATIVE_DEAD` / `IMPL_DEAD` (`5ecf7575f`), `RELEASE_DEAD` (`529486982`, corrected in
+  this slice by this detector). A round-2 review caught the release sha copied off the
+  record's `Head ref:` field -- `f7d3fb70e` is the tree the head arm was MEASURED against
+  and does not contain the record at all. A provenance claim asserted from the record's
+  front matter rather than from the command the same sentence names is the round-1 class
+  reproduced inside the round-1 correction; `git show` settled it.
+- RECONSTRUCTED, and for two different reasons neither of which is "corrected before
+  commit": `HANDOFF_DEAD` is a per-skill document that was NEVER committed in any form,
+  because the scaffold record's `## Stimulus` was a `<skill>` template until this slice, so
+  only its `## Polarity controls` prose describes the `artifact_path` arm. `ANNOUNCEMENT_DEAD`
+  is reconstructed from a preamble saying "an earlier stimulus IN THIS SLICE used one" --
+  which does not establish it was this record's own earlier stimulus, and `git log -S` finds
+  the bare-string form in no probe record at any revision. It may be another record's mistake.
 
 `_LIVE` twins are the corrected documents, verbatim from the records as they stand.
 
@@ -30,6 +37,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts import probe_record_lib
 from scripts import probe_stimulus_replay as replay
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -235,12 +243,16 @@ def test_ordinary_shell_spellings_of_the_same_heredoc_are_read_not_dropped(line)
         pytest.param("${s}-adapter.yaml", id="shell-expanded"),
         pytest.param("<skill>-adapter.yaml", id="angle-placeholder"),
         pytest.param("quality-adapter.yml", id="yml-spelling-no-reader-opens"),
+        pytest.param("Quality-Adapter.YAML", id="wrong-case-no-reader-opens"),
     ],
 )
 def test_an_adapter_shaped_target_this_module_cannot_resolve_is_refused_not_dropped(filename):
+    """The reason names the REQUIREMENT, not a list of causes. The first cut said "a
+    shell-expanded name, a placeholder, or a `.yml` spelling", none of which is true of
+    `Quality-Adapter.YAML` -- a right refusal naming the wrong defect."""
     result = _replay(_stimulus(filename, NARRATIVE_LIVE))
     assert result["state"] == replay.STIMULUS_NOT_ESTABLISHED
-    assert "reads as an adapter document" in " ".join(result["reasons"])
+    assert "<skill>-adapter.yaml`, lowercase, literal" in " ".join(result["reasons"])
 
 
 @pytest.mark.parametrize(
@@ -252,13 +264,64 @@ def test_an_adapter_shaped_target_this_module_cannot_resolve_is_refused_not_drop
         pytest.param("version: 1\nglobs:\n  - a\n", 2, "version: 1\nglobs:\n  - a-probe-mutation\n", id="sequence-item-suffixed"),
         pytest.param("version: 1\nglobs:\n  - a\n", 1, None, id="block-parent-owns-no-scalar"),
         pytest.param("version: 1\nnote: |\n  free text\n", 2, None, id="block-scalar-body-owns-no-key"),
+        # --- round 2: each of these was a variant the reader REJECTED, so the field fell
+        # back to the same default and a restated default was refused as unread.
+        pytest.param("version: 1\nnote: |\n  free text\n", 1, None, id="block-scalar-HEADER-cannot-be-varied"),
+        pytest.param("version: 1\nnote: >\n  folded\n", 1, None, id="folded-scalar-header-cannot-be-varied"),
+        pytest.param("version: 1\nstrict: false\n", 1, "version: 1\nstrict: true\n", id="bool-negates"),
+        pytest.param("version: 1\nstrict: True\n", 1, "version: 1\nstrict: false\n", id="bool-negates-capitalised"),
+        pytest.param("version: 1\nmargin: 2.0\n", 1, "version: 1\nmargin: 3.0\n", id="float-increments"),
+        pytest.param('version: 1\npath: "docs/x"\n', 1, 'version: 1\npath: "docs/x-probe-mutation"\n', id="quoted-scalar-varies-inside-its-quotes"),
+        pytest.param("version: 1\nn: 40  # widened\n", 1, "version: 1\nn: 41  # widened\n", id="inline-comment-carried-not-suffixed"),
+        pytest.param("version: 1\nglobs: []  # none yet\n", 1, "version: 1\nglobs:  # none yet\n  - probe-mutation\n", id="inline-comment-carried-onto-block-parent"),
+        # The block-scalar rule lives in `_varied_scalar`, not in the mapping branch, so the
+        # SEQUENCE-ITEM path is covered by it too. Keyed only in the mapping branch, `- |`
+        # had no answer and would have produced the raising variant.
+        pytest.param("version: 1\nnotes:\n  - |\n    free text\n", 2, None, id="sequence-item-block-scalar-header"),
     ],
 )
 def test_the_variant_generator_covers_every_declaration_shape(text, index, expected):
     """A variant this repo's reader cannot parse measures nothing, and `None` is the honest
     answer for a line that owns no scalar to vary -- the caller then reads the deletion
-    alone, which for a whole dead block is already the unread verdict."""
+    alone, which for a whole dead block is already the unread verdict.
+
+    Round 2 found three shapes where the variant was rejected by the reader rather than
+    merely different, so the field fell back to the SAME default and the discriminator
+    reported a restated default as an unread key -- the class it exists to prevent, for the
+    type-checked half of the fields. The inline-comment case was the sharpest: suffixing
+    `40  # widened` produced `40  # widened-probe-mutation`, which
+    `adapter_lib.strip_inline_comment` removes again, so the variant was a literal no-op."""
     assert replay.with_mutated_value(text, index) == expected
+
+
+@pytest.mark.parametrize("marker", ["---", "..."])
+def test_a_yaml_document_marker_is_not_a_declaration(marker):
+    """`adapter_lib._parse_block` skips document markers WITHOUT recording them as
+    uninterpreted, precisely because editors and templates emit them by default. Per-line
+    ablation then called `---` a declaration no value of which changes anything, refusing
+    legal YAML with a nonsensical reason -- and, worse, refusing `---` plus a bare version
+    for the marker instead of for declaring nothing, hiding the correct diagnosis of the
+    maximal defect. Per-KEY ablation could not see `---`; the repair for the nesting hole
+    opened this one."""
+    assert [line["label"] for line in replay.declaration_lines(f"{marker}\nversion: 1\nrepo: demo\n")] == ["repo: demo"]
+    result = _replay(_stimulus("narrative-adapter.yaml", f"{marker}\nversion: 9\nrepo: demo\nremote_name: upstream\n"))
+    assert result["state"] == replay.STIMULUS_EVALUATED, result["reasons"]
+
+
+def test_a_document_marker_does_not_hide_the_declares_nothing_diagnosis():
+    result = _replay(_stimulus("release-adapter.yaml", "---\nversion: 9\n"))
+    assert result["state"] == replay.STIMULUS_NOT_ESTABLISHED
+    assert "declares nothing but a version" in " ".join(result["reasons"])
+
+
+def test_a_cat_line_naming_an_adapter_that_cannot_be_read_is_refused_not_dropped():
+    """Widening the heredoc regex only moves the boundary -- round 2 named six more
+    spellings it still misses. So the BOUNDARY reports: an unmatched `cat` line that names
+    an adapter document is refused, because a silent drop renders `not-configured`, which
+    does not demote."""
+    result = _replay("cat <<'YAML' > $D/.agents/narrative-adapter.yaml\nversion: 9\nYAML\n")
+    assert result["state"] == replay.STIMULUS_NOT_ESTABLISHED
+    assert "a shell form this module cannot read" in " ".join(result["reasons"])
 
 
 @pytest.mark.parametrize(
@@ -402,7 +465,8 @@ Head ref: bbbbbbb
 Base arm: base-observed
 Call sites unproven: none
 """
-_QUOTED_SOURCE = "def declaration_lines(text: str) -> list[dict]:"
+# A line that stayed in `probe_stimulus_replay` after the grammar half was split out.
+_QUOTED_SOURCE = "def replay_probe_stimulus(record: dict, *, repo_root: Path) -> dict:"
 
 
 def _record_text(stimulus_body: str, *, filename: str = "narrative-adapter.yaml") -> str:
@@ -442,6 +506,27 @@ def test_the_replay_is_opt_in_so_a_close_boundary_does_not_silently_shell_out(tm
     # The KEY at column 0, not the substring: this record cites `probe_stimulus_replay.py`
     # as its source, so a bare substring test passes on the `Source ref:` echo instead.
     assert "\nstimulus_replay:" not in passing.stdout
+
+
+def test_the_demoted_result_is_built_by_the_library_and_carries_every_key(tmp_path):
+    """`probe_record_lib._result` exists so no branch can omit a key a consumer branches on,
+    and `check_probe_record` already carries a comment recording that a previous hand-rolled
+    copy had drifted past `residual_judgment` and the `local` flag. The replay merge was a
+    THIRD construction of the same shape -- correct today, which is exactly the state the
+    earlier copy was in before it drifted."""
+    from tests.script_main import load_script_module
+
+    record = tmp_path / "record.md"
+    record.write_text(_record_text(NARRATIVE_DEAD), encoding="utf-8")
+    check_probe_record = load_script_module("check_probe_record_for_shape_test", CLI)
+    demoted = check_probe_record.evaluate(ROOT, record, replay_stimulus=True)
+    reference = probe_record_lib.unreadable_record_result("shape reference")
+    assert set(demoted) == set(reference) | {"stimulus_replay"}
+    assert demoted["state"] == probe_record_lib.PROBE_NOT_ESTABLISHED
+    assert demoted["supports_claim"] is False
+    assert demoted["residual_judgment"] == []
+    # The static resolver's own reasons survive alongside the replay's, in order.
+    assert any("does not reproduce" in reason for reason in demoted["undetermined_reasons"])
 
 
 def test_a_passing_replay_never_promotes_a_record_the_static_resolver_refused(tmp_path):

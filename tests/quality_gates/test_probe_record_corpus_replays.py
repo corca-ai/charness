@@ -6,9 +6,9 @@ standing check. `#674`'s premise is "thirteen review rounds, no gate", and an op
 nobody invokes leaves that premise exactly as true for record fourteen. The detector was
 inert.
 
-The sweep is deliberately here rather than in the pre-commit path. It costs ~8s for the
-whole corpus -- each record resolves its adapter documents once per declaration through a
-real subprocess -- which is far over the ~1s pre-commit budget
+The sweep is deliberately here rather than in the pre-commit path. Each document costs one
+resolve whole plus one or two per declaration, every one a real subprocess, so the corpus
+costs tens of seconds -- far over the ~1s pre-commit budget
 (`docs/conventions/validator-timing-layers.md`) and right for the standing lane, where the
 corpus changes rarely and a dead control is expensive to find any other way.
 
@@ -31,10 +31,23 @@ ROOT = Path(__file__).resolve().parents[2]
 RECORDS = sorted((ROOT / "charness-artifacts" / "probe").glob("*.md"))
 
 
-def test_the_corpus_is_not_empty():
+def _stimulus(record: Path) -> str:
+    parsed = probe_record_lib.parse_probe_record(record.read_text(encoding="utf-8"))
+    return (parsed.get("sections") or {}).get("stimulus") or ""
+
+
+# DERIVED, not a hand-written count. Round 2 found both floors written as `>= 13` against a
+# 24-file corpus: eleven records could be deleted with the gate green, and the number gains a
+# silent slot of slack the moment a fourteenth adapter record lands. The set of records that
+# WRITE an adapter document is what this gate is a floor for, so it is computed.
+ADAPTER_RECORDS = [record for record in RECORDS if probe_stimulus_replay.extract_adapter_documents(_stimulus(record))]
+
+
+def test_the_corpus_glob_matched_something():
     """A glob that silently matched nothing would make every test below vacuously green --
     the shape this repo's `no silent caps` rule exists to refuse."""
-    assert len(RECORDS) >= 13, [path.name for path in RECORDS]
+    assert RECORDS, "no probe records matched charness-artifacts/probe/*.md"
+    assert ADAPTER_RECORDS, "no probe record writes an adapter document; the sweep proves nothing"
 
 
 @pytest.mark.parametrize("record", RECORDS, ids=lambda path: path.stem)
@@ -44,15 +57,20 @@ def test_a_checked_in_records_stimulus_still_reproduces(record: Path):
     assert result["state"] != probe_stimulus_replay.STIMULUS_NOT_ESTABLISHED, result["reasons"]
 
 
-def test_the_adapter_records_are_actually_replayed_and_not_all_skipped():
+def test_every_record_that_writes_an_adapter_is_actually_replayed():
     """`not-configured` is a legitimate answer for a record that writes no adapter document,
-    and it is also what every extraction miss degrades to. Without this, a regression that
-    stopped recognising heredocs would turn the whole sweep green."""
-    replayed = [
+    and it is also what every extraction miss degrades to -- so a regression that stopped
+    recognising heredocs would turn the sweep above green while measuring nothing.
+
+    This counts DOCUMENTS EXTRACTED, not records passing. The first cut counted records
+    reaching `evaluated`, which conflates `was replayed` with `passed`: one record honestly
+    regressing failed both tests, and this one failed with the misleading message `not all
+    skipped`."""
+    unreplayed = [
         record.stem
-        for record in RECORDS
+        for record in ADAPTER_RECORDS
         if probe_stimulus_replay.replay_probe_stimulus(
             probe_record_lib.parse_probe_record(record.read_text(encoding="utf-8")), repo_root=ROOT
-        )["state"] == probe_stimulus_replay.STIMULUS_EVALUATED
+        )["state"] == probe_stimulus_replay.STIMULUS_NOT_CONFIGURED
     ]
-    assert len(replayed) >= 13, replayed
+    assert not unreplayed, unreplayed
