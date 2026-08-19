@@ -552,6 +552,23 @@ def test_caller_coverage_must_name_callers_that_are_themselves_guarded(tmp_path:
     problems, _ = GATE.check(repo)
     assert any("covering_callers" in p for p in problems), problems
 
+    # A named caller with NO row at all. Distinct from a caller whose row is unguarded: the
+    # first is a claim about a file the census never saw, and reporting it as "not guarded"
+    # would tell the author to fix a row that does not exist.
+    repo = _tree(
+        tmp_path / "phantom",
+        {"scripts/leaf.py": unguarded},
+        {
+            "scripts/leaf.py": {
+                "verdict": "guarded-by-caller",
+                "reason": "covered by a file nobody classified",
+                "covering_callers": ["scripts/nowhere.py"],
+            }
+        },
+    )
+    problems, _ = GATE.check(repo)
+    assert any("carries no census row" in p for p in problems), problems
+
 
 def test_a_file_that_guards_itself_may_not_claim_caller_coverage(tmp_path: Path) -> None:
     """The token means "cannot guard itself". A file that asks the condition and records
