@@ -14,8 +14,7 @@ non-mapping arm `load_yaml` cannot produce).
 
 from __future__ import annotations
 
-import contextlib
-from pathlib import Path
+import sys
 
 import pytest
 
@@ -81,42 +80,44 @@ def test_a_failed_parser_load_does_not_poison_every_later_load_in_the_process(tm
     """`adapter_lib` loads its parser BY PATH and registers it in `sys.modules` before
     executing it. Registered-then-failed, the empty module short-circuits every later load
     in the process and each one dies with `AttributeError: no attribute
-    'SUPPORTED_BLOCK_SCALAR_RE'` — the second error hiding the first. CPython's own importer
+    'SUPPORTED_BLOCK_SCALAR_RE'` -- the second error hiding the first. CPython's own importer
     unregisters on failure; this hand-rolled loader has to as well.
 
     `plugin_import_smoke` execs every module in one process, so without this an install
-    missing the parser would have reported the wrong cause for every adapter module on a
-    packaging proof surface.
+    missing the parser would report the wrong cause for every adapter module, on a packaging
+    proof surface.
+
+    Calls the loader in `scripts/adapter_lib.py` DIRECTLY. The first cut copied the module
+    into a temp dir and loaded the copy, which exercises the copy's lines and leaves the
+    real file's `except` arm uncovered -- a green test over the wrong bytes.
     """
-    import importlib.util
-    import shutil
-    import sys
+    from scripts import adapter_lib
 
-    root = Path(__file__).resolve().parents[1]
-    shutil.copy2(root / "scripts" / "adapter_lib.py", tmp_path / "adapter_lib.py")
-    (tmp_path / "adapter_yaml_parse.py").write_text("raise RuntimeError('broken parser')\n", encoding="utf-8")
-    (tmp_path / "runtime_bootstrap.py").write_text(
-        "def import_repo_module(*_a, **_k):\n    raise AssertionError('unused')\n", encoding="utf-8"
-    )
-
-    def _load(name: str):
-        spec = importlib.util.spec_from_file_location(name, tmp_path / "adapter_lib.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-
-    before = set(sys.modules)
-    for attempt in ("first", "second"):
-        with pytest.raises(RuntimeError, match="broken parser"), _guard(sys, before):
-            _load(f"adapter_lib_poison_{attempt}")
-    assert not [key for key in sys.modules if key.startswith("charness_adapter_yaml_parse::")
-                and str(tmp_path) in key], "the failed parser stayed registered"
+    broken = tmp_path / "adapter_yaml_parse.py"
+    broken.write_text("raise RuntimeError('broken parser')\n", encoding="utf-8")
+    key = f"charness_adapter_yaml_parse::{broken}"
+    for _attempt in ("first", "second"):
+        with pytest.raises(RuntimeError, match="broken parser"):
+            adapter_lib._load_yaml_module(broken)
+        assert key not in sys.modules, "the failed parser stayed registered"
 
 
-@contextlib.contextmanager
-def _guard(sys_module, before):
-    try:
-        yield
-    finally:
-        for key in set(sys_module.modules) - before:
-            if key.startswith("adapter_lib_poison_"):
-                del sys_module.modules[key]
+def test_the_parser_is_loaded_once_per_path_and_its_sink_is_internally_consistent(tmp_path):
+    """One instance PER PATH, and the sink consistent within it.
+
+    Written first as "one instance per process", which is FALSE and the test found it:
+    `from scripts import adapter_yaml_parse` is a second module object beside `adapter_lib`'s
+    path-loaded one, so two `_UNINTERPRETED_SINK` ContextVars exist right now. Harmless,
+    because `load_yaml_report` arms the sink and `_parse_block` records into it from the SAME
+    instance -- no caller can cross them. An adoption scan that would have collapsed them was
+    tried and reverted: it makes which instance wins depend on import order.
+
+    What must hold is asserted here: the loader is idempotent for one path, and each instance
+    reports the lines it dropped."""
+    from scripts import adapter_lib
+
+    first = adapter_lib._load_yaml_module(adapter_lib._YAML_PATH)
+    assert first is adapter_lib._load_yaml_module(adapter_lib._YAML_PATH)
+    for module in (first, parse):
+        _parsed, uninterpreted = module.load_yaml_report("version: 1\n  repo: demo\n")
+        assert [entry["line"] for entry in uninterpreted] == [2]

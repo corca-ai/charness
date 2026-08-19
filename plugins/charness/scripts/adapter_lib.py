@@ -34,21 +34,59 @@ from typing import Any
 # rendered as agreement. Same file therefore still means one instance and one sink; a
 # different tree gets its own, which is what a different tree should get.
 _YAML_PATH = Path(__file__).resolve().parent / "adapter_yaml_parse.py"
-_YAML_MODULE_KEY = f"charness_adapter_yaml_parse::{_YAML_PATH}"
-if (_yaml := sys.modules.get(_YAML_MODULE_KEY)) is None:
-    _yaml_spec = importlib.util.spec_from_file_location(_YAML_MODULE_KEY, _YAML_PATH)
-    _yaml = importlib.util.module_from_spec(_yaml_spec)
-    sys.modules[_YAML_MODULE_KEY] = _yaml
+
+
+def _load_yaml_module(path: Path):
+    """Load the parser beside this file, once per PATH, and fail clean.
+
+    A FUNCTION rather than inline module-level code so the failure arm is reachable from a
+    test against THIS file. Written inline first, its `except` arm was uncovered by
+    construction -- the only way to reach it is a broken sibling, and a test that copies the
+    module elsewhere exercises the copy, not the line the gate reads.
+
+    KEYED ON THE RESOLVED PATH, not on a bare name. A bare key means the FIRST `adapter_lib`
+    loaded in a process binds the parser for every later one from any tree -- so a vendored
+    or stale charness beside a fresh one would silently share a parser, which is the wrong
+    answer rendered as agreement. Same file therefore means one instance per loader, and a
+    different tree gets its own, which is what it should get.
+
+    NOT one instance per PROCESS, and a test written to claim that found the difference:
+    `from scripts import adapter_yaml_parse` produces a second module object beside this
+    one, so two `_UNINTERPRETED_SINK` ContextVars can exist at once. That is harmless
+    because arming and recording are CO-LOCATED -- `load_yaml_report` and `_parse_block`
+    are always the same instance's -- so no caller can arm one sink and record into the
+    other. An adoption scan over `sys.modules` was tried and reverted: which instance wins
+    would then depend on import ORDER, and order-dependent module identity is worse than
+    two consistent copies.
+
+    UNREGISTERS ON FAILURE, as CPython's own importer does. Left registered, the empty module
+    short-circuits every later load in the process and each one dies with `AttributeError: no
+    attribute 'SUPPORTED_BLOCK_SCALAR_RE'` -- the second error hiding the first.
+    `plugin_import_smoke` execs every module in one process, so an install missing this file
+    would report the wrong cause for every adapter module, on a packaging proof surface.
+    """
+    key = f"charness_adapter_yaml_parse::{path}"
+    if (module := sys.modules.get(key)) is not None:
+        return module
+    spec = importlib.util.spec_from_file_location(key, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[key] = module
     try:
-        _yaml_spec.loader.exec_module(_yaml)
+        spec.loader.exec_module(module)
     except BaseException:
-        # UNREGISTER ON FAILURE, as CPython's own importer does. Left registered, the empty
-        # module short-circuits every later load in the process and each one dies with
-        # `AttributeError: no attribute 'SUPPORTED_BLOCK_SCALAR_RE'` -- the second error
-        # hiding the first. `plugin_import_smoke` execs every module in one process, so an
-        # install missing this file would report the wrong cause for every adapter module.
-        del sys.modules[_YAML_MODULE_KEY]
+        del sys.modules[key]
         raise
+    return module
+
+
+# LOADED BY PATH WITH STDLIB ONLY, and that is a hard constraint rather than a style choice.
+# This module is imported three ways: as `scripts.adapter_lib`, as a bare `adapter_lib` from
+# a seeded test repo, and by absolute PATH from a skill script whose loader puts nothing on
+# `sys.path`. The first cut of this split used `runtime_bootstrap.import_repo_module` and
+# broke the third: every achieve and handoff skill script that reaches `adapter_lib` died
+# with `No module named 'runtime_bootstrap'`. The pre-split file had no repo imports at all,
+# which is why it worked everywhere.
+_yaml = _load_yaml_module(_YAML_PATH)
 
 # Re-exported so `adapter_lib` remains the one import site for anything that reads or
 # resolves an adapter. NOT fully transparent, and the difference is worth knowing before it
