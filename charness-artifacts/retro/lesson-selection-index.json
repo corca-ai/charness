@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-19",
-  "source_artifact_count": 535,
-  "candidate_count": 2175,
+  "source_artifact_count": 536,
+  "candidate_count": 2183,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1502,6 +1502,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:ed3534041ddd",
+      "kind": "current_focus",
+      "lesson": "Slice 3 through slice 5's first twenty-six rows of the probe-provenance goal.",
+      "normalized_key": "slice 3 through slice 5 s first twenty six rows of the probe provenance",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+          "date": "2026-08-19",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Slice 3 through slice 5's first twenty-six rows of the probe-provenance goal."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:69ffbfc0bfef",
       "kind": "current_focus",
       "lesson": "Slices 1 and 2 of the probe-provenance goal, plus the precondition that unblocked pre-push.",
@@ -1554,6 +1580,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:08a090d81898",
+      "kind": "next_improvement",
+      "lesson": "**capability** — give the census a verdict vocabulary that distinguishes coverage levels, so `guarded` stops meaning four things. Tracked.",
+      "normalized_key": "capability give the census a verdict vocabulary that distinguishes coverage levels so guarded stops",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+          "date": "2026-08-19",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — give the census a verdict vocabulary that distinguishes coverage levels, so `guarded` stops meaning four things. Tracked."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:541c0e33d175",
+      "kind": "next_improvement",
+      "lesson": "**capability** — teach `check_probe_record` to replay `## Stimulus` and diff against `## Base observable`. Tracked, not built here.",
+      "normalized_key": "capability teach check probe record to replay stimulus and diff against base observable tracked",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+          "date": "2026-08-19",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — teach `check_probe_record` to replay `## Stimulus` and diff against `## Base observable`. Tracked, not built here."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:0ba26b354d3f",
       "kind": "next_improvement",
       "lesson": "**memory — the goal artifact's frame now carries slice 3's measured groundwork** so a compacted or resumed session does not re-derive that `what_reads_this.py` cannot express a shape while `consumer_files()` already does. Applied: `## Active Operating Frame`, Next action.",
@@ -1580,6 +1658,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:cf2603cc68f7",
+      "kind": "next_improvement",
+      "lesson": "**memory** — the handoff now carries the review pattern and the two detectors, so a pickup inherits them without reading twelve reports.",
+      "normalized_key": "memory the handoff now carries the review pattern and the two detectors so a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+          "date": "2026-08-19",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory** — the handoff now carries the review pattern and the two detectors, so a pickup inherits them without reading twelve reports."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:0990f9f7a1b6",
       "kind": "next_improvement",
       "lesson": "**workflow — never delete a source before the copy is confirmed, and never use a guessable shared temp path.** This retro's first draft was destroyed by `cp X /tmp/retro-body.md && rm X && persist`, where the persist refused and the temp path already belonged to another session. Applied: the rewrite uses a process-unique directory, and the source is deleted only after the persist succeeds.",
@@ -1602,6 +1706,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow — never delete a source before the copy is confirmed, and never use a guessable shared temp path.** This retro's first draft was destroyed by `cp X /tmp/retro-body.md && rm X && persist`, where the persist refused and the temp path already belonged to another session. Applied: the rewrite uses a process-unique directory, and the source is deleted only after the persist succeeds."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:50ddec11427a",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — start each batch with the two-question pre-mortem (can this control fail? where else does this sentence appear?) rather than discovering both at review. Applied this window only from row 24 onward, where the `in_progress_sources` mapping shape was caught BEFORE publishing for the first time.",
+      "normalized_key": "workflow start each batch with the two question pre mortem can this control fail",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+          "date": "2026-08-19",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — start each batch with the two-question pre-mortem (can this control fail? where else does this sentence appear?) rather than discovering both at review. Applied this window only from row 24 onward, where the `in_progress_sources` mapping shape was caught BEFORE publishing for the first time."
         }
       ]
     },
@@ -1736,6 +1866,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:6fc422cfbcc4",
+      "kind": "repeat_trap",
+      "lesson": "Round 1 of rows 6-13 corrected the explicit-path exemption's wording; round 2 found the correction had landed in ONE of five surfaces.",
+      "normalized_key": "round 1 of rows 6 13 corrected the explicit path exemption s wording round",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+          "date": "2026-08-19",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Round 1 of rows 6-13 corrected the explicit-path exemption's wording; round 2 found the correction had landed in ONE of five surfaces."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:1c2f7fe47266",
       "kind": "repeat_trap",
       "lesson": "**The largest cost was not a mistake — it was the fixture migration.** Making the probe record a hard floor turned 67 existing tests red across 15 files. That was foreseeable in kind but not in size, and the size is what the operator's REVIEW-severity ruling was made against. It was not wasted: the number IS the deliverable that let the decision be made on measurement rather than on estimate.",
@@ -1758,6 +1914,58 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The largest cost was not a mistake — it was the fixture migration.** Making the probe record a hard floor turned 67 existing tests red across 15 files. That was foreseeable in kind but not in size, and the size is what the operator's REVIEW-severity ruling was made against. It was not wasted: the number IS the deliverable that let the decision be made on measurement rather than on estimate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:31dff2a54dac",
+      "kind": "repeat_trap",
+      "lesson": "The read-site rationale (\"a refusal in `main()` would leave the importers reading charness defaults\") was struck by rows 1-5's round 2, recorded in dup-review with the settled replacement — and I published it again for rows 6-13, into eight surfaces.",
+      "normalized_key": "the read site rationale a refusal in main would leave the importers reading charness",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+          "date": "2026-08-19",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The read-site rationale (\"a refusal in `main()` would leave the importers reading charness defaults\") was struck by rows 1-5's round 2, recorded in dup-review with the settled replacement — and I published it again for rows 6-13, into eight surfaces."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:53be6ac0c452",
+      "kind": "repeat_trap",
+      "lesson": "The `record_announcement` asymmetry claim went into a probe record, a census reason and a test docstring together, and was refuted whole. The cost is not the wrong sentence, it is that one wrong sentence needs six to eight edits and a review round to find. **The cheap detector is grep the phrase, not the file** — and it was available every time. **Second waste: four probe records shipped a polarity control that could not fail.** Each time the published stimulus declared a field in a shape `adapter_lib` does not parse into the type its validator requires — `command: [a, b]` as a flow sequence, `in_progress_sources` as bare strings, `startup_probes` with `id` instead of `label`. Each time the matching TEST FIXTURE was right. The section offered for independent replay was the wrong one, four times, while the executable one was correct. Not waste: the review rounds themselves. They cost more changed lines than the rows they reviewed and found a blocker in every single batch.",
+      "normalized_key": "the record announcement asymmetry claim went into a probe record a census reason and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-slice5-adapter-debt-retro.md",
+          "date": "2026-08-19",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The `record_announcement` asymmetry claim went into a probe record, a census reason and a test docstring together, and was refuted whole. The cost is not the wrong sentence, it is that one wrong sentence needs six to eight edits and a review round to find. **The cheap detector is grep the phrase, not the file** — and it was available every time. **Second waste: four probe records shipped a polarity control that could not fail.** Each time the published stimulus declared a field in a shape `adapter_lib` does not parse into the type its validator requires — `command: [a, b]` as a flow sequence, `in_progress_sources` as bare strings, `startup_probes` with `id` instead of `label`. Each time the matching TEST FIXTURE was right. The section offered for independent replay was the wrong one, four times, while the executable one was correct. Not waste: the review rounds themselves. They cost more changed lines than the rows they reviewed and found a blocker in every single batch."
         }
       ]
     },
