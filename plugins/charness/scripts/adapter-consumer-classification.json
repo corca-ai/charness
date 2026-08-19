@@ -14,8 +14,16 @@
       "reason": "resolve_probe_state (lines 218-289) loads the critique adapter at line 232, then at line 270 calls _adapter_lib.unreadable_reasons(adapter), which reads adapter.get('errors') (adapter_lib.py:420) \u2014 this list includes the 'version must be N' refusal string \u2014 and at lines 271-288 downgrades the probe state to PROBE_NOT_ESTABLISHED with an explanatory undetermined_reason whenever the adapter is unreadable and no hit was already found."
     },
     "scripts/build_debug_seam_risk_index.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "_load_debug_output_dir (lines 38-55) calls module.load_adapter(repo_root) at line 42 and reads adapter['data']['output_dir'] at line 52 with no reference to 'errors' or 'valid' anywhere in the file (grep confirms zero occurrences of either key)."
+      "verdicts": [
+        {
+          "verdict": "accepted-risk-unguarded",
+          "reason": "_load_debug_output_dir (lines 38-55) calls module.load_adapter(repo_root) at line 42 and reads adapter['data']['output_dir'] at line 52 with no reference to 'errors' or 'valid' anywhere in the file (grep confirms zero occurrences of either key). SCOPED after measurement: the parenthetical above covers the RESOLVER path only. See this row's second verdict."
+        },
+        {
+          "verdict": "no-version-validation",
+          "reason": "SECOND CLASS, added 2026-08-19 after slice 5 measured this row and did NOT pay it down. `_load_debug_output_dir` (lines 43-49) falls back to a RAW LINE SCAN of `.agents/debug-adapter.yaml` -- `if raw_line.startswith(\"output_dir:\")` -- whenever neither `skills/public/debug/scripts/resolve_adapter.py` nor `skills/debug/scripts/resolve_adapter.py` exists, which is the ordinary plugin-install layout in a consumer repo rather than an edge. That path never reads `version`, so there is no `errors` for any guard to check. MEASURED, not argued: against a temp repo with no skill tree, `build_debug_seam_risk_index.py --repo-root $D` reported the DECLARED `docs/mine-debug` identically at `version: 9` and `version: 1` -- the declaration honored by a reader that never checked whether it could speak it. This is the THIRD file found carrying this fallback shape (`risk_interrupt_lib.py` and `build_retro_lesson_selection_index.py` are the others, both already multi-class); a sweep for `startswith(\"output_dir:\")` over `scripts/` and `skills/` finds exactly these. It stays UNPAID rather than classified on an argument -- reproducing the resolver arm needs a repo that ships the skill tree."
+        }
+      ]
     },
     "scripts/build_retro_lesson_selection_index.py": {
       "verdicts": [
@@ -498,8 +506,8 @@
       "reason": "L25 `load_yaml_file` then the shared version check; refuses an unsupported version before applying surface overrides."
     },
     "skills/support/web-fetch/scripts/route_public_fetch_routes.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "`resolve_github_mode` (lines 184-202) does `payload = module.load_adapter(repo_root)` then `provider = payload.get(\"data\", {}).get(\"gather_provider\") or {}` with no check of `payload.get(\"valid\")` or `payload.get(\"errors\")` \u2014 only a bare `except Exception` around the import/call, which a version-refused adapter does not raise (load_adapter returns a normal dict with valid=False)."
+      "verdict": "guarded",
+      "reason": "resolve_github_mode() now refuses via `adapter_version_verdict.unspeakable_version_message` before `gather_provider` is read. THE FLIP RUNS IN THE PERMISSIVE DIRECTION on an external-fetch boundary, which is why this row is guarded rather than accepted: measured at e1c93ba17, a repo declaring `gather_provider.github.mode: none` -- 'this repo has no GitHub path' -- resolved to `direct-cli` under `version: 9` and routed `github.com` to `github-grant-or-cli` instead of `github-missing-capability`. The repo said it had no path; the router offered to take one. Controls at version 1 return `none`/`github-missing-capability` and `host-mediated`/`github-host-mediated`. THE `except Exception -> direct-cli` FALLBACK IS DELIBERATELY LEFT: a missing gather resolver or an unloadable module is not 'the repo declared something this reader ignored', and degrading there keeps web fetch working in a checkout that ships no gather skill. This module has no skill-runtime bootstrap, so it reaches `scripts/adapter_version_verdict.py` by the same ancestor walk it already uses for the gather resolver. Probe record: charness-artifacts/probe/2026-08-19-web-fetch-route-version-refusal.md."
     }
   }
 }

@@ -169,16 +169,38 @@ def host_matches(host: str, patterns: Sequence[str]) -> bool:
     return any(host == pattern or host.endswith(f".{pattern}") for pattern in patterns)
 
 
-def _find_gather_adapter_script() -> Path:
+def _find_repo_script(*candidates: tuple[str, ...], missing: str) -> Path:
+    """Ancestor-walk for a repo-owned script.
+
+    This module has no skill-runtime bootstrap -- it is support, not a skill -- so it
+    reaches repo scripts by walking its own parents. ONE owner for that walk: adding a
+    second copy for the version-verdict module produced a duplicate the ratchet caught,
+    and the two copies differed only in their candidate list and their sentinel name.
+    """
     script = Path(__file__).resolve()
     for ancestor in script.parents:
-        for candidate in (
-            ancestor / "skills" / "public" / "gather" / "scripts" / "resolve_adapter.py",
-            ancestor / "skills" / "gather" / "scripts" / "resolve_adapter.py",
-        ):
+        for rel in candidates:
+            candidate = ancestor.joinpath(*rel)
             if candidate.is_file():
                 return candidate
-    return Path("__missing_gather_resolve_adapter__.py")
+    return Path(missing)
+
+
+def _load_module(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _find_gather_adapter_script() -> Path:
+    return _find_repo_script(
+        ("skills", "public", "gather", "scripts", "resolve_adapter.py"),
+        ("skills", "gather", "scripts", "resolve_adapter.py"),
+        missing="__missing_gather_resolve_adapter__.py",
+    )
 
 
 def resolve_github_mode(repo_root: Path | None) -> str:
@@ -196,6 +218,30 @@ def resolve_github_mode(repo_root: Path | None) -> str:
         payload = module.load_adapter(repo_root)
     except Exception:
         return "direct-cli"
+    # GUARDED AT THE READ SITE, and the flip here runs in the PERMISSIVE direction on an
+    # external-fetch boundary. Measured at `e1c93ba17`: a repo declaring
+    # `gather_provider.github.mode: none` -- "this repo has no GitHub path" -- resolved to
+    # `direct-cli` under `version: 9`, routing `github.com` to `github-grant-or-cli`
+    # instead of `github-missing-capability`. The repo said it had no path; the router
+    # offered to take one.
+    #
+    # The `except Exception -> "direct-cli"` fallback above is DELIBERATELY LEFT: a missing
+    # resolver or an unloadable module is not "the repo declared something this reader
+    # ignored", and degrading there keeps web fetch working in a checkout that ships no
+    # gather skill. This guard fires only on the state where a declaration exists and was
+    # not honored.
+    verdict_path = _find_repo_script(
+        ("scripts", "adapter_version_verdict.py"),
+        missing="__missing_adapter_version_verdict__.py",
+    )
+    if verdict_path.is_file():
+        verdict = _load_module(verdict_path, "web_fetch_adapter_version_verdict")
+        if verdict is not None:
+            refusal = verdict.unspeakable_version_message(
+                module.load_adapter, repo_root, adapter_name="gather-adapter.yaml"
+            )
+            if refusal is not None:
+                raise SystemExit(refusal)
     provider = payload.get("data", {}).get("gather_provider") or {}
     entry = provider.get("github") or {}
     mode = entry.get("mode", "direct-cli")
