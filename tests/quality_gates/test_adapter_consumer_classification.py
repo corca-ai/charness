@@ -570,6 +570,93 @@ def test_upstream_coverage_must_name_rows_that_are_themselves_guarded(tmp_path: 
     assert any("carries no census row" in p for p in problems), problems
 
 
+def test_the_counts_name_the_errors_only_bypass_and_print_in_coverage_order(tmp_path: Path) -> None:
+    """The class this vocabulary created to make a live bypass legible printed as a bare
+    number, sorted alphabetically into the middle. `accepted-risk-unguarded` has carried a
+    callout sentence since it existed, for the same reason: a risk that stops being named
+    stops being decided."""
+    errors_only = "def go(root):\n    p = load_adapter(root)\n    return declarations_unhonored(p['errors'])\n"
+    all_doors = "def go(root):\n    return refuse_unspeakable_version(load_adapter, root, adapter_name='x')\n"
+    repo = _tree(
+        tmp_path / "counts",
+        {"scripts/weak.py": errors_only, "scripts/strong.py": all_doors},
+        {
+            "scripts/weak.py": {"verdict": "guarded-errors-only", "reason": "errors channel only"},
+            "scripts/strong.py": {"verdict": "guarded-all-doors", "reason": "all three"},
+        },
+    )
+    module = load_script_module("gate_cli_counts", ROOT / "scripts/check_adapter_consumer_classification.py")
+    result = run_loaded_script_main(
+        "scripts/check_adapter_consumer_classification.py", module, "--repo-root", str(repo)
+    )
+    assert result.returncode == 0, result.stderr
+    assert "ERRORS-ONLY: 1 consumer(s)" in result.stdout
+    assert "one-typo bypass" in result.stdout
+    # Coverage order, strongest first — not the alphabetical order that sorts the weakest
+    # level into the middle.
+    assert result.stdout.index("guarded-all-doors") < result.stdout.index("guarded-errors-only")
+
+
+def test_a_malformed_verdicts_list_is_refused_rather_than_read_as_empty(tmp_path: Path) -> None:
+    """`verdicts` that is not a list yields no rows, and the entry then falls to the
+    non-empty check that names it — rather than being read as a file with nothing declared,
+    which is how an unclassified consumer would look."""
+    repo = _tree(
+        tmp_path / "shape",
+        {"scripts/leaf.py": CALLS_LOADER},
+        {"scripts/leaf.py": {"verdicts": {"verdict": "guarded-all-doors", "reason": "a mapping, not a list"}}},
+    )
+    problems, _ = GATE.check(repo)
+    assert any("must be a non-empty list" in p for p in problems), problems
+
+
+def test_covering_rows_entries_must_be_paths_and_a_malformed_one_refuses(tmp_path: Path) -> None:
+    """A non-string entry made `caller not in declared` raise `TypeError: unhashable type`
+    — an uncaught traceback out of a proof surface, where a named refusal belongs."""
+    unguarded = "def go(root):\n    p = load_adapter(root)\n    return p['data']\n"
+    repo = _tree(
+        tmp_path / "malformed",
+        {"scripts/leaf.py": unguarded},
+        {
+            "scripts/leaf.py": {
+                "verdict": "guarded-upstream",
+                "reason": "covered, allegedly",
+                "covering_rows": [["scripts/nested.py"]],
+            }
+        },
+    )
+    problems, _ = GATE.check(repo)
+    assert any("must be repo-relative paths" in p for p in problems), problems
+
+
+def test_a_multi_verdict_row_keeps_the_entrys_covering_rows(tmp_path: Path) -> None:
+    """The first fix was ONE-SIDED: only the single-verdict branch carried the entry's extra
+    keys, so an entry-level `covering_rows` beside a `verdicts` list was dropped and the gate
+    reported a row owing a list it plainly carried — a checker losing evidence rather than a
+    row lacking it, in the shape the first fix did not touch."""
+    both = (
+        "def go(root):\n    p = load_adapter(root)\n    return p['data']\n"
+        "def raw(root):\n    return load_yaml_file(root / '.agents/x.yaml')\n"
+    )
+    guard = "def go(root):\n    return refuse_unspeakable_version(load_adapter, root, adapter_name='x')\n"
+    repo = _tree(
+        tmp_path / "multi",
+        {"scripts/leaf.py": both, "scripts/up.py": guard},
+        {
+            "scripts/leaf.py": {
+                "covering_rows": ["scripts/up.py"],
+                "verdicts": [
+                    {"verdict": "guarded-upstream", "reason": "covered upstream"},
+                    {"verdict": "no-version-validation", "reason": "second call site reads raw"},
+                ],
+            },
+            "scripts/up.py": {"verdict": "guarded-all-doors", "reason": "real"},
+        },
+    )
+    problems, _ = GATE.check(repo)
+    assert problems == [], problems
+
+
 def test_a_file_that_guards_itself_may_not_claim_upstream_coverage(tmp_path: Path) -> None:
     """The token means "cannot guard itself". A file that asks the condition and records
     caller coverage hides its own level behind someone else's."""

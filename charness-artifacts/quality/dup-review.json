@@ -4990,6 +4990,20 @@
       "note": "`load_adapter` in `issue/scripts/resolve_adapter.py` and `proof_semantics_adapter_lib`, BOTH UNTOUCHED. Same family and same reason as 3a454eab3c6bf754, with one addition: `issue` maps validity to an exit code in its own `main` (one of the two skills pinned in `NON_ZERO_EXIT_SKILLS`), so its resolver is deliberately not the shared shape.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6b90d0e84b83b2c2",
+      "note": "the argparse CLI-entrypoint boilerplate family, re-fingerprinted because `check_adapter_consumer_classification.main()` grew the per-level counts loop and the errors-only callout (#675). Every other member is UNTOUCHED. Same family and same reason as the already-classified a2a04eacbcea76ec and 04fc34c123ef7b4e: the matched run is `def main() -> int`, `ArgumentParser(description=__doc__.splitlines()[0])`, a `--repo-root` argument, per-gate flags, `parse_args()` and a `return 0` tail, while every body diverges completely. A shared main() parameterised by each gate's flag set and exit semantics is the boilerplate again with indirection on top.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f96082ddc7b569a1",
+      "note": "the argparse CLI-entrypoint boilerplate family, re-fingerprinted because `check_adapter_consumer_classification.main()` grew the per-level counts loop and the errors-only callout (#675). Every other member is UNTOUCHED. Same family and same reason as the already-classified a2a04eacbcea76ec and 04fc34c123ef7b4e: the matched run is `def main() -> int`, `ArgumentParser(description=__doc__.splitlines()[0])`, a `--repo-root` argument, per-gate flags, `parse_args()` and a `return 0` tail, while every body diverges completely. A shared main() parameterised by each gate's flag set and exit semantics is the boilerplate again with indirection on top.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
