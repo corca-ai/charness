@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+from runtime_bootstrap import import_repo_module
+
 from .cautilus_artifact_support import (
     run_diagnostic_validator,
     seed_repo,
@@ -414,3 +416,41 @@ def test_evaluator_output_dirs_are_not_diagnostic_bundles(tmp_path: Path, all_bu
 
     assert result.returncode == 0, result.stderr
     assert "no changed cautilus diagnostic bundles" in result.stdout
+
+
+def test_the_finding_word_ceiling_runs_in_process_through_the_shared_engine(tmp_path: Path) -> None:
+    """In-process, by dotted path, so the changed-line gate can attribute this file.
+
+    Every other test here drives the validator as a SUBPROCESS, which coverage cannot
+    see: the changed-line proof reported `validate_cautilus_diagnostics.py` as mapping
+    to no standing test and refused to call a clean result a verdict for it. That is the
+    `no-verdict is not a pass` case, and it is the same attribution gap this repo has
+    now paid for twice.
+
+    It also pins what the migration actually changed here: the ceiling is charged in
+    WORDS by the SHARED `validate_max_words`, not by a local re-expression of it.
+    """
+    module = import_repo_module(
+        ROOT / "scripts" / "validate_cautilus_diagnostics.py",
+        "scripts.validate_cautilus_diagnostics",
+    )
+    over = tmp_path / "over"
+    over.mkdir()
+    # `# T` is 2 tokens; 400 filler lines of 4 = 1602 words, past the 1200 ceiling.
+    (over / "finding.md").write_text("# T\n" + "one two three four\n" * 400, encoding="utf-8")
+
+    with pytest.raises(module.ValidationError) as excinfo:
+        module._validate_finding(over)
+    message = str(excinfo.value)
+    assert "is 1602 words" in message, message
+    assert "get back under 1200" in message
+    # The shared engine's sentence, not a local copy of it.
+    assert "Rewrapping cannot help: the budget charges words, not lines." in message
+
+    under = tmp_path / "under"
+    under.mkdir()
+    (under / "finding.md").write_text("# T\n" + "one two three four\n" * 10, encoding="utf-8")
+    with pytest.raises(module.ValidationError) as ok_exc:
+        module._validate_finding(under)
+    # Refused by a LATER rule, never by size -- so the ceiling let this one through.
+    assert "words" not in str(ok_exc.value), str(ok_exc.value)
