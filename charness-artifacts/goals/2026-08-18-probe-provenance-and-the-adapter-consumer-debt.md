@@ -127,9 +127,23 @@ the pre-implementation critique passes.
   difference**: all three doors (gather, announcement after the repair), one door
   (every quality-adapter consumer), and the raising variant. `#673` is the closure; until
   then each row's reason names which doors it actually has.
-- Next action: rows 27+. Several remaining rows are structurally different — by-construction
-  (injected loader, guarded consumer), deliberate-by-docstring, or needing a shipped skill
-  tree — and want a recorded decision rather than a guard. Recount with
+- **THE REMAINING ROWS ARE DECIDED, not merely unfinished.** Five carry a measured
+  CALLER-COVERAGE reason and stay `accepted-risk-unguarded` deliberately: `runtime_budget_lib`
+  and `runtime_budget_sizing_lib` (injected loader — cannot name the adapter it reads),
+  `artifact_validator.resolve_adapter_line_budget` (its docstring's polarity argument is
+  right; refusing here would key on `valid`), `scaffold_artifact_lib.size_budget` (receives
+  an already-resolved dict), and `retro_output_dir_lib` (a path derivation behind a guarded
+  validator). Every production caller of each was enumerated and is guarded. Three more are
+  MULTI-CLASS with a raw line-scan arm that reads no `version` at all
+  (`risk_interrupt_lib`, `build_retro_lesson_selection_index`, `build_debug_seam_risk_index`);
+  reproducing their resolver arm needs a repo shipping the skill tree, so they stay unpaid
+  rather than classified on an argument.
+- **The census's unit is the DIRECT read site**, and its own blind class says a file
+  reaching an adapter through a helper is invisible. So "11 accepted-risk rows" counts read
+  sites, not live harms: five are covered by guarded callers, and the coverage claim is
+  about the callers enumerated rather than a completeness proof.
+- Next action: rows 27+ are the three multi-class ones plus `resolve_artifact_path`,
+  `public_skill_dogfood_lib` and `achieve_adapter_policy`. Recount with
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .` rather than
   reading a number off this line. Measured and in hand:
   `skills/support/web-fetch/scripts/route_public_fetch_routes.py` (a ROUTING flip --

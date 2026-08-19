@@ -9,7 +9,9 @@ Claim: `preflight_sources` and `record_announcement` refuse when the adapter dec
   declaration blocks
 Claim kind: change
 Observable: the `delivery_blocked` / `ok` / `surfaces` the preflight prints and its exit
-  code; the `adapter_resolved` field the recorder writes into its record log
+  code; whether the recorder appends to its record log at all. An earlier draft named
+  `adapter_resolved`, an observable the head arm no longer produces — the recorder now
+  refuses before writing
 Source ref: scripts/adapter-consumer-classification.json
 Source revision: dd5b6dee9
 Source conditions: the adapter's declared version is one this reader does not speak, so
@@ -96,6 +98,26 @@ Measured on both.
 
 ## Non-claims
 
+- **THE FIRST FIX FOR THE SECOND BYPASS WAS INCOMPLETE, and a round-2 review measured it.**
+  It asked whether the validated `in_progress_sources` list ended up EMPTY. Entries are
+  dropped with `continue`, so with two entries — one `kind: Path`, one valid — the list is
+  non-empty, the guard never fired, and the preflight cleared the delivery at exit 0 over
+  a source the repo declared and this reader dropped. The witness is now the ERROR PREFIX:
+  every message that validator emits starts with `in_progress_sources`, so "a declaration
+  was lost" is complete. The emptiness test remains as the second arm, for a value that is
+  not a list at all.
+- **THIS BATCH CHANGED THREE UNGUARDED CONSUMERS AND DID NOT SAY SO** until a review found
+  it. Arming the sink moves announcement from "the loader RAISES" to "the resolver records
+  and hands back defaults" — and `adapter_version_verdict`'s own docstring draws exactly
+  that line, calling the first "no payload for anyone to act on" and the second the state
+  it refuses. Measured: `skills/public/announcement/scripts/resolve_adapter.py` now emits a
+  payload at exit 0 where it used to traceback at exit 1.
+  `scripts/resolve_artifact_path.py` rests, by its own census reason, on "only checking the
+  subprocess's own returncode" — the returncode that protected it is gone. And `charness
+  capability explain --skill announcement` is outside the census's scan roots by
+  construction, so no gate sees it. Each is arguably an improvement over a traceback; none
+  was declared, and the `resolve_artifact_path` row's accepted risk now covers an input it
+  did not cover when it was accepted.
 - **THE "ASYMMETRY IS CORRECT" CLAIM THIS RECORD FIRST CARRIED WAS REFUTED, and the
   refutation is kept rather than the claim quietly replaced.** It argued that a refused
   parse should be absorbed by `record_announcement`'s `except Exception` and recorded as
@@ -128,17 +150,18 @@ Measured on both.
   against the validated result. **This slice had already documented that second input, as
   a probe-authoring mistake, without noticing it was a live bypass of the gate it was
   repairing.**
-- **The two doors now land the SAME way on `record_announcement`.** `version: 9` resolves cleanly to a payload carrying a
-  `delivery_kind` the repo never wrote, so the guard refuses —
-  `requires_delivery_kind_agreement` would otherwise compare the recorded kind against a
-  charness default. `version: !!int 9` makes announcement's resolver RAISE (one of the six
-  in [#673](https://github.com/corca-ai/charness/issues/673)); the guard swallows that,
-  answers `None`, and the module's own `except Exception` arm records
-  `adapter_resolved: false`. That was VERIFIED by reading the written record, not assumed,
-  and it is exactly the case that fallback was written for. Forcing symmetry would replace
-  a legible fallback with a stop on the one input where the fallback is right.
-- The preflight's parse door refuses with a raw traceback for the same reason, which is
-  the same named residual, not a new one.
+- **The two doors now land the SAME way on `record_announcement`.** `version: 9` resolves
+  cleanly to a payload carrying a `delivery_kind` the repo never wrote, so the guard
+  refuses. `version: !!int 9` now resolves to a recorded `parse_failure_error` rather than
+  a raise, so the guard sees it and refuses too. NO RECORD IS WRITTEN in either arm and
+  `adapter_resolved` is never reached. The `except Exception` fallback remains for the case
+  it was written for -- a loader that genuinely cannot be reached -- and is no longer the
+  arm a malformed declaration lands in. A round-2 bounded review found this record still
+  carrying the PRE-REPAIR description under a post-repair heading, arguing against the fix
+  shipped in the same commit; that text is replaced rather than annotated, because it
+  described behavior that no longer exists.
+- **The preflight's parse door renders a verdict, not a traceback**, for the same reason.
+  An earlier line here said the opposite and was refuted by this repo's own test.
 - This record establishes TWO files. Recount the rest with
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .`.
 - The claim is about the delivery verdict and the recorded resolution state. Nothing here

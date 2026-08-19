@@ -4892,6 +4892,20 @@
       "note": "MEMBERS: `cautilus_adapter_lib.py`, `critique_adapter_lib.py`, `skills/public/achieve/scripts/achieve_adapter_policy.py` -- ALL THREE UNTOUCHED by this batch, and all three are among the six resolvers #673 names as calling `adapter_lib.load_yaml_file` bare. The family is their shared bare-loader prologue, surfaced by the fingerprint shift when announcement left that group. Classifying rather than extracting is deliberate: an extraction now would freeze the shape #673 exists to change, and these three are the ones that still need changing.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b4d6225d7e621d65",
+      "note": "ROTATION of b5432f058b1ad3f5 with the same three members -- `announcement_adapter_lib.py` (this batch), `narrative_adapter_lib.py` (untouched), `quality_adapter_lib.py` (untouched) -- and the same reasoning; the window shifted when the announcement payload construction was extracted into one `_payload()` builder. The whole-function `load_*_adapter` shape across three of sixteen resolvers, each with its own field list, validators and artifact naming. The shared half is what #673 proposes to unify across all sixteen; unifying three here would leave thirteen on the old shape.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c01aa2c41de459e0",
+      "note": "Intra-file, between the new `_payload()` builder and `_bootstrap_expectations`. Both construct a dict literal that includes `_artifact_path(data[\"output_dir\"])` and `_record_path()` -- the same two derived paths, in two different payloads with different audiences: the resolver's return shape, and the bootstrap hints an operator reads. The overlap is those two calls, which are ALREADY the single owners of that derivation; the surrounding keys share nothing. `_payload` exists precisely because a round-2 bounded review found the hand-built parse-failure arm omitting six keys the other arms carried, including `artifact_path`, which `preflight_sources` indexes directly -- so collapsing it back toward `_bootstrap_expectations` would undo the fix that made all three arms one construction site.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

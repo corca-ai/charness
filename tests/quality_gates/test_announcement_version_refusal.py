@@ -187,7 +187,7 @@ def test_an_ordinary_invalid_field_is_not_refused(tmp_path: Path) -> None:
         (
             "validated-away entry",
             "version: 1\ndelivery_kind: release-notes\nin_progress_sources:\n  - kind: Path\n    path: docs/p.md\n",
-            "no entry survived validation",
+            "did not honor",
         ),
     ],
 )
@@ -232,3 +232,71 @@ def test_a_valid_entry_still_blocks_and_no_entry_still_clears(tmp_path: Path) ->
     )
     assert cleared.returncode == 0, cleared.stderr
     assert "delivery_blocked: false" in cleared.stdout
+
+
+def test_a_partially_lost_declaration_also_refuses(tmp_path: Path) -> None:
+    """The bypass the FIRST fix did not close, found by a round-2 bounded review.
+
+    That fix asked whether the validated list ended up EMPTY. `_validate_in_progress_sources`
+    drops rejected entries with `continue`, so with two entries — one `kind: Path`, one
+    valid — the list is non-empty, the guard never fired, and the preflight cleared the
+    delivery at exit 0 over a source the repo declared and this reader dropped.
+
+    The witness is now the ERROR PREFIX, not the emptiness: every message that validator
+    emits starts with `in_progress_sources`, so "an entry the repo wrote did not survive"
+    is complete. The emptiness arm stays as the second half, because a declaration can be
+    lost without an error when the value is not a list at all.
+    """
+    repo = _repo(
+        tmp_path,
+        "version: 1\nrepo: demo\ndelivery_kind: release-notes\n"
+        "in_progress_sources:\n"
+        "  - kind: Path\n    path: docs/pending-migration.md\n"
+        "  - kind: path\n    path: docs/done.md\n",
+    )
+    draft = repo / "charness-artifacts" / "announcement"
+    draft.mkdir(parents=True, exist_ok=True)
+    (draft / "latest.md").write_text(
+        "# Announcement\n\n## Source surfaces\n- path docs/done.md collected\n", encoding="utf-8"
+    )
+    result = _run(PREFLIGHT, repo)
+    assert result.returncode == 1, result.stdout
+    assert "did not honor" in result.stderr, result.stderr
+    assert "delivery_blocked: false" not in result.stdout
+
+
+def test_an_explicitly_empty_source_list_still_clears(tmp_path: Path) -> None:
+    """The input EVERY scaffolded repo has, and which the first control missed.
+
+    `init_adapter` writes `in_progress_sources: []`, and the shipped `adapter.example.yaml`
+    carries it too. That parses to `[]`, which `list_field_state` calls `explicit-empty`
+    rather than `configured`, so the guard correctly does not fire. The earlier control
+    omitted the key entirely — a different state — so a regression to
+    `if "in_progress_sources" in raw_data` would have hard-stopped the publish preflight of
+    every scaffolded repo with a green suite.
+    """
+    result = _run(
+        PREFLIGHT,
+        _repo(tmp_path, "version: 1\nrepo: demo\ndelivery_kind: release-notes\nin_progress_sources: []\n"),
+    )
+    assert result.returncode == 0, result.stderr
+    assert "delivery_blocked: false" in result.stdout
+
+
+def test_the_parse_arm_carries_every_key_the_success_arm_does(tmp_path: Path) -> None:
+    """The `KeyError` a round-2 bounded review found waiting.
+
+    The parse-failure arm was hand-built with nine keys where the other two carried
+    fifteen, omitting `artifact_path` — which `preflight_sources` indexes directly.
+    Unreachable only because the version guard refuses first on exactly that input; any
+    reordering or unguarded caller turns a refusal into a traceback. All three arms are now
+    built by one `_payload`.
+    """
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT))
+    from scripts.announcement_adapter_lib import load_announcement_adapter
+
+    parse_repo = _repo(tmp_path / "p", "version: !!int 9\nrepo: demo\n")
+    ok_repo = _repo(tmp_path / "o", "version: 1\nrepo: demo\n")
+    assert set(load_announcement_adapter(parse_repo)) == set(load_announcement_adapter(ok_repo))

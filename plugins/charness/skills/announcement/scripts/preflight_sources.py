@@ -63,15 +63,32 @@ def main() -> None:
         # `field_state` already carries the distinction between "unset" and "configured",
         # so this asks the payload rather than re-deriving: the repo WROTE the key and
         # nothing survived validation.
-        if (
+        # KEYED ON WHETHER A DECLARATION WAS LOST, not on whether the list ended up empty.
+        # The first cut asked `not adapter_data["in_progress_sources"]`, and a round-2
+        # bounded review found that closes the bypass only when EVERY entry dies: with two
+        # entries, one `kind: Path` and one valid, the list is non-empty, the guard never
+        # fires, and the preflight clears the delivery over a source the repo declared and
+        # this reader dropped. Measured, exit 0.
+        #
+        # Every message `_validate_in_progress_sources` emits starts with
+        # `in_progress_sources`, so the prefix is a complete witness for "an entry the repo
+        # wrote did not survive". The emptiness test stays as the second arm because a
+        # declaration can also be lost without an error -- a non-list value takes a
+        # different path.
+        source_errors = [
+            str(error)
+            for error in (adapter.get("errors") or [])
+            if str(error).startswith("in_progress_sources")
+        ]
+        if source_errors or (
             adapter.get("field_state", {}).get("in_progress_sources") == "configured"
             and not adapter_data.get("in_progress_sources")
         ):
             raise SystemExit(
-                "`.agents/announcement-adapter.yaml` declares `in_progress_sources` but no "
-                "entry survived validation, so this preflight would clear the delivery on "
-                "an EMPTY source list -- the same answer it gives a repo that declared "
-                "none. Refusing instead. Adapter errors: "
+                "`.agents/announcement-adapter.yaml` declares `in_progress_sources` that "
+                "this reader did not honor, so this preflight would judge the delivery "
+                "against a source list the repo did not write. Refusing instead. Adapter "
+                "errors: "
                 + "; ".join(str(error) for error in (adapter.get("errors") or []))
             )
         if args.draft_path is not None:

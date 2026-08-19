@@ -102,6 +102,30 @@ def _adapter_prompt_policy(repo_root: Path) -> tuple[dict[str, object], dict[str
         if refusal is not None:
             raise SystemExit(refusal)
     adapter = _load_quality_adapter(repo_root)
+    # AND the ordinary-invalid path, which a round-2 bounded review found reaching this
+    # row's own headline observable without touching `version`. `source_globs: src/**/*.py`
+    # written as a STRING appends `prompt_asset_policy.source_globs must be a list of
+    # strings`, and `merge_prompt_asset_policy` still returns the merged dict carrying the
+    # charness default `[]` -- so the scan covers nothing and reports `findings: []`, at
+    # `valid: false` nobody reads.
+    #
+    # This is consumer-local and does NOT widen `adapter_version_verdict`, which rightly
+    # forbids refusing on ordinary invalidity in general. The distinction is this command's
+    # own contract: `--from-adapter` means "use the policy the repo declared", so a policy
+    # that failed validation means the declared policy is not in use, and scanning the
+    # default under that flag answers a question nobody asked.
+    policy_errors = [
+        str(error)
+        for error in (adapter.get("errors") or [])
+        if str(error).startswith("prompt_asset_policy")
+    ]
+    if policy_errors:
+        raise SystemExit(
+            "`.agents/quality-adapter.yaml` declares a `prompt_asset_policy` this reader "
+            "did not honor, so `--from-adapter` would scan the charness default rather "
+            "than the repo's policy. Refusing instead. Adapter errors: "
+            + "; ".join(policy_errors)
+        )
     data = adapter.get("data") if isinstance(adapter, dict) else {}
     policy = data.get("prompt_asset_policy") if isinstance(data, dict) else {}
     return adapter, policy if isinstance(policy, dict) else {}

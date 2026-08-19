@@ -110,3 +110,27 @@ def test_an_ordinary_invalid_field_is_not_refused(tmp_path: Path) -> None:
     result = _run(_repo(tmp_path, adapter), "--from-adapter")
     assert result.returncode == 0, result.stderr
     assert "min_multiline_chars: 40" in result.stdout
+
+
+def test_an_invalid_prompt_policy_refuses_rather_than_scanning_the_default(
+    tmp_path: Path,
+) -> None:
+    """The cheapest input to this row's own headline observable, found by a round-2
+    bounded review — and it needs no `version` change at all.
+
+    `source_globs: src/**/*.py` written as a STRING appends
+    `prompt_asset_policy.source_globs must be a list of strings`, and
+    `merge_prompt_asset_policy` still returns a merged dict carrying the charness default
+    `[]`. So the scan covered nothing and reported `findings: []` at `valid: false` that
+    nobody reads — verbatim the harm this row exists to close.
+
+    The refusal is CONSUMER-LOCAL and does not widen `adapter_version_verdict`, which
+    rightly forbids refusing on ordinary invalidity in general. It rests on this command's
+    own contract: `--from-adapter` means "use the policy the repo declared", so a policy
+    that failed validation means the declared policy is not in use.
+    """
+    adapter = "version: 1\nrepo: demo\nprompt_asset_policy:\n  source_globs: src/**/*.py\n  min_multiline_chars: 40\n"
+    result = _run(_repo(tmp_path, adapter), "--from-adapter")
+    assert result.returncode == 1, result.stdout
+    assert "did not honor" in result.stderr, result.stderr
+    assert "findings: []" not in result.stdout

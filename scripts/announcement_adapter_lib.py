@@ -397,59 +397,62 @@ def load_announcement_adapter(repo_root: Path) -> dict[str, Any]:
     # This is one of the six resolvers #673 names. It is repaired HERE, ahead of that
     # issue, because the bypass it leaves open is a publish boundary rather than a message
     # shape.
+    def _payload(
+        *,
+        data: dict[str, Any],
+        errors: list[str],
+        warnings: list[str],
+        raw_data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Every return below this line, built ONCE.
+
+        A round-2 bounded review found the parse-failure arm hand-built as a nine-key
+        dict while the other two arms carried fifteen -- omitting `artifact_path`, which
+        `preflight_sources` indexes directly. Unreachable today only because the version
+        guard refuses first on exactly the input that produces that arm; any reordering
+        or any unguarded caller turns the refusal into a `KeyError`. The sibling this
+        repair was modelled on, `simple_skill_adapter_lib`, avoids that structurally with
+        one builder, and this copied the idea without the mechanism.
+        """
+        return {
+            "found": True,
+            "valid": not errors,
+            "path": str(adapter_path),
+            "data": data,
+            "delivery_contract": delivery_contract(data),
+            # CONTAINED ON THE UNHONORED CONDITION, not on `errors` -- the difference is
+            # load-bearing and was measured. `simple_skill_adapter_lib` uses
+            # `declarations_unhonored` here for the reason its own comment gives: under a
+            # refused version the payload honors nothing, so reporting `configured` beside
+            # a defaulted value makes the payload and the state map disagree about one
+            # adapter. Keying on `if errors` instead ALSO zeroes the map for an ORDINARY
+            # field error -- and `preflight_sources` reads this map precisely to catch a
+            # declaration lost to one. The first cut did that and left the bypass open.
+            "field_state": _field_state_map({} if declarations_unhonored(errors) else raw_data),
+            "artifact_filename": ARTIFACT_FILENAME,
+            "artifact_class": data["artifact_class"],
+            "artifact_path": _artifact_path(data["output_dir"]),
+            "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
+            "record_path": _record_path(),
+            "bootstrap_expectations": _bootstrap_expectations(data),
+            "errors": errors,
+            "warnings": warnings,
+            "searched_paths": searched_paths,
+        }
+
     try:
         raw, uninterpreted = load_yaml_file_report(adapter_path)
     except ValueError as exc:
-        return {
-            "found": True,
-            "valid": False,
-            "path": str(adapter_path),
-            "data": infer_announcement_defaults(repo_root),
-            "delivery_contract": delivery_contract(infer_announcement_defaults(repo_root)),
-            "field_state": {},
-            "errors": [parse_failure_error(exc)],
-            "warnings": [],
-            "searched_paths": searched_paths,
-        }
+        return _payload(
+            data=infer_announcement_defaults(repo_root),
+            errors=[parse_failure_error(exc)],
+            warnings=[],
+            raw_data={},
+        )
     raw_data = raw if isinstance(raw, dict) else {}
     warnings: list[str] = uninterpreted_warnings(uninterpreted)
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
     data, errors, extra_warnings = validate_announcement_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
-    contract = delivery_contract(data)
-    return {
-        "found": True,
-        "valid": not errors,
-        "path": str(adapter_path),
-        "data": data,
-        "delivery_contract": contract,
-        # CONTAINED, matching `simple_skill_adapter_lib`'s own comment: under an unhonored
-        # declaration the resolved payload honors nothing the file declared, so handing
-        # the raw file through here would report `configured` for a field whose value was
-        # refused -- the payload and the state map beside it disagreeing about one
-        # adapter. A bounded review found this loader missing the containment its sibling
-        # applies, and `preflight_sources` now READS `field_state`, so it stopped being
-        # latent.
-        # CONTAINED ON THE UNHONORED CONDITION, not on `errors` -- and the difference is
-        # load-bearing, measured rather than reasoned. `simple_skill_adapter_lib` uses
-        # `declarations_unhonored` here for the reason its own comment gives: under a
-        # refused version the payload honors nothing, so reporting `configured` beside a
-        # defaulted value makes the payload and the state map disagree about one adapter.
-        #
-        # Keying on `if errors` instead ALSO zeroes the map for an ORDINARY field error --
-        # and `preflight_sources` reads this map precisely to catch "the repo wrote
-        # `in_progress_sources` and nothing survived validation", which IS an ordinary
-        # field error. The first cut did that and left the bypass open; the control that
-        # caught it is `kind: Path` with a capital P.
-        "field_state": _field_state_map({} if declarations_unhonored(errors) else raw_data),
-        "artifact_filename": ARTIFACT_FILENAME,
-        "artifact_class": data["artifact_class"],
-        "artifact_path": _artifact_path(data["output_dir"]),
-        "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
-        "record_path": _record_path(),
-        "bootstrap_expectations": _bootstrap_expectations(data),
-        "errors": errors,
-        "warnings": warnings,
-        "searched_paths": searched_paths,
-    }
+    return _payload(data=data, errors=errors, warnings=warnings, raw_data=raw_data)
