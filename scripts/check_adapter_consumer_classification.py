@@ -109,11 +109,18 @@ GUARDED_WITNESSES = (
 # only answerable by reading paragraphs, and two rows with the same token could differ by
 # whether a one-character typo bypassed them.
 #
-# The axis is what the CONSUMER asks, not what its resolver reports, and that is deliberate:
-# `#673` made all sixteen resolvers report all three doors, so a resolver-keyed level would
-# now be uniform and measure nothing. Keyed on the consumer it is real and was measured
-# before this vocabulary was written -- 32 rows cover all three doors, three cover only the
-# ERROR channel and are blind to a silently dropped line, which is a live one-typo bypass.
+# The axis is what the CONSUMER asks, not what its resolver reports. `#673` made all
+# sixteen PUBLIC resolvers report all three doors, so that axis is uniform across every
+# guarded row -- traced, not assumed. It is NOT uniform repo-wide: `cautilus_adapter_lib`
+# and `proof_semantics_adapter_lib` still call `load_yaml_file` bare, and four consumers
+# read through them. Those four are `safe-checks-errors`, so no guarded row loses a level
+# here -- but 55 `safe-checks-errors` classifications now carry one token over materially
+# different coverage, which is this same defect standing on the largest class. Recorded in
+# the goal's decision queue rather than silently split here.
+#
+# Keyed on the consumer the level is real and was measured before this vocabulary was
+# written -- 32 rows cover all three doors, three cover only the ERROR channel and are blind
+# to a silently dropped line, which is a live one-typo bypass.
 #
 # `unspeakable_version_message` and `refuse_unspeakable_version` check `declarations_dropped`
 # themselves, so calling either covers all three doors. `declarations_unhonored` ALONE is a
@@ -124,8 +131,8 @@ CONDITION_WITNESS = "declarations_unhonored"
 
 GUARDED_ALL_DOORS = "guarded-all-doors"
 GUARDED_ERRORS_ONLY = "guarded-errors-only"
-GUARDED_BY_CALLER = "guarded-by-caller"
-GUARDED_LEVELS = (GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY, GUARDED_BY_CALLER)
+GUARDED_UPSTREAM = "guarded-upstream"
+GUARDED_LEVELS = (GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY, GUARDED_UPSTREAM)
 
 
 def measured_guard_level(called: set[str]) -> str | None:
@@ -134,6 +141,20 @@ def measured_guard_level(called: set[str]) -> str | None:
     Returned rather than compared so the gate can refuse a row that claims MORE than it
     holds AND one that claims less -- the previous witness only checked membership, so an
     over-conservative row was never checked at all and one sat wrong through a whole slice.
+
+    BLIND CLASS OF THE LEVEL ITSELF, which the module's list above did not cover and a round-1
+    review enumerated. This is CALL PRESENCE, not load-bearing-ness: a witness called in dead
+    code, inside a never-called helper, with the wrong argument, with its result discarded, or
+    shadowed by a local function of the same name all read as guarded. That is not
+    hypothetical -- `refresh_current_pointer` carried an unreachable `refuse_unspeakable_version`
+    block whose AST call satisfied this witness, and deleting it left every assertion green.
+    It is also ALIAS-BLIND: `import declarations_unhonored as du` then `du(errors)` reads as
+    unguarded and forces a wrong row. And a guard behind a runtime `if` (`find_inline_prompt_bulk`
+    returns None when the module is absent) is recorded unconditionally.
+
+    `unspeakable_version_message` covering all three doors is true on its RETURNING path only;
+    its `except Exception` swallow arm answers None with every door dead, so `guarded-all-doors`
+    is precise about which predicate is asked and not about whether a raising loader bypasses it.
     """
     if set(ALL_DOOR_ENTRYPOINTS) & called:
         return GUARDED_ALL_DOORS
@@ -152,10 +173,10 @@ VERDICTS = {
     # declaration is gone.
     GUARDED_ERRORS_ONLY: GUARDED_WITNESSES,
     # Cannot guard itself -- an injected loader, or a loader that refuses upstream -- and
-    # every production caller is guarded. Owes `covering_callers`, because "every caller"
+    # every production caller is guarded. Owes `covering_rows`, because "every caller"
     # is a claim about an enumerated set and the census's own blind class is that it
     # classifies FILES, not call sites.
-    GUARDED_BY_CALLER: None,
+    GUARDED_UPSTREAM: None,
     # Reads `errors`/`valid` itself and refuses or degrades deliberately.
     "safe-checks-errors": None,
     # Reads a payload but nothing it reads can mis-steer anything.
@@ -182,41 +203,55 @@ def _guard_level_problems(
     """
     problems: list[str] = []
     measured = measured_guard_level(called)
-    if verdict == GUARDED_BY_CALLER:
+    if verdict == GUARDED_UPSTREAM:
         if measured is not None:
             problems.append(
-                f"{rel}: classified `{GUARDED_BY_CALLER}` but guards ITSELF ({measured}). "
-                f"A file that asks the condition is not caller-covered; record the level it holds."
+                f"{rel}: classified `{GUARDED_UPSTREAM}` but guards ITSELF ({measured}). "
+                "A file that asks the condition is not upstream-covered; record the level it holds."
             )
-        callers = row.get("covering_callers")
+        callers = row.get("covering_rows")
         if not isinstance(callers, list) or not callers:
             problems.append(
-                f"{rel}: `{GUARDED_BY_CALLER}` owes a non-empty `covering_callers` list. "
+                f"{rel}: `{GUARDED_UPSTREAM}` owes a non-empty `covering_rows` list. "
                 "\"Every caller is guarded\" is a claim about an ENUMERATED set, and this "
                 "census's own blind class is that it classifies files rather than call sites."
             )
             return problems
         for caller in callers:
+            if not isinstance(caller, str):
+                # A non-string entry made `caller not in declared` raise `TypeError:
+                # unhashable type` -- an uncaught traceback out of a proof surface where a
+                # named refusal belongs.
+                problems.append(
+                    f"{rel}: `covering_rows` entries must be repo-relative paths; got {caller!r}"
+                )
+                continue
             if caller not in declared:
                 problems.append(
-                    f"{rel}: names `{caller}` as a covering caller, but it carries no census row"
+                    f"{rel}: names `{caller}` as a covering row, but it carries no census row"
                 )
             elif not any(
                 item.get("verdict") in (GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY)
                 for item in row_verdicts(declared[caller])
             ):
                 problems.append(
-                    f"{rel}: names `{caller}` as a covering caller, but that row is not itself "
-                    "guarded -- a chain of caller-coverage ending in nothing is not coverage"
+                    f"{rel}: names `{caller}` as a covering row, but that row is not itself "
+                    "guarded -- a chain of upstream coverage ending in nothing is not coverage"
                 )
         return problems
     if measured is None:
+        dropped_only = DROPPED_DOOR_WITNESS in called
         problems.append(
+            f"{rel}: classified `{verdict}` but asks only `{DROPPED_DOOR_WITNESS}`, which sees "
+            "the dropped-line door and neither of the other two. There is no level for that "
+            "alone; ask the condition too."
+            if dropped_only else
             f"{rel}: classified `{verdict}` but references none of "
             f"{', '.join(f'`{m}`' for m in GUARDED_WITNESSES)}. A bare `version_refused` does "
             "NOT satisfy it: it answers False for a parser refusal, which leaves the same "
-            f"charness defaults in `data`. If the property comes from its callers, say "
-            f"`{GUARDED_BY_CALLER}` and name them."
+            f"charness defaults in `data`. If the property comes from upstream, say "
+            f"`{GUARDED_UPSTREAM}` and name the rows. If the witness IS called but under an "
+            "alias, this check cannot see it -- import the name directly."
         )
     elif measured != verdict:
         problems.append(
@@ -318,9 +353,17 @@ def row_verdicts(entry: dict) -> list[dict]:
     """
     if "verdicts" in entry:
         rows = entry["verdicts"]
-        return list(rows) if isinstance(rows, list) else []
-    # CARRIES THE WHOLE ENTRY's extra keys, not just verdict+reason. `guarded-by-caller`
-    # owes `covering_callers`, and rebuilding a two-key dict here dropped it -- the row was
+        if not isinstance(rows, list):
+            return []
+        # THE ENTRY'S extra keys reach each sub-row here too. The first fix was one-sided --
+        # only the single-verdict branch spread them -- so an entry-level `covering_rows`
+        # beside a `verdicts` list was still dropped and the gate reported a row owing a
+        # list it plainly carried. The identical defect, unfixed, in the other shape. A
+        # sub-row's own keys win, so a per-verdict `covering_rows` still overrides.
+        extra = {k: v for k, v in entry.items() if k not in ("verdicts", "verdict", "reason")}
+        return [{**extra, **row} for row in rows if isinstance(row, dict)]
+    # CARRIES THE WHOLE ENTRY's extra keys, not just verdict+reason. `guarded-upstream`
+    # owes `covering_rows`, and rebuilding a two-key dict here dropped it -- the row was
     # written correctly and the gate reported it missing, which is a checker losing evidence
     # rather than a row lacking it.
     return [{**entry, "verdict": entry.get("verdict"), "reason": entry.get("reason")}]
@@ -494,8 +537,18 @@ def main() -> int:
 
     problems, counts = check(repo_root)
     print("adapter consumer classification:")
-    for verdict in sorted(counts):
-        print(f"  {verdict}: {counts[verdict]}")
+    # COVERAGE ORDER, not alphabetical. The point of the split is legibility, and
+    # `guarded-all-doors` / `guarded-by... / `guarded-errors-only` sorts the weakest level
+    # into the middle.
+    order = [GUARDED_ALL_DOORS, GUARDED_ERRORS_ONLY, GUARDED_UPSTREAM]
+    for verdict in order + [v for v in sorted(counts) if v not in order]:
+        if verdict in counts:
+            print(f"  {verdict}: {counts[verdict]}")
+    if counts.get(GUARDED_ERRORS_ONLY):
+        print(
+            f"  ERRORS-ONLY: {counts[GUARDED_ERRORS_ONLY]} consumer(s) refuse on `errors` and "
+            "cannot see a line the parser silently DROPPED -- a one-typo bypass"
+        )
     accepted = counts.get("accepted-risk-unguarded", 0)
     if accepted:
         # Reported on every run, passing or failing. An accepted risk that stops being

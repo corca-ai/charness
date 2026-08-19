@@ -524,7 +524,7 @@ def test_the_witness_refuses_a_row_that_claims_a_level_its_calls_do_not_hold(tmp
     assert any("its own calls establish `guarded-all-doors`" in p for p in problems), problems
 
 
-def test_caller_coverage_must_name_callers_that_are_themselves_guarded(tmp_path: Path) -> None:
+def test_upstream_coverage_must_name_rows_that_are_themselves_guarded(tmp_path: Path) -> None:
     """"Every caller is guarded" is a claim about an ENUMERATED set, and this census's own
     blind class is that it classifies files rather than call sites. A chain of
     caller-coverage ending in nothing is not coverage."""
@@ -534,9 +534,9 @@ def test_caller_coverage_must_name_callers_that_are_themselves_guarded(tmp_path:
         {"scripts/leaf.py": unguarded, "scripts/mid.py": unguarded},
         {
             "scripts/leaf.py": {
-                "verdict": "guarded-by-caller",
+                "verdict": "guarded-upstream",
                 "reason": "covered upstream",
-                "covering_callers": ["scripts/mid.py"],
+                "covering_rows": ["scripts/mid.py"],
             },
             "scripts/mid.py": {"verdict": "accepted-risk-unguarded", "reason": "not guarded at all"},
         },
@@ -547,10 +547,10 @@ def test_caller_coverage_must_name_callers_that_are_themselves_guarded(tmp_path:
     repo = _tree(
         tmp_path / "bare",
         {"scripts/leaf.py": unguarded},
-        {"scripts/leaf.py": {"verdict": "guarded-by-caller", "reason": "covered, somehow"}},
+        {"scripts/leaf.py": {"verdict": "guarded-upstream", "reason": "covered, somehow"}},
     )
     problems, _ = GATE.check(repo)
-    assert any("covering_callers" in p for p in problems), problems
+    assert any("covering_rows" in p for p in problems), problems
 
     # A named caller with NO row at all. Distinct from a caller whose row is unguarded: the
     # first is a claim about a file the census never saw, and reporting it as "not guarded"
@@ -560,9 +560,9 @@ def test_caller_coverage_must_name_callers_that_are_themselves_guarded(tmp_path:
         {"scripts/leaf.py": unguarded},
         {
             "scripts/leaf.py": {
-                "verdict": "guarded-by-caller",
+                "verdict": "guarded-upstream",
                 "reason": "covered by a file nobody classified",
-                "covering_callers": ["scripts/nowhere.py"],
+                "covering_rows": ["scripts/nowhere.py"],
             }
         },
     )
@@ -570,7 +570,7 @@ def test_caller_coverage_must_name_callers_that_are_themselves_guarded(tmp_path:
     assert any("carries no census row" in p for p in problems), problems
 
 
-def test_a_file_that_guards_itself_may_not_claim_caller_coverage(tmp_path: Path) -> None:
+def test_a_file_that_guards_itself_may_not_claim_upstream_coverage(tmp_path: Path) -> None:
     """The token means "cannot guard itself". A file that asks the condition and records
     caller coverage hides its own level behind someone else's."""
     guards = "def go(root):\n    return refuse_unspeakable_version(load_adapter, root, adapter_name='x')\n"
@@ -579,9 +579,9 @@ def test_a_file_that_guards_itself_may_not_claim_caller_coverage(tmp_path: Path)
         {"scripts/self.py": guards, "scripts/caller.py": guards},
         {
             "scripts/self.py": {
-                "verdict": "guarded-by-caller",
+                "verdict": "guarded-upstream",
                 "reason": "hiding its own level",
-                "covering_callers": ["scripts/caller.py"],
+                "covering_rows": ["scripts/caller.py"],
             },
             "scripts/caller.py": {"verdict": "guarded-all-doors", "reason": "real"},
         },

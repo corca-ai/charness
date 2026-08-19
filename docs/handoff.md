@@ -22,10 +22,11 @@
 ## Current State
 
 - **The adapter-consumer debt is being paid down row by row, each by a MEASURED
-  behavioral flip.** The census now records the COVERAGE LEVEL, not one `guarded` token for
-  four different states: `guarded-all-doors`, `guarded-errors-only` (blind to a silently
-  dropped line), and `guarded-by-caller` (owes an enumerated `covering_callers` list). The
-  guard refuses on the CONDITION
+  behavioral flip.** The census records the COVERAGE LEVEL now, not one `guarded` token:
+  `guarded-all-doors`, `guarded-errors-only` (blind to a silently dropped line — a one-typo
+  bypass, 3 rows), and `guarded-upstream` (owes an enumerated `covering_rows` list). That
+  split halved the reported accepted risk, 10 to 5: half those rows were already covered
+  upstream and the token could not say so. The guard refuses on the CONDITION
   ("this reader honored nothing the repo declared") through the channels a resolver
   REPORTS — a refused `version`, a refused parse, a silently dropped line. ALL SIXTEEN
   report all three since [#673](https://github.com/corca-ai/charness/issues/673); records

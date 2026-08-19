@@ -166,10 +166,10 @@ done, and point at `## Active Operating Frame` for when it is proven.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | `#674` — `check_probe_record --replay-stimulus` replays the adapter declarations a record's `## Stimulus` writes and refuses the ones no reader honors | Every claim defect this corpus produced was visible from data already in the record, and none was caught by a tool | Six published dead controls refused at their original documents and passing at their corrected ones; a FIFTH record's dead control found that no review round had; all thirteen records pass the sweep gate | done (`a12ba86f5`) |
-| 2 | `#673` — the FIVE resolvers that call `load_yaml_file` bare route through the reporting loader (`announcement` was already repaired; measured, not read off the issue) | Until this lands, `parse_refused` and `declarations_dropped` are structurally dead for six skills, so every consumer guard there is one-door | All sixteen resolvers render a verdict for a parse refusal and record a dropped line; one test sweeps all sixteen | planned |
-| 3 | `#675` — a census verdict vocabulary that distinguishes coverage levels, with a witness that checks the level | `guarded` now means four things and the gate sees one; slice 2 changes which rows qualify for which | Per-level counts printed; existing rows migrate with measured evidence, none upgraded without a measurement | planned |
-| 4 | The remaining nineteen rows | After slices 2-3 a row's coverage is uniform and legible, so the per-row claim stops needing a paragraph of caveats | Each row `guarded` or carrying a recorded decision with measured caller coverage | planned |
-| 5 | Slice 6 of the predecessor: two-round bookkeeping as typed critique fields; `#628` to the operator queue | The obligation is currently remembered, not recorded | Typed fields; `#628` staged with its design call | planned |
+| 2 | `#673` — the FIVE resolvers that call `load_yaml_file` bare route through the reporting loader (`announcement` was already repaired; measured, not read off the issue) | Until this lands, `parse_refused` and `declarations_dropped` are structurally dead for six skills, so every consumer guard there is one-door | All sixteen resolvers render a verdict for a parse refusal and record a dropped line; one test sweeps all sixteen | done (`e54132c47` + folds) |
+| 3 | `#675` — a census verdict vocabulary that distinguishes coverage levels, with a witness that checks the level | `guarded` now means four things and the gate sees one; slice 2 changes which rows qualify for which | Per-level counts printed; existing rows migrate with measured evidence, none upgraded without a measurement | done (`a21e0d0d3` + round-1 fold) |
+| 4 | The remaining nineteen rows — NOT STARTED, stopped by the Slice Plan's own rule | After slices 2-3 a row's coverage is uniform and legible, so the per-row claim stops needing a paragraph of caveats | Each row `guarded` or carrying a recorded decision with measured caller coverage | handed to a successor goal |
+| 5 | Slice 6 of the predecessor: two-round bookkeeping as typed critique fields; `#628` to the operator queue | The obligation is currently remembered, not recorded | Typed fields; `#628` staged with its design call | handed to a successor goal |
 
 Slices 1-3 are the tooling arc and slice 4 is the payoff. **If slice 1 or 2 overruns, the
 honest stop is BEFORE slice 4**, not partway through it: nineteen rows measured under a
@@ -207,6 +207,20 @@ Queue item form:
 - Revisit trigger: event, date, or proof boundary that reopens this
 
 RAISED BY THIS RUN:
+
+- Decision: 55 rows carry `safe-checks-errors`, and that token now covers materially
+  different coverage the same way `guarded` did before slice 3 split it. Four of them
+  (`proof_mismatch`, `cautilus_scenarios_lib`, `plan_cautilus_proof`,
+  `control_plane_lifecycle_lib`) read through `cautilus_adapter_lib` /
+  `proof_semantics_adapter_lib`, which still call `load_yaml_file` bare, so two of the three
+  doors are structurally dead for them; the rest sit behind full-reporting resolvers. Owner:
+  repo operator. Why deferred: splitting the largest class is a slice of its own and this
+  goal stopped at its own rule. Unblock action: rule whether `safe-checks-errors` gets the
+  same level treatment, or whether those two libraries should simply be routed through
+  `read_declared_adapter` (which would make the question moot). Revisit trigger: the
+  successor goal, or any change to either library. Found by a round-1 bounded review of
+  slice 3.
+
 
 - Decision: `User Acceptance 1` names the bare `check_probe_record.py --require-evaluated`
   as the command that must refuse a non-reproducing record. It does not; the working
