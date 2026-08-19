@@ -32,6 +32,9 @@ run_readback_probe = _verification_lib.run_readback_probe
 _adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.announcement_adapter_lib")
 DELIVERY_KINDS = _adapter_lib.DELIVERY_KINDS
 load_announcement_adapter = _adapter_lib.load_announcement_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 normalize_delivery_kind = _adapter_lib.normalize_delivery_kind
 
 
@@ -57,6 +60,18 @@ def _path_provenance(repo_root: Path, value: str) -> dict[str, str]:
 
 
 def _resolve_delivery_kind_check(args: argparse.Namespace, *, repo_root: Path) -> dict[str, object]:
+    # GUARDED BEFORE the `except Exception` fallback below, deliberately. That fallback is
+    # correct for a resolution FAILURE -- it records `adapter_resolved: False` and keeps
+    # the disagreement typed and visible. It is wrong for a resolution that SUCCEEDED
+    # while honoring nothing: there the payload carries a `delivery_kind` the repo never
+    # wrote, and `requires_delivery_kind_agreement` then compares the recorded kind
+    # against a charness default and can pass a mismatch the repo's own declaration would
+    # have refused. Refusing keeps the fallback for the case it was written for.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_announcement_adapter, repo_root, adapter_name="announcement-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     try:
         adapter_delivery_kind = load_announcement_adapter(repo_root)["data"]["delivery_kind"]
     except Exception:  # noqa: BLE001 -- adapter resolution failure falls back to typed, visible trust

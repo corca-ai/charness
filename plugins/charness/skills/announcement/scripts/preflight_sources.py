@@ -31,10 +31,26 @@ def main() -> None:
         args = parser.parse_args()
         repo_root = args.repo_root.resolve()
         sys.path.insert(0, str(_repo_root()))
+        from scripts.adapter_version_verdict import unspeakable_version_message
         from scripts.announcement_adapter_lib import load_announcement_adapter
         from scripts.announcement_preflight_lib import preflight_sources
         from scripts.yaml_output import emit_yaml
 
+        # GUARDED AT THE READ SITE, and this is a PUBLISH-BOUNDARY gate: its whole job is
+        # to block a delivery that would claim an in-progress source is finished.
+        #
+        # WHAT IT COSTS TO BE UNGUARDED, measured at `254fa5c44`: a repo declaring one
+        # `in_progress_sources` entry got `delivery_blocked: false`, `ok: true`,
+        # `surfaces: []`, exit 0 -- clear to announce. The same repo at a speakable version
+        # gets `delivery_blocked: true`, `ok: false`, exit 2. The gate did not degrade; it
+        # INVERTED, because `announcement_preflight_lib.preflight_sources` short-circuits
+        # to ok/unblocked the moment `in_progress_sources` is empty, and an unhonored
+        # declaration is indistinguishable there from a repo that declared none.
+        refusal = unspeakable_version_message(
+            load_announcement_adapter, repo_root, adapter_name="announcement-adapter.yaml"
+        )
+        if refusal is not None:
+            raise SystemExit(refusal)
         adapter = load_announcement_adapter(repo_root)
         adapter_data = adapter["data"]
         if args.draft_path is not None:

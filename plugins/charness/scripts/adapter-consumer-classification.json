@@ -230,12 +230,12 @@
       "reason": "upsert_goal() (lines 302-305) calls `_policy.load_adapter(repo_root)` and explicitly checks `if adapter['found'] and not adapter['valid']:` and returns a `refused` result (naming `adapter['errors']`) BEFORE any consequential action (mkdir, template render with adapter['data']['scaffold']..., or path.write_text at lines 306-326) is taken."
     },
     "skills/public/announcement/scripts/preflight_sources.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "Lines 38-46 call load_announcement_adapter() and pass adapter_data straight into preflight_sources() with no check of adapter['valid']/adapter['errors']; announcement_preflight_lib.py:66-72 short-circuits to {ok: True, delivery_blocked: False, surfaces: []} whenever sources is empty."
+      "verdict": "guarded",
+      "reason": "main() now refuses via `unspeakable_version_message` before `adapter[\"data\"]` reaches `preflight_sources`. THIS IS A PUBLISH-BOUNDARY GATE and the flip is an INVERSION, not a degradation: measured at 254fa5c44, a repo declaring one `in_progress_sources` entry got `delivery_blocked: false`, `ok: true`, `surfaces: []`, exit 0 -- clear to announce -- while the same repo at a speakable version gets `delivery_blocked: true`, `ok: false`, exit 2. The mechanism is the row's own: `announcement_preflight_lib` short-circuits to ok/unblocked the moment `in_progress_sources` is empty, so an unhonored declaration is indistinguishable from a repo that declared none. Controls: version 1 blocks and lists the declared source; no adapter clears at exit 0; an ordinarily-invalid adapter still blocks. Probe record: charness-artifacts/probe/2026-08-19-announcement-version-refusal.md."
     },
     "skills/public/announcement/scripts/record_announcement.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "Line 61: `adapter_delivery_kind = load_announcement_adapter(repo_root)['data']['delivery_kind']` is read with no check of the adapter's errors/valid fields (only a bare `except Exception` around the whole lookup)."
+      "verdict": "guarded",
+      "reason": "_resolve_delivery_kind_check now refuses BEFORE its own `except Exception` fallback rather than replacing it. The distinction is measured, not argued: a refused VERSION resolves cleanly to a payload carrying a `delivery_kind` the repo never wrote, and `requires_delivery_kind_agreement` would then compare the recorded kind against a charness default -- so that arm refuses. A refused PARSE makes announcement's resolver raise (one of the six in #673); the guard swallows it and the existing fallback records `adapter_resolved: false`, a typed visible signal and exactly what that fallback was written for. Verified by reading the written record. Forcing symmetry would replace a legible fallback with a stop on the one input where the fallback is right. Probe record: charness-artifacts/probe/2026-08-19-announcement-version-refusal.md."
     },
     "skills/public/critique/scripts/prepare_packet.py": {
       "verdict": "safe-checks-errors",
