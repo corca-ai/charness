@@ -18,7 +18,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
-load_yaml_file = _adapter_lib.load_yaml_file
+read_declared_adapter = _adapter_lib.read_declared_adapter
 list_field_state = _adapter_lib.list_field_state
 optional_string = _adapter_lib.optional_string
 declared_fields_after_version_check = _adapter_lib.declared_fields_after_version_check
@@ -144,11 +144,15 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "searched_paths": searched_paths,
         }
 
-    raw = load_yaml_file(adapter_path)
-    raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
-    errors: list[str] = []
-    shape_error = _mapping_shape_error(adapter_path, raw_data)
+    # `read_declared_adapter`, NOT `load_yaml_file`. The bare loader RAISES on a document
+    # the parser refuses and DISCARDS the uninterpreted-line sink, so `parse_refused` and
+    # `declarations_dropped` were both structurally dead for this skill's consumers.
+    raw_data, parse_errors, warnings = read_declared_adapter(adapter_path)
+    # Parse refusal FIRST: it is the reason the rest of `errors` is about inferred defaults.
+    errors: list[str] = list(parse_errors)
+    # The shape check re-reads the file and reports "no recognized fields" for a document
+    # the parser already REFUSED -- a second, misleading error about the same input.
+    shape_error = None if parse_errors else _mapping_shape_error(adapter_path, raw_data)
     if shape_error is not None:
         errors.append(shape_error)
     data, validation_errors, extra_warnings = validate_adapter_data(raw_data, repo_root)

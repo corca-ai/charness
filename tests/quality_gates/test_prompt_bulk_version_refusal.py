@@ -69,8 +69,14 @@ def test_an_unhonored_policy_refuses_rather_than_scanning_nothing(
         assert "quality-adapter.yaml" in result.stderr, result.stderr
         assert "does not speak" in result.stderr, result.stderr
     else:
-        # quality is one of six resolvers that let a parser refusal's ValueError out (#673).
-        assert "Traceback" in result.stderr, result.stderr
+        # CONVERGED. `#673` routed the five bare-loader libraries through
+        # `adapter_lib.read_declared_adapter`, so every resolver now RECORDS a parse
+        # refusal in `errors` instead of raising, and this door renders the same
+        # verdict shape everywhere. The traceback branch this replaces was honest
+        # about a real gap; keeping it would now pin the gap shut.
+        assert "Traceback" not in result.stderr, result.stderr
+        assert "quality-adapter.yaml" in result.stderr, result.stderr
+        assert "could not be parsed" in result.stderr, result.stderr
     assert "findings: []" not in result.stdout
 
 

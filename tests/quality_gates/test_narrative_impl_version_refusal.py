@@ -77,13 +77,12 @@ def test_map_sources_refuses_rather_than_mapping_the_default_set(
         assert "narrative-adapter.yaml" in result.stderr, result.stderr
         assert "does not speak" in result.stderr, result.stderr
     else:
-        # `narrative` is one of SIX resolvers (of sixteen measured) that let a parser
-        # refusal's `ValueError` out instead of recording it in `errors`: achieve,
-        # announcement, create-skill, critique, narrative, quality. It refuses with a raw
-        # TRACEBACK. That stops the run and reports nothing substituted, which is this
-        # row's claim; the operator experience is a separate, filed defect.
-        assert "Traceback" in result.stderr, result.stderr
-        assert "unsupported YAML construct" in result.stderr, result.stderr
+        # CONVERGED by `#673`: the five bare-loader libraries route through
+        # `adapter_lib.read_declared_adapter`, so every resolver RECORDS a parse refusal
+        # instead of raising and this door renders one verdict shape everywhere.
+        assert "Traceback" not in result.stderr, result.stderr
+        assert "narrative-adapter.yaml" in result.stderr, result.stderr
+        assert "could not be parsed" in result.stderr, result.stderr
     # The substituted document set must not be reported alongside the refusal.
     assert "README.md" not in result.stdout
 
@@ -162,21 +161,16 @@ def test_an_ordinary_invalid_field_is_not_refused(
 def test_a_silently_dropped_declaration_splits_on_the_resolver(
     tmp_path: Path, rel: str, name: str
 ) -> None:
-    """The third door, and the two rows land on opposite sides of it.
+    """The third door, and the two rows now land on the SAME side of it.
 
-    `impl` routes through `simple_skill_adapter_lib`, which records a dropped line in
-    WARNINGS, so `adapter_version_verdict.declarations_dropped` sees it and the run
-    REFUSES. `narrative` calls `adapter_lib.load_yaml_file` bare and discards that sink,
-    so nothing sees it and the run proceeds on the inferred default — the residual filed
-    as #673.
-
-    Both arms are asserted so closing #673 is a deliberate test change rather than a
-    silent one, and so the `impl` fix cannot regress unnoticed.
+    They did not. `impl` routed through `simple_skill_adapter_lib`, which records a dropped
+    line in WARNINGS, so `declarations_dropped` saw it and the run refused; `narrative`
+    called `adapter_lib.load_yaml_file` bare, discarded that sink, and proceeded on the
+    inferred default. `#673` routed narrative through `read_declared_adapter`, so this is
+    the deliberate test change the previous version asked for — and the `impl` arm, which
+    was already correct, still guards against regressing the half that worked.
     """
     repo = _repo(tmp_path, name, "version: 1\nrepo: demo\n  remote_name: upstream\n")
     result = _run(rel, repo)
-    if name == "impl":
-        assert result.returncode == 1, result.stdout
-        assert "could not interpret" in result.stderr, result.stderr
-    else:
-        assert result.returncode == 0, result.stderr
+    assert result.returncode == 1, result.stdout
+    assert "could not interpret" in result.stderr, result.stderr

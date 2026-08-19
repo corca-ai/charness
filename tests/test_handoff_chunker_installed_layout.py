@@ -34,6 +34,10 @@ def _copy_installed_runtime(tmp_path: Path) -> None:
         "scripts/runtime_bootstrap.py",
         "scripts/script_timeout.py",
         "scripts/adapter_lib.py",
+        # `adapter_lib` re-exports this repo's YAML dialect from it and loads it BY PATH
+        # from its own directory, so a fake layout without it fails at import rather than
+        # on the behavior under test — the same rule as every sibling entry here.
+        "scripts/adapter_yaml_parse.py",
         "scripts/artifact_naming_lib.py",
         "scripts/simple_skill_adapter_lib.py",
         # `simple_skill_adapter_lib` imports the shared typed-field applier, so a fake

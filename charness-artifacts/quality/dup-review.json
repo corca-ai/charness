@@ -4920,6 +4920,48 @@
       "note": "idiom-sized `if <mapping>.get(<key>): return <verdict>` guard-clause shape shared by four unrelated classifiers: the stimulus-replay unreadable-command refusal (`probe_stimulus_replay._shape_refusal`, #674), the seed-fixture footprint capability-gap status (`check_seed_fixture_budget`), the regenerable-facts adapter-refusal status (`check_regenerable_facts`) and the mutation-testing proposal status (`propose_mutation_testing`). Same family and same reason as the already-classified 003780cc89f2ccfd: the matched run is the two-line guard clause itself, the keys are different, the returned values are different types (a refusal sentence versus a status token), and the four live in unrelated subsystems. Extracting it would be a helper that takes a mapping, a key and a value and returns the value -- `dict.get` with extra steps.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "23a91b662846af37",
+      "note": "the found=False early return in `cautilus_adapter_lib` and `proof_semantics_adapter_lib`, BOTH UNTOUCHED by this slice. Neither routes through `resolve_adapter_payload` because neither returns the seven-key shape: cautilus gates on an `enabled` flag and proof_semantics resolves a semantics table, so the payloads diverge past `found`/`valid`/`path`. Re-fingerprinted rather than newly written. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c044134fc8023896",
+      "note": "the `searched_paths` + `find_adapter` preamble in `cautilus_adapter_lib` and `proof_semantics_adapter_lib`, BOTH UNTOUCHED. Same two modules and same reason as 23a91b662846af37: three structural lines whose callers keep different payload shapes. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "28a430c3ed94f75c",
+      "note": "the per-skill DERIVED artifact keys \u2014 `artifact_filename` / `artifact_class` / `artifact_path` / `record_artifact_pattern` \u2014 in `narrative_adapter_lib._narrative_derived` and `announcement_adapter_lib`. Four lines each, computed from three DIFFERENT module-level functions per skill (`_artifact_path`, `_record_artifact_pattern`, `ARTIFACT_FILENAME`), so a shared helper would take three callables as parameters to save four lines. narrative already computes them in ONE place instead of once per branch, which is the drift this family's shape used to hide. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8d14c4cd2e9a9e30",
+      "note": "the same derived-artifact-keys shape as 28a430c3ed94f75c, between `narrative_adapter_lib._narrative_derived` and `quality_adapter_lib._quality_derived`. Both are NEW in this slice and both are the deduplication itself: each collapses a block that was previously written twice per module (once in the found arm, once in the absent arm) into one function. The family is what remains after that collapse, not what caused it. narrative's version returns five keys and quality's four. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b14e0893bd81e805",
+      "note": "`announcement_adapter_lib.load_announcement_adapter`'s found=False arm against the new `adapter_lib.resolve_adapter_payload`. Announcement is the fifth member of that family and is deliberately NOT routed through the builder: its payload needs `field_state` keyed on `declarations_unhonored(errors)` and on the RAW mapping, so it would require widening `derive` from a function of `data` alone to one taking `raw_data` and `errors` \u2014 which is precisely the parameter growth that docstring refuses, and which would re-admit the found/absent drift the hook exists to prevent. Announcement was repaired ahead of `#673` for a publish-gate bypass and carries its own round-2 review; folding it in now would re-open a reviewed surface for a four-line saving. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e884cd57e7dba39d",
+      "note": "`announcement_adapter_lib`'s own two payload arms, BOTH UNTOUCHED by this slice. That module already answers this internally: a round-2 review found its parse-failure arm hand-built with nine keys where the others had fifteen, and the repair was the `_payload` builder its docstring describes. The residual match is the absent arm against that builder \u2014 two arms of one function that cannot be merged, because one runs before any file was read. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

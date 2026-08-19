@@ -14,7 +14,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import declared_fields_after_version_check, load_yaml_file, optional_string
+from scripts.adapter_lib import (
+    declared_fields_after_version_check,
+    optional_string,
+    resolve_adapter_payload,
+)
 
 DEFAULT_OUTPUT_DIR = "charness-artifacts/critique"
 ADAPTER_CANDIDATES = (
@@ -245,38 +249,20 @@ def find_adapter(repo_root: Path) -> Path | None:
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:
-    searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
-    adapter_path = find_adapter(repo_root)
-    if adapter_path is None:
-        return {
-            "found": False,
-            "valid": True,
-            "path": None,
-            "data": infer_repo_defaults(repo_root),
-            "errors": [],
-            "warnings": [
-                "No critique adapter found. The prepare-packet contract is opt-in;"
-                " critique runs with inferred defaults and no packet consumption.",
-            ],
-            "searched_paths": searched_paths,
-        }
-
-    raw = load_yaml_file(adapter_path)
-    raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
-    if not isinstance(raw, dict):
-        warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
-    warnings.extend(extra_warnings)
-    return {
-        "found": True,
-        "valid": not errors,
-        "path": str(adapter_path),
-        "data": data,
-        "errors": errors,
-        "warnings": warnings,
-        "searched_paths": searched_paths,
-    }
+    # `resolve_adapter_payload`, NOT a hand-written pair of branches around
+    # `load_yaml_file`. The bare loader RAISES on a document the parser refuses and DISCARDS
+    # the uninterpreted-line sink, so `parse_refused` and `declarations_dropped` were both
+    # structurally dead for this skill's consumers (#673).
+    return resolve_adapter_payload(
+        repo_root,
+        candidates=ADAPTER_CANDIDATES,
+        infer_defaults=infer_repo_defaults,
+        validate=validate_adapter_data,
+        absent_warnings=lambda _data: [
+            "No critique adapter found. The prepare-packet contract is opt-in;"
+            " critique runs with inferred defaults and no packet consumption.",
+        ],
+    )
 
 
 def adapter_has_sections(adapter: dict[str, Any]) -> bool:

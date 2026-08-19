@@ -81,11 +81,12 @@ def test_the_inventory_refuses_rather_than_clearing_the_wrong_file(
         assert "quality-adapter.yaml" in result.stderr, result.stderr
         assert "does not speak" in result.stderr, result.stderr
     else:
-        # quality is one of six resolvers that let a parser refusal's `ValueError` out
-        # rather than recording it (#673), so this door refuses with a raw traceback. It
-        # stops and clears nothing, which is this row's claim.
-        assert "Traceback" in result.stderr, result.stderr
-        assert "unsupported YAML construct" in result.stderr, result.stderr
+        # CONVERGED by `#673`: the five bare-loader libraries route through
+        # `adapter_lib.read_declared_adapter`, so every resolver RECORDS a parse refusal
+        # instead of raising and this door renders one verdict shape everywhere.
+        assert "Traceback" not in result.stderr, result.stderr
+        assert "quality-adapter.yaml" in result.stderr, result.stderr
+        assert "could not be parsed" in result.stderr, result.stderr
     assert "charness-artifacts/quality" not in result.stdout
 
 

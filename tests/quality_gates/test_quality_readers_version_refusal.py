@@ -97,15 +97,14 @@ def test_an_unhonored_declaration_refuses(tmp_path: Path, rel: str, version: str
         assert "quality-adapter.yaml" in result.stderr, result.stderr
         assert "does not speak" in result.stderr, result.stderr
     else:
-        # The quality resolver lets a parser refusal's `ValueError` out rather than
-        # recording it in `errors` — `quality_adapter_lib` calls `load_yaml_file` with no
-        # handler, unlike `simple_skill_adapter_lib`. So this door refuses with a raw
-        # TRACEBACK for the whole quality family. It stops and reports nothing inverted,
-        # which is this row's claim; the stack trace is the same named residual the
-        # scaffold rows record, not a new one, and fixing that resolver is a different
-        # change than these rows make.
-        assert "Traceback" in result.stderr, result.stderr
-        assert "unsupported YAML construct" in result.stderr, result.stderr
+        # CONVERGED. `#673` routed the five bare-loader libraries through
+        # `adapter_lib.read_declared_adapter`, so every resolver now RECORDS a parse
+        # refusal in `errors` instead of raising, and this door renders the same
+        # verdict shape everywhere. The traceback branch this replaces was honest
+        # about a real gap; keeping it would now pin the gap shut.
+        assert "Traceback" not in result.stderr, result.stderr
+        assert "quality-adapter.yaml" in result.stderr, result.stderr
+        assert "could not be parsed" in result.stderr, result.stderr
     # The inverted finding must not be reported alongside the refusal.
     assert "has no startup_probes" not in result.stdout
     assert "charness-artifacts/quality" not in result.stdout
@@ -173,20 +172,23 @@ def test_an_ordinary_invalid_field_is_not_refused(tmp_path: Path, rel: str) -> N
 def test_a_silently_dropped_declaration_is_the_documented_blind_arm(
     tmp_path: Path, rel: str
 ) -> None:
-    """The THIRD state, pinned as a known gap rather than left to make the claim read
-    wider than it is.
+    """The THIRD state, and it is CLOSED as of `#673` — this test is the deliberate change
+    its previous version asked for.
 
-    `quality_adapter_lib` calls `adapter_lib.load_yaml_file`, which discards the
-    uninterpreted-line sink `load_yaml_file_report` returns. So an over-indented line is
+    `quality_adapter_lib` used to call `adapter_lib.load_yaml_file`, which discards the
+    uninterpreted-line sink `load_yaml_file_report` returns. An over-indented line was
     dropped with `errors: []` and `valid: True`, and no predicate over `errors` — which is
-    what `declarations_unhonored` is — can see it. Measured: one stray indent restores the
-    charness default at exit 0, with the guard in place.
+    what `declarations_unhonored` is — could see it: one stray indent restored the charness
+    default at exit 0 with the guard in place, which is WORSE than the pre-guard base.
 
-    This test asserts the CURRENT behavior so the gap is visible and so closing it
-    (#673) is a deliberate test change rather than a silent one. It is NOT an assertion
-    that the current behavior is correct.
+    It now routes through `adapter_lib.read_declared_adapter`, so the dropped line reaches
+    `warnings`, `declarations_dropped` sees it, and the guard refuses naming the line and
+    the fix rather than `version:`. The old assertion is kept in the failing direction
+    below: the charness default must not appear, and the run must not proceed.
     """
     repo = _repo(tmp_path, "version: 1\nrepo: demo\n  output_dir: docs/mine-q\n")
     result = _run(rel, repo)
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 1, result.stdout
+    assert "could not interpret" in result.stderr, result.stderr
     assert "docs/mine-q" not in result.stdout
+    assert "charness-artifacts/quality" not in result.stdout

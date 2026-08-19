@@ -6,7 +6,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file, optional_int, optional_string, optional_string_list
+from scripts.adapter_lib import (
+    optional_int,
+    optional_string,
+    optional_string_list,
+    resolve_adapter_payload,
+)
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 from scripts.quality_bootstrap_absence import remove_nested_absences
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
@@ -473,48 +478,33 @@ def validate_quality_adapter_data(
     return validated, errors, warnings
 
 
-def load_quality_adapter(repo_root: Path) -> dict[str, Any]:
-    searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
-    adapter_path = next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
-    if adapter_path is None:
-        data = infer_quality_defaults(repo_root)
-        return {
-            "found": False,
-            "valid": True,
-            "path": None,
-            "data": data,
-            "artifact_filename": ARTIFACT_FILENAME,
-            "artifact_class": data["artifact_class"],
-            "artifact_path": _artifact_path(data["output_dir"]),
-            "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
-            "errors": [],
-            "warnings": [
-                "No quality adapter found. Using default durable artifact location.",
-                "Create .agents/quality-adapter.yaml to record gate commands and preset lineage.",
-            ],
-            "searched_paths": searched_paths,
-        }
-
-    raw = load_yaml_file(adapter_path)
-    raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
-    if not isinstance(raw, dict):
-        warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    data, errors, extra_warnings = validate_quality_adapter_data(raw_data, repo_root)
-    warnings.extend(extra_warnings)
+def _quality_derived(data: dict[str, Any]) -> dict[str, Any]:
+    """The four keys this skill adds, computed from `data` in ONE place rather than once
+    per branch — which is how the found and absent arms drift apart."""
     return {
-        "found": True,
-        "valid": not errors,
-        "path": str(adapter_path),
-        "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_class": data["artifact_class"],
         "artifact_path": _artifact_path(data["output_dir"]),
         "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
-        "errors": errors,
-        "warnings": warnings,
-        "searched_paths": searched_paths,
     }
+
+
+def load_quality_adapter(repo_root: Path) -> dict[str, Any]:
+    # `resolve_adapter_payload`, NOT a hand-written pair of branches around
+    # `load_yaml_file`. The bare loader RAISES on a document the parser refuses and DISCARDS
+    # the uninterpreted-line sink, so `parse_refused` and `declarations_dropped` were both
+    # structurally dead for this skill's consumers (#673).
+    return resolve_adapter_payload(
+        repo_root,
+        candidates=ADAPTER_CANDIDATES,
+        infer_defaults=infer_quality_defaults,
+        validate=validate_quality_adapter_data,
+        absent_warnings=lambda _data: [
+            "No quality adapter found. Using default durable artifact location.",
+            "Create .agents/quality-adapter.yaml to record gate commands and preset lineage.",
+        ],
+        derive=_quality_derived,
+    )
 
 
 def load_quality_adapter_strict(repo_root: Path) -> dict[str, Any]:

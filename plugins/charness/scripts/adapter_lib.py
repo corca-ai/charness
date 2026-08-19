@@ -1,394 +1,67 @@
 #!/usr/bin/env python3
 
+"""What an adapter RESOLVER owes: reconcile the version, validate the fields, build the payload.
+
+The YAML dialect itself lives in ``adapter_yaml_parse`` and is re-exported below, so every
+existing `from scripts.adapter_lib import load_yaml_file` keeps working. See that module's
+docstring for the split and its reason.
+"""
+
 from __future__ import annotations
 
-import contextvars
-import re
+import importlib.util
+import sys
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
-SUPPORTED_BLOCK_SCALAR_RE = re.compile(r"^[|>](-)?$")
+# LOADED BY PATH WITH STDLIB ONLY, and that is a hard constraint rather than a style
+# choice. This module is imported three ways: as `scripts.adapter_lib`, as a bare
+# `adapter_lib` from a seeded test repo, and by absolute PATH from a skill script whose
+# loader puts nothing on `sys.path`. The first cut of this split used
+# `runtime_bootstrap.import_repo_module` and broke the third: every achieve and handoff
+# skill script that reaches `adapter_lib` died with `No module named 'runtime_bootstrap'`.
+# The pre-split file had no repo imports at all, which is why it worked everywhere.
+#
+# Registered in `sys.modules` under a stable key so the three load paths SHARE one
+# instance. `_UNINTERPRETED_SINK` is a ContextVar living in that module: two copies means
+# `load_yaml_report` arms one sink while `_parse_block` records into another, and the
+# report comes back empty while the parse silently drops lines -- the exact silence this
+# repo built the sink to end.
+_YAML_MODULE_KEY = "charness_adapter_yaml_parse"
+if (_yaml := sys.modules.get(_YAML_MODULE_KEY)) is None:
+    _yaml_spec = importlib.util.spec_from_file_location(
+        _YAML_MODULE_KEY, Path(__file__).resolve().parent / "adapter_yaml_parse.py"
+    )
+    _yaml = importlib.util.module_from_spec(_yaml_spec)
+    sys.modules[_YAML_MODULE_KEY] = _yaml
+    _yaml_spec.loader.exec_module(_yaml)
 
-
-def strip_inline_comment(value: str) -> str:
-    """Drop a trailing ` # ...` comment from an unquoted scalar.
-
-    Without this the comment text is swallowed into the value, so
-    ``margin: 2.0  # widened`` parses as the string ``"2.0  # widened"``. A caller
-    type-checking for a number then rejects it and silently falls back to a default,
-    while still reporting the field as preserved — the operator's value is lost and
-    the report says it was kept. Only space-hash starts a YAML comment, so a value
-    like ``a#b`` is left alone.
-    """
-    if (index := inline_comment_start(value)) is not None:
-        return value[:index].strip()
-    return value
-
-
-def inline_comment_start(value: str) -> int | None:
-    """Return the first YAML comment marker outside a leading quoted scalar.
-
-    A quoted scalar may be followed by a valid trailing comment, for example
-    ``"https://example.test/a # fragment" # annotation``. The previous
-    space-hash scan treated the hash inside the scalar as the comment and
-    truncated the value before bootstrap or resolution could inspect it.
-    Plain scalars may contain apostrophes, so quote tracking begins only when
-    the value itself begins with a quote.
-    """
-    leading = len(value) - len(value.lstrip())
-    candidate = value[leading:]
-    quote = candidate[0] if candidate[:1] in {"'", '"'} else None
-    escaped = False
-    index = leading + 1 if quote is not None else leading
-    while index < len(value):
-        char = value[index]
-        if quote is not None:
-            if quote == '"' and escaped:
-                escaped = False
-                index += 1
-                continue
-            if quote == '"' and char == "\\":
-                escaped = True
-                index += 1
-                continue
-            if char == quote:
-                if quote == "'" and index + 1 < len(value) and value[index + 1] == "'":
-                    index += 2
-                    continue
-                quote = None
-            index += 1
-            continue
-        if char == "#" and (index == 0 or value[index - 1] in " \t"):
-            return index
-        index += 1
-    return None
-
-
-def _coerce_scalar(value: str) -> Any:
-    value = strip_inline_comment(value)
-    _reject_unsupported_scalar(value)
-    if value == "":
-        return ""
-    lower = value.lower()
-    if lower == "true":
-        return True
-    if lower == "false":
-        return False
-    if lower in ("null", "~"):
-        return None
-    try:
-        return int(value)
-    except ValueError:
-        pass
-    try:
-        return float(value)
-    except ValueError:
-        pass
-    if value.startswith('"') and value.endswith('"'):
-        return _decode_double_quoted(value[1:-1])
-    if value.startswith("'") and value.endswith("'"):
-        return value[1:-1].replace("''", "'")
-    return value
-
-
-def _is_quoted_scalar(value: str) -> bool:
-    return (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'"))
-
-
-def _decode_double_quoted(value: str) -> str:
-    decoded: list[str] = []
-    index = 0
-    while index < len(value):
-        char = value[index]
-        if char != "\\" or index + 1 >= len(value):
-            decoded.append(char)
-            index += 1
-            continue
-        escaped = value[index + 1]
-        if escaped == "n":
-            decoded.append("\n")
-        elif escaped == "r":
-            decoded.append("\r")
-        elif escaped in {'"', "\\"}:
-            decoded.append(escaped)
-        else:
-            decoded.append("\\")
-            decoded.append(escaped)
-        index += 2
-    return "".join(decoded)
-
-
-def _reject_unsupported_scalar(value: str) -> None:
-    stripped = value.strip()
-    if not stripped or _is_quoted_scalar(stripped):
-        return
-    if stripped.startswith(("*", "&", "!")):
-        raise ValueError(f"unsupported YAML construct in scalar: {value!r}")
-
-
-def _find_mapping_separator(value: str) -> int:
-    quote: str | None = None
-    escaped = False
-    for index, char in enumerate(value):
-        if escaped:
-            escaped = False
-            continue
-        if quote == '"' and char == "\\":
-            escaped = True
-            continue
-        if quote:
-            if char == quote:
-                quote = None
-            continue
-        if char in ("'", '"'):
-            quote = char
-            continue
-        if char == ":":
-            return index
-    return -1
-
-
-def _split_mapping_entry(value: str) -> tuple[str, str] | None:
-    separator = _find_mapping_separator(value)
-    if separator < 0:
-        return None
-    key = _coerce_scalar(value[:separator].strip())
-    if not isinstance(key, str):
-        key = str(key)
-    return key, value[separator + 1 :].strip()
-
-
-def _next_meaningful_line(lines: list[str], start: int) -> tuple[int, str] | None:
-    for index in range(start, len(lines)):
-        stripped = lines[index].strip()
-        if stripped and not stripped.startswith("#"):
-            return index, lines[index]
-    return None
-
-
-# The parser drops a line it cannot interpret and keeps going, which is what lets a
-# malformed adapter read as a valid one (sweep row S24): `default_org corca-typo` with
-# no colon parses to a mapping that simply lacks `default_org`, and the caller's
-# inferred default fills the hole silently. The sink below records those drops WITHOUT
-# changing what the parser returns, so a caller can distinguish "the file did not say
-# this" from "the file said something the parser threw away". Collection is off unless
-# a `load_yaml_report` call is on the stack: existing `load_yaml` callers are
-# byte-identical.
-# A ContextVar rather than a module global: the sink is per-parse state, and a plain
-# global would let a future nested or threaded `load_yaml` leak one file's dropped lines
-# into another file's report — an unrelated input's evidence read as this input's, which
-# is the class this collector exists to close.
-_UNINTERPRETED_SINK: contextvars.ContextVar[list[dict[str, Any]] | None] = contextvars.ContextVar(
-    "adapter_lib_uninterpreted_sink", default=None
-)
-# YAML document markers carry no mapping content, so dropping them loses nothing. They
-# are skipped rather than recorded: reporting them would refuse legal YAML that many
-# editors and templates emit by default.
-_DOCUMENT_MARKERS = ("---", "...")
-
-
-def _record_uninterpreted(lines: list[str], index: int, reason: str) -> None:
-    sink = _UNINTERPRETED_SINK.get()
-    if sink is None:
-        return
-    sink.append({"line": index + 1, "reason": reason, "text": lines[index].rstrip()})
-
-
-def _line_shape(lines: list[str], index: int) -> tuple[str, str, int]:
-    """`(raw, stripped, indent)` for one line — the preamble both parser loops share."""
-    raw = lines[index]
-    return raw, raw.strip(), len(raw) - len(raw.lstrip(" "))
-
-
-def _is_ignorable(stripped: str) -> bool:
-    """Blank or comment: carries no content, so skipping it loses nothing.
-
-    Document markers are deliberately NOT included. Skipping them here would be safe in
-    the mapping loop and wrong in the list loop, where `---` ENDS the list: treating it as
-    ignorable merged a second document's items into the first document's list and changed
-    what `load_yaml` returns. The mapping loop tests for them at its own call site.
-    """
-    return not stripped or stripped.startswith("#")
-
-
-def _mapping_value(
-    lines: list[str], index: int, indent: int, value: str
-) -> tuple[Any, int, bool]:
-    """Parse the text after `key:` — the three-way dispatch both parser loops need.
-
-    Returns `(parsed, next_index, consumed_block)`; `consumed_block` is True when a block
-    scalar swallowed the following lines, which is the one case a caller must not treat
-    as a single-line advance.
-    """
-    # Strip before the dispatch below, not only inside `_coerce_scalar`. Every branch
-    # here compares the raw post-colon text, so a trailing comment made `[]`, `{}`, a
-    # block-scalar header, and "empty, value is on the following lines" all fall through
-    # to the scalar branch — turning a nested block into the empty string and dropping
-    # its children silently, while the field still counted as explicitly set.
-    value = strip_inline_comment(value)
-    if not value:
-        parsed, next_index = _parse_empty_value(lines, index, indent)
-        return parsed, next_index, False
-    if value == "[]":
-        return [], index + 1, False
-    if value == "{}":
-        return {}, index + 1, False
-    if value.startswith(("|", ">")):
-        parsed, next_index = _parse_block_scalar(lines, index, indent, value)
-        return parsed, next_index, True
-    return _coerce_scalar(value), index + 1, False
-
-
-def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[Any], int]:
-    items: list[Any] = []
-    index = start
-    while index < len(lines):
-        raw, stripped, current_indent = _line_shape(lines, index)
-        if _is_ignorable(stripped):
-            index += 1
-            continue
-        if current_indent < indent:
-            break
-        if current_indent == indent:
-            if not stripped.startswith("- "):
-                break
-            item_body = stripped[2:].strip()
-            if not item_body:
-                items.append("")
-                index += 1
-                continue
-            if _is_quoted_scalar(item_body):
-                items.append(_coerce_scalar(item_body))
-                index += 1
-                continue
-            separator = _find_mapping_separator(item_body)
-            mapping_entry = _split_mapping_entry(item_body)
-            has_mapping_separator = separator == len(item_body) - 1 or (
-                separator >= 0 and item_body[separator + 1].isspace()
-            )
-            if mapping_entry is not None and has_mapping_separator and " " not in mapping_entry[0]:
-                key, value = mapping_entry
-                item: dict[str, Any] = {}
-                item[key], index, consumed_block = _mapping_value(lines, index, indent + 2, value)
-                if consumed_block:
-                    items.append(item)
-                    continue
-                nested, index = _parse_block(lines, index, indent + 2)
-                item.update(nested)
-                items.append(item)
-                continue
-            items.append(_coerce_scalar(item_body))
-            index += 1
-            continue
-        # The fourth drop site, and the one the first instrumentation pass missed: a line
-        # more indented than the list it sits under is discarded here. That eats a nested
-        # `  - item` and a wrapped plain-scalar continuation alike.
-        _record_uninterpreted(lines, index, "over-indented line in list")
-        index += 1
-    return items, index
-
-
-def _parse_empty_value(lines: list[str], index: int, current_indent: int) -> tuple[Any, int]:
-    next_item = _next_meaningful_line(lines, index + 1)
-    if next_item is None:
-        return {}, index + 1
-    next_index, next_raw = next_item
-    next_stripped = next_raw.strip()
-    next_indent = len(next_raw) - len(next_raw.lstrip(" "))
-    if next_stripped.startswith("- "):
-        if next_indent < current_indent:
-            return {}, index + 1
-        return _parse_list_items(lines, next_index, next_indent)
-    if next_indent <= current_indent:
-        return {}, index + 1
-    return _parse_block(lines, index + 1, current_indent + 2)
-
-
-def _parse_block_scalar(lines: list[str], start: int, current_indent: int, header: str) -> tuple[str, int]:
-    if SUPPORTED_BLOCK_SCALAR_RE.fullmatch(header) is None:
-        raise ValueError(f"unsupported YAML construct in block scalar header: {header!r}")
-    style = header[0]
-    strip_final = header.endswith("-")
-    index = start + 1
-    block_indent: int | None = None
-    collected: list[str] = []
-    while index < len(lines):
-        raw = lines[index]
-        stripped = raw.strip()
-        indent = len(raw) - len(raw.lstrip(" "))
-        if stripped and indent <= current_indent:
-            break
-        if block_indent is None and stripped:
-            block_indent = indent
-        trim = block_indent if block_indent is not None else current_indent + 2
-        collected.append(raw[trim:] if len(raw) >= trim else "")
-        index += 1
-    if style == ">":
-        rendered = " ".join(line.strip() for line in collected if line.strip())
-    else:
-        rendered = "\n".join(collected)
-    if not strip_final:
-        rendered += "\n"
-    return rendered, index
-
-
-def _parse_block(lines: list[str], start: int, indent: int) -> tuple[dict[str, Any], int]:
-    result: dict[str, Any] = {}
-    index = start
-
-    while index < len(lines):
-        raw, stripped, current_indent = _line_shape(lines, index)
-
-        if _is_ignorable(stripped) or stripped in _DOCUMENT_MARKERS:
-            index += 1
-            continue
-        if current_indent < indent:
-            break
-        if current_indent > indent:
-            _record_uninterpreted(lines, index, "over-indented line")
-            index += 1
-            continue
-        if stripped.startswith("- "):
-            _record_uninterpreted(lines, index, "list item with no owning key")
-            index += 1
-            continue
-
-        mapping_entry = _split_mapping_entry(stripped)
-        if mapping_entry is None:
-            _record_uninterpreted(lines, index, "no mapping separator")
-            index += 1
-            continue
-        key, value = mapping_entry
-        result[key], index, _ = _mapping_value(lines, index, current_indent, value)
-
-    return result, index
-
-
-def load_yaml(text: str) -> dict[str, Any]:
-    parsed, _ = _parse_block(text.splitlines(), 0, 0)
-    return parsed
-
-
-def load_yaml_file(path: Path) -> dict[str, Any]:
-    return load_yaml(path.read_text(encoding="utf-8"))
-
-
-def load_yaml_report(text: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    """Parse ``text`` exactly as ``load_yaml`` does, and also return the lines the
-    parser could not interpret. The parsed value is identical to ``load_yaml(text)``;
-    the second element is the evidence a caller needs before reporting the file valid."""
-    sink: list[dict[str, Any]] = []
-    token = _UNINTERPRETED_SINK.set(sink)
-    try:
-        parsed, _ = _parse_block(text.splitlines(), 0, 0)
-    finally:
-        _UNINTERPRETED_SINK.reset(token)
-    return parsed, sink
-
-
-def load_yaml_file_report(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    return load_yaml_report(path.read_text(encoding="utf-8"))
-
+# Re-exported so the split stays an implementation detail: `adapter_lib` remains the one
+# import site for anything that reads or resolves an adapter.
+SUPPORTED_BLOCK_SCALAR_RE = _yaml.SUPPORTED_BLOCK_SCALAR_RE
+strip_inline_comment = _yaml.strip_inline_comment
+inline_comment_start = _yaml.inline_comment_start
+load_yaml = _yaml.load_yaml
+load_yaml_file = _yaml.load_yaml_file
+load_yaml_report = _yaml.load_yaml_report
+load_yaml_file_report = _yaml.load_yaml_file_report
+# PRIVATE names other modules and tests reach for by name. Re-exported deliberately rather
+# than left to break: they are the parser internals this repo's own gates probe (`#530`'s
+# indent axis, the flow-sequence class, the document-marker rule), and a split that silently
+# renamed them would be the split hiding a behavior change.
+_DOCUMENT_MARKERS = _yaml._DOCUMENT_MARKERS
+_find_mapping_separator = _yaml._find_mapping_separator
+_line_shape = _yaml._line_shape
+_mapping_value = _yaml._mapping_value
+_parse_block = _yaml._parse_block
+_parse_empty_value = _yaml._parse_empty_value
+_reject_unsupported_scalar = _yaml._reject_unsupported_scalar
+_coerce_scalar = _yaml._coerce_scalar
+_split_mapping_entry = _yaml._split_mapping_entry
+_parse_list_items = _yaml._parse_list_items
+_parse_block_scalar = _yaml._parse_block_scalar
+_UNINTERPRETED_SINK = _yaml._UNINTERPRETED_SINK
 
 def uninterpreted_warnings(uninterpreted: list[dict[str, Any]]) -> list[str]:
     """One operator-facing line per line the parser could not interpret. Lives here, with
@@ -424,6 +97,108 @@ def unreadable_reasons(adapter: dict[str, Any]) -> list[str]:
         if UNINTERPRETED_WARNING_MARKER in str(warning)
     ]
     return reasons
+
+
+def read_declared_adapter(path: Path) -> tuple[dict[str, Any], list[str], list[str]]:
+    """``(raw_data, parse_errors, warnings)`` for one adapter document, BOTH channels live.
+
+    The single owner of the lines every resolver in this repo writes before it validates
+    anything: read the file, refuse a document the parser cannot read, and report the lines
+    it silently dropped. `simple_skill_adapter_lib` already did all three for the eleven
+    skills that route through it; five more libraries called `load_yaml_file` bare and got
+    neither (#673).
+
+    WHAT THAT COST, and it is a consumer-guard hole rather than a message-shape complaint.
+    `adapter_version_verdict` refuses on the CONDITION "this reader honored nothing the repo
+    declared", and reaches it through three doors: a refused `version`, a refused PARSE, and
+    a silently DROPPED line. The second door keys on `errors` and the third on `warnings`,
+    so for a resolver that raises before either exists, both are structurally dead --
+    `parse_refused` and `declarations_dropped` answer False for inputs that are exactly what
+    they were written to catch. Every consumer guard in those skills had a blind arm that
+    the others did not, and no test could tell, because the resolver never returned.
+
+    Returning parse errors SEPARATELY from validation errors, rather than raising, is what
+    lets each caller keep its own payload shape: it feeds `{}` to its own validator, gets its
+    own inferred defaults, and prepends these. That is the same end state
+    `simple_skill_adapter_lib` produces -- defaults plus `parse_failure_error` in `errors` --
+    reached without every caller re-deciding what a refused document should return.
+    """
+    try:
+        raw, uninterpreted = load_yaml_file_report(path)
+    except ValueError as exc:
+        return {}, [parse_failure_error(exc)], []
+    warnings = uninterpreted_warnings(uninterpreted)
+    if not isinstance(raw, dict):
+        # `load_yaml` always returns a dict today, so this cannot fire; kept because removing
+        # it would be a behavior claim about every caller that this change has not proven.
+        return {}, [], [*warnings, "Adapter file did not contain a mapping. Using inferred defaults."]
+    return raw, [], warnings
+
+
+def resolve_declared_adapter(
+    path: Path, validate: Callable[[dict[str, Any], Path], tuple[dict[str, Any], list[str], list[str]]],
+    repo_root: Path,
+) -> tuple[dict[str, Any], list[str], list[str]]:
+    """``(data, errors, warnings)`` for one adapter document and its skill's own validator.
+
+    `read_declared_adapter` plus the caller's validator, with the two error channels merged
+    in the order that reads correctly: a PARSE refusal first, because it is the reason every
+    field below it is an inferred default rather than a declared value.
+    """
+    raw_data, parse_errors, warnings = read_declared_adapter(path)
+    data, errors, extra_warnings = validate(raw_data, repo_root)
+    return data, [*parse_errors, *errors], [*warnings, *extra_warnings]
+
+
+def resolve_adapter_payload(
+    repo_root: Path,
+    *,
+    candidates: Sequence[Path],
+    infer_defaults: Callable[[Path], dict[str, Any]],
+    validate: Callable[[dict[str, Any], Path], tuple[dict[str, Any], list[str], list[str]]],
+    absent_warnings: Callable[[dict[str, Any]], list[str]],
+    derive: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """The seven-key resolver payload every adapter library in this repo returns.
+
+    `simple_skill_adapter_lib` has been this for eleven skills since it was written. The
+    five that did not route through it hand-wrote the same two branches -- find the file,
+    return inferred defaults with an opt-in warning when it is absent, otherwise read,
+    validate and report -- and `#673` made them converge the rest of the way, which the
+    duplicate ratchet caught in the same run. That is `#550`'s subject ("adapter resolver
+    bodies are near-identical") narrowing, not a new debt.
+
+    `derive` is the escape hatch for what is genuinely per-skill, and it is deliberately a
+    function of `data` ALONE: `artifact_path`, `record_artifact_pattern` and
+    `bootstrap_expectations` are computed from the resolved payload in BOTH branches today,
+    and writing them twice per caller is how the found/absent arms drift apart. Anything
+    that needs the adapter PATH -- create-skill's shape check re-reads the file -- or the RAW
+    mapping -- announcement's `field_state` -- stays with its caller rather than growing a
+    second parameter here, which would re-admit exactly that drift.
+
+    NOT a replacement for `simple_skill_adapter_lib`, which also owns preset lineage and
+    host extensions. This is the smaller shape those five actually share.
+    """
+    searched_paths = [str((repo_root / candidate).resolve()) for candidate in candidates]
+    adapter_path = next(
+        (repo_root / candidate for candidate in candidates if (repo_root / candidate).is_file()), None
+    )
+    if adapter_path is None:
+        data = infer_defaults(repo_root)
+        errors: list[str] = []
+        warnings = list(absent_warnings(data))
+    else:
+        data, errors, warnings = resolve_declared_adapter(adapter_path, validate, repo_root)
+    return {
+        "found": adapter_path is not None,
+        "valid": not errors,
+        "path": str(adapter_path) if adapter_path is not None else None,
+        "data": data,
+        **(derive(data) if derive is not None else {}),
+        "errors": errors,
+        "warnings": warnings,
+        "searched_paths": searched_paths,
+    }
 
 
 def parse_failure_error(exc: Exception) -> str:

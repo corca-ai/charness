@@ -48,12 +48,6 @@ SCAFFOLDS = (
 # all five `raise SystemExit(refusal)` lines uncovered — while the suite was green and the
 # lines were, in fact, exercised. A test the mapper cannot see is a test the coverage lane
 # does not have. `test_the_script_table_matches_the_derived_paths` keeps this honest.
-# The two whose resolvers let a parser refusal's `ValueError` out instead of recording
-# it in `errors`: `quality_adapter_lib` and `critique_adapter_lib` call `load_yaml_file`
-# with no handler, while retro/debug/handoff go through `simple_skill_adapter_lib`, which
-# catches it. Named here so the count in the probe record is pinned by a test.
-RAW_TRACEBACK_SKILLS = frozenset({"quality", "critique"})
-
 SCRIPT_PATHS = {
     "quality": "skills/public/quality/scripts/scaffold_quality_artifact.py",
     "retro": "skills/public/retro/scripts/scaffold_retro_artifact.py",
@@ -129,13 +123,12 @@ def test_a_parser_refusal_refuses_at_the_same_place(
     # pointed out that `A or B` for all five leaves the published "two of five" count
     # unfalsifiable: fix `quality`'s resolver or regress `retro`'s and the test stays
     # green while the record drifts. This asserts which surface renders which shape.
-    if skill in RAW_TRACEBACK_SKILLS:
-        assert "Traceback" in result.stderr, result.stderr
-        assert "unsupported YAML construct" in result.stderr, result.stderr
-        assert "could not be parsed" not in result.stderr, result.stderr
-    else:
-        assert "could not be parsed" in result.stderr, result.stderr
-        assert "Traceback" not in result.stderr, result.stderr
+    # CONVERGED by `#673`. The keyed branch this replaces was right to refuse a
+    # disjunction -- `A or B` for all five left the published "two of five" count
+    # unfalsifiable -- and it is now a single shape asserted for all five, which is
+    # falsifiable in the same way: regress any one resolver and its case fails alone.
+    assert "could not be parsed" in result.stderr, result.stderr
+    assert "Traceback" not in result.stderr, result.stderr
     # Empty, not merely free of the default path: the refusal raises before any emit, so
     # `default not in stdout` was near-vacuous against a blank stream.
     assert result.stdout.strip() == "", result.stdout

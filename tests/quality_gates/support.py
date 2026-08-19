@@ -624,6 +624,11 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "quality_label_universe.py",
         "runtime_bootstrap.py",
         "adapter_lib.py",
+        # `adapter_lib` re-exports this repo's YAML dialect from it since the resolver
+        # half crossed the length cap; the module is imported at `adapter_lib` scope, so a
+        # seeded repo without it fails at IMPORT rather than on behavior. Same rule as the
+        # entries around it, and the split is exactly the event that would have missed it.
+        "adapter_yaml_parse.py",
         "yaml_output.py",
         "subprocess_guard.py",
         # The basetemp lifecycle the runner re-exports; extracted in S6 when the

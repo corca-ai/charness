@@ -9,14 +9,25 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder.md` after confirming the draft is
-  still intended.
+- Current slice: **slice 2 — `#673`, route the bare-loader resolvers through the reporting
+  loader.** Slice 1 landed at `a12ba86f5` with both bounded rounds folded; see `## Slice Log`.
+- Current slice intent: make all sixteen public resolvers answer a parser-refused document
+  the same way, so `adapter_version_verdict.parse_refused` and `declarations_dropped` stop
+  being structurally dead for the skills whose libs call `load_yaml_file` bare. This names
+  the reviewable-intent unit in progress and the commits it spans; critique and broad proof
+  do not re-fire within one unchanged intent (meaningful-slice-cadence).
+- Next action: add the shared reporting-loader helper to `adapter_lib`, route the five
+  remaining bare call sites through it, then one test that drives all sixteen resolvers.
+- **Measured before starting, and it corrects the issue's own count: FIVE resolvers
+  traceback today, not six.** `announcement` was repaired by the predecessor goal ahead of
+  `#673`. Sweep at `a12ba86f5` over `version: !!int 9`: TRACEBACK on achieve, create-skill,
+  critique, narrative, quality; recorded on the other eleven. The exit codes are a THIRD
+  inconsistency the issue does not name — ten record at exit 0, `issue` records at exit 1 —
+  so `#673`'s "non-zero exit" acceptance is wider than its "six resolvers" diagnosis.
+- Bare `load_yaml_file` call sites to route: `scripts/quality_adapter_lib.py:498`,
+  `scripts/critique_adapter_lib.py:264`, `scripts/narrative_adapter_lib.py:176`,
+  `skills/public/achieve/scripts/achieve_adapter_policy.py:291`,
+  `skills/public/create-skill/scripts/resolve_adapter.py:147`.
 - Timebox: none set by the operator. Set one on activation if this should stop before the
   full five slices; without one, the Slice Plan's own stop rule (halt BEFORE slice 4 if
   slices 1-2 overrun) is the only bound.
@@ -156,8 +167,8 @@ done, and point at `## Active Operating Frame` for when it is proven.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | `#674` — `check_probe_record` replays a record's own `## Stimulus` and diffs it against the recorded observable | Every claim defect this corpus produced was visible from data already in the record; thirteen rounds found them by hand | The four dead-control records from git history are refused at their original stimuli and pass at their corrected ones | planned |
-| 2 | `#673` — the six resolvers that call `load_yaml_file` bare route through the reporting loader | Until this lands, `parse_refused` and `declarations_dropped` are structurally dead for six skills, so every consumer guard there is one-door | All sixteen resolvers render a verdict for a parse refusal and record a dropped line; one test sweeps all sixteen | planned |
+| 1 | `#674` — `check_probe_record --replay-stimulus` replays the adapter declarations a record's `## Stimulus` writes and refuses the ones no reader honors | Every claim defect this corpus produced was visible from data already in the record, and none was caught by a tool | Six published dead controls refused at their original documents and passing at their corrected ones; a FIFTH record's dead control found that no review round had; all thirteen records pass the sweep gate | done (`a12ba86f5`) |
+| 2 | `#673` — the FIVE resolvers that call `load_yaml_file` bare route through the reporting loader (`announcement` was already repaired; measured, not read off the issue) | Until this lands, `parse_refused` and `declarations_dropped` are structurally dead for six skills, so every consumer guard there is one-door | All sixteen resolvers render a verdict for a parse refusal and record a dropped line; one test sweeps all sixteen | planned |
 | 3 | `#675` — a census verdict vocabulary that distinguishes coverage levels, with a witness that checks the level | `guarded` now means four things and the gate sees one; slice 2 changes which rows qualify for which | Per-level counts printed; existing rows migrate with measured evidence, none upgraded without a measurement | planned |
 | 4 | The remaining nineteen rows | After slices 2-3 a row's coverage is uniform and legible, so the per-row claim stops needing a paragraph of caveats | Each row `guarded` or carrying a recorded decision with measured caller coverage | planned |
 | 5 | Slice 6 of the predecessor: two-round bookkeeping as typed critique fields; `#628` to the operator queue | The obligation is currently remembered, not recorded | Typed fields; `#628` staged with its design call | planned |
@@ -196,6 +207,21 @@ Queue item form:
 - Why deferred: why the run did not stop immediately
 - Unblock action: exact action or answer needed
 - Revisit trigger: event, date, or proof boundary that reopens this
+
+RAISED BY THIS RUN:
+
+- Decision: `User Acceptance 1` names the bare `check_probe_record.py --require-evaluated`
+  as the command that must refuse a non-reproducing record. It does not; the working
+  command is `--replay-stimulus --require-evaluated`. Owner: repo operator. Why deferred:
+  proceeding either way is safe and blocking would stall the whole goal, so slice 1 shipped
+  the opt-in form and recorded the deviation. Unblock action: rule whether the replay should
+  join the `--require-evaluated` path. Consequence recorded rather than softened — the
+  issue-close and release closeout floors call this CLI, so folding it in makes every close
+  boundary run up to sixteen resolver subprocesses per record, and executing a record's own
+  declarations at a close is a cost those floors did not ask for. The corpus sweep gate
+  (`tests/quality_gates/test_probe_record_corpus_replays.py`) is the standing-lane
+  substitute that keeps the detector from being inert either way. Revisit trigger: the first
+  probe record authored after this goal, or any change to the issue-close floor.
 
 INHERITED, and deliberately NOT re-decided here — these stay the predecessor's and stay
 the operator's:
@@ -289,6 +315,20 @@ applies.
   and the single push carries the whole arc at once. `## Boundaries` holds the grant.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — `#674`, the stimulus-replay detector
+
+- Objective: Build the mechanical detector thirteen bounded review rounds paid for by hand: replay the adapter declarations a probe record's `## Stimulus` writes and refuse the ones no reader honors.
+- Why this approach: Every claim defect this corpus produced was visible from data already inside the record, and none was caught by a tool. Building it before paying more rows was the goal's own thesis.
+- Commits: `687a1e86b` (detector + two record corrections), `fb54e488b` (verdict for an outright-refused construct + coverage), `567a4b947` (round-1 fold), `a12ba86f5` (round-2 fold + module split).
+- What changed: NEW `scripts/probe_stimulus_documents.py` (shell/heredoc grammar and text surgery) and `scripts/probe_stimulus_replay.py` (resolve and judge), split on the concept boundary `probe_record_lib`/`probe_record_parse` already uses. `check_probe_record.py` gains `--replay-stimulus`; `probe_record_lib` gains `demoted_result` so the merge has one construction site. NEW `tests/test_probe_stimulus_replay.py` (63) and `tests/quality_gates/test_probe_record_corpus_replays.py` (the standing-lane corpus sweep). Corrected: the `release-planner` and `scaffold-family` probe records, and `tests/quality_gates/test_release_planner_version_refusal.py`, which still declared the dead key. Two dup families classified `intentional`.
+- Alternatives rejected: REJECTED: replay the CLI half of the stimulus and diff against `## Base observable`, which is what `#674` literally asks for. It is defeated by the PARTIAL dead control this corpus actually produced — the quality record's dead control flipped three of its five CLIs — and again by volatile bytes, and it would execute a record's own shell at a proof surface. REJECTED: fold the replay into `--require-evaluated`, because the issue-close and release floors call that path and would silently acquire sixteen subprocess resolves. Recorded in the Operator Decision Queue as a deviation from User Acceptance 1's literal command.
+- Targeted verification: `run_slice_closeout.py --skip-broad-pytest` at every commit boundary (four, all exit 0); `prepush_focused_changed_line_coverage.py --refuse-unestablished` after each commit and before the broad lane (clean); coverage measured at 115/115 and 133/133 rather than inferred from passing tests; TWELVE mutations across the three rounds of repair, each naming the test that failed. The corpus sweep is the standing-lane witness that the detector runs at all.
+- Test duplication pressure: `check_dup_ratchet.py --summary` at each boundary. Two new families, both classified `intentional` with measured notes: `a2a04eacbcea76ec` (argparse CLI entrypoint boilerplate across seven gates) and `1bca07c734ac01f8` (a two-line `if <mapping>.get(<key>): return <verdict>` guard clause across four unrelated classifiers, the same family as the already-classified `003780cc89f2ccfd`). Ratchet clean at the close.
+- Critique: TWO bounded rounds, two reviewers each, all spawned UNNAMED and read-only as `bounded-reviewer`; `reviewer_boundary_fingerprint.py` snapshot/verify around each window, both `ok: true` / `clean`. NEITHER ROUND WAS CLEAN. Round 1 found the detector defeatable five ways and INERT — nothing in the repo ran it, so `#674`'s own premise held for record fourteen — plus nine claim defects including a test corpus whose docstring claimed `verbatim` for a constant never published in any form. Round 2 found THREE of round 1's six repairs carrying the class they repaired: the variant generator emitted a flow sequence, then suffixed an inline comment the reader strips back off, then produced type-invalid values for booleans, floats, quoted and block scalars; and the per-line ablation the nesting repair introduced called YAML document markers declarations. It also found the demotion merge to be a THIRD hand-rolled construction of a shape whose single-owner rule is recorded forty lines above it. Per the two-round cap, the round-2 repairs are ACCEPTED-UNREVIEWED: no third round read them.
+- Off-goal findings: The detector measures whether the RESOLVER honors a declaration, not whether any consumer READS it. A field that passes nested keys through verbatim (`command_timing_log`, `host_extensions`) makes an unread key change the payload, so it reads live. `scripts/adapter_key_registry.py` already answers the reader question without a subprocess; wiring it in is unmade and is recorded in the module's blind class rather than filed, because slice 3 changes the census surface that would consume it.
+- Lessons carried forward: A detector's first version is a hypothesis about its own blind class, and the fastest way to test it is to hand a reviewer the mechanism and ask only `what is the cheapest input that still gets past this`. Both rounds answered with inputs the author could not see. The sharper one: EVERY generator this slice wrote — the variant, the ablation, the extraction — reproduced the defect class it was built to detect, three times in a row. A tool that constructs inputs for a reader must be checked against that reader's own parser, not against the author's model of it.
+- Metrics:
 
 ## Context Sources
 

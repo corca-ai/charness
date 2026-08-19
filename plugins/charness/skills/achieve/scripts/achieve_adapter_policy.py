@@ -273,37 +273,20 @@ def find_adapter(repo_root: Path) -> Path | None:
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:
-    searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
-    adapter_path = find_adapter(repo_root)
-    if adapter_path is None:
-        return {
-            "found": False,
-            "valid": True,
-            "path": None,
-            "data": _defaults(repo_root),
-            "errors": [],
-            "warnings": [
-                "No achieve adapter found. Using audit-only closeout publication defaults.",
-                "Create .agents/achieve-adapter.yaml to declare publication and Auto-Retro policy.",
-            ],
-            "searched_paths": searched_paths,
-        }
-    raw = _adapter_lib.load_yaml_file(adapter_path)
-    raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
-    if not isinstance(raw, dict):
-        warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
-    warnings.extend(extra_warnings)
-    return {
-        "found": True,
-        "valid": not errors,
-        "path": str(adapter_path),
-        "data": data,
-        "errors": errors,
-        "warnings": warnings,
-        "searched_paths": searched_paths,
-    }
+    # `resolve_adapter_payload`, NOT a hand-written pair of branches around
+    # `load_yaml_file`. The bare loader RAISES on a document the parser refuses and DISCARDS
+    # the uninterpreted-line sink, so `parse_refused` and `declarations_dropped` were both
+    # structurally dead for this skill's consumers.
+    return _adapter_lib.resolve_adapter_payload(
+        repo_root,
+        candidates=ADAPTER_CANDIDATES,
+        infer_defaults=_defaults,
+        validate=validate_adapter_data,
+        absent_warnings=lambda _data: [
+            "No achieve adapter found. Using audit-only closeout publication defaults.",
+            "Create .agents/achieve-adapter.yaml to declare publication and Auto-Retro policy.",
+        ],
+    )
 
 
 def resolve_discussion_deploy_vocab(repo_root: Path) -> list[str]:

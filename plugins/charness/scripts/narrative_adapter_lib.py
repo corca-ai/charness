@@ -7,9 +7,9 @@ from typing import Any
 
 from scripts.adapter_lib import (
     declared_fields_after_version_check,
-    load_yaml_file,
     optional_string,
     optional_string_list,
+    resolve_adapter_payload,
 )
 from scripts.artifact_naming_lib import RECORD_PATTERN
 
@@ -148,52 +148,40 @@ def validate_narrative_adapter_data(
     return validated, errors, warnings
 
 
-def load_narrative_adapter(repo_root: Path) -> dict[str, Any]:
-    searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
-    adapter_path = next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
-    if adapter_path is None:
-        data = infer_narrative_defaults(repo_root)
-        return {
-            "found": False,
-            "valid": True,
-            "path": None,
-            "data": data,
-            "artifact_filename": ARTIFACT_FILENAME,
-            "artifact_class": data["artifact_class"],
-            "artifact_path": _artifact_path(data["output_dir"]),
-            "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
-            "bootstrap_expectations": _bootstrap_expectations(data),
-            "errors": [],
-            "warnings": [
-                "No narrative adapter found. Using inferred source-of-truth defaults.",
-                f"First run leaves `{_artifact_path(data['output_dir'])}` as the durable truth-surface alignment artifact.",
-                "High-leverage README or landing rewrites should pin .agents/narrative-adapter.yaml before editing in earnest instead of relying on fallback inference.",
-                "Create .agents/narrative-adapter.yaml to pin the truth surface and mutable documents.",
-            ],
-            "searched_paths": searched_paths,
-        }
-
-    raw = load_yaml_file(adapter_path)
-    raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
-    if not isinstance(raw, dict):
-        warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
-    data, errors, extra_warnings = validate_narrative_adapter_data(raw_data, repo_root)
-    warnings.extend(extra_warnings)
+def _narrative_derived(data: dict[str, Any]) -> dict[str, Any]:
+    """The five keys this skill adds, computed from `data` in ONE place rather than once
+    per branch — which is how the found and absent arms drift apart."""
     return {
-        "found": True,
-        "valid": not errors,
-        "path": str(adapter_path),
-        "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_class": data["artifact_class"],
         "artifact_path": _artifact_path(data["output_dir"]),
         "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "bootstrap_expectations": _bootstrap_expectations(data),
-        "errors": errors,
-        "warnings": warnings,
-        "searched_paths": searched_paths,
     }
+
+
+def _narrative_absent_warnings(data: dict[str, Any]) -> list[str]:
+    return [
+        "No narrative adapter found. Using inferred source-of-truth defaults.",
+        f"First run leaves `{_artifact_path(data['output_dir'])}` as the durable truth-surface alignment artifact.",
+        "High-leverage README or landing rewrites should pin .agents/narrative-adapter.yaml before editing in earnest instead of relying on fallback inference.",
+        "Create .agents/narrative-adapter.yaml to pin the truth surface and mutable documents.",
+    ]
+
+
+def load_narrative_adapter(repo_root: Path) -> dict[str, Any]:
+    # `resolve_adapter_payload`, NOT a hand-written pair of branches around
+    # `load_yaml_file`. The bare loader RAISES on a document the parser refuses and DISCARDS
+    # the uninterpreted-line sink, so `parse_refused` and `declarations_dropped` were both
+    # structurally dead for this skill's consumers (#673).
+    return resolve_adapter_payload(
+        repo_root,
+        candidates=ADAPTER_CANDIDATES,
+        infer_defaults=infer_narrative_defaults,
+        validate=validate_narrative_adapter_data,
+        absent_warnings=_narrative_absent_warnings,
+        derive=_narrative_derived,
+    )
 
 
 def _finding(
