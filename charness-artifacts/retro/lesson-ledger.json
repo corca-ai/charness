@@ -1779,6 +1779,54 @@
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
       "anchor": "Ran prepush_focused_changed_line_coverage.py --refuse-unestablished immediately after each of the fifteen slice commits and BEFORE the broad lane, rather than running the broad suite first and re-running it after each fold. Without it the three slices would have paid the predecessor's four wasted broad reruns again."
+    },
+    {
+      "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-detector-blind-class-unstated",
+      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Shaping the successor goal, I wrote the blind class into the acceptance criteria as its own item (item 4: the docstring lands in its own commit ahead of any test file) and, when round 2 found that the covering_rows CALLS witness would ship call-presence/alias-blind/file-granular limits undeclared, I had a place to put them -- item 7 now carries that non-claim block. Otherwise: acceptance would have named only what the detector DOES, the blind class would have been a review-round discovery for the third time in this repo, and the CALLS witness would have shipped with the class it repairs unstated, which is exactly what the goal exists to stop."
+    },
+    {
+      "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-bar-recorded-as-prose",
+      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "read-but-not-applied",
+      "anchor": "The class came up in my FIRST DRAFT and the lesson was in view: I recorded the goal stop rule (\"stop if the detector flags none of the six\") as prose in `## Boundaries` while `## User Acceptance` -- the section a goal is actually reported complete against -- carried no numeric bar at all. A bounded reviewer named exactly that gap, and only then did the >=3-of-6 floor become a positional acceptance item. The lesson says prefer a structural property over prose when the property can be made positional; the property here (a count, in the section that decides completion) was trivially positional and I still wrote it as prose one section over."
+    },
+    {
+      "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-goal-closeout-evidence-binding",
+      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "lesson_id": "goal-closeout-evidence-binding",
+      "outcome": "changed-an-action",
+      "anchor": "The retro planner and every generated score command pointed --source-retro at charness-artifacts/retro/2026-08-19-session-retro.md, an artifact whose Goal names a DIFFERENT objective from this work unit. I refused that binding and routed this retro to its own session-bound path, which is also what the scaffold independently did (refused_write_artifact_reason: record-occupied). Otherwise: I would have appended six lesson scores and a disposition citing a retro that does not record the work they came from -- a merely existing artifact standing in for a bound one, which is this lesson verbatim."
+    },
+    {
+      "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-one-engine-per-pattern",
+      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "lesson_id": "one-engine-per-pattern",
+      "outcome": "changed-an-action",
+      "anchor": "Deciding the --replay-stimulus question, a third option was on the table: fold the replay for records authored after this goal and leave the existing corpus on the sweep gate. I rejected it in `## Interview Decisions` 3 because it creates two paths through one command, and named this lesson as the reason. Otherwise: that option is the cheapest-looking one (it bounds the close-boundary cost AND satisfies the acceptance wording), and I would probably have recommended it -- shipping one CLI whose refusal behavior depends on when the record was written."
+    },
+    {
+      "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-conservative-static-verdicts",
+      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "lesson_id": "conservative-static-verdicts",
+      "outcome": "changed-an-action",
+      "anchor": "It shaped how I put the detector-teeth question to the operator: reporting-only was offered as the recommended option and a no-increase baseline was offered as a THIRD option carrying its own recorded risk, rather than as a free addition. The baseline is now an explicit `## Non-Goals` entry (a baseline over an unmeasured detector freezes its mis-seeding). Otherwise: I would have framed it as blocking-vs-advisory, and the baseline would have read as a cheap middle option -- which is how a mis-seeded row gets ratcheted in this repo."
+    },
+    {
+      "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-isolated-agent-base-mismatch",
+      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
+      "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "lesson_id": "isolated-agent-base-mismatch",
+      "outcome": "changed-an-action",
+      "anchor": "My three bounded reviewers were NOT worktree-isolated, but the base-ambiguity half transferred: I named `dd671ec1e` as the base ref in all three briefs, and in the round-2 brief additionally stated that the target file was UNCOMMITTED working-tree content. Both reviewers then reported their reading base explicitly as a limitation (\"I read the worktree, not `git show dd671ec1e:<path>`\"), which is why I re-verified their factual findings myself before folding. Otherwise: an unbriefed reviewer reads whatever is on disk and reports line numbers as facts about a commit, and I would have folded five citation corrections without knowing which tree they were measured against."
     }
   ],
   "lessons": {
@@ -1905,10 +1953,10 @@
     "goal-closeout-evidence-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
       "transition_id": "seed-goal-closeout-evidence-binding",
-      "score_total": 1,
-      "score_count": 1,
+      "score_total": 2,
+      "score_count": 2,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2085,10 +2133,10 @@
     "conservative-static-verdicts": {
       "source_retro": "charness-artifacts/retro/2026-08-14-session-retro.md",
       "transition_id": "seed-conservative-static-verdicts",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2250,13 +2298,13 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 4,
-      "score_count": 8,
+      "score_total": 3,
+      "score_count": 9,
       "outcome_counts": {
         "changed-an-action": 6,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 2,
+        "read-but-not-applied": 3,
         "legacy-scalar": 0
       },
       "state": "active",
@@ -2280,10 +2328,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 5,
-      "score_count": 11,
+      "score_total": 6,
+      "score_count": 12,
       "outcome_counts": {
-        "changed-an-action": 8,
+        "changed-an-action": 9,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,
@@ -2295,10 +2343,10 @@
     "isolated-agent-base-mismatch": {
       "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
       "transition_id": "seed-isolated-agent-base-mismatch",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2385,10 +2433,10 @@
     "one-engine-per-pattern": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "transition_id": "seed-one-engine-per-pattern",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,

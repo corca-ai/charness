@@ -53,7 +53,9 @@ done, and point at `## Active Operating Frame` for when it is proven.
 
 ## Backlog Recount
 
-Recount the tracker before scope; see `references/lifecycle-before.md`.
+Recount the tracker before scope; see the `achieve` skill's
+`references/lifecycle-before.md`. That path is SKILL-relative — resolve it from
+`$SKILL_DIR`, not from this artifact's own directory, where it does not exist.
 
 - Counted: To be filled by the achieve Before-phase
 - Claims: To be filled by the achieve Before-phase

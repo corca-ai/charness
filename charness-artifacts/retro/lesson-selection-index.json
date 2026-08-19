@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-19",
-  "source_artifact_count": 536,
-  "candidate_count": 2179,
+  "source_artifact_count": 537,
+  "candidate_count": 2184,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1554,6 +1554,84 @@
       ]
     },
     {
+      "candidate_id": "current_focus:f4baf24bcb2e",
+      "kind": "current_focus",
+      "lesson": "The operator asked for a next-work proposal from `docs/handoff.md`, the open issues, and recent lessons, then chose the first track: fill the successor goal's Before phase and prepare it for activation.",
+      "normalized_key": "the operator asked for a next work proposal from docs handoff md the open",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+          "date": "2026-08-19",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The operator asked for a next-work proposal from `docs/handoff.md`, the open issues, and recent lessons, then chose the first track: fill the successor goal's Before phase and prepare it for activation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:820af59cee73",
+      "kind": "next_improvement",
+      "lesson": "a citation-liveness validator over `charness-artifacts/**` — see `## Sibling Search` / `## Portable Candidate`. Structural pattern: **a durable artifact asserts `path:line` facts about the tree and no mechanism reads them, so a wrong citation is corrected only by a reviewer who happens to check**. Triggering instance(s): this session's `adapter_lib.py:188` (one caller, claimed sixteen), `slice_closeout_advisories.py:517-586` (stale docstring over live code), the census gate's own `four consumers` comment. Destination: issue [#677](https://github.com/corca-ai/charness/issues/677) (recurs: same family as `#599`'s \"no command answers what reads this\", and the successor goal's slice 1 is the semantic version — filed so the two are reconciled rather than built twice).",
+      "normalized_key": "a citation liveness validator over charness artifacts see sibling search portable candidate structural pattern",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+          "date": "2026-08-19",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a citation-liveness validator over `charness-artifacts/**` — see `## Sibling Search` / `## Portable Candidate`. Structural pattern: **a durable artifact asserts `path:line` facts about the tree and no mechanism reads them, so a wrong citation is corrected only by a reviewer who happens to check**. Triggering instance(s): this session's `adapter_lib.py:188` (one caller, claimed sixteen), `slice_closeout_advisories.py:517-586` (stale docstring over live code), the census gate's own `four consumers` comment. Destination: issue [#677](https://github.com/corca-ai/charness/issues/677) (recurs: same family as `#599`'s \"no command answers what reads this\", and the successor goal's slice 1 is the semantic version — filed so the two are reconciled rather than built twice)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4da95d2fb7d6",
+      "kind": "next_improvement",
+      "lesson": "before spawning a plan reviewer, spend two minutes on the author's own pre-mortem — \"this goal is reported complete and the thing it built does nothing; how did that pass?\" Round 1's sharpest finding was answerable that way, and it is free. Applied: recorded here and in the shaped goal's `## Plan Critique Findings`.",
+      "normalized_key": "before spawning a plan reviewer spend two minutes on the author s own pre",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+          "date": "2026-08-19",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "before spawning a plan reviewer, spend two minutes on the author's own pre-mortem — \"this goal is reported complete and the thing it built does nothing; how did that pass?\" Round 1's sharpest finding was answerable that way, and it is free. Applied: recorded here and in the shaped goal's `## Plan Critique Findings`."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:3c21c9295c7c",
       "kind": "next_improvement",
       "lesson": "**capability — a floor that adds a required field ships its authoring surface.** `Probe record` reaches no template, no shape describer, and no reference doc, so an author's discovery path is the error message. Tracked issue, with the generalized pattern and destination below.",
@@ -1602,6 +1680,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**memory — the goal artifact's frame now carries slice 3's measured groundwork** so a compacted or resumed session does not re-derive that `what_reads_this.py` cannot express a shape while `consumer_files()` already does. Applied: `## Active Operating Frame`, Next action."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:691040dec383",
+      "kind": "next_improvement",
+      "lesson": "this retro, plus the six ledger scores.",
+      "normalized_key": "this retro plus the six ledger scores",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+          "date": "2026-08-19",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "this retro, plus the six ledger scores."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3f5814415215",
+      "kind": "next_improvement",
+      "lesson": "verify every `file:line` an artifact asserts BEFORE the first reviewer spawn, the way `## Backlog Recount` already verifies issue premises. Four of my nine defects were citations, and a reviewer round is an expensive way to run grep. Applied: all citations in the committed artifact re-verified.",
+      "normalized_key": "verify every file line an artifact asserts before the first reviewer spawn the way",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+      "latest_source_date": "2026-08-19",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
+          "date": "2026-08-19",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "verify every `file:line` an artifact asserts BEFORE the first reviewer spawn, the way `## Backlog Recount` already verifies issue premises. Four of my nine defects were citations, and a reviewer round is an expensive way to run grep. Applied: all citations in the committed artifact re-verified."
         }
       ]
     },
