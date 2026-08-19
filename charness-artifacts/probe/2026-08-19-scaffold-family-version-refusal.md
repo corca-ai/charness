@@ -50,18 +50,44 @@ One temp repo per skill, each declaring its own `output_dir` — a value that di
 the reader's default, so "honored" and "fell back" are distinguishable. Each real CLI is
 run against its own repo.
 
+**WRITTEN OUT PER SKILL after `check_probe_record.py --replay-stimulus` refused the earlier
+form.** This block used to be a TEMPLATE over `<skill>`, which reads compactly and is not a
+reproduction step: `.agents/<skill>-adapter.yaml` names no resolver, nobody can paste it,
+and no checker can replay it. The five documents below are what was actually run. `handoff`
+declares `docs/mine` rather than `docs/mine-handoff` because its adapter derives the path
+from a directory plus a fixed `handoff.md`.
+
 ```
-mkdir -p $D/.agents
-cat > $D/.agents/<skill>-adapter.yaml <<'YAML'
+for s in quality retro debug critique handoff; do mkdir -p $D/$s/.agents; done
+cat > $D/quality/.agents/quality-adapter.yaml <<'YAML'
 version: 9
 repo: demo
-output_dir: docs/mine-<skill>
+output_dir: docs/mine-quality
 YAML
-python3 skills/public/<skill>/scripts/scaffold_<skill>_artifact.py --repo-root $D --title probe
+cat > $D/retro/.agents/retro-adapter.yaml <<'YAML'
+version: 9
+repo: demo
+output_dir: docs/mine-retro
+YAML
+cat > $D/debug/.agents/debug-adapter.yaml <<'YAML'
+version: 9
+repo: demo
+output_dir: docs/mine-debug
+YAML
+cat > $D/critique/.agents/critique-adapter.yaml <<'YAML'
+version: 9
+repo: demo
+output_dir: docs/mine-critique
+YAML
+cat > $D/handoff/.agents/handoff-adapter.yaml <<'YAML'
+version: 9
+repo: demo
+output_dir: docs/mine
+YAML
+for s in quality retro debug critique handoff; do
+  python3 skills/public/$s/scripts/scaffold_${s}_artifact.py --repo-root $D/$s --title probe
+done
 ```
-
-`handoff` uses `output_dir: docs/mine`; its adapter derives the path from a directory plus
-a fixed `handoff.md`.
 
 ## Base observable
 

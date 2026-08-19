@@ -8,7 +8,8 @@ Claim: `plan_release_run.build_plan` refuses an unspeakable adapter version at i
   read site, rather than inheriting a callee's refusal
 Claim kind: change
 Observable: the planner's `next_action=` summary line and its process exit code, under a
-  repo that DID declare `release_record_path` and a real-host trigger glob
+  repo that DID declare an `output_dir` (the key `release_record_path` is derived from) and
+  a real-host trigger glob
 Source ref: scripts/adapter-consumer-classification.json
 Source revision: dd5b6dee9
 Source conditions: the adapter's declared version is one this reader does not speak, so
@@ -47,14 +48,26 @@ inheritance, so the CLI reading alone could not establish the claim.
 
 A temp repo with a git repository (the planner asks git for the current branch on the arm
 that reaches a plan) and an adapter declaring a version this reader refuses beside a real
-`release_record_path` and a real trigger glob. The real CLI is run against it.
+`output_dir` and a real trigger glob. The real CLI is run against it.
+
+**CORRECTED after `check_probe_record.py --replay-stimulus`, the detector built for `#674`,
+refused this record on its first sweep of the corpus — the FIFTH control-that-could-not-fail
+in this family and the only one thirteen bounded review rounds did not find.** The first
+version of this block declared `release_record_path: charness-artifacts/release/mine.md`.
+No reader in this repo takes that key: `plan_release_prepared_stop.release_record_path`
+DERIVES the path from `output_dir` plus a fixed `latest.md`, precisely so a second copy of
+the constant cannot drift. Deleting the line changes nothing the release resolver honors.
+Re-measured: at HEAD with `version: 1`, the dead declaration and the corrected `output_dir`
+BOTH print `next_action=sync_release_surface`, so the polarity control below could not have
+distinguished honored from fell-back. Both arms were re-run on `output_dir`, which is the
+key the contract reads, and both reproduced the observables recorded here unchanged.
 
 ```
 git -C $D init -q
 mkdir -p $D/.agents
 cat > $D/.agents/release-adapter.yaml <<'YAML'
 version: 9
-release_record_path: charness-artifacts/release/mine.md
+output_dir: charness-artifacts/release-mine
 real_host_required_path_globs:
   - "src/**"
 YAML
@@ -88,10 +101,17 @@ exit 1
 
 ## Polarity controls
 
-- speakable but otherwise invalid (`version: 1`, `release_record_path: 12345`) →
+- speakable but otherwise invalid (`version: 1`, `output_dir: 12345`) →
   `next_action=sync_release_surface`, exit 0. The affordance an operator runs this planner
   for is preserved; only an unspeakable version refuses.
-- speakable and well-formed → `next_action=sync_release_surface`, exit 0.
+- speakable and well-formed (`version: 1`, `output_dir: charness-artifacts/release-mine`) →
+  `next_action=sync_release_surface`, exit 0.
+- **The control that could not fail, kept for the trend line.** With the original
+  `release_record_path` declaration this pair was WORTHLESS: `next_action=` is identical
+  whether the reader honors the declaration or falls back, because no reader takes that key
+  at all. Neither speakable control distinguished anything until the declaration moved to
+  `output_dir`. The isolating control below is what carried this row, which is why the
+  defect survived thirteen review rounds — the dead arm was not the load-bearing one.
 - **The isolating control, and the one this row actually needs.** The CLI reading above is
   satisfied WITHOUT the guard, because `build_release_payload` (guarded in row 2) is called
   near the top of `build_plan` and its `SystemExit` escapes the surrounding

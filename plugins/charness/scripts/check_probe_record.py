@@ -13,6 +13,14 @@ reason both exist:
   This is the mode a close or a publish runs, where a claim that outran its measurement
   is the failure being prevented.
 
+`--replay-stimulus` composes with either. It adds the one thing the two modes above
+structurally cannot do -- it REPLAYS the adapter declarations the record's own `## Stimulus`
+writes, through the real resolver, and refuses a declaration the reader does not honor even
+at a speakable version (#674). It is OPT-IN rather than part of `--require-evaluated`
+because it shells out to sixteen possible resolvers, and the issue-close and release floors
+that call this CLI should not silently acquire that cost. `probe_stimulus_replay`'s
+docstring owns what it replays and, at greater length, what it does not.
+
 WHAT THIS DOES NOT DO, stated because the name invites the assumption: it does not run
 the probe. It reads captured observables out of a file somebody wrote. Its whole tooth
 is that an unmeasured claim must now SAY it is unmeasured in a typed word, in a file a
@@ -30,12 +38,13 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 _probe_record = import_repo_module(__file__, "scripts.probe_record_lib")
+_stimulus_replay = import_repo_module(__file__, "scripts.probe_stimulus_replay")
 _yaml_output = import_repo_module(__file__, "scripts.yaml_output")
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def evaluate(repo_root: Path, record_path: Path) -> dict:
+def evaluate(repo_root: Path, record_path: Path, *, replay_stimulus: bool = False) -> dict:
     try:
         text = record_path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
@@ -50,7 +59,30 @@ def evaluate(repo_root: Path, record_path: Path) -> dict:
         return _probe_record.unreadable_record_result(
             f"could not read the probe record at `{record_path}`: {exc}"
         )
-    return _probe_record.resolve_probe_record_text(text, repo_root=repo_root)
+    parsed = _probe_record.parse_probe_record(text)
+    result = _probe_record.resolve_probe_record(parsed, repo_root=repo_root)
+    if replay_stimulus:
+        _merge_stimulus_replay(result, _stimulus_replay.replay_probe_stimulus(parsed, repo_root=repo_root))
+    return result
+
+
+def _merge_stimulus_replay(result: dict, replay: dict) -> None:
+    """Fold the replay verdict into the record's, IN PLACE and in the refusing direction only.
+
+    A replay that resolves `not-established` demotes the record: its reproduction steps do
+    not reproduce, so whatever the captured observables say, the record does not establish
+    its claim. A replay that PASSES never promotes a record the static resolver refused --
+    the two mechanisms answer different questions and only one of them can say `evaluated`.
+    """
+    result["stimulus_replay"] = replay
+    if replay["state"] != _stimulus_replay.STIMULUS_NOT_ESTABLISHED:
+        return
+    result["undetermined_reasons"] = list(result["undetermined_reasons"]) + [
+        f"the stimulus does not reproduce: {reason}" for reason in replay["reasons"]
+    ]
+    result["state"] = _probe_record.PROBE_NOT_ESTABLISHED
+    result["supports_claim"] = False
+    result["residual_judgment"] = []
 
 
 def main() -> int:
@@ -63,8 +95,14 @@ def main() -> int:
         help="Exit non-zero unless the record resolves `evaluated`. Use at a close or publish "
         "boundary; omit while authoring.",
     )
+    parser.add_argument(
+        "--replay-stimulus",
+        action="store_true",
+        help="Also replay the adapter declarations the record's `## Stimulus` writes, through the "
+        "real resolver, and refuse a declaration the reader does not honor at a speakable version.",
+    )
     args = parser.parse_args()
-    result = evaluate(args.repo_root.resolve(), args.record)
+    result = evaluate(args.repo_root.resolve(), args.record, replay_stimulus=args.replay_stimulus)
     result["record"] = str(args.record)
     sys.stdout.write(_yaml_output.render_yaml(result))
     if args.require_evaluated and result["state"] != _probe_record.PROBE_EVALUATED:

@@ -1,6 +1,6 @@
 # Achieve Goal: Build the tool the review rounds paid for, then finish the adapter-consumer corpus
 
-Status: draft
+Status: active
 Created: 2026-08-19
 Activation: `/goal @charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder.md`
 

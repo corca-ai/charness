@@ -4906,6 +4906,13 @@
       "note": "Intra-file, between the new `_payload()` builder and `_bootstrap_expectations`. Both construct a dict literal that includes `_artifact_path(data[\"output_dir\"])` and `_record_path()` -- the same two derived paths, in two different payloads with different audiences: the resolver's return shape, and the bootstrap hints an operator reads. The overlap is those two calls, which are ALREADY the single owners of that derivation; the surrounding keys share nothing. `_payload` exists precisely because a round-2 bounded review found the hand-built parse-failure arm omitting six keys the other arms carried, including `artifact_path`, which `preflight_sources` indexes directly -- so collapsing it back toward `_bootstrap_expectations` would undo the fix that made all three arms one construction site.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a2a04eacbcea76ec",
+      "note": "argparse CLI-entrypoint boilerplate across seven unrelated repo gates (`parity_harness`, `check_adapter_consumer_classification`, `check_probe_record`, `check_plugin_doc_links`, `check_export_self_sufficiency`, `removed_name_consumers`, `check_plugin_asset_command_carriers`). The matched run is the preamble and tail only -- `def main() -> int`, `ArgumentParser(description=__doc__.splitlines()[0])`, a `--repo-root` argument, one or more `store_true` flags, `parse_args()`, `return 0` -- while every body diverges completely. `check_probe_record` entered the family by gaining a SECOND store_true flag (`--replay-stimulus`, #674), not by copying anyone; the other six members are untouched. Same family as the already-classified 04fc34c123ef7b4e and for the same reason: a shared main() parameterised by each gate's flag set and exit semantics is the boilerplate again with indirection on top, and `run_adapter_cli` exists for the SIMPLE resolvers precisely because their tails are invariant, which these are not.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
