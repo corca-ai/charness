@@ -26,7 +26,15 @@ _BUDGET_SPEC = importlib.util.spec_from_file_location(
 )
 _BUDGET = importlib.util.module_from_spec(_BUDGET_SPEC)
 _BUDGET_SPEC.loader.exec_module(_BUDGET)
-MAX_CONTENT_LINES = _BUDGET.DEFAULT_MAX_CONTENT_LINES
+MAX_CONTENT_WORDS = _BUDGET.DEFAULT_MAX_CONTENT_WORDS
+# The fixture's OWN arithmetic, kept independent of the counter under test: every
+# `- state detail {i} in \`git status --short\`` bullet is 8 whitespace-separated
+# tokens, and the surrounding scaffolding (title, trigger bullet, `OWNED_NEXT`,
+# discuss bullet) contributes 12. Deriving the expected count from
+# `_BUDGET.content_words` instead would make these assertions agree with any
+# counter, including a broken one.
+STATE_BULLET_WORDS = 8
+FIXED_CONTENT_WORDS = 12
 
 # Scaffolding bullets for `## Current State` / `## Next Session`. They exist to
 # make the section non-empty for a test about some OTHER rule, so they carry a
@@ -124,7 +132,7 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
                 "",
                 "## Current State",
                 "",
-                *[f"- stale detail {index} in `git status --short`" for index in range(MAX_CONTENT_LINES + 7)],
+                *[f"- stale detail {index} in `git status --short`" for index in range(MAX_CONTENT_WORDS // STATE_BULLET_WORDS + 7)],
                 "",
                 "## Next Session",
                 "",
@@ -145,7 +153,7 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert f"content lines (limit {MAX_CONTENT_LINES})" in result.stderr
+    assert f"content words (limit {MAX_CONTENT_WORDS})" in result.stderr
 
 
 def _handoff_with(state_lines: list[str], reference_lines: list[str]) -> str:
@@ -183,9 +191,11 @@ def _handoff_with(state_lines: list[str], reference_lines: list[str]) -> str:
 def test_handoff_budget_ignores_blank_lines_headings_and_references(tmp_path: Path) -> None:
     # The re-base: a file well OVER the old raw cap of 70 lines passes, because
     # its length is structure and reference links rather than content the next
-    # operator has to read: the body sits 4 content lines under the ceiling.
+    # operator has to read. Under the WORD budget the point sharpens: the blank
+    # line after every bullet costs nothing at all, so this fixture runs to
+    # hundreds of raw lines while staying well under the ceiling.
     state = []
-    for index in range(MAX_CONTENT_LINES - 8):
+    for index in range((MAX_CONTENT_WORDS - FIXED_CONTENT_WORDS) // STATE_BULLET_WORDS - 8):
         state.append(f"- state detail {index} in `git status --short`")
         state.append("")
     references = [f"- [guide {index}](docs/guide.md) — the demo guide." for index in range(12)]
@@ -292,14 +302,18 @@ def test_validate_handoff_artifact_reports_every_descriptorless_reference_at_onc
 
 
 def test_handoff_budget_still_charges_for_prose_density(tmp_path: Path) -> None:
-    # The other half: padding `## References` buys no room for content. 56 state
-    # bullets + 4 fixed content lines put the body 2 over the ceiling.
-    state = [f"- state detail {index} in `git status --short`" for index in range(MAX_CONTENT_LINES - 2)]
+    # The other half: padding `## References` buys no room for content. One bullet
+    # past the largest body that fits puts the count exactly `STATE_BULLET_WORDS`
+    # over the ceiling, and the gate must report that number.
+    _over_entries = (MAX_CONTENT_WORDS - FIXED_CONTENT_WORDS) // STATE_BULLET_WORDS + 1
+    state = [f"- state detail {index} in `git status --short`" for index in range(_over_entries)]
     repo = seed_repo(tmp_path, _handoff_with(state, ["- [guide](docs/guide.md) — the demo guide."]))
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert f"{MAX_CONTENT_LINES + 2} content lines (limit {MAX_CONTENT_LINES})" in result.stderr
+    _expected = FIXED_CONTENT_WORDS + STATE_BULLET_WORDS * _over_entries
+    assert _expected > MAX_CONTENT_WORDS, "fixture must breach, not merely differ"
+    assert f"{_expected} content words (limit {MAX_CONTENT_WORDS})" in result.stderr
 
 
 def test_validate_handoff_artifact_rejects_a_transcribed_release_version(tmp_path: Path) -> None:

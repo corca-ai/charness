@@ -14,11 +14,26 @@ def test_handoff_skill_names_diary_antipattern_and_size_gate() -> None:
         ROOT / "skills" / "public" / "handoff" / "references" / "state-selection.md"
     ).read_text(encoding="utf-8")
 
-    # The budget counts CONTENT lines; the skill must say so, because an author
-    # who thinks it is a raw line cap trims formatting and reference links and
-    # gets nowhere.
-    assert "CONTENT" in skill_text and "25-50" in skill_text and "78" in skill_text
-    assert "content_line_count" in skill_text
+    # The budget counts CONTENT WORDS; the skill must say so, because an author who
+    # thinks it is a line cap trims formatting, rewraps, and gets nowhere -- which is
+    # precisely what the old line-based budget rewarded.
+    #
+    # The ceiling is READ from the module that owns it rather than written here as a
+    # literal. This assertion carried `"78"` and would have kept passing on a SKILL.md
+    # that still advertised 78 after the default moved, which is the transcription
+    # class the budget module's own docstring is about.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "handoff_content_budget_for_skill_gate",
+        ROOT / "skills" / "public" / "handoff" / "scripts" / "handoff_content_budget.py",
+    )
+    budget = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(budget)
+    assert "CONTENT" in skill_text
+    assert "250-550" in skill_text, "the skill must publish an authoring TARGET, not only a ceiling"
+    assert str(budget.DEFAULT_MAX_CONTENT_WORDS) in skill_text
+    assert "content_word_count" in skill_text
     assert "## This Session" in skill_text and "(<date>)" in skill_text
     assert "spill-targets.md" in skill_text
     assert "changes the next action" in skill_text

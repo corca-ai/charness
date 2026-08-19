@@ -79,6 +79,7 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 # addition-restraint: this is diagnosis only, never a new blocking floor.
 _budget = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_content_budget")
 content_lines = _budget.content_lines
+content_words = _budget.content_words
 REQUIRED_SECTIONS, OPTIONAL_SECTIONS = _budget.REQUIRED_SECTIONS, _budget.OPTIONAL_SECTIONS
 # Same single-sourcing reason as the budget: the author should see unowned
 # entries while drafting, not learn about them from the gate afterwards.
@@ -88,19 +89,22 @@ unowned_entries = _ownership.unowned_entries
 has_unclosed_fence = _ownership.has_unclosed_fence
 try:
     _handoff_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_handoff_artifact")
-    MAX_CONTENT_LINES = int(_handoff_validator.MAX_CONTENT_LINES)
+    MAX_CONTENT_WORDS = int(_handoff_validator.MAX_CONTENT_WORDS)
 except Exception:
-    MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
-# "near" = within 8 content lines of the ceiling: enough room to add a fact, not
-# enough to add a section, which is the point at which a refresh should prune. Only the
-# MARGIN is a module constant; the near-limit line itself is derived per run from the
-# resolved ceiling. A precomputed `NEAR_LIMIT_LINES` used to sit here and was deleted
-# rather than left dead: derived from the DEFAULT, it would have warned "near limit" at
-# 70 in a repo whose adapter set 120.
-NEAR_LIMIT_MARGIN = 8
+    MAX_CONTENT_WORDS = _budget.DEFAULT_MAX_CONTENT_WORDS
+# "near" = within 90 content WORDS of the ceiling: enough room to add a fact, not
+# enough to add a section, which is the point at which a refresh should prune. Scaled
+# from the 8-CONTENT-LINE margin it replaces at this repo's measured ~10.6 words per
+# wrapped line; the unit changed with the budget, and a margin left at 8 would have
+# warned only after the author was 8 words from refusal. Only the MARGIN is a module
+# constant; the near-limit point is derived per run from the resolved ceiling. A
+# precomputed absolute used to sit here and was deleted rather than left dead: derived
+# from the DEFAULT, it would have warned "near limit" at the shipped number in a repo
+# whose adapter set its own.
+NEAR_LIMIT_MARGIN = 90
 
 
-def _resolved_max_content_lines(adapter: dict[str, Any]) -> int:
+def _resolved_max_content_words(adapter: dict[str, Any]) -> int:
     """The ceiling THIS repo declared, else the module default.
 
     Read from the adapter payload the planner already loaded. A planner that
@@ -113,10 +117,10 @@ def _resolved_max_content_lines(adapter: dict[str, Any]) -> int:
     # resolver, and a bare attribute read would turn that skew into an AttributeError
     # and no plan at all. An adversarial round found this copy still unguarded after
     # the validators were fixed -- the cost of resolving the rule twice.
-    field = getattr(resolve_adapter, "LINE_BUDGET_FIELD", "max_content_lines")
+    field = getattr(resolve_adapter, "WORD_BUDGET_FIELD", "max_content_words")
     declared = (adapter or {}).get("data", {}).get(field)
     if isinstance(declared, bool) or not isinstance(declared, int) or declared < 1:
-        return MAX_CONTENT_LINES
+        return MAX_CONTENT_WORDS
     return declared
 
 
@@ -163,7 +167,7 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
             "path": rel_path,
             "exists": False,
             "line_count": 0,
-            "content_line_count": 0,
+            "content_word_count": 0,
             "status": "missing",
             "dated_session_sections": 0,
             "missing_sections": list(REQUIRED_SECTIONS),
@@ -176,9 +180,9 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
     missing = [section for section in REQUIRED_SECTIONS if section not in h2_sections]
     extra = [section for section in h2_sections if section not in _budget.CANONICAL_SECTIONS]
     dated_sessions = sum(1 for line in h2_sections if line.startswith("## This Session ("))
-    # Budget counts content, not file length (see handoff_content_budget).
-    content_line_count = len(content_lines(lines))
-    ceiling = _resolved_max_content_lines(adapter)
+    # Budget counts content WORDS, wrap-invariant (see handoff_content_budget).
+    content_word_count = content_words(lines)
+    ceiling = _resolved_max_content_words(adapter)
     near_limit = ceiling - NEAR_LIMIT_MARGIN
     unowned = unowned_entries(lines)
     if has_unclosed_fence(lines):
@@ -188,7 +192,7 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         # refuses this outright; a portable install without the repo validator
         # has only this surface, so the guard cannot live only there.
         status = "unscannable_fence"
-    elif content_line_count > ceiling:
+    elif content_word_count > ceiling:
         status = "over_limit"
     elif unowned:
         # The gate blocks on this, so a plan that reported `ok` sent the author
@@ -199,7 +203,7 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         status = "diary_smell"
     elif missing or extra:
         status = "shape_issue"
-    elif content_line_count >= near_limit:
+    elif content_word_count >= near_limit:
         status = "near_limit"
     else:
         status = "ok"
@@ -207,13 +211,13 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         "path": rel_path,
         "exists": True,
         "line_count": len(lines),
-        "content_line_count": content_line_count,
+        "content_word_count": content_word_count,
         # The ceiling this forecast used, published rather than left implicit. Without
         # it the only observable is the derived `status`, so a resolver returning ANY
         # number above the count looks identical to one returning the repo's declared
         # ceiling -- which is how an adversarial round found the planner's resolver
         # free to forecast a number the gate does not enforce, with the suite green.
-        "content_line_budget": ceiling,
+        "content_word_budget": ceiling,
         # Diagnosis, not a new blocking floor: the gate owns the verdict. Line
         # numbers so a refresh can go straight to the entry that needs a pointer.
         "unowned_entries": [
@@ -380,7 +384,7 @@ def build_plan(
     intent: str,
     invoked_directly: bool,
 ) -> dict[str, Any]:
-    # GUARDED AT THE READ SITE. The planner's `artifact_path` and the `max_content_lines`
+    # GUARDED AT THE READ SITE. The planner's `artifact_path` and the `max_content_words`
     # ceiling it forecasts against both come out of this payload. Measured at `97dfc881a`:
     # a repo declaring `output_dir: docs/mine` under `version: 9` planned against
     # `artifact_path: docs/handoff.md`, exit 0 — so every command and gate packet the plan

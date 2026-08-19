@@ -21,14 +21,32 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.simple_skill_adapter_lib")
 load_simple_adapter = _scripts_simple_skill_adapter_lib_module.load_simple_adapter
 
-# CONTENT lines, not file lines: the budget excludes blank lines, the canonical `##`
-# headings the validator itself requires, and the whole `## References` block. Named
-# apart from debug/quality's `max_artifact_lines` for exactly that reason -- one shared
-# name across the two families would have meant two different measurements, so a repo
-# copying a number between adapters would silently get a different ceiling than it read.
-LINE_BUDGET_FIELD = "max_content_lines"
+# CONTENT words, not file lines and no longer content LINES: the budget excludes blank
+# lines, the canonical `##` headings the validator itself requires, and the whole
+# `## References` block, then charges per whitespace-separated token of what remains.
+# Named apart from debug/quality's `max_artifact_lines` for the reason that name was
+# always separate -- one shared name across the two families would have meant two
+# different measurements, so a repo copying a number between adapters would silently get
+# a different ceiling than it read. That hazard is now sharper, not softer: the two
+# families no longer share a UNIT either.
+WORD_BUDGET_FIELD = "max_content_words"
 # 1, not 0: a ceiling of 0 refuses every possible handoff, including the scaffold's stub.
-INT_FIELDS = ((LINE_BUDGET_FIELD, 1),)
+INT_FIELDS = ((WORD_BUDGET_FIELD, 1),)
+# `max_content_lines` was this field until 2026-08-19. It is REFUSED rather than ignored,
+# and rather than silently reinterpreted: 78 read as a word ceiling would refuse every
+# real handoff, and dropping it would leave a consuming repo's declared bar inert while
+# the adapter reported `valid: true`. Neither the loader's uninterpreted-line channel nor
+# `declarations_dropped` can see this: both report what the PARSER dropped, and a
+# well-formed key the SCHEMA stopped reading parses perfectly. A retired field is exactly
+# the class those doors cannot cover, which is why it needs its own refusal.
+RETIRED_FIELDS = ((
+    "max_content_lines",
+    WORD_BUDGET_FIELD,
+    "the handoff budget now charges CONTENT WORDS, not lines, because a line count "
+    "measured the author's wrap width (a 3.3x swing on identical prose). A line "
+    "ceiling cannot be converted automatically -- the old bar admitted 222-1240 words "
+    "-- so restate the bar you want in words; the shipped default is 900",
+),)
 
 
 def load_adapter(repo_root: Path) -> dict[str, object]:
@@ -43,6 +61,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
             "Create .agents/handoff-adapter.yaml to move the artifact path or record preset provenance.",
         ),
         int_fields=INT_FIELDS,
+        retired_fields=RETIRED_FIELDS,
     )
 
 

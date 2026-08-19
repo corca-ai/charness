@@ -22,11 +22,11 @@ _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
 )
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 # The same budget module `validate_handoff_artifact.py` loads, so
-# `size_budget.max_lines` cannot disagree with the ceiling the gate enforces.
+# `size_budget.max_words` cannot disagree with the ceiling the gate enforces.
 _budget = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_content_budget")
 
 # Mirrors REQUIRED_SECTIONS in scripts/validate_handoff_artifact.py. The handoff
-# validator enforces an EXACT H2 set, a `# ... Handoff` title, a content-line
+# validator enforces an EXACT H2 set, a `# ... Handoff` title, a content-word
 # ceiling (blank lines, the required headings, and `## References` are not
 # counted), non-empty sections, and a markdown link under `## References` that
 # carries a descriptor on the link's OWN line, so the scaffold emits a skeleton
@@ -54,9 +54,10 @@ VALIDATOR_SCRIPT_NAMES = ("validate_handoff_artifact.py", "validate-handoff-arti
 # All three are in the skill body. Nothing bound them to the moment of authoring,
 # which is the `rule-exists-but-does-not-bind` class this repo already records.
 SIZE_GUIDANCE = (
-    "Write the whole artifact within max_lines. Blank lines, the required `##` headings, and "
-    "the whole `## References` block are free, so trimming formatting or shortening links buys "
-    "nothing — cut STATE instead, spilling detail to the artifact that owns it. `## Current "
+    "Write the whole artifact within max_words. Blank lines, the required `##` headings, and "
+    "the whole `## References` block are free, and the budget charges WORDS, so rewrapping or "
+    "shortening links buys nothing — cut STATE instead, spilling detail to the artifact that "
+    "owns it. `## Current "
     "State` and `## Next Session` read as a flat list of links: each entry is a link, an issue "
     "id, or an inline command WITH ARGUMENTS, on the entry itself. A command in a fenced block "
     "below a bullet owns nothing and is refused. The budget fills fastest when an entry names "
@@ -130,20 +131,21 @@ def validator_command(repo_root: Path) -> str:
     return _scaffold_lib.validator_command(repo_root=repo_root, script_file=__file__, script_names=VALIDATOR_SCRIPT_NAMES)
 
 
-def max_content_lines(adapter: dict | None = None) -> int:
+def max_content_words(adapter: dict | None = None) -> int:
     """The validator's own ceiling, read rather than transcribed.
 
-    A second copy of `78` here would be a number that goes stale silently the
-    next time an operator re-bases the budget -- the class this repo's
-    `regenerable-facts` gate exists for.
+    A second copy of the number here would go stale silently the next time an
+    operator re-bases the budget -- the class this repo's `regenerable-facts`
+    gate exists for. It went stale in the UNIT too: this function was
+    `max_content_lines` until 2026-08-19.
 
-    An adapter that declares `max_content_lines` overrides it, resolved with the same
+    An adapter that declares `max_content_words` overrides it, resolved with the same
     rule the gate applies: a forecast that disagreed with the gate would send the
     author to write-to-fit against a number that then refuses them. `adapter` stays
     optional so the no-adapter callers keep the default.
     """
-    default = int(_budget.DEFAULT_MAX_CONTENT_LINES)
-    declared = (adapter or {}).get("data", {}).get(_resolve_adapter.LINE_BUDGET_FIELD)
+    default = int(_budget.DEFAULT_MAX_CONTENT_WORDS)
+    declared = (adapter or {}).get("data", {}).get(_resolve_adapter.WORD_BUDGET_FIELD)
     if isinstance(declared, bool) or not isinstance(declared, int) or declared < 1:
         return default
     return declared
@@ -200,7 +202,7 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
         "title": resolved_title,
         "template": render_template(title=resolved_title, date_text=date_text),
         "validator_command": validator_command(repo_root),
-        "size_budget": {"max_lines": max_content_lines(adapter), "guidance": SIZE_GUIDANCE},
+        "size_budget": {"max_words": max_content_words(adapter), "guidance": SIZE_GUIDANCE},
     })
     return _scaffold_lib.with_subject_identity_facts(
         payload,

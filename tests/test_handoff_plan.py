@@ -52,7 +52,7 @@ def load_plan_module(path: Path = SCRIPT_PATH):
     return module
 
 
-def handoff_body(*, current_lines: int = 1, omit_references: bool = False, dated_session: bool = False, unpaired_fence: bool = False) -> str:
+def handoff_body(*, current_entries: int = 1, omit_references: bool = False, dated_session: bool = False, unpaired_fence: bool = False) -> str:
     lines = [
         "# Demo Handoff",
         "",
@@ -66,7 +66,7 @@ def handoff_body(*, current_lines: int = 1, omit_references: bool = False, dated
     # Owned scaffolding: the ownership rule now feeds `status`, so a bare
     # `- state` bullet would make every fixture report `unowned_entries`
     # instead of the status the test is about.
-    lines.extend(f"- state {index} in `git status --short`" for index in range(current_lines))
+    lines.extend(f"- state {index} in `git status --short`" for index in range(current_entries))
     if unpaired_fence:
         lines.extend(["", "```bash", "echo no closing delimiter"])
     lines.extend(
@@ -88,6 +88,28 @@ def handoff_body(*, current_lines: int = 1, omit_references: bool = False, dated
         lines.extend(["## References", "", "- [guide](docs/guide.md) — the demo guide.", ""])
     return "\n".join(lines)
 
+
+
+def body_measuring_at_least(module, target: int, *, ceiling: int | None = None, **kwargs) -> str:
+    """A body whose MEASURED content-word count reaches `target`.
+
+    Grows the fixture one owned entry at a time and asks the budget's own counter,
+    rather than converting a word target into an entry count by arithmetic. The
+    arithmetic form is what silently stopped testing the boundary the last time the
+    ceiling moved; a fixture that names a breach has to be measured to breach.
+
+    `ceiling`, when given, asserts the body landed UNDER it -- the near-limit case
+    needs a body in a band, and stepping past the lower edge must not sail past the
+    upper one.
+    """
+    for entries in range(1, 5000):
+        body = handoff_body(current_entries=entries, **kwargs)
+        measured = module.content_words(body.splitlines())
+        if measured >= target:
+            if ceiling is not None:
+                assert measured <= ceiling, f"overshot the band: {measured} > {ceiling}"
+            return body
+    raise AssertionError(f"could not reach {target} content words")
 
 def seed_repo(tmp_path: Path, body: str, *, adapter: bool = True) -> Path:
     repo = tmp_path / "repo"
@@ -332,7 +354,7 @@ def test_the_authoring_read_is_keyed_on_the_ACTION_not_the_intent(tmp_path: Path
 
     bloated = run_plan(
         "--repo-root",
-        str(seed_repo(tmp_path / "b", handoff_body(current_lines=4000))),
+        str(seed_repo(tmp_path / "b", handoff_body(current_entries=4000))),
         "--intent",
         "pickup",
     )
@@ -354,10 +376,10 @@ def test_handoff_plan_omits_authoring_rules_when_the_script_is_not_vendored(tmp_
 
 
 def test_handoff_plan_constants_single_sourced_from_validator() -> None:
-    # Drift-guard: the planner's MAX_CONTENT_LINES/REQUIRED_SECTIONS must never
+    # Drift-guard: the planner's MAX_CONTENT_WORDS/REQUIRED_SECTIONS must never
     # silently diverge from what scripts/validate_handoff_artifact.py enforces.
     module = load_plan_module()
-    assert module.MAX_CONTENT_LINES == _handoff_validator.MAX_CONTENT_LINES
+    assert module.MAX_CONTENT_WORDS == _handoff_validator.MAX_CONTENT_WORDS
     # The COUNT must not drift either: a planner that agrees on the ceiling but
     # counts different lines reports a status the gate contradicts.
     sample = ["# H", "", "## Current State", "", "- a", "## References", "- [x](y.md)"]
@@ -382,7 +404,7 @@ def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(
 
     monkeypatch.setattr(importlib, "import_module", fake_import_module)
     module = load_plan_module()
-    assert module.MAX_CONTENT_LINES == 78
+    assert module.MAX_CONTENT_WORDS == 900
     # The local counting fallback must still be used, not left as None.
     assert module.content_lines(["# H", "", "## Discuss", "- a"]) == ["# H", "- a"]
     assert module.REQUIRED_SECTIONS == (
@@ -393,13 +415,17 @@ def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(
 def test_handoff_plan_reports_artifact_statuses_that_require_repair(tmp_path: Path) -> None:
     module = load_plan_module()
     cases = [
-        # Derived from the ceiling, not written as a literal: raising the budget from 58
-        # to 78 silently turned the old hardcoded 60 into a PASSING body, so these cases
-        # stopped testing what they name. `+2` and `-10` keep each side of the boundary.
-        ("over_limit", handoff_body(current_lines=module.MAX_CONTENT_LINES + 2)),
+        # MEASURED against the ceiling, not derived by arithmetic on it: raising the
+        # budget from 58 to 78 silently turned an old hardcoded 60 into a PASSING body,
+        # so these cases stopped testing what they name. Deriving `ceiling + 2` entries
+        # would repeat that in the new unit -- an entry is ~7 words, so `+2 entries` is
+        # ~14 words past nothing in particular. `body_measuring_at_least` grows the body
+        # until the budget's OWN counter says it crossed, which is the only reading that
+        # cannot drift from the gate.
+        ("over_limit", body_measuring_at_least(module, module.MAX_CONTENT_WORDS + 1)),
         ("diary_smell", handoff_body(dated_session=True)),
         ("shape_issue", handoff_body(omit_references=True)),
-        ("near_limit", handoff_body(current_lines=module.MAX_CONTENT_LINES - 10)),
+        ("near_limit", body_measuring_at_least(module, module.MAX_CONTENT_WORDS - module.NEAR_LIMIT_MARGIN, ceiling=module.MAX_CONTENT_WORDS)),
         # An UNPAIRED fence makes every later line read as fenced, so the
         # ownership scan finds no sections and returns empty. Ranked above
         # `unowned_entries` precisely because that empty result would otherwise
@@ -575,7 +601,7 @@ def test_handoff_plan_briefs_the_rules_whenever_the_next_action_writes(tmp_path:
     # nothing: a pickup against a bloated artifact is sent to prune it, which is
     # authoring. The next action is what says whether the run writes.
     module = load_plan_module()
-    repo = seed_repo(tmp_path, handoff_body(current_lines=module.MAX_CONTENT_LINES + 2))
+    repo = seed_repo(tmp_path, body_measuring_at_least(module, module.MAX_CONTENT_WORDS + 1))
     (repo / "scripts").mkdir()
     # Seed EVERY file the emitted command needs, read from the manifest rather than
     # named here. The rules mode imports `doc_authoring_rules` and the preflight imports

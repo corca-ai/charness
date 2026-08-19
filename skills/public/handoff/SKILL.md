@@ -44,12 +44,11 @@ existing target, run the rules preflight before the target preflight, then apply
 receipt audit in `references/spill-targets.md`.
 Treat deterministic gates as evidence for shape and freshness, then use
 judgment for the actual baton pass. The repo-owned size budget counts CONTENT
-lines — blank lines, the required `##` headings, and the whole `## References`
-block are free — with a target of 25-50 and a hard stop the repo owns (78 unless its adapter
-sets `max_content_lines`); the planner
-reports `content_line_count` and flags `near_limit`/`over_limit`. Trimming formatting
-or shortening reference links buys nothing, so cut state instead. Multiple dated
-`## This Session (<date>)` sections are a hard diary smell.
+WORDS — blank lines, the required `##` headings and `## References` are free —
+target 250-550, hard stop 900 unless the adapter sets `max_content_words`; the
+planner reports `content_word_count` and flags `near_limit`/`over_limit`. It is
+wrap-invariant, so rewrapping and shortening links buy nothing: cut state.
+Multiple dated `## This Session (<date>)` sections are a hard diary smell.
 Assume a competent next operator can follow one good link. Aim for `## Current
 State` and `## Next Session` to read as a list of links, with prose only where no
 artifact owns the claim yet. Each entry — and every `## References` line, which is

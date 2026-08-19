@@ -16,6 +16,13 @@ from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 # `(field_name, minimum)` pairs a skill opts into; see `validate_simple_adapter_data`.
 IntFields = tuple[tuple[str, int], ...]
+# `(retired_name, replacement_name, why)` triples a skill opts into. A field this loader
+# stopped reading is INVISIBLE to every other refusal channel: `parse_failure_error` and
+# the uninterpreted-line sink report what the PARSER dropped, and a well-formed key the
+# SCHEMA no longer reads parses perfectly. Without this, a consuming repo's declared
+# setting goes inert under a `valid: true` payload -- the same silent-inertness this
+# repo already measured when a coordination floor recognized only one repo's names.
+RetiredFields = tuple[tuple[str, str, str], ...]
 ValidateAdapter = Callable[[dict[str, Any], Path], tuple[dict[str, Any], list[str], list[str]]]
 InferDefaults = Callable[[Path], dict[str, Any]]
 ExtraPayload = Callable[[dict[str, Any], dict[str, Any], bool], dict[str, Any]]
@@ -154,7 +161,12 @@ def infer_simple_adapter_defaults(repo_root: Path, *, output_dir: str) -> dict[s
 
 
 def validate_simple_adapter_data(
-    data: dict[str, Any], *, repo_root: Path, output_dir: str, int_fields: IntFields = ()
+    data: dict[str, Any],
+    *,
+    repo_root: Path,
+    output_dir: str,
+    int_fields: IntFields = (),
+    retired_fields: RetiredFields = (),
 ) -> tuple[dict[str, Any], list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -175,6 +187,17 @@ def validate_simple_adapter_data(
     # loader's own uninterpreted-line report exists to close.
     apply_optional_fields(data, validated, errors, string_fields=STRING_FIELDS, int_fields=int_fields)
 
+    # An ERROR, not a warning. A warning here would let the adapter resolve `valid: true`
+    # while the repo's declared bar did nothing, which is the state this check exists to
+    # make impossible. Keyed on PRESENCE of the key, not on its value: a retired field set
+    # to anything at all -- including the value that used to be correct -- is a statement
+    # the loader can no longer honor.
+    for retired, replacement, why in retired_fields:
+        if retired in data:
+            errors.append(
+                f"`{retired}` was retired and is no longer read; use `{replacement}` instead. {why}"
+            )
+
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
 
@@ -190,6 +213,7 @@ def load_simple_adapter(
     artifact_class: str = "history",
     missing_warnings: tuple[str, ...],
     int_fields: IntFields = (),
+    retired_fields: RetiredFields = (),
 ) -> dict[str, Any]:
     if artifact_class not in ARTIFACT_CLASSES:
         raise ValueError(f"artifact_class must be one of: {', '.join(sorted(ARTIFACT_CLASSES))}")
@@ -200,7 +224,11 @@ def load_simple_adapter(
 
     def validate(data: dict[str, Any], root: Path) -> tuple[dict[str, Any], list[str], list[str]]:
         validated, errors, warnings = validate_simple_adapter_data(
-            data, repo_root=root, output_dir=default_output_dir, int_fields=int_fields
+            data,
+            repo_root=root,
+            output_dir=default_output_dir,
+            int_fields=int_fields,
+            retired_fields=retired_fields,
         )
         validated["artifact_class"] = artifact_class
         if errors:

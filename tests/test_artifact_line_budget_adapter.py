@@ -1,6 +1,6 @@
 """The artifact line ceiling is a CONSUMING repo's setting, not a charness constant.
 
-Three families own a ceiling -- debug and quality count raw file lines, handoff counts
+Three families own a ceiling -- debug and quality count raw file LINES, handoff counts
 content lines -- and each one enforces it in a validator and forecasts it in a scaffold
 or planner. The forecast is the half that matters operationally: a ceiling discovered
 only after writing long is the wasted draft this override exists to end, so every family
@@ -107,7 +107,7 @@ def _handoff_artifact(entries_per_section: int) -> str:
 def test_handoff_content_ceiling_follows_the_adapter_in_gate_scaffold_and_planner(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
-    (repo / "docs" / "handoff.md").write_text(_handoff_artifact(25), encoding="utf-8")
+    (repo / "docs" / "handoff.md").write_text(_handoff_artifact(80), encoding="utf-8")
     base = ["version: 1", "repo: demo", "output_dir: docs"]
     gate = "scripts/validate_handoff_artifact.py"
     scaffold = "skills/public/handoff/scripts/scaffold_handoff_artifact.py"
@@ -118,17 +118,19 @@ def test_handoff_content_ceiling_follows_the_adapter_in_gate_scaffold_and_planne
     default_forecast = run_main(scaffold, "--repo-root", str(repo))
     default_plan = run_main(planner, "--repo-root", str(repo), "--intent", "refresh")
 
-    write_adapter(repo, "handoff-adapter.yaml", [*base, "max_content_lines: 120"])
+    write_adapter(repo, "handoff-adapter.yaml", [*base, "max_content_words: 1200"])
     raised_gate = run_main(gate, "--repo-root", str(repo))
     raised_forecast = run_main(scaffold, "--repo-root", str(repo))
     raised_plan = run_main(planner, "--repo-root", str(repo), "--intent", "refresh")
 
-    # The COUNT, not just the ceiling: raw file length is 116 and content length is
-    # 101, and both sit between 78 and 120 -- so without this the mutation "count raw
-    # lines instead of content lines" survives every other assertion here.
-    assert "handoff artifact has 101 content lines (limit 78)" in default_gate.stderr
-    assert "max_lines: 78\n" in default_forecast.stdout
-    assert "content_line_budget: 78" in default_plan.stdout
+    # The COUNT and its UNIT, not just the ceiling. The fixture measures 963 content
+    # WORDS across 335 raw lines and 321 content lines, so a mutation that counted
+    # either kind of LINE would report a number nowhere near 963 and this assertion
+    # kills it by value. Pinned as a literal on purpose: deriving it from the counter
+    # under test would make the assertion agree with any counter.
+    assert "handoff artifact has 963 content words (limit 900)" in default_gate.stderr
+    assert "max_words: 900\n" in default_forecast.stdout
+    assert "content_word_budget: 900" in default_plan.stdout
     assert "status: over_limit" in default_plan.stdout
 
     # The artifact is byte-identical across both halves, so only the adapter can
@@ -137,27 +139,27 @@ def test_handoff_content_ceiling_follows_the_adapter_in_gate_scaffold_and_planne
     # number the gate does not enforce. So pin the number wherever a surface publishes
     # one, and keep a POSITIVE assertion on the gate so "the rule passed" stays
     # distinguishable from "the gate exited early and printed nothing".
-    assert "content lines (limit" not in raised_gate.stderr
+    assert "content words (limit" not in raised_gate.stderr
     assert raised_gate.returncode == 1
     assert "at least one" in raised_gate.stderr or "reference" in raised_gate.stderr.lower()
-    assert "max_lines: 120\n" in raised_forecast.stdout
-    assert "content_line_budget: 120" in raised_plan.stdout
+    assert "max_words: 1200\n" in raised_forecast.stdout
+    assert "content_word_budget: 1200" in raised_plan.stdout
     assert "status: unowned_entries" in raised_plan.stdout
 
 
 def test_the_doc_authoring_forecasts_read_the_adapter_ceiling_not_the_default(tmp_path: Path) -> None:
     """The pre-write rules and the preflight verdict are the fourth and fifth surfaces.
 
-    Round-1 review found both still reading `MAX_CONTENT_LINES`: the preflight rendered
-    `status: blocked` against 78 for an artifact the gate accepted, and the rules mode --
-    the FIRST cap an authoring agent sees, before a draft exists -- published 78 as the
-    number to write to. The handoff run planner emits both commands, so one run computed
+    Round-1 review found both still reading the module constant: the preflight rendered
+    `status: blocked` against the shipped default for an artifact the gate accepted, and
+    the rules mode -- the FIRST cap an authoring agent sees, before a draft exists --
+    published that same default as the number to write to. The handoff run planner emits both commands, so one run computed
     the resolved ceiling and then told the author to run a command that contradicted it.
     """
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
     artifact = repo / "docs" / "handoff.md"
-    artifact.write_text(_handoff_artifact(25), encoding="utf-8")
+    artifact.write_text(_handoff_artifact(80), encoding="utf-8")
     base = ["version: 1", "repo: demo", "output_dir: docs"]
     # One entrypoint, two modes: `--path` renders the verdict, omitting it renders the
     # pre-write rules (owned by doc_authoring_rules, imported there).
@@ -167,20 +169,20 @@ def test_the_doc_authoring_forecasts_read_the_adapter_ceiling_not_the_default(tm
     default_preflight = run_main(preflight, "--repo-root", str(repo), "--path", "docs/handoff.md")
     default_rules = run_main(preflight, "--repo-root", str(repo), "--as-surface", "handoff")
 
-    write_adapter(repo, "handoff-adapter.yaml", [*base, "max_content_lines: 120"])
+    write_adapter(repo, "handoff-adapter.yaml", [*base, "max_content_words: 1200"])
     raised_preflight = run_main(preflight, "--repo-root", str(repo), "--path", "docs/handoff.md")
     raised_rules = run_main(preflight, "--repo-root", str(repo), "--as-surface", "handoff")
 
-    assert "cap: 78\n" in default_preflight.stdout
-    assert "current: 101" in default_preflight.stdout
+    assert "cap: 900\n" in default_preflight.stdout
+    assert "current: 963" in default_preflight.stdout
     assert "over: true" in default_preflight.stdout
-    assert "cap: 78\n" in default_rules.stdout
-    # Same 101-content-line artifact, byte for byte. Only the adapter differs, so the
+    assert "cap: 900\n" in default_rules.stdout
+    # Same 963-content-word artifact, byte for byte. Only the adapter differs, so the
     # forecast flipping to `over: false` can have no other cause.
-    assert "cap: 120\n" in raised_preflight.stdout
-    assert "current: 101" in raised_preflight.stdout
+    assert "cap: 1200\n" in raised_preflight.stdout
+    assert "current: 963" in raised_preflight.stdout
     assert "over: false" in raised_preflight.stdout
-    assert "cap: 120\n" in raised_rules.stdout
+    assert "cap: 1200\n" in raised_rules.stdout
 
 
 def test_the_handoff_planner_refuses_the_same_values_its_gate_does(tmp_path: Path) -> None:
@@ -189,12 +191,12 @@ def test_the_handoff_planner_refuses_the_same_values_its_gate_does(tmp_path: Pat
     It ships inside the skill package and must forecast in an install with no repo-root
     `scripts/` tree, so it cannot import the validator's resolver. That copy therefore
     needs its own refusal proof: an adversarial round found that deleting its bool guard
-    survived the entire suite, which would let `max_content_lines: yes` forecast a
+    survived the entire suite, which would let `max_content_words: yes` forecast a
     ceiling of 1 while the gate enforced 78.
     """
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
-    (repo / "docs" / "handoff.md").write_text(_handoff_artifact(25), encoding="utf-8")
+    (repo / "docs" / "handoff.md").write_text(_handoff_artifact(80), encoding="utf-8")
     base = ["version: 1", "repo: demo", "output_dir: docs"]
     planner = "skills/public/handoff/scripts/plan_handoff_run.py"
 
@@ -202,19 +204,19 @@ def test_the_handoff_planner_refuses_the_same_values_its_gate_does(tmp_path: Pat
     # value before the planner ever sees it, so no adapter file can reach that guard.
     # It is defense-in-depth against a stale vendored resolver and is asserted directly
     # below, the same way the validator's isinstance re-check is.
-    for value in ("yes", "0", "-5", "'120'"):
-        write_adapter(repo, "handoff-adapter.yaml", [*base, f"max_content_lines: {value}"])
+    for value in ("yes", "0", "-5", "'1200'"):
+        write_adapter(repo, "handoff-adapter.yaml", [*base, f"max_content_words: {value}"])
         plan = run_main(planner, "--repo-root", str(repo), "--intent", "refresh")
 
         # The conservative arm is the DEFAULT, never "unlimited" and never the
         # bool-coerced 1 that would refuse every possible handoff.
-        assert "content_line_budget: 78" in plan.stdout, value
+        assert "content_word_budget: 900" in plan.stdout, value
         assert "status: over_limit" in plan.stdout, value
 
 
 @pytest.mark.parametrize(
     ("declared", "expected"),
-    [(True, 78), ("120", 78), (0, 78), (-1, 78), (None, 78), (120, 120)],
+    [(True, 900), ("1200", 900), (0, 900), (-1, 900), (None, 900), (1200, 1200)],
     ids=["bool", "string", "zero", "negative", "absent", "honored"],
 )
 def test_the_planners_own_guard_survives_a_resolver_that_did_not_refuse(declared, expected) -> None:
@@ -223,13 +225,13 @@ def test_the_planners_own_guard_survives_a_resolver_that_did_not_refuse(declared
     A current resolver strips every bad value before the planner sees it, so this guard
     exists for the stale-resolver skew alone -- and a guard no adapter file can reach is
     a guard no CLI-level test can kill a mutant on. `isinstance(True, int)` is True, so
-    without the bool arm `max_content_lines: true` would forecast a ceiling of 1 while
-    the gate enforced 78. The honored arm is the positive control.
+    without the bool arm `max_content_words: true` would forecast a ceiling of 1 while
+    the gate enforced 900. The honored arm is the positive control.
     """
     planner = load_script_module("plan_handoff_run", ROOT / "skills/public/handoff/scripts/plan_handoff_run.py")
-    adapter = {"data": {} if declared is None else {"max_content_lines": declared}}
+    adapter = {"data": {} if declared is None else {"max_content_words": declared}}
 
-    assert planner._resolved_max_content_lines(adapter) == expected
+    assert planner._resolved_max_content_words(adapter) == expected
 
 
 def test_a_refused_ceiling_is_an_adapter_error_and_leaves_the_default_enforced(tmp_path: Path) -> None:

@@ -29,14 +29,15 @@ DOMINANCE_REGISTRY_PATH = Path(".agents/command-dominance.yaml")
 
 _handoff_resolve_adapter = load_path_module("handoff_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _handoff_resolve_adapter.load_adapter
-# The canonical sections and the content-line counting rule are ONE decision
-# (which lines the artifact must have -> which lines the budget must not charge
-# for), owned by the skill package so the run planner forecasts with the same
-# count this gate enforces. Only the enforced ceiling stays here.
+# The canonical sections and the content-counting rule are ONE decision (which
+# lines the artifact must have -> which lines the budget must not charge for),
+# owned by the skill package so the run planner forecasts with the same count
+# this gate enforces. Only the enforced ceiling stays here.
 _budget = load_path_module(
     "handoff_content_budget", _skill_script(REPO_ROOT, "handoff_content_budget.py")
 )
 content_lines = _budget.content_lines
+content_words = _budget.content_words
 REQUIRED_SECTIONS = _budget.REQUIRED_SECTIONS
 OPTIONAL_SECTIONS = _budget.OPTIONAL_SECTIONS
 CANONICAL_SECTIONS = _budget.CANONICAL_SECTIONS
@@ -65,35 +66,40 @@ validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
 validate_title = _scripts_artifact_validator_module.validate_title
 
-# 78, operator-raised from 58 on 2026-08-11. The re-base that produced 58 fixed the
-# right defect -- 13 of the 14 handoffs before it landed at 69-70 against a raw cap of
-# 70, a distribution pinned AT the ceiling, while those same files carried only ~50
-# CONTENT lines, so the raw count was measuring formatting and penalising long
-# reference links while a diary of short lines cost nothing. That correction stands;
-# only the ceiling moved.
+# LINEAGE, kept because it is the same defect twice. The ceiling was a raw line count
+# capped at 70; 13 of the 14 handoffs before the re-base landed at 69-70, a distribution
+# pinned AT the ceiling, while those same files carried only ~50 CONTENT lines -- so the
+# raw count was measuring formatting, penalising long reference links while a diary of
+# short lines cost nothing. The re-base to 58 CONTENT lines fixed that, and the operator
+# raised it to 78 on 2026-08-11 after 58 began refusing content that changed the next
+# action (the 2026-08-11 handoff hit 59/58 while carrying six live operator rulings).
 #
-# What moved it: 58 started REFUSING content that changed the next action. The
-# 2026-08-11 handoff hit 59/58 while carrying six live operator rulings, and the cut
-# that fit it was a real lesson, not padding. A cap that forces the author to choose
-# between two load-bearing lines has stopped being a diary guard.
+# Both corrections stand and both were incomplete: a CONTENT-line count is still a count
+# of newlines, so it still measured formatting -- just less of it. `handoff_content_budget`
+# holds the measurement that finally replaced it, and why 900 words is a new decision
+# rather than a conversion of 78.
 #
-# The TARGET stays 25-50 in SKILL.md deliberately, so the gap between target and
-# ceiling widens rather than the goal moving. This is a failure guard, not a budget to
-# spend: the operator's stated position is that a one-line link plus well-placed
-# content should still come in far under it, and the recurring fix remains spilling
-# durable detail to its owning artifact rather than filling the new headroom.
-# The DEFAULT ceiling. A consuming repo raises or lowers it with `max_content_lines`
-# in `.agents/handoff-adapter.yaml`; read it through `resolved_max_content_lines`, not
+# The TARGET stays well under the ceiling in SKILL.md deliberately, so the gap between
+# target and ceiling widens rather than the goal moving. This is a failure guard, not a
+# budget to spend: the operator's stated position is that a one-line link plus
+# well-placed content should still come in far under it, and the recurring fix remains
+# spilling durable detail to its owning artifact rather than filling the headroom.
+# The DEFAULT ceiling. A consuming repo raises or lowers it with `max_content_words`
+# in `.agents/handoff-adapter.yaml`; read it through `resolved_max_content_words`, not
 # directly, so the gate and the run planner's forecast cannot disagree.
-MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
+MAX_CONTENT_WORDS = _budget.DEFAULT_MAX_CONTENT_WORDS
 # Guarded for the same reason debug's is: a stale vendored resolver must degrade to the
 # default field name, never crash this gate at import.
-LINE_BUDGET_FIELD = getattr(_handoff_resolve_adapter, "LINE_BUDGET_FIELD", "max_content_lines")
+WORD_BUDGET_FIELD = getattr(_handoff_resolve_adapter, "WORD_BUDGET_FIELD", "max_content_words")
 
 
-def resolved_max_content_lines(repo_root: Path) -> int:
+def resolved_max_content_words(repo_root: Path) -> int:
+    # `resolve_adapter_line_budget` is a generic numeric-budget resolver taking `field`
+    # and `default`; only its NAME still says line. It is shared with debug/quality and
+    # is a named row in the adapter-consumer census, so renaming it here would churn a
+    # proof surface for cosmetics. Recorded rather than done.
     return _scripts_artifact_validator_module.resolve_adapter_line_budget(
-        load_adapter, repo_root, field=LINE_BUDGET_FIELD, default=MAX_CONTENT_LINES
+        load_adapter, repo_root, field=WORD_BUDGET_FIELD, default=MAX_CONTENT_WORDS
     )
 
 
@@ -405,23 +411,26 @@ def _display_path(path: Path, repo_root: Path) -> str:
         return str(path)
 
 
-def validate_max_content_lines(lines: list[str], max_lines: int | None = None) -> None:
-    """`max_lines` None means the built-in default, NOT "unlimited".
+def validate_max_content_words(lines: list[str], max_words: int | None = None) -> None:
+    """`max_words` None means the built-in default, NOT "unlimited".
 
     Defaulted rather than required for the same reason `repo_root` is on the caller:
     this validator ships to consumers, and a required parameter would break every
     existing call site on upgrade.
     """
-    ceiling = MAX_CONTENT_LINES if max_lines is None else max_lines
-    counted = content_lines(lines)
-    if len(counted) <= ceiling:
+    ceiling = MAX_CONTENT_WORDS if max_words is None else max_words
+    counted = content_words(lines)
+    if counted <= ceiling:
         return
     raise ValidationError(
-        f"handoff artifact has {len(counted)} content lines (limit {ceiling}); "
-        f"cut ~{len(counted) - ceiling}. Blank lines, the required `##` headings, "
-        "and the whole `## References` block are NOT counted, so trimming formatting or "
-        "shortening reference links will not help — drop state that does not change the "
-        "next operator's first action, or spill durable detail to its owning artifact."
+        f"handoff artifact has {counted} content words (limit {ceiling}); "
+        f"cut ~{counted - ceiling}. Blank lines, the required `##` headings, and the "
+        "whole `## References` block are NOT counted. REWRAPPING CANNOT HELP — the "
+        "budget charges words, not lines, so joining or splitting a physical line "
+        "changes nothing (this message used to claim formatting could not help while "
+        "the count was per-newline, which was false; that is why the unit changed). "
+        "Cut words: drop state that does not change the next operator's first action, "
+        "or spill durable detail to its owning artifact and link it."
     )
 
 
@@ -439,7 +448,7 @@ def validate_handoff_artifact(
             title_predicate=lambda line: line.startswith("# ") and "handoff" in line.lower(),
             error_message="handoff artifact must start with a `# ... Handoff` heading",
         ),
-        lambda: validate_max_content_lines(lines, resolved_max_content_lines(root)),
+        lambda: validate_max_content_words(lines, resolved_max_content_words(root)),
         lambda: validate_exact_h2_sections(
             lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS
         ),

@@ -128,7 +128,7 @@ def test_scaffold_budget_is_read_from_the_gate_not_transcribed(tmp_path: Path) -
 
     payload = yaml.safe_load(run_script(SCAFFOLD, "--repo-root", str(repo)).stdout)
 
-    assert payload["size_budget"]["max_lines"] == budget_module.DEFAULT_MAX_CONTENT_LINES
+    assert payload["size_budget"]["max_words"] == budget_module.DEFAULT_MAX_CONTENT_WORDS
 
 
 def test_handoff_scaffold_guards_custom_title(tmp_path: Path) -> None:

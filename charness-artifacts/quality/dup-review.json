@@ -2,6 +2,13 @@
   "entries": [
     {
       "class": "intentional",
+      "id": "8dd1e4cb0ec86aad",
+      "note": "Two unrelated dataclass FIELD-DECLARATION blocks, matched on the shape every typed attribute list has: `name: type` lines with trailing `| None = None` defaults. `check_doc_authoring_preflight.LengthSurface` describes a doc surface's cap, counter and checker; `inventory_current_pointer_layouts`'s row describes a skill's on-disk pointer layout. They share no field, no type beyond `str`/`bool`/`None`, no caller and no concept. The family appeared only because the handoff budget changed unit on 2026-08-19 and `LengthSurface`'s docstring grew to record why `count_attr` must return an int -- the BLOCK crossed a size threshold; the code did not become more duplicated. Extracting a shared base for two unrelated dataclasses to satisfy this would couple a doc-length forecast to a pointer-layout inventory, which is worse than the duplication.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "003780cc89f2ccfd",
       "note": "idiom-sized `if <payload>.get(<key>) == <literal>: return <message>` guard-clause shape shared by three unrelated blockers: the D48 release-surface corroboration refusal (publish_release_preflight), the seed-fixture shared-temp-root advisory (check_seed_fixture_budget), and the support-manifest state classifier (support_sync_lib). Same class already accepted as 349f5d577fe2588b -- different conditions, different strings, different subsystems; a shared formatter would couple three independently-owned refusal surfaces through a message helper and obscure which one owns the verdict. Surfaced as new because D48 slice 2 added release_surface_blocker; the other two members are untouched. ROTATED to 003780cc89f2ccfd on the same day when the round-2 review rewrote the refusal message text; same three members, same reasoning.",
       "reviewed_at": "2026-08-01",

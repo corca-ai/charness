@@ -76,8 +76,12 @@ class LengthSurface:
     ``count_attr``/``check_attr`` name the validator's own counting and checking
     functions for a surface that does not charge for raw file length. Reusing
     them (rather than reimplementing the rule here) is what keeps the forecast
-    from disagreeing with the gate about WHICH lines count, not just how many.
-    Left None, the surface falls back to raw line count + ``validate_max_lines``.
+    from disagreeing with the gate about WHAT the budget charges, not just how
+    much. ``count_attr`` must return the COUNT as an int, not the counted items:
+    the handoff budget charges words, and a call site that wrapped this in
+    ``len()`` would have raised ``TypeError`` on an int the moment the unit
+    changed. Left None, the surface falls back to raw line count +
+    ``validate_max_lines``.
     """
 
     name: str
@@ -144,12 +148,12 @@ def _length_surfaces(repo_root: Path) -> tuple[LengthSurface, ...]:
             LengthSurface(
                 name="handoff",
                 module="scripts.validate_handoff_artifact",
-                constant="MAX_CONTENT_LINES",
+                constant="MAX_CONTENT_WORDS",
                 label="handoff artifact",
                 matches=lambda rel, _h=handoff_rel: rel == _h,
-                count_attr="content_lines",
-                check_attr="validate_max_content_lines",
-                resolver_attr="resolved_max_content_lines",
+                count_attr="content_words",
+                check_attr="validate_max_content_words",
+                resolver_attr="resolved_max_content_words",
             )
         )
     return tuple(surfaces)
@@ -253,7 +257,7 @@ def collect_length(
     module = _surface_module(surface)
     cap = surface_cap(repo_root, surface)
     lines = doc.read_text(encoding="utf-8").splitlines()
-    counted = getattr(module, surface.count_attr)(lines) if surface.count_attr else lines
+    current = getattr(module, surface.count_attr)(lines) if surface.count_attr else len(lines)
     detail: str | None = None
     try:
         if surface.check_attr:
@@ -281,7 +285,7 @@ def collect_length(
     return {
         "surface": surface.name,
         "cap": cap,
-        "current": len(counted),
+        "current": current,
         "over": detail is not None,
         "detail": detail,
     }

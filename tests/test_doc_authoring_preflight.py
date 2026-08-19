@@ -32,7 +32,7 @@ _BUDGET_SPEC = importlib.util.spec_from_file_location(
 )
 _BUDGET = importlib.util.module_from_spec(_BUDGET_SPEC)
 _BUDGET_SPEC.loader.exec_module(_BUDGET)
-_MAX_CONTENT_LINES = _BUDGET.DEFAULT_MAX_CONTENT_LINES
+_MAX_CONTENT_WORDS = _BUDGET.DEFAULT_MAX_CONTENT_WORDS
 PREFLIGHT = "scripts/check_doc_authoring_preflight.py"
 _pf = import_repo_module(__file__, "scripts.check_doc_authoring_preflight")
 _handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
@@ -56,7 +56,7 @@ _BROKEN_FIXTURE = (
     "A wrapped `inline code\n"
     "span` here.\n"  # wrapped inline-code span
     "\n"
-) + "".join(f"filler line {i}\n" for i in range(1, _MAX_CONTENT_LINES + 21))
+) + "".join(f"filler line {i}\n" for i in range(1, _MAX_CONTENT_WORDS // 3 + 21))
 # Derived from the ceiling the handoff budget OWNS, not a literal: the comment here used to
 # say "the 70-line cap" while the cap was 58, and the fixture stopped breaching it entirely
 # when the ceiling moved to 78. A fixture that names a breach must outlive a budget change.
@@ -122,7 +122,7 @@ def test_length_cap_is_read_live_from_the_owning_validator(tmp_path: Path) -> No
     # hand-copied number.
     repo = _seed_repo(tmp_path, _BROKEN_FIXTURE)
     report = _pf.build_report(repo, "docs/handoff.md", "handoff")
-    assert report.length["cap"] == _handoff.MAX_CONTENT_LINES
+    assert report.length["cap"] == _handoff.MAX_CONTENT_WORDS
 
 
 def test_clean_fixture_is_silent(tmp_path: Path) -> None:
@@ -143,7 +143,7 @@ def test_raw_line_count_surface_forecasts_through_validate_max_lines(tmp_path: P
     surface = _pf.LengthSurface(
         name="synthetic",
         module="scripts.validate_handoff_artifact",
-        constant="MAX_CONTENT_LINES",
+        constant="MAX_CONTENT_WORDS",
         label="synthetic artifact",
         matches=lambda rel: rel == "docs/synthetic.md",
     )
@@ -151,11 +151,11 @@ def test_raw_line_count_surface_forecasts_through_validate_max_lines(tmp_path: P
     repo = _seed_repo(tmp_path, _CLEAN_FIXTURE)
     doc = repo / "docs" / "synthetic.md"
 
-    doc.write_text("x\n" * (_handoff.MAX_CONTENT_LINES + 40), encoding="utf-8")
+    doc.write_text("x\n" * (_handoff.MAX_CONTENT_WORDS + 40), encoding="utf-8")
     over = _pf.collect_length(repo, doc, "docs/synthetic.md", None)
     assert over["surface"] == "synthetic"
-    assert over["cap"] == _handoff.MAX_CONTENT_LINES
-    assert over["current"] == _handoff.MAX_CONTENT_LINES + 40
+    assert over["cap"] == _handoff.MAX_CONTENT_WORDS
+    assert over["current"] == _handoff.MAX_CONTENT_WORDS + 40
     assert over["over"] is True
     assert "synthetic artifact" in (over["detail"] or "")
 
@@ -269,9 +269,9 @@ def test_no_drift_broken_fixture_matches_real_gate_verdicts(tmp_path: Path) -> N
     # length forecast fires iff the file exceeds the gate's live cap, counted
     # the way the gate counts it (content lines, not raw file length).
     lines = (repo / "docs" / "handoff.md").read_text(encoding="utf-8").splitlines()
-    counted = _handoff.content_lines(lines)
-    assert report.length["current"] == len(counted)
-    assert report.length["over"] == (len(counted) > _handoff.MAX_CONTENT_LINES)
+    counted = _handoff.content_words(lines)
+    assert report.length["current"] == counted
+    assert report.length["over"] == (counted > _handoff.MAX_CONTENT_WORDS)
     # markdownlint forecast fires iff the real markdownlint engine fails. LAST, because
     # an unrun engine skips from here and the arms above must run regardless.
     ml = _real_gate_markdownlint(repo)
@@ -505,14 +505,14 @@ def test_rules_mode_renders_the_length_cap_live(monkeypatch: pytest.MonkeyPatch)
     """Drift proof: move the owning DEFAULT and the rendered rule must follow.
 
     Patches the RESOLVER, not the constant it falls back to. Patching
-    `MAX_CONTENT_LINES` used to be equivalent and stopped being so when the cap
+    `MAX_CONTENT_WORDS` used to be equivalent and stopped being so when the cap
     became adapter-resolvable: the assertion then held only because this repo's own
-    `.agents/handoff-adapter.yaml` happens to declare no `max_content_lines`, and
+    `.agents/handoff-adapter.yaml` happens to declare no `max_content_words`, and
     would have failed -- naming constant drift -- the day the repo raised its own
     budget. Round-2 review caught the test measuring something its comment did not
     describe.
     """
-    monkeypatch.setattr(_handoff, "resolved_max_content_lines", lambda _repo_root: 4321)
+    monkeypatch.setattr(_handoff, "resolved_max_content_words", lambda _repo_root: 4321)
     rules = _rules.build_rules(ROOT, "handoff")
 
     assert rules["length"]["cap"] == 4321
@@ -530,7 +530,7 @@ def test_rules_mode_falls_back_to_the_default_when_a_surface_has_no_resolver(
     """
     surfaces = _pf._length_surfaces(ROOT)
     handoff = next(s for s in surfaces if s.name == "handoff")
-    monkeypatch.setattr(_handoff, "MAX_CONTENT_LINES", 4321)
+    monkeypatch.setattr(_handoff, "MAX_CONTENT_WORDS", 4321)
 
     assert _pf.surface_cap(ROOT, replace(handoff, resolver_attr=None)) == 4321
 
@@ -875,7 +875,7 @@ def test_a_vendored_checker_without_the_cap_parameter_still_forecasts(monkeypatc
     `collect_length` began passing the resolved cap as a second positional argument in
     the same release that gave the checker its second parameter, and the surrounding
     `except` catches only `ValidationError` -- so an older vendored
-    `validate_max_content_lines(lines)` raised an uncaught `TypeError` where a forecast
+    `validate_max_content_words(lines)` raised an uncaught `TypeError` where a forecast
     belonged. The fallback loses the resolved cap for that install, which is the old
     behavior rather than a new wrong one, so this asserts a report comes back at all.
     """
@@ -884,7 +884,7 @@ def test_a_vendored_checker_without_the_cap_parameter_still_forecasts(monkeypatc
     def one_argument_only(lines):
         calls.append(len(lines))
 
-    monkeypatch.setattr(_handoff, "validate_max_content_lines", one_argument_only)
+    monkeypatch.setattr(_handoff, "validate_max_content_words", one_argument_only)
     report = _pf.build_report(ROOT, "docs/handoff.md", None)
 
     assert calls, "the fallback must actually reach the one-argument checker"
