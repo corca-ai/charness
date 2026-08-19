@@ -501,6 +501,35 @@ def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
     assert shared_manifest["version"] != "1.2.3"
 
 
+def test_install_surface_names_the_parser_adapter_lib_loads_by_path() -> None:
+    """`adapter_lib` loads `adapter_yaml_parse` BY PATH at module scope, so an installed
+    plugin missing it fails at IMPORT of `adapter_lib` — earlier than the
+    `adapter_yaml_render_lib` case beside it in the floor, which earned its entry for the
+    same reason. The file joined the required list when the YAML dialect moved out of
+    `adapter_lib` (`#673`'s length-cap split).
+
+    Drives `validate_checked_in_plugin_tree` directly with recording collaborators rather
+    than cloning a seeded repo, so it runs in the STANDING lane. The release-marked sibling
+    below proves the same requirement end-to-end; this one is what the changed-line gate can
+    see, and a requirement no standing test covers can be deleted with every gate green.
+    """
+    from scripts import validate_packaging_install_surface as surface
+    required: list[str] = []
+    root = Path(__file__).resolve().parents[2]
+    manifest = json.loads((root / "packaging" / "charness.json").read_text(encoding="utf-8"))
+    surface.validate_checked_in_plugin_tree(
+        root,
+        manifest,
+        require_dir=lambda *_a: None,
+        require_file=lambda path, _field: required.append(path.name),
+        require_json_matches=lambda *_a: None,
+        validate_relative_path=lambda value, _field: str(value),
+    )
+    assert "adapter_yaml_parse.py" in required, required
+    # Its neighbour, so a regression that dropped BOTH still fails here.
+    assert "adapter_lib.py" in required, required
+
+
 @pytest.mark.release_only
 def test_install_surface_requires_the_parser_adapter_lib_loads_by_path(
     tmp_path: Path, seeded_charness_repo: Path
