@@ -78,8 +78,8 @@
       "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
     },
     "scripts/inventory_quality_handoff.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "main() (lines 117-119) calls `adapter = load_adapter(repo_root)` (the quality resolve_adapter.py -> quality_adapter_lib.load_quality_adapter) and immediately does `artifact_path = repo_root / adapter['artifact_path']` with no check of `adapter['valid']`/`adapter['errors']`."
+      "verdict": "guarded",
+      "reason": "main() now refuses before `adapter[\"artifact_path\"]` is read, INSIDE the `args.artifact is None` branch so the `--artifact` arm (which asks the adapter nothing) still works -- pinned by a control. Measured flip at 1465689ac: a repo declaring `output_dir: docs/mine-q` under `version: 9` inventoried `artifact: charness-artifacts/quality/latest.md` with `status: advisory` and `findings: []`, exit 0 -- a clean bill of health on a file the repo does not keep its review in, while the one it does keep went uninventoried. Control at version 1 reports the declared path. RESIDUAL: quality's resolver calls `adapter_lib.load_yaml_file` bare, so the parse-refusal and silently-dropped-line doors are both invisible here (#673). Probe record: charness-artifacts/probe/2026-08-19-inventory-gather-version-refusal.md."
     },
     "scripts/manage_mutation_reports.py": {
       "verdict": "safe-checks-errors",
@@ -246,8 +246,8 @@
       "reason": "payload_for() now calls `_adapter_version_verdict.unspeakable_version_message(load_adapter, repo_root, adapter_name=\"debug-adapter.yaml\")` and raises SystemExit before the write target is read from the payload. Guarded at the READ SITE, not `main()`, and here the importer claim is MEASURED: `plan_debug_run` calls this `payload_for` directly, so an entrypoint-only refusal would have left that caller on charness defaults. Measured flip on the real CLI at 0bcb6b227: a repo declaring `output_dir: docs/mine-debug` under `version: 9` got back `artifact_path: charness-artifacts/debug/latest.md`, exit 0 -- an unhonored declaration RELOCATES this family's artifact rather than degrading its answer. Both polarity controls run: version 1 returns the declared path, no adapter returns the default. Probe record: charness-artifacts/probe/2026-08-19-scaffold-family-version-refusal.md."
     },
     "skills/public/gather/scripts/advise_google_workspace_path.py": {
-      "verdict": "accepted-risk-unguarded",
-      "reason": "L45 `load_gather_adapter(repo_root)[\"data\"]` with no `errors` check: on a refused version the advice is computed from gather's shipped defaults rather than the repo's declaration."
+      "verdict": "guarded",
+      "reason": "payload_for() now refuses before `gather_provider` is read. This advisor answers a CAPABILITY question, so an unhonored declaration does not degrade the advice -- it DENIES a capability the repo enabled. Measured flip at 1465689ac: a repo declaring `gather_provider.google_workspace.mode: host-mediated` under `version: 9` reported `provider_mode: none` and told the operator to stop with a missing-capability explanation, quoting a `mode=none` the adapter does not contain, exit 0. Control at version 1 reports `host-mediated`. gather routes through `simple_skill_adapter_lib`, so all three doors (version, parse, dropped line) are covered here. Probe record: charness-artifacts/probe/2026-08-19-inventory-gather-version-refusal.md."
     },
     "skills/public/gather/scripts/gather_plan.py": {
       "verdict": "safe-checks-errors",

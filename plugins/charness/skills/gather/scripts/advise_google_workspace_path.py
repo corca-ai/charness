@@ -36,12 +36,27 @@ _resolve_adapter_module = importlib.util.spec_from_file_location(
 _gather_adapter = importlib.util.module_from_spec(_resolve_adapter_module)
 _resolve_adapter_module.loader.exec_module(_gather_adapter)
 load_gather_adapter = _gather_adapter.load_adapter
+_adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_version_verdict"
+)
 
 PROVIDER_ID = "google-workspace"
 SOURCE_ID = "google_workspace"
 
 
 def payload_for(repo_root: Path) -> dict[str, object]:
+    # GUARDED AT THE READ SITE. This advisor answers a CAPABILITY question -- does this
+    # repo have a Google Workspace path at all -- so an unhonored declaration does not
+    # degrade the advice, it denies a capability the repo enabled. Measured at
+    # `1465689ac`: a repo declaring `gather_provider.google_workspace.mode: host-mediated`
+    # under `version: 9` reported `provider_mode: none` and told the operator to "stop
+    # with a missing-capability explanation", exit 0. At `version: 1` the same repo
+    # reports `host-mediated`.
+    refusal = _adapter_version_verdict.unspeakable_version_message(
+        load_gather_adapter, repo_root, adapter_name="gather-adapter.yaml"
+    )
+    if refusal is not None:
+        raise SystemExit(refusal)
     data = load_gather_adapter(repo_root)["data"]
     entry = (data.get("gather_provider") or {}).get(SOURCE_ID) or {}
     mode = str(entry.get("mode") or "none")

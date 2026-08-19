@@ -26,6 +26,9 @@ def _resolver_path(repo_root: Path) -> Path:
 
 _quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _quality_resolve_adapter.load_adapter
+_adapter_version_verdict = load_path_module(
+    "inventory_quality_handoff_version_verdict", REPO_ROOT / "scripts" / "adapter_version_verdict.py"
+)
 
 HITL_FIELDS = (
     "target",
@@ -115,6 +118,21 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     if args.artifact is None:
+        # GUARDED AT THE READ SITE, and INSIDE the `--artifact` branch: a caller that
+        # named the file is not asking the adapter anything, and refusing there would
+        # break the direct invocation this flag exists for.
+        #
+        # WHAT IT COSTS TO BE UNGUARDED, measured at `1465689ac`: a repo declaring
+        # `output_dir: docs/mine-q` under `version: 9` inventoried
+        # `artifact: charness-artifacts/quality/latest.md` and reported
+        # `status: advisory`, `findings: []`, exit 0 -- a clean bill of health on a file
+        # the repo does not keep its quality review in, while the one it does keep went
+        # uninventoried.
+        refusal = _adapter_version_verdict.unspeakable_version_message(
+            load_adapter, repo_root, adapter_name="quality-adapter.yaml"
+        )
+        if refusal is not None:
+            raise SystemExit(refusal)
         adapter = load_adapter(repo_root)
         artifact_path = repo_root / adapter["artifact_path"]
     else:
