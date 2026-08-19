@@ -4962,6 +4962,13 @@
       "note": "`announcement_adapter_lib`'s own two payload arms, BOTH UNTOUCHED by this slice. That module already answers this internally: a round-2 review found its parse-failure arm hand-built with nine keys where the others had fifteen, and the repair was the `_payload` builder its docstring describes. The residual match is the absent arm against that builder \u2014 two arms of one function that cannot be merged, because one runs before any file was read. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "92f186956bf2358d",
+      "note": "`_parse_list_items` and `_parse_block` in `adapter_yaml_parse`, the parser's TWO loops. BOTH UNTOUCHED by this slice; the family surfaced because the module was split out of `adapter_lib` and re-fingerprinted, and because deleting a dead empty-item arm shortened one span into range. The shared run is the loop preamble -- `_line_shape`, skip ignorable, break on dedent -- which is already extracted as far as it goes: `_line_shape` IS the extraction, and `_is_ignorable`'s own docstring records why the remaining line cannot be shared (`_DOCUMENT_MARKERS` are skipped in the mapping loop and END the list in the sequence loop, so folding the check into the helper would be a behavior change in one of the two callers). Past that point the loops diverge completely: one accumulates a list keyed on `- `, the other a mapping keyed on a quote-aware separator.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
