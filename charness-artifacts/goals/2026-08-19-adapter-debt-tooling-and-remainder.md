@@ -70,9 +70,13 @@ another ten review rounds spent on prose.
 
 ## Boundaries
 
-- **Push:** requested for this goal, at the boundary the operator names on activation.
-  The predecessor's pattern (push after the retro) is the assumed default and is written
-  into `## Discuss Before Activation` for confirmation rather than inherited silently.
+- **Push: ONE push, at the END of the goal, after the closeout retro.** Granted by the
+  operator on 2026-08-19 (`## Discuss Before Activation` (b)). Phase-scoped to that
+  boundary: it does NOT authorize a per-slice push, and it is not re-usable if the goal
+  stops early — an early stop needs its own grant. A distinct-channel hosted readback is
+  required, as it was for the predecessor.
+- **Everything before that boundary lands locally.** An ahead-of-origin count during the
+  run is expected and is not a defect to fix.
 - **Issue filing is standing-approved. Issue CLOSING is not**, and this goal expects to
   close `#673`, `#674` and `#675` — each needs the `issue` closeout floor and a
   phase-scoped grant, never inferred from a green gate.
@@ -266,23 +270,23 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: PENDING — two decisions, both consequential, neither settled
-  by a default strong enough to assume.
+- Discuss before activation: RESOLVED 2026-08-19 by the operator, on both surfaced
+  decisions.
 
-  **(a) Scope.** This goal claims all five slices: three tooling slices plus the remaining
-  nineteen rows plus the predecessor's slice 6. That is a large goal, and the alternative
-  is to stop it after slice 3 and let a successor claim the rows. The argument for
-  including them: after slices 2-3 a row costs materially less to pay and to describe, so
-  splitting there strands the payoff in a goal that has to re-establish context. The
-  argument against: slices 1-2 both change surfaces every skill reads, and either could
-  overrun on its own review rounds. The Slice Plan already names the honest stop (before
-  slice 4, not partway through). **Confirm the five-slice scope, or cut it at slice 3.**
+  **(a) Scope — RESOLVED: all five slices.** The operator chose the full arc: three
+  tooling slices, the remaining nineteen rows, and the predecessor's slice 6. The
+  alternative considered and rejected was cutting at slice 3 and letting a successor claim
+  the rows; what settled it is that the context for WHY each remaining row remains is
+  currently written down in one place and is expensive to rebuild. **The Slice Plan's stop
+  rule survives this decision and is not softened by it**: if slices 1-2 overrun, the
+  honest halt is BEFORE slice 4, not partway through. Claiming five slices is a scope
+  decision, not a promise to finish them at any cost.
 
-  **(b) Push cadence.** The predecessor pushed once, after its retro, on an explicit
-  ruling. The same default is assumed here and written into `## Boundaries` — but this
-  goal touches six resolvers and a proof surface, so per-slice push is a defensible
-  alternative if you want the intermediate states on the remote. **Confirm push-after-retro,
-  or name a different boundary.**
+  **(b) Push cadence — RESOLVED: ONE push, at the end.** Per-slice push was considered
+  because this goal touches six resolvers and a proof surface, and was rejected by the
+  operator. Consequence recorded rather than softened: every intermediate state stays
+  local, so a mid-goal handoff to another machine has nothing on the remote to pick up,
+  and the single push carries the whole arc at once. `## Boundaries` holds the grant.
 
 ## Slice Log
 
