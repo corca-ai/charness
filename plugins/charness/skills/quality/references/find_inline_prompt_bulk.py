@@ -8,6 +8,7 @@ import fnmatch
 import runpy
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from git_inventory_lib import visible_repo_files  # noqa: E402
@@ -62,6 +63,21 @@ def _docstring_constant_nodes(tree: ast.AST) -> set[ast.Constant]:
     return nodes
 
 
+def _load_repo_module(dotted: str):
+    """This file lives under `references/`, not `scripts/`, so it has no skill-runtime
+    bootstrap. It already reaches its sibling resolver by walking up from `__file__`;
+    this reaches the repo root the same way and answers None rather than raising when the
+    module is absent, so a checkout that ships the reference without `scripts/` keeps
+    working -- the availability gap is stated rather than assumed away."""
+    rel = Path(*dotted.split(".")).with_suffix(".py")
+    for ancestor in Path(__file__).resolve().parents:
+        candidate = ancestor / rel
+        if candidate.is_file():
+            namespace = runpy.run_path(str(candidate))
+            return SimpleNamespace(**namespace)
+    return None
+
+
 def _load_quality_adapter(repo_root: Path) -> dict[str, object]:
     resolver = Path(__file__).resolve().parents[1] / "scripts" / "resolve_adapter.py"
     namespace = runpy.run_path(str(resolver))
@@ -69,6 +85,22 @@ def _load_quality_adapter(repo_root: Path) -> dict[str, object]:
 
 
 def _adapter_prompt_policy(repo_root: Path) -> tuple[dict[str, object], dict[str, object]]:
+    # GUARDED AT THE READ SITE, and only on the `--from-adapter` path -- the flags exist
+    # precisely so a caller can scan without asking the adapter anything.
+    #
+    # WHAT IT COSTS TO BE UNGUARDED, measured at `abbcd9bff`: a repo declaring
+    # `prompt_asset_policy.source_globs: ["src/**/*.py"]` and `min_multiline_chars: 40`
+    # under `version: 9` scanned `source_globs: []` at `min_multiline_chars: 400` and
+    # reported `findings: []`. At a speakable version the same repo has findings. A
+    # scanner told to use the repo's declared policy scanned NOTHING and reported clean --
+    # the emptiest possible answer presented as a result.
+    verdict = _load_repo_module("scripts.adapter_version_verdict")
+    if verdict is not None:
+        refusal = verdict.unspeakable_version_message(
+            _load_quality_adapter, repo_root, adapter_name="quality-adapter.yaml"
+        )
+        if refusal is not None:
+            raise SystemExit(refusal)
     adapter = _load_quality_adapter(repo_root)
     data = adapter.get("data") if isinstance(adapter, dict) else {}
     policy = data.get("prompt_asset_policy") if isinstance(data, dict) else {}

@@ -96,8 +96,39 @@ Measured on both.
 
 ## Non-claims
 
-- **The two doors land DIFFERENTLY on `record_announcement`, and the asymmetry is correct
-  rather than a gap.** `version: 9` resolves cleanly to a payload carrying a
+- **THE "ASYMMETRY IS CORRECT" CLAIM THIS RECORD FIRST CARRIED WAS REFUTED, and the
+  refutation is kept rather than the claim quietly replaced.** It argued that a refused
+  parse should be absorbed by `record_announcement`'s `except Exception` and recorded as
+  `adapter_resolved: false`, "a typed, visible signal". A bounded review showed it wrong
+  twice over. The harm it named —
+  `requires_delivery_kind_agreement` comparing the recorded kind against a charness
+  default — fires only for `delivery_kind: human-backend`, and this record's stimulus
+  declares `release-notes`, so the published control could not exercise the harm it cited
+  (Fixed Decision 2's disagreeing-observable rule, violated). And with the harm in play
+  (`human-backend`, `--delivery-kind none`) the measurement was: `version: 1` raises
+  `fail_delivery_kind_mismatch`; `version: !!int 9` exits 0 and appends a DURABLE RECORD.
+  One token turned a hard refusal on the self-attestation bypass into a written record.
+  "Typed and visible" was not enforcement either: no production surface reads
+  `adapter_resolved` — only tests and one prose line.
+
+  Both are now CLOSED, and the closure is a resolver repair rather than a consumer guard —
+  see the next bullet.
+- **TWO LIVE EXIT-0 BYPASSES OF THIS PUBLISH GATE were found by that review and closed,
+  neither needing a version to be touched.** (1) `announcement_adapter_lib` called
+  `adapter_lib.load_yaml_file` bare, discarding the uninterpreted-line sink, so an
+  over-indented `in_progress_sources:` block left `errors: []`, `valid: true`, no warning,
+  and `delivery_blocked: false / ok: true` at exit 0 — two of the guard's three doors were
+  structurally dead for this adapter. Repaired by arming the sink, AHEAD of
+  [#673](https://github.com/corca-ai/charness/issues/673), because the bypass is a publish
+  boundary rather than a message shape; that also makes the parse door reachable and
+  closes the delivery-kind bypass above. (2) `_validate_in_progress_sources` uses
+  `continue` on every rejected entry, so ONE bad entry empties the list and the empty list
+  takes the same short-circuit — `kind: Path`, one capital letter, cleared the gate.
+  Repaired by reading `field_state`, which already carried "the repo wrote this key",
+  against the validated result. **This slice had already documented that second input, as
+  a probe-authoring mistake, without noticing it was a live bypass of the gate it was
+  repairing.**
+- **The two doors now land the SAME way on `record_announcement`.** `version: 9` resolves cleanly to a payload carrying a
   `delivery_kind` the repo never wrote, so the guard refuses —
   `requires_delivery_kind_agreement` would otherwise compare the recorded kind against a
   charness default. `version: !!int 9` makes announcement's resolver RAISE (one of the six

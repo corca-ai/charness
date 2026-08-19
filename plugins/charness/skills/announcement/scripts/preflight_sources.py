@@ -53,6 +53,27 @@ def main() -> None:
             raise SystemExit(refusal)
         adapter = load_announcement_adapter(repo_root)
         adapter_data = adapter["data"]
+        # DECLARED-BUT-NOT-HONORED, which the version verdict cannot see. A bounded review
+        # measured this: `_validate_in_progress_sources` uses `continue` on every rejected
+        # entry, so ONE bad entry -- `kind: Path` with a capital P, or a `kind: path` with
+        # no `path:` -- empties the list, and an empty list takes the short-circuit to
+        # `ok: True, delivery_blocked: False` at exit 0. The gate that exists to stop a
+        # premature announcement was cleared by one capital letter.
+        #
+        # `field_state` already carries the distinction between "unset" and "configured",
+        # so this asks the payload rather than re-deriving: the repo WROTE the key and
+        # nothing survived validation.
+        if (
+            adapter.get("field_state", {}).get("in_progress_sources") == "configured"
+            and not adapter_data.get("in_progress_sources")
+        ):
+            raise SystemExit(
+                "`.agents/announcement-adapter.yaml` declares `in_progress_sources` but no "
+                "entry survived validation, so this preflight would clear the delivery on "
+                "an EMPTY source list -- the same answer it gives a repo that declared "
+                "none. Refusing instead. Adapter errors: "
+                + "; ".join(str(error) for error in (adapter.get("errors") or []))
+            )
         if args.draft_path is not None:
             draft_path = args.draft_path.resolve()
         else:

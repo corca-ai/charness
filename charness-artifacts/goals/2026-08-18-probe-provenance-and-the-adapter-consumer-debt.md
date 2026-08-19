@@ -117,7 +117,19 @@ the pre-implementation critique passes.
   census gate cannot tell them apart: `gather` routes through `simple_skill_adapter_lib`
   and is covered on all three doors, while every consumer of the QUALITY adapter is covered
   on one, because that resolver calls `adapter_lib.load_yaml_file` bare. Closure is `#673`.
-- Next action: rows 23+. Recount with
+- Rows 23-26 landed; the round over 23-25 found TWO LIVE EXIT-0 BYPASSES of the
+  announcement publish gate, neither needing a `version` to be touched, plus a refuted
+  design claim I had published in three surfaces. Both bypasses are closed, and the
+  closure is a RESOLVER repair (`announcement_adapter_lib` now arms the uninterpreted-line
+  sink) rather than another consumer guard — done ahead of `#673` because the surface is a
+  publish boundary.
+- **The `guarded` token now spans FOUR coverage levels, and the census gate cannot see the
+  difference**: all three doors (gather, announcement after the repair), one door
+  (every quality-adapter consumer), and the raising variant. `#673` is the closure; until
+  then each row's reason names which doors it actually has.
+- Next action: rows 27+. Several remaining rows are structurally different — by-construction
+  (injected loader, guarded consumer), deliberate-by-docstring, or needing a shipped skill
+  tree — and want a recorded decision rather than a guard. Recount with
   `python3 scripts/check_adapter_consumer_classification.py --repo-root .` rather than
   reading a number off this line. Measured and in hand:
   `skills/support/web-fetch/scripts/route_public_fetch_routes.py` (a ROUTING flip --

@@ -10,9 +10,12 @@ from scripts.adapter_field_application import apply_optional_fields
 from scripts.adapter_lib import (
     declared_fields_after_version_check,
     list_field_state,
-    load_yaml_file,
+    load_yaml_file_report,
     optional_string,
+    parse_failure_error,
+    uninterpreted_warnings,
 )
+from scripts.adapter_version_verdict import declarations_unhonored
 from scripts.artifact_naming_lib import RECORD_PATTERN
 
 KIND_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -382,9 +385,34 @@ def load_announcement_adapter(repo_root: Path) -> dict[str, Any]:
             "searched_paths": searched_paths,
         }
 
-    raw = load_yaml_file(adapter_path)
+    # `load_yaml_file_report`, NOT `load_yaml_file`. The bare loader DISCARDS the
+    # uninterpreted-line sink, and a bounded review measured what that costs on the
+    # surface that matters most: `preflight_sources` is a PUBLISH GATE, and an
+    # over-indented `in_progress_sources:` block left `errors: []`, `valid: true`, no
+    # warning, and `delivery_blocked: false / ok: true` at exit 0 -- clear to announce over
+    # a repo that declared a source it must not claim finished. Two of
+    # `adapter_version_verdict`'s three refusal doors were structurally dead for this
+    # adapter, so its consumers' guards could only ever see a refused `version`.
+    #
+    # This is one of the six resolvers #673 names. It is repaired HERE, ahead of that
+    # issue, because the bypass it leaves open is a publish boundary rather than a message
+    # shape.
+    try:
+        raw, uninterpreted = load_yaml_file_report(adapter_path)
+    except ValueError as exc:
+        return {
+            "found": True,
+            "valid": False,
+            "path": str(adapter_path),
+            "data": infer_announcement_defaults(repo_root),
+            "delivery_contract": delivery_contract(infer_announcement_defaults(repo_root)),
+            "field_state": {},
+            "errors": [parse_failure_error(exc)],
+            "warnings": [],
+            "searched_paths": searched_paths,
+        }
     raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
+    warnings: list[str] = uninterpreted_warnings(uninterpreted)
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
     data, errors, extra_warnings = validate_announcement_adapter_data(raw_data, repo_root)
@@ -396,7 +424,25 @@ def load_announcement_adapter(repo_root: Path) -> dict[str, Any]:
         "path": str(adapter_path),
         "data": data,
         "delivery_contract": contract,
-        "field_state": _field_state_map(raw_data),
+        # CONTAINED, matching `simple_skill_adapter_lib`'s own comment: under an unhonored
+        # declaration the resolved payload honors nothing the file declared, so handing
+        # the raw file through here would report `configured` for a field whose value was
+        # refused -- the payload and the state map beside it disagreeing about one
+        # adapter. A bounded review found this loader missing the containment its sibling
+        # applies, and `preflight_sources` now READS `field_state`, so it stopped being
+        # latent.
+        # CONTAINED ON THE UNHONORED CONDITION, not on `errors` -- and the difference is
+        # load-bearing, measured rather than reasoned. `simple_skill_adapter_lib` uses
+        # `declarations_unhonored` here for the reason its own comment gives: under a
+        # refused version the payload honors nothing, so reporting `configured` beside a
+        # defaulted value makes the payload and the state map disagree about one adapter.
+        #
+        # Keying on `if errors` instead ALSO zeroes the map for an ORDINARY field error --
+        # and `preflight_sources` reads this map precisely to catch "the repo wrote
+        # `in_progress_sources` and nothing survived validation", which IS an ordinary
+        # field error. The first cut did that and left the bypass open; the control that
+        # caught it is `kind: Path` with a capital P.
+        "field_state": _field_state_map({} if declarations_unhonored(errors) else raw_data),
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_class": data["artifact_class"],
         "artifact_path": _artifact_path(data["output_dir"]),

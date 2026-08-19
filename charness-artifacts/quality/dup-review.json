@@ -4857,6 +4857,41 @@
       "note": "MEMBERS (listed so the count is checkable without re-running the gate, after a bounded review found the previous note's arithmetic unverifiable): `skills/public/quality/scripts/scaffold_quality_artifact.py`, `skills/public/quality/scripts/resolve_quality_artifact.py`, `skills/public/quality/scripts/measure_startup_probes.py`, `scripts/inventory_quality_handoff.py` -- four. NOT a rotation of a2e32c068aac058a, and the previous note calling it one was wrong: that family has SIX members and a rotation gaining one would have seven. This is a DIFFERENT, tighter window over three of those six plus `inventory_quality_handoff` (row 21). Same accepted class either way: the read-site version-refusal guard naming `quality-adapter.yaml`, whose extractable half is already in `scripts.adapter_version_verdict`, and whose five-line call-and-raise has to sit at the read site because that is the property the census verdict is about. THREE of the four members are untouched by row 21, which is the evidence the family is the idiom's own shape rather than duplication that row introduced. The inventory member's placement is deliberately different again: it sits inside the `args.artifact is None` branch, because the `--artifact` arm asks the adapter nothing.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "41874741ac4e2528",
+      "note": "MEMBERS: `scripts/simple_skill_adapter_lib.py` (untouched), `scripts/announcement_adapter_lib.py` (this batch). The `load_yaml_file_report` + `except ValueError -> parse_failure_error` prologue. It is duplicated BECAUSE announcement was repaired to match the sibling's shape: it called `load_yaml_file` bare, which left an over-indented line invisible and cleared a publish gate at exit 0. The right consolidation is #673 -- making the remaining five resolvers route through one loader -- not extracting a helper for two of six mid-slice. Recorded as the cost of the repair rather than as an idiom.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a829253e9fdcf28a",
+      "note": "MEMBERS: `narrative_adapter_lib.py`, `quality_adapter_lib.py`, `cautilus_adapter_lib.py`, `critique_adapter_lib.py` -- ALL FOUR UNTOUCHED by this batch. It surfaced only because repairing `announcement_adapter_lib` reshaped the fingerprint space around the resolver family. This is the pre-existing per-resolver payload tail (build the payload dict from validated data, defaults and artifact paths); each resolver owns a DIFFERENT contract, different defaults and different validators, and the shared skeleton is the return shape every consumer reads. Consolidating it is #673's territory.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b5432f058b1ad3f5",
+      "note": "MEMBERS: `announcement_adapter_lib.py` (this batch), `narrative_adapter_lib.py` (untouched), `quality_adapter_lib.py` (untouched). The whole-function `load_*_adapter` shape: search paths, not-found payload, load, validate, return. Three of this repo's sixteen resolvers, each with its own field list, its own validators and its own artifact naming. The genuinely shared half -- the loader and the parse-failure payload -- is what #673 proposes to unify across all sixteen; unifying three of them here would leave the other thirteen on the old shape and make that issue harder to land, not easier.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cf2465741f0198a4",
+      "note": "MEMBERS: `announcement_adapter_lib.py` (this batch), `skills/public/issue/scripts/resolve_adapter.py` (untouched). The `except ValueError` arm returning a parse-failure payload. `issue` already had it -- it is one of the ten resolvers that record a parse refusal rather than raising -- and announcement now does too, which is the repair. Same reasoning as 41874741ac4e2528: the duplication is the SHAPE OF THE FIX, and its owner is #673.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d087783f68bfa007",
+      "note": "MEMBERS: `cautilus_adapter_lib.py`, `critique_adapter_lib.py`, `skills/public/achieve/scripts/achieve_adapter_policy.py` -- ALL THREE UNTOUCHED by this batch, and all three are among the six resolvers #673 names as calling `adapter_lib.load_yaml_file` bare. The family is their shared bare-loader prologue, surfaced by the fingerprint shift when announcement left that group. Classifying rather than extracting is deliberate: an extraction now would freeze the shape #673 exists to change, and these three are the ones that still need changing.",
+      "reviewed_at": "2026-08-19",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

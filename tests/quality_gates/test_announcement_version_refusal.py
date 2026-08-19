@@ -70,13 +70,17 @@ def test_the_preflight_refuses_rather_than_clearing_the_delivery(
 ) -> None:
     result = _run(PREFLIGHT, _repo(tmp_path, DECLARED.format(v=version)))
     assert result.returncode != 0, result.stdout
+    assert "announcement-adapter.yaml" in result.stderr, result.stderr
     if version == "9":
-        assert "announcement-adapter.yaml" in result.stderr, result.stderr
         assert "does not speak" in result.stderr, result.stderr
     else:
-        # announcement is one of six resolvers that let a parser refusal's `ValueError`
-        # out rather than recording it (#673), so this door refuses with a raw traceback.
-        assert "Traceback" in result.stderr, result.stderr
+        # BOTH doors render a verdict now. This assertion used to expect a raw
+        # `Traceback`, because announcement was one of the six resolvers in #673 that call
+        # `adapter_lib.load_yaml_file` bare. A bounded review measured what that cost on
+        # THIS surface -- a publish gate cleared at exit 0 by an over-indented block -- so
+        # the resolver was repaired ahead of #673 and the parse door became reachable.
+        assert "could not be parsed" in result.stderr, result.stderr
+        assert "Traceback" not in result.stderr, result.stderr
     # The cleared verdict must not be reported alongside the refusal.
     assert "delivery_blocked: false" not in result.stdout
     assert "ok: true" not in result.stdout
@@ -84,35 +88,61 @@ def test_the_preflight_refuses_rather_than_clearing_the_delivery(
 
 @pytest.mark.parametrize("version", ["9", "!!int 9"], ids=["unspeakable", "unparseable"])
 def test_the_recorder_refuses_before_its_own_fallback(tmp_path: Path, version: str) -> None:
-    """THE TWO DOORS LAND DIFFERENTLY HERE, and the asymmetry is correct rather than a
-    gap — measured, then reasoned about, not the other way round.
+    """BOTH DOORS REFUSE. An earlier version of this test asserted the opposite and
+    argued the asymmetry was CORRECT — that a refused parse should be absorbed by the
+    module's `except Exception` and recorded as `adapter_resolved: false`, "a typed,
+    visible signal". A bounded review refuted both halves and this docstring records it
+    rather than quietly flipping.
 
-    `version: 9` resolves cleanly to a payload carrying a `delivery_kind` the repo never
-    wrote, so the guard refuses: `requires_delivery_kind_agreement` would otherwise
-    compare the recorded kind against a charness default.
+    The claim was wrong on the harm: the reason it cited —
+    `requires_delivery_kind_agreement` comparing the recorded kind against a charness
+    default — only fires for `delivery_kind: human-backend`, and the stimulus declared
+    `release-notes`. So the published control could not exercise the harm it named.
 
-    `version: !!int 9` makes announcement's resolver RAISE (one of the six in #673). The
-    guard swallows that and answers None, and the module's own `except Exception` arm
-    catches it and records `adapter_resolved: false` — which is a typed, visible signal
-    and exactly the case that fallback was written for. Verified by reading the written
-    record, not assumed. Forcing symmetry here would replace a legible fallback with a
-    stop, for the one input where the fallback is right.
+    And it was wrong on the outcome. Measured with the harm actually in play
+    (`delivery_kind: human-backend`, `--delivery-kind none`): at `version: 1` the run
+    raised `fail_delivery_kind_mismatch`; at `version: !!int 9` it exited 0 and appended a
+    DURABLE RECORD. One token converted a hard refusal on the self-attestation bypass into
+    a written record.
+
+    "Typed and visible" was also not enforcement: no production surface reads
+    `adapter_resolved` — only tests and one prose line.
     """
     repo = _repo(tmp_path, DECLARED.format(v=version))
     result = _run(
         RECORD, repo, "--head-commit", "deadbeef", "--delivery-kind", "release-notes",
     )
-    if version == "9":
-        assert result.returncode != 0, result.stdout
-        assert "announcement-adapter.yaml" in result.stderr
-        return
-    assert result.returncode == 0, result.stderr
-    import json
+    assert result.returncode != 0, result.stdout
+    assert "announcement-adapter.yaml" in result.stderr
 
-    log = (repo / ".charness" / "announcement" / "announcements.jsonl").read_text(encoding="utf-8")
-    entry = json.loads(log.strip().splitlines()[-1])
-    check = entry.get("delivery_kind_check") or entry
-    assert check.get("adapter_resolved") is False, entry
+
+def test_the_delivery_kind_bypass_the_review_found_is_closed(tmp_path: Path) -> None:
+    """The measurement the earlier control could not make.
+
+    `requires_delivery_kind_agreement` fires only for `human-backend`, so this is the
+    adapter that puts the named harm in play. Before the resolver repair, `!!int 9` here
+    exited 0 with a durable record while `version: 1` refused.
+    """
+    adapter = """version: {v}
+repo: demo
+delivery_kind: human-backend
+post_command_template: slack-post "{{body}}"
+delivery_capability: slack-post
+"""
+    for version in ("9", "!!int 9"):
+        repo = _repo(tmp_path / version.replace("!", "x").replace(" ", ""), adapter.format(v=version))
+        result = _run(
+            RECORD, repo, "--head-commit", "deadbeef", "--delivery-kind", "none",
+        )
+        assert result.returncode != 0, (version, result.stdout)
+        assert not (repo / ".charness" / "announcement" / "announcements.jsonl").exists(), version
+
+    # The polarity control: a speakable adapter still refuses the understated kind, by its
+    # OWN gate rather than by the version guard.
+    repo = _repo(tmp_path / "speakable", adapter.format(v="1"))
+    result = _run(RECORD, repo, "--head-commit", "deadbeef", "--delivery-kind", "none")
+    assert result.returncode != 0, result.stdout
+    assert "human-backend" in (result.stdout + result.stderr)
 
 
 def test_a_speakable_version_still_blocks_the_delivery(tmp_path: Path) -> None:
@@ -144,3 +174,61 @@ def test_an_ordinary_invalid_field_is_not_refused(tmp_path: Path) -> None:
     result = _run(PREFLIGHT, _repo(tmp_path, adapter))
     assert result.returncode == 2, result.stdout
     assert "delivery_blocked: true" in result.stdout
+
+
+@pytest.mark.parametrize(
+    ("label", "adapter", "expect"),
+    [
+        (
+            "over-indented block",
+            "version: 1\ndelivery_kind: release-notes\n  in_progress_sources:\n    - kind: path\n      path: docs/p.md\n",
+            "could not interpret",
+        ),
+        (
+            "validated-away entry",
+            "version: 1\ndelivery_kind: release-notes\nin_progress_sources:\n  - kind: Path\n    path: docs/p.md\n",
+            "no entry survived validation",
+        ),
+    ],
+)
+def test_a_declaration_that_never_reaches_the_gate_refuses(
+    tmp_path: Path, label: str, adapter: str, expect: str
+) -> None:
+    """Two live exit-0 bypasses of this publish gate, both found by a bounded review and
+    both closed. Neither needed a version to be touched.
+
+    ONE: `announcement_adapter_lib` called `adapter_lib.load_yaml_file` bare, discarding
+    the uninterpreted-line sink, so an over-indented `in_progress_sources:` block left
+    `errors: []`, `valid: true`, no warning — and `delivery_blocked: false / ok: true` at
+    exit 0. Two of `adapter_version_verdict`'s three doors were structurally dead for this
+    adapter. Repaired by arming the sink, ahead of #673, because the bypass is a publish
+    boundary rather than a message shape.
+
+    TWO: `_validate_in_progress_sources` uses `continue` on every rejected entry, so ONE
+    bad entry empties the list and the empty list takes the same short-circuit. `kind:
+    Path` — one capital letter — cleared the gate. Repaired by reading `field_state`,
+    which already carried "the repo wrote this key", against the validated result.
+
+    The slice had ALREADY documented the second input, as a probe-authoring mistake, in
+    this file's own `DECLARED` comment — without noticing it was a live bypass of the gate
+    being repaired.
+    """
+    result = _run(PREFLIGHT, _repo(tmp_path, adapter))
+    assert result.returncode == 1, result.stdout
+    assert expect in result.stderr, result.stderr
+    assert "delivery_blocked: false" not in result.stdout
+
+
+def test_a_valid_entry_still_blocks_and_no_entry_still_clears(tmp_path: Path) -> None:
+    """The polarity controls for the two repairs above. Without these, a preflight that
+    refuses every adapter passes both tests."""
+    blocked = _run(PREFLIGHT, _repo(tmp_path / "a", DECLARED.format(v="1")))
+    assert blocked.returncode == 2, blocked.stdout
+    assert "delivery_blocked: true" in blocked.stdout
+
+    cleared = _run(
+        PREFLIGHT,
+        _repo(tmp_path / "b", "version: 1\nrepo: demo\ndelivery_kind: release-notes\n"),
+    )
+    assert cleared.returncode == 0, cleared.stderr
+    assert "delivery_blocked: false" in cleared.stdout

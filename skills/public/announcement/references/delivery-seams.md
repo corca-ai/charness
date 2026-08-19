@@ -255,6 +255,20 @@ resolved at record time, the CLI falls back to `choices=`-validated trust and
 records that fact (`delivery_kind_check.adapter_resolved: false`) rather than
 silently skipping the cross-check.
 
+That fallback was measured covering two states it should not have. A document the
+parser refused, and a silently dropped `delivery_kind:` line, both left the
+cross-check reading a charness default -- the first reporting `adapter_resolved:
+false`, the second the more misleading `true`. Neither needed a `version` change,
+and `adapter_resolved` is not read by any production surface, so the record was a
+log field rather than a stop. This resolver now records both states, so the
+refusal fires.
+
+The general form is a consumer contract worth stating for any repo adopting this
+skill: a resolver that loads its adapter without capturing the parser's
+uninterpreted-line report cannot distinguish "the repo declared nothing" from
+"the repo declared something this reader dropped", and every guard downstream of
+it inherits that blindness.
+
 The recorded record carries `delivery_handle` (opaque, backend-defined --
 the same string chaining uses, see Chaining Outputs), a `verification`
 object `{channel, status, reason?}`, and a `delivery_kind_check` object
