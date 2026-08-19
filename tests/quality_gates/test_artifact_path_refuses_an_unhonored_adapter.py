@@ -85,3 +85,16 @@ def test_an_ordinary_invalid_field_is_not_refused(tmp_path: Path):
     result = _run(_repo(tmp_path, adapter))
     assert result.returncode == 0, result.stderr
     assert f"write_artifact_path: {DECLARED}/latest.md" in result.stdout
+
+
+def test_a_resolver_that_rendered_no_payload_is_refused_rather_than_read_as_empty():
+    """The guard reads a payload the resolver PRINTED. If nothing parseable came back there
+    is no `errors` to ask about, and treating that as "no errors, carry on" would resolve the
+    charness default on the one input where the reader said nothing at all — the same silence
+    the exit-code path used to catch."""
+    from tests.script_main import load_script_module
+
+    module = load_script_module("resolve_artifact_path_for_no_payload_test", CLI)
+    for rendered in (None, "", ["not", "a", "mapping"]):
+        with pytest.raises(SystemExit, match="rendered no payload"):
+            module._refuse_unhonored_adapter(rendered, "quality")

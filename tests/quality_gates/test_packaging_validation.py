@@ -499,3 +499,22 @@ def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
 
     shared_manifest = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))
     assert shared_manifest["version"] != "1.2.3"
+
+
+@pytest.mark.release_only
+def test_install_surface_requires_the_parser_adapter_lib_loads_by_path(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
+    """`adapter_lib` loads `adapter_yaml_parse` BY PATH at module scope, so an installed
+    plugin missing it fails at IMPORT of `adapter_lib` — earlier than the
+    `adapter_yaml_render_lib` case beside it in the floor, which earned its entry for the
+    same reason. The file joined the required list when the YAML dialect moved out of
+    `adapter_lib` (`#673`'s length-cap split); without the entry the floor under-specifies a
+    hard import dependency it is the only thing speaking about.
+    """
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    (repo / "plugins" / "charness" / "scripts" / "adapter_yaml_parse.py").unlink()
+
+    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "adapter_yaml_parse" in result.stderr
