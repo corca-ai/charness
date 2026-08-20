@@ -20,11 +20,12 @@ runs the activation command.
 - Current slice intent: turn the locally proven repair tree into one fixed,
   source/export/ledger-consistent semantic candidate without smuggling in a
   version bump or treating a local green gate as public release proof.
-- Next action: rebuild the semantic packet after the owner-binding repair and
-  coverage completion, obtain a fresh-eye read of that exact tree, rerun
+- Next action: rebuild the semantic packet after the owner-binding and
+  diagnostic repairs, obtain a fresh-eye read of that exact tree, rerun
   integrated verification, and bind the semantic candidate lock. The bounded
-  review found an argv/help-owner escape; it is repaired at `7b277c3d0`, and
-  the follow-up refusal tests are committed at `c29d338d8`. Any new failure
+  review found an argv/help-owner escape; it is repaired at `7b277c3d0`, the
+  follow-up refusal tests are at `c29d338d8`, and diagnostic drift is corrected
+  at `3cc29d5ea`. Any new failure
   returns to the owning seam and carries its recurrence class into a gate, test,
   or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
@@ -778,7 +779,7 @@ invent a common engine.
 - What changed: `scripts/command_plan_preflight.py`, its twenty-one focused regression
   tests, the parent parallel-execution contract, and the durable plan at
   `charness-artifacts/critique/command-plans/2026-08-21-goal-fanout.json`.
-- Targeted verification: focused tests passed `20`; ruff, Python length, doc
+- Targeted verification: focused tests passed `21`; ruff, Python length, doc
   links, documented-command flags, critique-all, diff check, and the actual
   five-target/full-ref preflight passed. Round 1 found two structural gaps;
   the repaired surface was read in round 2 with clean boundary verification
@@ -786,10 +787,29 @@ invent a common engine.
   second structural repair round: `owner_target` now binds `argv` and
   `help_argv`, malformed commands refuse structurally, and relative plans
   resolve from `--repo-root`. The follow-up changed-line run is clean across
-  `23/23` mapped files with `blocking=[]`; the round-2 test additions are
+  `23/23` mapped files with `blocking=[]` at current proof HEAD
+  `3cc29d5ea`; the round-2 test additions are
   accepted-unreviewed under the repository's two-round cap.
 - Non-claims: the preflight does not run planned commands or prove runtime,
   installed, hosted, external, issue-closeout, publication, or Cautilus truth.
+
+### Slice 4 integrated verification after command-plan repairs
+
+- Current source truth: `3cc29d5ea9f4e82d87cc6c5c0356c95f5569ccd6`.
+- Changed-line proof: the serialized current-head receipt at
+  `charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md`
+  is `clean`, with `23/23` changed-pool files covered, `blocking=[]`, and
+  consumer return code `0`.
+- Broad quality: `./scripts/run-quality.sh --read-only` passed `96` checks with
+  `0` failures in `167.7s`. Runtime remains advisory under #668; the result is
+  not a claim that the budget is clean.
+- Fresh checkout: the corrected owner command
+  `python3 skills/public/release/scripts/check_fresh_checkout_probes.py
+  --repo-root . --run-probes --detail` passed all five declared probes.
+- Execution-smell repair: an attempted concurrent changed-line/broad run
+  produced a no-verdict coverage race because both producers share mutation
+  state. The broad run was then rerun alone and the changed-line proof was rerun
+  alone before it; the final receipts above are serialized, not the raced run.
 
 ## Closeout Binding Plan
 
@@ -838,7 +858,8 @@ invent a common engine.
   explicitly non-required for the current changed range, focused changed-line
   coverage is clean across 22/22 files, and the integrated broad quality run is
   `96 passed, 0 failed`. The command-plan repair is committed at
-  `7b277c3d0` with coverage completion at `c29d338d8`, including malformed-entry
+  `7b277c3d0` with coverage completion at `c29d338d8` and diagnostic repair at
+  `3cc29d5ea`, including malformed-entry
   refusal, exact `owner_target` binding, same-owner help probes, and
   repo-root-relative plan resolution. A new packet
   and fresh-eye round must still read that exact tree; integrated verification
