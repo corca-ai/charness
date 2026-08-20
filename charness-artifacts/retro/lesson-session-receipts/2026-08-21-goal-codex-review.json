@@ -1,0 +1,11 @@
+{
+  "kind": "charness.lesson-session-emission-receipt",
+  "schema_version": 1,
+  "session_id": "2026-08-21-goal-codex-review",
+  "snapshot_sha256": "8d08058ad72e21884c9c7f1bc7b6a2fab056fa812288754158b9a6f60940b306",
+  "renderer_id": "charness.lesson-session-preview.text.v1",
+  "stdout_sha256": "dee1b64b3406cf0e31b3374bcc7172a1d4c3bed7508ca4605108c6ed216529f1",
+  "stdout_byte_count": 3205,
+  "emitted_at": "2026-08-20T16:03:22.605223Z",
+  "receipt_sha256": "df56b9d6fff38f97e1064f186e8e5d70f8c6839115a4611de7e7ec8b144b68a0"
+}

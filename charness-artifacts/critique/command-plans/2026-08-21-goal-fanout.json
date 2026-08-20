@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "intent": "Resolve the semantic-candidate review and release-proof command surface before fan-out.",
+  "targets": [
+    {
+      "id": "critique-validator",
+      "query": "scripts/validate_critique_artifacts.py",
+      "expected_path": "scripts/validate_critique_artifacts.py"
+    },
+    {
+      "id": "goal-validator",
+      "query": "skills/public/achieve/scripts/check_goal_artifact.py",
+      "expected_path": "skills/public/achieve/scripts/check_goal_artifact.py"
+    },
+    {
+      "id": "issue-ledger-test",
+      "query": "tests/quality_gates/test_release_issue_ledger.py",
+      "expected_path": "tests/quality_gates/test_release_issue_ledger.py"
+    },
+    {
+      "id": "release-reader",
+      "query": "skills/public/release/scripts/current_release.py",
+      "expected_path": "skills/public/release/scripts/current_release.py"
+    },
+    {
+      "id": "issue-ledger-validator",
+      "query": "scripts/check_release_issue_ledger.py",
+      "expected_path": "scripts/check_release_issue_ledger.py"
+    }
+  ],
+  "refs": [
+    {
+      "id": "semantic-candidate-base",
+      "ref": "38775dfeb8d1e5574663d7ef461d19a63e252841"
+    }
+  ],
+  "commands": [
+    {
+      "id": "validate-critique",
+      "argv": [
+        "python3",
+        "{target:critique-validator}",
+        "--repo-root",
+        ".",
+        "--all"
+      ]
+    },
+    {
+      "id": "check-goal",
+      "argv": [
+        "python3",
+        "{target:goal-validator}",
+        "--repo-root",
+        ".",
+        "--goal-path",
+        "charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
+        "--pursue-ready"
+      ]
+    },
+    {
+      "id": "check-issue-ledger",
+      "argv": [
+        "python3",
+        "{target:issue-ledger-validator}",
+        "--repo-root",
+        ".",
+        "--ledger",
+        "charness-artifacts/issues/2026-08-20-next-release-ledger.json"
+      ]
+    },
+    {
+      "id": "read-current-release",
+      "argv": [
+        "python3",
+        "{target:release-reader}",
+        "--repo-root",
+        "."
+      ]
+    }
+  ]
+}

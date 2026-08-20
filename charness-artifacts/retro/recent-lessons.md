@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The semantic-candidate review identified a procedural fan-out seam: operators were told to resolve paths, refs, and owner flags before parallel work, but no executable command checked those premises. (source: `charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md`)
 - This is the separate disposition for the goal-continuation lesson receipt. (source: `charness-artifacts/retro/2026-08-21-goal-continuation-retro.md`)
-- This retro closes the work unit that repaired the release fresh-checkout timeout, changed-line consumer coverage, duplicated child-process setup, and the parallel coverage-runtime collision exposed by the broad quality gate. (source: `charness-artifacts/retro/2026-08-21-session-retro.md`)
 
 ## Repeat Traps
 
@@ -49,5 +49,5 @@
 - `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`
 - `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
+- `charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-continuation-retro.md`
-- `charness-artifacts/retro/2026-08-21-session-retro.md`

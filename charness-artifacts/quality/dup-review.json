@@ -5228,6 +5228,13 @@
       "note": "small classification/path-boundary guard shared by push-diff and goal portability checks. The conditions are independent safety policies and the span is idiom-sized; extracting it would couple two proof surfaces with no common verdict.",
       "reviewed_at": "2026-08-20",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "57080e9e153a32c7",
+      "note": "repo-owned standalone CLI bootstrap shared by check_artifact_surface_preflight and command_plan_preflight: import the repo-local runtime, emit YAML, resolve the script's repo root, and load the shared path-portability seam. These commands own different artifact/command-plan verdicts and must remain directly executable in source and collapsed plugin layouts; extracting the bootstrap would couple independent operator entrypoints without changing their domain logic.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

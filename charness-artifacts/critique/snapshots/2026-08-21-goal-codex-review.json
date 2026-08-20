@@ -1,0 +1,22 @@
+{
+  "window": {
+    "id": "2026-08-21-goal-codex-review",
+    "opened_at": "2026-08-20T16:04:13Z"
+  },
+  "head": "de1b3bf3a9dc043c018c97c68f85271b4a69441c",
+  "status": [
+    "1 .M N... 100644 100644 100644 764e57cb6c6fee598961e493da233c6c7880ee5b 764e57cb6c6fee598961e493da233c6c7880ee5b charness-artifacts/retro/lesson-ledger.json",
+    "? charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.json",
+    "? charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.md"
+  ],
+  "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "worktree_patch_sha256": "6fee1af5b449ed9543a47954d837997bac8ee64be68ce280c98311712aeea671",
+  "changed_content": {
+    "charness-artifacts/retro/lesson-ledger.json": "-:457df552aec6af7f987d69906a1bb266c81e56c84167f75b23abaaee6a2d2b82"
+  },
+  "untracked": {
+    "charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.json": "c346d2df539b2f251aa18f0cfb77f8b3c7958d1933652c6bf77ef5d7201cb12d",
+    "charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.md": "dee1b64b3406cf0e31b3374bcc7172a1d4c3bed7508ca4605108c6ed216529f1"
+  },
+  "source_blobs": {}
+}

@@ -2,13 +2,26 @@
 
 Date: 2026-08-21
 
-Execution: blocked host signal: no Agent/spawn/ceal worker surface was available; `ceal capabilities` returned `status: unavailable`, `live_gateway_checked: false`, and `claims_allowed: []`.
+Execution: parent-delegated read-only Codex bounded review completed in a
+separate process context. The host exposes no typed Agent/spawn/Ceal worker
+envelope, so the review used the available unnamed `codex exec --sandbox
+read-only` channel and parent boundary fingerprints. A first delivery attempt
+was interrupted after it failed to return bounded findings; its boundary
+verification was clean. The unnamed retry returned the three requested release
+angles plus counterweight, and a later two-round review covered the repaired
+command-plan verdict surface.
 
 ## Decision Under Review
 
 Whether to lock the integrated semantic candidate at `5a170113dc8ea0bbd3c790d65180404db442081e` before version mutation, tag, publication, or external readback.
 
-Success requires a bounded fresh-eye release critique with separate angle and counterweight passes, followed by a durable four-bin disposition. This record does not claim that review ran.
+Success requires a bounded fresh-eye release critique with separate angle and
+counterweight passes, followed by a durable four-bin disposition. The original
+semantic-candidate packet was reviewed by the retry recorded in
+`charness-artifacts/critique/rounds/2026-08-21-2026-08-21-goal-codex-review.md`.
+The command-plan repair was separately reviewed in rounds 1 and 2 below. This
+does not authorize version mutation, publication, hosted readback, or issue
+closure.
 
 ## Release Scope
 
@@ -23,11 +36,23 @@ Version remains 6.2.0; no tag or release candidate is being locked. The consumer
 
 ## Failure Angles
 
-The required release angles were selected but not executed: Gawande (operator checklist and clean checkout), Minto (release/evidence communication), and Raskin (consumer-facing proof path). A separate counterweight pass was also not executed because the host could not provide the bounded reviewer context.
+The retry executed Gawande (operator checklist and clean checkout), Minto
+(release/evidence communication), and Raskin (consumer-facing proof path) as a
+bounded fresh-eye read, followed by the requested counterweight disposition. It
+found no release-blocking defect in the reviewed packet. The command-plan
+repair then received a first round that found ref/help/short-flag continuation
+gaps and a second round that read the repairs and found no remaining blocker.
 
 ## Counterweight Pass
 
-No reviewer-derived concern is synthesized here. Deterministic evidence is sufficient to keep the local candidate reproducible, but it cannot replace a distinct observer at the release boundary. The correct counterweight disposition is to hold semantic-candidate lock and version mutation until the bounded review is available.
+The release retry's counterweight classified the missing executable command-plan
+seam as `Bundle Anyway`, runtime above the #668 advisory budget as `Valid but
+Defer`, hypothetical unobserved consumer-host concerns as `Over-Worry`, and no
+current `Act Before Ship` blocker. The command-plan first round changed the
+implementation: ref/help/flag failures now stop later probes, and both long
+and short flags are checked. The second repair-read round found no blocker.
+Round-2 test additions are explicitly accepted-unreviewed under the repository
+two-round cap.
 
 ## Public-Skill Scenario Review
 
@@ -112,13 +137,18 @@ the wrong release-script owner (`scripts/current_release.py`), an unsupported
 are one command-surface smell: execution began before the owning path, accepted
 argv, and ref identity were resolved. They are not test or code failures.
 
-The structural repair is now part of this goal's execution protocol: before any
-manual or parallel command fan-out, resolve every repo-owned target from
-`rg --files`, verify every git ref with `git rev-parse --verify`, and probe the
-resolved CLI owner with `--help` before composing flags. The guard was executed
-after correction against five exact script/test targets plus the full base SHA;
-all resolved. A missing target or rejected help surface stops the fan-out and
-repairs the command plan first.
+The structural repair is now executable in
+`scripts/command_plan_preflight.py`, driven by
+`charness-artifacts/critique/command-plans/2026-08-21-goal-fanout.json`. It
+resolves five exact script/test targets through `rg --files`, verifies the full
+base SHA with `git rev-parse --verify`, and probes four owner `--help` surfaces
+before checking planned long and short flags. The corrected plan passed.
+Target/ref failures stop all owner probes; owner-help/flag failures stop later
+owner probes and return exit 2. A missing target or rejected help surface stops
+the fan-out and repairs the command plan first. The first implementation's
+fresh-eye finding and repair are recorded in rounds 1 and 2; the initial
+recorder rejection of an out-of-repo `/tmp` boundary snapshot was also
+preserved as a path-contract smell and repaired by using a repo-owned snapshot.
 
 The mutation closeout completed with fresh coverage and changed-line proof
 `analyzed: 22`, `changed: 22`, `blocking: []`; its broad standing pytest phase
@@ -130,7 +160,7 @@ or a subject-controlled metric before changing verdict semantics.
 
 ## Structured Findings
 
-- F1 | bin: act-before-ship | evidence: strong | ref: host signal and release boundary | action: defer | note: do not lock, bump, tag, publish, or close release issues while the required fresh-eye critique is unproven
+- F1 | bin: act-before-ship | evidence: strong | ref: release boundary and unchanged-candidate proof | action: defer | note: semantic lock may proceed only after the parent reruns the normal integrated verification on the repaired tree; do not infer version/publication approval
 - F2 | bin: valid-but-defer | evidence: strong | ref: /tmp/charness-s5-quality-read-only-final2.log | action: defer | note: local quality, fresh-checkout, duplicate-ratchet, and real-host trigger checks do not establish external release truth
 - F3 | bin: over-worry | evidence: weak | ref: hypothetical unobserved consumer hosts | action: document | note: speculative host concerns without a current reproducer remain outside this critique's proven findings
 
@@ -139,12 +169,16 @@ or a subject-controlled metric before changing verdict semantics.
 - Requested tier: high-leverage bounded-reviewer
 - Requested spawn fields: read-only one-shot bounded reviewer; inherited session model; no host addressing/name
 - Host exposure state: unsupported
-- Application state: n/a — host exposed no Agent/spawn surface, and Ceal live capability discovery was unavailable
-- Delivery state: pending-parent-spawn
+- Application state: parent-delegated read-only Codex review delivered after one interrupted attempt
+- Delivery state: findings-received; command-plan repair round 2 found no blocker
 
 ## Fresh-Eye Satisfaction
 
-blocked host signal: no Agent/spawn/ceal worker surface was available; ceal capabilities returned status unavailable with live_gateway_checked false and claims_allowed empty.
+parent-delegated: the semantic packet retry returned Gawande/Minto/Raskin plus
+counterweight findings; command-plan repair rounds 1 and 2 were recorded with
+clean boundary verification. Round 1 caused repairs; round 2 read the repaired
+surface and found no blocker. No same-agent substitute or Cautilus evaluation
+is claimed.
 
 ## Reviewed Input Identity
 
@@ -155,9 +189,13 @@ blocked host signal: no Agent/spawn/ceal worker surface was available; ceal capa
 
 ## Operator Action Required
 
-- Do not mutate version or release surfaces.
-- Restore a host-capable bounded reviewer path, then rerun the release critique against the unchanged candidate and record the returned findings.
-- Re-run the exact post-critique verification lock before any external-boundary action.
+- Do not mutate version or release surfaces until the repaired tree has its own
+  integrated verification lock.
+- Rebuild/rebind the semantic packet after committing the command-plan repair;
+  the old `5a170113d` packet identity cannot silently absorb new source/tests.
+- Re-run the exact post-critique verification lock before any external-boundary
+  action; hosted/install readback, issue closure, publication, and Cautilus
+  remain unrun.
 
 ## Upgrade Path
 

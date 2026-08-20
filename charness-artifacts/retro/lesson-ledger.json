@@ -1244,6 +1244,36 @@
         ]
       },
       "snapshot_sha256": "b2ce099946ecded90aa06cf0b16eab96a43c8a88987d6c62db82cf8e163c4428"
+    },
+    {
+      "session_id": "2026-08-21-goal-codex-review",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-21-goal-codex-review",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "positive-effect-cannot-be-cited",
+          "goal-closeout-evidence-binding",
+          "agent-authored-score-role",
+          "detector-blind-class-unstated",
+          "bar-recorded-as-prose",
+          "green-test-is-not-covered-line",
+          "proof-surface-message-drift",
+          "changed-line-proof-before-broad-quality",
+          "global-probe-for-local-fact",
+          "prose-claim-without-a-reader"
+        ]
+      },
+      "snapshot_sha256": "8d08058ad72e21884c9c7f1bc7b6a2fab056fa812288754158b9a6f60940b306"
     }
   ],
   "score_events": [

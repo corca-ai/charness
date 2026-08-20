@@ -42,6 +42,22 @@ Order-of-operations that a pending result does constrain still binds. This repo
 requires a bug's causal review before its fix is designed, so speculative work on
 that fix waits — while every part the review does not gate proceeds.
 
+## Command Fan-Out Preflight
+
+Before starting a manual or parallel command fan-out, write a small JSON plan
+and run `python3 scripts/command_plan_preflight.py --repo-root . --plan <repo-relative-plan>`.
+The preflight resolves each target through `rg --files`,
+verifies each git ref with `git rev-parse --verify`, and probes only the owning
+command's `--help` surface to confirm planned flags. A missing, ambiguous, or
+wrong path/ref/flag is a refusal that stops the fan-out; it is not a reason to
+guess a sibling path or continue with the remaining commands. The report proves
+resolution and parser ownership only, not the planned commands' runtime,
+installed state, hosted state, or external truth.
+
+Use `{target:<id>}` in command argv lists so one resolved target is the source of
+truth for every probe. Keep the plan under the repo root and preserve its report
+with the slice evidence when the fan-out crosses a release or review boundary.
+
 ## Disjoint Writers
 
 Concurrent writers must not share a file or a single-writer surface. Partition

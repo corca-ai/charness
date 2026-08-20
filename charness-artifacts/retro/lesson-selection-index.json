@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-21",
-  "source_artifact_count": 542,
-  "candidate_count": 2197,
+  "source_artifact_count": 543,
+  "candidate_count": 2201,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1634,6 +1634,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b357f490fda7",
+      "kind": "current_focus",
+      "lesson": "The semantic-candidate review identified a procedural fan-out seam: operators were told to resolve paths, refs, and owner flags before parallel work, but no executable command checked those premises.",
+      "normalized_key": "the semantic candidate review identified a procedural fan out seam operators were told to",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The semantic-candidate review identified a procedural fan-out seam: operators were told to resolve paths, refs, and owner flags before parallel work, but no executable command checked those premises."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:2d13c289b126",
       "kind": "current_focus",
       "lesson": "This is the separate disposition for the goal-continuation lesson receipt.",
@@ -1686,6 +1712,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:128b608f8790",
+      "kind": "next_improvement",
+      "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path.",
+      "normalized_key": "make the parallel execution workflow consume the preflight report as its input contract so",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:bc7f62a90289",
       "kind": "next_improvement",
       "lesson": "make the session-start workflow surface any outstanding declared session before opening another one, while preserving the no-auto-write rule; `Structural pattern: state opened by one actor and enforceable only against a later stranger. Triggering instance(s): 2026-08-20 session receipt and prior 2026-08-18 recurrence. Destination: issue #639.`",
@@ -1734,6 +1786,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "preserve the order commit → changed-line proof → broad quality."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:bbdd7562c908",
+      "kind": "next_improvement",
+      "lesson": "resolve repo-owned command paths with `rg --files` before invoking a gate",
+      "normalized_key": "resolve repo owned command paths with rg files before invoking a gate",
+      "recurrence_class": "wrong-path-is-premise-failure",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "resolve repo-owned command paths with `rg --files` before invoking a gate"
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:dbcfd39cc949",
+      "kind": "next_improvement",
+      "lesson": "run command-plan preflight before every independent fan-out, including validator and artifact paths",
+      "normalized_key": "run command plan preflight before every independent fan out including validator and artifact paths",
+      "recurrence_class": "command-plan-premise-before-fanout",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run command-plan preflight before every independent fan-out, including validator and artifact paths"
         }
       ]
     },
