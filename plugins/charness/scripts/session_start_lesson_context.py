@@ -235,6 +235,18 @@ def derive_session_id(payload: dict[str, Any], *, repo_root: Path, today: str | 
     return f"{date_text}-{hashlib.sha256(material).hexdigest()[:12]}"
 
 
+def _run_child(script: Path, arguments: list[str], *, timeout: int) -> subprocess.CompletedProcess:
+    """Run a sibling probe with one pinned module-resolution environment."""
+    environment = {**os.environ, "CHARNESS_REPO_ROOT": str(_script_tree_root())}
+    return subprocess.run(
+        [sys.executable, str(script), *arguments],
+        capture_output=True,
+        timeout=timeout,
+        check=False,
+        env=environment,
+    )
+
+
 def _run_preview(repo_root: Path, seed: str) -> tuple[int, str, str]:
     script = _sibling_script(PREVIEW_SCRIPT_NAME)
     if not script.is_file():
@@ -246,13 +258,10 @@ def _run_preview(repo_root: Path, seed: str) -> tuple[int, str, str]:
     # `not-established` caused by the caller's environment rather than by the
     # repo's state. The pinned value is what `repo_root_from_script` computes with
     # no override, so this is the documented default made explicit.
-    environment = {**os.environ, "CHARNESS_REPO_ROOT": str(_script_tree_root())}
-    completed = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(repo_root), "--seed", seed],
-        capture_output=True,
+    completed = _run_child(
+        script,
+        ["--repo-root", str(repo_root), "--seed", seed],
         timeout=LESSON_PREVIEW_TIMEOUT_SECONDS,
-        check=False,
-        env=environment,
     )
     return (
         completed.returncode,
@@ -290,13 +299,10 @@ def _run_unclaimed_sessions(repo_root: Path) -> dict[str, Any]:
     script = _retro_plan_script()
     if script is None:
         raise OSError("no `plan_retro_run.py` beside the SessionStart module")
-    environment = {**os.environ, "CHARNESS_REPO_ROOT": str(_script_tree_root())}
-    completed = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(repo_root)],
-        capture_output=True,
+    completed = _run_child(
+        script,
+        ["--repo-root", str(repo_root)],
         timeout=LESSON_ROUTING_TIMEOUT_SECONDS,
-        check=False,
-        env=environment,
     )
     if completed.returncode != 0:
         raise OSError(
