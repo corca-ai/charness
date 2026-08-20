@@ -105,15 +105,9 @@ history.
      closeout (`references/prepare-packet.md`)
    - do not collapse the counterweight into one of the angle subagents; keep
      it as a separate skeptical pass
-   - before the first spawn, resolve WHO authorized it — run
-     `python3 "$SKILL_DIR/../../shared/scripts/resolve_subagent_delegation.py" resolve --repo-root . --scope critique`;
-     a repo with no `AGENTS.md` block has not refused, it has not been asked
-   - `../../shared/references/fresh-eye-subagent-review.md` owns spawn
-     enforcement: that authorization ladder, the
-     rail-1 snapshot/verify around each reviewer spawn, the capability check
-     required before reporting the canonical path blocked, and the
-     stop-instead-of-local-substitute rule when the host cannot provide
-     subagents
+   - before the first spawn, resolve authorization and follow the full
+     `../../shared/references/fresh-eye-subagent-review.md` enforcement path.
+   - record each returned round immediately with `python3 "$SKILL_DIR/scripts/record_round_findings.py" --repo-root . --round <n> --window-id <id> --boundary-snapshot <path> --findings-file <path>`; it writes a non-overwritable `charness-artifacts/critique/rounds/<date>-<window-id>.md` that round `n+1` reads as prior evidence. A missing or mismatched snapshot refuses.
 4. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available
