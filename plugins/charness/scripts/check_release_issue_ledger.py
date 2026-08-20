@@ -7,6 +7,8 @@ import argparse
 import json
 from pathlib import Path
 
+from yaml_output import emit_yaml
+
 try:
     from scripts.release_issue_ledger_contract import (
         REPOSITORY,  # noqa: F401
@@ -39,13 +41,13 @@ def main(argv: list[str] | None = None) -> int:
     try:
         payload = json.loads(ledger_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        print(json.dumps({"status": "fail", "errors": [f"cannot read ledger: {exc}"]}, indent=2))
+        emit_yaml({"status": "fail", "errors": [f"cannot read ledger: {exc}"]})
         return 1
     errors = validate_ledger(payload, repo_root)
     if errors:
-        print(json.dumps({"status": "fail", "errors": errors}, indent=2))
+        emit_yaml({"status": "fail", "errors": errors})
         return 1
-    print(json.dumps(summary(payload), indent=2, sort_keys=True))
+    emit_yaml(summary(payload))
     return 0
 
 
