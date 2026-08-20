@@ -20,9 +20,10 @@ runs the activation command.
 - Current slice intent: turn the locally proven repair tree into one fixed,
   source/export/ledger-consistent semantic candidate without smuggling in a
   version bump or treating a local green gate as public release proof.
-- Next action: commit the command-plan repair, rebuild the semantic packet on
-  that exact tree, rerun integrated verification, and bind the semantic
-  candidate lock. The bounded release retry found no blocker; any new failure
+- Next action: rebuild the semantic packet after the owner-binding repair, obtain
+  a fresh-eye read of that exact tree, rerun integrated verification, and bind
+  the semantic candidate lock. The bounded review found an argv/help-owner
+  escape; it is now repaired and committed at `7b277c3d0`. Any new failure
   returns to the owning seam and carries its recurrence class into a gate, test,
   or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
@@ -773,15 +774,18 @@ invent a common engine.
 - Objective: make wrong path, ref, owner, and flag invocations fail before a
   parallel fan-out can escape, including the pattern where a failed preflight
   continues probing later commands.
-- What changed: `scripts/command_plan_preflight.py`, its six focused regression
+- What changed: `scripts/command_plan_preflight.py`, its twenty focused regression
   tests, the parent parallel-execution contract, and the durable plan at
   `charness-artifacts/critique/command-plans/2026-08-21-goal-fanout.json`.
-- Targeted verification: focused tests passed `6`; ruff, Python length, doc
+- Targeted verification: focused tests passed `20`; ruff, Python length, doc
   links, documented-command flags, critique-all, diff check, and the actual
   five-target/full-ref preflight passed. Round 1 found two structural gaps;
   the repaired surface was read in round 2 with clean boundary verification
-  and no remaining blocker. The round-2 test additions are accepted-unreviewed
-  under the repository's two-round cap.
+  and no remaining blocker. The first owner-binding fresh-eye finding added a
+  second structural repair round: `owner_target` now binds `argv` and
+  `help_argv`, malformed commands refuse structurally, and relative plans
+  resolve from `--repo-root`. The round-2 test additions are
+  accepted-unreviewed under the repository's two-round cap.
 - Non-claims: the preflight does not run planned commands or prove runtime,
   installed, hosted, external, issue-closeout, publication, or Cautilus truth.
 
@@ -831,10 +835,11 @@ invent a common engine.
   validate, duplicate ratchet is clean, real-host trigger evaluation is
   explicitly non-required for the current changed range, focused changed-line
   coverage is clean across 22/22 files, and the integrated broad quality run is
-  `96 passed, 0 failed`. The later command-plan repair is not yet committed or
-  included in a new semantic packet; its focused proof and two-round fresh-eye
-  records are complete, so the next closeout must commit, rebuild identity, and
-  rerun integrated verification before any version mutation.
+  `96 passed, 0 failed`. The command-plan repair is committed at
+  `7b277c3d0`, including malformed-entry refusal, exact `owner_target` binding,
+  same-owner help probes, and repo-root-relative plan resolution. A new packet
+  and fresh-eye round must still read that exact tree; integrated verification
+  must be rerun before any version mutation.
 
 ## User Verification Instructions
 
