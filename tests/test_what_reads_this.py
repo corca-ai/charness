@@ -296,13 +296,15 @@ def test_raise_scan_walks_nested_control_flow_but_skips_nested_definitions() -> 
 
 def test_ast_candidate_miss_and_unparseable_source_use_explicit_fallbacks() -> None:
     context = WRT._PythonReferenceContext("x = 1\n", "source")
-    assert context.kind("target = 2", 1, 0) is None
+    assert context.kind("target = 2", 2, 0) is None
 
     malformed = (
         'assert config["target"]\n'
         'if config["target"]: raise ValueError\n'
         'assert target\n'
         'if target: raise ValueError\n'
+        'value = config["target"]\n'
+        'target = value\n'
         '???\n'
     )
     hits = WRT._symbol_hits(malformed, "target", "source")
@@ -312,3 +314,5 @@ def test_ast_candidate_miss_and_unparseable_source_use_explicit_fallbacks() -> N
     assert by_line[2] == "value-constraint"
     assert by_line[3] == "value-constraint"
     assert by_line[4] == "value-constraint"
+    assert by_line[5] == "lookup"
+    assert by_line[6] == "definition"
