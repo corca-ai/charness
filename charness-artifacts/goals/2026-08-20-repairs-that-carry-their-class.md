@@ -9,18 +9,18 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active Slice 3 repair integration is locally proven after
- both bounded fresh-eye rounds, semantic integration, changed-line proof, and
- release-only proof; the broader release goal remains active at its external
- candidate/readback boundaries.
-- Current slice: Slice 3 — parallel P2/P3 repair lanes #672/#676/#677/#678,
-  serialized parent integration, and generated-surface synchronization.
-- Current slice intent: make each repair carry the failure class it addresses,
-  keep helper-only work from masquerading as a consumer, and finish the
-  changed-line/fresh-eye proof before the semantic candidate advances.
-- Next action: bind the Slice 3 closeout receipt to the verified commits and
- continue with the semantic-candidate critique and later release/hosted gates;
- do not claim publication or external readback from this local proof.
+- Current disposition: Slice 3 is locally proven and archived; Slice 4 is now
+  active at the integrated semantic-candidate boundary. The broader release
+  goal remains active at its version, publication, and external-readback edges.
+- Current slice: Slice 4 — reconcile the frozen ledger and exports, preserve
+  the lesson-session provenance, and bind the semantic candidate before the
+  mandatory release critique.
+- Current slice intent: turn the locally proven repair tree into one fixed,
+  source/export/ledger-consistent semantic candidate without smuggling in a
+  version bump or treating a local green gate as public release proof.
+- Next action: commit the lesson-session evidence and goal transition, run the
+  report-first quality/release packets, then prepare the bounded semantic
+  candidate critique and verification lock.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -487,8 +487,8 @@ invent a common engine.
 | 0 | Recount/read every open issue; write and validate the canonical ledger; reproduce candidate blockers; persist release/quality planner receipts; commit the intake lock | “Maximum” needs an executable frozen set, not a ticket list | Exactly-once ledger and validator tests; version/tag/CI state; per-row current premise, acceptance owner, path budget, dependencies, proof, disposition; release candidates not assumed blockers | completed |
 | 1 | Turn each qualified row into one work package; write the exact per-path owner table; split or serialize every overlap; create and doctor isolated writer worktrees | Scheduling labels are not code ownership, especially around critique, exports, and shared helpers | Approved path table including shared/generated/parent-only surfaces; worktree receipts; causal notes and focused commands per package | completed |
 | 2 | Execute P0/P1 release-path packages first: `#679` and any live `#612/#668/#669/#667`; close focused proof and integrate each commit serially | A release train cannot compensate for a broken entrypoint or nondeterministic publication machinery | Supported-path, process-tree, timeout-attribution, runtime-semantic, and current mutation evidence; no unresolved reproduced blocker | completed |
-| 3 | Execute every other qualified P2/P3/P4 package concurrently where path budgets are disjoint; integrate serially and run required proof-surface review rounds | This maximizes shipped repairs without pretending unlike issues share a design | Per-package regression/mutation/counterexample; lane closeout; generated impact; round records; parent integration proof | in progress |
-| 4 | Amend any disproved/cannot-ship rows; reconcile umbrellas/refutations; sync exports/generated docs; freeze and commit the integrated semantic candidate | Global proof needs a fixed semantic tree and truthful non-claims | Final ledger containing every frozen row exactly once plus separately identified blocker exceptions/amendments; source/export review; semantic candidate SHA | not started |
+| 3 | Execute every other qualified P2/P3/P4 package concurrently where path budgets are disjoint; integrate serially and run required proof-surface review rounds | This maximizes shipped repairs without pretending unlike issues share a design | Per-package regression/mutation/counterexample; lane closeout; generated impact; round records; parent integration proof | completed |
+| 4 | Amend any disproved/cannot-ship rows; reconcile umbrellas/refutations; sync exports/generated docs; freeze and commit the integrated semantic candidate | Global proof needs a fixed semantic tree and truthful non-claims | Final ledger containing every frozen row exactly once plus separately identified blocker exceptions/amendments; source/export review; semantic candidate SHA | in progress |
 | 5 | Prove and critique the semantic candidate: changed-line first, then exact planner-required standing/release/broad gates; run the mandatory critique roster and conditional round 2 | Independent green packages do not prove composition; critique must read semantics before the bump obscures the diff | Gate logs/receipts; packet/fingerprints/round records; mutation proof; semantic verification lock. Any semantic repair returns to Slice 4 | not started |
 | 6 | Re-run planner on the locked semantic candidate; select the bump; mutate version/export/release-record/note surfaces; commit the release candidate; run all planner-required post-bump checks, fresh-checkout/real-host probes, and publication dry-run on that exact commit | The release candidate is different from the pre-bump semantic candidate and owes its own proof | Version rationale/consistency; generated diff; release record; exact release-candidate SHA; post-bump lock; claims review; dry-run; tag target. Any semantic change returns to Slice 4 | not started |
 | 7 | Publish only the locked release candidate; handle ambiguity through resume; perform hosted/public and separate install/update/doctor readback; then close only proven issues with post-release carriers; reconcile handoff and retro | The goal ends at externally verified release truth, not local green or tag creation | Remote/tag/release/install identifiers; same-proxy flags; issue comments/state readbacks; final ledger; handoff; Auto-Retro; complete closeout | not started |
@@ -634,6 +634,20 @@ invent a common engine.
 - Critique/non-claims: Round 1 code, consumer/export, and goal-claim findings are durably recorded and repaired. Round 2 code, consumer/export, and goal/ledger findings were delivered, recorded, and repaired; their repair set is accepted-unreviewed under the two-round cap, not a third-round approval. Boundary results are parent-attributed because the parent changed the shared checkout after the reviewer snapshots. Cautilus, hosted release, install/update readback, issue closure, and publication remain unrun. The #671 fresh-eye delivery failure remains explicitly unproven from Slice 2.
 - Metrics: Four lanes integrated; lane proof is `24 + 12 + 16 + 43`, with #676 secondary consumer proof `33`; the pre-fallback combined focused/consumer bundle was `201 passed`, final reader-focused proof `26 passed`, changed-line is clean across all 10 mapped files, standing pytest passed, and release-only is `103 passed` with `10749 deselected`; #677/#678 premise commands match their receipts; package proof/path propagation is validator-enforced; generated source/plugin parity passes. External release, install/update, hosted readback, issue closeout, and publication remain open.
 
+### Slice 4: slice-3-closeout-and-slice-4-entry
+
+- Objective: Close the integrated Slice 3 repair lanes with durable proof, then move the active frame to the semantic-candidate freeze boundary.
+- Why this approach: Slice 3 had focused, changed-line, standing, release-only, ledger, mirror, and pre-commit evidence; the next planned boundary is the fixed semantic tree required before version mutation.
+- Commits: Semantic repair b2f9a6407; fallback coverage ff192f63a, 63c3996c9, 9dbda5097; proof-bound goal records 1ee53a795 and 7eb9b05bf. Lesson session 2026-08-20-goal-continuation is recorded in the repo-owned lesson ledger and receipt files.
+- What changed: Promoted Slice 3 from locally proven to archived in the active frame; recorded the continuation lesson bundle; no new source mutation in this transition.
+- Alternatives rejected: Rejected treating release-only green as a public release claim, skipping the lesson receipt because it dirtied the tree, or moving to version mutation before semantic candidate critique and fresh-checkout evidence.
+- Targeted verification: check_goal_artifact.py --pursue-ready passed; check_release_issue_ledger.py passed for 30 issues and 10 packages; final changed-line receipt was clean across 10/10 files with standing pytest passing; release-only was 103 passed, 10749 deselected; final pre-commit and worktree checks passed.
+- Test duplication pressure: No production tests were added in this transition. The prior Slice 3 fallback coverage repair is recorded as direct consumer and malformed-branch coverage; the lesson session itself is a durable evidence write and must be committed before release planning.
+- Critique: Round-2 Slice 3 findings remain durably recorded and accepted-unreviewed under the two-round cap. The next critique target is the semantic candidate as a release boundary, with distinct source, gate, and fresh-eye channels.
+- Off-goal findings: None. External publication, hosted/readback, install refresh, and issue closeout remain explicitly unclaimed.
+- Lessons carried forward: Changed-line proof must follow the commit and precede broad/release work; a lesson-session write is part of the provenance surface, not incidental dirt; release planner freshness must be re-read after every source or evidence-surface mutation.
+- Metrics: Current code truth before this transition: 1ee53a795; current documentation binding before this transition: 7eb9b05bf; current release surface remains 6.2.0; ledger 30 issues / 10 packages; worktree dirty only from the required lesson-session receipt.
+
 ## Closeout Binding Plan
 
 - Reviewed inputs: this goal, the frozen issue ledger and amendments, current
@@ -740,6 +754,10 @@ invent a common engine.
     and goal-claim records plus round-2 code, consumer/export, and goal/ledger
     records under `charness-artifacts/critique/rounds/`; round-2 repairs are
     explicitly accepted-unreviewed under the two-round cap.
+13. Continuation lesson session `2026-08-20-goal-continuation`: frozen selection
+    bundle and emission receipt at
+    `charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.md`
+    and `.json`; the repo-owned lesson ledger records its snapshot hash.
 
 ## Interview Decisions
 
