@@ -2,9 +2,8 @@
 
 Status: released
 Date: 2026-08-14
-Refreshed: 2026-08-15 (S3 of the 6.0.0 release scope) — interrupt carry-forward
-and delivery evidence; the contract below is unchanged, and no decision in it was
-reopened.
+Refreshed: 2026-08-20 (release-train Slice 0) — interrupt carry-forward remains
+explicit and the contract below is unchanged; no #617 decision was reopened.
 Source: https://github.com/corca-ai/charness/issues/617
 
 ## Delivery Status
@@ -227,6 +226,10 @@ audit code owns only historical incident diagnosis.
   accepted the bundle owner, rejected host-log lookup and v1 runtime
   compatibility, and required only an exact derived path, durable work citation,
   and fail-closed orphan semantics before implementation.
+- Current-slice carry-forward: this resolved handoff is refreshed for the
+  release-train investigation that also crosses installed-versus-repo-owned
+  seams. That is a new issue contract, not a reopening of #617; the current
+  slice must keep its own producer, consumer, and host non-claims explicit.
 
 ## Canonical Artifact
 
