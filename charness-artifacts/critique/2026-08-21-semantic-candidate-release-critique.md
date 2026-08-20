@@ -5,14 +5,14 @@ Date: 2026-08-21
 Execution: parent-delegated read-only Codex bounded reviews completed in
 separate process contexts. The host exposes no typed Agent/spawn/Ceal worker
 envelope, so the reviews used unnamed `codex exec --sandbox read-only` channels
-and parent boundary fingerprints. The final owner-bound round consumed the
-current repaired packet and found the verdict logic sound, while identifying a
-proof-identity binding gap and one diagnostic wording drift. The diagnostic
-repair was made in `3cc29d5ea`; a parent reproduction then found that embedded
-target markers could still escape the exact owner-token contract. That escape
-is repaired in `a1aeb90ed`, with focused coverage in `19e62aea8`. Exact-HEAD
-changed-line and broad receipts now bind `19e62aea8`; a replacement packet must
-read that truth surface before semantic lock.
+and parent boundary fingerprints. The final v9 review consumed the fixed
+candidate-endpoint packet and returned PASS: command-plan verdict logic,
+serialized evidence, and release-boundary separation were sound. The v9
+boundary verification returned `ok: true`, `verdict: clean`, and `drift: []`.
+The earlier proof-identity and embedded-target escapes remain recorded as
+historical repairs at `3cc29d5ea` and `a1aeb90ed`; focused, changed-line, and
+broad evidence now bind `19e62aea8`. A separate focused receipt was added for
+the 25-test command-plan suite.
 
 ## Decision Under Review
 
@@ -45,11 +45,10 @@ The retry executed Gawande (operator checklist and clean checkout), Minto
 bounded fresh-eye read, followed by the requested counterweight disposition. It
 found no release-blocking defect in the reviewed packet. The command-plan
 repair then received a first round that found ref/help/short-flag continuation
-gaps and a second round that read the repairs. The final owner-bound round found
-no remaining owner-binding blocker, but caught stale proof identity and a
-diagnostic-label mismatch. The diagnostic label was repaired; the replacement
-packet review caught the remaining current-HEAD evidence drift, which is now
-being repaired through exact-HEAD receipts and synchronized truth surfaces.
+gaps and a second round that read the repairs. The owner-bound rounds found and
+repaired stale proof identity, diagnostic-label drift, and embedded target-token
+escape. The final v9 review read the fixed endpoint, exact serialized receipts,
+and current packet identity; it found no remaining Act-Before-Ship blocker.
 
 ## Counterweight Pass
 
@@ -60,7 +59,13 @@ current `Act Before Ship` blocker. The command-plan first round changed the
 implementation: ref/help/flag failures now stop later probes, and both long
 and short flags are checked. The second repair-read round found no blocker.
 Round-2 test additions are explicitly accepted-unreviewed under the repository
-two-round cap.
+two-round cap. The final v9 counterweight recommended a fully serialized
+focused-suite receipt and either a nested `help_argv` regression or explicit
+documentation of the symmetric shared guard. The receipt is now durable at
+`charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md`; the
+implementation applies the same nested/embedded token validator to both command
+surfaces, and the current focused coverage documents that symmetry without
+changing the candidate endpoint.
 
 ## Public-Skill Scenario Review
 
@@ -186,7 +191,7 @@ blocker.
 
 ## Structured Findings
 
-- F1 | bin: act-before-ship | evidence: strong | ref: final owner-bound review and current-head proof binding | action: defer | note: semantic lock may proceed only after the replacement packet is reviewed and the current serialized verification is bound; do not infer version/publication approval
+- F1 | bin: act-before-ship | evidence: strong | ref: final v9 fresh-eye review, clean boundary fingerprint, and current endpoint-bound receipts | action: defer | note: semantic candidate is ready to proceed to the separate verification-lock step; this does not authorize version mutation or publication
 - F2 | bin: valid-but-defer | evidence: strong | ref: /tmp/charness-s5-quality-read-only-final2.log | action: defer | note: local quality, fresh-checkout, duplicate-ratchet, and real-host trigger checks do not establish external release truth
 - F3 | bin: over-worry | evidence: weak | ref: hypothetical unobserved consumer hosts | action: document | note: speculative host concerns without a current reproducer remain outside this critique's proven findings
 
@@ -195,17 +200,19 @@ blocker.
 - Requested tier: high-leverage bounded-reviewer
 - Requested spawn fields: read-only one-shot bounded reviewer; inherited session model; no host addressing/name
 - Host exposure state: unsupported
-- Application state: parent-delegated read-only Codex review delivered after one interrupted attempt
-- Delivery state: findings-received; final owner-bound round found the owner logic sound but blocked on stale proof identity; the parent repaired and reran it
+- Application state: parent-delegated unnamed read-only Codex review delivered after one interrupted attempt
+- Delivery state: findings-received; final v9 round returned PASS for the fixed candidate endpoint and no Act-Before-Ship blocker
 
 ## Fresh-Eye Satisfaction
 
 parent-delegated: the semantic retry returned Gawande/Minto/Raskin plus
 counterweight findings; command-plan rounds 1 and 2 were recorded, and the
-final owner-bound packet review returned findings. It found no owner-binding
-verdict escape, but required current-HEAD proof rebinding and diagnostic repair;
-the parent performed those repairs and serialized the reruns. No same-agent
-substitute or Cautilus evaluation is claimed.
+final v9 packet review returned the required headings and an explicit PASS. It
+verified the packet and reviewed-input hashes, the fixed candidate endpoint,
+the exact receipts, and the command-plan refusal seam. The parent boundary
+fingerprint was clean before the parent resumed writes (`ok: true`,
+`verdict: clean`, `drift: []`). No same-agent substitute or Cautilus
+evaluation is claimed.
 
 ## Reviewed Input Identity
 
@@ -214,23 +221,28 @@ substitute or Cautilus evaluation is claimed.
 - Packet path: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.json`
 - Packet SHA256: `42f2cbdee4bc8a5dc9e951af1c9d7be012d054814f303f556967f85dea9f012a`
 - Identity SHA256: `06d40fe77d56d483fb73ad1caadb156a769d2807fc2fb5d3048530fc697291bb`
-- The v5 review bound the packet itself to `ea6737b30`, but found that the
-  changed-line and broad-quality receipts cited older proof trees. Those
-  receipts are now rebound. A new packet and fresh-eye round must consume the
-  synchronized `19e62aea8` surfaces, including the standalone target-token
-  refusal and its focused coverage.
+- The v9 review bound the packet to the fixed endpoint range
+  `38775dfeb8d1e5574663d7ef461d19a63e252841..19e62aea829e4d40b1ede2d1e2273ea067963dd1`.
+  Its `base_head_role: target` is intentional: docs-only commits through
+  `aa26c1456db22e92c094e5bf3989534f671ae463` are truth-surface updates and do
+  not alter the reviewed candidate inputs. The packet identity verifier
+  returned `True, current`; the final round is recorded separately in
+  `charness-artifacts/critique/rounds/2026-08-21-2026-08-21-semantic-candidate-final.md`.
 
 ## Operator Action Required
 
-- Do not mutate version or release surfaces until the replacement packet for
-  `19e62aea8` has its own fresh-eye read and integrated verification lock.
-- Re-run the exact post-critique verification lock before any external-boundary
-  action; hosted/install readback, issue closure, publication, and Cautilus
-  remain unrun.
+- The semantic candidate at `19e62aea8` has passed the replacement packet's
+  fresh-eye review and may proceed to the separate exact post-critique
+  verification lock.
+- Do not mutate version or release surfaces until that verification lock and
+  its phase-scoped grant are complete; hosted/install readback, issue closure,
+  publication, and Cautilus remain unrun.
 
 ## Upgrade Path
 
-None is authorized: no version bump, tag, publication, install refresh, or rollback instruction is being issued from this blocked critique.
+No version bump, tag, publication, install refresh, or rollback instruction is
+issued from this semantic-candidate critique. Those remain separate,
+phase-scoped release operations after verification lock.
 
 ## Boundary Ownership
 

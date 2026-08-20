@@ -12,9 +12,10 @@ runs the activation command.
 - Current disposition: Slice 3 is locally proven and archived; Slice 4 remains
   active at the evidence-binding semantic-candidate boundary after absorbing
   the release-proof timeout, consumer-coverage, duplicate-seam, and command-
-  surface repairs. Exact-HEAD changed-line and broad quality receipts now bind
-  `19e62aea8`; the semantic candidate still awaits the replacement packet's
-  fresh-eye lock, and the broader release goal remains active at its version,
+  surface repairs. Exact-HEAD focused, changed-line, and broad quality
+  receipts now bind `19e62aea8`; the v9 replacement packet received a clean
+  fresh-eye PASS and the semantic candidate is ready for its separate exact
+  verification lock. The broader release goal remains active at its version,
   publication, and external-readback edges.
 - Current slice: Slice 4 — reconcile the frozen ledger and exports, preserve
   the lesson-session provenance, bind current-HEAD verification evidence, and
@@ -22,9 +23,9 @@ runs the activation command.
 - Current slice intent: turn the locally proven repair tree into one fixed,
   source/export/ledger-consistent semantic candidate without smuggling in a
   version bump or treating a local green gate as public release proof.
-- Next action: regenerate the semantic packet after the exact-HEAD evidence
-  rebinding, obtain a fresh-eye read of that packet, and bind the semantic
-  candidate lock. The bounded review found an argv/help-owner escape; it is
+- Next action: run the exact post-critique verification lock for the reviewed
+  candidate, then record the semantic candidate lock before any phase-scoped
+  version/release operation. The bounded review found an argv/help-owner escape; it is
   repaired at `7b277c3d0`, the follow-up refusal tests are at `c29d338d8`, and
   diagnostic drift is corrected at `3cc29d5ea`. The replacement review then
   exposed stale proof identity as a truth-surface smell; the changed-line and
@@ -814,6 +815,10 @@ invent a common engine.
   records `./scripts/run-quality.sh --read-only` passing `96` checks with
   `0` failures in `166.9s` at the same HEAD. Runtime remains advisory under
   #668; the result is not a claim that the budget is clean.
+- Focused command-plan proof: the durable receipt at
+  `charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md`
+  records `25 passed in 2.01s` at the same endpoint, with raw log SHA-256
+  `7f9d2ecd409e3385f77b15ba55bc4fad2e689455be43610c3f7c46c9928aa0a4`.
 - Fresh checkout: the corrected owner command
   `python3 skills/public/release/scripts/check_fresh_checkout_probes.py
   --repo-root . --run-probes --detail` passed all five declared probes.
@@ -870,9 +875,13 @@ invent a common engine.
   The latest exact-HEAD verification is now recorded at
   `19e62aea829e4d40b1ede2d1e2273ea067963dd1`: default fresh-checkout probes
   passed (5/5), the changed-line receipt is clean across `23/23` files, and
-  the durable broad receipt records `96 passed, 0 failed`. The latest
-  replacement packet and fresh-eye round must still read this synchronized
-  evidence before any version mutation.
+  the durable broad receipt records `96 passed, 0 failed`; the focused
+  command-plan receipt records `25 passed`. The v9 replacement packet and
+  final fresh-eye round read this synchronized candidate evidence. The parent
+  boundary fingerprint was clean (`ok: true`, `verdict: clean`, `drift: []`),
+  so the semantic candidate may proceed to the separate verification-lock
+  step. Version mutation, publication, external readback, issue closure, and
+  Cautilus remain unrun.
 
 ## User Verification Instructions
 
