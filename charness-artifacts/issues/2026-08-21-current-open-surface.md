@@ -21,10 +21,11 @@ retro-path child is represented by #686 and must be read independently.
 
 ## Qualification Checkpoints
 
-- #681: current source search finds the cadence-owner parser and related tests;
-  re-run the canonical goal checker on a current consumer fixture before
-  changing code. Existing ledger route is `already-satisfied`, not a closure
-  claim for the live tracker.
+- #681: the live issue was re-read with comments and preserved at
+  `charness-artifacts/issues/reads/681.raw.yaml`; current source search finds
+  the cadence-owner parser and related tests. Re-run the canonical goal checker
+  on a current consumer fixture before changing code. Existing ledger route is
+  `already-satisfied`, not a closure claim for the live tracker.
 - #682: current `check_auto_trigger.py --base-ref HEAD^ --head-ref HEAD` uses
   the explicit commit-range input and evaluates. The clean-after-commit
   no-basis failure still needs a deterministic fixture before admission.
@@ -49,9 +50,9 @@ issue-first #687 delivery failure, are now appended as post-lock
 `release-blocker` exceptions in
 `charness-artifacts/issues/2026-08-20-next-release-ledger.json`. Their
 source reads, reproduction artifacts, exact commands, nonzero assertion exits,
-and release impact are bound there. #681 remains the original ledger's
-`already-satisfied` row pending a fresh consumer requalification; it was not
-silently promoted or duplicated.
+and release impact are bound there. #681 now also has a comments-inclusive raw
+read, but remains the original ledger's `already-satisfied` row pending a fresh
+consumer requalification; it was not silently promoted or duplicated.
 
 ## Admission Rule
 

@@ -223,6 +223,23 @@ def validate_post_lock_exceptions(repo_root: Path, exceptions: Any, activation_n
             errors.append(f"{label}.observed_head_sha: commit SHA required")
         if row.get("classification") != "release-blocker":
             errors.append(f"{label}.classification: must be release-blocker")
+        require_nonempty(row.get("acceptance_owner"), f"{label}.acceptance_owner", errors)
+        for key in ("acceptance_assertions", "allowed_paths", "proof_commands"):
+            value = row.get(key)
+            if not isinstance(value, list) or not value or not all(isinstance(item, str) and item.strip() for item in value):
+                errors.append(f"{label}.{key}: non-empty string list required")
+            if key == "allowed_paths" and isinstance(value, list):
+                for path_index, raw_path in enumerate(value):
+                    if isinstance(raw_path, str):
+                        repo_path(repo_root, raw_path, field=f"{label}.allowed_paths[{path_index}]", errors=errors)
+        carrier = repo_path(
+            repo_root,
+            row.get("release_content_evidence_path"),
+            field=f"{label}.release_content_evidence_path",
+            errors=errors,
+        )
+        if carrier is not None and not carrier.is_file():
+            errors.append(f"{label}.release_content_evidence_path: file does not exist")
         premise = require_mapping(row.get("premise"), f"{label}.premise", errors)
         require_nonempty(premise.get("exact_command"), f"{label}.premise.exact_command", errors)
         if premise.get("verdict") != "post-lock-release-blocker-reproduced":

@@ -14,7 +14,7 @@ Codex source-level path may also omit a terminal result after interruption.
 Every bounded fresh-eye attempt emits one durable delivery state. The only
 state eligible for review approval is `findings-received`, backed by findings
 read in the parent context. `spawn-accepted-no-delivery`, `interrupted`,
-`timed-out`, `host-channel-unreadable`, and
+`timed-out`, `host-channel-unreadable`, `host-capacity-blocked`, and
 `findings-recovered-from-transcript` remain non-approval states unless the
 contract explicitly says what evidence recovery proves. Tree-integrity
 fingerprints and findings delivery are separate rails.
@@ -24,7 +24,8 @@ packet/input identity, parent receipt identity, boundary fingerprint, observed
 signal, terminal flag, and `recorded_at`. The minimum transition graph is:
 
 `spawn-accepted -> running -> findings-received | interrupted | timed-out |
-host-channel-unreadable | spawn-accepted-no-delivery | non-delivery-unknown`.
+host-channel-unreadable | host-capacity-blocked | spawn-accepted-no-delivery |
+non-delivery-unknown`.
 
 `findings-recovered-from-transcript` is a recovery observation, not an approval
 state. A retry creates a new `attempt_id`; it never overwrites the first
@@ -34,6 +35,11 @@ and remains non-approval unless a separately delivered review consumes it.
 `findings-received` is approval-eligible only when attempt ID, scope digest,
 packet identity, and parent receipt identity all match; otherwise the state is
 `non-delivery-unknown`.
+
+Each canonical transition and each late/duplicate/recovery observation has its
+own event ID and append-only history entry. A terminal canonical state has
+precedence over later observations; later evidence is retained but cannot
+rewrite the terminal state or resurrect approval.
 
 ## Current Slice
 
@@ -111,11 +117,14 @@ unproven and is not discharged by this new slice.
    terminal non-delivery, not an absent or successful result. (Verification
    type: `unit` and `integration`.)
 4. The review contract emits an exact recovery command/state packet so callers
-   do not guess paths or flags. (Verification type: `integration`.)
-5. The current-open refresh has a disposition and source read for every live
+  do not guess paths or flags. (Verification type: `integration`.)
+5. The portable backend runner refuses stale artifacts, validates JSON Schema,
+   uses a finite subprocess timeout, resolves paths before `cwd`, and emits a
+   typed receipt for every terminal outcome. (Verification type: `integration`.)
+6. The current-open refresh has a disposition and source read for every live
    issue; each admitted repair has an acceptance owner, path budget, proof,
    and release carrier. (Verification type: `manual` and `integration`.)
-6. The release candidate proves source/export parity, changed-line and broad
+7. The release candidate proves source/export parity, changed-line and broad
    gates, delivered fresh-eye evidence where required, and explicit non-claims
    for host, install, hosted, and unresolved issue boundaries. (Verification
    type: `e2e`.)
@@ -126,6 +135,7 @@ unproven and is not discharged by this new slice.
   tests/quality_gates/test_reviewer_result_delivery.py` — `unit`.
 - `python3 -m pytest -q tests/quality_gates/test_reviewer_boundary_fingerprint.py
   tests/quality_gates/test_reviewer_delivery_integration.py` — `integration`.
+- `python3 -m pytest -q tests/quality_gates/test_reviewer_worker.py` — `integration`.
 - `python3 scripts/run_slice_closeout.py --repo-root . --predict-commit` —
   `integration`.
 - `python3 scripts/validate_debug_artifact.py --repo-root . --paths
@@ -137,8 +147,8 @@ unproven and is not discharged by this new slice.
 
 ## Boundary Ownership
 
-- Charness: request shape, delivery state ledger, bounded recovery, closeout
-  refusal, and operator-readable non-claims.
+- Charness: request shape, portable backend worker envelope, delivery state
+  ledger, bounded recovery, closeout refusal, and operator-readable non-claims.
 - Host adapter/Codex: actual spawn channel, interruption signal, watcher,
   wait predicate, and terminal payload.
 - Parent release operator: serialized integration, export/version surfaces,
@@ -168,12 +178,17 @@ unproven and is not discharged by this new slice.
 - Interrupt Source: fresh-eye-interrupted-delivery-2026-08-21
 - Seam Summary: subagent spawn/wait/interruption status -> parent findings delivery -> fresh-eye closeout verdict
 - Chosen Next Step: critique
+- Current Packet: `charness-artifacts/critique/2026-08-21-r2-delivery-spec-current-packet.json`
+- Current Packet SHA: `4d71a52036fe0822767e863a1a3f19a4387c219ef60217e486197fe512497776`
+- Fresh-Eye Result: delivered `BLOCK`; boundary verify drifted because the
+  parent wrote implementation files during the review window, so the result is
+  consumed as repair input and is not an approval.
 - Impl Status: blocked
-- Impl Status Reason: the contract affects proof/review verdict behavior and
-  needs a bounded fresh-eye critique before implementation. The first angle
-  findings consumed a stale packet identity; a replacement unnamed spawn was
-  rejected with `agent thread limit reached`. See
-  `charness-artifacts/critique/rounds/2026-08-21-fresh-eye-delivery-spec-attempt.md`.
+- Repair State: repair-in-progress after delivered BLOCK; no release approval
+  or fresh-eye PASS is claimed.
+- Impl Status Reason: the current review delivered a BLOCK and its boundary
+  fingerprint was quarantined after parent writes; implementation is limited
+  to consuming the repair findings before a clean second review round.
 - What Disproving Observation Is Resolved: the unnamed retry rules out treating
   named-mailbox routing as the sole explanation; it does not prove the exact
   runtime Interrupted event.
@@ -185,6 +200,8 @@ unproven and is not discharged by this new slice.
 
 ## First Implementation Slice
 
-After critique, implement the smallest Charness-owned state/ledger and
-deterministic fake-host refusal path. Then integrate the open-issue refresh
-lanes and re-run the shared proof surface before any version mutation.
+Implement the Charness-owned portable worker envelope, state/ledger, and
+deterministic fake-host refusal path. Keep backend selection outside the
+contract; `codex exec` and `claude -p` are merely adapter inputs. Then integrate
+the open-issue refresh lanes and re-run the shared proof surface before any
+version mutation.

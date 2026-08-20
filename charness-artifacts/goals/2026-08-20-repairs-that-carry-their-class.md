@@ -18,17 +18,17 @@ runs the activation command.
   current-open-issue qualification, and fresh-eye delivery edges. Issue #687 is
   now a release-cut exception with a Charness-owned prevention child and an
   explicitly unproven host-side dependency.
-- Current slice: R1 — current-open surface refresh and delivery-boundary
-  contract; the installed/fresh-eye/release boundary remains open.
+- Current slice: R2 — portable review-worker and delivery-state reliability;
+  the installed/fresh-eye/release boundary remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: complete the current-open refresh, critique the #687 delivery
-  contract, then run the R2 reliability and open-issue repair lanes in parallel
-  under disjoint path budgets before any version mutation. Any new failure
-  returns to its owning seam and carries its recurrence class into a gate, test,
-  or spec.
+- Next action: commit the R2 worker/state repair, run its changed-line and
+  second fresh-eye proof with no parent writes during the review window, then
+  run the disjoint #682/#683/#685/#686 lanes before any version mutation. Any
+  new failure returns to its owning seam and carries its recurrence class into
+  a gate, test, or spec.
 - Large-slice rule: completed issue-level history remains auditable, but future
   work is scheduled by capability boundary rather than ticket count. Each macro
   slice owns one user-visible outcome and its shared contract; independent
@@ -515,8 +515,8 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 | Macro slice | Outcome | Parallel lanes | Parent-owned closeout | Status |
 | --- | --- | --- | --- | --- |
-| R1 — current-open qualification and contract freeze | Every live issue is freshly read and assigned an evidence-backed route; #687 has a durable Charness/host ownership split and a critique-ready implementation contract | #681 current requalification; #682 evidence-continuity; #683 reviewer-handoff; #685 persistence contract; #686 installed-path; #687 delivery boundary | Current-open manifest, ledger amendment(s), debug/spec artifacts, issue readback, path table, critique packet, and honest critique-delivery disposition | in progress |
-| R2 — evidence and delivery reliability | The release candidate carries the shared prevention pattern for wrong paths, lost delivery, commit-boundary evidence, and contradictory operator signals | Track A: delivery/evidence continuity (#682/#683/#687); Track B: CLI/installed-path contracts (#685/#686); #681 only after current requalification. Fake-host and installed-layout fixtures run concurrently after admission. | Parent integrates source/plugin exports, ledger carriers, generated docs, changed-line proof, and bounded fresh-eye rounds; any proof-surface repair triggers round 2 | pending |
+| R1 — current-open qualification and contract freeze | Every live issue is freshly read and assigned an evidence-backed route; #687 has a durable Charness/host ownership split and a critique-ready implementation contract | #681 current requalification; #682 evidence-continuity; #683 reviewer-handoff; #685 persistence contract; #686 installed-path; #687 delivery boundary | Current-open manifest, ledger amendment(s), debug/spec artifacts, issue readback, path table, critique packet, and honest critique-delivery disposition | completed |
+| R2 — evidence and delivery reliability | The release candidate carries the shared prevention pattern for wrong paths, lost delivery, commit-boundary evidence, and contradictory operator signals | Track A: delivery/evidence continuity (#682/#683/#687); Track B: CLI/installed-path contracts (#685/#686); #681 only after current requalification. Fake-host and installed-layout fixtures run concurrently after admission. | Parent integrates source/plugin exports, ledger carriers, generated docs, changed-line proof, and bounded fresh-eye rounds; any proof-surface repair triggers round 2 | in progress |
 | R3 — candidate freeze, external truth, and issue closeout | One unchanged release candidate is selected, versioned, proven locally, installed/read back, published, and reconciled issue-by-issue | Planner/quality/release read-only probes and final issue reads fan out only after the candidate SHA is locked; publication, version surfaces, install/update, hosted readback, and closeout remain serialized | Candidate lock/post-bump proof; distinct install and hosted readback; per-issue behavioral carriers; post-close reads; handoff, retro, and final goal audit | pending |
 
 ## Backlog Recount
@@ -972,8 +972,13 @@ boundary at once while parent-only truth surfaces remain serialized.
   spawn was rejected with `agent thread limit reached`; this is unproven
   delivery, not critique approval. The spec now includes explicit transition,
   provenance, late-result, R1/R2/R3 gate, and exact-test-path requirements, but
-  implementation remains blocked until a valid critique or explicit host-block
-  disposition is carried forward.
+  the current packet delivered a BLOCK whose findings are recorded as repair
+  input; its approval is quarantined because the parent wrote during the review
+  window. A clean second round remains required.
+- R2 now owns a portable Charness worker envelope and delivery ledger. It does
+  not import or depend on CEAL: CEAL's workbench runner is only an external
+  reference for failure classes, while Charness owns its own stale-artifact,
+  schema, timeout, cwd, atomic-publish, and typed-receipt contract.
 
 ## Final Verification
 

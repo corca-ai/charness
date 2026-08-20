@@ -76,6 +76,8 @@ _MAX_LINE_CHARS = 4_000_000
 _MAX_FIELD_CHARS = 200
 _MAX_AGENTS = 50
 _ID_PREFIX = "agent-"
+_RECOVERED_DELIVERY_STATE = "findings-recovered-from-transcript"
+_UNKNOWN_DELIVERY_STATE = "non-delivery-unknown"
 
 
 class ResultError(Exception):
@@ -290,6 +292,7 @@ def _unresolved(repo_root: str, resolved: dict) -> tuple[dict, int]:
             "session_count": len(resolved["sessions"]),
             "sessions": resolved["sessions"][:_MAX_AGENTS],
             "note": "the host layout resolved; this session id has no reviewer transcripts.",
+            "delivery_state": f"{_UNKNOWN_DELIVERY_STATE} transcript selector did not prove parent delivery",
         }, 1
     return {
         **base,
@@ -301,6 +304,7 @@ def _unresolved(repo_root: str, resolved: dict) -> tuple[dict, int]:
             f"{_claude_projects_dir(repo_root)}/<session>/subagents. Other hosts, including Codex, "
             "are not inspected and are not claimed to persist reviewer transcripts."
         ),
+        "delivery_state": f"{_UNKNOWN_DELIVERY_STATE} transcript layout unavailable; parent delivery not proven",
     }, 3
 
 
@@ -321,6 +325,7 @@ def _text_payload(args: argparse.Namespace, common: dict, scan: dict) -> dict:
         "text": text,
         "text_chars": full,
         "truncated": truncated,
+        "delivery_state": f"{_RECOVERED_DELIVERY_STATE} transcript recovery; parent delivery not proven",
     }
     if not scan["terminal"]:
         payload["note"] = (
@@ -334,10 +339,22 @@ def _get_payload(args: argparse.Namespace, resolved: dict) -> tuple[dict, int]:
     matches = select_agents(list_agents(resolved["root"]), args.agent)
     base = {**_envelope(resolved), "selector": args.agent}
     if not matches:
-        return {"ok": False, "status": "not-found", **base}, 1
+        return {
+            "ok": False,
+            "status": "not-found",
+            **base,
+            "delivery_state": f"{_UNKNOWN_DELIVERY_STATE} reviewer selector did not prove parent delivery",
+        }, 1
     if len(matches) > 1:
         candidates, total = _public_list(matches)
-        return {"ok": False, "status": "ambiguous", **base, "agent_count": total, "agents": candidates}, 1
+        return {
+            "ok": False,
+            "status": "ambiguous",
+            **base,
+            "agent_count": total,
+            "agents": candidates,
+            "delivery_state": f"{_UNKNOWN_DELIVERY_STATE} ambiguous selector did not prove parent delivery",
+        }, 1
 
     agent = matches[0]
     scan = scan_transcript(agent["file"])
@@ -351,6 +368,7 @@ def _get_payload(args: argparse.Namespace, resolved: dict) -> tuple[dict, int]:
         "status": "still-running",
         **common,
         "text": None,
+        "delivery_state": f"{_UNKNOWN_DELIVERY_STATE} transcript has no finished parent-readable result",
         "note": (
             "no finished assistant text turn at the end of this transcript. On-disk state cannot "
             "distinguish still-running from died mid-turn. Read once: this is not an invitation "

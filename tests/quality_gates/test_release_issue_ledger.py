@@ -237,6 +237,39 @@ def test_post_lock_exception_requires_a_reproduced_post_lock_blocker(tmp_path: P
     assert any("reproduced post-lock blocker required" in error for error in errors)
 
 
+def test_post_lock_exception_carries_its_own_repair_contract(tmp_path: Path) -> None:
+    payload = _payload(tmp_path)
+    source = _source(tmp_path, number=2)
+    evidence = payload["issues"][0]["premise"]["evidence_path"]
+    row = {
+        "exception_id": "e1",
+        "issue_number": 2,
+        "issue_url": "https://github.com/corca-ai/charness/issues/2",
+        "observed_at": "2026-08-20T18:01:00+09:00",
+        "observed_head_sha": "b" * 40,
+        "lock_head_sha": "a" * 40,
+        "classification": "release-blocker",
+        "release_impact": "release-blocker: new issue",
+        "acceptance_owner": "owner",
+        "acceptance_assertions": ["assertion"],
+        "allowed_paths": [source],
+        "proof_commands": ["python3 prove.py"],
+        "release_content_evidence_path": source,
+        "source_read_path": source,
+        "premise": {
+            "verdict": "post-lock-release-blocker-reproduced",
+            "exact_command": "python3 reproduce-post-lock.py",
+            "exit": 1,
+            "evidence_path": evidence,
+        },
+    }
+    payload["post_lock_exceptions"] = [row]
+    assert gate.validate_ledger(payload, tmp_path) == []
+    row.pop("acceptance_owner")
+    errors = gate.validate_ledger(payload, tmp_path)
+    assert any("acceptance_owner" in error for error in errors)
+
+
 def test_freshness_note_is_not_a_prose_bypass(tmp_path: Path) -> None:
     payload = _payload(tmp_path)
     payload["freshness_note"] = "The snapshot is fresh."

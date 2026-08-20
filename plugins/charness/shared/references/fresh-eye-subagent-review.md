@@ -409,6 +409,29 @@ resolve instead of guessing. Read it once: a `still-running` result is not an
 invitation to poll, and using it at all still means recording a delivery
 failure.
 
+For a Charness-owned worker or a backend adapter that runs outside the typed
+subagent channel, persist the parent-side state packet with the shared helper;
+do not infer delivery from a non-empty output file or exit code alone:
+
+```bash
+python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
+  --ledger "$RUN_DIR/delivery.json" start \
+  --attempt-id "$ATTEMPT_ID" \
+  --scope "$SCOPE_ID" \
+  --packet-identity "$PACKET_SHA256" \
+  --parent-receipt-identity "$RECEIPT_ID" \
+  --boundary-fingerprint "$BOUNDARY_SHA256"
+
+python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
+  --ledger "$RUN_DIR/delivery.json" show --attempt-id "$ATTEMPT_ID"
+```
+
+The backend runner itself must publish a typed receipt and a schema-validated
+fresh result before the parent calls the `findings` operation. A finite timeout,
+absolute paths resolved before `cwd`, unique run artifacts, and a pre-existing
+output refusal are part of that runner boundary; a result file's presence is
+not a terminal success signal.
+
 ## Required Before Declaring The Canonical Path Blocked
 
 0. Resolve the authorization ladder in *Where The Delegation Request Comes

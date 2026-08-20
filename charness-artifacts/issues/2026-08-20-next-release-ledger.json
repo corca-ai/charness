@@ -1455,6 +1455,25 @@
       "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
       "classification": "release-blocker",
       "release_impact": "release-blocker: fresh-eye delivery proof cannot honestly close",
+      "acceptance_owner": "critique/review owner",
+      "acceptance_assertions": [
+        "only parent-context findings-received with matching provenance is approval-eligible",
+        "interrupted, timeout, channel loss, and transcript recovery remain non-approval"
+      ],
+      "allowed_paths": [
+        "skills/shared/scripts/reviewer_delivery.py",
+        "skills/shared/scripts/reviewer_worker.py",
+        "skills/shared/scripts/reviewer_result.py",
+        "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+        "tests/quality_gates/test_reviewer_delivery_integration.py",
+        "tests/quality_gates/test_reviewer_worker.py",
+        "charness-artifacts/debug/2026-08-21-fresh-eye-interrupted-delivery.md"
+      ],
+      "proof_commands": [
+        "python3 -m pytest -q tests/quality_gates/test_reviewer_delivery_state_machine.py tests/quality_gates/test_reviewer_worker.py",
+        "python3 scripts/run_slice_closeout.py --repo-root . --predict-commit"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-21-post-lock-path-table.md",
       "source_read_path": "charness-artifacts/issues/reads/687.raw.yaml",
       "premise": {
         "verdict": "post-lock-release-blocker-reproduced",
@@ -1477,6 +1496,22 @@
       "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
       "classification": "release-blocker",
       "release_impact": "release-blocker: auto-retro closeout cannot evaluate a clean committed slice",
+      "acceptance_owner": "retro/prove owner",
+      "acceptance_assertions": [
+        "committed-slice auto-retro invocation preserves changed-path evidence",
+        "empty scope fails closed instead of producing an unqualified success"
+      ],
+      "allowed_paths": [
+        "skills/public/retro/scripts/check_auto_trigger.py",
+        "skills/public/prove/SKILL.md",
+        "tests/test_retro_plan.py",
+        "charness-artifacts/issues/2026-08-21-682-reproduction.txt"
+      ],
+      "proof_commands": [
+        "python3 skills/public/retro/scripts/check_auto_trigger.py --repo-root . --paths",
+        "python3 skills/public/retro/scripts/check_auto_trigger.py --repo-root . --base-ref HEAD^ --head-ref HEAD"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-21-post-lock-path-table.md",
       "source_read_path": "charness-artifacts/issues/reads/682.raw.yaml",
       "premise": {
         "verdict": "post-lock-release-blocker-reproduced",
@@ -1499,6 +1534,22 @@
       "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
       "classification": "release-blocker",
       "release_impact": "release-blocker: reviewer boundary integrity continuation is not copy-safe",
+      "acceptance_owner": "shared-boundary owner",
+      "acceptance_assertions": [
+        "snapshot output is consumable by verify --before without guessed flags",
+        "boundary drift remains distinct from reviewer findings delivery"
+      ],
+      "allowed_paths": [
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "skills/shared/references/fresh-eye-subagent-review.md",
+        "tests/quality_gates/test_reviewer_boundary_fingerprint.py",
+        "charness-artifacts/issues/2026-08-21-683-reproduction.txt"
+      ],
+      "proof_commands": [
+        "python3 skills/shared/scripts/reviewer_boundary_fingerprint.py snapshot --repo-root . --out .charness/reviewer-boundary/687-before.json",
+        "python3 skills/shared/scripts/reviewer_boundary_fingerprint.py verify --repo-root . --before .charness/reviewer-boundary/687-before.json"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-21-post-lock-path-table.md",
       "source_read_path": "charness-artifacts/issues/reads/683.raw.yaml",
       "premise": {
         "verdict": "post-lock-release-blocker-reproduced",
@@ -1521,6 +1572,22 @@
       "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
       "classification": "release-blocker",
       "release_impact": "release-blocker: documented retro persistence input emits an actionable-looking warning",
+      "acceptance_owner": "retro persistence owner",
+      "acceptance_assertions": [
+        "documented artifact-name stem does not emit a contradictory missing-extension warning",
+        "persisted artifact path and readback remain explicit"
+      ],
+      "allowed_paths": [
+        "skills/public/retro/scripts/persist_retro_artifact.py",
+        "scripts/retro_persistence_lib.py",
+        "tests/quality_gates/test_retro_persistence.py",
+        "charness-artifacts/issues/2026-08-21-685-reproduction.txt"
+      ],
+      "proof_commands": [
+        "python3 -m pytest -q tests/quality_gates/test_retro_persistence.py",
+        "python3 scripts/run_slice_closeout.py --repo-root . --predict-commit"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-21-post-lock-path-table.md",
       "source_read_path": "charness-artifacts/issues/reads/685.raw.yaml",
       "premise": {
         "verdict": "post-lock-release-blocker-reproduced",
@@ -1543,6 +1610,22 @@
       "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
       "classification": "release-blocker",
       "release_impact": "release-blocker: installed retro planner emits an unavailable required probe while returning ok",
+      "acceptance_owner": "retro planner owner",
+      "acceptance_assertions": [
+        "installed planner resolves a supported command path",
+        "unavailable source-layout probes cannot be wrapped in an ok envelope"
+      ],
+      "allowed_paths": [
+        "skills/public/retro/scripts/plan_retro_run.py",
+        "scripts/portable_command_carrier.py",
+        "tests/quality_gates/test_retro_installed_plan_path.py",
+        "charness-artifacts/issues/2026-08-21-686-reproduction.txt"
+      ],
+      "proof_commands": [
+        "python3 -m pytest -q tests/quality_gates/test_retro_installed_plan_path.py",
+        "python3 scripts/run_slice_closeout.py --repo-root . --predict-commit"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-21-post-lock-path-table.md",
       "source_read_path": "charness-artifacts/issues/reads/686.raw.yaml",
       "premise": {
         "verdict": "post-lock-release-blocker-reproduced",
