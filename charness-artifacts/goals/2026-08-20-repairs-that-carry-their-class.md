@@ -9,17 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active Slice 0 qualification; the activation snapshot and
-  planner receipts are captured, and the intake ledger is being validated before
-  it can be frozen.
+- Current disposition: active Slice 0 qualification complete; the activation
+  snapshot, planner receipts, ledger, and clean changed-line proof are locked.
 - Current slice: Slice 0 — issue-source snapshot, current reproductions, ledger,
   and ledger-validator proof. No writer lane is admitted before this lock.
 - Current slice intent: freeze one honest release backlog, distinguish blockers
   from independently shippable repairs and premise-refuted reports, then launch
   disjoint work lanes without weakening the release floor.
-- Next action: commit the changed-line proof repair, re-run the post-commit
-  gate on a clean tree, then prepare isolated writer lanes from the admitted
-  packages.
+- Next action: prepare isolated writer lanes from the admitted package path
+  table, starting with the release-blocker lane.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -580,16 +578,16 @@ invent a common engine.
 
 - Objective: Qualify the activation-time open issue snapshot, preserve immutable planner and issue-read receipts, and validate an exactly-once ledger before writer lanes begin.
 - Why this approach: The release train needs a structured admission boundary so current blockers, qualified repairs, premise refutations, decisions, and missing-input deferrals cannot be laundered through a ticket list or prose count.
-- Commits: Intake lock committed as `911f730dd`; round 1 fresh-eye review returned seven false-pass classes and round 2 returned six more; both repair sets were recorded before that commit, with round-2 repairs explicitly accepted-unreviewed under the two-round cap. A follow-up proof-repair commit is pending after the changed-line gate's initial false-green refusal.
+- Commits: Intake lock committed as `911f730dd`; proof-repair commit `a7678ad3e` added the missing executable rejection-path coverage. Round 1 fresh-eye review returned seven false-pass classes and round 2 returned six more; both repair sets were recorded before the intake-lock commit, with round-2 repairs explicitly accepted-unreviewed under the two-round cap.
 - What changed: Activated the goal; captured the 30-issue GitHub snapshot and all issue reads with comments; preserved issue, release, and quality planner receipts; recorded current reproductions; added the thin CLI `scripts/check_release_issue_ledger.py`, cohesive evidence and contract modules (`scripts/release_issue_ledger_evidence.py` and `scripts/release_issue_ledger_contract.py`), and focused tests; generated charness-artifacts/issues/2026-08-20-next-release-ledger.json; updated the live backlog recount; then bound raw snapshot hashes/order, source identity metadata, typed dispositions, post-lock exceptions, amendment roots, and issue/package path budgets. The length-gate failure exposed a monolith as a structural smell, so the validator was split by responsibility instead of suppressing the gate.
 - Alternatives rejected: Rejected a #679-only train, a fixed ticket quota, and a prose-only backlog table. The ledger keeps all 30 rows while admitting only 10 path-budgeted work packages.
-- Targeted verification: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json -> pass (30 issues, 10 work packages); python3 -m pytest -q tests/quality_gates/test_release_issue_ledger.py -> 25 passed; Python length and py_compile checks passed. The first post-commit changed-line run blocked on 3 files; its structural repair added executable CLI, helper, receipt, snapshot, and exception-edge coverage, with the second run reducing the unproven set to five paths before the final five-path repair.
+- Targeted verification: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json -> pass (30 issues, 10 work packages); `pytest -q ./tests/quality_gates/test_release_issue_ledger.py` -> 25 passed; Python length and py_compile checks passed. Changed-line proof passed cleanly at `a7678ad3e` for `scripts/check_release_issue_ledger.py`, `scripts/release_issue_ledger_contract.py`, and `scripts/release_issue_ledger_evidence.py` (blocking: `[]`; consumer return code: `0`). The first run blocked on 3 files, the second exposed five residual paths while dirty, and the final run passed after structural coverage repair.
 - Test duplication pressure: Focused tests cover truncated snapshots, raw snapshot substitution/digest drift, source receipt substitution, duplicate or missing issue coverage, enum refusal, typed admission floors, blocker impact, amendment-root overwrite, post-lock exceptions, freshness non-claims, and path overlap/parent-only violations. The validator's semantic truth and GitHub freshness blind classes remain explicit.
 - Critique: Round 1 bounded reviewer returned and boundary verification was clean. It found snapshot/source identity, admission, exception, amendment-root, path-budget, and schema-binding gaps; all are repaired. Round 2 bounded reviewer returned cleanly at the boundary, found receipt-content, placeholder, timestamp, parent-path, boolean-number, and exception identity/time gaps; those repairs are locally verified and accepted-unreviewed under the two-round cap.
 - Commit-gate smell and repair: the first commit attempt passed code gates but failed staged plugin-mirror drift because the new validator modules were absent from the generated install surface. Regenerated `plugins/charness` and both marketplace manifests, then included those derived surfaces in the same lock attempt.
 - Off-goal findings: No implementation lane started. The #668 operator decision and deferred historical or umbrella rows remain open in the ledger.
 - Lessons carried forward: Applied changed-line-proof-before-broad-quality, positive-effect-cannot-be-cited, detector-blind-class-unstated, goal-closeout-evidence-binding, prose-claim-without-a-reader, bar-recorded-as-prose, green-test-is-not-covered-line, global-probe-for-local-fact, proof-surface-message-drift, and the operator rule that every failure is a smell requiring a structural pattern or pattern-of-patterns repair.
-- Metrics: Activation set: 30 rows; release blockers: 1; qualified repairs: 9; admitted packages: 10; already satisfied: 3; premise refuted: 1; decision required: 1; deferred: 15; focused ledger tests: 25 passed; fresh-eye round 1: repairs required and repaired; round 2: repairs required, locally verified, accepted-unreviewed; changed-line proof: first run blocked, second run blocked with 5 residual paths while dirty, final clean-tree run pending.
+- Metrics: Activation set: 30 rows; release blockers: 1; qualified repairs: 9; admitted packages: 10; already satisfied: 3; premise refuted: 1; decision required: 1; deferred: 15; focused ledger tests: 25 passed; fresh-eye round 1: repairs required and repaired; round 2: repairs required, locally verified, accepted-unreviewed; changed-line proof: clean across 3 mapped files.
 
 ## Closeout Binding Plan
 
