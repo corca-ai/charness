@@ -1,0 +1,12 @@
+Round 2 code-logic findings returned by James.
+
+- HIGH: write-only subscripts were classified as value readers; require Load/AugStore context.
+- HIGH: field-presence validation was promoted to value consumption; field registries must only count at structural value consumers.
+- HIGH: string aliases survived dynamic rebinding; only a uniquely assigned static string alias is safe.
+- HIGH: what_reads_this missed value-consuming pop/setdefault calls.
+- HIGH: fallback structural classification had quoted-membership false-reds and multiline fixture false-greens; use tokenized string spans and explicit membership refusal.
+- HIGH: malformed parity reports could silently look clean or crash; missing harness, failed harness, invalid/scalar YAML, null/list/string files values must be UNPROVEN.
+- MEDIUM: parity base accepted a blob-shaped ref; require a commit object.
+- MEDIUM: dynamic-reader registry audit rejected its intended non-literal reader shape; owner existence is the static floor.
+
+The reviewer also confirmed source/plugin parity at the reviewed HEAD. Parent repairs after the snapshot are accepted-unreviewed under the two-round cap; no third round is claimed.

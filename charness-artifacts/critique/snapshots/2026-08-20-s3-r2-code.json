@@ -1,0 +1,13 @@
+{
+  "window": {
+    "id": "w-20260820-s3-r2-code",
+    "opened_at": "2026-08-20T13:11:29Z"
+  },
+  "head": "e7fc1e6d8b0c25c13a93b05d121d5eec40eff1d3",
+  "status": [],
+  "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "worktree_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changed_content": {},
+  "untracked": {},
+  "source_blobs": {}
+}

@@ -162,7 +162,7 @@
       "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "premise": {
         "verdict": "current-contract-gap",
-        "exact_command": "python3 -c adapter-key-reader-refuser-probe",
+        "exact_command": "python3 -c \"from pathlib import Path; from scripts.adapter_key_registry import resolve_key; print(resolve_key(Path(\\\".\\\"), \\\"max_content_lines\\\")); print(resolve_key(Path(\\\".\\\"), \\\"max_artifact_lines\\\"))\"",
         "exit": 0,
         "evidence_path": "charness-artifacts/issues/2026-08-20-678-reproduction.raw.txt"
       },
@@ -177,7 +177,8 @@
       "allowed_paths": [
         "scripts/adapter_key_registry.py",
         "scripts/adapter_key_usage.py",
-        "tests/test_adapter_key_registry.py"
+        "tests/test_adapter_key_registry.py",
+        "tests/quality_gates/test_adapter_key_registry.py"
       ],
       "dependencies": [],
       "proof_commands": [
@@ -215,7 +216,7 @@
       "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "premise": {
         "verdict": "current-contract-gap",
-        "exact_command": "rg -n path-line-citations charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
+        "exact_command": "rg -n '[[:alnum:]_./-]+:[0-9]+' charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
         "exit": 0,
         "evidence_path": "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt"
       },
@@ -296,11 +297,19 @@
       "allowed_paths": [
         "scripts/slice_closeout_advisories.py",
         "scripts/slice_closeout_repair_parity.py",
-        "tests/test_slice_closeout_advisories.py"
+        "scripts/new_proof_surface_advisory.py",
+        "scripts/slice_closeout_commit_advisories.py",
+        "scripts/removed_name_consumers.py",
+        "tests/test_slice_closeout_advisories.py",
+        "tests/coverage_debt/test_batch2.py",
+        "tests/quality_gates/test_slice_closeout_new_pool_advisory.py",
+        "tests/quality_gates/test_removed_name_consumers.py",
+        "tests/quality_gates/test_parity_harness.py"
       ],
       "dependencies": [],
       "proof_commands": [
-        "python3 -m pytest -q tests/test_slice_closeout_advisories.py"
+        "python3 -m pytest -q tests/test_slice_closeout_advisories.py",
+        "python3 -m pytest -q tests/coverage_debt/test_batch2.py::test_the_repair_parity_advisory_marks_unreadable_harness_output_unproven tests/quality_gates/test_slice_closeout_new_pool_advisory.py tests/quality_gates/test_removed_name_consumers.py tests/quality_gates/test_parity_harness.py"
       ],
       "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-676-reproduction.raw.txt",
       "post_publication_closeout_path": null,
@@ -347,6 +356,7 @@
       "lane_id": "p3-672",
       "allowed_paths": [
         "scripts/what_reads_this.py",
+        "scripts/what_reads_this_fallback.py",
         "tests/test_what_reads_this.py"
       ],
       "dependencies": [],
@@ -356,7 +366,20 @@
       "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-672-reproduction.raw.txt",
       "post_publication_closeout_path": null,
       "close_disposition": "leave-open",
-      "amendments": [],
+      "amendments": [
+        {
+          "amendment_id": "2026-08-20-672-fallback-split",
+          "recorded_at": "2026-08-20T23:30:00+09:00",
+          "from_classification": "qualified-repair",
+          "to_classification": "qualified-repair",
+          "reason": "The malformed-source fallback gained a cohesive multiline string-span and membership-refusal responsibility; split it into a dedicated module to discharge the Python length gate without weakening classification.",
+          "owner": "quality tooling owner",
+          "evidence_path": "charness-artifacts/issues/2026-08-20-672-fallback-split.txt",
+          "new_source": "scripts/what_reads_this_fallback.py",
+          "successor_destination": "none; p3-672 remains the what-reads-this contract",
+          "release_scope_impact": "No new issue or external release claim; the added path is a structural child of the existing #672 budget."
+        }
+      ],
       "locked_classification": "qualified-repair",
       "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
     },
@@ -1264,6 +1287,7 @@
       "status": "admitted",
       "allowed_paths": [
         "scripts/what_reads_this.py",
+        "scripts/what_reads_this_fallback.py",
         "tests/test_what_reads_this.py"
       ],
       "dependencies": [],
@@ -1285,11 +1309,19 @@
       "allowed_paths": [
         "scripts/slice_closeout_advisories.py",
         "scripts/slice_closeout_repair_parity.py",
-        "tests/test_slice_closeout_advisories.py"
+        "scripts/new_proof_surface_advisory.py",
+        "scripts/slice_closeout_commit_advisories.py",
+        "scripts/removed_name_consumers.py",
+        "tests/test_slice_closeout_advisories.py",
+        "tests/coverage_debt/test_batch2.py",
+        "tests/quality_gates/test_slice_closeout_new_pool_advisory.py",
+        "tests/quality_gates/test_removed_name_consumers.py",
+        "tests/quality_gates/test_parity_harness.py"
       ],
       "dependencies": [],
       "proof_commands": [
-        "python3 -m pytest -q tests/test_slice_closeout_advisories.py"
+        "python3 -m pytest -q tests/test_slice_closeout_advisories.py",
+        "python3 -m pytest -q tests/coverage_debt/test_batch2.py::test_the_repair_parity_advisory_marks_unreadable_harness_output_unproven tests/quality_gates/test_slice_closeout_new_pool_advisory.py tests/quality_gates/test_removed_name_consumers.py tests/quality_gates/test_parity_harness.py"
       ],
       "acceptance_assertions": [
         "issue acceptance remains bound to current evidence"
@@ -1311,7 +1343,8 @@
       ],
       "dependencies": [],
       "proof_commands": [
-        "python3 -m pytest -q tests/test_artifact_citations.py"
+        "python3 -m pytest -q tests/test_artifact_citations.py tests/quality_gates/test_slice_closeout_artifact_citations.py",
+        "python3 scripts/run_slice_closeout.py --paths charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md --plan-only --allow-unmatched --skip-broad-pytest --ack-cautilus-skill-review"
       ],
       "acceptance_assertions": [
         "issue acceptance remains bound to current evidence"
@@ -1327,11 +1360,14 @@
       "status": "admitted",
       "allowed_paths": [
         "scripts/adapter_key_registry.py",
-        "tests/test_adapter_key_registry.py"
+        "scripts/adapter_key_usage.py",
+        "tests/test_adapter_key_registry.py",
+        "tests/quality_gates/test_adapter_key_registry.py"
       ],
       "dependencies": [],
       "proof_commands": [
-        "python3 -m pytest -q tests/test_adapter_key_registry.py"
+        "python3 -m pytest -q tests/test_adapter_key_registry.py",
+        "python3 -m pytest -q tests/quality_gates/test_adapter_key_registry.py"
       ],
       "acceptance_assertions": [
         "issue acceptance remains bound to current evidence"
@@ -1352,7 +1388,8 @@
       ],
       "dependencies": [],
       "proof_commands": [
-        "python3 -m pytest -q tests/test_impl_bootstrap.py"
+        "python3 -m pytest -q tests/test_impl_bootstrap.py",
+        "python3 skills/public/impl/scripts/init_adapter.py --repo-root /tmp/charness-679-probe.bFbbDk/valid"
       ],
       "acceptance_assertions": [
         "issue acceptance remains bound to current evidence"

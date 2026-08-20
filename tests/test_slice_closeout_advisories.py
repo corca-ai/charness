@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
+import sys
 from pathlib import Path
 
 from scripts.slice_closeout_advisories import advise_repair_parity
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -52,7 +56,7 @@ def test_advisory_names_each_refusal_detector_class_in_a_real_diff(
     assert "literal no-op" in err
 
 
-def test_advisory_ignores_validation_generation_cleanup_and_call_chains(
+def test_advisory_keeps_validation_generation_cleanup_and_call_chains_unclassified(
     tmp_path: Path, capsys
 ) -> None:
     repo = _seed_repo(tmp_path)
@@ -76,7 +80,9 @@ def test_advisory_ignores_validation_generation_cleanup_and_call_chains(
 
     advise_repair_parity(repo, ["scripts/ordinary.py"])
 
-    assert capsys.readouterr().err == ""
+    err = capsys.readouterr().err
+    assert "unsupported" not in err
+    assert "UNPROVEN" in err
 
 
 def test_advisory_is_silent_for_non_source_changed_paths(
@@ -146,3 +152,74 @@ def test_advisory_does_not_crash_on_non_mapping_harness_report(tmp_path: Path, m
     advise_repair_parity(repo, ["scripts/check_adapter.py"])
 
     assert "malformed report" in capsys.readouterr().err
+
+
+def test_advisory_reports_unavailable_parity_harness_as_unproven(tmp_path: Path, capsys) -> None:
+    repo = _seed_repo(tmp_path)
+    target = repo / "scripts" / "check_adapter.py"
+    target.parent.mkdir()
+    target.write_text('raise ValueError("unsupported adapter version")\n', encoding="utf-8")
+
+    advise_repair_parity(repo, ["scripts/check_adapter.py"])
+
+    assert "UNPROVEN" in capsys.readouterr().err
+
+
+def test_advisory_reports_failed_parity_harness_as_unproven(tmp_path: Path, capsys) -> None:
+    repo = _seed_repo(tmp_path)
+    target = repo / "scripts" / "check_adapter.py"
+    target.parent.mkdir()
+    target.write_text('raise ValueError("unsupported adapter version")\n', encoding="utf-8")
+    harness = repo / "scripts" / "parity_harness.py"
+    harness.write_text("raise SystemExit(7)\n", encoding="utf-8")
+
+    advise_repair_parity(repo, ["scripts/check_adapter.py"])
+
+    err = capsys.readouterr().err
+    assert "exit code 7" in err
+    assert "UNPROVEN" in err
+
+
+def test_advisory_reports_scalar_parity_report_as_unproven(tmp_path: Path, capsys) -> None:
+    repo = _seed_repo(tmp_path)
+    target = repo / "scripts" / "check_adapter.py"
+    target.parent.mkdir()
+    target.write_text('raise ValueError("unsupported adapter version")\n', encoding="utf-8")
+    harness = repo / "scripts" / "parity_harness.py"
+    harness.write_text('print("scalar")\n', encoding="utf-8")
+
+    advise_repair_parity(repo, ["scripts/check_adapter.py"])
+
+    err = capsys.readouterr().err
+    assert "non-mapping report" in err
+    assert "UNPROVEN" in err
+
+
+def test_advisory_reports_null_repair_names_as_unproven(tmp_path: Path, capsys) -> None:
+    repo = _seed_repo(tmp_path)
+    target = repo / "scripts" / "check_adapter.py"
+    target.parent.mkdir()
+    target.write_text('raise ValueError("unsupported adapter version")\n', encoding="utf-8")
+    harness = repo / "scripts" / "parity_harness.py"
+    harness.write_text('print("files: {scripts/a.py: null}\\nuncomparable: {}")\n', encoding="utf-8")
+
+    advise_repair_parity(repo, ["scripts/check_adapter.py"])
+
+    err = capsys.readouterr().err
+    assert "malformed report" in err
+    assert "UNPROVEN" in err
+
+
+def test_advisory_script_uses_local_import_fallback_when_run_standalone(tmp_path: Path) -> None:
+    environment = {key: value for key, value in os.environ.items() if key != "PYTHONPATH"}
+
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "slice_closeout_advisories.py")],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr

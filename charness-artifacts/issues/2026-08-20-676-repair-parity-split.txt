@@ -12,7 +12,9 @@ Verification:
     python3 scripts/check_python_lengths.py --repo-root . \
       --paths scripts/slice_closeout_advisories.py scripts/slice_closeout_repair_parity.py
     python3 -m pytest -q tests/test_slice_closeout_advisories.py \
-      tests/coverage_debt/test_batch2.py::test_the_repair_parity_advisory_stays_silent_on_unreadable_harness_output
+      tests/coverage_debt/test_batch2.py::test_the_repair_parity_advisory_marks_unreadable_harness_output_unproven
 
-Both passed on the parent tree; the focused advisory suite and standing regression
-measured 74 tests together in the full targeted run.
+Both passed on the parent tree. The later fresh-eye round also exposed the shared
+advisory-chain seam: campaign base propagation, explicit UNPROVEN parity failure
+states, and ImportFrom compatibility bindings now remain in this same closeout
+budget rather than becoming unrelated silent consumers.

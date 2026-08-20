@@ -268,7 +268,22 @@ def validate_ledger(payload: Any, repo_root: Path) -> list[str]:  # noqa: C901, 
                     errors.append(f"{label}.allowed_paths: overlaps {prior_package}:{prior_path}; declare a serialized/shared lane")
             footprints.append((str(package_id), path))
         require_string_list(row.get("dependencies"), f"{label}.dependencies", errors)
-        require_string_list(row.get("proof_commands"), f"{label}.proof_commands", errors)
+        proof_commands = row.get("proof_commands")
+        require_string_list(proof_commands, f"{label}.proof_commands", errors)
+        required_proofs = {
+            command
+            for number in issue_numbers
+            if isinstance(issue_numbers, list)
+            for command in (issue_rows.get(number, {}).get("proof_commands") or [])
+            if isinstance(command, str)
+        }
+        if isinstance(proof_commands, list):
+            missing_proofs = sorted(required_proofs - set(proof_commands))
+            if missing_proofs:
+                errors.append(
+                    f"{label}.proof_commands: missing issue acceptance command(s): "
+                    + "; ".join(missing_proofs)
+                )
     qualified = {issue.get("number") for issue in issues if isinstance(issue, dict) and issue.get("classification") in {"qualified-repair", "release-blocker"}}
     packaged = {number for package in packages if isinstance(package, dict) for number in package.get("issue_numbers", [])}
     for number in sorted(qualified - packaged):

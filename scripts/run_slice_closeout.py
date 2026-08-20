@@ -361,7 +361,7 @@ def _run_preexecution_blocks(
     advise_prose_pin(repo_root, payload["changed_paths"])
     advise_skill_surface_preflight(repo_root, payload["changed_paths"])
     advise_doc_surface_preflight(repo_root, payload["changed_paths"])
-    advise_new_pool_module(repo_root, payload["changed_paths"])
+    advise_new_pool_module(repo_root, payload["changed_paths"], base=base)
     advise_repair_parity(repo_root, payload["changed_paths"], base=base)
     # Against the slice BASE, and over the slice-base PATH SET too: a name deleted
     # in an earlier slice commit leaves its file clean, so the worktree-dirty set
@@ -370,8 +370,8 @@ def _run_preexecution_blocks(
     advise_removed_name_consumers(repo_root, payload["changed_paths"], against=base)
     advise_over_slicing(repo_root)
     advise_floor_addition_restraint(repo_root, payload["changed_paths"], base=base)
-    attach_new_proof_surface_advisory(payload, repo_root)
-    advise_close_keyword_leakage(repo_root)
+    attach_new_proof_surface_advisory(payload, repo_root, base=base)
+    advise_close_keyword_leakage(repo_root, base=base)
     advise_decaying_habits(repo_root, payload["changed_paths"])
     advise_artifact_citations(repo_root, payload["changed_paths"])
 

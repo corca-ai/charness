@@ -436,12 +436,9 @@ def audit_registry(repo_root: Path) -> list[str]:
         for key, owner in DYNAMIC_READER_KEYS.items()
         if not (repo_root / owner).is_file()
     ]
-    problems += [
-        f"DYNAMIC_READER_KEYS[{key!r}] names {owner}, which does not reference the key; "
-        "scanning already covers it, or the reader moved"
-        for key, owner in DYNAMIC_READER_KEYS.items()
-        if (repo_root / owner).is_file() and not find_readers(repo_root, key, files=[repo_root / owner])[0]
-    ]
+    # A dynamic entry is the explicit evidence for a reader shape the literal scanner
+    # cannot see. Its executable invariant is owner existence; requiring a literal
+    # here would reject the very dynamic reader this registry is allowed to name.
     problems += [
         f"RETIRED_KEYS[{key!r}] is marked retired but {len(readers)} module(s) still read it: {', '.join(readers)}"
         for key, readers in ((key, find_readers(repo_root, key)[0]) for key in RETIRED_KEYS)

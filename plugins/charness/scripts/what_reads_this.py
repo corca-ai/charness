@@ -34,6 +34,17 @@ from pathlib import Path, PurePosixPath
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
+try:
+    from scripts import what_reads_this_fallback as _fallback
+except ModuleNotFoundError:
+    import what_reads_this_fallback as _fallback
+
+_inside_string_literal = _fallback.inside_string_literal
+_lookup_column = _fallback.lookup_column
+_position_in_string_span = _fallback.position_in_string_span
+_fallback_string_spans = _fallback.string_spans
+_fallback_structural_kind = _fallback.structural_kind
+
 REPO_ROOT = repo_root_from_script(__file__)
 
 _repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
@@ -205,55 +216,16 @@ class _PythonReferenceContext:
                 if _block_contains_raise(parent.body) or _block_contains_raise(parent.orelse):
                     return "value-constraint"
         for parent in ancestors:
-            if isinstance(parent, ast.Call) and isinstance(parent.func, ast.Attribute) and parent.func.attr == "get":
-                if parent.args and _contains_node(parent.args[0], node):
-                    return "lookup"
-            if isinstance(parent, ast.Subscript) and _contains_node(parent.slice, node):
-                return "lookup"
+            if isinstance(parent, ast.Call) and isinstance(parent.func, ast.Attribute) and parent.func.attr in {"get", "pop", "setdefault"}:
+               if parent.args and _contains_node(parent.args[0], node):
+                   return "lookup"
+            if (
+                isinstance(parent, ast.Subscript)
+                and isinstance(parent.ctx, (ast.Load, ast.AugStore))
+                and _contains_node(parent.slice, node)
+            ):
+               return "lookup"
         return None
-
-
-def _lookup_column(line: str, name: str, column: int) -> bool:
-    quoted = re.escape(name)
-    pattern = re.compile(rf"(?:\.\s*get\s*\(\s*|\[\s*)['\"](?P<key>{quoted})['\"]")
-    return any(match.start("key") <= column < match.end("key") for match in pattern.finditer(line))
-
-
-def _inside_string_literal(line: str, column: int) -> bool:
-    """Recognize a quoted occurrence when AST parsing is unavailable."""
-    quote: str | None = None
-    escaped = False
-    for index, character in enumerate(line):
-        if quote is None:
-            if character in "'\"":
-                quote = character
-            continue
-        if escaped:
-            escaped = False
-        elif character == "\\":
-            escaped = True
-        elif character == quote:
-            quote = None
-        elif index == column:
-            return True
-    return quote is not None and column >= 0
-
-
-def _fallback_structural_kind(line: str, name: str, column: int) -> str | None:
-    """Classify simple non-AST-readable code without broad line-wide matches."""
-    if _lookup_column(line, name, column):
-        if re.match(r"\s*assert\b", line) or (
-            re.match(r"\s*if\b", line) and re.search(r"\braise\b", line)
-        ):
-            return "value-constraint"
-        return "lookup"
-    if _inside_string_literal(line, column):
-        return None
-    if re.match(r"\s*assert\b", line) and "," not in line:
-        return "value-constraint"
-    if re.match(r"\s*if\b", line) and re.search(r"\braise\b", line):
-        return "value-constraint"
-    return None
 
 
 def _symbol_kind(
@@ -263,6 +235,7 @@ def _symbol_kind(
     structural_kind: str | None = None,
     *,
     use_fallback: bool = True,
+    fallback_inside_string: bool | None = None,
 ) -> str:
     """How this occurrence of ``name`` reads, from the line around it.
 
@@ -273,7 +246,9 @@ def _symbol_kind(
     category costs a second look, while a missing consumer costs a wrong deletion.
     """
     if use_fallback:
-        structural_kind = structural_kind or _fallback_structural_kind(line, name, column)
+        structural_kind = structural_kind or _fallback_structural_kind(
+            line, name, column, inside_string=fallback_inside_string
+        )
     if structural_kind is not None:
         return structural_kind
     stripped = line.lstrip()
@@ -299,6 +274,7 @@ def _symbol_hits(text: str, name: str, surface: str) -> list[dict[str, object]]:
         for match in pattern.finditer(line)
     ]
     context = _PythonReferenceContext(text, surface) if matches else None
+    fallback_string_spans = _fallback_string_spans(text) if context is None or not context.parseable else []
     hits: list[dict[str, object]] = []
     for line_no, line, match in matches:
         structural_kind = context.kind(line, line_no, match.start()) if context is not None else None
@@ -311,6 +287,11 @@ def _symbol_hits(text: str, name: str, surface: str) -> list[dict[str, object]]:
                     match.start(),
                     structural_kind,
                     use_fallback=use_fallback,
+                    fallback_inside_string=(
+                        _position_in_string_span(fallback_string_spans, line_no, match.start())
+                        if use_fallback
+                        else None
+                    ),
                 ),
                 "line": line_no,
                 "source": line.strip()[:200],

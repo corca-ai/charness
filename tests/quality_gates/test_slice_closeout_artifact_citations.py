@@ -8,13 +8,16 @@ from scripts import run_slice_closeout as closeout
 
 def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_path: Path) -> None:
     seen: list[tuple[Path, list[str]]] = []
-    parity_bases: list[str] = []
+    base_calls: dict[str, str] = {}
 
     def record(repo_root: Path, paths: list[str]) -> None:
         seen.append((repo_root, paths))
 
-    def record_parity(*_args, **kwargs) -> None:
-        parity_bases.append(kwargs["base"])
+    def record_base(name: str):
+        def record(*_args, **kwargs) -> None:
+            base_calls[name] = kwargs.get("base", kwargs.get("against"))
+
+        return record
 
     monkeypatch.setattr(closeout, "advise_artifact_citations", record)
     monkeypatch.setattr(closeout, "block_on_structural_sweep", lambda *args, **kwargs: None)
@@ -32,8 +35,8 @@ def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_
         "advise_close_keyword_leakage",
         "advise_decaying_habits",
     ):
-        monkeypatch.setattr(closeout, name, lambda *args, **kwargs: None)
-    monkeypatch.setattr(closeout, "advise_repair_parity", record_parity)
+        monkeypatch.setattr(closeout, name, record_base(name))
+    monkeypatch.setattr(closeout, "advise_repair_parity", record_base("parity"))
     monkeypatch.setattr(closeout, "_maybe_block_on_unmatched", lambda *args, **kwargs: None)
     monkeypatch.setattr(closeout, "_maybe_block_on_cautilus", lambda *args, **kwargs: None)
     monkeypatch.setattr(closeout, "_maybe_block_on_risk_interrupt", lambda *args, **kwargs: None)
@@ -46,6 +49,13 @@ def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_
         ack_cautilus_skill_review=True,
     )
 
-    assert closeout._run_preexecution_blocks(tmp_path, payload, args) is None
+    assert closeout._run_preexecution_blocks(tmp_path, payload, args, base="campaign-base") is None
     assert seen == [(tmp_path, payload["changed_paths"])]
-    assert parity_bases == ["origin/main"]
+    assert {name: value for name, value in base_calls.items() if value is not None} == {
+        "advise_new_pool_module": "campaign-base",
+        "parity": "campaign-base",
+        "advise_removed_name_consumers": "campaign-base",
+        "advise_floor_addition_restraint": "campaign-base",
+        "attach_new_proof_surface_advisory": "campaign-base",
+        "advise_close_keyword_leakage": "campaign-base",
+    }

@@ -25,11 +25,15 @@ _REPAIR_CLASS_LINE = re.compile(
 )
 
 
-def _added_vs_base(repo_root: Path, paths: list[str], base: str) -> list[str]:
+def _is_commit_ref(repo_root: Path, base: str) -> bool:
     probe = subprocess.run(
-        ["git", "rev-parse", "--verify", "--quiet", base], cwd=repo_root, capture_output=True
+        ["git", "cat-file", "-t", base], cwd=repo_root, capture_output=True, text=True
     )
-    if probe.returncode != 0:
+    return probe.returncode == 0 and probe.stdout.strip() == "commit"
+
+
+def _added_vs_base(repo_root: Path, paths: list[str], base: str) -> list[str]:
+    if not _is_commit_ref(repo_root, base):
         return []
     added: list[str] = []
     for path in paths:
@@ -65,6 +69,78 @@ def added_diff_lines(repo_root: Path, base: str, paths: list[str]) -> str:
     return "\n".join([diff_added, *new_texts])
 
 
+def _unproven(source_paths: list[str], message: str) -> None:
+    if source_paths:
+        print(message, file=sys.stderr)
+
+
+def _read_parity_report(
+    repo_root: Path,
+    harness_path: str,
+    source_paths: list[str],
+) -> tuple[dict[str, list[str]], dict[str, str], object] | None:
+    harness = repo_root / harness_path
+    if not harness.is_file():
+        _unproven(
+            source_paths,
+            "ADVISORY: repair-parity harness is unavailable; reviewer parity is "
+            f"UNPROVEN for {len(source_paths)} changed Python path(s), not clean.",
+        )
+        return None
+    proc = subprocess.run(
+        [sys.executable, str(harness), "--repo-root", str(repo_root), "--against", "review-snapshot"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        _unproven(
+            source_paths,
+            "ADVISORY: repair-parity harness failed with exit code "
+            f"{proc.returncode}; reviewer parity is UNPROVEN, not clean.",
+        )
+        return None
+    try:
+        report = yaml.safe_load(proc.stdout)
+    except yaml.YAMLError:
+        _unproven(
+            source_paths,
+            "ADVISORY: repair-parity harness returned invalid YAML; reviewer parity is "
+            "UNPROVEN, not clean.",
+        )
+        return None
+    if not isinstance(report, dict):
+        _unproven(
+            source_paths,
+            "ADVISORY: repair-parity harness returned a non-mapping report; reviewer parity is "
+            "UNPROVEN, not clean.",
+        )
+        return None
+    repaired = report.get("files")
+    uncomparable = report.get("uncomparable", {})
+    valid_repaired = isinstance(repaired, dict) and all(
+        isinstance(path, str)
+        and isinstance(names, list)
+        and all(isinstance(name, str) for name in names)
+        for path, names in repaired.items()
+    )
+    valid_uncomparable = isinstance(uncomparable, dict) and all(
+        isinstance(path, str) and isinstance(reason, str)
+        for path, reason in uncomparable.items()
+    )
+    if not valid_repaired or not valid_uncomparable or (
+        not repaired and "uncomparable" not in report
+    ):
+        _unproven(
+            source_paths,
+            "ADVISORY: repair-parity returned a malformed report; reviewer parity is "
+            "UNPROVEN, not clean. Expected files to map paths to string lists and "
+            "uncomparable to map paths to string reasons.",
+        )
+        return None
+    return repaired, uncomparable, report.get("repair_count", 0)
+
+
 def advise_repair_parity(
     repo_root: Path,
     changed_paths: list[str],
@@ -74,10 +150,7 @@ def advise_repair_parity(
 ) -> None:
     """Name repaired functions and expose newly added refusal classes."""
     source_paths = [p for p in changed_paths if p.startswith(("scripts/", "skills/")) and p.endswith(".py")]
-    base_probe = subprocess.run(
-        ["git", "rev-parse", "--verify", "--quiet", base], cwd=repo_root, capture_output=True
-    )
-    if base_probe.returncode != 0:
+    if not _is_commit_ref(repo_root, base):
         if source_paths and (repo_root / ".git").exists():
             print(
                 "ADVISORY: repair-parity base is unavailable; added refusal/detector classes "
@@ -100,32 +173,10 @@ def advise_repair_parity(
             + "\n".join(f"  - {line}" for line in classes),
             file=sys.stderr,
         )
-    harness = repo_root / harness_path
-    if not harness.is_file():
+    report_parts = _read_parity_report(repo_root, harness_path, source_paths)
+    if report_parts is None:
         return
-    proc = subprocess.run(
-        [sys.executable, str(harness), "--repo-root", str(repo_root), "--against", "review-snapshot"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if proc.returncode != 0:
-        return
-    try:
-        report = yaml.safe_load(proc.stdout)
-    except yaml.YAMLError:
-        return
-    if not isinstance(report, dict):
-        return
-    repaired = report.get("files") or {}
-    uncomparable = report.get("uncomparable") or {}
-    if not isinstance(repaired, dict) or not isinstance(uncomparable, dict):
-        print(
-            "ADVISORY: repair-parity returned a malformed report; reviewer parity is "
-            "UNPROVEN, not clean. Expected mapping values for `files` and `uncomparable`.",
-            file=sys.stderr,
-        )
-        return
+    repaired, uncomparable, repair_count = report_parts
     if not repaired and not uncomparable:
         return
     if not repaired:
@@ -145,7 +196,7 @@ def advise_repair_parity(
         else ""
     )
     print(
-        f"ADVISORY: {report.get('repair_count', 0)} function(s) were REPAIRED after a bounded reviewer "
+        f"ADVISORY: {repair_count} function(s) were REPAIRED after a bounded reviewer "
         f"read them (same signature, changed body) — {rendered}.{unexamined} State the INTENDED delta "
         "for each and prove the complement is unchanged; a repair verified only against the finding that "
         "prompted it is how a narrowing ships green. Baseline source is recoverable: "

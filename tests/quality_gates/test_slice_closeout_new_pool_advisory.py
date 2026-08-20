@@ -44,6 +44,24 @@ def test_advisory_fires_for_new_eligible_module(monkeypatch: pytest.MonkeyPatch,
     assert "implementation-discipline.md" in err
 
 
+def test_advisory_threads_the_campaign_base_into_its_evidence(
+    monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    seen: list[str] = []
+    monkeypatch.setattr(sample_mutation_files, "list_eligible", lambda repo_root: ["scripts/fake_new_module.py"])
+
+    def added(repo_root, paths, base="origin/main"):
+        seen.append(base)
+        return ["scripts/fake_new_module.py"]
+
+    monkeypatch.setattr("scripts.slice_closeout_advisories._added_vs_base", added)
+    advise_new_pool_module(REPO_ROOT, ["scripts/fake_new_module.py"], base="campaign-base")
+
+    err = capsys.readouterr().err
+    assert seen == ["campaign-base"]
+    assert "campaign-base" in err
+
+
 def test_advisory_silent_without_python_changes(capsys) -> None:
     advise_new_pool_module(REPO_ROOT, ["docs/handoff.md"])
     assert capsys.readouterr().err == ""
@@ -102,4 +120,4 @@ def test_run_slice_closeout_wires_the_advisory_call_site() -> None:
 
     assert rsc.advise_new_pool_module is advisories.advise_new_pool_module
     source = (REPO_ROOT / "scripts" / "run_slice_closeout.py").read_text(encoding="utf-8")
-    assert 'advise_new_pool_module(repo_root, payload["changed_paths"])' in source
+    assert 'advise_new_pool_module(repo_root, payload["changed_paths"], base=base)' in source

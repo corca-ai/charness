@@ -89,6 +89,18 @@ def test_a_file_that_never_mentions_the_module_is_not_a_candidate(tmp_path: Path
     assert report["consumers"] == {}
 
 
+def test_import_alias_is_retained_as_a_module_level_binding() -> None:
+    baseline = "VALUE = 1\n"
+    current = (
+        "from scripts.slice_closeout_repair_parity import added_diff_lines as _added_diff_lines\n"
+        "\n"
+        "def report():\n"
+        "    return _added_diff_lines\n"
+    )
+
+    assert _removed.removed_names(baseline, current) == ["VALUE"]
+
+
 def test_private_names_are_included(tmp_path: Path) -> None:
     """This repo really does bind private names across modules (`_STATE._status_path_map`)."""
     repo = seeded_repo(

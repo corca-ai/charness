@@ -441,7 +441,7 @@ def test_a_dynamic_reader_key_resolves_to_its_registered_owner(monkeypatch) -> N
     assert resolution.readers == ("scripts/adapter_lib.py",)
 
 
-def test_dynamic_reader_audit_does_not_accept_text_only_presence(tmp_path: Path, monkeypatch) -> None:
+def test_dynamic_reader_audit_uses_owner_existence_as_its_static_floor(tmp_path: Path, monkeypatch) -> None:
     from scripts import adapter_key_registry
 
     owner = tmp_path / "scripts" / "owner.py"
@@ -450,9 +450,7 @@ def test_dynamic_reader_audit_does_not_accept_text_only_presence(tmp_path: Path,
     monkeypatch.setattr(adapter_key_registry, "DYNAMIC_READER_KEYS", {"built_key": "scripts/owner.py"})
     monkeypatch.setattr(adapter_key_registry, "RETIRED_KEYS", {})
 
-    problems = adapter_key_registry.audit_registry(tmp_path)
-
-    assert any("does not reference the key" in problem for problem in problems)
+    assert adapter_key_registry.audit_registry(tmp_path) == []
 
 
 def test_an_unparseable_module_is_skipped_rather_than_failing_the_survey(tmp_path: Path) -> None:

@@ -1,0 +1,14 @@
+#672 scope amendment — 2026-08-20
+
+The malformed-source fallback gained a multiline string-span scanner, quoted
+membership refusal classifier, and pop/setdefault lookup support. The added
+state is a cohesive fallback responsibility, so it moved to
+scripts/what_reads_this_fallback.py rather than pushing the main reader beyond
+the Python length gate. The exported plugin copy is regenerated from source.
+
+Verification:
+
+    python3 -m pytest -q tests/test_what_reads_this.py
+
+The focused suite passed after the split; semantic consumer truth remains
+distinct from this syntactic classifier proof.

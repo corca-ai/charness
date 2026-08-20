@@ -379,14 +379,14 @@ def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
 # --- slice_closeout_advisories: an unreadable parity harness must stay silent --
 
 
-def test_the_repair_parity_advisory_stays_silent_on_unreadable_harness_output(
+def test_the_repair_parity_advisory_marks_unreadable_harness_output_unproven(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """Harness stdout that is not YAML must produce no advisory and no crash.
 
     This is a non-blocking advisory printed during closeout. A parse error
-    escaping here would fail a closeout that has nothing wrong with it, and a
-    half-read report would name repaired functions that were never measured.
+    escaping here would fail a closeout that has nothing wrong with it, while
+    silence would misreport a parity measurement that never happened.
     """
     harness = tmp_path / "scripts" / "parity_harness.py"
     harness.parent.mkdir(parents=True)
@@ -394,7 +394,9 @@ def test_the_repair_parity_advisory_stays_silent_on_unreadable_harness_output(
 
     advise_repair_parity(tmp_path, ["scripts/thing.py"])
 
-    assert capsys.readouterr().err == ""
+    err = capsys.readouterr().err
+    assert "UNPROVEN" in err
+    assert "invalid YAML" in err
 
 
 def test_the_repair_parity_advisory_reports_repairs_when_the_harness_is_readable(

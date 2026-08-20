@@ -1,0 +1,7 @@
+Round 2 consumer/export findings returned by Turing.
+
+- HIGH: campaign base propagation stopped at some closeout advisories; new-pool, proof-surface, and close-keyword consumers could read origin/main instead of the selected base.
+- HIGH: missing, failed, invalid, scalar, and malformed parity reports were silent or could crash; all must remain non-blocking but visibly UNPROVEN.
+- MEDIUM: removed-name scanning missed ImportFrom compatibility aliases and could report a live binding as removed.
+
+The reviewer verified the reporting-only artifact-citation consumer, catalog/packaging validation, semantic citation non-claim, and source/plugin identity at the reviewed HEAD. Parent repairs after the snapshot are accepted-unreviewed under the two-round cap; no third round is claimed.

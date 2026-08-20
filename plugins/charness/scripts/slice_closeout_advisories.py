@@ -87,7 +87,9 @@ def _added_vs_base(repo_root: Path, paths: list[str], base: str = "origin/main")
     return added
 
 
-def advise_new_pool_module(repo_root: Path, changed_paths: list[str]) -> None:
+def advise_new_pool_module(
+    repo_root: Path, changed_paths: list[str], base: str = "origin/main"
+) -> None:
     """A slice that ADDS a new mutation-pool module gets no commit-time signal
     that its environment-dependent branches (import fallbacks, dep-missing
     degrades) are uncovered; the first signal otherwise arrives at the bundle
@@ -101,18 +103,18 @@ def advise_new_pool_module(repo_root: Path, changed_paths: list[str]) -> None:
         return
     sample = import_repo_module(__file__, "scripts.sample_mutation_files")
     eligible = set(sample.list_eligible(repo_root))
-    new_pool = sorted(set(_added_vs_base(repo_root, changed_py)) & eligible)
+    new_pool = sorted(set(_added_vs_base(repo_root, changed_py, base=base)) & eligible)
     if not new_pool:
         return
     print(
-        "ADVISORY: new mutation-pool module(s) added vs origin/main: "
+        f"ADVISORY: new mutation-pool module(s) added vs {base}: "
         + ", ".join(new_pool)
         + "; walk each branch (import fallbacks, dep-missing degrades) into the "
         "introducing slice's tests, then run the early changed-line self-check "
         "(docs/conventions/implementation-discipline.md) so the bundle producer "
         "CONFIRMS instead of discovering: run the --produce-mutation-coverage "
         "closeout, then python3 scripts/check_changed_line_mutation_coverage.py "
-        "--repo-root . --base-sha origin/main --reuse-coverage. Before citing a "
+        f"--repo-root . --base-sha {base} --reuse-coverage. Before citing a "
         "CI mutation run as changed-line proof, gate the claim with "
         "python3 scripts/check_mutation_run_proof.py --claim changed-line "
         "(a dispatch-green run proves only the score path).",

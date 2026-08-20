@@ -27,13 +27,19 @@ def _key_value(node: ast.AST, aliases: dict[str, str]) -> set[str]:
     return set()
 
 
-def _loop_bound_reads(nodes: list[ast.AST], aliases: dict[str, str]) -> set[str]:
+def _loop_bound_reads(
+    nodes: list[ast.AST],
+    aliases: dict[str, str],
+    field_registry_values: dict[str, set[str]],
+) -> set[str]:
     """Resolve literal field loops consumed by ``data.get(field)`` or ``data[field]``."""
     reads: set[str] = set()
     for node in nodes:
         if not isinstance(node, ast.For) or not isinstance(node.target, ast.Name):
             continue
         values = _string_values(node.iter)
+        if isinstance(node.iter, ast.Name):
+            values.update(field_registry_values.get(node.iter.id, set()))
         if not values:
             continue
         for child in ast.walk(node):
@@ -96,19 +102,28 @@ def key_usage(path: Path) -> tuple[set[str], set[str]]:
         _KEY_USAGE_CACHE[path] = (set(), set())
         return _KEY_USAGE_CACHE[path]
 
-    aliases: dict[str, str] = {}
+    alias_counts: dict[str, int] = {}
+    alias_values: dict[str, set[str]] = {}
+    alias_rebound: set[str] = set()
     for node in ast.walk(tree):
         if not isinstance(node, (ast.Assign, ast.AnnAssign)):
             continue
         targets, value = (node.targets, node.value) if isinstance(node, ast.Assign) else ((node.target,), node.value)
-        if isinstance(value, ast.Constant) and isinstance(value.value, str):
-            for target in targets:
-                for name in (item.id for item in ast.walk(target) if isinstance(item, ast.Name)):
-                    aliases[name] = value.value
+        names = [item.id for target in targets for item in ast.walk(target) if isinstance(item, ast.Name)]
+        for name in names:
+            alias_counts[name] = alias_counts.get(name, 0) + 1
+            if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                alias_values.setdefault(name, set()).add(value.value)
+            else:
+                alias_rebound.add(name)
+    aliases = {
+        name: next(iter(values))
+        for name, values in alias_values.items()
+        if alias_counts[name] == 1 and name not in alias_rebound and len(values) == 1
+    }
 
     nodes = list(ast.walk(tree))
-    field_registry_values: set[str] = set()
-    field_registry_names: set[str] = set()
+    field_registry_values: dict[str, set[str]] = {}
     for node in nodes:
         if not isinstance(node, (ast.Assign, ast.AnnAssign)):
             continue
@@ -119,10 +134,9 @@ def key_usage(path: Path) -> tuple[set[str], set[str]]:
             for name in ast.walk(target)
             if isinstance(name, ast.Name) and (name.id.endswith("_FIELDS") or name.id == "FIELDS")
         }
-        non_retired_names = {name for name in names if not name.upper().startswith("RETIRED")}
-        field_registry_names.update(non_retired_names)
-        if non_retired_names:
-            field_registry_values.update(_string_values(value))
+        for name in names:
+            if not name.upper().startswith("RETIRED"):
+                field_registry_values[name] = _string_values(value)
 
     refused = {
         key
@@ -146,7 +160,11 @@ def key_usage(path: Path) -> tuple[set[str], set[str]]:
         for key in _string_values(value)
     )
     reads = {
-        key for node in nodes if isinstance(node, ast.Subscript) for key in _key_value(node.slice, aliases)
+        key
+        for node in nodes
+        if isinstance(node, ast.Subscript)
+        and isinstance(node.ctx, (ast.Load, ast.AugStore))
+        for key in _key_value(node.slice, aliases)
     }
     reads.update(
         key
@@ -157,15 +175,19 @@ def key_usage(path: Path) -> tuple[set[str], set[str]]:
         for argument in node.args[:1]
         for key in _key_value(argument, aliases)
     )
-    reads.update(_loop_bound_reads(nodes, aliases))
-    reads.update(_intent_reader_keys(nodes, aliases))
-    if any(
-        isinstance(node, ast.Name)
-        and isinstance(node.ctx, ast.Load)
-        and node.id in field_registry_names
+    reads.update(_loop_bound_reads(nodes, aliases, field_registry_values))
+    reads.update(
+        value
         for node in nodes
-    ):
-        reads.update(field_registry_values)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "apply_optional_fields"
+        for keyword in node.keywords
+        if keyword.arg in {"string_fields", "list_fields", "int_fields"}
+        and isinstance(keyword.value, ast.Name)
+        for value in field_registry_values.get(keyword.value.id, set())
+    )
+    reads.update(_intent_reader_keys(nodes, aliases))
     reads.update(
         key
         for node in nodes

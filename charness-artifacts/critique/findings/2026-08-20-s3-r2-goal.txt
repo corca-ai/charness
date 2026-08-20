@@ -1,0 +1,8 @@
+Round 2 goal/ledger findings returned by Hume.
+
+- HIGH: #677 and #678 premise exact commands did not match their durable receipt commands; the recorded premise evidence was unbound.
+- HIGH: issue amendments were not fully propagated to work-package allowed paths and proof commands; the validator checked only a subset authorization floor.
+- MEDIUM: current repairs were not SHA-bound in the goal; the frozen intake SHA must remain distinct from current parent truth-surface commits.
+- MEDIUM: Slice 3 focused test-count claims and the #676 amendment's claimed 74 tests were stale or unsupported by durable receipts.
+
+The reviewer confirmed worker/integration mappings, #672/#676 premise receipts, #679's corrected exit, amendment-chain structure, source/plugin identity, and local focused/ledger validation. Parent truth-surface and closeout repairs after the snapshot are accepted-unreviewed under the two-round cap; no third round is claimed.

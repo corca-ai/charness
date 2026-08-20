@@ -121,6 +121,25 @@ def test_symbol_and_config_key_share_mapping_lookup_semantics(tmp_path: Path) ->
     assert {hit["kind"] for hit in config_entry["hits"]} == {"lookup"}
 
 
+def test_mapping_pop_and_setdefault_are_value_lookups(tmp_path: Path) -> None:
+    source = (
+        "def read(config):\n"
+        '    return config.pop("target", None), config.setdefault("target", 0)\n'
+    )
+
+    hits = WRT._symbol_hits(source, "target", "source")
+
+    assert [hit["kind"] for hit in hits] == ["lookup", "lookup"]
+
+
+def test_write_only_subscript_is_not_a_mapping_lookup() -> None:
+    source = 'def emit(data):\n    data["target"] = 3\n'
+
+    hits = WRT._symbol_hits(source, "target", "source")
+
+    assert [hit["kind"] for hit in hits] == ["string-literal"]
+
+
 def test_the_real_eval_setup_consumer_is_value_constraint_not_string_literal() -> None:
     source = (ROOT / "scripts" / "eval_setup.py").read_text(encoding="utf-8")
     hits = WRT._symbol_hits(source, "listed_skill_ids", "source")
@@ -324,3 +343,30 @@ def test_unparseable_fallback_does_not_promote_error_message_text() -> None:
     hits = WRT._symbol_hits(source, "target", "source")
 
     assert [hit["kind"] for hit in hits] == ["value-constraint", "string-literal"]
+
+
+def test_unparseable_fallback_keeps_escaped_quotes_inside_a_string() -> None:
+    line = 'if target: raise ValueError("escaped \\"target\\"")'
+    source = line + "\n???\n"
+    hits = WRT._symbol_hits(source, "target", "source")
+
+    escaped_target = line.index("target", line.index("escaped"))
+    assert WRT._inside_string_literal(line, escaped_target)
+    assert hits[0]["kind"] == "value-constraint"
+    assert all(hit["kind"] != "value-constraint" for hit in hits[1:])
+
+
+def test_unparseable_fallback_recognizes_quoted_membership_refusal() -> None:
+    source = 'if "target" not in data: raise ValueError\n???\n'
+
+    hits = WRT._symbol_hits(source, "target", "source")
+
+    assert [hit["kind"] for hit in hits] == ["value-constraint"]
+
+
+def test_unparseable_fallback_does_not_promote_multiline_fixture_text() -> None:
+    source = 'FIXTURE = """\nif target: raise ValueError\n"""\n???\n'
+
+    hits = WRT._symbol_hits(source, "target", "source")
+
+    assert [hit["kind"] for hit in hits] == ["string-literal"]
