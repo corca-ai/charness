@@ -14,9 +14,10 @@ Built and consumed on the current tree. Measured 2026-08-15, not transcribed:
   `311844e23` (`git log -S "def bundle_path"`), an ancestor of `eae80f660`. The
   release-scope contract cites `eae80f660` for this capability; that commit
   contains it but is not where it shipped, and this line is the accurate one.
-- `open_lesson_session.py:33-34,53` writes the bundle and names its path;
-  `lesson_evaluation_records_lib.py:325` is the production consumer that reads it
-  back through `load_session_bundle`, inside `_bundle_lesson_texts`.
+- `scripts/open_lesson_session.py:33-34` writes the bundle and
+  `scripts/open_lesson_session.py:53` names its path;
+  `scripts/lesson_evaluation_records_lib.py:330-332` is the production consumer
+  that reads it back through `load_session_bundle`, inside `_bundle_lesson_texts`.
 - ALL EIGHT receipts on disk re-digest to their bundles exactly, each matching
   its own `stdout_sha256` and `stdout_byte_count` (re-digested with `hashlib`, not
   read off the field). Seven are committed at HEAD; the eighth,
@@ -33,8 +34,7 @@ Built and consumed on the current tree. Measured 2026-08-15, not transcribed:
 - `tests/test_lesson_session_emission.py`,
   `tests/test_lesson_evaluation_continuity.py`, and
   `tests/test_lesson_evaluation_contract_boundaries.py` pass — 80 tests.
-- `skills/public/retro/references/lesson-evaluation.md:10-13` binds retro to the
-  explicit-session-ID lookup and refuses the newest-file guess.
+- `skills/public/retro/references/lesson-evaluation.md:10-13` binds retro to the explicit-session-ID lookup and refuses the newest-file guess. Citation disposition: non-code — reference contract prose.
 
 Released, and the evidence is named so a later reader re-runs it rather than
 trusting this line: `git log -S "def bundle_path" -- scripts/lesson_evaluation_continuity_lib.py`

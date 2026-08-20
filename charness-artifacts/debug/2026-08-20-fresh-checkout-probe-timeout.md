@@ -78,9 +78,10 @@ the wrapper-only attribution.
 
 ## Root Cause
 
-`check_fresh_checkout_probes.py:217` calls `SKILL_RUNTIME.arm_cli_timeout` with no
-`default_seconds`, so `scripts/script_timeout.py` arms the repository-wide
-10-second default. That alarm covers clone setup plus five sequential probe
+`skills/public/release/scripts/check_fresh_checkout_probes.py:217-224` explicitly
+calls `SKILL_RUNTIME.arm_cli_timeout` with `default_seconds=0`, so the producer
+does not arm the repository-wide 10-second aggregate default. Before this repair,
+that alarm covered clone setup plus five sequential probe
 commands. It fires before `_run`'s 120-second clone bound or `_run_shell`'s
 300-second child bound can attribute a result. The global default is therefore
 not a valid budget for this producer; it is a shared helper contract accidentally

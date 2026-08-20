@@ -735,6 +735,28 @@ invent a common engine.
   records `blocked host signal`: no Agent/spawn/ceal surface was available and
   Ceal capability discovery returned unavailable. No fresh-eye approval or
   same-agent substitute is claimed.
+- Public-skill scenario review: deterministic dogfood, conditional-read,
+  scenario-registry, call-provenance, and proof validators passed; the five
+  changed public skills remain mapped to their existing review/evaluator
+  posture. The maintained `impl-adapter-bootstrap` scenario was inspected and
+  no registry mutation was justified for this release/quality/evidence slice.
+  Live Cautilus was not run because its policy remains ask-before-run and no
+  log-backed evaluator proof was requested.
+- Closeout advisories are dispositioned in the critique record: the moved
+  `_added_diff_lines` helper has live import/test coverage; eleven added
+  proof-surface candidates have explicit skipped/non-surface decisions because
+  the host cannot provide fresh-eye review; and Floor-Addition Restraint keeps
+  only the three recurring release-boundary floors (artifact citations,
+  consumer-validator catalog, and issue ledger). No fourth blocking floor is
+  being added.
+- Command-surface failure is also treated as a smell: guessed validator/test/
+  release paths, an unsupported release-reader flag, and an abbreviated ref
+  all failed before their intended subject ran. The repaired protocol resolves
+  targets via `rg --files`, verifies refs with `git rev-parse --verify`, and
+  probes the resolved CLI owner with `--help` before parallel fan-out; the
+  corrected five-target/full-ref preflight passed. The closeout's `177.71s`
+  standing pytest runtime over the `120s` advisory budget is retained as a
+  typed #668 runtime advisory, not re-leveled or claimed clean.
 - Non-claims: no semantic-candidate lock, version bump, tag, push, publication,
   hosted/install readback, issue closure, or Cautilus evaluation.
 

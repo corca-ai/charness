@@ -29,6 +29,105 @@ The required release angles were selected but not executed: Gawande (operator ch
 
 No reviewer-derived concern is synthesized here. Deterministic evidence is sufficient to keep the local candidate reproducible, but it cannot replace a distinct observer at the release boundary. The correct counterweight disposition is to hold semantic-candidate lock and version mutation until the bounded review is available.
 
+## Public-Skill Scenario Review
+
+The closeout planner required a deterministic review of the public-skill
+validation and scenario-registry decision before its acknowledgment could be
+recorded. That review was completed without invoking live Cautilus:
+
+- `validate_public_skill_dogfood.py`: 20 cases, 20 required cases.
+- `validate_scenario_conditional_reads.py`: passed; one planner-covered
+  `docs/handoff.md` read and advisories for the other extractor/stale-allowlist
+  cases.
+- `validate_cautilus_scenarios.py`: passed; 8 evaluator-required skills.
+- `validate_cautilus_call_provenance.py`: passed; 5 grandfathered calls.
+- `validate_cautilus_proof.py`: passed with no Cautilus proof artifact changed.
+- `suggest_public_skill_dogfood.py` for `achieve`, `critique`, `impl`,
+  `quality`, and `release`: applicable cases reported; `impl` remains
+  evaluator-required and the other four remain HITL-recommended.
+
+The maintained `evals/cautilus/scenarios.json` mapping and
+`evals/cautilus/impl-claim-fidelity/spec.json` were inspected. The existing
+`impl-adapter-bootstrap` scenario remains the applicable evaluator scenario;
+this candidate changes release/quality/evidence contracts and does not add or
+alter the impl adapter-bootstrap behavior that would justify a registry
+mutation. Decision: keep the registry unchanged and acknowledge the
+deterministic scenario review. Cautilus remains ask-before-run, and no live
+evaluation, evaluator verdict, or evaluator-backed claim is made here.
+
+## Closeout Advisory Dispositions
+
+The closeout detector found an intentional helper move and new proof-surface
+families in the already-integrated slice. `scripts/slice_closeout_advisories.py`
+imports `_added_diff_lines` from `slice_closeout_repair_parity.py`; the two
+remaining readers are therefore not a dangling-name defect. The helper move is
+covered by the existing in-process and removed-name tests; no compatibility
+alias is added merely to silence a textual detector.
+
+The following are proof-surface decisions. Each fresh-eye pass is explicitly
+skipped because the host still exposes no bounded reviewer context; these are
+not same-agent approvals:
+
+- Fresh-eye pass: `scripts/adapter_key_usage.py` — proof-surface helper,
+  skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `scripts/check_artifact_citations.py` — proof surface,
+  skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `scripts/check_consumer_validator_catalog.py` — proof
+  surface, skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `scripts/check_release_issue_ledger.py` — proof surface,
+  skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `scripts/release_issue_ledger_contract.py` — proof-surface
+  helper, skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `scripts/release_issue_ledger_evidence.py` — proof-surface
+  helper, skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `scripts/slice_closeout_repair_parity.py` — proof-surface
+  helper, skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `scripts/what_reads_this_fallback.py` — not a proof surface;
+  fallback analysis is consumed by the parent reporter, skipped fresh-eye
+  review because the host has no bounded reviewer context.
+- Fresh-eye pass: `skills/public/achieve/scripts/goal_artifact_portability_gate.py`
+  — proof surface, skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `skills/public/achieve/scripts/goal_path_portability.py` —
+  proof surface, skipped, no Agent/spawn/Ceal reviewer context available.
+- Fresh-eye pass: `skills/public/critique/scripts/record_round_findings.py` —
+  proof-surface recording boundary, skipped, no Agent/spawn/Ceal reviewer
+  context available.
+
+Floor-Addition Restraint: retain the three new blocking floors in
+`check_artifact_citations.py`, `check_consumer_validator_catalog.py`, and
+`check_release_issue_ledger.py`. Advisory or describe-first absorption is not
+enough here: each protects a distinct recurring release escape (stale evidence
+citations, package consumer drift, or an incomplete issue train), and the
+checks are path/snapshot scoped with their semantic blind spots disclosed.
+This is a keep decision for the existing gates, not authorization to add a
+fourth floor.
+
+## Command-Surface and Runtime Advisory
+
+Several operator-issued commands in this goal were rejected before their
+intended subject ran: guessed validator paths (`scripts/check_critique_artifacts.py`,
+`scripts/check_goal_artifact.py`), a guessed test path (`tests/test_release_issue_ledger.py`),
+the wrong release-script owner (`scripts/current_release.py`), an unsupported
+`--detail` flag on the release reader, and an unresolvable abbreviated ref. These
+are one command-surface smell: execution began before the owning path, accepted
+argv, and ref identity were resolved. They are not test or code failures.
+
+The structural repair is now part of this goal's execution protocol: before any
+manual or parallel command fan-out, resolve every repo-owned target from
+`rg --files`, verify every git ref with `git rev-parse --verify`, and probe the
+resolved CLI owner with `--help` before composing flags. The guard was executed
+after correction against five exact script/test targets plus the full base SHA;
+all resolved. A missing target or rejected help surface stops the fan-out and
+repairs the command plan first.
+
+The mutation closeout completed with fresh coverage and changed-line proof
+`analyzed: 22`, `changed: 22`, `blocking: []`; its broad standing pytest phase
+also measured `177.71s` against the `120s` advisory budget. This is preserved as
+an explicit runtime advisory, not a clean-budget claim and not a new version
+blocker: issue `#668` already owns the runtime-semantics decision, forbids
+releveling the wall-time number, and requires isolated-versus-contended evidence
+or a subject-controlled metric before changing verdict semantics.
+
 ## Structured Findings
 
 - F1 | bin: act-before-ship | evidence: strong | ref: host signal and release boundary | action: defer | note: do not lock, bump, tag, publish, or close release issues while the required fresh-eye critique is unproven
