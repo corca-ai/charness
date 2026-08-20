@@ -71,10 +71,11 @@ def test_release_fresh_checkout_detail_emits_payload(tmp_path: Path, monkeypatch
         "emit_yaml",
         emitted.append,
     )
+    timeout_kwargs: dict[str, object] = {}
     monkeypatch.setattr(
         FRESH_CHECKOUT_PROBES.SKILL_RUNTIME,
         "arm_cli_timeout",
-        lambda **_kwargs: lambda: None,
+        lambda **kwargs: timeout_kwargs.update(kwargs) or (lambda: None),
     )
     monkeypatch.setattr(
         sys,
@@ -89,6 +90,10 @@ def test_release_fresh_checkout_detail_emits_payload(tmp_path: Path, monkeypatch
 
     assert FRESH_CHECKOUT_PROBES.main() == 0
     assert emitted == [payload]
+    assert timeout_kwargs == {
+        "label": "release fresh checkout probes",
+        "default_seconds": 0,
+    }
 
 
 def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path, monkeypatch, capsys) -> None:

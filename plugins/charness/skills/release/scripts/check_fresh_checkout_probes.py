@@ -214,7 +214,14 @@ def build_payload(repo_root: Path, *, run_probes: bool) -> dict[str, Any]:
 
 
 def main() -> int:
-    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="release fresh checkout probes")
+    # This workflow owns bounded clone/probe subprocesses (120s for clone, 300s
+    # per declared probe). Inheriting the shared 10s script default lets the
+    # wrapper kill a valid fresh-checkout proof before those owners can report a
+    # result. Keep explicit CHARNESS_SCRIPT_TIMEOUT_SECONDS overrides available,
+    # but do not impose an unrelated aggregate default here.
+    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(
+        label="release fresh checkout probes", default_seconds=0
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
     parser.add_argument("--run-probes", action="store_true", help="Clone the repo into a temp dir and execute the declared probes")

@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 145,
-  "indexed_artifact_count": 132,
+  "source_artifact_count": 147,
+  "indexed_artifact_count": 134,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 15,
-    "host-disproves-local": 4,
-    "none": 57,
+    "host-disproves-local": 5,
+    "none": 58,
     "operator-visible-recovery": 23,
     "repeated-symptom": 5
   },
   "generalization_pressure_counts": {
-    "factor-now": 7,
-    "monitor": 109,
+    "factor-now": 8,
+    "monitor": 110,
     "none": 16
   },
   "entries": [
@@ -1856,8 +1856,8 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-08-14-lesson-presentation-lost-across-compaction.md",
+      "is_current_pointer": false,
       "interrupt_id": "lesson-presentation-compaction-2026-08-14",
       "risk_classes": [
         "host-disproves-local"
@@ -1867,6 +1867,34 @@
       "critique_required": true,
       "next_step": "spec",
       "handoff_artifact": "charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-20-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "lesson-presentation-compaction-2026-08-14 (resolved carry-forward)",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "source skill entrypoint → shared helper → consuming adapter file",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-20-issue-679-impl-bootstrap-idempotence.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "fresh-checkout-release-proof-timeout-2026-08-20",
+      "risk_classes": [
+        "host-disproves-local"
+      ],
+      "seam": "local release planner → temporary checkout → child CLI/doctor probes.",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-20-fresh-checkout-probe-timeout.md",
       "forced": true
     }
   ],
