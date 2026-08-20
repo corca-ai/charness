@@ -1,14 +1,25 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills/public/critique/scripts/record_round_findings.py"
+
+
+def load_recorder_module():
+    spec = importlib.util.spec_from_file_location("record_round_findings_inprocess", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def run_recorder(
@@ -110,3 +121,110 @@ def test_skill_contract_requires_immediate_round_record_and_next_round_read() ->
     assert "--boundary-snapshot <path>" in text
     assert "round `n+1`" in text
     assert "reads as prior evidence" in text
+
+
+def test_inprocess_recorder_covers_rejection_boundaries(tmp_path: Path, monkeypatch, capsys) -> None:
+    module = load_recorder_module()
+    window_id = "w-inprocess"
+    snapshot = seed_snapshot(tmp_path, window_id)
+    findings = tmp_path / "findings.md"
+    findings.write_text("finding\n", encoding="utf-8")
+
+    receipt = module.record_round(
+        tmp_path,
+        round_number=1,
+        window_id=window_id,
+        snapshot=str(snapshot),
+        findings=str(findings),
+        recorded_date="2026-08-20",
+    )
+    assert receipt["window_id"] == window_id
+
+    relative_snapshot = snapshot.relative_to(tmp_path).as_posix()
+    assert module._read_snapshot(tmp_path, relative_snapshot, window_id)[0] == relative_snapshot
+
+    with pytest.raises(module.RoundFindingsError, match="path must stay under repo root"):
+        module._repo_relative(tmp_path, Path("/tmp/outside-round-record"))
+    with pytest.raises(module.RoundFindingsError, match="snapshot not found"):
+        module._read_snapshot(tmp_path, "missing.json", window_id)
+
+    malformed = tmp_path / "malformed.json"
+    malformed.write_bytes(b"not-json")
+    with pytest.raises(module.RoundFindingsError, match="snapshot is unreadable"):
+        module._read_snapshot(tmp_path, str(malformed), window_id)
+
+    findings_dir = tmp_path / "findings-dir"
+    findings_dir.mkdir()
+    with pytest.raises(module.RoundFindingsError, match="findings file is unreadable"):
+        module._read_findings(str(findings_dir))
+    empty = tmp_path / "empty.md"
+    empty.write_bytes(b"\n")
+    with pytest.raises(module.RoundFindingsError, match="must not be empty"):
+        module._read_findings(str(empty))
+    invalid_utf8 = tmp_path / "invalid.md"
+    invalid_utf8.write_bytes(b"\xff")
+    with pytest.raises(module.RoundFindingsError, match="must be UTF-8"):
+        module._read_findings(str(invalid_utf8))
+
+    with pytest.raises(module.RoundFindingsError, match="window id may contain"):
+        module._record_path(tmp_path, "2026-08-20", "bad/id")
+    with pytest.raises(module.RoundFindingsError, match="ISO-8601"):
+        module._record_path(tmp_path, "not-a-date", window_id)
+    with pytest.raises(module.RoundFindingsError, match="positive integer"):
+        module.record_round(
+            tmp_path,
+            round_number=0,
+            window_id=window_id,
+            snapshot=str(snapshot),
+            findings=str(findings),
+            recorded_date="2026-08-20",
+        )
+
+    original_write_text = Path.write_text
+
+    def fail_write(self, *args, **kwargs):
+        if self.name == "2026-08-21-w-write-error.md":
+            raise OSError("simulated write failure")
+        return original_write_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", fail_write)
+    write_snapshot = tmp_path / "write-snapshot.json"
+    write_snapshot.write_text(
+        json.dumps({"head": "abc", "window": {"id": "w-write-error"}}),
+        encoding="utf-8",
+    )
+    with pytest.raises(module.RoundFindingsError, match="could not write round record"):
+        module.record_round(
+            tmp_path,
+            round_number=2,
+            window_id="w-write-error",
+            snapshot=str(write_snapshot),
+            findings=str(findings),
+            recorded_date="2026-08-21",
+        )
+
+    class HelperPath:
+        def __init__(self, value):
+            self.value = value
+
+        def resolve(self):
+            return self
+
+        @property
+        def parents(self):
+            return [self]
+
+        def __truediv__(self, _other):
+            return self
+
+        def is_file(self):
+            return True
+
+    monkeypatch.setattr(module, "Path", HelperPath)
+    monkeypatch.setattr(
+        module.importlib.util,
+        "spec_from_file_location",
+        lambda *_args, **_kwargs: SimpleNamespace(loader=None),
+    )
+    module._emit_yaml({"fallback": True})
+    assert '"fallback": true' in capsys.readouterr().out
