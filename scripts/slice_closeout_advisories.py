@@ -513,22 +513,31 @@ def advise_over_slicing(repo_root: Path) -> None:
 
 _PARITY_HARNESS = "scripts/parity_harness.py"
 
+_REPAIR_CLASS_LINE = re.compile(
+    r"(?:\b(?:refus\w*|reject\w*|unhonored|uninterpreted|uncomparable|unread|"
+    r"unsupported|malformed|not[-_ ](?:established|configured|found|read))\b|"
+    r"report\s*\[\s*['\"](?:ok|status)['\"]\s*\]\s*=\s*False|"
+    r"\b(?:findings|violations|problems|uncomparable)\s*\.\s*(?:append|add)\s*\()",
+    re.IGNORECASE,
+)
+
 
 def advise_repair_parity(repo_root: Path, changed_paths: list[str]) -> None:
-    """Name the functions this slice REPAIRED since a bounded reviewer read them.
+    """Name repaired functions and expose newly added refusal classes.
 
-    A reviewer's finding is a point; the repair is a change to a function; the
-    blast radius is that function's whole prior behaviour. Tests written for the
-    original only cover properties someone already named, so a repair can narrow a
-    property nothing asserted and leave every gate green.
-
-    Measured in one slice of this repo: two repaired surfaces were differentially
-    verified against their baseline and a second bounded round found nothing in
-    them; the third was not, and the same round found three narrowings in it.
-
-    Fires only when a reviewer snapshot captured the pre-repair source, so it is
-    silent on slices that ran no bounded review and cannot substitute for one.
+    A finding is a point; the repair changes a function's whole prior behaviour.
+    The class notice uses added source lines, stays advisory, and does not replace
+    the reviewer snapshot required by the parity notice below.
     """
+    source_paths = [p for p in changed_paths if p.startswith(("scripts/", "skills/")) and p.endswith(".py")]
+    added = _added_diff_lines(repo_root, "origin/main", sorted(set(source_paths)))
+    classes = [line.strip() for line in added.splitlines() if line.strip() and not line.lstrip().startswith(("#", "'''", '\"\"\"')) and _REPAIR_CLASS_LINE.search(line)]
+    if classes:
+        print(
+            "ADVISORY: added refusal/detector input class candidates — exercise each exact source line against the real consumer and confirm the new code discriminates. Malformed, type-invalid, comment-only, or literal no-op generators are not evidence; repair the generator/consumer pair if it carries the class:\n"
+            + "\n".join(f"  - {line}" for line in classes),
+            file=sys.stderr,
+        )
     harness = repo_root / _PARITY_HARNESS
     if not harness.is_file():
         return
