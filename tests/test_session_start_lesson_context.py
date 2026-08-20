@@ -572,3 +572,137 @@ def test_the_refresh_command_falls_back_to_a_placeholder_rather_than_a_wrong_pat
     assert text.startswith("python3 CHARNESS_PLUGIN_DIR/skills/retro/scripts/")
     assert "<" not in text
     assert f"--repo-root {tmp_path}" in text
+
+
+def _stub_router_process(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, returncode: int = 0, stderr: bytes = b"") -> None:
+    router = tmp_path / "plan_retro_run.py"
+    router.write_text("# fixture router\n", encoding="utf-8")
+    monkeypatch.setattr(lesson_context, "_retro_plan_script", lambda: router)
+    monkeypatch.setattr(
+        lesson_context.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], returncode, stdout=b"ignored", stderr=stderr
+        ),
+    )
+
+
+def test_unclaimed_router_reports_missing_router_script(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(lesson_context, "_retro_plan_script", lambda: None)
+
+    with pytest.raises(OSError, match="no `plan_retro_run.py`"):
+        lesson_context._run_unclaimed_sessions(tmp_path)
+
+
+def test_unclaimed_router_reports_child_exit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_router_process(monkeypatch, tmp_path, returncode=7, stderr=b"router failed\n")
+
+    with pytest.raises(OSError, match="exited 7: router failed"):
+        lesson_context._run_unclaimed_sessions(tmp_path)
+
+
+def test_unclaimed_router_reports_unreadable_payload(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_router_process(monkeypatch, tmp_path)
+    monkeypatch.setattr(lesson_context, "_parse_preview", lambda _output: (_ for _ in ()).throw(ValueError("bad payload")))
+
+    with pytest.raises(ValueError, match="emitted unreadable output.*bad payload"):
+        lesson_context._run_unclaimed_sessions(tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        ({}, "no `lesson_session` routing payload"),
+        (
+            {"lesson_session": {"state": "not-established", "sessions": []}},
+            "retro routing is not established",
+        ),
+        (
+            {
+                "lesson_session": {
+                    "state": lesson_context.STATE_EVALUATED,
+                    "sessions": [{"session_id": "only-id"}],
+                }
+            },
+            "without id or frozen bundle path",
+        ),
+        (
+            {"lesson_session": {"state": lesson_context.STATE_EVALUATED, "sessions": []}},
+            "claimed evaluated state but emitted no sessions",
+        ),
+    ],
+)
+def test_unclaimed_router_rejects_unestablished_shapes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, payload: dict[str, object], message: str
+) -> None:
+    _stub_router_process(monkeypatch, tmp_path)
+    monkeypatch.setattr(lesson_context, "_parse_preview", lambda _output: payload)
+
+    with pytest.raises(ValueError, match=message):
+        lesson_context._run_unclaimed_sessions(tmp_path)
+
+
+def test_unclaimed_router_preserves_the_explicit_no_session_answer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _stub_router_process(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        lesson_context,
+        "_parse_preview",
+        lambda _output: {"lesson_session": {"configuration_status": "no-unclaimed-session"}},
+    )
+
+    assert lesson_context._run_unclaimed_sessions(tmp_path) == {
+        "state": "no-unclaimed-session",
+        "sessions": [],
+    }
+
+
+def test_routing_details_keeps_not_established_distinct_from_empty() -> None:
+    text, sessions = lesson_context._routing_details(
+        Path("/repo"), {"state": "not-established", "cause": "router unavailable"}
+    )
+
+    assert sessions is None
+    assert "could not establish" in text
+    assert "router unavailable" in text
+
+
+def test_evaluated_context_records_routing_cause_when_no_lessons_are_selected(tmp_path: Path) -> None:
+    result = lesson_context._evaluated(
+        tmp_path,
+        tmp_path / "lesson-ledger.json",
+        "session-1",
+        {"preview_text": "", "items": []},
+        {"state": "not-established", "cause": "router unavailable"},
+    )
+
+    assert result["eligible_lessons_present"] is False
+    assert result["unclaimed_sessions"] is None
+    assert result["unclaimed_sessions_cause"] == "router unavailable"
+
+
+def test_build_context_carries_routing_failure_into_evaluated_result(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _seeded_repo(tmp_path)
+    monkeypatch.setattr(
+        lesson_context,
+        "_run_preview",
+        lambda _repo, _seed: (0, "ignored", ""),
+    )
+    monkeypatch.setattr(
+        lesson_context,
+        "_parse_preview",
+        lambda _output: {"preview_text": "- lesson", "items": [{}]},
+    )
+    monkeypatch.setattr(
+        lesson_context,
+        "_run_unclaimed_sessions",
+        lambda _repo: (_ for _ in ()).throw(OSError("router unavailable")),
+    )
+
+    result = lesson_context.build_lesson_context(repo, {"session_id": "host-1"})
+
+    assert result["unclaimed_sessions"] is None
+    assert result["unclaimed_sessions_cause"].startswith("OSError: router unavailable")

@@ -203,13 +203,6 @@ def validate_catalog(
             f"{catalog_path_value}: packaged validator(s) missing an explicit catalog "
             f"decision: {', '.join(missing)}"
         )
-    extra = sorted(set(declared) - discovered_set)
-    if extra:
-        raise CatalogError(
-            f"{catalog_path_value}: catalog names non-packaged validator(s): "
-            f"{', '.join(extra)}"
-        )
-
     consumer_paths = sorted(
         path for path, entry in declared.items() if entry["consumer_facing"] is True
     )

@@ -165,3 +165,117 @@ def test_report_lists_only_explicit_consumer_facing_paths(tmp_path: Path) -> Non
 
     assert report["consumer_facing_validators"] == ["scripts/validate_demo.py"]
     assert report["excluded_count"] == 1
+
+
+def _valid_header() -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "package_root": "plugins/charness",
+        "candidate_patterns": list(catalog_check.EXPECTED_CANDIDATE_PATTERNS),
+        "scanner_exclusions": [
+            {
+                "path": catalog_check.EXPECTED_SCANNER_EXCLUSIONS[0],
+                "reason": "fixed scanner owner",
+            }
+        ],
+        "consumer_contract": {
+            "source": "packaged",
+            "selection_field": "consumer_facing",
+            "no_substitute": "use packaged validator",
+        },
+        "validators": [],
+    }
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda value: value.update(schema_version=2), "schema_version"),
+        (lambda value: value.update(package_root="other"), "package_root"),
+        (lambda value: value.update(candidate_patterns=["**/check_*.py"]), "fixed scanner scope"),
+        (lambda value: value.update(scanner_exclusions=None), "scanner_exclusions"),
+        (
+            lambda value: value.update(
+                scanner_exclusions=[
+                    {"path": catalog_check.EXPECTED_SCANNER_EXCLUSIONS[0], "reason": "x"},
+                    "not a mapping",
+                ]
+            ),
+            r"scanner_exclusions\[2\]",
+        ),
+        (
+            lambda value: value.update(
+                scanner_exclusions=[
+                    {
+                        "path": catalog_check.EXPECTED_SCANNER_EXCLUSIONS[0],
+                        "reason": "",
+                    }
+                ]
+            ),
+            "reason",
+        ),
+        (lambda value: value.update(consumer_contract=None), "consumer_contract"),
+        (
+            lambda value: value.update(
+                consumer_contract={
+                    "source": "consumer",
+                    "selection_field": "x",
+                    "no_substitute": "y",
+                }
+            ),
+            "source.*packaged",
+        ),
+        (
+            lambda value: value.update(
+                consumer_contract={"source": "packaged", "selection_field": "", "no_substitute": "y"}
+            ),
+            "selection_field",
+        ),
+        (lambda value: value.update(validators=None), "validators"),
+    ],
+)
+def test_header_rejects_each_untrusted_shape(mutate, message: str) -> None:
+    header = _valid_header()
+    mutate(header)
+
+    with pytest.raises(catalog_check.CatalogError, match=message):
+        catalog_check._validate_catalog_header(header, Path("catalog.yaml"), "plugins/charness")
+
+
+def test_loader_and_discovery_failures_are_attributed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    with pytest.raises(catalog_check.CatalogError, match="packaged plugin root is missing"):
+        catalog_check.discover_packaged_validators(tmp_path / "missing")
+
+    with pytest.raises(catalog_check.CatalogError, match="catalog is missing"):
+        catalog_check._load_catalog(tmp_path / "missing.yaml")
+
+    catalog_path = tmp_path / "catalog.yaml"
+    catalog_path.write_text("placeholder", encoding="utf-8")
+    for failure in (OSError("read failed"), ValueError("bad yaml"), TypeError("wrong yaml")):
+        monkeypatch.setattr(catalog_check, "load_yaml_file", lambda _path, failure=failure: (_ for _ in ()).throw(failure))
+        with pytest.raises(catalog_check.CatalogError, match="could not read catalog"):
+            catalog_check._load_catalog(catalog_path)
+
+    monkeypatch.setattr(catalog_check, "load_yaml_file", lambda _path: ["not a mapping"])
+    with pytest.raises(catalog_check.CatalogError, match="top level must be a mapping"):
+        catalog_check._load_catalog(catalog_path)
+
+
+@pytest.mark.parametrize(
+    ("entry", "message"),
+    [
+        ([], "must be a mapping"),
+        ({"path": "../escape"}, "normalized relative POSIX"),
+        ({"path": "scripts/check_demo.py", "consumer_facing": False, "decision": "unknown", "reason": "x"}, "decision"),
+        ({"path": "scripts/check_demo.py", "consumer_facing": True, "decision": "publish", "reason": "x"}, "purpose"),
+    ],
+)
+def test_entry_validation_rejects_untrusted_shapes(entry, message: str) -> None:
+    with pytest.raises(catalog_check.CatalogError, match=message):
+        catalog_check._validate_entry(
+            entry,
+            index=1,
+            catalog_path=Path("catalog.yaml"),
+            discovered={"scripts/check_demo.py"},
+            declared={},
+        )
