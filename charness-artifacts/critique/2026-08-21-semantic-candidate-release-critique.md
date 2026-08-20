@@ -189,9 +189,28 @@ shared mutation state; it is not used as proof. The final runs were serialized.
 Runtime remains an explicit #668 advisory, not a clean-budget claim or a version
 blocker.
 
+## Verification-Lock Result
+
+The first post-critique lock invocation was correctly blocked because its cached
+broad pytest proof carried a different locked-diff fingerprint. All preceding
+structural and verify commands passed; recovery used
+`--refresh-broad-pytest-proof` only after the mutation set was final. The
+successful exact-range lock at target HEAD `0784bb041` executed 53 commands,
+returned `status: completed` and effective exit code `0`, and recorded
+`10,792 passed in 92.65s` with broad proof fingerprint
+`dbcf626dd2ec1b8fae22730f508712ab9a4939efc1ace1e6b5b7ea10a0c5865c`. Its
+durable receipt is
+`charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md`.
+
+The separate `--paths` plan also initially placed `--plan-only` after the
+greedy path option under `xargs`; argparse refused the call before execution.
+The corrected invocation places all flags before `--paths` and scopes only the
+committed `origin/main..HEAD` paths, keeping untracked intermediate packets out
+of the lock. These are command/cache-surface smells, not hidden green proof.
+
 ## Structured Findings
 
-- F1 | bin: act-before-ship | evidence: strong | ref: final v9 fresh-eye review, clean boundary fingerprint, and current endpoint-bound receipts | action: defer | note: semantic candidate is ready to proceed to the separate verification-lock step; this does not authorize version mutation or publication
+- F1 | bin: act-before-ship | evidence: strong | ref: final v9 fresh-eye review, clean boundary fingerprint, and completed verification-lock receipt at 0784bb041 | action: defer | note: semantic candidate local lock is now supported; version mutation and publication remain separate phase-scoped operations
 - F2 | bin: valid-but-defer | evidence: strong | ref: /tmp/charness-s5-quality-read-only-final2.log | action: defer | note: local quality, fresh-checkout, duplicate-ratchet, and real-host trigger checks do not establish external release truth
 - F3 | bin: over-worry | evidence: weak | ref: hypothetical unobserved consumer hosts | action: document | note: speculative host concerns without a current reproducer remain outside this critique's proven findings
 

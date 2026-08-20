@@ -14,18 +14,19 @@ runs the activation command.
   the release-proof timeout, consumer-coverage, duplicate-seam, and command-
   surface repairs. Exact-HEAD focused, changed-line, and broad quality
   receipts now bind `19e62aea8`; the v9 replacement packet received a clean
-  fresh-eye PASS and the semantic candidate is ready for its separate exact
-  verification lock. The broader release goal remains active at its version,
-  publication, and external-readback edges.
+  fresh-eye PASS and the semantic candidate verification lock completed at
+  target HEAD `0784bb041`. The semantic candidate is locally locked; the
+  broader release goal remains active at its version, publication, and
+  external-readback edges.
 - Current slice: Slice 4 — reconcile the frozen ledger and exports, preserve
   the lesson-session provenance, bind current-HEAD verification evidence, and
   lock the semantic candidate before the mandatory release critique.
 - Current slice intent: turn the locally proven repair tree into one fixed,
   source/export/ledger-consistent semantic candidate without smuggling in a
   version bump or treating a local green gate as public release proof.
-- Next action: run the exact post-critique verification lock for the reviewed
-  candidate, then record the semantic candidate lock before any phase-scoped
-  version/release operation. The bounded review found an argv/help-owner escape; it is
+- Next action: keep the semantic candidate bound to `0784bb041`; any
+  phase-scoped version/release mutation must create a distinct release
+  candidate, then commit and re-prove it. The bounded review found an argv/help-owner escape; it is
   repaired at `7b277c3d0`, the follow-up refusal tests are at `c29d338d8`, and
   diagnostic drift is corrected at `3cc29d5ea`. The replacement review then
   exposed stale proof identity as a truth-surface smell; the changed-line and
@@ -819,6 +820,12 @@ invent a common engine.
   `charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md`
   records `25 passed in 2.01s` at the same endpoint, with raw log SHA-256
   `7f9d2ecd409e3385f77b15ba55bc4fad2e689455be43610c3f7c46c9928aa0a4`.
+- Verification lock: the durable receipt at
+  `charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md`
+  records the exact committed-range closeout at target HEAD `0784bb041` as
+  `status: completed`, with `53` executed commands, `10,792 passed in 92.65s`,
+  and broad proof fingerprint
+  `dbcf626dd2ec1b8fae22730f508712ab9a4939efc1ace1e6b5b7ea10a0c5865c`.
 - Fresh checkout: the corrected owner command
   `python3 skills/public/release/scripts/check_fresh_checkout_probes.py
   --repo-root . --run-probes --detail` passed all five declared probes.
@@ -827,6 +834,12 @@ invent a common engine.
   state. The broad run was then rerun alone and the changed-line proof was rerun
   alone before it at the exact current HEAD; the final receipts above are
   serialized, not the raced run.
+- Verification-smell repair: the first post-critique closeout refused a stale
+  cached broad proof because the locked-diff fingerprint changed after commit
+  `0784bb041`; the final mutation set was then refreshed explicitly. A separate
+  `xargs` plan also put `--plan-only` after greedy `--paths`, and argparse
+  refused it before execution. The corrected plan puts all flags before
+  `--paths` and excludes untracked intermediate packets from the lock.
 
 ## Closeout Binding Plan
 
@@ -867,8 +880,9 @@ invent a common engine.
   receipt and does not alter the source mutation pool.
 - Slice 0 local intake proof remains recorded in the ledger, planner receipts,
   issue-read/reproduction receipts, and Slice 0 log. Integrated semantic
-  candidate critique, version/release-candidate proof, external readback, and
-  tracker closeout remain unrun; this goal is therefore still active.
+  candidate critique and verification lock are complete at the target commit;
+  version/release-candidate proof, external readback, and tracker closeout
+  remain unrun, so this goal is still active.
 - Historical Slice 4 integrated proof remains recorded at code truth
   `5a170113d`, with the command-plan implementation repairs at `7b277c3d0`,
   coverage completion at `c29d338d8`, and diagnostic repair at `3cc29d5ea`.
@@ -879,8 +893,9 @@ invent a common engine.
   command-plan receipt records `25 passed`. The v9 replacement packet and
   final fresh-eye round read this synchronized candidate evidence. The parent
   boundary fingerprint was clean (`ok: true`, `verdict: clean`, `drift: []`),
-  so the semantic candidate may proceed to the separate verification-lock
-  step. Version mutation, publication, external readback, issue closure, and
+  and the exact post-critique verification lock completed at target HEAD
+  `0784bb041` with `10,792 passed`. The semantic candidate is locally locked;
+  version mutation, publication, external readback, issue closure, and
   Cautilus remain unrun.
 
 ## User Verification Instructions
