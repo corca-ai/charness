@@ -9,18 +9,21 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: Slice 3 is locally proven and archived; Slice 4 is now
-  active at the integrated semantic-candidate boundary. The broader release
-  goal remains active at its version, publication, and external-readback edges.
+- Current disposition: Slice 3 is locally proven and archived; Slice 4 remains
+  active at the integrated semantic-candidate boundary after absorbing the
+  release-proof timeout, consumer-coverage, and duplicate-seam repairs. The
+  semantic candidate is not frozen yet, and the broader release goal remains
+  active at its version, publication, and external-readback edges.
 - Current slice: Slice 4 — reconcile the frozen ledger and exports, preserve
   the lesson-session provenance, and bind the semantic candidate before the
   mandatory release critique.
 - Current slice intent: turn the locally proven repair tree into one fixed,
   source/export/ledger-consistent semantic candidate without smuggling in a
   version bump or treating a local green gate as public release proof.
-- Next action: commit the lesson-session evidence and goal transition, run the
-  report-first quality/release packets, then prepare the bounded semantic
-  candidate critique and verification lock.
+- Next action: run the report-first quality/release packets against the now
+  source- and artifact-stable tree, then prepare the bounded semantic-candidate
+  critique and verification lock. Any new failure returns to the owning seam
+  and carries its recurrence class into a gate, test, or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -648,6 +651,53 @@ invent a common engine.
 - Lessons carried forward: Changed-line proof must follow the commit and precede broad/release work; a lesson-session write is part of the provenance surface, not incidental dirt; release planner freshness must be re-read after every source or evidence-surface mutation.
 - Metrics: Current code truth before this transition: 1ee53a795; current documentation binding before this transition: 7eb9b05bf; current release surface remains 6.2.0; ledger 30 issues / 10 packages; worktree dirty only from the required lesson-session receipt.
 
+### Slice 4 continuation: failure-smell and proof-surface repairs
+
+- Objective: Repair the newly observed release-proof timeout class, close the
+  integrated changed-line coverage gaps, and classify or remove duplicate seams
+  before the semantic candidate is frozen.
+- Why this approach: The failures were coupled at boundaries rather than being
+  isolated red tests. The release wrapper owned a shorter timeout than its
+  bounded children; two CLI entry paths duplicated the same child-process
+  setup; and changed-line proof exposed unmeasured entry branches. The repairs
+  therefore moved to the producer contract, shared runner seam, and direct
+  consumer tests instead of weakening gates or merely recording exceptions.
+- Commits: timeout repair `345ec2a7b`; consumer coverage `e00898cf9`; validator
+  and lesson-hook entry coverage `69c1a3ec7`; shared child runner extraction
+  `2ff21b39e`; reviewed duplicate-family classifications `b44d6df16`; closed
+  timeout RCA and ledger event `e29735316`.
+- What changed: The fresh-checkout producer explicitly opts out of the shared
+  10-second alarm while retaining 120/300-second owned subprocess bounds, and
+  its regression pins that policy. Session child execution now has one shared
+  environment/process/timeout seam. Consumer tests exercise CLI guards,
+  routing failures, fallback branches, and entrypoint paths. Twenty-six
+  remaining intentional duplicate families are recorded with rationale; the
+  one duplicated subprocess seam was structurally removed.
+- Targeted verification: release focused tests passed; the exact default
+  fresh-checkout proof returned `status: passed` with five probes and zero
+  return codes; source/plugin mirror and spec/debug artifact validators passed;
+  duplicate ratchet returned `new_code_families: []`, `hard_block: false`, and
+  `status: clean`; real-host trigger evaluation over the full changed range
+  returned `required: false`, `evaluation_scope: evaluated`, and no hits.
+  Immutable changed-line proof at frozen source HEAD
+  `2ff21b39e10a1ee1b2aaceae3b6d58263a792a5b` passed with 10,766 tests,
+  `analyzed=20/changed=20`, and `blocking=[]`.
+- RCA conversion: `charness-artifacts/debug/2026-08-20-fresh-checkout-probe-timeout.md`
+  is resolved and `charness-artifacts/metrics/rca-ledger.jsonl` records the
+  converted class `release-fresh-checkout-aggregate-timeout-boundary` with a
+  gate and regression carrier.
+- Critique/non-claims: Two unnamed bounded-reviewer spawn attempts were
+  blocked by the host because no Agent/spawn/ceal capability was available;
+  no fresh-eye approval is claimed and no same-agent pass substitutes for it.
+  No version bump, tag, push, publication, hosted/install readback, issue
+  closure, or Cautilus evaluation is claimed. The current code truth is
+  `e29735316`; the release surface remains `6.2.0`.
+- Lessons carried forward: A generic timeout applied across unlike producer
+  workflows is a shared-contract smell; a green focused suite without changed
+  lines is an evidence-measurement smell; and a ratchet exception without a
+  family-specific rationale is a memory smell. Each now has a producer seam,
+  direct coverage, or durable classification rather than a silent waiver.
+
 ## Closeout Binding Plan
 
 - Reviewed inputs: this goal, the frozen issue ledger and amendments, current
@@ -689,6 +739,12 @@ invent a common engine.
   issue-read/reproduction receipts, and Slice 0 log. Integrated semantic
   candidate critique, version/release-candidate proof, external readback, and
   tracker closeout remain unrun; this goal is therefore still active.
+- Slice 4 continuation proof is recorded at current code truth `e29735316`:
+  default fresh-checkout probes passed (5/5), debug/RCA/spec/mirror surfaces
+  validate, duplicate ratchet is clean, and real-host trigger evaluation is
+  explicitly non-required for the current changed range. Full broad quality,
+  semantic-candidate fresh-eye critique, version mutation, publication, and
+  external readback remain open.
 
 ## User Verification Instructions
 
