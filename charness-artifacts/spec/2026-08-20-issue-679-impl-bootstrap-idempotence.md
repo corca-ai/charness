@@ -75,6 +75,11 @@ after integration.
   `skills/public/impl/SKILL.md`,
   `skills/public/impl/scripts/init_adapter.py`, and
   `tests/test_impl_bootstrap.py`.
+- The shared `scripts/adapter_init_lib.py` dependency is parent-owned and
+  serialized by the operating contract. If diagnosis confirms that the
+  reusable classification boundary is the owner, the parent may repair that
+  path during integration under a separately recorded shared-lane change; the
+  p0 writer must not widen its worktree budget silently.
 - Source and generated plugin mirrors must be synchronized by the parent
   integration lane.
 - The regression must prove unchanged bytes and metadata for a valid adapter,
@@ -107,10 +112,11 @@ after integration.
 
 ## Boundary Ownership
 
-`init_adapter.py` owns the existing-file decision and write boundary;
-`adapter_init_lib.py` owns the reusable idempotent classification; the resolver
-owns reporting adapter validity; the parent integration lane owns generated
-plugin parity and release proof. A host consumer remains outside local proof.
+`init_adapter.py` owns the public existing-file decision and write boundary;
+`adapter_init_lib.py` owns the reusable idempotent classification and is a
+parent-owned serialized shared dependency; the resolver owns reporting adapter
+validity; the parent integration lane owns generated plugin parity and release
+proof. A host consumer remains outside local proof.
 
 ## Critique
 
