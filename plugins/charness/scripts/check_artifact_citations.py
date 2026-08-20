@@ -24,6 +24,8 @@ from collections.abc import Iterable, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+import yaml
+
 DEFAULT_ARTIFACT_ROOTS = ("charness-artifacts",)
 DISPOSITION_VALUES = frozenset(
     {"non-code", "external", "historical", "evidence-only", "semantic-only"}
@@ -344,6 +346,25 @@ def check_artifact_citations(
     }
 
 
+def advise_artifact_citations(repo_root: Path, paths: Iterable[str | Path]) -> dict[str, object]:
+    """Report changed durable-artifact citations without blocking closeout.
+
+    The closeout consumer owns the path scope; this function owns one structured
+    report and the explicit syntactic-only non-claim. A no-scope slice stays quiet,
+    while selected artifacts always produce a visible advisory, including findings.
+    """
+    report = check_artifact_citations(repo_root, paths)
+    if report["status"] == "no-scope":
+        return report
+    print(
+        "ADVISORY: durable artifact citation report (syntactic-only; semantic truth "
+        "and counts remain unverified):",
+        file=sys.stderr,
+    )
+    print(yaml.safe_dump(report, sort_keys=False), file=sys.stderr, end="")
+    return report
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--repo-root", type=Path, required=True)
@@ -359,8 +380,6 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError as exc:
         print(f"artifact citation checker configuration error: {exc}", file=sys.stderr)
         return 2
-    import yaml
-
     print(yaml.safe_dump(report, sort_keys=False), end="")
     return 0 if report["ok"] else 1
 

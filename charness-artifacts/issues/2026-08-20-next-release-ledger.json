@@ -203,7 +203,7 @@
         "exit": 0,
         "evidence_path": "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt"
       },
-      "classification": "qualified-repair",
+      "classification": "partial-child-shipped",
       "release_impact": "release-train-quality: qualified release-train repair",
       "acceptance_owner": "artifact validation owner",
       "acceptance_assertions": [
@@ -213,7 +213,9 @@
       "lane_id": "p3-677",
       "allowed_paths": [
         "scripts/check_artifact_citations.py",
-        "tests/test_artifact_citations.py"
+        "tests/test_artifact_citations.py",
+        "scripts/run_slice_closeout.py",
+        "tests/quality_gates/test_slice_closeout_artifact_citations.py"
       ],
       "dependencies": [],
       "proof_commands": [
@@ -222,7 +224,20 @@
       "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt",
       "post_publication_closeout_path": null,
       "close_disposition": "leave-open",
-      "amendments": [],
+      "amendments": [
+        {
+          "amendment_id": "2026-08-20-677-consumer-gap",
+          "recorded_at": "2026-08-20T20:57:32+09:00",
+          "from_classification": "qualified-repair",
+          "to_classification": "partial-child-shipped",
+          "reason": "The syntactic checker shipped, but no supported slice-closeout consumer read it; add reporting-only wiring and an integration test before claiming the qualified repair complete.",
+          "owner": "artifact validation owner",
+          "evidence_path": "charness-artifacts/issues/2026-08-20-677-consumer-gap.txt",
+          "new_source": "scripts/run_slice_closeout.py",
+          "successor_destination": "p3-677 integration",
+          "release_scope_impact": "No full #677 acceptance claim until closeout advisory wiring is proven."
+        }
+      ],
       "locked_classification": "qualified-repair",
       "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
     },
@@ -1246,7 +1261,9 @@
       "status": "admitted",
       "allowed_paths": [
         "scripts/check_artifact_citations.py",
-        "tests/test_artifact_citations.py"
+        "tests/test_artifact_citations.py",
+        "scripts/run_slice_closeout.py",
+        "tests/quality_gates/test_slice_closeout_artifact_citations.py"
       ],
       "dependencies": [],
       "proof_commands": [

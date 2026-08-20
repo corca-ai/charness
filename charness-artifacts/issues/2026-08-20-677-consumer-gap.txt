@@ -1,0 +1,26 @@
+#677 ledger amendment evidence — 2026-08-20
+
+The qualified worker delivered the syntactic checker and focused fixtures in
+commit `53cf7d618` (source, test, and generated plugin mirror). A helper-only
+repair is not a closeout carrier: the checker was not read by the slice-closeout
+entrypoint.
+
+Observed before the amendment:
+
+    rg -n "check_artifact_citations|artifact citation" scripts/run_slice_closeout.py
+    exit=1
+
+    python3 scripts/check_artifact_citations.py --repo-root . --paths \
+      charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md
+    exit=0; status=checked; issues=[]
+
+Decision: transition #677 from `qualified-repair` to
+`partial-child-shipped`, keep the helper commit as the shipped child, and add
+the closeout consumer plus its focused integration test to the same successor
+package. The closeout consumer must remain reporting-only and path-scoped; the
+historical artifact corpus must not be rewritten or made a blocking floor.
+
+Owner: artifact validation owner.
+Successor destination: p3-677 integration in the current goal before Slice 4.
+Release impact: no full #677 acceptance claim until the closeout advisory is
+wired and read back from the supported entrypoint.

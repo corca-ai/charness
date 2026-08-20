@@ -31,6 +31,8 @@ _slice_closeout_parser = import_repo_module(__file__, "scripts.slice_closeout_pa
 _slice_closeout_command_executor = import_repo_module(__file__, "scripts.slice_closeout_command_executor")
 execute_command_plan = _slice_closeout_command_executor.execute_command_plan
 _slice_closeout_advisories = import_repo_module(__file__, "scripts.slice_closeout_advisories")
+_artifact_citations = import_repo_module(__file__, "scripts.check_artifact_citations")
+advise_artifact_citations = _artifact_citations.advise_artifact_citations
 advise_prose_pin = _slice_closeout_advisories.advise_prose_pin
 advise_skill_surface_preflight = _slice_closeout_advisories.advise_skill_surface_preflight
 advise_doc_surface_preflight = _slice_closeout_advisories.advise_doc_surface_preflight
@@ -370,6 +372,7 @@ def _run_preexecution_blocks(
     attach_new_proof_surface_advisory(payload, repo_root)
     advise_close_keyword_leakage(repo_root)
     advise_decaying_habits(repo_root, payload["changed_paths"])
+    advise_artifact_citations(repo_root, payload["changed_paths"])
 
     blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched)
     if blocked is not None:
