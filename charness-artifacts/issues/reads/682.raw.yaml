@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "repo": "corca-ai/charness",
+  "number": 682,
+  "read_argv": [
+    "gh",
+    "issue",
+    "view",
+    "--repo",
+    "corca-ai/charness",
+    "682",
+    "--comments",
+    "--json",
+    "number,title,body,comments,labels,state,url,author,createdAt,updatedAt"
+  ],
+  "comments_read": true,
+  "comment_count": 0,
+  "issue": {
+    "author": {
+      "id": "MDQ6VXNlcjE1ODk0MzA=",
+      "is_bot": false,
+      "login": "spilist",
+      "name": "Hwidong Bae"
+    },
+    "body": "## Situation\n\nThe prescribed closeout path tells callers to run:\n\n```sh\npython3 <retro-skill>/scripts/check_auto_trigger.py --repo-root .\n```\n\nAfter a meaningful slice was committed, the repository worktree was clean. The command then had no changed paths to inspect and returned an unknown state instead of an auto-retro decision.\n\n## Observed experience\n\nThe first call returned exit 3 with:\n\n```text\nstate: not-established\nchanged_paths: []\nreason: Auto-retro triggers are configured but could not be evaluated ... a clean tree after a commit cannot reconstruct it.\n```\n\nOnly this explicit commit-range call settled the question:\n\n```sh\npython3 <retro-skill>/scripts/check_auto_trigger.py \\\n  --repo-root . --base-ref HEAD^ --head-ref HEAD\n```\n\nIt returned `state: evaluated`, `triggered: true`, `surface_hits: [goal-lifecycle]`, and `input.mode: commit_range`.\n\n## Evidence\n\n- `skills/prove/SKILL.md` tells closeout to run `check_auto_trigger.py --repo-root .` without a path or commit basis.\n- `skills/retro/SKILL.md` repeats the no-basis command for the automatic closeout trigger.\n- The tool itself correctly fails closed when the default working-tree diff is empty; the mismatch is between sequencing guidance and the command contract.\n- Triggering consumer commit: `corca-ai/ceal@5f3f5e2a1` changed one active goal lifecycle and three supporting artifacts, then left a clean worktree.\n\n## Impact\n\nA caller following the prescribed order can misread the unknown result as “no retro owed,” or spend a repair round discovering `--base-ref HEAD^`. The behavior depends on whether the trigger is checked immediately before or after the slice commit, although the underlying slice is identical.\n\n## Desired contract\n\nThe prescribed path should retain or derive the slice change set across the commit boundary and always produce an evaluated verdict when the just-finished slice is locally identifiable. If automatic derivation is intentionally unavailable, the closeout instructions should require an explicit base/head or path packet and show the exact command.\n\n## Weak direction\n\nOne possible direction is for the closeout producer to pass the slice base/head it already knows, while keeping the checker’s current fail-closed empty-input behavior. This is a candidate, not a required implementation.\n",
+    "comments": [],
+    "createdAt": "2026-08-20T11:17:51Z",
+    "labels": [
+      {
+        "id": "LA_kwDOR9yx7M8AAAACepY1HA",
+        "name": "bug",
+        "description": "Something isn't working",
+        "color": "d73a4a"
+      }
+    ],
+    "number": 682,
+    "state": "OPEN",
+    "title": "Auto-retro prescribed command loses changed paths after slice commit",
+    "updatedAt": "2026-08-20T11:17:51Z",
+    "url": "https://github.com/corca-ai/charness/issues/682"
+  },
+  "selected_backend": {
+    "id": "gh",
+    "binary": "gh",
+    "commands": null,
+    "repo_scoped": null
+  }
+}

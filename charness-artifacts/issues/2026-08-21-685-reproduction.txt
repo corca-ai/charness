@@ -1,0 +1,21 @@
+Issue: #685 Retro persistence warns on the documented artifact-name stem
+Observed against installed Charness 6.2.0: 2026-08-21
+
+Command:
+tmp_probe=$(mktemp -d /tmp/charness-685-probe.XXXXXX); python3 /home/hwidong/.codex/plugins/cache/local/charness/6.2.0/skills/retro/scripts/persist_retro_artifact.py --repo-root "$tmp_probe" --artifact-name 2026-08-21-stem-probe --markdown-file /home/hwidong/codes/charness/charness-artifacts/retro/2026-08-21-session-retro.md --force-empty-summary
+
+Exit: 0
+Observed warning:
+persist_retro_artifact: --artifact-name '2026-08-21-stem-probe' lacks .md; writing '2026-08-21-stem-probe.md' so the lesson-selection-index can read it.
+
+The success exit does not make the warning truthful: the help contract calls
+the input a stem, so the expected `.md` append is canonical normalization.
+
+Contract assertion:
+python3 -c "import subprocess,tempfile; root=tempfile.mkdtemp(prefix='charness-685-'); cmd=['python3','/home/hwidong/.codex/plugins/cache/local/charness/6.2.0/skills/retro/scripts/persist_retro_artifact.py','--repo-root',root,'--artifact-name','2026-08-21-stem-probe','--markdown-file','/home/hwidong/codes/charness/charness-artifacts/retro/2026-08-21-session-retro.md','--force-empty-summary']; o=subprocess.run(cmd,text=True,capture_output=True); print(o.stdout,end=''); print(o.stderr,end=''); raise SystemExit(1 if 'lacks .md' in o.stderr else 0)"
+
+Assertion exit: 1 (the documented stem invocation emits the contradictory
+warning).
+
+The first wrapper attempt also used zsh's read-only variable `status` and failed
+after the producer succeeded; the corrected wrapper uses `rc` and exits 0.

@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "repo": "corca-ai/charness",
+  "number": 683,
+  "read_argv": [
+    "gh",
+    "issue",
+    "view",
+    "--repo",
+    "corca-ai/charness",
+    "683",
+    "--comments",
+    "--json",
+    "number,title,body,comments,labels,state,url,author,createdAt,updatedAt"
+  ],
+  "comments_read": true,
+  "comment_count": 0,
+  "issue": {
+    "author": {
+      "id": "MDQ6VXNlcjE1ODk0MzA=",
+      "is_bot": false,
+      "login": "spilist",
+      "name": "Hwidong Bae"
+    },
+    "body": "## Situation\n\nThe shared-tree reviewer fingerprint flow supports writing a snapshot to a custom path with `snapshot --out <path>`. The command then prints that path under the key `out:`. The documented review workflow recommends using `--out` when the snapshot should live outside the reviewer-reachable tree.\n\n## Observed problem\n\nThe matching verify command does not accept `--snapshot <path>` or `--out <path>`; it requires the differently named `--before <path>`. The fresh-eye workflow documentation shows `verify` without this argument and does not connect a custom snapshot `--out` to verify's `--before`.\n\nReproduction:\n\n```sh\npython3 shared/scripts/reviewer_boundary_fingerprint.py snapshot \\\n  --repo-root /path/to/repo \\\n  --window-id example \\\n  --out /tmp/example.json\n\npython3 shared/scripts/reviewer_boundary_fingerprint.py verify \\\n  --repo-root /path/to/repo \\\n  --window-id example \\\n  --snapshot /tmp/example.json\n```\n\nThe second command exits 2 with `unrecognized arguments: --snapshot ...`. `verify --help` reveals the required spelling is `--before /tmp/example.json`; using that spelling succeeds.\n\n## Impact\n\nThis failure occurs exactly at the reviewer-return boundary, where the parent must verify the shared tree before doing more work. The asymmetric option names make a likely caller guess fail and can delay or skip the integrity check. The printed `out:` key does not expose the verify-side name, so the failure recurs across sessions instead of being recoverable from the snapshot payload alone.\n\n## Evidence\n\n- Skill contract: `shared/references/fresh-eye-subagent-review.md`, parent-side integrity proof and custom `--out` guidance.\n- CLI parser: `shared/scripts/reviewer_boundary_fingerprint.py`, snapshot `--out` versus verify `--before`.\n- Duplicate search on 2026-08-20: no matching issue among 200 open/closed `corca-ai/charness` issues for `reviewer boundary fingerprint before out snapshot verify`.\n\n## Desired outcome\n\nMake the custom snapshot handoff self-describing and symmetric enough that the documented command can be copied without guessing. For example, document the exact `verify --before <out>` continuation and/or emit a ready-to-run verify command; an alias is optional. Preserve the current fail-closed window-id check.\n\n## Non-claims\n\n- No reviewer boundary violation occurred; verification succeeded after using `--before`.\n- This issue does not request weakening fingerprint scope or allowing implicit latest-snapshot selection.\n",
+    "comments": [],
+    "createdAt": "2026-08-20T12:24:52Z",
+    "labels": [
+      {
+        "id": "LA_kwDOR9yx7M8AAAACepY1HA",
+        "name": "bug",
+        "description": "Something isn't working",
+        "color": "d73a4a"
+      },
+      {
+        "id": "LA_kwDOR9yx7M8AAAACepY1IQ",
+        "name": "documentation",
+        "description": "Improvements or additions to documentation",
+        "color": "0075ca"
+      }
+    ],
+    "number": 683,
+    "state": "OPEN",
+    "title": "Reviewer fingerprint custom snapshot output does not reveal verify --before handoff",
+    "updatedAt": "2026-08-20T12:24:52Z",
+    "url": "https://github.com/corca-ai/charness/issues/683"
+  },
+  "selected_backend": {
+    "id": "gh",
+    "binary": "gh",
+    "commands": null,
+    "repo_scoped": null
+  }
+}

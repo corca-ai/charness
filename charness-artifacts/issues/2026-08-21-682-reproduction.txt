@@ -1,0 +1,23 @@
+Issue: #682 Auto-retro prescribed command loses changed paths after slice commit
+Observed against current source: 2026-08-21
+
+Command:
+python3 skills/public/retro/scripts/check_auto_trigger.py --repo-root . --paths
+
+Exit: 3
+
+Output:
+state: not-established
+changed_paths: []
+input:
+  mode: explicit_paths
+reason: Auto-retro triggers are configured but could not be evaluated, so this
+  run has no answer either way — do not read it as `no retro owed`.
+undetermined:
+- Auto-retro triggers are configured, but the changed-path set handed to this
+  run was EMPTY, so nothing was compared against them. Re-run with --paths or
+  --base-ref naming the slice; a clean tree after a commit cannot reconstruct it.
+
+This is the current fail-closed reproducer for the no-basis/empty-change-set
+contract. The explicit `--base-ref HEAD^ --head-ref HEAD` path is a distinct
+working positive control, not a repair of the prescribed no-basis command.

@@ -1,0 +1,16 @@
+Issue: #686 Retro planner emits unavailable source-layout auto-trigger command
+Observed against installed Charness 6.2.0: 2026-08-21
+
+Assertion command (nonzero means the contradictory planner result was found):
+python3 -c "import subprocess; o=subprocess.run(['python3','/home/hwidong/.codex/plugins/cache/local/charness/6.2.0/skills/retro/scripts/plan_retro_run.py','--repo-root','/tmp','--changed-paths','scripts/example.ts'],text=True,capture_output=True); print(o.stdout); raise SystemExit(1 if 'available: false' in o.stdout and 'ok: true' in o.stdout else 0)"
+
+Exit: 1
+Relevant output:
+- auto-session-trigger command points to
+  `python3 skills/public/retro/scripts/check_auto_trigger.py --repo-root .`
+- `path: skills/public/retro/scripts/check_auto_trigger.py`
+- `available: false`
+- plan envelope ends with `ok: true`
+
+The installed helper exists under `skills/retro/scripts/`; this is the
+source-layout-versus-flattened-install-layout mismatch described by the issue.

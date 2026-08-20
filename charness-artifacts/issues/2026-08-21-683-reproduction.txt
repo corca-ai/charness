@@ -1,0 +1,14 @@
+Issue: #683 Reviewer fingerprint custom snapshot output does not reveal verify --before handoff
+Observed against current source: 2026-08-21
+
+Wrong copied continuation:
+python3 skills/shared/scripts/reviewer_boundary_fingerprint.py verify --repo-root . --window-id fresh-eye-delivery-spec-angle-r2-a --snapshot .charness/reviewer-boundary/2026-08-21-fresh-eye-delivery-spec-angle-r2-a.json
+
+Exit: 2
+Output: `unrecognized arguments: --snapshot ...`
+
+Declared continuation:
+python3 skills/shared/scripts/reviewer_boundary_fingerprint.py verify --repo-root . --window-id fresh-eye-delivery-spec-angle-r2-a --before .charness/reviewer-boundary/2026-08-21-fresh-eye-delivery-spec-angle-r2-a.json
+
+Exit: 1 with `verdict: boundary-drift` after parent edits. The option shape is
+accepted; the separate drift verdict must not be mistaken for delivery proof.

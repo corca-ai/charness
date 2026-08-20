@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "repo": "corca-ai/charness",
+  "number": 685,
+  "read_argv": [
+    "gh",
+    "issue",
+    "view",
+    "--repo",
+    "corca-ai/charness",
+    "685",
+    "--comments",
+    "--json",
+    "number,title,body,comments,labels,state,url,author,createdAt,updatedAt"
+  ],
+  "comments_read": true,
+  "comment_count": 0,
+  "issue": {
+    "author": {
+      "id": "MDQ6VXNlcjE1ODk0MzA=",
+      "is_bot": false,
+      "login": "spilist",
+      "name": "Hwidong Bae"
+    },
+    "body": "## Observed problem\n\nThe installed Charness 6.2.0 retro persistence CLI documents `--artifact-name` as a filename stem without an extension, but following that contract emits a warning that the argument \"lacks .md\".\n\n## Reproduction\n\n```sh\npython3 skills/retro/scripts/persist_retro_artifact.py --help\n```\n\nThe help says:\n\n```text\n--artifact-name ARTIFACT_NAME\n  Filename stem (without extension) for the persisted retro artifact\n```\n\nPassing a stem such as `2026-08-20-cealctl-source-authority-slice-retro` succeeds but emits:\n\n```text\npersist_retro_artifact: --artifact-name '2026-08-20-cealctl-source-authority-slice-retro' lacks .md; writing '2026-08-20-cealctl-source-authority-slice-retro.md' so the lesson-selection-index can read it.\n```\n\n## Structural cause\n\n`skills/retro/scripts/persist_retro_artifact.py` explicitly describes the argument as a stem, then passes it unchanged to `scripts/retro_persistence_lib.py`. The library treats the expected stem-to-`.md` normalization as a warning-worthy correction whenever `normalize_artifact_name` reports `was_normalized`.\n\nThe CLI contract and write-boundary signal therefore disagree about which input is canonical.\n\n## Impact\n\nEvery correct caller receives a warning that has no disposition other than ignoring it. This trains agents and operators to filter persistence warnings and makes a future actionable normalization warning easier to miss. It also makes successful retro closeout look structurally suspect even though the resulting artifact validates.\n\n## Desired outcome\n\nChoose one canonical contract and make help, validation, and output agree. Prefer retaining the documented stem input and treating the expected `.md` append as silent normalization; reserve warnings for genuinely non-canonical or unsafe names. Add a CLI-level regression proving the documented invocation emits no warning and persists the expected `.md` artifact.\n\n## Evidence boundary\n\nReproduced against installed Charness 6.2.0 on 2026-08-20. The persisted artifact and lesson-selection index validated successfully; this issue concerns the contradictory warning, not persistence correctness.\n",
+    "comments": [],
+    "createdAt": "2026-08-20T12:59:37Z",
+    "labels": [
+      {
+        "id": "LA_kwDOR9yx7M8AAAACepY1HA",
+        "name": "bug",
+        "description": "Something isn't working",
+        "color": "d73a4a"
+      }
+    ],
+    "number": 685,
+    "state": "OPEN",
+    "title": "Retro persistence warns on the documented artifact-name stem",
+    "updatedAt": "2026-08-20T12:59:37Z",
+    "url": "https://github.com/corca-ai/charness/issues/685"
+  },
+  "selected_backend": {
+    "id": "gh",
+    "binary": "gh",
+    "commands": null,
+    "repo_scoped": null
+  }
+}

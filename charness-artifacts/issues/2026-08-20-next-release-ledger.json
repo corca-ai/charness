@@ -1440,5 +1440,116 @@
     "raw_sha256": "e1592de2a495612a72d52940ecf3937f93e35a860caf12cd99707355a206fad1",
     "meta_sha256": "1a39acfd10027dd992f42f4d1cd84d709913a9e80f26cc7f763304ac18b11349"
   },
-  "post_lock_exceptions": []
+  "post_lock_exceptions": [
+    {
+      "exception_id": "2026-08-21-687-fresh-eye-delivery-boundary",
+      "issue_number": 687,
+      "issue_url": "https://github.com/corca-ai/charness/issues/687",
+      "title": "Fresh-eye review delivery has no terminal path for interrupted subagents",
+      "state": "open",
+      "updated_at": "2026-08-20T22:13:22Z",
+      "body_sha256": "89f199a64e6c7c350c32b8ed2b8938ecf65580f70f884a534a2491634ece1894",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-08-20T22:13:22Z",
+      "observed_head_sha": "ea70d72a1dc0208b8bfc050874277bac005d8f61",
+      "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "classification": "release-blocker",
+      "release_impact": "release-blocker: fresh-eye delivery proof cannot honestly close",
+      "source_read_path": "charness-artifacts/issues/reads/687.raw.yaml",
+      "premise": {
+        "verdict": "post-lock-release-blocker-reproduced",
+        "exact_command": "python3 -c \"from pathlib import Path; p=Path('charness-artifacts/critique/rounds/2026-08-21-consumer-validator-round-2-retry.md'); raise SystemExit(1 if 'Verdict: unproven — delivery failure' in p.read_text(encoding='utf-8') else 0)\"",
+        "exit": 1,
+        "evidence_path": "charness-artifacts/critique/rounds/2026-08-21-consumer-validator-round-2-retry.md"
+      }
+    },
+    {
+      "exception_id": "2026-08-21-682-auto-retro-commit-boundary",
+      "issue_number": 682,
+      "issue_url": "https://github.com/corca-ai/charness/issues/682",
+      "title": "Auto-retro prescribed command loses changed paths after slice commit",
+      "state": "open",
+      "updated_at": "2026-08-20T11:17:51Z",
+      "body_sha256": "9be5dc8353dfdea3b43962fa511a2ebbe642adf38745d3174c1ff9e187605924",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-08-20T22:25:07Z",
+      "observed_head_sha": "ea70d72a1dc0208b8bfc050874277bac005d8f61",
+      "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "classification": "release-blocker",
+      "release_impact": "release-blocker: auto-retro closeout cannot evaluate a clean committed slice",
+      "source_read_path": "charness-artifacts/issues/reads/682.raw.yaml",
+      "premise": {
+        "verdict": "post-lock-release-blocker-reproduced",
+        "exact_command": "python3 skills/public/retro/scripts/check_auto_trigger.py --repo-root . --paths",
+        "exit": 3,
+        "evidence_path": "charness-artifacts/issues/2026-08-21-682-reproduction.txt"
+      }
+    },
+    {
+      "exception_id": "2026-08-21-683-reviewer-fingerprint-handoff",
+      "issue_number": 683,
+      "issue_url": "https://github.com/corca-ai/charness/issues/683",
+      "title": "Reviewer fingerprint custom snapshot output does not reveal verify --before handoff",
+      "state": "open",
+      "updated_at": "2026-08-20T12:24:52Z",
+      "body_sha256": "2c4a8e2da689877fe3634f77fe4dd8e9144d6bd52110b980aacfe78da8d25055",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-08-20T22:25:07Z",
+      "observed_head_sha": "ea70d72a1dc0208b8bfc050874277bac005d8f61",
+      "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "classification": "release-blocker",
+      "release_impact": "release-blocker: reviewer boundary integrity continuation is not copy-safe",
+      "source_read_path": "charness-artifacts/issues/reads/683.raw.yaml",
+      "premise": {
+        "verdict": "post-lock-release-blocker-reproduced",
+        "exact_command": "python3 skills/shared/scripts/reviewer_boundary_fingerprint.py verify --repo-root . --window-id fresh-eye-delivery-spec-angle-r2-a --snapshot .charness/reviewer-boundary/2026-08-21-fresh-eye-delivery-spec-angle-r2-a.json",
+        "exit": 2,
+        "evidence_path": "charness-artifacts/issues/2026-08-21-683-reproduction.txt"
+      }
+    },
+    {
+      "exception_id": "2026-08-21-685-retro-stem-warning",
+      "issue_number": 685,
+      "issue_url": "https://github.com/corca-ai/charness/issues/685",
+      "title": "Retro persistence warns on the documented artifact-name stem",
+      "state": "open",
+      "updated_at": "2026-08-20T12:59:37Z",
+      "body_sha256": "ed214ac53a9341b7a3597de7d7d113cc83961c3a12c1fdb8733d3f14b5537ca1",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-08-20T22:25:07Z",
+      "observed_head_sha": "ea70d72a1dc0208b8bfc050874277bac005d8f61",
+      "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "classification": "release-blocker",
+      "release_impact": "release-blocker: documented retro persistence input emits an actionable-looking warning",
+      "source_read_path": "charness-artifacts/issues/reads/685.raw.yaml",
+      "premise": {
+        "verdict": "post-lock-release-blocker-reproduced",
+        "exact_command": "python3 -c \"import subprocess,tempfile; root=tempfile.mkdtemp(prefix='charness-685-'); cmd=['python3','/home/hwidong/.codex/plugins/cache/local/charness/6.2.0/skills/retro/scripts/persist_retro_artifact.py','--repo-root',root,'--artifact-name','2026-08-21-stem-probe','--markdown-file','/home/hwidong/codes/charness/charness-artifacts/retro/2026-08-21-session-retro.md','--force-empty-summary']; o=subprocess.run(cmd,text=True,capture_output=True); print(o.stdout,end=''); print(o.stderr,end=''); raise SystemExit(1 if 'lacks .md' in o.stderr else 0)\"",
+        "exit": 1,
+        "evidence_path": "charness-artifacts/issues/2026-08-21-685-reproduction.txt"
+      }
+    },
+    {
+      "exception_id": "2026-08-21-686-retro-installed-path",
+      "issue_number": 686,
+      "issue_url": "https://github.com/corca-ai/charness/issues/686",
+      "title": "Retro planner emits unavailable source-layout auto-trigger command",
+      "state": "open",
+      "updated_at": "2026-08-20T13:02:07Z",
+      "body_sha256": "5bda53ce35c455ec55839b9eeef8ca9e74dac2e529e7cc6439fc8d6497fcde26",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-08-20T22:25:07Z",
+      "observed_head_sha": "ea70d72a1dc0208b8bfc050874277bac005d8f61",
+      "lock_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "classification": "release-blocker",
+      "release_impact": "release-blocker: installed retro planner emits an unavailable required probe while returning ok",
+      "source_read_path": "charness-artifacts/issues/reads/686.raw.yaml",
+      "premise": {
+        "verdict": "post-lock-release-blocker-reproduced",
+        "exact_command": "python3 -c \"import subprocess; o=subprocess.run(['python3','/home/hwidong/.codex/plugins/cache/local/charness/6.2.0/skills/retro/scripts/plan_retro_run.py','--repo-root','/tmp','--changed-paths','scripts/example.ts'],text=True,capture_output=True); print(o.stdout); raise SystemExit(1 if 'available: false' in o.stdout and 'ok: true' in o.stdout else 0)\"",
+        "exit": 1,
+        "evidence_path": "charness-artifacts/issues/2026-08-21-686-reproduction.txt"
+      }
+    }
+  ]
 }

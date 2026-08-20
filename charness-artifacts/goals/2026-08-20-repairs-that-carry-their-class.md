@@ -9,23 +9,31 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: Slice 3 is locally proven and archived; the prior Slice
+- Current disposition: historical Slices 0–5 are locally proven and archived;
+  the prior Slice
   4 semantic-candidate lock was repaired and committed as `dbdebcfe7`, then its
   focused proof repair was committed as `5b0828beb`. Slice 5 local proof and the
   planner-required fresh-checkout probes are now green. The broader release goal
   remains active at its version, publication, external-readback, issue-closeout,
-  and fresh-eye delivery edges.
-- Current slice: Slice 5 — local semantic and fresh-checkout verification is
-  complete; the installed/fresh-eye/release boundary remains open.
+  current-open-issue qualification, and fresh-eye delivery edges. Issue #687 is
+  now a release-cut exception with a Charness-owned prevention child and an
+  explicitly unproven host-side dependency.
+- Current slice: R1 — current-open surface refresh and delivery-boundary
+  contract; the installed/fresh-eye/release boundary remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: preserve the green local and fresh-checkout receipts, re-run the
-  release planner against this unchanged semantic candidate, and resolve the
-  missing delivered fresh-eye boundary before deciding whether version mutation
-  is authorized. Any new failure returns to its owning seam and carries its
-  recurrence class into a gate, test, or spec.
+- Next action: complete the current-open refresh, critique the #687 delivery
+  contract, then run the R2 reliability and open-issue repair lanes in parallel
+  under disjoint path budgets before any version mutation. Any new failure
+  returns to its owning seam and carries its recurrence class into a gate, test,
+  or spec.
+- Large-slice rule: completed issue-level history remains auditable, but future
+  work is scheduled by capability boundary rather than ticket count. Each macro
+  slice owns one user-visible outcome and its shared contract; independent
+  issue lanes run concurrently inside it, while the parent serializes ledger,
+  exports, proof, version, and release truth surfaces.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -67,7 +75,7 @@ qualified repair must be implemented and independently proven. The final
 release may leave issues open only when their ledger row explains why shipping
 does not make a claim about them.
 
-The shaping snapshot contains 29 open issues through `#680`. It already shows
+The original shaping snapshot contains 30 open issues through `#681`. It already shows
 four kinds of work that should not be forced through one implementation seam:
 consumer bootstrap and portability, release/quality determinism, evidence
 lifecycle, and semantic inspection. Those become isolated authoring lanes with
@@ -498,6 +506,19 @@ invent a common engine.
 | 6 | Re-run planner on the locked semantic candidate; select the bump; mutate version/export/release-record/note surfaces; commit the release candidate; run all planner-required post-bump checks, fresh-checkout/real-host probes, and publication dry-run on that exact commit | The release candidate is different from the pre-bump semantic candidate and owes its own proof | Version rationale/consistency; generated diff; release record; exact release-candidate SHA; post-bump lock; claims review; dry-run; tag target. Any semantic change returns to Slice 4 | not started |
 | 7 | Publish only the locked release candidate; handle ambiguity through resume; perform hosted/public and separate install/update/doctor readback; then close only proven issues with post-release carriers; reconcile handoff and retro | The goal ends at externally verified release truth, not local green or tag creation | Remote/tag/release/install identifiers; same-proxy flags; issue comments/state readbacks; final ledger; handoff; Auto-Retro; complete closeout | not started |
 
+## Replanned Release-Cut Macro Slices
+
+The historical Slice 0–5 records remain the evidence ledger for work already
+completed. This macro plan replaces the fine-grained pending Slice 6/7 schedule;
+it is intentionally larger so parallel work advances a complete capability
+boundary at once while parent-only truth surfaces remain serialized.
+
+| Macro slice | Outcome | Parallel lanes | Parent-owned closeout | Status |
+| --- | --- | --- | --- | --- |
+| R1 — current-open qualification and contract freeze | Every live issue is freshly read and assigned an evidence-backed route; #687 has a durable Charness/host ownership split and a critique-ready implementation contract | #681 current requalification; #682 evidence-continuity; #683 reviewer-handoff; #685 persistence contract; #686 installed-path; #687 delivery boundary | Current-open manifest, ledger amendment(s), debug/spec artifacts, issue readback, path table, critique packet, and honest critique-delivery disposition | in progress |
+| R2 — evidence and delivery reliability | The release candidate carries the shared prevention pattern for wrong paths, lost delivery, commit-boundary evidence, and contradictory operator signals | Track A: delivery/evidence continuity (#682/#683/#687); Track B: CLI/installed-path contracts (#685/#686); #681 only after current requalification. Fake-host and installed-layout fixtures run concurrently after admission. | Parent integrates source/plugin exports, ledger carriers, generated docs, changed-line proof, and bounded fresh-eye rounds; any proof-surface repair triggers round 2 | pending |
+| R3 — candidate freeze, external truth, and issue closeout | One unchanged release candidate is selected, versioned, proven locally, installed/read back, published, and reconciled issue-by-issue | Planner/quality/release read-only probes and final issue reads fan out only after the candidate SHA is locked; publication, version surfaces, install/update, hosted readback, and closeout remain serialized | Candidate lock/post-bump proof; distinct install and hosted readback; per-issue behavioral carriers; post-close reads; handoff, retro, and final goal audit | pending |
+
 ## Backlog Recount
 
 - Counted: 30 open issues from the non-truncated GitHub snapshot at
@@ -921,8 +942,38 @@ invent a common engine.
 
 ## Off-Goal Findings
 
-- None during shaping. Record newly discovered work here unless it meets the
-  post-lock release-blocker exception.
+- `#687` — [Fresh-eye review delivery has no terminal path for interrupted
+  subagents](https://github.com/corca-ai/charness/issues/687), filed before any
+  Charness code change. The established unnamed one-shot request is a
+  Charness-side mitigation for named mailbox routing. The Codex `Interrupted`
+  path is recorded as a pinned source-level host hypothesis, not as runtime
+  proof of every episode. R1 carries the Charness prevention child into this
+  release and keeps the host fix open/non-claimed.
+- `#681`–`#686` current-open refresh: the live set is captured in
+  `charness-artifacts/issues/2026-08-21-current-open-surface.md`; #684 was
+  re-read as closed and excluded. These rows enter R1/R2 only after their
+  current reproducer, owner, path budget, proof, and release carrier are
+  appended to the locked ledger rather than being silently folded into prose.
+  #682/#683/#685/#686 are now bound as post-lock release-blocker exceptions;
+  #681 remains the original `already-satisfied` row pending fresh consumer
+  requalification.
+- The R1 writer join barrier is
+  `charness-artifacts/issues/2026-08-21-post-lock-path-table.md`. It keeps
+  shared review-boundary files parent-serialized while allowing the retro
+  persistence and installed-planner lanes to proceed in disjoint worktrees.
+- `charness-artifacts/debug/2026-08-21-fresh-eye-interrupted-delivery.md` and
+  `charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md` are the
+  durable RCA/contract handoff for #687. The current debug interrupt is
+  `handoff-recorded` only for the stated artifact paths; it does not discharge
+  the missing delivered fresh-eye result.
+- The R1 spec-critique attempt is recorded at
+  `charness-artifacts/critique/rounds/2026-08-21-fresh-eye-delivery-spec-attempt.md`.
+  Earlier angle findings consumed a stale packet identity, and the replacement
+  spawn was rejected with `agent thread limit reached`; this is unproven
+  delivery, not critique approval. The spec now includes explicit transition,
+  provenance, late-result, R1/R2/R3 gate, and exact-test-path requirements, but
+  implementation remains blocked until a valid critique or explicit host-block
+  disposition is carried forward.
 
 ## Final Verification
 
@@ -958,8 +1009,8 @@ invent a common engine.
 - After publication, follow the release skill's maintainer install/update path,
   confirm the installed version, run the public bootstrap and discovery smoke
   paths selected in Slice 0, and compare their output with the release record.
-  Exact commands remain Slice 6 output because the qualified public surface is
-  not yet frozen.
+  Exact commands remain R3 output because the qualified public surface and
+  current-open amendments are not yet frozen.
 
 ## Auto-Retro
 
@@ -981,9 +1032,10 @@ invent a common engine.
    [implementation discipline](../../docs/conventions/implementation-discipline.md),
    and [parallel execution](../../docs/conventions/parallel-execution.md) —
    issue, critique, worktree, integration, proof, and external-boundary rules.
-4. Current GitHub source of truth for all 29 shaping-snapshot issues through
-   `#680`, read with bodies and comments through the resolved `gh` issue backend
-   on 2026-08-20.
+4. Current GitHub source of truth for the original 30-issue shaping snapshot
+   through `#681`, read with bodies and comments through the resolved `gh`
+   issue backend on 2026-08-20; the live refresh is
+   `charness-artifacts/issues/2026-08-21-current-open-surface.md`.
 5. Current source at shaping HEAD `38775dfeb`, including the `impl` bootstrap,
    release subprocess/runtime budget paths, critique packet identity, adapter
    registry, and relationship inspection code cited by the current issues.
@@ -1022,9 +1074,18 @@ invent a common engine.
     records under `charness-artifacts/critique/rounds/`; round-2 repairs are
     explicitly accepted-unreviewed under the two-round cap.
 13. Continuation lesson session `2026-08-20-goal-continuation`: frozen selection
-    bundle and emission receipt at
-    `charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.md`
-    and `.json`; the repo-owned lesson ledger records its snapshot hash.
+   bundle and emission receipt at
+   `charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.md`
+   and `.json`; the repo-owned lesson ledger records its snapshot hash.
+14. [#687](https://github.com/corca-ai/charness/issues/687), its issue-first
+    body readback, the round-2 retry record, and the pinned adjacent Codex
+    source inspection. These establish separate named-channel and interrupted-
+    terminal hypotheses; they do not establish an episode-level host trace.
+15. [Current open surface refresh](../issues/2026-08-21-current-open-surface.md)
+    and [fresh-eye delivery debug](../debug/2026-08-21-fresh-eye-interrupted-delivery.md)
+    — R1 intake and causal evidence.
+16. [Fresh-eye delivery boundary spec](../spec/2026-08-21-fresh-eye-delivery-boundary.md)
+    — R2 implementation contract, pending bounded critique.
 
 ## Interview Decisions
 
@@ -1085,10 +1146,11 @@ hosted visibility from fresh-checkout install/update behavior; re-read issue
 `updatedAt` before close; and make the critique roster exact without creating a
 cross-product of every generic defect against every lane.
 
-**Over-Worry (rejected).** Do not force all 29 rows into code, create a universal
-scanner/meta-validator, pull newly opened non-blockers into the locked train, or
-mass-close umbrellas. Evidence qualification preserves the user's broad mandate
-better than a ticket quota.
+**Over-Worry (rejected).** Do not force every open row into one universal code
+bundle, create a universal scanner/meta-validator, pull newly opened
+non-blockers into the locked train without qualification, or mass-close
+umbrellas. Evidence qualification plus the R1/R2 macro slices preserves the
+user's broad mandate better than a ticket quota.
 
 The operator then added that a lower-capacity model will execute the goal. The
 post-critique `## Execution Runbook` is the accepted response: it fixes commands,

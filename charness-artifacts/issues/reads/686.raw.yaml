@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "repo": "corca-ai/charness",
+  "number": 686,
+  "read_argv": [
+    "gh",
+    "issue",
+    "view",
+    "--repo",
+    "corca-ai/charness",
+    "686",
+    "--comments",
+    "--json",
+    "number,title,body,comments,labels,state,url,author,createdAt,updatedAt"
+  ],
+  "comments_read": true,
+  "comment_count": 0,
+  "issue": {
+    "author": {
+      "id": "MDQ6VXNlcjE1ODk0MzA=",
+      "is_bot": false,
+      "login": "spilist",
+      "name": "Hwidong Bae"
+    },
+    "body": "## Observed problem\n\nThe installed Charness 6.2.0 retro planner emits an `auto-session-trigger` command under the source-layout path `skills/public/retro/...`, marks it unavailable, and still reports the run plan as `ok: true`. The installed helper is present under the flattened path `skills/retro/...`.\n\n## Reproduction\n\n```sh\npython3 skills/retro/scripts/plan_retro_run.py \\\n  --repo-root /path/to/repo \\\n  --changed-paths scripts/example.ts\n```\n\nRelevant planner output:\n\n```yaml\n- id: auto-session-trigger\n  command: python3 skills/public/retro/scripts/check_auto_trigger.py --repo-root .\n  available: false\n  path: skills/public/retro/scripts/check_auto_trigger.py\nok: true\n```\n\nPositive control:\n\n```sh\npython3 skills/retro/scripts/check_auto_trigger.py --help\n```\n\nThe flattened installed helper exists and succeeds. Source inspection shows `skills/retro/scripts/plan_retro_run.py` passes the `skills/public/retro/scripts/check_auto_trigger.py` literal to its relative-command resolver instead of using the installed-skill resolver that already understands both layouts.\n\n## Impact\n\nThe planner's purpose is to make a closeout run copyable and capability-aware. It instead declares an available required probe unavailable and prints a command that cannot run from the consumer repository. Since the envelope remains `ok: true`, callers can silently skip auto-trigger evaluation or spend a round trip rediscovering the installed path.\n\n## Pattern and sibling issues\n\nThis is the same source-layout versus flattened-install-layout class as the critique artifact preflight defect in #637 (with #684 as a duplicate 6.2 reproduction), but it has a distinct owner surface and acceptance test: `plan_retro_run.py` must emit an executable `auto-session-trigger` packet and `available: true` in an installed plugin layout.\n\n## Desired outcome\n\nRoute generated skill executable paths through the shared installed-layout resolver. Add an installed-layout planner regression proving the emitted command exists, runs, and is reported available. Audit other generated `skills/public/<skill>/...` executable paths through the same resolver so the literal does not recur in another planner.\n\n## Evidence boundary\n\nReproduced against installed Charness 6.2.0 on 2026-08-20. No claim is made about source-checkout-only execution.\n",
+    "comments": [],
+    "createdAt": "2026-08-20T13:02:07Z",
+    "labels": [
+      {
+        "id": "LA_kwDOR9yx7M8AAAACepY1HA",
+        "name": "bug",
+        "description": "Something isn't working",
+        "color": "d73a4a"
+      }
+    ],
+    "number": 686,
+    "state": "OPEN",
+    "title": "Retro planner emits unavailable source-layout auto-trigger command",
+    "updatedAt": "2026-08-20T13:02:07Z",
+    "url": "https://github.com/corca-ai/charness/issues/686"
+  },
+  "selected_backend": {
+    "id": "gh",
+    "binary": "gh",
+    "commands": null,
+    "repo_scoped": null
+  }
+}

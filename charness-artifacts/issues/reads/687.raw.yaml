@@ -1,0 +1,135 @@
+ok: true
+repo: corca-ai/charness
+number: 687
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '687'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: |
+    # Fresh-eye review delivery has no terminal path for interrupted subagents
+
+    ## Situation
+
+    Charness requires bounded fresh-eye reviewers for task-completing critique and
+    release boundaries. In the 2026-08-21 consumer-validator slice, the first
+    round-2 reviewer ran for more than ten minutes without delivering the required
+    report. One unnamed retry was then run with a tighter prompt, ran for about
+    five minutes, and was interrupted after no report arrived. The parent recorded
+    the boundary as unproven rather than treating silence as approval.
+
+    ## Experience and impact
+
+    The parent can observe that a spawn was accepted and that the reviewer started,
+    but cannot distinguish a slow reviewer, a reviewer that was interrupted, and a
+    completed reviewer whose result was lost without a terminal delivery record.
+    The current outcome is an expensive retry loop and a release boundary that
+    cannot honestly close. It also makes the wrong recovery tempting: same-agent
+    self-review or treating an idle/completion signal as a received finding.
+
+    ## Evidence
+
+    - Charness round record:
+      `charness-artifacts/critique/rounds/2026-08-21-consumer-validator-round-2-retry.md`
+      records two delivery failures, a clean retry boundary, and the explicit
+      non-claim that no fresh-eye PASS/BLOCK was received.
+    - The checked-in contract already records a separate named-spawn channel defect
+      and requires unnamed one-shot spawns:
+      `skills/shared/references/fresh-eye-subagent-review.md` (Result Delivery).
+      That explains one class of lost results but does not explain the interrupted
+      terminal-state gap observed in this run.
+    - In the adjacent Codex source at commit
+      `53cec04646576d3a55d431b6d6820455a26ffd69`,
+      [`agent/status.rs`](https://github.com/openai/codex/blob/53cec04646576d3a55d431b6d6820455a26ffd69/codex-rs/core/src/agent/status.rs#L6-L27)
+      maps an interrupted turn to `AgentStatus::Interrupted` while `is_final`
+      explicitly excludes that status.
+    - The same source's completion watcher loops until `is_final` and only then
+      injects a parent notification:
+      [`agent/control.rs`](https://github.com/openai/codex/blob/53cec04646576d3a55d431b6d6820455a26ffd69/codex-rs/core/src/agent/control.rs#L513-L600).
+      Its v1 `wait_agent` path uses the same predicate and can return only after a
+      final status:
+      [`multi_agents/wait.rs`](https://github.com/openai/codex/blob/53cec04646576d3a55d431b6d6820455a26ffd69/codex-rs/core/src/tools/handlers/multi_agents/wait.rs#L117-L201).
+    - The completion formatter returns no payload for `Interrupted`:
+      [`session_prefix.rs`](https://github.com/openai/codex/blob/53cec04646576d3a55d431b6d6820455a26ffd69/codex-rs/core/src/session_prefix.rs#L27-L43).
+
+    Together these paths explain why a parent that waits, times out, and interrupts
+    the child can end with no delivered final findings: the child is no longer
+    working, but the host does not classify that state as deliverable terminal
+    output.
+
+    ## Root-cause boundary
+
+    There are two distinct delivery smells that must not be collapsed:
+
+    1. **Channel selection:** a named spawn can route its result to an unread
+       teammate/mailbox channel. Charness owns the unnamed-shape rule and must keep
+       proving it per host.
+    2. **Terminal-state handling:** an interrupted child is excluded from the
+       host's terminal-result predicate, so the completion watcher and wait path can
+       wait or return without a typed result. This is the primary explanation for
+       the repeated “interrupted after no final report” pattern in the current
+       round.
+
+    ## Qualification
+
+    The unnamed one-shot request is the Charness-side workaround for the named
+    mailbox routing class. The round-2 retry used that unnamed shape and still
+    delivered no report, so named routing is not sufficient to explain the current
+    incident. The Codex inspection is source-level evidence for a separate host
+    candidate; no runtime event trace proves that every failed episode reached
+    `TurnAborted(Interrupted)`.
+
+    ## Weak, non-binding direction
+
+    Charness should own a delivery state machine around every bounded review:
+    spawn accepted → reviewer running → findings received, or a typed terminal
+    non-delivery such as `interrupted`, `timed-out`, `host-channel-unreadable`, or
+    `transcript-recovered-after-delivery-failure`. A timeout must stop retry loops,
+    record the concrete host signal, and never become approval. The host-side
+    interrupted status should either emit a typed completion/non-delivery message or
+    be treated as terminal by its watcher and `wait_agent` path. Add a deterministic
+    probe or fake-host test for the interrupted branch before changing the Charness
+    review/closeout contract.
+
+    ## Non-claims
+
+    - This issue does not claim that the round-2 reviewer found no blockers; its
+      findings were not delivered through the canonical path.
+    - The adjacent Codex source inspection identifies a concrete structural gap but
+      is not a hosted upstream fix or an upstream issue readback.
+    - Named-spawn routing and interrupted-terminal handling may be independent
+      defects; one must not be used as evidence that the other is fixed.
+  comments: []
+  createdAt: '2026-08-20T21:59:11Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1HA
+    name: bug
+    description: Something isn't working
+    color: d73a4a
+  - id: LA_kwDOR9yx7M8AAAACepY1Lg
+    name: operations
+    description: Request to develop functions for operation
+    color: c5def5
+  number: 687
+  state: OPEN
+  title: Fresh-eye review delivery has no terminal path for interrupted subagents
+  updatedAt: '2026-08-20T22:13:22Z'
+  url: https://github.com/corca-ai/charness/issues/687
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
