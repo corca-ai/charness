@@ -65,4 +65,6 @@ gates.
 - `references/coverage_floor_inventory.py` — coverage floor inventory helper.
 - `references/find_inline_prompt_bulk.py` — inline prompt/content inventory helper.
 - `references/inventory-consumer-fields.json` — inventory-consumption field declaration.
+- `references/consumer-validator-catalog.yaml` — explicit consumer-facing validator
+  catalog used to detect under-enumerated quality checks.
 - `references/validate_spec_pytest_references.py` — executable-spec pytest reference validator.
