@@ -33,6 +33,10 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
+_artifact_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
+_critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
+safe_repo_relative_path = _artifact_run_scope.safe_repo_relative_path
+is_critique_round_record = _critique_paths.is_critique_round_record
 
 # Goal template that already seeds the `## Final Verification` closeout block;
 # the goal-closeout surface has no scaffold script, so this template section IS
@@ -56,11 +60,17 @@ class Surface:
     shape_command: tuple[str, ...] | None = None  # skill-script argv that prints the enforced shape (run with --stub for a starter); rendered from the owning validator's live constants
 
     def excludes(self, rel: str) -> bool:
-        # retro validator skips its rolled-up memory + archived history.
-        if self.artifact_type != "retro":
-            return False
         tail = rel[len(self.prefix or ""):]
-        return tail == "recent-lessons.md" or tail.startswith("history/")
+        # Critique round records are append-only evidence consumed by the next
+        # review round, not hand-authored critique decisions. Their writer owns
+        # a different shape and the critique validator must not reinterpret them
+        # as completed artifacts at the commit boundary.
+        if self.artifact_type == "critique":
+            return is_critique_round_record(rel)
+        # retro validator skips its rolled-up memory + archived history.
+        if self.artifact_type == "retro":
+            return tail == "recent-lessons.md" or tail.startswith("history/")
+        return False
 
 
 # The artifact-authoring shape family. Two coverage tiers, by validator shape:
@@ -196,6 +206,9 @@ def _resolve(repo_root: Path, raw: str) -> str:
 
 
 def surface_for_path(rel: str) -> Surface | None:
+    rel = safe_repo_relative_path(rel)
+    if rel is None:
+        return None
     for surface in REGISTRY:
         if surface.prefix and rel.startswith(surface.prefix) and rel.endswith(".md"):
             if not surface.excludes(rel):
@@ -451,8 +464,25 @@ def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     reverted it and what still disagrees with `run-quality.sh`.
     """
     groups: dict[str, tuple[Surface, list[str]]] = {}
+    invalid_paths = sorted({str(raw) for raw in paths if safe_repo_relative_path(str(raw)) is None})
+    if invalid_paths:
+        detail = "malformed repo-relative path(s) refused: " + ", ".join(invalid_paths)
+        return {
+            "status": "blocked",
+            "blocked": ["path-resolution"],
+            "checked": [{
+                "artifact_type": "path-resolution",
+                "validator": "repo-relative-path-contract",
+                "paths": invalid_paths,
+                "returncode": 2,
+                "stdout": "",
+                "stderr": detail,
+            }],
+            "path_error": detail,
+        }
     for raw in paths:
-        rel = Path(raw).as_posix()
+        rel = safe_repo_relative_path(str(raw))
+        assert rel is not None
         surface = surface_for_path(rel)
         if surface is None or not surface.commit_boundary or surface.validator is None:
             continue
@@ -487,7 +517,7 @@ def changed_artifacts_report(report: dict[str, Any]) -> dict[str, Any]:
     """
     payload = dict(report)
     if report["status"] == "blocked":
-        payload["remedy"] = (
+        payload["remedy"] = report.get("path_error") or (
             "An artifact's owning validator failed at the commit boundary (relocated "
             "from the broad gate). Fix the required shape — run "
             "`python3 scripts/check_artifact_surface_preflight.py --path <artifact>` to see it."

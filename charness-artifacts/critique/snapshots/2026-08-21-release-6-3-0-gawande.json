@@ -1,0 +1,19 @@
+{
+  "window": {
+    "id": "2026-08-21-release-6-3-0-gawande",
+    "opened_at": "2026-08-20T19:22:46Z"
+  },
+  "head": "67946f19b8478cea40ba76d8209bfe82dfd03603",
+  "status": [
+    "? charness-artifacts/critique/2026-08-21-release-6.3.0-packet.json",
+    "? charness-artifacts/critique/2026-08-21-release-6.3.0-packet.md"
+  ],
+  "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "worktree_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changed_content": {},
+  "untracked": {
+    "charness-artifacts/critique/2026-08-21-release-6.3.0-packet.json": "da91b2c1cf73fabda39a4c706449f08060b95db95116df8b9d3219b967cf2c36",
+    "charness-artifacts/critique/2026-08-21-release-6.3.0-packet.md": "88d954e6999f43718dceaa9d0320f4fbad57f2e8839c16c2749c387882ad777b"
+  },
+  "source_blobs": {}
+}

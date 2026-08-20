@@ -471,6 +471,18 @@ packet_sections:
     assert candidates == []
 
 
+def test_round_findings_are_not_critique_candidates(tmp_path: Path) -> None:
+    round_record = tmp_path / "charness-artifacts/critique/rounds/2026-08-21-review.md"
+    round_record.parent.mkdir(parents=True, exist_ok=True)
+    round_record.write_text("# Critique Round Findings\n\n## Findings Returned\n", encoding="utf-8")
+
+    assert critique_candidate_paths(
+        tmp_path,
+        ["charness-artifacts/critique/rounds/2026-08-21-review.md"],
+        all_artifacts=False,
+    ) == []
+
+
 def test_renamed_or_mislabeled_packet_name_does_not_bypass_critique_record_floors(tmp_path: Path) -> None:
     artifact = tmp_path / "charness-artifacts/critique/2026-07-10-fake-packet.md"
     artifact.parent.mkdir(parents=True, exist_ok=True)

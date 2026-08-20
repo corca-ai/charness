@@ -59,6 +59,15 @@ def test_retro_surface_excludes_rolled_up_and_history() -> None:
     assert preflight.surface_for_path("charness-artifacts/retro/2026-06-08-x.md").artifact_type == "retro"
 
 
+def test_critique_surface_excludes_append_only_round_records() -> None:
+    # Round records are evidence written by record_round_findings.py. They have
+    # a receipt/findings shape, not the final critique shape; routing them to the
+    # critique validator made a valid reviewer round fail only at commit time.
+    assert preflight.surface_for_path("charness-artifacts/critique/rounds/2026-08-21-w.md") is None
+    assert preflight.surface_for_path("charness-artifacts/critique/2026-08-21-w.md").artifact_type == "critique"
+    assert preflight.surface_for_path("charness-artifacts/critique/../outside.md") is None
+
+
 def test_surface_for_path_maps_adapter_scoped_trio() -> None:
     # debug/quality default dirs + handoff's default docs/handoff.md file.
     assert preflight.surface_for_path("charness-artifacts/debug/x.md").artifact_type == "debug"
@@ -113,6 +122,8 @@ def test_changed_artifacts_groups_by_validator_and_passes(monkeypatch) -> None:
         [
             "charness-artifacts/critique/a.md",
             "charness-artifacts/critique/b.md",
+            "charness-artifacts/critique/rounds/2026-08-21-round.md",
+            "charness-artifacts/critique/release-packet.md",
             "charness-artifacts/ideation/c.md",
             "charness-artifacts/retro/recent-lessons.md",  # excluded -> ignored
             "scripts/x.py",  # out-of-family -> ignored
@@ -125,10 +136,21 @@ def test_changed_artifacts_groups_by_validator_and_passes(monkeypatch) -> None:
     assert checked["scripts/validate_critique_artifacts.py"] == [
         "charness-artifacts/critique/a.md",
         "charness-artifacts/critique/b.md",
+        "charness-artifacts/critique/release-packet.md",
     ]
     assert "scripts/validate_ideation_artifact.py" in checked
     # recent-lessons + scripts produced no group
     assert "scripts/validate_retro_artifact.py" not in checked
+
+
+def test_changed_artifacts_refuses_malformed_paths_instead_of_silently_omitting() -> None:
+    report = preflight.changed_artifacts(
+        ROOT,
+        ["charness-artifacts/critique/../../../../etc/hostname"],
+    )
+    assert report["status"] == "blocked"
+    assert report["blocked"] == ["path-resolution"]
+    assert "malformed repo-relative path" in report["path_error"]
 
 
 def test_changed_artifacts_blocks_when_owning_validator_fails(monkeypatch) -> None:

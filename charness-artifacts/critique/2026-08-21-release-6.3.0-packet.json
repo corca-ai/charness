@@ -1,0 +1,1246 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-20T19:21:55Z",
+  "prepared_for": "release 6.3.0 candidate",
+  "changed_ref": "origin/main..HEAD",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `origin/main..HEAD`:\n- .agents/surfaces.json\n- charness-artifacts/critique/2026-08-20-142117-packet.json\n- charness-artifacts/critique/2026-08-20-142117-packet.md\n- charness-artifacts/critique/2026-08-20-broad-release-goal-packet.json\n- charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md\n- charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-packet.json\n- charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-packet.md\n- charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-r2-packet.json\n- charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-r2-packet.md\n- charness-artifacts/critique/2026-08-20-release-handoff-packet.json\n- charness-artifacts/critique/2026-08-20-release-handoff-packet.md\n- charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.json\n- charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.md\n- charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.json\n- charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.md\n- charness-artifacts/critique/2026-08-21-semantic-candidate-packet.json\n- charness-artifacts/critique/2026-08-21-semantic-candidate-packet.md\n- charness-artifacts/critique/2026-08-21-semantic-candidate-release-critique.md\n- charness-artifacts/critique/command-plans/2026-08-21-goal-fanout.json\n- charness-artifacts/critique/findings/2026-08-20-s3-r2-code.txt\n- charness-artifacts/critique/findings/2026-08-20-s3-r2-consumer.txt\n- charness-artifacts/critique/findings/2026-08-20-s3-r2-goal.txt\n- charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-code-logic.md\n- charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-consumer-export.md\n- charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-goal-claims.md\n- charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-code.md\n- charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-consumer.md\n- charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-goal.md\n- charness-artifacts/critique/rounds/2026-08-21-2026-08-21-command-plan-repair.md\n- charness-artifacts/critique/rounds/2026-08-21-2026-08-21-command-plan.md\n- charness-artifacts/critique/rounds/2026-08-21-2026-08-21-goal-codex-review.md\n- charness-artifacts/critique/rounds/2026-08-21-2026-08-21-semantic-candidate-final.md\n- charness-artifacts/critique/snapshots/2026-08-20-s3-code-logic.json\n- charness-artifacts/critique/snapshots/2026-08-20-s3-consumer-export.json\n- charness-artifacts/critique/snapshots/2026-08-20-s3-goal-claims.json\n- charness-artifacts/critique/snapshots/2026-08-20-s3-r2-code.json\n- charness-artifacts/critique/snapshots/2026-08-20-s3-r2-consumer.json\n- charness-artifacts/critique/snapshots/2026-08-20-s3-r2-goal.json\n- charness-artifacts/critique/snapshots/2026-08-21-command-plan-repair.json\n- charness-artifacts/critique/snapshots/2026-08-21-command-plan.json\n- charness-artifacts/critique/snapshots/2026-08-21-goal-codex-review.json\n- charness-artifacts/critique/snapshots/2026-08-21-semantic-candidate-final-v9-boundary.json\n- charness-artifacts/debug/2026-08-20-debug-review.md\n- charness-artifacts/debug/2026-08-20-fresh-checkout-probe-timeout.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md\n- charness-artifacts/issues/2026-08-20-612-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-612-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-634-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-634-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-635-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-635-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-637-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-637-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-638-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-638-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-639-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-639-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-668-reproduction.meta.yaml\n- charness-artifacts/issues/2026-08-20-668-reproduction.raw.yaml\n- charness-artifacts/issues/2026-08-20-669a-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-669a-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-669b-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-669b-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-670-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-670-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-671-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-671-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-672-fallback-split.txt\n- charness-artifacts/issues/2026-08-20-672-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-672-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-676-repair-parity-split.txt\n- charness-artifacts/issues/2026-08-20-676-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-676-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-677-consumer-gap.txt\n- charness-artifacts/issues/2026-08-20-677-consumer-proof.txt\n- charness-artifacts/issues/2026-08-20-677-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-678-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-678-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-678-usage-classifier-split.txt\n- charness-artifacts/issues/2026-08-20-679-reproduction.txt\n- charness-artifacts/issues/2026-08-20-681-reproduction.meta.txt\n- charness-artifacts/issues/2026-08-20-681-reproduction.raw.txt\n- charness-artifacts/issues/2026-08-20-issue-plan.meta.txt\n- charness-artifacts/issues/2026-08-20-issue-plan.raw.txt\n- charness-artifacts/issues/2026-08-20-next-release-ledger.json\n- charness-artifacts/issues/2026-08-20-open-issues.meta.txt\n- charness-artifacts/issues/2026-08-20-open-issues.raw.json\n- charness-artifacts/issues/reads/527.meta.txt\n- charness-artifacts/issues/reads/527.raw.yaml\n- charness-artifacts/issues/reads/546.meta.txt\n- charness-artifacts/issues/reads/546.raw.yaml\n- charness-artifacts/issues/reads/550.meta.txt\n- charness-artifacts/issues/reads/550.raw.yaml\n- charness-artifacts/issues/reads/582.meta.txt\n- charness-artifacts/issues/reads/582.raw.yaml\n- charness-artifacts/issues/reads/583.meta.txt\n- charness-artifacts/issues/reads/583.raw.yaml\n- charness-artifacts/issues/reads/584.meta.txt\n- charness-artifacts/issues/reads/584.raw.yaml\n- charness-artifacts/issues/reads/586.meta.txt\n- charness-artifacts/issues/reads/586.raw.yaml\n- charness-artifacts/issues/reads/587.meta.txt\n- charness-artifacts/issues/reads/587.raw.yaml\n- charness-artifacts/issues/reads/599.meta.txt\n- charness-artifacts/issues/reads/599.raw.yaml\n- charness-artifacts/issues/reads/601.meta.txt\n- charness-artifacts/issues/reads/601.raw.yaml\n- charness-artifacts/issues/reads/605.meta.txt\n- charness-artifacts/issues/reads/605.raw.yaml\n- charness-artifacts/issues/reads/612.meta.txt\n- charness-artifacts/issues/reads/612.raw.yaml\n- charness-artifacts/issues/reads/628.meta.txt\n- charness-artifacts/issues/reads/628.raw.yaml\n- charness-artifacts/issues/reads/634.meta.txt\n- charness-artifacts/issues/reads/634.raw.yaml\n- charness-artifacts/issues/reads/635.meta.txt\n- charness-artifacts/issues/reads/635.raw.yaml\n- charness-artifacts/issues/reads/637.meta.txt\n- charness-artifacts/issues/reads/637.raw.yaml\n- charness-artifacts/issues/reads/638.meta.txt\n- charness-artifacts/issues/reads/638.raw.yaml\n- charness-artifacts/issues/reads/639.meta.txt\n- charness-artifacts/issues/reads/639.raw.yaml\n- charness-artifacts/issues/reads/667.meta.txt\n- charness-artifacts/issues/reads/667.raw.yaml\n- charness-artifacts/issues/reads/668.meta.txt\n- charness-artifacts/issues/reads/668.raw.yaml\n- charness-artifacts/issues/reads/669.meta.txt\n- charness-artifacts/issues/reads/669.raw.yaml\n- charness-artifacts/issues/reads/670.meta.txt\n- charness-artifacts/issues/reads/670.raw.yaml\n- charness-artifacts/issues/reads/671.meta.txt\n- charness-artifacts/issues/reads/671.raw.yaml\n- charness-artifacts/issues/reads/672.meta.txt\n- charness-artifacts/issues/reads/672.raw.yaml\n- charness-artifacts/issues/reads/676.meta.txt\n- charness-artifacts/issues/reads/676.raw.yaml\n- charness-artifacts/issues/reads/677.meta.txt\n- charness-artifacts/issues/reads/677.raw.yaml\n- charness-artifacts/issues/reads/678.meta.txt\n- charness-artifacts/issues/reads/678.raw.yaml\n- charness-artifacts/issues/reads/679.meta.txt\n- charness-artifacts/issues/reads/679.raw.yaml\n- charness-artifacts/issues/reads/680.meta.txt\n- charness-artifacts/issues/reads/680.raw.yaml\n- charness-artifacts/issues/reads/681.meta.txt\n- charness-artifacts/issues/reads/681.raw.yaml\n- charness-artifacts/metrics/rca-ledger.jsonl\n- charness-artifacts/quality/2026-08-20-slice-0-quality-planner.meta.txt\n- charness-artifacts/quality/2026-08-20-slice-0-quality-planner.raw.yaml\n- charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md\n- charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md\n- charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md\n- charness-artifacts/quality/2026-08-21-command-plan-targeted-mutant-proof.md\n- charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md\n- charness-artifacts/quality/dup-review.json\n- charness-artifacts/release/2026-08-20-slice-0-release-planner.meta.txt\n- charness-artifacts/release/2026-08-20-slice-0-release-planner.raw.yaml\n- charness-artifacts/retro/2026-08-20-093708-packet.json\n- charness-artifacts/retro/2026-08-20-093708-packet.md\n- charness-artifacts/retro/2026-08-20-152747-packet.json\n- charness-artifacts/retro/2026-08-20-152747-packet.md\n- charness-artifacts/retro/2026-08-20-release-goal-shaping.md\n- charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md\n- charness-artifacts/retro/2026-08-21-goal-continuation-retro.md\n- charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.json\n- charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.md\n- charness-artifacts/retro/2026-08-21-release-candidate.md\n- charness-artifacts/retro/2026-08-21-session-retro.md\n- charness-artifacts/retro/lesson-ledger.json\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.md\n- charness-artifacts/retro/recent-lessons.md\n- charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md\n- charness-artifacts/spec/2026-08-20-fresh-checkout-probe-timeout.md\n- charness-artifacts/spec/2026-08-20-issue-679-impl-bootstrap-idempotence.md\n- docs/conventions/parallel-execution.md\n- docs/handoff.md\n- plugins/charness/scripts/adapter-consumer-classification.json\n- plugins/charness/scripts/adapter_init_lib.py\n- plugins/charness/scripts/adapter_key_registry.py\n- plugins/charness/scripts/adapter_key_usage.py\n- plugins/charness/scripts/check_artifact_citations.py\n- plugins/charness/scripts/check_consumer_validator_catalog.py\n- plugins/charness/scripts/check_release_issue_ledger.py\n- plugins/charness/scripts/command_plan_preflight.py\n- plugins/charness/scripts/manage_mutation_reports.py\n- plugins/charness/scripts/mutation_sampling_lib.py\n- plugins/charness/scripts/release_issue_ledger_contract.py\n- plugins/charness/scripts/release_issue_ledger_evidence.py\n- plugins/charness/scripts/run_slice_closeout.py\n- plugins/charness/scripts/session_start_lesson_context.py\n- plugins/charness/scripts/slice_closeout_advisories.py\n- plugins/charness/scripts/slice_closeout_repair_parity.py\n- plugins/charness/scripts/what_reads_this.py\n- plugins/charness/scripts/what_reads_this_fallback.py\n- plugins/charness/skills/achieve/references/lifecycle-during.md\n- plugins/charness/skills/achieve/scripts/goal_artifact_lib.py\n- plugins/charness/skills/achieve/scripts/goal_artifact_portability_gate.py\n- plugins/charness/skills/achieve/scripts/goal_path_portability.py\n- plugins/charness/skills/critique/SKILL.md\n- plugins/charness/skills/critique/scripts/record_round_findings.py\n- plugins/charness/skills/impl/scripts/init_adapter.py\n- plugins/charness/skills/quality/references/consumer-validator-catalog.yaml\n- plugins/charness/skills/quality/references/index.md\n- plugins/charness/skills/release/scripts/check_fresh_checkout_probes.py\n- scripts/adapter-consumer-classification.json\n- scripts/adapter_init_lib.py\n- scripts/adapter_key_registry.py\n- scripts/adapter_key_usage.py\n- scripts/check_artifact_citations.py\n- scripts/check_consumer_validator_catalog.py\n- scripts/check_release_issue_ledger.py\n- scripts/command_plan_preflight.py\n- scripts/manage_mutation_reports.py\n- scripts/mutation_sampling_lib.py\n- scripts/release_issue_ledger_contract.py\n- scripts/release_issue_ledger_evidence.py\n- scripts/run_slice_closeout.py\n- scripts/session_start_lesson_context.py\n- scripts/slice_closeout_advisories.py\n- scripts/slice_closeout_repair_parity.py\n- scripts/what_reads_this.py\n- scripts/what_reads_this_fallback.py\n- skills/public/achieve/references/lifecycle-during.md\n- skills/public/achieve/scripts/goal_artifact_lib.py\n- skills/public/achieve/scripts/goal_artifact_portability_gate.py\n- skills/public/achieve/scripts/goal_path_portability.py\n- skills/public/critique/SKILL.md\n- skills/public/critique/scripts/record_round_findings.py\n- skills/public/impl/scripts/init_adapter.py\n- skills/public/quality/references/consumer-validator-catalog.yaml\n- skills/public/quality/references/index.md\n- skills/public/release/scripts/check_fresh_checkout_probes.py\n- tests/coverage_debt/test_batch2.py\n- tests/quality_gates/test_adapter_key_registry.py\n- tests/quality_gates/test_command_plan_preflight.py\n- tests/quality_gates/test_goal_artifact_portability.py\n- tests/quality_gates/test_public_skill_yaml_output_contract.py\n- tests/quality_gates/test_quality_mutation_coverage.py\n- tests/quality_gates/test_release_issue_ledger.py\n- tests/quality_gates/test_removed_name_consumers.py\n- tests/quality_gates/test_script_inprocess_behaviors.py\n- tests/quality_gates/test_slice_closeout_artifact_citations.py\n- tests/quality_gates/test_slice_closeout_new_pool_advisory.py\n- tests/test_achieve_lesson_citation.py\n- tests/test_adapter_key_registry.py\n- tests/test_artifact_citations.py\n- tests/test_consumer_validator_catalog.py\n- tests/test_critique_round_findings.py\n- tests/test_goal_path_portability.py\n- tests/test_impl_bootstrap.py\n- tests/test_session_start_lesson_context.py\n- tests/test_slice_closeout_advisories.py\n- tests/test_what_reads_this.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/adapter-consumer-classification.json, scripts/adapter_init_lib.py, scripts/adapter_key_registry.py, scripts/adapter_key_usage.py, scripts/check_artifact_citations.py, scripts/check_consumer_validator_catalog.py, scripts/check_release_issue_ledger.py, scripts/command_plan_preflight.py, scripts/manage_mutation_reports.py, scripts/mutation_sampling_lib.py, scripts/release_issue_ledger_contract.py, scripts/release_issue_ledger_evidence.py, scripts/run_slice_closeout.py, scripts/session_start_lesson_context.py, scripts/slice_closeout_advisories.py, scripts/slice_closeout_repair_parity.py, scripts/what_reads_this.py, scripts/what_reads_this_fallback.py, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/goal_artifact_portability_gate.py, skills/public/achieve/scripts/goal_path_portability.py, skills/public/critique/SKILL.md, skills/public/critique/scripts/record_round_findings.py, skills/public/impl/scripts/init_adapter.py, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/index.md, skills/public/release/scripts/check_fresh_checkout_probes.py\n  derived matches: plugins/charness/scripts/adapter-consumer-classification.json, plugins/charness/scripts/adapter_init_lib.py, plugins/charness/scripts/adapter_key_registry.py, plugins/charness/scripts/adapter_key_usage.py, plugins/charness/scripts/check_artifact_citations.py, plugins/charness/scripts/check_consumer_validator_catalog.py, plugins/charness/scripts/check_release_issue_ledger.py, plugins/charness/scripts/command_plan_preflight.py, plugins/charness/scripts/manage_mutation_reports.py, plugins/charness/scripts/mutation_sampling_lib.py, plugins/charness/scripts/release_issue_ledger_contract.py, plugins/charness/scripts/release_issue_ledger_evidence.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/session_start_lesson_context.py, plugins/charness/scripts/slice_closeout_advisories.py, plugins/charness/scripts/slice_closeout_repair_parity.py, plugins/charness/scripts/what_reads_this.py, plugins/charness/scripts/what_reads_this_fallback.py, plugins/charness/skills/achieve/references/lifecycle-during.md, plugins/charness/skills/achieve/scripts/goal_artifact_lib.py, plugins/charness/skills/achieve/scripts/goal_artifact_portability_gate.py, plugins/charness/skills/achieve/scripts/goal_path_portability.py, plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/scripts/record_round_findings.py, plugins/charness/skills/impl/scripts/init_adapter.py, plugins/charness/skills/quality/references/consumer-validator-catalog.yaml, plugins/charness/skills/quality/references/index.md, plugins/charness/skills/release/scripts/check_fresh_checkout_probes.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-20-142117-packet.md, charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md, charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-packet.md, charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-r2-packet.md, charness-artifacts/critique/2026-08-20-release-handoff-packet.md, charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.md, charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.md, charness-artifacts/critique/2026-08-21-semantic-candidate-packet.md, charness-artifacts/critique/2026-08-21-semantic-candidate-release-critique.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-code-logic.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-consumer-export.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-goal-claims.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-code.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-consumer.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-goal.md, charness-artifacts/critique/rounds/2026-08-21-2026-08-21-command-plan-repair.md, charness-artifacts/critique/rounds/2026-08-21-2026-08-21-command-plan.md, charness-artifacts/critique/rounds/2026-08-21-2026-08-21-goal-codex-review.md, charness-artifacts/critique/rounds/2026-08-21-2026-08-21-semantic-candidate-final.md, charness-artifacts/debug/2026-08-20-debug-review.md, charness-artifacts/debug/2026-08-20-fresh-checkout-probe-timeout.md, charness-artifacts/debug/latest.md, charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md, charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md, charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md, charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md, charness-artifacts/quality/2026-08-21-command-plan-targeted-mutant-proof.md, charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md, charness-artifacts/retro/2026-08-20-093708-packet.md, charness-artifacts/retro/2026-08-20-152747-packet.md, charness-artifacts/retro/2026-08-20-release-goal-shaping.md, charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md, charness-artifacts/retro/2026-08-21-goal-continuation-retro.md, charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.md, charness-artifacts/retro/2026-08-21-release-candidate.md, charness-artifacts/retro/2026-08-21-session-retro.md, charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.md, charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.md, charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.md, charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.md, charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.md, charness-artifacts/retro/recent-lessons.md, charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md, charness-artifacts/spec/2026-08-20-fresh-checkout-probe-timeout.md, charness-artifacts/spec/2026-08-20-issue-679-impl-bootstrap-idempotence.md, docs/conventions/parallel-execution.md, docs/handoff.md, skills/public/achieve/references/lifecycle-during.md, skills/public/critique/SKILL.md, skills/public/quality/references/index.md\n  derived matches: plugins/charness/skills/achieve/references/lifecycle-during.md, plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/quality/references/index.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- handoff-machine-readers: docs/handoff.md is a rotating human document that is ALSO a machine-read source: the retro-memory gate requires its recent-lessons reference, and the artifact-surface preflight requires its H2 sections and a References link.\n  source matches: docs/handoff.md\n  verify: python3 scripts/validate_handoff_artifact.py --repo-root ., python3 -m pytest -q tests/quality_gates/test_retro_memory.py\n- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.\n  source matches: charness-artifacts/quality/dup-review.json\n  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --detail >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --detail >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/issues/2026-08-20-612-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-612-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-634-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-634-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-635-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-635-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-637-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-637-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-638-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-638-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-639-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-639-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-668-reproduction.meta.yaml, charness-artifacts/issues/2026-08-20-668-reproduction.raw.yaml, charness-artifacts/issues/2026-08-20-669a-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-669a-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-669b-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-669b-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-670-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-670-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-671-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-671-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-672-fallback-split.txt, charness-artifacts/issues/2026-08-20-672-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-672-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-676-repair-parity-split.txt, charness-artifacts/issues/2026-08-20-676-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-676-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-677-consumer-gap.txt, charness-artifacts/issues/2026-08-20-677-consumer-proof.txt, charness-artifacts/issues/2026-08-20-677-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-678-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-678-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-678-usage-classifier-split.txt, charness-artifacts/issues/2026-08-20-679-reproduction.txt, charness-artifacts/issues/2026-08-20-681-reproduction.meta.txt, charness-artifacts/issues/2026-08-20-681-reproduction.raw.txt, charness-artifacts/issues/2026-08-20-issue-plan.meta.txt, charness-artifacts/issues/2026-08-20-issue-plan.raw.txt, charness-artifacts/issues/2026-08-20-next-release-ledger.json, charness-artifacts/issues/2026-08-20-open-issues.meta.txt, charness-artifacts/issues/2026-08-20-open-issues.raw.json, charness-artifacts/issues/reads/527.meta.txt, charness-artifacts/issues/reads/527.raw.yaml, charness-artifacts/issues/reads/546.meta.txt, charness-artifacts/issues/reads/546.raw.yaml, charness-artifacts/issues/reads/550.meta.txt, charness-artifacts/issues/reads/550.raw.yaml, charness-artifacts/issues/reads/582.meta.txt, charness-artifacts/issues/reads/582.raw.yaml, charness-artifacts/issues/reads/583.meta.txt, charness-artifacts/issues/reads/583.raw.yaml, charness-artifacts/issues/reads/584.meta.txt, charness-artifacts/issues/reads/584.raw.yaml, charness-artifacts/issues/reads/586.meta.txt, charness-artifacts/issues/reads/586.raw.yaml, charness-artifacts/issues/reads/587.meta.txt, charness-artifacts/issues/reads/587.raw.yaml, charness-artifacts/issues/reads/599.meta.txt, charness-artifacts/issues/reads/599.raw.yaml, charness-artifacts/issues/reads/601.meta.txt, charness-artifacts/issues/reads/601.raw.yaml, charness-artifacts/issues/reads/605.meta.txt, charness-artifacts/issues/reads/605.raw.yaml, charness-artifacts/issues/reads/612.meta.txt, charness-artifacts/issues/reads/612.raw.yaml, charness-artifacts/issues/reads/628.meta.txt, charness-artifacts/issues/reads/628.raw.yaml, charness-artifacts/issues/reads/634.meta.txt, charness-artifacts/issues/reads/634.raw.yaml, charness-artifacts/issues/reads/635.meta.txt, charness-artifacts/issues/reads/635.raw.yaml, charness-artifacts/issues/reads/637.meta.txt, charness-artifacts/issues/reads/637.raw.yaml, charness-artifacts/issues/reads/638.meta.txt, charness-artifacts/issues/reads/638.raw.yaml, charness-artifacts/issues/reads/639.meta.txt, charness-artifacts/issues/reads/639.raw.yaml, charness-artifacts/issues/reads/667.meta.txt, charness-artifacts/issues/reads/667.raw.yaml, charness-artifacts/issues/reads/668.meta.txt, charness-artifacts/issues/reads/668.raw.yaml, charness-artifacts/issues/reads/669.meta.txt, charness-artifacts/issues/reads/669.raw.yaml, charness-artifacts/issues/reads/670.meta.txt, charness-artifacts/issues/reads/670.raw.yaml, charness-artifacts/issues/reads/671.meta.txt, charness-artifacts/issues/reads/671.raw.yaml, charness-artifacts/issues/reads/672.meta.txt, charness-artifacts/issues/reads/672.raw.yaml, charness-artifacts/issues/reads/676.meta.txt, charness-artifacts/issues/reads/676.raw.yaml, charness-artifacts/issues/reads/677.meta.txt, charness-artifacts/issues/reads/677.raw.yaml, charness-artifacts/issues/reads/678.meta.txt, charness-artifacts/issues/reads/678.raw.yaml, charness-artifacts/issues/reads/679.meta.txt, charness-artifacts/issues/reads/679.raw.yaml, charness-artifacts/issues/reads/680.meta.txt, charness-artifacts/issues/reads/680.raw.yaml, charness-artifacts/issues/reads/681.meta.txt, charness-artifacts/issues/reads/681.raw.yaml, charness-artifacts/quality/2026-08-20-slice-0-quality-planner.meta.txt, charness-artifacts/quality/2026-08-20-slice-0-quality-planner.raw.yaml, charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md, charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md, charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md, charness-artifacts/quality/2026-08-21-command-plan-targeted-mutant-proof.md, charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md, charness-artifacts/quality/dup-review.json, charness-artifacts/release/2026-08-20-slice-0-release-planner.meta.txt, charness-artifacts/release/2026-08-20-slice-0-release-planner.raw.yaml\n  verify: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/validate_quality_artifact.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/achieve/references/lifecycle-during.md, skills/public/critique/SKILL.md, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/index.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/goal_artifact_portability_gate.py, skills/public/achieve/scripts/goal_path_portability.py, skills/public/critique/SKILL.md, skills/public/critique/scripts/record_round_findings.py, skills/public/impl/scripts/init_adapter.py, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/index.md, skills/public/release/scripts/check_fresh_checkout_probes.py\n  derived matches: plugins/charness/skills/achieve/references/lifecycle-during.md, plugins/charness/skills/achieve/scripts/goal_artifact_lib.py, plugins/charness/skills/achieve/scripts/goal_artifact_portability_gate.py, plugins/charness/skills/achieve/scripts/goal_path_portability.py, plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/scripts/record_round_findings.py, plugins/charness/skills/impl/scripts/init_adapter.py, plugins/charness/skills/quality/references/consumer-validator-catalog.yaml, plugins/charness/skills/quality/references/index.md, plugins/charness/skills/release/scripts/check_fresh_checkout_probes.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/goal_artifact_portability_gate.py, skills/public/achieve/scripts/goal_path_portability.py, skills/public/critique/SKILL.md, skills/public/critique/scripts/record_round_findings.py, skills/public/impl/scripts/init_adapter.py, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/index.md, skills/public/release/scripts/check_fresh_checkout_probes.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/goal_artifact_portability_gate.py, skills/public/achieve/scripts/goal_path_portability.py, skills/public/critique/SKILL.md, skills/public/critique/scripts/record_round_findings.py, skills/public/impl/scripts/init_adapter.py, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/index.md, skills/public/release/scripts/check_fresh_checkout_probes.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: scripts/adapter_init_lib.py\n  verify: python3 scripts/validate_adapters.py --repo-root .\n- surface-obligations: Repo-owned changed-surface manifest that drives slice closeout obligations.\n  source matches: .agents/surfaces.json\n  verify: python3 scripts/validate_surfaces.py --repo-root .\n- mutation-testing-workflow: Repo-owned scheduled mutation testing workflow, runner config, and adapter slot behavior.\n  source matches: scripts/mutation_sampling_lib.py\n  derived matches: plugins/charness/scripts/mutation_sampling_lib.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 -m pytest -q tests/quality_gates/test_quality_mutation_testing.py, python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py, python3 scripts/check_github_actions.py --repo-root ., python3 scripts/validate_adapters.py --repo-root ., python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-20-142117-packet.json, charness-artifacts/critique/2026-08-20-142117-packet.md, charness-artifacts/critique/2026-08-20-broad-release-goal-packet.json, charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md, charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-packet.json, charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-packet.md, charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-r2-packet.json, charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-r2-packet.md, charness-artifacts/critique/2026-08-20-release-handoff-packet.json, charness-artifacts/critique/2026-08-20-release-handoff-packet.md, charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.json, charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.md, charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.json, charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.md, charness-artifacts/critique/2026-08-21-semantic-candidate-packet.json, charness-artifacts/critique/2026-08-21-semantic-candidate-packet.md, charness-artifacts/critique/2026-08-21-semantic-candidate-release-critique.md, charness-artifacts/critique/command-plans/2026-08-21-goal-fanout.json, charness-artifacts/critique/findings/2026-08-20-s3-r2-code.txt, charness-artifacts/critique/findings/2026-08-20-s3-r2-consumer.txt, charness-artifacts/critique/findings/2026-08-20-s3-r2-goal.txt, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-code-logic.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-consumer-export.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-goal-claims.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-code.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-consumer.md, charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-goal.md, charness-artifacts/critique/rounds/2026-08-21-2026-08-21-command-plan-repair.md, charness-artifacts/critique/rounds/2026-08-21-2026-08-21-command-plan.md, charness-artifacts/critique/rounds/2026-08-21-2026-08-21-goal-codex-review.md, charness-artifacts/critique/rounds/2026-08-21-2026-08-21-semantic-candidate-final.md, charness-artifacts/critique/snapshots/2026-08-20-s3-code-logic.json, charness-artifacts/critique/snapshots/2026-08-20-s3-consumer-export.json, charness-artifacts/critique/snapshots/2026-08-20-s3-goal-claims.json, charness-artifacts/critique/snapshots/2026-08-20-s3-r2-code.json, charness-artifacts/critique/snapshots/2026-08-20-s3-r2-consumer.json, charness-artifacts/critique/snapshots/2026-08-20-s3-r2-goal.json, charness-artifacts/critique/snapshots/2026-08-21-command-plan-repair.json, charness-artifacts/critique/snapshots/2026-08-21-command-plan.json, charness-artifacts/critique/snapshots/2026-08-21-goal-codex-review.json, charness-artifacts/critique/snapshots/2026-08-21-semantic-candidate-final-v9-boundary.json\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-20-debug-review.md, charness-artifacts/debug/2026-08-20-fresh-checkout-probe-timeout.md, charness-artifacts/debug/latest.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-20-093708-packet.json, charness-artifacts/retro/2026-08-20-093708-packet.md, charness-artifacts/retro/2026-08-20-152747-packet.json, charness-artifacts/retro/2026-08-20-152747-packet.md, charness-artifacts/retro/2026-08-20-release-goal-shaping.md, charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md, charness-artifacts/retro/2026-08-21-goal-continuation-retro.md, charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.json, charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.md, charness-artifacts/retro/2026-08-21-release-candidate.md, charness-artifacts/retro/2026-08-21-session-retro.md, charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.md, charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.md, charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.md, charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.md, charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.md, charness-artifacts/retro/recent-lessons.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- lesson-ledger-and-contract-register: Local cited lesson state and the explicit pre-contract-mutation register probe.\n  source matches: charness-artifacts/retro/lesson-ledger.json, charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.json, charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.json, charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.json, charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.json, charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.json\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/check_lesson_ledger.py --repo-root ., python3 scripts/check_contract_register.py --repo-root ., python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_contract_register.py\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/adapter-consumer-classification.json, plugins/charness/scripts/adapter_init_lib.py, plugins/charness/scripts/adapter_key_registry.py, plugins/charness/scripts/adapter_key_usage.py, plugins/charness/scripts/check_artifact_citations.py, plugins/charness/scripts/check_consumer_validator_catalog.py, plugins/charness/scripts/check_release_issue_ledger.py, plugins/charness/scripts/command_plan_preflight.py, plugins/charness/scripts/manage_mutation_reports.py, plugins/charness/scripts/mutation_sampling_lib.py, plugins/charness/scripts/release_issue_ledger_contract.py, plugins/charness/scripts/release_issue_ledger_evidence.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/session_start_lesson_context.py, plugins/charness/scripts/slice_closeout_advisories.py, plugins/charness/scripts/slice_closeout_repair_parity.py, plugins/charness/scripts/what_reads_this.py, plugins/charness/scripts/what_reads_this_fallback.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/adapter_init_lib.py, scripts/adapter_key_registry.py, scripts/adapter_key_usage.py, scripts/check_artifact_citations.py, scripts/check_consumer_validator_catalog.py, scripts/check_release_issue_ledger.py, scripts/command_plan_preflight.py, scripts/manage_mutation_reports.py, scripts/mutation_sampling_lib.py, scripts/release_issue_ledger_contract.py, scripts/release_issue_ledger_evidence.py, scripts/run_slice_closeout.py, scripts/session_start_lesson_context.py, scripts/slice_closeout_advisories.py, scripts/slice_closeout_repair_parity.py, scripts/what_reads_this.py, scripts/what_reads_this_fallback.py, tests/coverage_debt/test_batch2.py, tests/quality_gates/test_adapter_key_registry.py, tests/quality_gates/test_command_plan_preflight.py, tests/quality_gates/test_goal_artifact_portability.py, tests/quality_gates/test_public_skill_yaml_output_contract.py, tests/quality_gates/test_quality_mutation_coverage.py, tests/quality_gates/test_release_issue_ledger.py, tests/quality_gates/test_removed_name_consumers.py, tests/quality_gates/test_script_inprocess_behaviors.py, tests/quality_gates/test_slice_closeout_artifact_citations.py, tests/quality_gates/test_slice_closeout_new_pool_advisory.py, tests/test_achieve_lesson_citation.py, tests/test_adapter_key_registry.py, tests/test_artifact_citations.py, tests/test_consumer_validator_catalog.py, tests/test_critique_round_findings.py, tests/test_goal_path_portability.py, tests/test_impl_bootstrap.py, tests/test_session_start_lesson_context.py, tests/test_slice_closeout_advisories.py, tests/test_what_reads_this.py\n  derived matches: plugins/charness/scripts/adapter_init_lib.py, plugins/charness/scripts/adapter_key_registry.py, plugins/charness/scripts/adapter_key_usage.py, plugins/charness/scripts/check_artifact_citations.py, plugins/charness/scripts/check_consumer_validator_catalog.py, plugins/charness/scripts/check_release_issue_ledger.py, plugins/charness/scripts/command_plan_preflight.py, plugins/charness/scripts/manage_mutation_reports.py, plugins/charness/scripts/mutation_sampling_lib.py, plugins/charness/scripts/release_issue_ledger_contract.py, plugins/charness/scripts/release_issue_ledger_evidence.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/session_start_lesson_context.py, plugins/charness/scripts/slice_closeout_advisories.py, plugins/charness/scripts/slice_closeout_repair_parity.py, plugins/charness/scripts/what_reads_this.py, plugins/charness/scripts/what_reads_this_fallback.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/adapter_init_lib.py, scripts/adapter_key_registry.py, scripts/adapter_key_usage.py, scripts/check_artifact_citations.py, scripts/check_consumer_validator_catalog.py, scripts/check_release_issue_ledger.py, scripts/command_plan_preflight.py, scripts/manage_mutation_reports.py, scripts/mutation_sampling_lib.py, scripts/release_issue_ledger_contract.py, scripts/release_issue_ledger_evidence.py, scripts/run_slice_closeout.py, scripts/session_start_lesson_context.py, scripts/slice_closeout_advisories.py, scripts/slice_closeout_repair_parity.py, scripts/what_reads_this.py, scripts/what_reads_this_fallback.py, skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/goal_artifact_portability_gate.py, skills/public/achieve/scripts/goal_path_portability.py, skills/public/critique/scripts/record_round_findings.py, skills/public/impl/scripts/init_adapter.py, skills/public/release/scripts/check_fresh_checkout_probes.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "origin/main..HEAD",
+    "resolved_changed_ref": [
+      "67946f19b8478cea40ba76d8209bfe82dfd03603",
+      "^38775dfeb8d1e5574663d7ef461d19a63e252841"
+    ],
+    "base_head": "67946f19b8478cea40ba76d8209bfe82dfd03603",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/surfaces.json",
+      "charness-artifacts/debug/2026-08-20-debug-review.md",
+      "charness-artifacts/debug/2026-08-20-fresh-checkout-probe-timeout.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
+      "charness-artifacts/issues/2026-08-20-612-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-612-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-634-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-634-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-635-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-635-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-637-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-637-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-638-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-638-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-639-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-639-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-668-reproduction.meta.yaml",
+      "charness-artifacts/issues/2026-08-20-668-reproduction.raw.yaml",
+      "charness-artifacts/issues/2026-08-20-669a-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-669a-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-669b-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-669b-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-670-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-670-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-671-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-671-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-672-fallback-split.txt",
+      "charness-artifacts/issues/2026-08-20-672-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-672-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-676-repair-parity-split.txt",
+      "charness-artifacts/issues/2026-08-20-676-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-676-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-677-consumer-gap.txt",
+      "charness-artifacts/issues/2026-08-20-677-consumer-proof.txt",
+      "charness-artifacts/issues/2026-08-20-677-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-678-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-678-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-678-usage-classifier-split.txt",
+      "charness-artifacts/issues/2026-08-20-679-reproduction.txt",
+      "charness-artifacts/issues/2026-08-20-681-reproduction.meta.txt",
+      "charness-artifacts/issues/2026-08-20-681-reproduction.raw.txt",
+      "charness-artifacts/issues/2026-08-20-issue-plan.meta.txt",
+      "charness-artifacts/issues/2026-08-20-issue-plan.raw.txt",
+      "charness-artifacts/issues/2026-08-20-next-release-ledger.json",
+      "charness-artifacts/issues/2026-08-20-open-issues.meta.txt",
+      "charness-artifacts/issues/2026-08-20-open-issues.raw.json",
+      "charness-artifacts/issues/reads/527.meta.txt",
+      "charness-artifacts/issues/reads/527.raw.yaml",
+      "charness-artifacts/issues/reads/546.meta.txt",
+      "charness-artifacts/issues/reads/546.raw.yaml",
+      "charness-artifacts/issues/reads/550.meta.txt",
+      "charness-artifacts/issues/reads/550.raw.yaml",
+      "charness-artifacts/issues/reads/582.meta.txt",
+      "charness-artifacts/issues/reads/582.raw.yaml",
+      "charness-artifacts/issues/reads/583.meta.txt",
+      "charness-artifacts/issues/reads/583.raw.yaml",
+      "charness-artifacts/issues/reads/584.meta.txt",
+      "charness-artifacts/issues/reads/584.raw.yaml",
+      "charness-artifacts/issues/reads/586.meta.txt",
+      "charness-artifacts/issues/reads/586.raw.yaml",
+      "charness-artifacts/issues/reads/587.meta.txt",
+      "charness-artifacts/issues/reads/587.raw.yaml",
+      "charness-artifacts/issues/reads/599.meta.txt",
+      "charness-artifacts/issues/reads/599.raw.yaml",
+      "charness-artifacts/issues/reads/601.meta.txt",
+      "charness-artifacts/issues/reads/601.raw.yaml",
+      "charness-artifacts/issues/reads/605.meta.txt",
+      "charness-artifacts/issues/reads/605.raw.yaml",
+      "charness-artifacts/issues/reads/612.meta.txt",
+      "charness-artifacts/issues/reads/612.raw.yaml",
+      "charness-artifacts/issues/reads/628.meta.txt",
+      "charness-artifacts/issues/reads/628.raw.yaml",
+      "charness-artifacts/issues/reads/634.meta.txt",
+      "charness-artifacts/issues/reads/634.raw.yaml",
+      "charness-artifacts/issues/reads/635.meta.txt",
+      "charness-artifacts/issues/reads/635.raw.yaml",
+      "charness-artifacts/issues/reads/637.meta.txt",
+      "charness-artifacts/issues/reads/637.raw.yaml",
+      "charness-artifacts/issues/reads/638.meta.txt",
+      "charness-artifacts/issues/reads/638.raw.yaml",
+      "charness-artifacts/issues/reads/639.meta.txt",
+      "charness-artifacts/issues/reads/639.raw.yaml",
+      "charness-artifacts/issues/reads/667.meta.txt",
+      "charness-artifacts/issues/reads/667.raw.yaml",
+      "charness-artifacts/issues/reads/668.meta.txt",
+      "charness-artifacts/issues/reads/668.raw.yaml",
+      "charness-artifacts/issues/reads/669.meta.txt",
+      "charness-artifacts/issues/reads/669.raw.yaml",
+      "charness-artifacts/issues/reads/670.meta.txt",
+      "charness-artifacts/issues/reads/670.raw.yaml",
+      "charness-artifacts/issues/reads/671.meta.txt",
+      "charness-artifacts/issues/reads/671.raw.yaml",
+      "charness-artifacts/issues/reads/672.meta.txt",
+      "charness-artifacts/issues/reads/672.raw.yaml",
+      "charness-artifacts/issues/reads/676.meta.txt",
+      "charness-artifacts/issues/reads/676.raw.yaml",
+      "charness-artifacts/issues/reads/677.meta.txt",
+      "charness-artifacts/issues/reads/677.raw.yaml",
+      "charness-artifacts/issues/reads/678.meta.txt",
+      "charness-artifacts/issues/reads/678.raw.yaml",
+      "charness-artifacts/issues/reads/679.meta.txt",
+      "charness-artifacts/issues/reads/679.raw.yaml",
+      "charness-artifacts/issues/reads/680.meta.txt",
+      "charness-artifacts/issues/reads/680.raw.yaml",
+      "charness-artifacts/issues/reads/681.meta.txt",
+      "charness-artifacts/issues/reads/681.raw.yaml",
+      "charness-artifacts/metrics/rca-ledger.jsonl",
+      "charness-artifacts/quality/2026-08-20-slice-0-quality-planner.meta.txt",
+      "charness-artifacts/quality/2026-08-20-slice-0-quality-planner.raw.yaml",
+      "charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md",
+      "charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md",
+      "charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md",
+      "charness-artifacts/quality/2026-08-21-command-plan-targeted-mutant-proof.md",
+      "charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md",
+      "charness-artifacts/quality/dup-review.json",
+      "charness-artifacts/release/2026-08-20-slice-0-release-planner.meta.txt",
+      "charness-artifacts/release/2026-08-20-slice-0-release-planner.raw.yaml",
+      "charness-artifacts/retro/2026-08-20-093708-packet.json",
+      "charness-artifacts/retro/2026-08-20-093708-packet.md",
+      "charness-artifacts/retro/2026-08-20-152747-packet.json",
+      "charness-artifacts/retro/2026-08-20-152747-packet.md",
+      "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
+      "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+      "charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.json",
+      "charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.md",
+      "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "charness-artifacts/retro/lesson-ledger.json",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.md",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.md",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.md",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.md",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.json",
+      "charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.md",
+      "charness-artifacts/retro/recent-lessons.md",
+      "charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md",
+      "charness-artifacts/spec/2026-08-20-fresh-checkout-probe-timeout.md",
+      "charness-artifacts/spec/2026-08-20-issue-679-impl-bootstrap-idempotence.md",
+      "docs/conventions/parallel-execution.md",
+      "docs/handoff.md",
+      "plugins/charness/scripts/adapter-consumer-classification.json",
+      "plugins/charness/scripts/adapter_init_lib.py",
+      "plugins/charness/scripts/adapter_key_registry.py",
+      "plugins/charness/scripts/adapter_key_usage.py",
+      "plugins/charness/scripts/check_artifact_citations.py",
+      "plugins/charness/scripts/check_consumer_validator_catalog.py",
+      "plugins/charness/scripts/check_release_issue_ledger.py",
+      "plugins/charness/scripts/command_plan_preflight.py",
+      "plugins/charness/scripts/manage_mutation_reports.py",
+      "plugins/charness/scripts/mutation_sampling_lib.py",
+      "plugins/charness/scripts/release_issue_ledger_contract.py",
+      "plugins/charness/scripts/release_issue_ledger_evidence.py",
+      "plugins/charness/scripts/run_slice_closeout.py",
+      "plugins/charness/scripts/session_start_lesson_context.py",
+      "plugins/charness/scripts/slice_closeout_advisories.py",
+      "plugins/charness/scripts/slice_closeout_repair_parity.py",
+      "plugins/charness/scripts/what_reads_this.py",
+      "plugins/charness/scripts/what_reads_this_fallback.py",
+      "plugins/charness/skills/achieve/references/lifecycle-during.md",
+      "plugins/charness/skills/achieve/scripts/goal_artifact_lib.py",
+      "plugins/charness/skills/achieve/scripts/goal_artifact_portability_gate.py",
+      "plugins/charness/skills/achieve/scripts/goal_path_portability.py",
+      "plugins/charness/skills/critique/SKILL.md",
+      "plugins/charness/skills/critique/scripts/record_round_findings.py",
+      "plugins/charness/skills/impl/scripts/init_adapter.py",
+      "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
+      "plugins/charness/skills/quality/references/index.md",
+      "plugins/charness/skills/release/scripts/check_fresh_checkout_probes.py",
+      "scripts/adapter-consumer-classification.json",
+      "scripts/adapter_init_lib.py",
+      "scripts/adapter_key_registry.py",
+      "scripts/adapter_key_usage.py",
+      "scripts/check_artifact_citations.py",
+      "scripts/check_consumer_validator_catalog.py",
+      "scripts/check_release_issue_ledger.py",
+      "scripts/command_plan_preflight.py",
+      "scripts/manage_mutation_reports.py",
+      "scripts/mutation_sampling_lib.py",
+      "scripts/release_issue_ledger_contract.py",
+      "scripts/release_issue_ledger_evidence.py",
+      "scripts/run_slice_closeout.py",
+      "scripts/session_start_lesson_context.py",
+      "scripts/slice_closeout_advisories.py",
+      "scripts/slice_closeout_repair_parity.py",
+      "scripts/what_reads_this.py",
+      "scripts/what_reads_this_fallback.py",
+      "skills/public/achieve/references/lifecycle-during.md",
+      "skills/public/achieve/scripts/goal_artifact_lib.py",
+      "skills/public/achieve/scripts/goal_artifact_portability_gate.py",
+      "skills/public/achieve/scripts/goal_path_portability.py",
+      "skills/public/critique/SKILL.md",
+      "skills/public/critique/scripts/record_round_findings.py",
+      "skills/public/impl/scripts/init_adapter.py",
+      "skills/public/quality/references/consumer-validator-catalog.yaml",
+      "skills/public/quality/references/index.md",
+      "skills/public/release/scripts/check_fresh_checkout_probes.py",
+      "tests/coverage_debt/test_batch2.py",
+      "tests/quality_gates/test_adapter_key_registry.py",
+      "tests/quality_gates/test_command_plan_preflight.py",
+      "tests/quality_gates/test_goal_artifact_portability.py",
+      "tests/quality_gates/test_public_skill_yaml_output_contract.py",
+      "tests/quality_gates/test_quality_mutation_coverage.py",
+      "tests/quality_gates/test_release_issue_ledger.py",
+      "tests/quality_gates/test_removed_name_consumers.py",
+      "tests/quality_gates/test_script_inprocess_behaviors.py",
+      "tests/quality_gates/test_slice_closeout_artifact_citations.py",
+      "tests/quality_gates/test_slice_closeout_new_pool_advisory.py",
+      "tests/test_achieve_lesson_citation.py",
+      "tests/test_adapter_key_registry.py",
+      "tests/test_artifact_citations.py",
+      "tests/test_consumer_validator_catalog.py",
+      "tests/test_critique_round_findings.py",
+      "tests/test_goal_path_portability.py",
+      "tests/test_impl_bootstrap.py",
+      "tests/test_session_start_lesson_context.py",
+      "tests/test_slice_closeout_advisories.py",
+      "tests/test_what_reads_this.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/surfaces.json",
+        "content_sha256": "6c900e1ab04e520c7254ec06886652b0d47f248aa245e6b0bfbbc80cba97998b"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-20-debug-review.md",
+        "content_sha256": "8e6f6a6874c7e42d775f7043a974e6712ac0d63d2f67cf34d53724f8fba03461"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-20-fresh-checkout-probe-timeout.md",
+        "content_sha256": "617c18e8edae2971d888913ac8bf9ef1d2982a904d072f7390fa43447b7f68fa"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "1f38b556ab91f48d4e69cb6785b792ff1dda6c26ee9f61ffefc99b020c21e525"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "033b7876213e1b50be4a42f4e50c629ef0984f69eb9df03468837ca9580acd07"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
+        "content_sha256": "f0bf615307ce0437273e700d43c99c0b405c8cb1acc00e5266287a2b9614f0c8"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-612-reproduction.meta.txt",
+        "content_sha256": "bb9ddfe07d0c3713e52467ed51f66e04eabc3e590a21ca5cd04c493e4f69f2b3"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-612-reproduction.raw.txt",
+        "content_sha256": "cc6eb140ce5673832f013c16ec663834cb573b1d3a9fa6e75798a8387ef3ad3f"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-634-reproduction.meta.txt",
+        "content_sha256": "4dbf37cc5fddecc40678b1b873d220d92b4c433a8ff16ea3420c14341404397e"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-634-reproduction.raw.txt",
+        "content_sha256": "6e209b3109de4f8aa8034f649df6287a17586d664fe9818d6798c75a20480ca7"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-635-reproduction.meta.txt",
+        "content_sha256": "0f0e1130730580f6a9184ac570de0e59d6b5b56a35872789feb5366d9f74abf7"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-635-reproduction.raw.txt",
+        "content_sha256": "22af97d0e48978eebeb26ee68744d7d468e08f1d15a56148de87b381c09568b5"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-637-reproduction.meta.txt",
+        "content_sha256": "d26b67df111ac91c98e82b9316c632708032ead2922aee21629a87eda91642e4"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-637-reproduction.raw.txt",
+        "content_sha256": "ff0f9246899b5a553554a30deb07b1bcb9aaa3d4ecfeb0334bc139702c5d753c"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-638-reproduction.meta.txt",
+        "content_sha256": "08c2a85dbcae31f4b74a8cecb7a1614750ef50009b8390db8a4084dad4163805"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-638-reproduction.raw.txt",
+        "content_sha256": "4478adda4cb3eb0b744a86d07996ca33ac47388a3d090f26103227a041936eec"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-639-reproduction.meta.txt",
+        "content_sha256": "dcbcbd17e61eacfed6e7f5e6d3a7d6ed7343638e46b36209d437135a8f4dfb9e"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-639-reproduction.raw.txt",
+        "content_sha256": "58255857f283d6e825b8c232539f1ebcac56841bc93452899dd9ca4e86e3ad54"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-668-reproduction.meta.yaml",
+        "content_sha256": "9e5d3e9c748e4f20d60331f10212b0aaafb66ded78be743a60a68432fa041db2"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-668-reproduction.raw.yaml",
+        "content_sha256": "b2733b98ee08696151049b688acf3ddc237ef127d641a4d97d6c272a9288db68"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-669a-reproduction.meta.txt",
+        "content_sha256": "c52e62ce7cb7198580baa3f7e32b57c303b5087f131922c22b8da00be456116d"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-669a-reproduction.raw.txt",
+        "content_sha256": "d008c937657ca233aa7f8362477e98ebbae7c36b088e698e49730b1c88db0708"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-669b-reproduction.meta.txt",
+        "content_sha256": "3a56b93f52be7a816f515f9ebd20677aa698b660bb76fa5632fd2efe57c65c91"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-669b-reproduction.raw.txt",
+        "content_sha256": "781d8adb85d573445f0a3aa93007fd37217a9bd16cb36bbbb550e5b91756898b"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-670-reproduction.meta.txt",
+        "content_sha256": "d49d264889835d4bb64233e73b2370ef0c7e03a617d0d2b80cef5f8c18f732ca"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-670-reproduction.raw.txt",
+        "content_sha256": "6fef0fa84f7e97aa7897860e2349e5e66c7394b03d983eca588586ed2b4f5016"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-671-reproduction.meta.txt",
+        "content_sha256": "0e864e2bc5f4d748021dbd227001984764281e8c70c82b7f945749621fe18cf1"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-671-reproduction.raw.txt",
+        "content_sha256": "f5c09e25f5f083d554fe48e2f28b5bc7feeed17aa4eee2c3aeede3a415760d9c"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-672-fallback-split.txt",
+        "content_sha256": "3d8b93884f2da0f7e0c5f8730a191987de32a3b41eb670df8ff47ecc997cb7b3"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-672-reproduction.meta.txt",
+        "content_sha256": "077cbd8d0fa116d013504f719d3c9ec72df4bd5707563a209fd5f60509b119da"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-672-reproduction.raw.txt",
+        "content_sha256": "ec898446ca64f1ae7b911f703e1ae648ce32b8a68085eb3c910c199709cda884"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-676-repair-parity-split.txt",
+        "content_sha256": "b3f2a5b2983d7d98f1f8ba3f251f57722af0ada3d89d1fb68cab3df5dd2ee0f8"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-676-reproduction.meta.txt",
+        "content_sha256": "ab8a1eccc89cd556f84f7ff1dfd24579b08c2b350e74442794be717ea1fb2ea5"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-676-reproduction.raw.txt",
+        "content_sha256": "71b973aa28653eb91cc62b6d8712e29ba20d4903e06ea2804f0f1bcdca9a60b3"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-677-consumer-gap.txt",
+        "content_sha256": "fd01e89b72fa38eeab72c334c7aa51434fcc494d98e6cbe577689635d0c4cb09"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-677-consumer-proof.txt",
+        "content_sha256": "aba6fa71152127d07bddbe665d1c78d3777120c2328fe21884cd8f2b2c433526"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-677-reproduction.meta.txt",
+        "content_sha256": "7a8d65c59c8b749884a6559a0ccf6c37db203270ee978b17896c2aaed323cf73"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt",
+        "content_sha256": "65cd2347f53baa9d081eb74dee28d432e3fad26e94efd7f28f80ef2e3ca14d78"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-678-reproduction.meta.txt",
+        "content_sha256": "fd7b445320bcf586a192a24b9c85c2c6d57403eb6747f27b6e795dedde2a43e9"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-678-reproduction.raw.txt",
+        "content_sha256": "38ff1491ac2b5c6d449b2c8645c800420c03c2efe195a2f9e6399669c3cd23f6"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-678-usage-classifier-split.txt",
+        "content_sha256": "537d1ea0c8ce73d83777f5b4f3f63386cbf3f5063d9ac578aa866fddd07f4da9"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-679-reproduction.txt",
+        "content_sha256": "de6c4a21f06eac429f5eb13b15009a3a72edc54f550ec22372fcd39078c3aca3"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-681-reproduction.meta.txt",
+        "content_sha256": "2d7cd3ea79fcfb97ec81d48545028a6b4da10f4be91aba0c1299d0ea87031b0a"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-681-reproduction.raw.txt",
+        "content_sha256": "040ac3ed6b71f64000e32ae8219819a14971f1bc19698715932f16d41e2bbda4"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-issue-plan.meta.txt",
+        "content_sha256": "1a39acfd10027dd992f42f4d1cd84d709913a9e80f26cc7f763304ac18b11349"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-issue-plan.raw.txt",
+        "content_sha256": "e1592de2a495612a72d52940ecf3937f93e35a860caf12cd99707355a206fad1"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-next-release-ledger.json",
+        "content_sha256": "6ad748bdd1883f59a86888d7e6b8986663a81412f0c88cebb5d0f7d8ccbcd1b6"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-open-issues.meta.txt",
+        "content_sha256": "b989f141002a4c94812763674132dbfed3aae904a789ae338265f6d7b25ed69f"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-08-20-open-issues.raw.json",
+        "content_sha256": "5ae55170d4c628302602eaa709e0379a3e06957dc41372641c5eea21733677d0"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/527.meta.txt",
+        "content_sha256": "77c333b7a157eabbc27644fd656742f736b2724aa777e8bd19ec09714f28c7c9"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/527.raw.yaml",
+        "content_sha256": "7b7e22d3699c4a5b03f860515ec991950bee0ad61b6a02a6b4f3027978f3b4ad"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/546.meta.txt",
+        "content_sha256": "b0133cf7af50f0062c63e947f11b2abc9da297113a7f3aa13228852db8bb2fd4"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/546.raw.yaml",
+        "content_sha256": "623741ca8a22478134fd641299ffbd4002957b705d243bf75648e5d468f083f3"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/550.meta.txt",
+        "content_sha256": "81436f7dd84a006f6d94c9f46522b3981730e072c86b763214ad0d2f0f532323"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/550.raw.yaml",
+        "content_sha256": "ab9fb4b4f4a0c1558bcfa343358bdfbcf2c1818796801e88174b3bd9456902d3"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/582.meta.txt",
+        "content_sha256": "afb0f2f15c360302a186c9112ccab642c4ff409e9d6597d1c1183821e3e6dc2b"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/582.raw.yaml",
+        "content_sha256": "952ff6a794baa071f80ff01394fe67f200137bbae5e21d888dceab99b0ddd569"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/583.meta.txt",
+        "content_sha256": "78b8080f0d952af41498bfbd5ccd922c6a9a1440a32c8a379b1a122ef4d63c49"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/583.raw.yaml",
+        "content_sha256": "33674b71941c3e00ff1ac2e298efd6d026448493f0f22aeee2283d7ef57d0590"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/584.meta.txt",
+        "content_sha256": "f96362d53268681c1c3f0f33d4f8cc708b28a6b441d0595d780342065a09cd43"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/584.raw.yaml",
+        "content_sha256": "3e9c779249f8e7a5f0af0198dff038e7f133bd5432ffa34ac0565d7dd01fd0d5"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/586.meta.txt",
+        "content_sha256": "21ba70303586f56e257ae6f883895a7c06ddd2df45b9735ad87f22aef2d7c5cf"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/586.raw.yaml",
+        "content_sha256": "8fe06cd9d3b0f9ea05eaacd70fa370d0c26b682a256d6130acaefd6cff136282"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/587.meta.txt",
+        "content_sha256": "ac20c3ff78a0e262543e412afd58f07aa094f948cd9749d78d37d901d2b2fbc2"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/587.raw.yaml",
+        "content_sha256": "aa25a1551d6500523a17bb7ca15d764cc1cc1433c706b38f15e975160d328b67"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/599.meta.txt",
+        "content_sha256": "fb2416d016e254b82c6d0bfafc512069669ffb7b16ba2cf151aac7a1725fe5ac"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/599.raw.yaml",
+        "content_sha256": "aab45999162210353cb061902cdf83dfbfcf1b33c941485a1f5a163f472152ce"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/601.meta.txt",
+        "content_sha256": "48a43065ab6b1d27ced5d2925a659eac2c01ce0643be0439dde7c5d55bea93af"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/601.raw.yaml",
+        "content_sha256": "9a52bc8c794943caf5afc799a9eaf29925ee103989ea254cca5d0c543cee3af3"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/605.meta.txt",
+        "content_sha256": "641d0166821b2f260e62be9c96823c8a19255d4d6df7f848ceee556f15d164de"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/605.raw.yaml",
+        "content_sha256": "e942d1db30ba5f4866c65b14a3ca78b603e71a481c94ececf988629d0ad07a1f"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/612.meta.txt",
+        "content_sha256": "38b6d0b162804ebe1b76b3f89f2cccd777ed810ec2922a4bff0a3a705a9cb309"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/612.raw.yaml",
+        "content_sha256": "f1fc25e3dd9f5820249ec09a8cdd85451211ee32815d52ad9395730fe06368f7"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/628.meta.txt",
+        "content_sha256": "96fcf848dabbcd85bbcbe0405c675c108e95d2a4cd17af14ac946875fc2bb9d8"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/628.raw.yaml",
+        "content_sha256": "66fdfafd263b07dfc4cc25d1212f892290a2e29e47f1df4f2fc8bfdbf802a55d"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/634.meta.txt",
+        "content_sha256": "de52a66ca00cc54d80ae1893d7b8c865c312b4185dfd219482ba20b6f4e0a6fb"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/634.raw.yaml",
+        "content_sha256": "8e8b65427eb9fe5b2fcc4958c6e4572638d5f6ef05a537955c5044b18e445567"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/635.meta.txt",
+        "content_sha256": "524f4eb7b261a173f24a104437a98506071e115f3ea6508ac5f9124172087940"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/635.raw.yaml",
+        "content_sha256": "e76b5b4b66e8e812b2aa0ab30e2ec9f6b07d893fefced2d0324a6a8a86626c28"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/637.meta.txt",
+        "content_sha256": "8b4a3d54fb11c999649b5dba90aefa6f3ca638d58959b87971f912f6570a323e"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/637.raw.yaml",
+        "content_sha256": "cf4a1a5af1884c3ed1aa28be0037381109c6116fd028b3daf4bd6d40ebd0ccec"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/638.meta.txt",
+        "content_sha256": "c4337f1a53e714dfbaacae71af4cab3dded50a7a322bd9972b65d0d96807e811"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/638.raw.yaml",
+        "content_sha256": "51eb02062060c7cd5cb0bda75fae8ac9a9edb20e5671ba9470a23fcaf7698504"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/639.meta.txt",
+        "content_sha256": "fe3e951931aa470da33b002058546f33a5897f6f1d650f1b879f7faedacdf951"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/639.raw.yaml",
+        "content_sha256": "ce77d26f6b26169a9f821b0834da5769eb6fc99c51b6de3a337623cfd1b4829a"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/667.meta.txt",
+        "content_sha256": "3e6ac3be8541325e152443fe8aae4451b2f0a370efe8523bda24f46e1490ed22"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/667.raw.yaml",
+        "content_sha256": "d3e6353f7b8b3be6f16adf3ed729e95eaf1a093f22c03e1c3ad93e79ddf230f8"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/668.meta.txt",
+        "content_sha256": "98db4ac0ea2ca19ac06e81012a568c5b4c1928ee47f29a1e8cd1fb146c3e82fc"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/668.raw.yaml",
+        "content_sha256": "eb28ea808b66cc59ff590919afb23d67acd51a1df8d225c214cf338dc016aab9"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/669.meta.txt",
+        "content_sha256": "acdafeef33296d49461702b0847488d6c0489754f9c18eba54824201331a02e7"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/669.raw.yaml",
+        "content_sha256": "8c3c4eedf34a2207a56dbd99d40a6b21a4dd1201f9efa996d8497dd455dfb9ec"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/670.meta.txt",
+        "content_sha256": "3d1f98f190f6c4aade59235c4158ff02e55374c83a99377393b4d3afe82496c5"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/670.raw.yaml",
+        "content_sha256": "0fbadcbf86f9e040b7828d6947124a3f0d9cd31a38969100af6c75bfeca43f3d"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/671.meta.txt",
+        "content_sha256": "91bf5f79b9f7b7b15e735a025ead735a619b0cfb66e19be0fb808041e16e38a0"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/671.raw.yaml",
+        "content_sha256": "60d23ca9f87d90c4c5fc0896b88564ac12bafe123a8c408b7822c086f96beac0"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/672.meta.txt",
+        "content_sha256": "8dce0aac090d9714c872dd57c41c2c56d1024d2276a102b6eb35a72f056778cf"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/672.raw.yaml",
+        "content_sha256": "8725edb7e1e4520e718d7862cecb9940911618f0f785ade6eaa0a453f91cd8df"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/676.meta.txt",
+        "content_sha256": "90763da92f85af0ff9fd0bab83ad473af8a2c4fa9169947a2c7279b1f63e6385"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/676.raw.yaml",
+        "content_sha256": "55a5509df021549f39b43fdb5aad191fc536fc84dfd69160f4722bf3954d0c91"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/677.meta.txt",
+        "content_sha256": "78d6abc820e82912308ba65110a33a3a4ac501b73bcaf84583820c92621dd8c9"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/677.raw.yaml",
+        "content_sha256": "5892b9b764af80cb457b69928a8760b0d4d6fa0b78e97b2a42411cbfb88c3268"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/678.meta.txt",
+        "content_sha256": "a7db48d129054264de830b4271321b96477c654f542b06cee30e827b8f2c0de7"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/678.raw.yaml",
+        "content_sha256": "c02adc97138b7ab595078718265cba414ae7bde13cdb554a7cff2e18e99e4df6"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/679.meta.txt",
+        "content_sha256": "52e5d8c862d546160376a1735aae203a038fb487a39de557dc696259efb42502"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/679.raw.yaml",
+        "content_sha256": "7f640634c4c940b4b300fa62aafa9c0a9db0ab789fa77bc33c8913e8eca4c27f"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/680.meta.txt",
+        "content_sha256": "ed6099e40df696d9eeb82dad5d385d31d520b773fcf54304821c05f93fa07e7e"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/680.raw.yaml",
+        "content_sha256": "ea0f8c592ecfd2c0129c91eb98887d70436941ed359b4924a565d18a121335c9"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/681.meta.txt",
+        "content_sha256": "002c5c6d440d4213b5f98e25bb0183529ad4cd3f373f942d959ff344119e6106"
+      },
+      {
+        "path": "charness-artifacts/issues/reads/681.raw.yaml",
+        "content_sha256": "8ff619282ca3c2ff9a1966841cef1d0e9cfb99a15c55bec25901f686cf76bdca"
+      },
+      {
+        "path": "charness-artifacts/metrics/rca-ledger.jsonl",
+        "content_sha256": "49f0b7a30fc23596f1770dcda971b9343dc10c07cc3e0f055b6900ccc1b53ad8"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-20-slice-0-quality-planner.meta.txt",
+        "content_sha256": "ca65b8266169a73ad4fb378de8e0128d4c8cc3de9236749bf871e0c9f230ed8c"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-20-slice-0-quality-planner.raw.yaml",
+        "content_sha256": "2fa50f79bc2e5b59f83d40e1c2f9cad3c4b5469270ad35389e0cfd20c6d2a31d"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md",
+        "content_sha256": "141e22b8d11ffd386666611fc1f30b30672d32be81ff893ba35e329161b5f0a0"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md",
+        "content_sha256": "022315903ddbd054eae0af013b494f956fd0cf6b2445c5fc6c39996bcd5342e8"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md",
+        "content_sha256": "e5e665923efd77a1feb52f8f2ff6a3523dd7546717d2735fb721ec3421563a3d"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-21-command-plan-targeted-mutant-proof.md",
+        "content_sha256": "0bb472de1bb7b3286ff89469e250d8f7423bf128572be4760e9eb257dc74b2ec"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md",
+        "content_sha256": "12943b6231b0a60d8fc4bcd063c57183de8ad4f3c4c6e03f22f47615f6feebfc"
+      },
+      {
+        "path": "charness-artifacts/quality/dup-review.json",
+        "content_sha256": "fdcdb382e0e1c75690c6119e759c81e2fff9055646125e6c2f72aa7846144d85"
+      },
+      {
+        "path": "charness-artifacts/release/2026-08-20-slice-0-release-planner.meta.txt",
+        "content_sha256": "8dff95b5bf7a0d0269b71c30da58559573c8fca878e5c1afbb04a60526eb86b9"
+      },
+      {
+        "path": "charness-artifacts/release/2026-08-20-slice-0-release-planner.raw.yaml",
+        "content_sha256": "56849a464a200c7c4b72df7f027c82272002aa9d352be8132679ce182792637b"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-20-093708-packet.json",
+        "content_sha256": "e142b68dbff1986aed5edfe8cc104ba5a0da0672492b7f8b6a2fe26d248e7e3e"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-20-093708-packet.md",
+        "content_sha256": "e46be86ecc4d9673c01a6ec7321572cb87e330bd50cf4ceddc43c72bddcc075f"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-20-152747-packet.json",
+        "content_sha256": "275d7bec887d8352d6ec241f6952dc08c0ea74106c817978497a01c0d9857c8f"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-20-152747-packet.md",
+        "content_sha256": "558034f962e4d6a679cc36947b6a8bc29cbb69332fdca757ab46fd87c93673f2"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
+        "content_sha256": "4d7bd00179750373a37c083fc4f270ca7419a725fd7163562cd4c611d1a2dbcb"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+        "content_sha256": "d1210f86e770b16baf4f7ac666ed9a755b027d5708ff17279ec7a2bd373c8e8b"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+        "content_sha256": "9c2f06ba138aed97a601425bd448d4b89dae8456a51f855c0163500b5acf500a"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.json",
+        "content_sha256": "4577d1db1b7780c07972799ff83e76d6cfad9db5c2971391b11be367241af8c4"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-21-release-candidate-retro-packet.md",
+        "content_sha256": "67b24b3d78047676fc62f0f488f256f900b8a394dd8bdd63c47474fc3d789187"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+        "content_sha256": "603cc61197aa0c6b65d5d7947e5909b0863b7d2ac4dfaff1d84cd1f1273fe236"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-21-session-retro.md",
+        "content_sha256": "d6c91c37458da19e43ada9e0c6fd1b0e36a45ab099dcb10da6e20c6f477931f2"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-ledger.json",
+        "content_sha256": "5194ab5a2333fce87892280a320ea65a5ee3c7076e5a0109d9ca92b6901dd04f"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "32e075e83f82361545c22a0b5b35b48b2ef6bd87308306150ff8b0e4d62454f5"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.json",
+        "content_sha256": "1136715fd7b0a89c46ddd65d124f37a84e366ab963fda39faff372b0c9934c2f"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b.md",
+        "content_sha256": "522d729f83fbac25db8835f411a89e1d1b14b079efd2101f22cb035e5c79cd71"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.json",
+        "content_sha256": "8f8c4cc3b8199f49dbe6ef42a4dc37cf587d92807c233b9eb7d2cfd58f186c87"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.md",
+        "content_sha256": "ff7e49fd6b9015af3c4cbcaa454bd7a9bf44baa71550c70f528e4f960da169c6"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.json",
+        "content_sha256": "cddef8434d62317a1546b3010a7ea6d1569a4ef2ff127e00ce904d05e6f97b38"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-20-goal-continuation.md",
+        "content_sha256": "5b9a627c7ab919a1013971bcd14e3583ab852d0874b12848aa7ada5690756847"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.json",
+        "content_sha256": "c346d2df539b2f251aa18f0cfb77f8b3c7958d1933652c6bf77ef5d7201cb12d"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-codex-review.md",
+        "content_sha256": "dee1b64b3406cf0e31b3374bcc7172a1d4c3bed7508ca4605108c6ed216529f1"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.json",
+        "content_sha256": "aecae492dd89f5a3623d04cefd14c62e4a9ae731fc4530e31cd2097330095d75"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-session-receipts/2026-08-21-release-candidate.md",
+        "content_sha256": "188d684fad3b94af858cee4fa9f48b04b3e05fb6d01db760c823fdae589897c7"
+      },
+      {
+        "path": "charness-artifacts/retro/recent-lessons.md",
+        "content_sha256": "66ea528afcb8aef65a9725dabfba0305a2be342326ce774b9bf5141080765906"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-14-issue-617-durable-lesson-session-bundle.md",
+        "content_sha256": "0fff1aed2a3477550dba39e297ada295bf2f53320872600e2e0a67ac4b79f8cb"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-20-fresh-checkout-probe-timeout.md",
+        "content_sha256": "4a733b17ade73da40be10226ce15419c4254e1de4792ad2ebade347f821ef438"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-20-issue-679-impl-bootstrap-idempotence.md",
+        "content_sha256": "4b17d846b50b6a1100da9f0d4020937789d7dfff2314a7bd9745338f5fdc28d4"
+      },
+      {
+        "path": "docs/conventions/parallel-execution.md",
+        "content_sha256": "e174db195f6a42f5aac512a563625c39ec13ad02ca4b3ff371d9a2d723d1c1c7"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "e7e15b88ca9ed5df942d80aba5498600e7100576010dd01303ee0f2891911e34"
+      },
+      {
+        "path": "plugins/charness/scripts/adapter-consumer-classification.json",
+        "content_sha256": "7564ef7607da9c845da96983d8eb90d227d532dcc0e24de5d84df23992b60a83"
+      },
+      {
+        "path": "plugins/charness/scripts/adapter_init_lib.py",
+        "content_sha256": "52047da81c4625ab9cd7e8ea5d47464f06288ea98c7f73b38e07fca24b9ee2da"
+      },
+      {
+        "path": "plugins/charness/scripts/adapter_key_registry.py",
+        "content_sha256": "c72167faa4257db1d15a844b0775135bc33d99b156d5ccfe8e5e3c50ed239405"
+      },
+      {
+        "path": "plugins/charness/scripts/adapter_key_usage.py",
+        "content_sha256": "91547636dc1d175c0e30d6a47e82061364b6254ab87609a89febd4818243b777"
+      },
+      {
+        "path": "plugins/charness/scripts/check_artifact_citations.py",
+        "content_sha256": "f455165e4796515d0a2d41d0488b2c8bafacfa12ebac8721d154e327aeadf88d"
+      },
+      {
+        "path": "plugins/charness/scripts/check_consumer_validator_catalog.py",
+        "content_sha256": "33ecfd60bf372e9a603dc5b9da987b329dc1ece6ecb41e56847f39d3cae03e9e"
+      },
+      {
+        "path": "plugins/charness/scripts/check_release_issue_ledger.py",
+        "content_sha256": "558e7824abd119b213c05a4b9dd9aaed095ec3c4c74598f9cf30e1ae79518a33"
+      },
+      {
+        "path": "plugins/charness/scripts/command_plan_preflight.py",
+        "content_sha256": "32e95c08c9cdbec3960c02984f01f80adcf6d58183989338b4a9ea1c35493943"
+      },
+      {
+        "path": "plugins/charness/scripts/manage_mutation_reports.py",
+        "content_sha256": "95cd6147e43ffa852e93b39a605a118ff41934ba478487113f3261fea1a7937f"
+      },
+      {
+        "path": "plugins/charness/scripts/mutation_sampling_lib.py",
+        "content_sha256": "482afc1cc194a56cc5ae32472a3f5d8fe5ffe8db139e733948692c92b7721fb0"
+      },
+      {
+        "path": "plugins/charness/scripts/release_issue_ledger_contract.py",
+        "content_sha256": "1fc5a3ae1e44144002faac957e50d80aeb56514a8ca5627608ec93dec4809e3e"
+      },
+      {
+        "path": "plugins/charness/scripts/release_issue_ledger_evidence.py",
+        "content_sha256": "30acc1a9adc20bdd2a383cc395ab3b4662471edd182fb08d458decbbc2b614bc"
+      },
+      {
+        "path": "plugins/charness/scripts/run_slice_closeout.py",
+        "content_sha256": "9c3f6a12bef3b3acf6e2758afa70ec88c2969b0ab01f3090cdd17512a3c43392"
+      },
+      {
+        "path": "plugins/charness/scripts/session_start_lesson_context.py",
+        "content_sha256": "6c03dd3e86ecc4365eb66f802bafb7e3994795df3372a79cbe49fd6ae013fd1b"
+      },
+      {
+        "path": "plugins/charness/scripts/slice_closeout_advisories.py",
+        "content_sha256": "e092f3b07a16ffbef45a7c065f23e395c9290859a6499a1ae4c6cc58209c1b9a"
+      },
+      {
+        "path": "plugins/charness/scripts/slice_closeout_repair_parity.py",
+        "content_sha256": "ac71fb03d34e972380a64e6e602b9491f6e0dafc08f0f6bef7c1c896f5b005cf"
+      },
+      {
+        "path": "plugins/charness/scripts/what_reads_this.py",
+        "content_sha256": "d47b5ab37cf27b23a6c04257cfbbbc5e92ada3d1c3590611af5eda151cdce6c7"
+      },
+      {
+        "path": "plugins/charness/scripts/what_reads_this_fallback.py",
+        "content_sha256": "c7c461e1ee0668e1c9f0bf4d696cc6d165b903da55c999d0a3357eaba65e2e5e"
+      },
+      {
+        "path": "plugins/charness/skills/achieve/references/lifecycle-during.md",
+        "content_sha256": "cba5f2f93ac7b275fcb6b5f57e6bdd7b8c0d84fbc15193501e2e21f87230ee56"
+      },
+      {
+        "path": "plugins/charness/skills/achieve/scripts/goal_artifact_lib.py",
+        "content_sha256": "4b6d7e430ea6d9a66dab43ce1c85768a35a528683b5a198fde7aa9213d5f183f"
+      },
+      {
+        "path": "plugins/charness/skills/achieve/scripts/goal_artifact_portability_gate.py",
+        "content_sha256": "915451388a57b04a776a012af66efb52f9404a8d19f8bd5616432a144d1548a1"
+      },
+      {
+        "path": "plugins/charness/skills/achieve/scripts/goal_path_portability.py",
+        "content_sha256": "0915db90010f95d87623c4dbf50eeeccb8a0090c7a628e370a8a1241e585e97b"
+      },
+      {
+        "path": "plugins/charness/skills/critique/SKILL.md",
+        "content_sha256": "202818b072125f6aa5cd6491a1400b074b58bd40fafc045f2ba6d7046bba2d43"
+      },
+      {
+        "path": "plugins/charness/skills/critique/scripts/record_round_findings.py",
+        "content_sha256": "89c178a7671e5e0fc4c2bec1d8d0afa0f4ea40aeb096d34e91f8e611ccf4a8ec"
+      },
+      {
+        "path": "plugins/charness/skills/impl/scripts/init_adapter.py",
+        "content_sha256": "ae2cbbbe8454f5f14ec7de53ed63c228d1bb214c9817484a660cb1bc7db83623"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
+        "content_sha256": "4e62a956c6dd06e00aa1e6acb494fffe390ec04368145395887cb4f2d420adc4"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/index.md",
+        "content_sha256": "ca5cf11ff16169f519e7b9a0eb423b5b36b0c72cfa2a9ee3bf8cf72fae9fd9f0"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/check_fresh_checkout_probes.py",
+        "content_sha256": "2154d319fb63da78d923b4f7917c0cc15900d50bf4d5932190ef6157731fff8d"
+      },
+      {
+        "path": "scripts/adapter-consumer-classification.json",
+        "content_sha256": "7564ef7607da9c845da96983d8eb90d227d532dcc0e24de5d84df23992b60a83"
+      },
+      {
+        "path": "scripts/adapter_init_lib.py",
+        "content_sha256": "52047da81c4625ab9cd7e8ea5d47464f06288ea98c7f73b38e07fca24b9ee2da"
+      },
+      {
+        "path": "scripts/adapter_key_registry.py",
+        "content_sha256": "c72167faa4257db1d15a844b0775135bc33d99b156d5ccfe8e5e3c50ed239405"
+      },
+      {
+        "path": "scripts/adapter_key_usage.py",
+        "content_sha256": "91547636dc1d175c0e30d6a47e82061364b6254ab87609a89febd4818243b777"
+      },
+      {
+        "path": "scripts/check_artifact_citations.py",
+        "content_sha256": "f455165e4796515d0a2d41d0488b2c8bafacfa12ebac8721d154e327aeadf88d"
+      },
+      {
+        "path": "scripts/check_consumer_validator_catalog.py",
+        "content_sha256": "33ecfd60bf372e9a603dc5b9da987b329dc1ece6ecb41e56847f39d3cae03e9e"
+      },
+      {
+        "path": "scripts/check_release_issue_ledger.py",
+        "content_sha256": "558e7824abd119b213c05a4b9dd9aaed095ec3c4c74598f9cf30e1ae79518a33"
+      },
+      {
+        "path": "scripts/command_plan_preflight.py",
+        "content_sha256": "32e95c08c9cdbec3960c02984f01f80adcf6d58183989338b4a9ea1c35493943"
+      },
+      {
+        "path": "scripts/manage_mutation_reports.py",
+        "content_sha256": "95cd6147e43ffa852e93b39a605a118ff41934ba478487113f3261fea1a7937f"
+      },
+      {
+        "path": "scripts/mutation_sampling_lib.py",
+        "content_sha256": "482afc1cc194a56cc5ae32472a3f5d8fe5ffe8db139e733948692c92b7721fb0"
+      },
+      {
+        "path": "scripts/release_issue_ledger_contract.py",
+        "content_sha256": "1fc5a3ae1e44144002faac957e50d80aeb56514a8ca5627608ec93dec4809e3e"
+      },
+      {
+        "path": "scripts/release_issue_ledger_evidence.py",
+        "content_sha256": "30acc1a9adc20bdd2a383cc395ab3b4662471edd182fb08d458decbbc2b614bc"
+      },
+      {
+        "path": "scripts/run_slice_closeout.py",
+        "content_sha256": "9c3f6a12bef3b3acf6e2758afa70ec88c2969b0ab01f3090cdd17512a3c43392"
+      },
+      {
+        "path": "scripts/session_start_lesson_context.py",
+        "content_sha256": "6c03dd3e86ecc4365eb66f802bafb7e3994795df3372a79cbe49fd6ae013fd1b"
+      },
+      {
+        "path": "scripts/slice_closeout_advisories.py",
+        "content_sha256": "e092f3b07a16ffbef45a7c065f23e395c9290859a6499a1ae4c6cc58209c1b9a"
+      },
+      {
+        "path": "scripts/slice_closeout_repair_parity.py",
+        "content_sha256": "ac71fb03d34e972380a64e6e602b9491f6e0dafc08f0f6bef7c1c896f5b005cf"
+      },
+      {
+        "path": "scripts/what_reads_this.py",
+        "content_sha256": "d47b5ab37cf27b23a6c04257cfbbbc5e92ada3d1c3590611af5eda151cdce6c7"
+      },
+      {
+        "path": "scripts/what_reads_this_fallback.py",
+        "content_sha256": "c7c461e1ee0668e1c9f0bf4d696cc6d165b903da55c999d0a3357eaba65e2e5e"
+      },
+      {
+        "path": "skills/public/achieve/references/lifecycle-during.md",
+        "content_sha256": "cba5f2f93ac7b275fcb6b5f57e6bdd7b8c0d84fbc15193501e2e21f87230ee56"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_artifact_lib.py",
+        "content_sha256": "4b6d7e430ea6d9a66dab43ce1c85768a35a528683b5a198fde7aa9213d5f183f"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_artifact_portability_gate.py",
+        "content_sha256": "915451388a57b04a776a012af66efb52f9404a8d19f8bd5616432a144d1548a1"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_path_portability.py",
+        "content_sha256": "0915db90010f95d87623c4dbf50eeeccb8a0090c7a628e370a8a1241e585e97b"
+      },
+      {
+        "path": "skills/public/critique/SKILL.md",
+        "content_sha256": "202818b072125f6aa5cd6491a1400b074b58bd40fafc045f2ba6d7046bba2d43"
+      },
+      {
+        "path": "skills/public/critique/scripts/record_round_findings.py",
+        "content_sha256": "89c178a7671e5e0fc4c2bec1d8d0afa0f4ea40aeb096d34e91f8e611ccf4a8ec"
+      },
+      {
+        "path": "skills/public/impl/scripts/init_adapter.py",
+        "content_sha256": "ae2cbbbe8454f5f14ec7de53ed63c228d1bb214c9817484a660cb1bc7db83623"
+      },
+      {
+        "path": "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "content_sha256": "4e62a956c6dd06e00aa1e6acb494fffe390ec04368145395887cb4f2d420adc4"
+      },
+      {
+        "path": "skills/public/quality/references/index.md",
+        "content_sha256": "ca5cf11ff16169f519e7b9a0eb423b5b36b0c72cfa2a9ee3bf8cf72fae9fd9f0"
+      },
+      {
+        "path": "skills/public/release/scripts/check_fresh_checkout_probes.py",
+        "content_sha256": "2154d319fb63da78d923b4f7917c0cc15900d50bf4d5932190ef6157731fff8d"
+      },
+      {
+        "path": "tests/coverage_debt/test_batch2.py",
+        "content_sha256": "5d5373113c8797f62da292e9396bd8bf3285de2b0835a07cc6221c4d5876a717"
+      },
+      {
+        "path": "tests/quality_gates/test_adapter_key_registry.py",
+        "content_sha256": "bd900783ccb682681458c4706a5b9971ad2af42575a3c2986ce7a0ba828924da"
+      },
+      {
+        "path": "tests/quality_gates/test_command_plan_preflight.py",
+        "content_sha256": "f6bac32ac2dc51633725ae802e93164fe170fba6464a71bf2578df231b0a7352"
+      },
+      {
+        "path": "tests/quality_gates/test_goal_artifact_portability.py",
+        "content_sha256": "ee2d878286d5dd2410c3b7e8fb1de401fa0a403dc835494e2d9a89abe25cc06d"
+      },
+      {
+        "path": "tests/quality_gates/test_public_skill_yaml_output_contract.py",
+        "content_sha256": "4f2c5d407c9f7c5c113a81bb3269978efbc23a21aaa761e6417433b23e0ae5d7"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_mutation_coverage.py",
+        "content_sha256": "5dfa24a062e64a39c0bb285cb0016b94b586a9ecc4a9a6e49427cde3a698ae0f"
+      },
+      {
+        "path": "tests/quality_gates/test_release_issue_ledger.py",
+        "content_sha256": "f6f9d932de75d317bf569c7212e86f7cbbb483beb701422a6eb01bbfebfc0a75"
+      },
+      {
+        "path": "tests/quality_gates/test_removed_name_consumers.py",
+        "content_sha256": "fff8332bde75039e82d24af461219b18cde1c841d919aeebea0faa8d861be5b6"
+      },
+      {
+        "path": "tests/quality_gates/test_script_inprocess_behaviors.py",
+        "content_sha256": "412a66d8b4febc6ec8bf013b4634d04e6acb7eb918af1556c65f99b5800b1eb3"
+      },
+      {
+        "path": "tests/quality_gates/test_slice_closeout_artifact_citations.py",
+        "content_sha256": "dc325a916916f4cde9beb22919e54cd197a2c4b19172058d845e7eab2a3d0d0a"
+      },
+      {
+        "path": "tests/quality_gates/test_slice_closeout_new_pool_advisory.py",
+        "content_sha256": "9aa8e8d4a773a139579103148769f680fcdbbb5db464b2267cc9ecb9f6e9964f"
+      },
+      {
+        "path": "tests/test_achieve_lesson_citation.py",
+        "content_sha256": "d719ffc0fe3ba4ea3448721d63e44687fbd2beb4a08ab512897e96e50072612d"
+      },
+      {
+        "path": "tests/test_adapter_key_registry.py",
+        "content_sha256": "ebcc49657456e66bfb5e0e914748b7a2d50484ddcbcd7bc5dbab66ac7ff280c3"
+      },
+      {
+        "path": "tests/test_artifact_citations.py",
+        "content_sha256": "c1fd0b355b3e288fd59a97841b833d73f49cc5193adeede768c198cfb5aec485"
+      },
+      {
+        "path": "tests/test_consumer_validator_catalog.py",
+        "content_sha256": "a41ad17a493df1d57d5e3c29d93a5d13df3bce6a8dc63db97b08d22d77ee41ba"
+      },
+      {
+        "path": "tests/test_critique_round_findings.py",
+        "content_sha256": "daa14d2f9f6fed6deb020a6d29dad0eab65c67eb266883b5cb66e3bd04c14e27"
+      },
+      {
+        "path": "tests/test_goal_path_portability.py",
+        "content_sha256": "c28afeb08748f2615230bb689f4e48a154fa14c3989e45dc4668528af6d4d85e"
+      },
+      {
+        "path": "tests/test_impl_bootstrap.py",
+        "content_sha256": "cb0e5fe8a2af5db9d6bb58dda442beefe8ef1f20e3671d30e341f3611242713f"
+      },
+      {
+        "path": "tests/test_session_start_lesson_context.py",
+        "content_sha256": "3b686b402d7a55ec43fb495a9d0d0112763f8febb99111bccaec99e480f1b5b7"
+      },
+      {
+        "path": "tests/test_slice_closeout_advisories.py",
+        "content_sha256": "294305fa7e81076c9e670b80b2d0a0fccd1da285dc669fbcbf9df0a49dcb5ec1"
+      },
+      {
+        "path": "tests/test_what_reads_this.py",
+        "content_sha256": "32bbcdecae731d56862351867bb7e8839ab7af8a4e06b50178bd47b9f4ba8e31"
+      }
+    ],
+    "reviewed_patch_sha256": "34b56e6a0a3e5d86da92c45eae7c39596b50bd8fb3f4f570586bf1d7d9557088",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-20-142117-packet.json",
+      "charness-artifacts/critique/2026-08-20-142117-packet.md",
+      "charness-artifacts/critique/2026-08-20-broad-release-goal-packet.json",
+      "charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md",
+      "charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-packet.json",
+      "charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-packet.md",
+      "charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-r2-packet.json",
+      "charness-artifacts/critique/2026-08-20-release-goal-execution-readiness-r2-packet.md",
+      "charness-artifacts/critique/2026-08-20-release-handoff-packet.json",
+      "charness-artifacts/critique/2026-08-20-release-handoff-packet.md",
+      "charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.json",
+      "charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.md",
+      "charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.json",
+      "charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.md",
+      "charness-artifacts/critique/2026-08-21-semantic-candidate-packet.json",
+      "charness-artifacts/critique/2026-08-21-semantic-candidate-packet.md",
+      "charness-artifacts/critique/2026-08-21-semantic-candidate-release-critique.md",
+      "charness-artifacts/critique/command-plans/2026-08-21-goal-fanout.json",
+      "charness-artifacts/critique/findings/2026-08-20-s3-r2-code.txt",
+      "charness-artifacts/critique/findings/2026-08-20-s3-r2-consumer.txt",
+      "charness-artifacts/critique/findings/2026-08-20-s3-r2-goal.txt",
+      "charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-code-logic.md",
+      "charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-consumer-export.md",
+      "charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-goal-claims.md",
+      "charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-code.md",
+      "charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-consumer.md",
+      "charness-artifacts/critique/rounds/2026-08-20-w-20260820-s3-r2-goal.md",
+      "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-command-plan-repair.md",
+      "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-command-plan.md",
+      "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-goal-codex-review.md",
+      "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-semantic-candidate-final.md",
+      "charness-artifacts/critique/snapshots/2026-08-20-s3-code-logic.json",
+      "charness-artifacts/critique/snapshots/2026-08-20-s3-consumer-export.json",
+      "charness-artifacts/critique/snapshots/2026-08-20-s3-goal-claims.json",
+      "charness-artifacts/critique/snapshots/2026-08-20-s3-r2-code.json",
+      "charness-artifacts/critique/snapshots/2026-08-20-s3-r2-consumer.json",
+      "charness-artifacts/critique/snapshots/2026-08-20-s3-r2-goal.json",
+      "charness-artifacts/critique/snapshots/2026-08-21-command-plan-repair.json",
+      "charness-artifacts/critique/snapshots/2026-08-21-command-plan.json",
+      "charness-artifacts/critique/snapshots/2026-08-21-goal-codex-review.json",
+      "charness-artifacts/critique/snapshots/2026-08-21-semantic-candidate-final-v9-boundary.json"
+    ],
+    "identity_sha256": "cfecfe36279b82aeab4c86dc10da31019e6f92f049210e5606e1aaa7e50aeab0"
+  }
+}

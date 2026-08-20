@@ -1,0 +1,47 @@
+{
+  "window": {
+    "id": "2026-08-21-critique-round-routing-repair",
+    "opened_at": "2026-08-20T19:48:40Z"
+  },
+  "head": "67946f19b8478cea40ba76d8209bfe82dfd03603",
+  "status": [
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 092b7841e04e1c12e910fbe46f41421329727e95 charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-minto.md",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 1381f1da7e86ac551e7e859ac1f832a3e74fad0d charness-artifacts/critique/2026-08-21-release-6.3.0-packet.md",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 167e101425b979d12e3a12a4a58703879acbb987 charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-raskin.json",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 5da207fd4d16b6e4e66a5e67e1d9aed512dcca0f charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-raskin.md",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 754452146e99ce17c2355f08389f59c6a21e87f5 charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-counterweight.json",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 7552018a37b9f1c790e2f28c90c389d8d7bb0d67 charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-minto.json",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 972c90392cb22f372a84eb789733ba92d7484968 charness-artifacts/critique/2026-08-21-release-6-3-0.md",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 c6bde6fda4f8cca24cc163247047a2dc481826b5 charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-gawande.md",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 f3e2b2d05f60767ecea1c0cd0c91bad6072ec8f1 charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-counterweight.md",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 fc844d04f953d8f0f9eb04c3ae2f2c2117812323 charness-artifacts/critique/2026-08-21-release-6.3.0-packet.json",
+    "1 A. N... 000000 100644 100644 0000000000000000000000000000000000000000 fcfff6ed7b8be690d5fec26566b075be7fb8e0ea charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-gawande.json",
+    "1 M. N... 100644 100644 100644 dc8ca2b2eaecd6028b1a5b74d90c631def2a62e2 0c27a2e4e45da0c1302aa8d494e580fa3cf12232 plugins/charness/scripts/check_artifact_surface_preflight.py",
+    "1 M. N... 100644 100644 100644 dc8ca2b2eaecd6028b1a5b74d90c631def2a62e2 0c27a2e4e45da0c1302aa8d494e580fa3cf12232 scripts/check_artifact_surface_preflight.py",
+    "1 M. N... 100644 100644 100644 ddf6f0c06bcc2649d9123c39787ff97451e4cdaf 0ae680d558e95667e5bc5af24749520b88444290 tests/quality_gates/test_check_artifact_surface_preflight.py"
+  ],
+  "staged_patch_sha256": "a70c740622f674e81aac58a5dd85e0523b76883436c8554ce6cb087729932acb",
+  "worktree_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changed_content": {
+    "charness-artifacts/critique/2026-08-21-release-6-3-0.md": "-:9712106c579f1647ff29f9573345ac117d3f18380155d5f6c11f651a0c85db74",
+    "charness-artifacts/critique/2026-08-21-release-6.3.0-packet.json": "-:da91b2c1cf73fabda39a4c706449f08060b95db95116df8b9d3219b967cf2c36",
+    "charness-artifacts/critique/2026-08-21-release-6.3.0-packet.md": "-:88d954e6999f43718dceaa9d0320f4fbad57f2e8839c16c2749c387882ad777b",
+    "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-counterweight.md": "-:d38a161fcf67675f184d64fe3cd7b94da90e3a7b86cc6eb253dde1e340480ac7",
+    "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-gawande.md": "-:e5a850b35481b3a5402ccf9574b3251d84c59d4a2ba973aaa045d2cc446e492c",
+    "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-minto.md": "-:ccf3ecde0cb48175bd9de78f0e00fb77e2fd4fa76309a24a40275baebc69a396",
+    "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-raskin.md": "-:a57670a4b2c6a965ea77e8dfd40a3ecda857861b9e6dc243a80ead4ad4596065",
+    "charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-counterweight.json": "-:3f2ca28eb75b77d70aea98077c6b4478d246d34ec39a436c0b17d625727ccfd3",
+    "charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-gawande.json": "-:cba86f012493c8ced6391a5e940ae6262e385ea7a703070112c1de764fbd0035",
+    "charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-minto.json": "-:bb2aad12ebb762cbeba757cd19494c7b7b9bc251824bdd90958d440fd817b51d",
+    "charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-raskin.json": "-:fca3f6dc89aedcd12f89923799c733a17f165d213eddc32f24a5a94921d47170",
+    "plugins/charness/scripts/check_artifact_surface_preflight.py": "-:c5c413409109ecfef5f1db924e2389a41cc235b536f6e2505a0935fb3a24e3f3",
+    "scripts/check_artifact_surface_preflight.py": "-:c5c413409109ecfef5f1db924e2389a41cc235b536f6e2505a0935fb3a24e3f3",
+    "tests/quality_gates/test_check_artifact_surface_preflight.py": "-:e76b910f8f62c073edda98d4de1d9a6d43c836618bf060144871c6d0f383f5f9"
+  },
+  "untracked": {},
+  "source_blobs": {
+    "plugins/charness/scripts/check_artifact_surface_preflight.py": "c5c413409109ecfef5f1db924e2389a41cc235b536f6e2505a0935fb3a24e3f3",
+    "scripts/check_artifact_surface_preflight.py": "c5c413409109ecfef5f1db924e2389a41cc235b536f6e2505a0935fb3a24e3f3",
+    "tests/quality_gates/test_check_artifact_surface_preflight.py": "e76b910f8f62c073edda98d4de1d9a6d43c836618bf060144871c6d0f383f5f9"
+  }
+}

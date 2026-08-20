@@ -135,6 +135,16 @@ def test_named_path_that_resolves_to_nothing_refuses(tmp_path: Path, script: str
     assert "resolve to nothing" in (result.stdout + result.stderr)
 
 
+def test_named_critique_path_traversal_refuses(tmp_path: Path) -> None:
+    result = run_gate(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root", str(tmp_path),
+        "--paths", "charness-artifacts/critique/../../outside.md",
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "resolve to nothing" in (result.stdout + result.stderr)
+
+
 def test_named_path_from_another_family_is_not_this_validator_business(tmp_path: Path) -> None:
     """The commit-boundary tools pass a slice of the changed set. A path outside
     this validator's artifact directory must stay a pass whether or not it

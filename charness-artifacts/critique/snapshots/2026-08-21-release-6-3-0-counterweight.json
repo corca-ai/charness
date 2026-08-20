@@ -1,0 +1,31 @@
+{
+  "window": {
+    "id": "2026-08-21-release-6-3-0-counterweight",
+    "opened_at": "2026-08-20T19:37:31Z"
+  },
+  "head": "67946f19b8478cea40ba76d8209bfe82dfd03603",
+  "status": [
+    "? charness-artifacts/critique/2026-08-21-release-6.3.0-packet.json",
+    "? charness-artifacts/critique/2026-08-21-release-6.3.0-packet.md",
+    "? charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-gawande.md",
+    "? charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-minto.md",
+    "? charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-raskin.md",
+    "? charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-gawande.json",
+    "? charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-minto.json",
+    "? charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-raskin.json"
+  ],
+  "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "worktree_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changed_content": {},
+  "untracked": {
+    "charness-artifacts/critique/2026-08-21-release-6.3.0-packet.json": "da91b2c1cf73fabda39a4c706449f08060b95db95116df8b9d3219b967cf2c36",
+    "charness-artifacts/critique/2026-08-21-release-6.3.0-packet.md": "88d954e6999f43718dceaa9d0320f4fbad57f2e8839c16c2749c387882ad777b",
+    "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-gawande.md": "e5a850b35481b3a5402ccf9574b3251d84c59d4a2ba973aaa045d2cc446e492c",
+    "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-minto.md": "ccf3ecde0cb48175bd9de78f0e00fb77e2fd4fa76309a24a40275baebc69a396",
+    "charness-artifacts/critique/rounds/2026-08-21-2026-08-21-release-6-3-0-raskin.md": "a57670a4b2c6a965ea77e8dfd40a3ecda857861b9e6dc243a80ead4ad4596065",
+    "charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-gawande.json": "cba86f012493c8ced6391a5e940ae6262e385ea7a703070112c1de764fbd0035",
+    "charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-minto.json": "bb2aad12ebb762cbeba757cd19494c7b7b9bc251824bdd90958d440fd817b51d",
+    "charness-artifacts/critique/snapshots/2026-08-21-release-6-3-0-raskin.json": "fca3f6dc89aedcd12f89923799c733a17f165d213eddc32f24a5a94921d47170"
+  },
+  "source_blobs": {}
+}

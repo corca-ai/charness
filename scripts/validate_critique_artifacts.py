@@ -35,6 +35,7 @@ _sections = import_repo_module(__file__, "scripts.markdown_sections")
 # The required-fields / unique-id / typed-enum loop over a structured-entry
 # section, shared with the ideation `## Structured Questions` floor.
 _structured_entry_floor = import_repo_module(__file__, "scripts.structured_entry_floor")
+_critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
 critique_observed_date = _scope.critique_observed_date
 # Kept as module attributes: `tests/test_validate_critique_artifacts_dates.py`
@@ -49,7 +50,7 @@ DELIVERY_STATE_FIELD = _reviewer_evidence.DELIVERY_STATE_FIELD
 DELIVERY_STATE_VALUES = _reviewer_evidence.DELIVERY_STATE_VALUES
 DELIVERY_STATE_VALUES_SUMMARY = _reviewer_evidence.DELIVERY_STATE_VALUES_SUMMARY
 
-CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
+CRITIQUE_ARTIFACT_PREFIX = _critique_paths.CRITIQUE_ARTIFACT_PREFIX
 CRITIQUE_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Critique Prepare Packet(?:\s+—\s+\S.*)?$")
 STRUCTURED_FINDINGS_HEADING = "## Structured Findings"
 STRUCTURED_BINS = frozenset({"act-before-ship", "bundle-anyway", "over-worry", "valid-but-defer"})
@@ -175,27 +176,16 @@ def changed_paths(repo_root: Path) -> list[str]:
 
 
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
-    if all_artifacts:
-        return [
-            path
-            for path in sorted((repo_root / CRITIQUE_ARTIFACT_PREFIX).glob("*.md"))
-            if not file_is_prepare_packet_markdown_kind(
-                path,
-                expected_kind=CRITIQUE_PREPARE_PACKET_KIND,
-                expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
-            )
-        ]
-    candidates: list[Path] = []
-    for relpath in paths:
-        if relpath.startswith(CRITIQUE_ARTIFACT_PREFIX) and relpath.endswith(".md"):
-            path = repo_root / relpath
-            if not file_is_prepare_packet_markdown_kind(
-                path,
-                expected_kind=CRITIQUE_PREPARE_PACKET_KIND,
-                expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
-            ) and path.is_file():
-                candidates.append(path)
-    return sorted(candidates)
+    return _critique_paths.candidate_paths(
+        repo_root,
+        paths,
+        all_artifacts=all_artifacts,
+        packet_checker=lambda path: file_is_prepare_packet_markdown_kind(
+            path,
+            expected_kind=CRITIQUE_PREPARE_PACKET_KIND,
+            expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
+        ),
+    )
 
 
 def _normalize_contract_text(text: str) -> str:

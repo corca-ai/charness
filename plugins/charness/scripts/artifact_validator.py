@@ -23,6 +23,7 @@ resolve_artifact_override = _run_scope.resolve_artifact_override
 git_changed_paths = _run_scope.git_changed_paths
 selected_changed_paths = _run_scope.selected_changed_paths
 unresolvable_named_paths = _run_scope.unresolvable_named_paths
+safe_repo_relative_path = _run_scope.safe_repo_relative_path
 
 # Re-exported so every validator keeps importing its selection surface from one
 # place; the split moved where the code lives, not what callers import.
@@ -36,6 +37,7 @@ __all__ = [
     "git_changed_paths",
     "selected_changed_paths",
     "unresolvable_named_paths",
+    "safe_repo_relative_path",
 ]
 
 H2_RE = re.compile(r"^##\s+.+$")

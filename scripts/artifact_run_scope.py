@@ -18,12 +18,33 @@ from __future__ import annotations
 import subprocess
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 
 class ValidationError(Exception):
     pass
+
+
+def safe_repo_relative_path(raw: str) -> str | None:
+    """Return a normalized repo-relative path, or refuse an escaping one.
+
+    Git emits slash-separated relative paths. An absolute path, Windows drive,
+    backslash, or ``..`` component is a malformed ``--paths`` assertion, not an
+    empty artifact scope; refusing it prevents readers from escaping their owner.
+    """
+
+    value = str(raw)
+    candidate = Path(value)
+    if (
+        not value
+        or candidate.is_absolute()
+        or PureWindowsPath(value).is_absolute()
+        or "\\" in value
+        or ".." in candidate.parts
+    ):
+        return None
+    return candidate.as_posix()
 
 
 def _git_paths(repo_root: Path, args: list[str], *, artifact_label: str) -> list[str]:
@@ -153,8 +174,9 @@ def unresolvable_named_paths(
     if owned_prefix is None:
         return []
     owned = [str(path) for path in named if str(path).startswith(owned_prefix)]
-    missing = [path for path in owned if not (repo_root / path).is_file()]
-    if not missing:
+    unsafe = [path for path in owned if safe_repo_relative_path(path) is None]
+    missing = [path for path in owned if path not in unsafe and not (repo_root / path).is_file()]
+    if not unsafe and not missing:
         return []
     deleted: set[str] = set()
     for args in (["ls-files", "--deleted", "-z"], ["diff", "--cached", "--name-only", "--diff-filter=D", "-z"]):
@@ -170,5 +192,4 @@ def unresolvable_named_paths(
             deleted.update(
                 entry for entry in result.stdout.decode("utf-8", errors="surrogateescape").split("\0") if entry
             )
-    return [path for path in missing if path not in deleted]
-
+    return unsafe + [path for path in missing if path not in deleted]
