@@ -2,18 +2,18 @@
 
 Date: 2026-08-21
 
-Execution: parent-delegated read-only Codex bounded review completed in a
-separate process context. The host exposes no typed Agent/spawn/Ceal worker
-envelope, so the review used the available unnamed `codex exec --sandbox
-read-only` channel and parent boundary fingerprints. A first delivery attempt
-was interrupted after it failed to return bounded findings; its boundary
-verification was clean. The unnamed retry returned the three requested release
-angles plus counterweight, and a later two-round review covered the repaired
-command-plan verdict surface.
+Execution: parent-delegated read-only Codex bounded reviews completed in
+separate process contexts. The host exposes no typed Agent/spawn/Ceal worker
+envelope, so the reviews used unnamed `codex exec --sandbox read-only` channels
+and parent boundary fingerprints. The final owner-bound round consumed the
+current repaired packet and found the verdict logic sound, while identifying a
+proof-identity binding gap and one diagnostic wording drift; both were repaired
+and rerun by the parent. A replacement packet is required before semantic lock.
 
 ## Decision Under Review
 
-Whether to lock the integrated semantic candidate at `5a170113dc8ea0bbd3c790d65180404db442081e` before version mutation, tag, publication, or external readback.
+Whether to lock the integrated semantic candidate at `def088cf9` before version
+mutation, tag, publication, or external readback.
 
 Success requires a bounded fresh-eye release critique with separate angle and
 counterweight passes, followed by a durable four-bin disposition. The original
@@ -41,7 +41,9 @@ The retry executed Gawande (operator checklist and clean checkout), Minto
 bounded fresh-eye read, followed by the requested counterweight disposition. It
 found no release-blocking defect in the reviewed packet. The command-plan
 repair then received a first round that found ref/help/short-flag continuation
-gaps and a second round that read the repairs and found no remaining blocker.
+gaps and a second round that read the repairs. The final owner-bound round found
+no remaining owner-binding blocker, but caught stale proof identity and a
+diagnostic-label mismatch; the parent repaired both.
 
 ## Counterweight Pass
 
@@ -150,17 +152,22 @@ fresh-eye finding and repair are recorded in rounds 1 and 2; the initial
 recorder rejection of an out-of-repo `/tmp` boundary snapshot was also
 preserved as a path-contract smell and repaired by using a repo-owned snapshot.
 
-The mutation closeout completed with fresh coverage and changed-line proof
-`analyzed: 22`, `changed: 22`, `blocking: []`; its broad standing pytest phase
-also measured `177.71s` against the `120s` advisory budget. This is preserved as
-an explicit runtime advisory, not a clean-budget claim and not a new version
-blocker: issue `#668` already owns the runtime-semantics decision, forbids
-releveling the wall-time number, and requires isolated-versus-contended evidence
-or a subject-controlled metric before changing verdict semantics.
+The final owner-bound round also found that `fanout-stopped` over-described
+malformed/token/help failures as owner/flag failures; `3cc29d5ea` now emits the
+general preflight-failure diagnosis and tests it.
+
+The serialized current-head changed-line proof is `23/23`, `blocking=[]`, at
+`3cc29d5ea`, with the durable receipt at
+`charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md`.
+The serialized broad quality run is `96 passed, 0 failed` in `167.7s`. An
+earlier concurrent broad/changed-line attempt produced a no-verdict race through
+shared mutation state; it is not used as proof. The final runs were serialized.
+Runtime remains an explicit #668 advisory, not a clean-budget claim or a version
+blocker.
 
 ## Structured Findings
 
-- F1 | bin: act-before-ship | evidence: strong | ref: release boundary and unchanged-candidate proof | action: defer | note: semantic lock may proceed only after the parent reruns the normal integrated verification on the repaired tree; do not infer version/publication approval
+- F1 | bin: act-before-ship | evidence: strong | ref: final owner-bound review and current-head proof binding | action: defer | note: semantic lock may proceed only after the replacement packet is reviewed and the current serialized verification is bound; do not infer version/publication approval
 - F2 | bin: valid-but-defer | evidence: strong | ref: /tmp/charness-s5-quality-read-only-final2.log | action: defer | note: local quality, fresh-checkout, duplicate-ratchet, and real-host trigger checks do not establish external release truth
 - F3 | bin: over-worry | evidence: weak | ref: hypothetical unobserved consumer hosts | action: document | note: speculative host concerns without a current reproducer remain outside this critique's proven findings
 
@@ -170,29 +177,30 @@ or a subject-controlled metric before changing verdict semantics.
 - Requested spawn fields: read-only one-shot bounded reviewer; inherited session model; no host addressing/name
 - Host exposure state: unsupported
 - Application state: parent-delegated read-only Codex review delivered after one interrupted attempt
-- Delivery state: findings-received; command-plan repair round 2 found no blocker
+- Delivery state: findings-received; final owner-bound round found the owner logic sound but blocked on stale proof identity; the parent repaired and reran it
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated: the semantic packet retry returned Gawande/Minto/Raskin plus
-counterweight findings; command-plan repair rounds 1 and 2 were recorded with
-clean boundary verification. Round 1 caused repairs; round 2 read the repaired
-surface and found no blocker. No same-agent substitute or Cautilus evaluation
-is claimed.
+parent-delegated: the semantic retry returned Gawande/Minto/Raskin plus
+counterweight findings; command-plan rounds 1 and 2 were recorded, and the
+final owner-bound packet review returned findings. It found no owner-binding
+verdict escape, but required current-HEAD proof rebinding and diagnostic repair;
+the parent performed those repairs and serialized the reruns. No same-agent
+substitute or Cautilus evaluation is claimed.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/2026-08-21-semantic-candidate-packet.json (prepared by the parent; no bounded reviewer could consume it)
-- Packet path: charness-artifacts/critique/2026-08-21-semantic-candidate-packet.json
-- Packet SHA256: 5d2075b58d4742336f59bbf30c6eec6ea415d37b24af43d59c0cdbceeefdfb6e
-- Identity SHA256: 4d0d947e003c1a9d0621aebbb54c7308d12e14c9d20e4389bd09c4b799292858
+- Packet consumed: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-packet.json`
+- Packet SHA256: `437cae4ae72bd71a608063d021312c866b89d4d4d8ef1b9f7e0bb5121fe00cc3`
+- Identity SHA256: `a9c83957de85a0c841539cf0d10c557a23f861c61ba8244ed1cdbe61cbc7286b`
+- The final packet is the identity to be consumed by the replacement
+  fresh-eye review; it is not substituted by the earlier v3 packet.
 
 ## Operator Action Required
 
-- Do not mutate version or release surfaces until the repaired tree has its own
-  integrated verification lock.
-- Rebuild/rebind the semantic packet after committing the command-plan repair;
-  the old `5a170113d` packet identity cannot silently absorb new source/tests.
+- Do not mutate version or release surfaces until the final packet for
+  `def088cf9` has its own fresh-eye read and integrated verification lock.
 - Re-run the exact post-critique verification lock before any external-boundary
   action; hosted/install readback, issue closure, publication, and Cautilus
   remain unrun.
