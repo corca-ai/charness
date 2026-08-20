@@ -188,6 +188,28 @@
       ]
     },
     {
+      "surface_id": "operational-evidence-records",
+      "description": "Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.",
+      "source_paths": [
+        "charness-artifacts/issues/**",
+        "charness-artifacts/quality/**",
+        "charness-artifacts/release/**"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json",
+        "python3 scripts/validate_quality_artifact.py --repo-root .",
+        "./scripts/check-markdown.sh",
+        "./scripts/check-secrets.sh"
+      ],
+      "notes": [
+        "This surface owns historical raw/meta attachments so a closeout cannot mistake an unowned evidence file for a complete bundle.",
+        "The pinned release-issue ledger command validates the current activation ledger and its referenced receipts; a new ledger generation must update this command and its owning evidence together.",
+        "The quality validator checks the current quality artifact, while historical quality/release Markdown remains under the repository Markdown checks. These commands do not claim external freshness, semantic truth of prose, or validity of every historical raw transcript."
+      ]
+    },
+    {
       "surface_id": "prompt-behavior-proof",
       "description": "Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.",
       "source_paths": [

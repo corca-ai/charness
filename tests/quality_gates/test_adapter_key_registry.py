@@ -104,6 +104,17 @@ def test_a_text_asserted_key_is_not_reported_as_read(tmp_path: Path) -> None:
     assert resolve_key(tmp_path, "some_declared_key", files=[module]).state == "text-asserted"
 
 
+def test_an_inert_output_literal_is_not_reported_as_a_value_reader(tmp_path: Path) -> None:
+    module = tmp_path / "scripts" / "fake_output.py"
+    module.parent.mkdir(parents=True)
+    module.write_text('DEFAULTS = {"some_declared_key": 3}\n', encoding="utf-8")
+
+    parsing, asserting = find_readers(tmp_path, "some_declared_key", files=[module])
+
+    assert parsing == ()
+    assert asserting == ()
+
+
 def test_a_parsing_reader_outranks_a_text_assertion(tmp_path: Path) -> None:
     module = tmp_path / "scripts" / "fake_parser.py"
     module.parent.mkdir(parents=True)
@@ -297,18 +308,22 @@ def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
     assert result["registry_problems"] == []
     assert any(gap["adapter"].startswith(".agents/") for gap in result["gaps"]) or not result["gaps"]
     # The two cautilus files have no parsing reader at all -- the repo documents this.
-    # The other two are UNDER-ASSOCIATION residue: a real reader the closure cannot reach
-    # because it receives adapter data from a caller rather than naming the adapter or its
-    # owner. They appeared when association was narrowed to kill the module-basename
-    # collision, and keeping them visible is the deliberate trade: a false
-    # `reader-elsewhere` is a report an operator dismisses in one reading, while a false
-    # `reader` is a false green that hides an unreconciled declaration.
+    # The remaining rows are UNDER-ASSOCIATION residue: a real reader the closure cannot
+    # reach because it receives adapter data from a caller rather than naming the adapter or
+    # its owner. They appeared when association was narrowed to kill the module-basename
+    # collision, and keeping them visible is the deliberate trade: a false `reader-elsewhere`
+    # is a report an operator dismisses in one reading, while a false `reader` is a false
+    # green that hides an unreconciled declaration. The quality rows are the same
+    # cross-module bootstrap pattern as the hook rows, not newly accepted unknowns; the
+    # survey still exposes them for a future association repair.
     covered = {gap["adapter"] for gap in result["gaps"]}
     assert covered <= {
         ".agents/cautilus-adapters/chatbot-benchmark.yaml",
         ".agents/cautilus-adapters/chatbot-proposals.yaml",
+        ".agents/quality-adapter.yaml",
         ".agents/usage-episodes-adapter.yaml",
         "skills/public/handoff/adapter.example.yaml",
+        "skills/public/quality/adapter.example.yaml",
     }, f"a new unreconciled adapter surface appeared and needs a decision: {sorted(covered)}"
 
 
@@ -424,6 +439,20 @@ def test_a_dynamic_reader_key_resolves_to_its_registered_owner(monkeypatch) -> N
 
     assert resolution.state == "reader"
     assert resolution.readers == ("scripts/adapter_lib.py",)
+
+
+def test_dynamic_reader_audit_does_not_accept_text_only_presence(tmp_path: Path, monkeypatch) -> None:
+    from scripts import adapter_key_registry
+
+    owner = tmp_path / "scripts" / "owner.py"
+    owner.parent.mkdir(parents=True)
+    owner.write_text('REQUIRED = ("built_key:",)\n', encoding="utf-8")
+    monkeypatch.setattr(adapter_key_registry, "DYNAMIC_READER_KEYS", {"built_key": "scripts/owner.py"})
+    monkeypatch.setattr(adapter_key_registry, "RETIRED_KEYS", {})
+
+    problems = adapter_key_registry.audit_registry(tmp_path)
+
+    assert any("does not reference the key" in problem for problem in problems)
 
 
 def test_an_unparseable_module_is_skipped_rather_than_failing_the_survey(tmp_path: Path) -> None:

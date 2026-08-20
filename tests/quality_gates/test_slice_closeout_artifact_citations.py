@@ -8,9 +8,13 @@ from scripts import run_slice_closeout as closeout
 
 def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_path: Path) -> None:
     seen: list[tuple[Path, list[str]]] = []
+    parity_bases: list[str] = []
 
     def record(repo_root: Path, paths: list[str]) -> None:
         seen.append((repo_root, paths))
+
+    def record_parity(*_args, **kwargs) -> None:
+        parity_bases.append(kwargs["base"])
 
     monkeypatch.setattr(closeout, "advise_artifact_citations", record)
     monkeypatch.setattr(closeout, "block_on_structural_sweep", lambda *args, **kwargs: None)
@@ -29,6 +33,7 @@ def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_
         "advise_decaying_habits",
     ):
         monkeypatch.setattr(closeout, name, lambda *args, **kwargs: None)
+    monkeypatch.setattr(closeout, "advise_repair_parity", record_parity)
     monkeypatch.setattr(closeout, "_maybe_block_on_unmatched", lambda *args, **kwargs: None)
     monkeypatch.setattr(closeout, "_maybe_block_on_cautilus", lambda *args, **kwargs: None)
     monkeypatch.setattr(closeout, "_maybe_block_on_risk_interrupt", lambda *args, **kwargs: None)
@@ -43,3 +48,4 @@ def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_
 
     assert closeout._run_preexecution_blocks(tmp_path, payload, args) is None
     assert seen == [(tmp_path, payload["changed_paths"])]
+    assert parity_bases == ["origin/main"]

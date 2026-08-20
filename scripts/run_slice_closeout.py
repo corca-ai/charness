@@ -335,6 +335,7 @@ def _run_preexecution_blocks(
     args,
     *,
     structural_paths: list[str] | None = None,
+    base: str = "origin/main",
 ) -> int | None:
     """Fail-fast pre-execution gate chain; returns an exit code on the first block.
     #332: the cheap structural sweep runs FIRST (before surface-match / cautilus /
@@ -361,14 +362,14 @@ def _run_preexecution_blocks(
     advise_skill_surface_preflight(repo_root, payload["changed_paths"])
     advise_doc_surface_preflight(repo_root, payload["changed_paths"])
     advise_new_pool_module(repo_root, payload["changed_paths"])
-    advise_repair_parity(repo_root, payload["changed_paths"])
+    advise_repair_parity(repo_root, payload["changed_paths"], base=base)
     # Against the slice BASE, and over the slice-base PATH SET too: a name deleted
     # in an earlier slice commit leaves its file clean, so the worktree-dirty set
     # alone would never inspect it. `advise_removed_name_consumers` widens the set
     # itself and falls back to this one when the base does not resolve.
-    advise_removed_name_consumers(repo_root, payload["changed_paths"], against="origin/main")
+    advise_removed_name_consumers(repo_root, payload["changed_paths"], against=base)
     advise_over_slicing(repo_root)
-    advise_floor_addition_restraint(repo_root, payload["changed_paths"])
+    advise_floor_addition_restraint(repo_root, payload["changed_paths"], base=base)
     attach_new_proof_surface_advisory(payload, repo_root)
     advise_close_keyword_leakage(repo_root)
     advise_decaying_habits(repo_root, payload["changed_paths"])
@@ -439,7 +440,11 @@ def main() -> int:
 
     structural_paths = collect_changed_paths(repo_root) if args.base is not None else None
     blocked = _run_preexecution_blocks(
-        repo_root, payload, args, structural_paths=structural_paths
+        repo_root,
+        payload,
+        args,
+        structural_paths=structural_paths,
+        base=campaign_base_sha or "origin/main",
     )
     if blocked is not None:
         return blocked

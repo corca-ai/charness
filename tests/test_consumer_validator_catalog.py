@@ -77,8 +77,8 @@ def test_live_catalog_has_a_decision_for_every_packaged_candidate() -> None:
 
     assert report["status"] == "pass"
     assert report["packaged_validator_count"] == report["decision_count"]
-    assert report["packaged_validator_count"] == 132
-    assert report["consumer_facing_count"] == 13
+    assert report["packaged_validator_count"] == 133
+    assert report["consumer_facing_count"] == 14
     assert "scripts/validate_handoff_artifact.py" in report["consumer_facing_validators"]
     assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
 

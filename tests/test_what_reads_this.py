@@ -316,3 +316,11 @@ def test_ast_candidate_miss_and_unparseable_source_use_explicit_fallbacks() -> N
     assert by_line[4] == "value-constraint"
     assert by_line[5] == "lookup"
     assert by_line[6] == "definition"
+
+
+def test_unparseable_fallback_does_not_promote_error_message_text() -> None:
+    source = 'if target: raise ValueError("target")\n???\n'
+
+    hits = WRT._symbol_hits(source, "target", "source")
+
+    assert [hit["kind"] for hit in hits] == ["value-constraint", "string-literal"]

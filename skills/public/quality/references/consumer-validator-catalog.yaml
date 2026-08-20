@@ -25,6 +25,12 @@ validators:
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "preflights a consumer-authored artifact surface before writing it"
     invocation: "python3 <plugin-root>/scripts/check_artifact_surface_preflight.py"
+  - path: scripts/check_artifact_citations.py
+    consumer_facing: true
+    decision: publish
+    reason: "reports syntactic path-and-line citation integrity for consumer-authored durable artifacts"
+    purpose: "checks selected durable Markdown citations without claiming semantic truth"
+    invocation: "python3 <plugin-root>/scripts/check_artifact_citations.py --repo-root <repo-root> --paths <artifact-path>"
   - path: scripts/check_bootstrap_shim_consistency.py
     consumer_facing: false
     decision: exclude

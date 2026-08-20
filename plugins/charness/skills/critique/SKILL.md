@@ -103,6 +103,10 @@ history.
      prepare-packet markdown render to each subagent and record the
      consumed packet path plus the runner's exact reviewed-input binding in the
      closeout (`references/prepare-packet.md`)
+   - this is the rail-1 snapshot/verify around each reviewer spawn; a parent-head
+     move is parent-attributed drift, not a clean boundary
+   - apply the stop-instead-of-local-substitute rule when the host cannot provide
+     the canonical fresh-eye context
    - do not collapse the counterweight into one of the angle subagents; keep
      it as a separate skeptical pass
    - before the first spawn, resolve authorization and follow the full

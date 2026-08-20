@@ -105,3 +105,44 @@ def test_existing_closeout_consumer_runs_class_advisory_without_parity_harness(
     advise_repair_parity(repo, ["scripts/check_adapter.py"])
 
     assert "malformed adapter" in capsys.readouterr().err
+
+
+def test_advisory_reports_unavailable_base_instead_of_silent_zero(tmp_path: Path, capsys) -> None:
+    repo = _seed_repo(tmp_path)
+    target = repo / "scripts" / "check_adapter.py"
+    target.parent.mkdir()
+    target.write_text('raise ValueError("unsupported adapter version")\n', encoding="utf-8")
+
+    advise_repair_parity(repo, ["scripts/check_adapter.py"], base="missing-base")
+
+    err = capsys.readouterr().err
+    assert "base is unavailable" in err
+    assert "UNPROVEN" in err
+
+
+def test_advisory_uses_an_explicit_alternate_base(tmp_path: Path, capsys) -> None:
+    repo = _seed_repo(tmp_path)
+    target = repo / "scripts" / "check_adapter.py"
+    target.parent.mkdir()
+    target.write_text('raise ValueError("unsupported adapter version")\n', encoding="utf-8")
+
+    advise_repair_parity(repo, ["scripts/check_adapter.py"], base="HEAD")
+
+    assert "unsupported adapter version" in capsys.readouterr().err
+
+
+def test_advisory_does_not_crash_on_non_mapping_harness_report(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = _seed_repo(tmp_path)
+    target = repo / "scripts" / "check_adapter.py"
+    target.parent.mkdir()
+    target.write_text('raise ValueError("unsupported adapter version")\n', encoding="utf-8")
+    harness = repo / "scripts" / "parity_harness.py"
+    harness.write_text(
+        'print("files: [not-a-map]\\nuncomparable: {}")\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("scripts.slice_closeout_advisories._PARITY_HARNESS", "scripts/parity_harness.py")
+
+    advise_repair_parity(repo, ["scripts/check_adapter.py"])
+
+    assert "malformed report" in capsys.readouterr().err

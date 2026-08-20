@@ -1,0 +1,13 @@
+{
+  "window": {
+    "id": "w-20260820-s3-consumer-export",
+    "opened_at": "2026-08-20T12:13:22Z"
+  },
+  "head": "f6c4ed340780c3edaac37598a3ad5f25c792bd9d",
+  "status": [],
+  "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "worktree_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changed_content": {},
+  "untracked": {},
+  "source_blobs": {}
+}

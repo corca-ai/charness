@@ -73,6 +73,11 @@ import ast
 from pathlib import Path
 from typing import Any, NamedTuple
 
+try:
+    from scripts.adapter_key_usage import key_usage
+except ModuleNotFoundError:
+    from adapter_key_usage import key_usage
+
 # Keys every adapter shares, owned by the shared loader in scripts/adapter_lib.py.
 SHARED_CORE_OWNER = "scripts/adapter_lib.py"
 SHARED_CORE_KEYS = ("version", "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
@@ -102,7 +107,11 @@ READER_ROOTS = ("scripts", "skills")
 # created it: its prose quotes `gate_commands`, `product_surfaces`, `startup_probes` as the
 # measured false-positive set, so without this entry the tier would report itself as their
 # owner. Splitting a module moves its literals; it does not move them out of scan range.
-EXCLUDED_READERS = ("scripts/adapter_key_registry.py", "scripts/adapter_warn_tier.py")
+EXCLUDED_READERS = (
+    "scripts/adapter_key_registry.py",
+    "scripts/adapter_key_usage.py",
+    "scripts/adapter_warn_tier.py",
+)
 
 _EXTENSION_PREFIX = "x-"
 _EXTENSION_CONTAINER = "host_extensions"
@@ -190,81 +199,6 @@ def _reader_literals(repo_root: Path, files: list[Path] | None) -> list[tuple[st
     return _LITERALS_CACHE[repo_root]
 
 
-_KEY_USAGE_CACHE: dict[Path, tuple[set[str], set[str]]] = {}
-
-
-def _string_values(node: ast.AST) -> set[str]:
-    return {item.value for item in ast.walk(node) if isinstance(item, ast.Constant) and isinstance(item.value, str)}
-
-
-def _key_value(node: ast.AST, aliases: dict[str, str]) -> set[str]:
-    if isinstance(node, ast.Constant) and isinstance(node.value, str):
-        return {node.value}
-    if isinstance(node, ast.Name) and node.id in aliases:
-        return {aliases[node.id]}
-    return set()
-
-
-def _key_usage(path: Path) -> tuple[set[str], set[str]]:
-    """Return ``(refusal candidates, structural value reads)`` for one module."""
-    cached = _KEY_USAGE_CACHE.get(path)
-    if cached is not None:
-        return cached
-    try:
-        tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
-    except (OSError, SyntaxError, ValueError):
-        _KEY_USAGE_CACHE[path] = (set(), set())
-        return _KEY_USAGE_CACHE[path]
-
-    aliases: dict[str, str] = {}
-    for node in ast.walk(tree):
-        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
-            continue
-        targets, value = (node.targets, node.value) if isinstance(node, ast.Assign) else ((node.target,), node.value)
-        if isinstance(value, ast.Constant) and isinstance(value.value, str):
-            for target in targets:
-                for name in (item.id for item in ast.walk(target) if isinstance(item, ast.Name)):
-                    aliases[name] = value.value
-
-    nodes = list(ast.walk(tree))
-    refused = {
-        key
-        for node in nodes
-        if isinstance(node, ast.Compare)
-        and any(isinstance(operator, (ast.In, ast.NotIn)) for operator in node.ops)
-        for operand in (node.left, *node.comparators)
-        for key in _key_value(operand, aliases)
-    }
-    refused.update(
-        key
-        for node in nodes
-        if isinstance(node, (ast.Assign, ast.AnnAssign))
-        for targets, value in ((node.targets, node.value) if isinstance(node, ast.Assign) else ((node.target,), node.value),)
-        if any(
-            name.id.upper().startswith("RETIRED")
-            for target in targets
-            for name in ast.walk(target)
-            if isinstance(name, ast.Name)
-        )
-        for key in _string_values(value)
-    )
-    reads = {
-        key for node in nodes if isinstance(node, ast.Subscript) for key in _key_value(node.slice, aliases)
-    }
-    reads.update(
-        key
-        for node in nodes
-        if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Attribute)
-        and node.func.attr in {"get", "pop", "setdefault"}
-        for argument in node.args[:1]
-        for key in _key_value(argument, aliases)
-    )
-
-    _KEY_USAGE_CACHE[path] = (refused, reads)
-    return _KEY_USAGE_CACHE[path]
-
-
 def find_readers(
     repo_root: Path, key: str, *, files: list[Path] | None = None
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
@@ -273,8 +207,8 @@ def find_readers(
     asserting: list[str] = []
     for relative, literals in _reader_literals(repo_root, files):
         path = repo_root / relative
-        refused, reads = _key_usage(path)
-        if key in reads or (key in literals and key not in refused):
+        _refused, reads = key_usage(path)
+        if key in reads:
             parsing.append(relative)
         elif any(literal.startswith(f"{key}:") for literal in literals):
             asserting.append(relative)
@@ -506,7 +440,7 @@ def audit_registry(repo_root: Path) -> list[str]:
         f"DYNAMIC_READER_KEYS[{key!r}] names {owner}, which does not reference the key; "
         "scanning already covers it, or the reader moved"
         for key, owner in DYNAMIC_READER_KEYS.items()
-        if (repo_root / owner).is_file() and not any(find_readers(repo_root, key, files=[repo_root / owner]))
+        if (repo_root / owner).is_file() and not find_readers(repo_root, key, files=[repo_root / owner])[0]
     ]
     problems += [
         f"RETIRED_KEYS[{key!r}] is marked retired but {len(readers)} module(s) still read it: {', '.join(readers)}"

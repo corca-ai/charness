@@ -1,0 +1,18 @@
+#676 scope amendment — 2026-08-20
+
+The parity/base-boundary and malformed-report repairs added to the slice-closeout
+advisory crossed the Python length gate in the parent module. The failure is a
+responsibility smell, not a reason to weaken the gate: `scripts/slice_closeout_repair_parity.py`
+now owns source-diff and reviewer-parity classification, while
+`scripts/slice_closeout_advisories.py` retains the closeout advisory registry and
+compatibility wrapper. The plugin mirror is regenerated from that source.
+
+Verification:
+
+    python3 scripts/check_python_lengths.py --repo-root . \
+      --paths scripts/slice_closeout_advisories.py scripts/slice_closeout_repair_parity.py
+    python3 -m pytest -q tests/test_slice_closeout_advisories.py \
+      tests/coverage_debt/test_batch2.py::test_the_repair_parity_advisory_stays_silent_on_unreadable_harness_output
+
+Both passed on the parent tree; the focused advisory suite and standing regression
+measured 74 tests together in the full targeted run.

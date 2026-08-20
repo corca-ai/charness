@@ -1,0 +1,21 @@
+#678 scope amendment — 2026-08-20
+
+The first integrated repair made the adapter-key registry distinguish structural
+value reads from refusal-only and inert mentions, but the commit gate exposed a
+second-order design smell: the registry had accumulated the complete AST usage
+classifier and crossed the Python code-length limit.
+
+The repair is split by responsibility rather than hidden behind a length exception:
+`scripts/adapter_key_usage.py` owns AST usage classification and
+`scripts/adapter_key_registry.py` owns resolution, association, and survey policy.
+The generated plugin mirror carries the same split. This is a scope expansion within
+#678's named adapter-reader/refuser contract, not a new issue or a classification
+change.
+
+Verification:
+
+    python3 scripts/check_python_lengths.py --repo-root . \
+      --paths scripts/adapter_key_registry.py scripts/adapter_key_usage.py
+    python3 -m pytest -q tests/quality_gates/test_adapter_key_registry.py
+
+Both passed on the integrated parent tree. The focused suite measured 35 tests.

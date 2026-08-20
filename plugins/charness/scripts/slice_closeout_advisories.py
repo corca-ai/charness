@@ -15,10 +15,23 @@ import subprocess
 import sys
 from pathlib import Path
 
-import yaml
-
 from runtime_bootstrap import import_repo_module
 from yaml_output import render_yaml
+
+try:
+    from scripts.slice_closeout_repair_parity import (
+        added_diff_lines as _added_diff_lines,
+    )
+    from scripts.slice_closeout_repair_parity import (
+        advise_repair_parity as _advise_repair_parity,
+    )
+except ModuleNotFoundError:
+    from slice_closeout_repair_parity import (
+        added_diff_lines as _added_diff_lines,
+    )
+    from slice_closeout_repair_parity import (
+        advise_repair_parity as _advise_repair_parity,
+    )
 
 DEFAULT_GATE_RUNTIME_BUDGET_SECONDS = 120.0
 DEFAULT_OVERSLICE_ARTIFACT_RUN = 3
@@ -426,35 +439,6 @@ def _git_show(repo_root: Path, ref_path: str) -> str:
     return res.stdout if res.returncode == 0 else ""
 
 
-def _added_diff_lines(repo_root: Path, base: str, paths: list[str]) -> str:
-    if not paths:
-        return ""
-    res = subprocess.run(["git", "diff", "--unified=0", base, "--", *paths],
-                         cwd=repo_root, capture_output=True, text=True)
-    diff_added = ""
-    if res.returncode == 0:
-        diff_added = "\n".join(line[1:] for line in res.stdout.splitlines()
-                               if line.startswith("+") and not line.startswith("+++"))
-    # `git diff` is blind to an UNTRACKED file (no baseline to diff against) even
-    # once it is a real `changed_paths` entry (collect_changed_paths includes
-    # `ls-files --others`) — a same-file restraint marker in a brand-new,
-    # not-yet-staged gate script would otherwise never be seen, false-firing the
-    # advisory this rule exists to avoid. Read such a file's raw content instead;
-    # every line in it is "added" by definition.
-    new_texts = []
-    for path in _added_vs_base(repo_root, paths, base=base):
-        try:
-            new_texts.append((repo_root / path).read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            # `UnicodeDecodeError` subclasses `ValueError`, not `OSError`, so a
-            # newly-added file with non-UTF-8 bytes used to raise straight out of
-            # the advisory block and abort a closeout that would otherwise pass.
-            # Every caller here is advisory: an unreadable file must degrade, not
-            # decide.
-            continue
-    return "\n".join([diff_added, *new_texts])
-
-
 def advise_floor_addition_restraint(repo_root: Path, changed_paths: list[str], base: str = "origin/main") -> None:
     """Non-blocking nudge: a new blocking floor added without a recorded
     Floor-Addition Restraint call (spec achieve-efficiency,
@@ -513,83 +497,14 @@ def advise_over_slicing(repo_root: Path) -> None:
 
 _PARITY_HARNESS = "scripts/parity_harness.py"
 
-_REPAIR_CLASS_LINE = re.compile(
-    r"(?:\b(?:refus\w*|reject\w*|unhonored|uninterpreted|uncomparable|unread|"
-    r"unsupported|malformed|not[-_ ](?:established|configured|found|read))\b|"
-    r"report\s*\[\s*['\"](?:ok|status)['\"]\s*\]\s*=\s*False|"
-    r"\b(?:findings|violations|problems|uncomparable)\s*\.\s*(?:append|add)\s*\()",
-    re.IGNORECASE,
-)
 
-
-def advise_repair_parity(repo_root: Path, changed_paths: list[str]) -> None:
-    """Name repaired functions and expose newly added refusal classes.
-
-    A finding is a point; the repair changes a function's whole prior behaviour.
-    The class notice uses added source lines, stays advisory, and does not replace
-    the reviewer snapshot required by the parity notice below.
-    """
-    source_paths = [p for p in changed_paths if p.startswith(("scripts/", "skills/")) and p.endswith(".py")]
-    added = _added_diff_lines(repo_root, "origin/main", sorted(set(source_paths)))
-    classes = [line.strip() for line in added.splitlines() if line.strip() and not line.lstrip().startswith(("#", "'''", '\"\"\"')) and _REPAIR_CLASS_LINE.search(line)]
-    if classes:
-        print(
-            "ADVISORY: added refusal/detector input class candidates — exercise each exact source line against the real consumer and confirm the new code discriminates. Malformed, type-invalid, comment-only, or literal no-op generators are not evidence; repair the generator/consumer pair if it carries the class:\n"
-            + "\n".join(f"  - {line}" for line in classes),
-            file=sys.stderr,
-        )
-    harness = repo_root / _PARITY_HARNESS
-    if not harness.is_file():
-        return
-    proc = subprocess.run(
-        [sys.executable, str(harness), "--repo-root", str(repo_root), "--against", "review-snapshot"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if proc.returncode != 0:
-        return
-    try:
-        report = yaml.safe_load(proc.stdout)
-    except yaml.YAMLError:
-        return
-    if not isinstance(report, dict):
-        # `yaml.safe_load` returns a scalar where `json.loads` raised, so the
-        # mapping check keeps unreadable stdout silent rather than an AttributeError.
-        return
-    repaired = report.get("files") or {}
-    uncomparable = report.get("uncomparable") or {}
-    if not repaired and not uncomparable:
-        return
-    # An all-uncomparable slice used to return here and print NOTHING, which is
-    # the silent zero this advisory exists to remove -- one step worse, because
-    # nothing distinguished "the snapshot was invalidated by a mid-slice commit"
-    # from "no bounded review ran". Both now say so, by name.
-    if not repaired:
-        reason = "no reviewer snapshot for this HEAD (none taken, or invalidated by a mid-slice commit)"
-        print(
-            f"ADVISORY: {len(uncomparable)} changed Python path(s) could NOT be compared against what a "
-            f"bounded reviewer read — {reason}. That is UNEXAMINED, not clean: any repair in them is "
-            f"unverified. `python3 {_PARITY_HARNESS} --against <base-ref>` is the fallback baseline for "
-            "a function that already shipped.",
-            file=sys.stderr,
-        )
-        return
-    rendered = "; ".join(f"{path}: {', '.join(names)}" for path, names in sorted(repaired.items()))
-    unexamined = (
-        f" {len(uncomparable)} further path(s) could NOT be compared and are unexamined, not clean."
-        if uncomparable
-        else ""
-    )
-    # stderr, like every sibling advisory: `run_slice_closeout.py` writes its
-    # payload to stdout, so an advisory printed there corrupts the documented
-    # `yaml.safe_load(result.stdout)` read.
-    print(
-        f"ADVISORY: {report.get('repair_count', 0)} function(s) were REPAIRED after a bounded reviewer "
-        f"read them (same signature, changed body) — {rendered}.{unexamined} State the INTENDED delta "
-        "for each and prove the complement is unchanged; a repair verified only against the finding that "
-        "prompted it is how a narrowing ships green. Baseline source is recoverable: "
-        f"`python3 {_PARITY_HARNESS} --against review-snapshot` lists them, and its "
-        "`baseline_source`/`load_module_from_source`/`compare_callables` run the differential.",
-        file=sys.stderr,
+def advise_repair_parity(
+    repo_root: Path, changed_paths: list[str], base: str = "origin/main"
+) -> None:
+    """Delegate the cohesive repair/parity boundary to its focused module."""
+    _advise_repair_parity(
+        repo_root,
+        changed_paths,
+        base=base,
+        harness_path=_PARITY_HARNESS,
     )

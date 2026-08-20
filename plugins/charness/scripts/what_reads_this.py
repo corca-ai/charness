@@ -219,6 +219,26 @@ def _lookup_column(line: str, name: str, column: int) -> bool:
     return any(match.start("key") <= column < match.end("key") for match in pattern.finditer(line))
 
 
+def _inside_string_literal(line: str, column: int) -> bool:
+    """Recognize a quoted occurrence when AST parsing is unavailable."""
+    quote: str | None = None
+    escaped = False
+    for index, character in enumerate(line):
+        if quote is None:
+            if character in "'\"":
+                quote = character
+            continue
+        if escaped:
+            escaped = False
+        elif character == "\\":
+            escaped = True
+        elif character == quote:
+            quote = None
+        elif index == column:
+            return True
+    return quote is not None and column >= 0
+
+
 def _fallback_structural_kind(line: str, name: str, column: int) -> str | None:
     """Classify simple non-AST-readable code without broad line-wide matches."""
     if _lookup_column(line, name, column):
@@ -227,6 +247,8 @@ def _fallback_structural_kind(line: str, name: str, column: int) -> str | None:
         ):
             return "value-constraint"
         return "lookup"
+    if _inside_string_literal(line, column):
+        return None
     if re.match(r"\s*assert\b", line) and "," not in line:
         return "value-constraint"
     if re.match(r"\s*if\b", line) and re.search(r"\braise\b", line):
