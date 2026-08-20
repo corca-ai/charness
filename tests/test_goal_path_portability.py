@@ -45,6 +45,15 @@ def test_historical_evidence_is_reported_without_failing_the_goal() -> None:
     assert report["intentional_evidence"][0]["kind"] == "intentional-evidence"
 
 
+def test_evidence_section_is_intentional_without_evidence_keywords() -> None:
+    report = portability.check_goal_path_portability(
+        "## Final Verification\n/home/hwidong/codes/demo-repo\n"
+    )
+
+    assert report["ok"] is True
+    assert report["intentional_evidence"][0]["kind"] == "intentional-evidence"
+
+
 def test_ambiguous_checkout_root_also_requires_a_disposition() -> None:
     report = portability.check_goal_path_portability(
         "## Non-Goals\n"
@@ -78,6 +87,23 @@ def test_placeholder_or_unknown_disposition_does_not_clear_a_finding() -> None:
         )
         assert report["ok"] is False
         assert report["disposition"]["present"] is True
+
+
+def test_present_but_unusable_disposition_is_rejected_without_a_path() -> None:
+    report = portability.check_goal_path_portability(
+        "Path portability disposition: unknown\n"
+    )
+
+    assert report["ok"] is False
+    assert "not a usable disposition" in report["issues"][0]
+
+
+def test_find_executable_absolute_paths_returns_only_refusing_references() -> None:
+    references = portability.find_executable_absolute_paths(
+        "## Goal\nRun /home/hwidong/codes/demo-repo\n"
+    )
+
+    assert [reference.path for reference in references] == ["/home/hwidong/codes/demo-repo"]
 
 
 def test_windows_checkout_root_uses_the_same_classifier() -> None:

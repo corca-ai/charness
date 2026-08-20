@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 _LIB = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/goal_artifact_lib.py"
 _spec = importlib.util.spec_from_file_location("goal_artifact_lib_portability", _LIB)
 gal = importlib.util.module_from_spec(_spec)
@@ -142,6 +144,18 @@ def test_evidence_absolute_path_is_observable_without_refusal() -> None:
         result["path_portability"]["intentional_evidence"][0]["path"]
         == "/home/hwidong/codes/demo-repo"
     )
+
+
+def test_portability_gate_reports_an_unloadable_sibling_loader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        gal._portability_gate.importlib.util,
+        "spec_from_file_location",
+        lambda *_args, **_kwargs: None,
+    )
+    with pytest.raises(ImportError, match="not found beside goal_artifact_portability_gate"):
+        gal._portability_gate._load_sibling("missing-portability-sibling")
 
 
 def test_check_goal_passes_with_portability_sections_present() -> None:
