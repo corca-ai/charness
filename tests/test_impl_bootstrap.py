@@ -9,6 +9,7 @@ recurrence class this issue is meant to remove.
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import os
 import subprocess
 import sys
@@ -38,6 +39,15 @@ repo: consumer-customized
 language: en
 output_dir: custom-artifacts/impl
 """
+
+
+def _load_init_adapter_lib():
+    module_name = "adapter_init_lib_for_impl_bootstrap"
+    spec = importlib.util.spec_from_file_location(module_name, REPO_ROOT / "scripts/adapter_init_lib.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _run(entrypoint: Path, repo: Path) -> subprocess.CompletedProcess[str]:
@@ -122,3 +132,21 @@ def test_invalid_existing_adapter_remains_nonzero_and_unchanged(tmp_path: Path) 
     initialized = _run(INIT_ENTRYPOINT, tmp_path)
     assert initialized.returncode != 0
     assert _file_state(adapter) == before
+
+
+def test_shared_init_boundary_skips_only_resolver_valid_existing_state(tmp_path: Path, monkeypatch, capsys) -> None:
+    module = _load_init_adapter_lib()
+    output = Path(".agents/impl-adapter.yaml")
+    adapter = _write_adapter(tmp_path, VALID_ADAPTER)
+    original = adapter.read_bytes()
+    monkeypatch.setattr(sys, "argv", ["init_adapter", "--repo-root", str(tmp_path)])
+
+    result = module.run_init_adapter(
+        default_output=output,
+        build_items=lambda _repo_name, _args: [("version", 1)],
+        existing_adapter_is_valid=lambda path: path == adapter,
+    )
+
+    assert result == adapter
+    assert adapter.read_bytes() == original
+    assert "unchanged" in capsys.readouterr().out

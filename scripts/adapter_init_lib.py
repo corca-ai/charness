@@ -31,6 +31,7 @@ def run_init_adapter(
     default_output: Path,
     build_items: Callable[[str, argparse.Namespace], list[tuple[str, object]]],
     add_arguments: Callable[[argparse.ArgumentParser], None] | None = None,
+    existing_adapter_is_valid: Callable[[Path], bool] | None = None,
 ) -> Path:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
@@ -42,4 +43,13 @@ def run_init_adapter(
 
     repo_root = args.repo_root.resolve()
     contents = render_yaml_mapping(build_items(repo_root.name, args))
+    resolved_output = args.output if args.output.is_absolute() else repo_root / args.output
+    if (
+        resolved_output.exists()
+        and not args.force
+        and existing_adapter_is_valid is not None
+        and existing_adapter_is_valid(resolved_output)
+    ):
+        print(f"Adapter already exists at {resolved_output}; unchanged.")
+        return resolved_output
     return write_adapter_scaffold(repo_root, args.output, contents, args.force)

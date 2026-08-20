@@ -24,6 +24,8 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _scripts_adapter_init_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
 base_adapter_items = _scripts_adapter_init_lib_module.base_adapter_items
 run_init_adapter = _scripts_adapter_init_lib_module.run_init_adapter
+_resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+load_adapter = _resolve_adapter_module.load_adapter
 
 
 def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
@@ -39,8 +41,19 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
     return items
 
 
+def existing_adapter_is_valid(path: Path) -> bool:
+    """Reuse the resolver's validity decision before the shared writer refuses."""
+    repo_root = path.parent.parent
+    payload = load_adapter(repo_root)
+    return payload.get("valid") is True and payload.get("path") == str(path)
+
+
 def main() -> None:
-    output = run_init_adapter(default_output=Path(".agents/impl-adapter.yaml"), build_items=build_items)
+    output = run_init_adapter(
+        default_output=Path(".agents/impl-adapter.yaml"),
+        build_items=build_items,
+        existing_adapter_is_valid=existing_adapter_is_valid,
+    )
     sys.stdout.write(f"{output}\n")
 
 
