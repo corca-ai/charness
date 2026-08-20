@@ -1,1 +1,1 @@
-2026-08-14-lesson-presentation-lost-across-compaction.md
+2026-08-20-debug-review.md
