@@ -10,10 +10,23 @@ import pytest
 
 from scripts.mutation_sampling_lib import (
     coverage_run_command,
+    coverage_runtime_paths,
     load_line_contexts,
     run_test_coverage,
     select_test_nodeids,
 )
+
+
+def test_coverage_runtime_files_are_namespaced_by_report(tmp_path: Path) -> None:
+    broad = tmp_path / "reports" / "mutation" / "test-coverage.json"
+    focused = tmp_path / "reports" / "mutation" / "prepush-focused-coverage.json"
+
+    broad_paths = coverage_runtime_paths(broad)
+    focused_paths = coverage_runtime_paths(focused)
+
+    assert set(broad_paths).isdisjoint(focused_paths)
+    assert broad_paths[0].name == ".test-coverage.mutation-coverage"
+    assert focused_paths[0].name == ".prepush-focused-coverage.mutation-coverage"
 
 
 def test_coverage_run_command_wraps_pytest_module_command(tmp_path: Path) -> None:
@@ -103,7 +116,7 @@ def test_mutation_coverage_drops_stale_parallel_shards(tmp_path: Path) -> None:
     )
     coverage_json = repo / "reports" / "mutation" / "coverage.json"
     coverage_json.parent.mkdir(parents=True)
-    stale_shard = coverage_json.with_name(".mutation-coverage.stale")
+    stale_shard = coverage_json.with_name(".coverage.mutation-coverage.stale")
     stale_shard.write_text("not a coverage sqlite database", encoding="utf-8")
 
     run_test_coverage(repo, "python3 -m pytest -q tests/test_cli_target.py", coverage_json)

@@ -79,13 +79,31 @@ def _sitecustomize_source(*, dynamic_context: bool) -> str:
     return "\n".join(lines) + "\n"
 
 
+def coverage_runtime_paths(coverage_json: Path) -> tuple[Path, Path, Path]:
+    """Return the isolated runtime files owned by one coverage report.
+
+    The broad pytest producer and the incremental changed-line producer can run
+    in the same quality batch. They write different JSON reports, but the old
+    fixed names below made them share one coverage database, rcfile, and
+    ``sitecustomize`` directory. The last writer then silently changed the
+    other producer's input, turning parallel execution into a nondeterministic
+    verdict. Namespace every runtime file by its report stem so parallel
+    producers have disjoint write surfaces while keeping their public JSON
+    outputs unchanged.
+    """
+    prefix = f".{coverage_json.stem}"
+    return (
+        coverage_json.with_name(f"{prefix}.mutation-coverage"),
+        coverage_json.with_name(f"{prefix}.mutation-coveragerc"),
+        coverage_json.with_name(f"{prefix}.mutation-sitecustomize"),
+    )
+
+
 def _write_coverage_config(
     repo_root: Path, coverage_json: Path, *, dynamic_context: bool
 ) -> tuple[Path, Path, Path]:
     coverage_json.parent.mkdir(parents=True, exist_ok=True)
-    data_file = coverage_json.with_name(".mutation-coverage")
-    rcfile = coverage_json.with_name(".mutation-coveragerc")
-    sitecustomize_dir = coverage_json.with_name(".mutation-sitecustomize")
+    data_file, rcfile, sitecustomize_dir = coverage_runtime_paths(coverage_json)
     sitecustomize_dir.mkdir(parents=True, exist_ok=True)
     sitecustomize_dir.joinpath("sitecustomize.py").write_text(
         _sitecustomize_source(dynamic_context=dynamic_context), encoding="utf-8"

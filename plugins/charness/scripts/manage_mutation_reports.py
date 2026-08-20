@@ -15,6 +15,8 @@ from yaml_output import emit_yaml
 
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter_strict = _quality_adapter.load_quality_adapter_strict
+_mutation_sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
+coverage_runtime_paths = _mutation_sampling.coverage_runtime_paths
 
 DEFAULT_REPORT_ROOT = Path("reports/mutation")
 DEFAULT_MANAGED_NAMES = {
@@ -63,6 +65,13 @@ def managed_paths(repo_root: Path) -> set[Path]:
         coverage = _resolved(repo_root, coverage_json).resolve()
         paths.add(coverage)
         paths.add(coverage.with_name(f"{coverage.name}.fingerprint"))
+        paths.update(path.resolve() for path in coverage_runtime_paths(coverage))
+    # The incremental pre-push producer owns a separate report from the broad
+    # closeout producer. Keep its namespaced runtime files under the same
+    # retention contract even when a consuming adapter only declares the broad
+    # report path above.
+    focused = (report_root / "prepush-focused-coverage.json").resolve()
+    paths.update(path.resolve() for path in coverage_runtime_paths(focused))
     return {path.resolve() for path in paths}
 
 
