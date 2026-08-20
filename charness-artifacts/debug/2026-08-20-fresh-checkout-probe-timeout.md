@@ -71,9 +71,10 @@ the wrapper-only attribution.
   checkout and all five declared probes with return code 0.
 - confirmed — source inspection shows the 10-second alarm is inherited at
   `main`, while clone/probe subprocesses have 120/300-second bounds.
-- pending — implement the producer-side timeout contract, mirror it, add a
-  regression that observes the default passed to `arm_cli_timeout`, and rerun
-  the default fresh-checkout proof.
+- confirmed — producer-side `default_seconds=0` is implemented in the source
+  and plugin mirror, the regression observes that explicit default, and the
+  exact default fresh-checkout proof completes with all five probes returning
+  code 0.
 
 ## Root Cause
 
@@ -92,8 +93,10 @@ applied across unlike workflows.
 - Producer Proof: source inspection plus the 420-second override bind the generic
   timeout to the producer; the override's established payload has five successful
   probe results.
-- Final-Consumer Proof: pending; release planner must consume the established
-  packet after the producer-side repair rather than the wrapper timeout.
+- Final-Consumer Proof: confirmed for the local release-proof boundary; the
+  repaired default invocation emits an established packet with five completed
+  probe results and zero return codes. Hosted, installed, and release-publication
+  consumers remain outside this local proof.
 - Interface-Shape Sibling Scan: `current_release.py` intentionally does not run
   probes; `publish_release_cli.py` invokes this checker and therefore inherits
   the defect. The shared timeout helper remains valid for short scripts; this
@@ -130,7 +133,7 @@ applied across unlike workflows.
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-08-20-fresh-checkout-probe-timeout.md
