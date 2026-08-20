@@ -141,6 +141,7 @@ def test_owner_or_flag_failure_stops_later_help_probes(tmp_path: Path) -> None:
     result = _run(repo, _write_plan(repo, plan))
     assert result.returncode == 2
     assert "fanout-stopped" in result.stdout
+    assert "later command help probes were not run after the first preflight failure" in result.stdout
     assert "id: later-command" not in result.stdout
 
 

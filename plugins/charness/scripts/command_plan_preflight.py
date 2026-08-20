@@ -420,7 +420,7 @@ def build_report(root: Path, plan_path: Path) -> dict[str, Any]:
                 errors.append(
                     _error(
                         "fanout-stopped",
-                        "later command help probes were not run after the first owner/flag failure",
+                        "later command help probes were not run after the first preflight failure",
                     )
                 )
                 break
