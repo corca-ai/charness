@@ -54,9 +54,13 @@ guess a sibling path or continue with the remaining commands. The report proves
 resolution and parser ownership only, not the planned commands' runtime,
 installed state, hosted state, or external truth.
 
-Use `{target:<id>}` in command argv lists so one resolved target is the source of
-truth for every probe. Keep the plan under the repo root and preserve its report
-with the slice evidence when the fan-out crosses a release or review boundary.
+Each command must declare `owner_target` and use exactly
+`{target:<owner_target>}` in `argv`; an explicit `help_argv` must use the same
+token, or the checker refuses the command. This binds the planned invocation and
+its help owner to one resolved path instead of allowing a copied literal or
+wrong-owner probe to produce a false green. Keep the plan under the repo root;
+relative plan paths are resolved from `--repo-root`, and preserve the report with
+the slice evidence when the fan-out crosses a release or review boundary.
 
 ## Disjoint Writers
 

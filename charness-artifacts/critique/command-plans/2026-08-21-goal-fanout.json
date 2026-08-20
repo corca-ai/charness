@@ -37,6 +37,7 @@
   "commands": [
     {
       "id": "validate-critique",
+      "owner_target": "critique-validator",
       "argv": [
         "python3",
         "{target:critique-validator}",
@@ -47,6 +48,7 @@
     },
     {
       "id": "check-goal",
+      "owner_target": "goal-validator",
       "argv": [
         "python3",
         "{target:goal-validator}",
@@ -59,6 +61,7 @@
     },
     {
       "id": "check-issue-ledger",
+      "owner_target": "issue-ledger-validator",
       "argv": [
         "python3",
         "{target:issue-ledger-validator}",
@@ -70,6 +73,7 @@
     },
     {
       "id": "read-current-release",
+      "owner_target": "release-reader",
       "argv": [
         "python3",
         "{target:release-reader}",

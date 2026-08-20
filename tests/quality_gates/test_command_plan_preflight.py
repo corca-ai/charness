@@ -44,6 +44,7 @@ def _base_plan() -> dict:
         "commands": [
             {
                 "id": "demo-command",
+                "owner_target": "demo",
                 "argv": ["python3", "{target:demo}", "--repo-root", ".", "--detail", "-v"],
             }
         ],
@@ -134,7 +135,7 @@ def test_owner_or_flag_failure_stops_later_help_probes(tmp_path: Path) -> None:
     _demo(repo)
     plan = _base_plan()
     plan["commands"].extend(
-        [{"id": "later-command", "argv": ["python3", "{target:demo}", "--detail"]}]
+        [{"id": "later-command", "owner_target": "demo", "argv": ["python3", "{target:demo}", "--detail"]}]
     )
     plan["commands"][0]["argv"] = ["python3", "{target:demo}", "--gone"]
     result = _run(repo, _write_plan(repo, plan))
@@ -155,7 +156,7 @@ def test_ref_resolution_is_verified_before_help_probe(tmp_path: Path) -> None:
     plan = _base_plan()
     plan["refs"] = [{"id": "missing", "ref": "does-not-exist"}]
     plan["commands"].append(
-        {"id": "later-command", "argv": ["python3", "{target:demo}", "--detail"]}
+        {"id": "later-command", "owner_target": "demo", "argv": ["python3", "{target:demo}", "--detail"]}
     )
     result = _run(repo, _write_plan(repo, plan))
     assert result.returncode == 2
@@ -302,20 +303,79 @@ def test_command_probe_covers_shape_help_and_owner_failures(tmp_path: Path) -> N
     _demo(repo)
     targets = {"demo": "scripts/demo.py"}
     assert module._probe_command(repo, {}, targets)[1][0]["code"] == "command-shape"
-    assert module._probe_command(repo, {"id": "bad", "argv": ["python3", "{target:no}"]}, targets)[1][0]["code"] == "target-token"
+    assert module._probe_command(
+        repo, {"id": "bad", "owner_target": "demo", "argv": ["python3", "{target:no}"]}, targets
+    )[1][0]["code"] == "owner-binding"
     assert module._probe_command(
         repo,
-        {"id": "help-token", "argv": ["python3", "{target:demo}"], "help_argv": ["python3", "{target:no}"]},
+        {
+            "id": "help-token",
+            "owner_target": "demo",
+            "argv": ["python3", "{target:demo}"],
+            "help_argv": ["python3", "{target:no}"],
+        },
         targets,
-    )[1][0]["code"] == "target-token"
+    )[1][0]["code"] == "owner-binding"
     assert module._probe_command(
-        repo, {"id": "no-help", "argv": ["python3", "{target:demo}"], "help_argv": ["python3", "scripts/demo.py"]}, targets
+        repo,
+        {
+            "id": "no-help",
+            "owner_target": "demo",
+            "argv": ["python3", "{target:demo}"],
+            "help_argv": ["python3", "{target:demo}"],
+        },
+        targets,
     )[1][0]["code"] == "help-probe-shape"
-    assert module._probe_command(repo, {"id": "missing-exe", "argv": ["missing-command", "--x"]}, targets)[1][0]["code"] == "help-probe-failed"
+    assert module._probe_command(
+        repo,
+        {"id": "missing-exe", "owner_target": "demo", "argv": ["missing-command", "{target:demo}", "--x"]},
+        targets,
+    )[1][0]["code"] == "help-probe-failed"
     fail = repo / "scripts" / "fail.py"
     fail.write_text("raise SystemExit(3)\n", encoding="utf-8")
-    observation, errors = module._probe_command(repo, {"id": "nonzero", "argv": ["python3", "scripts/fail.py"]}, targets)
+    targets["fail"] = "scripts/fail.py"
+    observation, errors = module._probe_command(
+        repo,
+        {"id": "nonzero", "owner_target": "fail", "argv": ["python3", "{target:fail}"]},
+        targets,
+    )
     assert observation["status"] == "fail" and errors[0]["code"] == "help-probe-failed"
+
+
+def test_owner_binding_rejects_literal_or_mismatched_help_paths(tmp_path: Path) -> None:
+    module = _load_preflight_module()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _demo(repo)
+    targets = {"demo": "scripts/demo.py", "other": "scripts/demo.py"}
+    for command in (
+        {"id": "literal", "owner_target": "demo", "argv": ["python3", "scripts/demo.py"]},
+        {
+            "id": "wrong-help-owner",
+            "owner_target": "demo",
+            "argv": ["python3", "{target:demo}"],
+            "help_argv": ["python3", "{target:other}"],
+        },
+    ):
+        observation, errors = module._probe_command(repo, command, targets)
+        assert observation["status"] == "fail"
+        assert errors[0]["code"] == "owner-binding"
+
+
+def test_malformed_command_is_structured_refusal_and_relative_plan_uses_repo_root(tmp_path: Path) -> None:
+    module = _load_preflight_module()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _demo(repo)
+    plan = _base_plan()
+    plan["commands"] = [None]
+    report = module.build_report(repo, _write_plan(repo, plan))
+    assert report["exit_code"] == 2
+    assert report["errors"][0]["code"] == "command-shape"
+
+    _write_plan(repo, _base_plan())
+    result = run_script(str(SCRIPT), "--repo-root", str(repo), "--plan", "plan.json", cwd=tmp_path)
+    assert result.returncode == 0, result.stderr
 
 
 def test_main_converts_unexpected_preflight_errors_to_structured_refusal(tmp_path: Path, monkeypatch, capsys) -> None:

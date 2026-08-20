@@ -243,6 +243,63 @@ def _expand_argv(raw_argv: Any, targets: dict[str, str]) -> tuple[list[str] | No
     return (expanded if not errors else None), errors
 
 
+def _target_tokens(raw_argv: Any) -> list[str]:
+    if not isinstance(raw_argv, list):
+        return []
+    return [
+        token[len(TARGET_TOKEN_PREFIX) : -len(TARGET_TOKEN_SUFFIX)]
+        for token in raw_argv
+        if isinstance(token, str)
+        and token.startswith(TARGET_TOKEN_PREFIX)
+        and token.endswith(TARGET_TOKEN_SUFFIX)
+    ]
+
+
+def _validate_owner_binding(
+    command_id: str,
+    owner_target: Any,
+    raw_argv: Any,
+    raw_help_argv: Any,
+    targets: dict[str, str],
+) -> list[dict[str, Any]]:
+    """Require both command surfaces to name the same resolved owner target.
+
+    A help probe is evidence about the command that actually receives the
+    planned flags. Letting it be an independently copied path recreates the
+    original wrong-owner smell: a healthy parser can make an unrelated command
+    look like the planned command passed. The token is intentionally exact and
+    singular for this plan format; a future wrapper contract must name its own
+    target explicitly rather than quietly weakening this binding.
+    """
+    if not isinstance(owner_target, str) or not owner_target:
+        return [_error("owner-binding", f"{command_id}: owner_target must be a non-empty target id")]
+    if owner_target not in targets:
+        return [_error("owner-binding", f"{command_id}: owner_target is unresolved: {owner_target}")]
+    expected = [owner_target]
+    argv_targets = _target_tokens(raw_argv)
+    if argv_targets != expected:
+        return [
+            _error(
+                "owner-binding",
+                f"{command_id}: argv must contain exactly {{target:{owner_target}}}",
+                owner_target=owner_target,
+                argv_targets=argv_targets,
+            )
+        ]
+    if raw_help_argv is not None:
+        help_targets = _target_tokens(raw_help_argv)
+        if help_targets != expected:
+            return [
+                _error(
+                    "owner-binding",
+                    f"{command_id}: help_argv must contain exactly {{target:{owner_target}}}",
+                    owner_target=owner_target,
+                    help_targets=help_targets,
+                )
+            ]
+    return []
+
+
 def _derived_help_argv(argv: list[str]) -> list[str]:
     for index, token in enumerate(argv):
         if token.startswith("-"):
@@ -260,14 +317,20 @@ def _planned_flags(argv: list[str]) -> list[str]:
     return list(dict.fromkeys(flags))
 
 
-def _probe_command(root: Path, item: dict[str, Any], targets: dict[str, str]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+def _probe_command(root: Path, item: Any, targets: dict[str, str]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    if not isinstance(item, dict):
+        return {}, [_error("command-shape", "each command must be an object")]
     command_id = item.get("id")
     if not isinstance(command_id, str) or not command_id:
         return {}, [_error("command-shape", "command id must be a non-empty string")]
-    argv, errors = _expand_argv(item.get("argv"), targets)
+    raw_argv = item.get("argv")
+    raw_help = item.get("help_argv")
+    binding_errors = _validate_owner_binding(command_id, item.get("owner_target"), raw_argv, raw_help, targets)
+    if binding_errors:
+        return {"id": command_id, "status": "fail"}, binding_errors
+    argv, errors = _expand_argv(raw_argv, targets)
     if errors or argv is None:
         return {"id": command_id, "status": "fail"}, errors
-    raw_help = item.get("help_argv")
     help_argv, help_errors = _expand_argv(raw_help, targets) if raw_help is not None else (None, [])
     if help_errors:
         return {"id": command_id, "status": "fail", "argv": argv}, help_errors
@@ -395,7 +458,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--plan", type=Path, required=True, help="Repo-relative JSON command plan")
     args = parser.parse_args(argv)
     try:
-        report = build_report(args.repo_root.resolve(), args.plan.resolve())
+        root = args.repo_root.resolve()
+        plan_path = args.plan if args.plan.is_absolute() else root / args.plan
+        report = build_report(root, plan_path)
     except (OSError, ValueError, subprocess.SubprocessError) as exc:
         report = {"status": "refused", "exit_code": 2, "errors": [_error("preflight-error", str(exc))]}
     emit_yaml(report)
