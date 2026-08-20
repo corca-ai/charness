@@ -210,10 +210,10 @@ substitute or Cautilus evaluation is claimed.
 ## Reviewed Input Identity
 
 - Packet consumed by the latest replacement review:
-  `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.json`
-- Packet path: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.json`
-- Packet SHA256: `edd9caed834d16b0676f0d57faf177ff1c20f7c0aea0863b3026d6f3f8a47fe4`
-- Identity SHA256: `912a6e04c7fd94f4b083e0dd8b65ea5523941893b42e22735031fcb266fdefea`
+  `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v9-packet.json`
+- Packet SHA256: `42f2cbdee4bc8a5dc9e951af1c9d7be012d054814f303f556967f85dea9f012a`
+- Identity SHA256: `06d40fe77d56d483fb73ad1caadb156a769d2807fc2fb5d3048530fc697291bb`
 - The v5 review bound the packet itself to `ea6737b30`, but found that the
   changed-line and broad-quality receipts cited older proof trees. Those
   receipts are now rebound. A new packet and fresh-eye round must consume the
