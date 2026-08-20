@@ -19,13 +19,13 @@ import sys
 from pathlib import Path
 
 import pytest
-import session_start_lesson_context as lesson_context
 import yaml
 
 from scripts import lesson_evaluation_continuity_lib as continuity
 from scripts import lesson_ledger_lib as ledger_lib
 from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import render_lesson_selection_preview as _preview
+from scripts import session_start_lesson_context as lesson_context
 from tests.script_main import run_loaded_script_main
 from tests.test_lesson_ledger import _ledger, _retro
 
