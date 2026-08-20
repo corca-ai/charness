@@ -431,6 +431,51 @@ def test_owner_binding_rejects_embedded_target_tokens(tmp_path: Path, surface: s
     assert errors[0]["code"] == "target-token"
 
 
+def test_owner_binding_rejects_nested_target_tokens(tmp_path: Path) -> None:
+    module = _load_preflight_module()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _demo(repo)
+    observation, errors = module._probe_command(
+        repo,
+        {
+            "id": "nested-target-token",
+            "owner_target": "demo",
+            "argv": ["python3", "{target:demo{target:other}}"],
+        },
+        {"demo": "scripts/demo.py", "other": "scripts/demo.py"},
+    )
+    assert observation["status"] == "fail"
+    assert errors[0]["code"] == "target-token"
+
+
+def test_command_probe_expansion_errors_are_structured_for_argv_and_help(tmp_path: Path) -> None:
+    module = _load_preflight_module()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _demo(repo)
+    targets = {"demo": "scripts/demo.py"}
+    observation, errors = module._probe_command(
+        repo,
+        {"id": "non-string-argv", "owner_target": "demo", "argv": ["python3", "{target:demo}", 7]},
+        targets,
+    )
+    assert observation["status"] == "fail"
+    assert errors[0]["code"] == "command-shape"
+    observation, errors = module._probe_command(
+        repo,
+        {
+            "id": "non-string-help",
+            "owner_target": "demo",
+            "argv": ["python3", "{target:demo}"],
+            "help_argv": ["python3", "{target:demo}", "--help", 7],
+        },
+        targets,
+    )
+    assert observation["status"] == "fail"
+    assert errors[0]["code"] == "command-shape"
+
+
 def test_malformed_command_is_structured_refusal_and_relative_plan_uses_repo_root(tmp_path: Path) -> None:
     module = _load_preflight_module()
     repo = tmp_path / "repo"
