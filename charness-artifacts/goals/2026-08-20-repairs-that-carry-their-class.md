@@ -20,10 +20,10 @@ runs the activation command.
 - Current slice intent: turn the locally proven repair tree into one fixed,
   source/export/ledger-consistent semantic candidate without smuggling in a
   version bump or treating a local green gate as public release proof.
-- Next action: run the report-first quality/release packets against the now
-  source- and artifact-stable tree, then prepare the bounded semantic-candidate
-  critique and verification lock. Any new failure returns to the owning seam
-  and carries its recurrence class into a gate, test, or spec.
+- Next action: restore a host-capable bounded reviewer path, run the blocked
+  semantic-candidate release critique against unchanged `5a170113d`, then bind
+  the verification lock. Any new failure returns to the owning seam and carries
+  its recurrence class into a gate, test, or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -711,6 +711,33 @@ invent a common engine.
   remains pending until external release/readback work, so this does not flip
   the goal terminal status.
 
+### Slice 4 continuation: integrated quality and critique boundary
+
+- Objective: run the full integrated quality floor, refresh release-time probes,
+  and bind the semantic-candidate critique before any version or publication
+  mutation.
+- Targeted verification: `run-quality.sh --read-only` passed `96 passed, 0
+  failed` in 168.8 seconds; the changed-line producer passed concurrently after
+  the report-stem runtime namespace repair. Fresh-checkout probes passed 5/5;
+  duplicate ratchet remained clean with `new_code_families: []` and
+  `hard_block: false`; real-host trigger evaluation over the full 234-path
+  range returned `required: false`, `evaluation_scope: evaluated`, and no hits.
+- Release planner: current version remains `6.2.0` and blockers are empty. Its
+  planner-only fresh-checkout field is intentionally `not_established`; the
+  direct five-probe packet above is the executed proof, not the planner listing.
+- Critique boundary: packet
+  `charness-artifacts/critique/2026-08-21-semantic-candidate-packet.json` is
+  bound by SHA `5d2075b58d4742336f59bbf30c6eec6ea415d37b24af43d59c0cdbceeefdfb6e`
+  and identity SHA
+  `4d0d947e003c1a9d0621aebbb54c7308d12e14c9d20e4389bd09c4b799292858`.
+  The durable critique record
+  `charness-artifacts/critique/2026-08-21-semantic-candidate-release-critique.md`
+  records `blocked host signal`: no Agent/spawn/ceal surface was available and
+  Ceal capability discovery returned unavailable. No fresh-eye approval or
+  same-agent substitute is claimed.
+- Non-claims: no semantic-candidate lock, version bump, tag, push, publication,
+  hosted/install readback, issue closure, or Cautilus evaluation.
+
 ## Closeout Binding Plan
 
 - Reviewed inputs: this goal, the frozen issue ledger and amendments, current
@@ -752,15 +779,16 @@ invent a common engine.
   issue-read/reproduction receipts, and Slice 0 log. Integrated semantic
   candidate critique, version/release-candidate proof, external readback, and
   tracker closeout remain unrun; this goal is therefore still active.
-- Slice 4 continuation proof is recorded at current code truth `933ac9f32`:
+- Slice 4 continuation proof is recorded at current code truth `5a170113d`:
   default fresh-checkout probes passed (5/5), debug/RCA/spec/mirror surfaces
   validate, duplicate ratchet is clean, real-host trigger evaluation is
-  explicitly non-required for the current changed range, and focused
-  changed-line coverage is clean across 22/22 files. The first integrated broad
-  quality run recorded 94 passes and two failures; the coverage failure was
-  structurally repaired as the parallel runtime collision above, while the
-  lesson continuity failure is now reconciled. A fresh full broad quality run,
-  semantic-candidate fresh-eye critique, version mutation, publication, and
+  explicitly non-required for the current changed range, focused changed-line
+  coverage is clean across 22/22 files, and the final integrated broad quality
+  run is `96 passed, 0 failed`. The first integrated broad quality run recorded
+  94 passes and two failures; the coverage failure was structurally repaired as
+  the parallel runtime collision above, while the lesson continuity failure is
+  now reconciled. The semantic-candidate critique is durably blocked on the
+  host signal recorded in its artifact; version mutation, publication, and
   external readback remain open.
 
 ## User Verification Instructions
