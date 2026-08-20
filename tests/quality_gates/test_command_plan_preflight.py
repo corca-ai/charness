@@ -342,6 +342,54 @@ def test_command_probe_covers_shape_help_and_owner_failures(tmp_path: Path) -> N
     assert observation["status"] == "fail" and errors[0]["code"] == "help-probe-failed"
 
 
+def test_owner_binding_and_expansion_refusal_branches_are_exercised(tmp_path: Path) -> None:
+    module = _load_preflight_module()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _demo(repo)
+    targets = {"demo": "scripts/demo.py"}
+
+    observation, errors = module._probe_command(
+        repo,
+        {"id": "non-list-argv", "owner_target": "demo", "argv": None},
+        targets,
+    )
+    assert observation["status"] == "fail" and errors[0]["code"] == "owner-binding"
+    observation, errors = module._probe_command(
+        repo,
+        {"id": "missing-owner", "argv": ["python3", "{target:demo}"]},
+        targets,
+    )
+    assert observation["status"] == "fail" and errors[0]["code"] == "owner-binding"
+    observation, errors = module._probe_command(
+        repo,
+        {"id": "unresolved-owner", "owner_target": "missing", "argv": ["python3", "{target:demo}"]},
+        targets,
+    )
+    assert observation["status"] == "fail" and errors[0]["code"] == "owner-binding"
+    observation, errors = module._probe_command(
+        repo,
+        {
+            "id": "malformed-argv-token",
+            "owner_target": "demo",
+            "argv": ["python3", "{target:demo}", "{target:missing"],
+        },
+        targets,
+    )
+    assert observation["status"] == "fail" and errors[0]["code"] == "target-token"
+    observation, errors = module._probe_command(
+        repo,
+        {
+            "id": "malformed-help-token",
+            "owner_target": "demo",
+            "argv": ["python3", "{target:demo}"],
+            "help_argv": ["python3", "{target:demo}", "{target:missing"],
+        },
+        targets,
+    )
+    assert observation["status"] == "fail" and errors[0]["code"] == "target-token"
+
+
 def test_owner_binding_rejects_literal_or_mismatched_help_paths(tmp_path: Path) -> None:
     module = _load_preflight_module()
     repo = tmp_path / "repo"
