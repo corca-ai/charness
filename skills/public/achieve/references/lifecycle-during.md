@@ -20,6 +20,18 @@ boundaries. Do not make a compacted session reread the whole `## Slice Log` to
 learn what to do next; the log is the archive, while the frame is the active
 prompt surface.
 
+### Lesson-session citation carrier
+
+When the SessionStart context provides a lesson-session declaration command,
+run that exact command before the affected work. Record the returned
+`session_id` and frozen `bundle_path` in the active goal artifact's
+`## Context Sources` (and keep the citation visible in the active record while
+the slice is in progress). The durable citation is the handoff from achieve's
+work phase to retro's evaluator: retro reads that exact bundle after context
+loss, never a newest-file guess or mutable lesson source. Record the reference,
+not a copy of the bundle contents; the bundle proves issued bytes, not human
+readback, lesson use, or lesson effect.
+
 After each slice, append a slice report with `append_slice_log.py`:
 
 - objective and why this slice was chosen now
