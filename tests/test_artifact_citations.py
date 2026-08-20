@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import runpy
+import sys
 from pathlib import Path
+
+import pytest
 
 from scripts import check_artifact_citations as checker
 
@@ -162,3 +166,80 @@ def test_main_returns_nonzero_and_emits_structured_findings(tmp_path: Path, caps
     assert code == 1
     assert "semantic_scope: syntactic-only" in output
     assert "does not exist" in output
+
+
+def test_path_and_root_validation_reject_absolute_outside_and_empty_inputs(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+
+    assert checker._relative_path(repo, repo / "scripts" / "sample.py") is None
+    assert checker._relative_path(repo, "../outside") is None
+    with pytest.raises(ValueError, match="non-empty"):
+        checker._declared_roots(repo, ["."])
+    with pytest.raises(ValueError, match="at least one"):
+        checker._declared_roots(repo, [])
+
+
+def test_disposition_and_range_error_branches_remain_explicit(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    target = repo / "scripts" / "sample.py"
+    target.write_text("present = True\n", encoding="utf-8")
+
+    assert checker._disposition(["Citation disposition: custom — explain"], 0) == "custom"
+    assert checker._range_lines(target, 0, 0)[1] is not None
+    assert checker._range_lines(repo / "scripts" / "missing.py", 1, 1)[1] is not None
+
+
+def test_check_one_rejects_unknown_contradictory_and_absolute_citations(tmp_path: Path, monkeypatch) -> None:
+    repo = _repo(tmp_path)
+    (repo / "scripts" / "sample.py").write_text("present = True\n", encoding="utf-8")
+    base = {"artifact": "charness-artifacts/current.md", "artifact_line": 1, "start": 1, "end": 1, "identifier": None}
+
+    unknown = checker.Citation(target="scripts/sample.py", disposition="custom", **base)
+    assert "unknown Citation disposition" in checker._check_one(repo, unknown).reason
+    contradictory = checker.Citation(target="scripts/sample.py", disposition="non-code", **base)
+    assert "contradicts" in checker._check_one(repo, contradictory).reason
+    absolute = checker.Citation(target=str(repo / "scripts" / "sample.py"), disposition=None, **base)
+    assert "repository-relative" in checker._check_one(repo, absolute).reason
+
+    monkeypatch.setattr(checker, "_range_lines", lambda *_args: (None, "unreadable"))
+    historical = checker.Citation(target="scripts/sample.py", disposition="historical", **base)
+    assert checker._check_one(repo, historical) is None
+
+
+def test_check_report_preserves_artifact_read_failure(monkeypatch, tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    artifact = repo / "charness-artifacts" / "current.md"
+    artifact.write_text("no citations\n", encoding="utf-8")
+    monkeypatch.setattr(checker, "find_citations", lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("boom")))
+
+    report = _check(repo, "charness-artifacts/current.md")
+
+    assert report["ok"] is False
+    assert "artifact cannot be read" in report["issues"][0]["reason"]
+
+
+def test_main_configuration_error_and_module_entrypoint_are_exercised(tmp_path: Path, capsys, monkeypatch) -> None:
+    repo = _repo(tmp_path)
+    artifact = repo / "charness-artifacts" / "current.md"
+    artifact.write_text("no citations\n", encoding="utf-8")
+
+    code = checker.main(
+        ["--repo-root", str(repo), "--paths", "charness-artifacts/current.md", "--artifact-root", "."]
+    )
+    assert code == 2
+    assert "configuration error" in capsys.readouterr().err
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "check_artifact_citations.py",
+            "--repo-root",
+            str(repo),
+            "--paths",
+            "charness-artifacts/current.md",
+        ],
+    )
+    with pytest.raises(SystemExit) as raised:
+        runpy.run_path(str(Path(checker.__file__)), run_name="__main__")
+    assert raised.value.code == 0

@@ -103,8 +103,6 @@ def _relative_path(repo_root: Path, value: str | Path) -> str | None:
         relative = (repo_root / candidate).resolve().relative_to(repo_root.resolve())
     except ValueError:
         return None
-    if ".." in relative.parts:
-        return None
     return relative.as_posix()
 
 

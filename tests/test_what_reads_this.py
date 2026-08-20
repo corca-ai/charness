@@ -276,3 +276,39 @@ def test_the_declared_allowlist_caveat_matches_the_code() -> None:
     than merely present."""
     assert ".jsonl" not in WRT._TEXT_SUFFIXES
     assert ".html" not in WRT._TEXT_SUFFIXES
+
+
+def test_raise_scan_walks_nested_control_flow_but_skips_nested_definitions() -> None:
+    source = (
+        'def outer(config):\n'
+        '    if config.get("target"):\n'
+        '        def nested():\n'
+        '            return "target"\n'
+        '        if True:\n'
+        '            pass\n'
+    )
+
+    hits = WRT._symbol_hits(source, "target", "source")
+
+    assert any(hit["kind"] == "lookup" for hit in hits)
+    assert any(hit["kind"] == "string-literal" for hit in hits)
+
+
+def test_ast_candidate_miss_and_unparseable_source_use_explicit_fallbacks() -> None:
+    context = WRT._PythonReferenceContext("x = 1\n", "source")
+    assert context.kind("target = 2", 1, 0) is None
+
+    malformed = (
+        'assert config["target"]\n'
+        'if config["target"]: raise ValueError\n'
+        'assert target\n'
+        'if target: raise ValueError\n'
+        '???\n'
+    )
+    hits = WRT._symbol_hits(malformed, "target", "source")
+    by_line = {hit["line"]: hit["kind"] for hit in hits}
+
+    assert by_line[1] == "value-constraint"
+    assert by_line[2] == "value-constraint"
+    assert by_line[3] == "value-constraint"
+    assert by_line[4] == "value-constraint"
