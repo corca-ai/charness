@@ -203,7 +203,7 @@
         "exit": 0,
         "evidence_path": "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt"
       },
-      "classification": "partial-child-shipped",
+      "classification": "qualified-repair",
       "release_impact": "release-train-quality: qualified release-train repair",
       "acceptance_owner": "artifact validation owner",
       "acceptance_assertions": [
@@ -236,6 +236,18 @@
           "new_source": "scripts/run_slice_closeout.py",
           "successor_destination": "p3-677 integration",
           "release_scope_impact": "No full #677 acceptance claim until closeout advisory wiring is proven."
+        },
+        {
+          "amendment_id": "2026-08-20-677-consumer-proven",
+          "recorded_at": "2026-08-20T21:03:30+09:00",
+          "from_classification": "partial-child-shipped",
+          "to_classification": "qualified-repair",
+          "reason": "The reporting-only closeout consumer now reads the changed artifact path set and its focused integration plus supported-entrypoint plan readback pass with no syntactic citation issues.",
+          "owner": "artifact validation owner",
+          "evidence_path": "charness-artifacts/issues/2026-08-20-677-consumer-proof.txt",
+          "new_source": "scripts/check_artifact_citations.py and scripts/run_slice_closeout.py",
+          "successor_destination": "none; p3-677 acceptance complete",
+          "release_scope_impact": "The qualified repair may enter the integrated semantic candidate; no semantic truth or issue-close claim is made."
         }
       ],
       "locked_classification": "qualified-repair",

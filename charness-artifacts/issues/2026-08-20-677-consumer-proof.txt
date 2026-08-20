@@ -1,0 +1,26 @@
+#677 closeout-consumer proof — 2026-08-20
+
+The helper-only gap was repaired by wiring the checker into the supported
+slice-closeout entrypoint as a reporting-only advisory. The consumer receives
+the changed-path set, so historical artifacts outside the slice are not
+re-litigated.
+
+Focused proof:
+
+    python3 -m pytest -q tests/test_artifact_citations.py \
+      tests/quality_gates/test_slice_closeout_artifact_citations.py
+    11 passed
+
+Supported-entrypoint readback:
+
+    python3 scripts/run_slice_closeout.py \
+      --paths charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md \
+      --plan-only --allow-unmatched --skip-broad-pytest \
+      --ack-cautilus-skill-review
+    exit=0; status=planned
+    stderr advisory: status=checked; artifacts_checked=[the selected goal];
+    issues=[]; semantic_scope=syntactic-only
+
+The advisory explicitly leaves semantic truth, call-graph reachability, and
+counts unverified. The closeout remains non-blocking and does not rewrite the
+historical artifact corpus.
