@@ -22,7 +22,7 @@ try:
         validate_receipt,
         validate_snapshot,
     )
-except ImportError:  # direct execution from scripts/
+except ImportError:  # pragma: no cover - direct execution from scripts/
     from release_issue_ledger_evidence import (  # type: ignore[no-redef]
         CLASSIFICATIONS,
         HEX40,

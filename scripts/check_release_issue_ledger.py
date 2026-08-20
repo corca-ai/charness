@@ -16,7 +16,7 @@ try:
     from scripts.release_issue_ledger_contract import (
         SCHEMA_VERSION as _SCHEMA_VERSION,
     )
-except ImportError:  # direct execution from scripts/
+except ImportError:  # pragma: no cover - direct execution from scripts/
     from release_issue_ledger_contract import (  # type: ignore[no-redef]
         REPOSITORY,  # type: ignore[no-redef]  # noqa: F401
         summary,
@@ -49,5 +49,5 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - main is unit-tested
     raise SystemExit(main())

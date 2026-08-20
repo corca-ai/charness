@@ -5,11 +5,14 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+from datetime import datetime
 from pathlib import Path
 
 import yaml
 
 from scripts import check_release_issue_ledger as gate
+from scripts import release_issue_ledger_contract as contract
+from scripts import release_issue_ledger_evidence as evidence
 
 
 def _write(repo: Path, relative: str, content: str) -> str:
@@ -363,3 +366,231 @@ def test_post_lock_exception_identity_and_time_are_bound(tmp_path: Path) -> None
     errors = gate.validate_ledger(payload, tmp_path)
     assert any("observed_at: invalid ISO-8601 timestamp" in error for error in errors)
     assert any("issue_url: must match issue number" in error for error in errors)
+
+
+def test_cli_success_and_read_failures_are_executable(tmp_path: Path, capsys) -> None:
+    ledger_path = tmp_path / "ledger.json"
+    ledger_path.write_text(json.dumps(_payload(tmp_path)), encoding="utf-8")
+    assert gate.main(["--repo-root", str(tmp_path), "--ledger", "ledger.json"]) == 0
+    assert gate.main(["--repo-root", str(tmp_path), "--ledger", "missing.json"]) == 1
+    (tmp_path / "invalid.json").write_text("{", encoding="utf-8")
+    assert gate.main(["--repo-root", str(tmp_path), "--ledger", "invalid.json"]) == 1
+    (tmp_path / "rejected.json").write_text("{}", encoding="utf-8")
+    assert gate.main(["--repo-root", str(tmp_path), "--ledger", "rejected.json"]) == 1
+    assert capsys.readouterr().out
+
+
+def test_contract_edge_refusals_execute_each_append_only_floor(tmp_path: Path) -> None:
+    payload = _payload(tmp_path)
+    issue = copy.deepcopy(payload["issues"][0])
+    errors: list[str] = []
+    contract.require_string_list("not-a-list", "field", errors)
+    contract.require_string_list([], "field", errors, nonempty=True)
+    assert any("list required" in error for error in errors)
+    assert any("non-empty list required" in error for error in errors)
+
+    issue["amendments"] = "not-a-list"
+    errors = []
+    contract.validate_amendments(issue, "issue", tmp_path, "a" * 40, datetime.fromisoformat("2026-08-20T18:00:00+09:00"), errors)
+    assert any("append-only list" in error for error in errors)
+
+    issue["amendments"] = []
+    issue["locked_classification"] = "not-a-class"
+    issue["locked_head_sha"] = "b" * 40
+    errors = []
+    contract.validate_amendments(issue, "issue", tmp_path, "a" * 40, datetime.fromisoformat("2026-08-20T18:00:00+09:00"), errors)
+    assert any("required locked enum" in error for error in errors)
+    assert any("must equal ledger head_sha" in error for error in errors)
+
+    amendment = {
+        "amendment_id": "same",
+        "recorded_at": "2026-08-20T18:00:00+09:00",
+        "from_classification": "not-a-class",
+        "to_classification": "already-satisfied",
+        "reason": "edge coverage",
+        "owner": "owner",
+        "evidence_path": "missing-evidence.txt",
+    }
+    issue["locked_classification"] = "qualified-repair"
+    issue["locked_head_sha"] = "a" * 40
+    issue["amendments"] = [amendment, copy.deepcopy(amendment)]
+    issue["classification"] = "qualified-repair"
+    errors = []
+    contract.validate_amendments(issue, "issue", tmp_path, "a" * 40, datetime.fromisoformat("2026-08-20T18:00:00+09:00"), errors)
+    assert any("unique non-empty id" in error for error in errors)
+    assert any("must be after ledger capture" in error for error in errors)
+    assert any("timestamps must increase" in error for error in errors)
+    assert any("invalid classification transition" in error for error in errors)
+    assert any("evidence_path: file does not exist" in error for error in errors)
+    assert any("final transition does not reach" in error for error in errors)
+
+
+def test_contract_issue_and_ledger_edges_execute_each_structural_floor(tmp_path: Path) -> None:
+    payload = _payload(tmp_path)
+    base_issue = copy.deepcopy(payload["issues"][0])
+    captured = datetime.fromisoformat("2026-08-20T18:00:00+09:00")
+
+    def issue_errors(mutator) -> list[str]:
+        issue = copy.deepcopy(base_issue)
+        mutator(issue)
+        errors: list[str] = []
+        contract.validate_issue(tmp_path, issue, 0, "a" * 40, captured, errors)
+        return errors
+
+    assert any("positive integer" in error for error in issue_errors(lambda row: row.update(number=0)))
+    assert any("lowercase SHA-256" in error for error in issue_errors(lambda row: row.update(body_sha256="bad")))
+    assert any("invalid disposition" in error for error in issue_errors(lambda row: row.update(close_disposition="later")))
+    assert any("premise.exit: required integer" in error for error in issue_errors(lambda row: row["premise"].update(exit=True)))
+    assert any("premise.evidence_path: file does not exist" in error for error in issue_errors(lambda row: row["premise"].update(evidence_path="missing.txt")))
+    assert any("admitted row requires current reproducer" in error for error in issue_errors(lambda row: row["premise"].update(verdict="not-current")))
+    assert any("release_content_evidence_path: file does not exist" in error for error in issue_errors(lambda row: row.update(release_content_evidence_path="missing.txt")))
+    assert any("post_publication_closeout_path: must be null" in error for error in issue_errors(lambda row: row.update(post_publication_closeout_path="closeout.txt")))
+
+    def refuted(row: dict) -> None:
+        row["classification"] = "premise-refuted"
+        row.pop("refutation_scope", None)
+        row["post_lock_exception"] = "embedded"
+
+    refuted_errors = issue_errors(refuted)
+    assert any("refutation_scope" in error for error in refuted_errors)
+    assert any("exceptions must be top-level" in error for error in refuted_errors)
+    assert any("body_sha256: does not match" in error for error in issue_errors(lambda row: row.update(body_sha256="0" * 64, comments_sha256="0" * 64)))
+    assert any("comments_sha256: does not match" in error for error in issue_errors(lambda row: row.update(body_sha256="0" * 64, comments_sha256="0" * 64)))
+
+    def ledger_errors(mutator) -> list[str]:
+        candidate = copy.deepcopy(payload)
+        mutator(candidate)
+        return gate.validate_ledger(candidate, tmp_path)
+
+    missing = ledger_errors(lambda row: row.pop("repo"))
+    assert any("ledger.repo: required" in error for error in missing)
+    assert any("ledger.schema_version" in error for error in ledger_errors(lambda row: row.update(schema_version="wrong")))
+    assert any("ledger.repo: expected" in error for error in ledger_errors(lambda row: row.update(repo="wrong/repo")))
+    assert any("commit SHA required" in error for error in ledger_errors(lambda row: row.update(head_sha="bad")))
+    assert any("issue_count: integer required" in error for error in ledger_errors(lambda row: row.update(issue_count=True)))
+    assert any("does not equal issues length" in error for error in ledger_errors(lambda row: row.update(issue_count=2)))
+
+    def duplicate_snapshot(row: dict) -> None:
+        raw = '[{"number": 1}, {"number": 1}]\n'
+        snapshot = row["activation_issue_snapshot"]
+        (tmp_path / snapshot["path"]).write_text(raw, encoding="utf-8")
+        snapshot.update(numbers=[1, 1], count=2, raw_sha256=hashlib.sha256(raw.encode()).hexdigest(), numbers_sha256=hashlib.sha256(b"[1,1]").hexdigest())
+
+    assert any("duplicate issue number" in error for error in ledger_errors(duplicate_snapshot))
+    assert any("duplicate activation issue" in error for error in ledger_errors(lambda row: row.update(issues=[copy.deepcopy(row["issues"][0]), copy.deepcopy(row["issues"][0])], issue_count=2)))
+    assert any("parent_only_paths: non-empty" in error for error in ledger_errors(lambda row: row.update(parent_only_paths="bad")))
+    assert any("allowed_paths[0]: required repo-relative path" in error for error in ledger_errors(lambda row: row["issues"][0].update(allowed_paths=[123, "src/repair.py"])))
+    assert any("parent-only path admitted" in error for error in ledger_errors(lambda row: row.update(parent_only_paths=["src"] , issues=[dict(row["issues"][0], allowed_paths=["src/repair.py"])])))
+    assert any("overlaps issue" in error for error in ledger_errors(lambda row: row["issues"][0].update(allowed_paths=["src/repair.py", "src/repair.py"])))
+    assert any("package_id: unique" in error for error in ledger_errors(lambda row: row["work_packages"].append(copy.deepcopy(row["work_packages"][0]))))
+    assert any("non-boolean activation" in error for error in ledger_errors(lambda row: row["work_packages"][0].update(issue_numbers=[True])))
+    assert any("qualified disposition has no work package" in error for error in ledger_errors(lambda row: row.update(work_packages=[])))
+    result = contract.summary(payload)
+    assert result["status"] == "pass"
+
+
+def test_evidence_edge_refusals_execute_helper_and_receipt_floors(tmp_path: Path, monkeypatch) -> None:
+    errors: list[str] = []
+    assert evidence.repo_path(tmp_path, "", field="path", errors=errors) is None
+    assert evidence.repo_path(tmp_path, "../escape", field="path", errors=errors) is None
+    assert evidence.require_mapping("not-an-object", "object", errors) == {}
+    assert evidence.parse_timestamp("", "time", errors) is None
+    assert evidence.parse_timestamp("not-a-time", "time", errors) is None
+    assert evidence.parse_timestamp("2026-08-20T18:00:00", "time", errors) is None
+    assert any("required repo-relative path" in error for error in errors)
+    assert any("path must stay repo-relative" in error for error in errors)
+    assert any("expected object" in error for error in errors)
+    assert any("ISO-8601 timestamp required" in error for error in errors)
+    assert any("invalid ISO-8601 timestamp" in error for error in errors)
+    assert any("timezone required" in error for error in errors)
+
+    source_path = tmp_path / "issues" / "reads" / "missing.raw.yaml"
+    source_errors: list[str] = []
+    assert evidence.source_record(tmp_path, source_path, source_errors, "source") == (None, None, None)
+    bad_source = tmp_path / "issues" / "reads" / "bad.raw.yaml"
+    bad_source.parent.mkdir(parents=True, exist_ok=True)
+    bad_source.write_text("not: [valid", encoding="utf-8")
+    assert evidence.source_record(tmp_path, bad_source, source_errors, "source") == (None, None, None)
+    monkeypatch.setattr(evidence, "yaml", None)
+    assert evidence.source_record(tmp_path, bad_source, source_errors, "source") == (None, None, None)
+    evidence._receipt_metadata(bad_source, {}, "receipt", source_errors)
+    monkeypatch.setattr(evidence, "yaml", yaml)
+    assert any("PyYAML is required" in error for error in source_errors)
+
+    payload = _payload(tmp_path)
+    receipt = copy.deepcopy(payload["release_planner_receipt"])
+    receipt_errors: list[str] = []
+    evidence.validate_receipt(tmp_path, receipt, "receipt", "b" * 40, receipt_errors)
+    receipt["exit_code"] = "0"
+    evidence.validate_receipt(tmp_path, receipt, "receipt", "a" * 40, receipt_errors)
+    receipt["raw_output_path"] = "missing.raw"
+    receipt["meta_path"] = "missing.meta"
+    evidence.validate_receipt(tmp_path, receipt, "receipt", "a" * 40, receipt_errors)
+    receipt = copy.deepcopy(payload["release_planner_receipt"])
+    receipt["raw_sha256"] = "bad"
+    evidence.validate_receipt(tmp_path, receipt, "receipt", "a" * 40, receipt_errors)
+    assert any("head_sha: differs" in error for error in receipt_errors)
+    assert any("exit_code: required integer" in error for error in receipt_errors)
+    assert any("file does not exist" in error for error in receipt_errors)
+    assert any("lowercase SHA-256 required" in error for error in receipt_errors)
+
+    meta_path = tmp_path / payload["release_planner_receipt"]["meta_path"]
+    meta_path.write_text("[", encoding="utf-8")
+    evidence.validate_receipt(tmp_path, copy.deepcopy(payload["release_planner_receipt"]), "receipt", "a" * 40, receipt_errors)
+    meta_path.write_text("- item\n", encoding="utf-8")
+    evidence.validate_receipt(tmp_path, copy.deepcopy(payload["release_planner_receipt"]), "receipt", "a" * 40, receipt_errors)
+    meta_path.write_text("command: other\nhead_sha: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ncaptured_at: 2026-08-20T19:00:00+09:00\nexit_code: 0\n", encoding="utf-8")
+    evidence.validate_receipt(tmp_path, copy.deepcopy(payload["release_planner_receipt"]), "receipt", "a" * 40, receipt_errors)
+    assert any("cannot parse metadata receipt" in error for error in receipt_errors)
+    assert any("metadata must be an object" in error for error in receipt_errors)
+    assert any("does not match metadata receipt" in error for error in receipt_errors)
+
+
+def test_evidence_snapshot_refusals_execute_raw_binding_floors(tmp_path: Path) -> None:
+    snapshot_errors: list[str] = []
+    missing_snapshot = {"path": "missing.json", "numbers": [1], "count": 1, "list_truncated": False}
+    evidence.validate_snapshot(tmp_path, missing_snapshot, snapshot_errors)
+    invalid_json = _write(tmp_path, "issues/invalid.json", "{")
+    evidence.validate_snapshot(tmp_path, {"path": invalid_json, "numbers": [1], "count": 1, "list_truncated": False}, snapshot_errors)
+    non_list = _write(tmp_path, "issues/object.json", "{}")
+    evidence.validate_snapshot(tmp_path, {"path": non_list, "numbers": [1], "count": 1, "list_truncated": False}, snapshot_errors)
+    duplicate = _write(tmp_path, "issues/duplicate.json", '[{"number": true}, {"number": 1}, {"number": 1}]')
+    evidence.validate_snapshot(tmp_path, {"path": duplicate, "numbers": [1, 1], "count": 3, "list_truncated": False}, snapshot_errors)
+    assert any("path: file does not exist" in error for error in snapshot_errors)
+    assert any("cannot read raw snapshot" in error for error in snapshot_errors)
+    assert any("raw snapshot must be an issue list" in error for error in snapshot_errors)
+    assert any("every issue needs" in error for error in snapshot_errors)
+    assert any("duplicate issue number" in error for error in snapshot_errors)
+
+
+def test_evidence_exception_refusals_execute_post_lock_floors(tmp_path: Path) -> None:
+    exception_errors: list[str] = []
+    captured = datetime.fromisoformat("2026-08-20T18:00:00+09:00")
+    evidence.validate_post_lock_exceptions(tmp_path, "bad", {1}, "a" * 40, captured, exception_errors)
+    source = _source(tmp_path, number=2)
+    exception = {
+        "exception_id": "same",
+        "issue_number": 1,
+        "issue_url": "https://github.com/corca-ai/charness/issues/1",
+        "observed_at": "2026-08-20T17:00:00+09:00",
+        "observed_head_sha": "bad",
+        "lock_head_sha": "b" * 40,
+        "classification": "qualified-repair",
+        "release_impact": "release-blocker: edge",
+        "source_read_path": source,
+        "premise": {"verdict": "post-lock-release-blocker-reproduced", "exact_command": "python reproduce.py", "exit": 1, "evidence_path": "missing.txt"},
+    }
+    evidence.validate_post_lock_exceptions(tmp_path, [exception, copy.deepcopy(exception)], {1}, "a" * 40, captured, exception_errors)
+    typed_number = copy.deepcopy(exception)
+    typed_number["issue_number"] = "1"
+    evidence.validate_post_lock_exceptions(tmp_path, [typed_number], {1}, "a" * 40, captured, exception_errors)
+    assert any("required list" in error for error in exception_errors)
+    assert any("unique non-empty id" in error for error in exception_errors)
+    assert any("issue_number: integer required" in error for error in exception_errors)
+    assert any("outside activation snapshot" in error for error in exception_errors)
+    assert any("must be after ledger capture" in error for error in exception_errors)
+    assert any("lock_head_sha: must equal" in error for error in exception_errors)
+    assert any("observed_head_sha: commit SHA required" in error for error in exception_errors)
+    assert any("classification: must be release-blocker" in error for error in exception_errors)
+    assert any("premise.evidence_path: file does not exist" in error for error in exception_errors)
+    assert any("issue number does not match" in error for error in exception_errors)
