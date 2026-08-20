@@ -14,6 +14,7 @@ number is not a test.
 """
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 from tests.script_loader import load_script_module
@@ -21,6 +22,13 @@ from tests.script_loader import load_script_module
 ROOT = Path(__file__).resolve().parents[1]
 
 WRT = load_script_module("what_reads_this_under_test", ROOT / "scripts" / "what_reads_this.py")
+
+
+class _BlockScriptsPackage:
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "scripts" or fullname.startswith("scripts."):
+            raise ModuleNotFoundError(f"No module named {fullname!r}")
+        return None
 
 _CONSUMER = '''"""A module that reads things in three different ways."""
 from helpers import listed_skill_ids
@@ -74,6 +82,24 @@ def _kinds(payload: dict[str, object]) -> dict[str, int]:
 
 def _files(payload: dict[str, object]) -> list[str]:
     return payload["files_with_references"]
+
+
+def test_standalone_loader_uses_the_flat_fallback_module(monkeypatch) -> None:
+    """The exported flat layout must exercise the sibling fallback import."""
+    import runtime_bootstrap
+
+    monkeypatch.setattr(runtime_bootstrap, "import_repo_module", lambda *_args: WRT._repo_file_listing)
+    monkeypatch.setattr(sys, "meta_path", [_BlockScriptsPackage()] + sys.meta_path)
+    for name in [name for name in sys.modules if name == "scripts" or name.startswith("scripts.")]:
+        monkeypatch.delitem(sys.modules, name)
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+
+    module = load_script_module(
+        "what_reads_this_flat_under_test", ROOT / "scripts" / "what_reads_this.py"
+    )
+
+    assert module._fallback.__name__ == "what_reads_this_fallback"
+    assert module._fallback_structural_kind is module._fallback.structural_kind
 
 
 def test_a_symbol_answer_separates_definition_import_and_assertion_on_value(tmp_path: Path) -> None:
