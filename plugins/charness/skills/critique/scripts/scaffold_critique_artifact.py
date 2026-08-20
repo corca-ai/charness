@@ -147,7 +147,7 @@ def render_template(*, title: str, date_text: str) -> str:
             # is the closeout-authoring-churn class this repo names.
             "<!-- Every bullet below is a placeholder: a value still opening TODO/TBD is "
             "refused, and a pending-parent-spawn Host exposure or Delivery state is refused "
-            "alongside a parent-delegated/nested-delegated Fresh-Eye Satisfaction (it would "
+            "alongside a worker-delivered/parent-delegated/nested-delegated Fresh-Eye Satisfaction (it would "
             "claim a completed delegation over a record saying nothing was spawned). Write "
             "n/a when the host genuinely exposes no such control. -->",
             "- Requested tier: TODO replace with the fresh-eye reviewer tier requested (or n/a).",
@@ -165,8 +165,8 @@ def render_template(*, title: str, date_text: str) -> str:
             "## Fresh-Eye Satisfaction",
             "",
             # Deliberately NOT a typed value (see the module comment above): the
-            # validator requires this line to OPEN with `parent-delegated` /
-            # `nested-delegated` / a signal-bearing typed value once dated
+            # validator requires this line to OPEN with `worker-delivered` /
+            # `parent-delegated` / `nested-delegated` / a signal-bearing typed value once dated
             # on/after its enforce-from date, and it also rejects a typed value
             # whose remainder still carries an unedited `todo`. Pre-filling a
             # real typed token here (even with a trailing TODO) would let every
@@ -174,8 +174,8 @@ def render_template(*, title: str, date_text: str) -> str:
             # cannot satisfy the floor until the author replaces it with a real
             # typed value after the reviewer actually runs. Stays free of the
             # literal "blocked" token for the same reason as the module comment.
-            "TODO: replace with `parent-delegated`, `nested-delegated`, or a citation of "
-            "the concrete signal that stopped delegation — after the reviewer actually runs.",
+            "TODO: replace with `worker-delivered`, `parent-delegated`, `nested-delegated`, "
+            "or a citation of the concrete signal that stopped review — after the reviewer actually runs.",
             "",
         ]
     )

@@ -74,10 +74,10 @@ verification preferences or `truth_surfaces`.
      the contract
 3. Run the stop gate.
    - every task-completing repo slice records critique before closeout; scale the pass instead of asking whether it is needed
-   - record `Critique: short <scope>` for small local-risk slices, or `Critique: full <artifact-or-subagent-status>` after using standalone `critique` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
-   - `critique` always means a fresh bounded subagent review, never a same-agent pass; use `Critique: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
-   - if the required critique is blocked because the host cannot provide
-     subagents after the capability check, stop and record `Critique: blocked <host-signal>`
+   - record `Critique: short <scope>` for small local-risk slices, or `Critique: full <artifact-or-worker-status>` after using standalone `critique` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
+   - `critique` always means a fresh bounded worker review (or an adapter-selected typed-subagent review), never a same-context pass; use `Critique: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
+   - if the configured worker and optional typed-subagent path are both blocked
+     after the capability check, stop and record `Critique: blocked <host-signal>`
    - run a fresh-eye review for runtime behavior, boundary honesty, and
      docs/spec synchronization; the
      [boundary ownership brief](../../shared/references/boundary-ownership-brief.md)
@@ -130,7 +130,7 @@ Emittable-verbatim closeout tokens (validator substring-matches these); WHY-pros
 
 ## Guardrails
 
-- Do not call a same-agent review a critique. If the required critique is
+- Do not call a same-context review a critique. If the required critique is
   blocked, stop instead of downgrading to a local substitute and still calling
   the slice reviewed.
 - Do not absorb another boundary's ledger: `issue`/`release` closeout

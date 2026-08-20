@@ -99,22 +99,25 @@ Good default angles for a non-trivial change:
   new H1 titles, and is any concept-home page duplicated)
 - `devil's advocate`: strongest argument for keeping the current design
 
-Subagent sizing:
+Worker sizing:
 
-- minimum: two contrasting angle subagents plus one separate counterweight
-  subagent
-- default: three angle subagents plus one counterweight subagent
-- widen to four angle subagents only when the change spans multiple durable
+- minimum: two contrasting angle worker runs plus one separate counterweight
+  worker run
+- default: three angle worker runs plus one counterweight worker run
+- widen to four angle worker runs only when the change spans multiple durable
   surfaces, a breaking migration, or a release/install/doc cascade
 - if you cannot name four meaningfully different angles, stay at two or three
   instead of inventing filler
 
-The parent review coordinator owns spawning those angle and counterweight
-subagents. A delegated angle reviewer should run the assigned lens directly and
-should not spawn another reviewer unless the parent explicitly asks for
-recursive delegation.
+The parent review coordinator owns the worker run artifacts and delivery
+ledgers for those angle and counterweight runs. A typed-subagent adapter may
+delegate an angle reviewer, but the consumer still reads its own delivery
+evidence and never treats a host notification as a verdict.
 
-Canonical execution uses subagents. Before a parent reports that path as unavailable, use `../../../shared/references/fresh-eye-subagent-review.md`: attempt the bounded subagent setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, say the canonical critique path is unavailable and leave the host-side contract gap visible. Do not collapse into a same-agent self-review.
+Canonical execution uses file-backed workers. Before a parent reports that path
+as unavailable, use `../../../shared/references/fresh-eye-subagent-review.md`:
+run the configured worker, consume its typed report, and cite the concrete
+worker/host signal if it blocks. Do not collapse into a same-context self-review.
 
 Rotate or swap angles when the change is narrower:
 

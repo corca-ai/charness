@@ -26,6 +26,10 @@ reviewer_tiers:
     model: gpt-5.6-terra
     reasoning_effort: medium
     fork_turns: none
+reviewer_runner:
+  mode: file-backed-worker
+  backend: host-defaulted
+  timeout_seconds: 900
 packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces

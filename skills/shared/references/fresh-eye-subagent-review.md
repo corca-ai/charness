@@ -1,8 +1,12 @@
 # Fresh-Eye Subagent Review
 
-The canonical fresh-eye review path spawns bounded subagents. Before reporting
-that path as blocked, confirm the host actually cannot provide them. Guessing
-from priors is the exact failure mode this reference exists to stop.
+The canonical fresh-eye review path is a bounded, separate file-backed worker
+selected by the adapter. `codex exec` and `claude -p` are valid worker backends;
+typed subagents remain an optional host adapter. Before reporting a
+task-completing result, consume the worker's typed receipt and delivery ledger,
+proving that the returned findings reached the parent context. Guessing from a
+file, exit code, or host prior is the exact failure mode this reference exists
+to stop.
 
 Use this for bounded reviewer scopes owned by another skill, including
 `critique`, `spec`, `quality`, `handoff`, and any skill that names a
@@ -334,8 +338,16 @@ reviewer-reachable tree when that matters.
 
 ## Result Delivery
 
-A spawned reviewer is not a received review. The parent holds the review only
-when the reviewer's findings text is in the parent's own context. Spawn
+The default worker path is the canonical consumer path. A worker run is
+complete only when `reviewer_worker_report.py` returns a typed report with
+`approval_eligible: true`; the report requires a succeeded worker receipt, a
+fresh output hash, and a matching `findings-received` delivery-ledger attempt.
+This keeps the report media-neutral: `codex_exec` and `claude_p` are adapter
+choices, not verdict categories.
+
+For the optional typed-subagent path, **A spawned reviewer is not a received
+review.** The parent holds the review only when the reviewer's findings text is in
+the parent's own context. Spawn
 acceptance, a clean rail-1 fingerprint, and an idle or completion notification
 are each individually compatible with findings that never arrived — the
 reviewer can run correctly, keep its boundary clean, write a complete final
@@ -359,8 +371,8 @@ defect closes, re-probe and the rule may relax to a preference. The invariant
 above ("a spawned reviewer is not a received review") does not relax; it is what
 makes the failure diagnosable at all.
 
-Delivery is a per-host live claim, proven by the step-1 probe below and never
-assumed — the same standing as envelope binding in rail 2. The channel-selection
+Typed-subagent delivery is a per-host live claim, proven by the step-1 probe
+below and never assumed — the same standing as envelope binding in rail 2. The channel-selection
 differential above is recorded on one host at one version and corroborated by the
 upstream report. The named arm has since been observed in a second session
 (`n=2`); explicit background spawns and multi-reviewer concurrency remain
@@ -373,7 +385,8 @@ the named shape is the delivering one, the unnamed-shape rule is a no-op and
 only the "findings text in your context" test carries. The current Codex
 `explorer` path is not inspected.
 
-- Spawn one-shot subagents **without** a host addressing or team name. This
+- If the adapter selects the optional typed-subagent path, spawn one-shot
+  subagents **without** a host addressing or team name. This
   applies to EVERY spawn, not only bounded reviewers: the always-loaded contract in
   `<repo-root>/AGENTS.md` states the same rule for any spawn, because scoping the
   rule to review is what let it fail to bind at all. Reserve named spawns for agents the
@@ -409,9 +422,10 @@ resolve instead of guessing. Read it once: a `still-running` result is not an
 invitation to poll, and using it at all still means recording a delivery
 failure.
 
-For a Charness-owned worker or a backend adapter that runs outside the typed
-subagent channel, persist the parent-side state packet with the shared helper;
-do not infer delivery from a non-empty output file or exit code alone:
+For the default Charness-owned worker, persist the parent-side state packet with
+the shared helper; do not infer delivery from a non-empty output file, process
+exit code, or worker receipt status alone. Consume
+`reviewer_worker_report.py` and require `approval_eligible: true`:
 
 ```bash
 python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
@@ -424,6 +438,13 @@ python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
 
 python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
   --ledger "$RUN_DIR/delivery.json" show --attempt-id "$ATTEMPT_ID"
+
+python3 "$SKILL_DIR/../../shared/scripts/reviewer_worker_report.py" \
+  --receipt-file "$RUN_DIR/receipt.json" \
+  --ledger-file "$RUN_DIR/delivery.json" \
+  --attempt-id "$ATTEMPT_ID" --scope "$SCOPE_ID" \
+  --packet-identity "$PACKET_SHA256" \
+  --parent-receipt-identity "$RECEIPT_ID"
 ```
 
 The backend runner itself must publish a typed receipt and a schema-validated
@@ -440,13 +461,15 @@ not a terminal success signal.
    skipped, not a host restriction. A recorded `declined` IS a legitimate stop,
    recorded as such and not re-asked.
 1. Attempt the bounded setup the skill calls for.
-   - Try to open one fresh-eye or critique subagent with a tight scope and
-     time box. A single probe is enough; you are not required to spawn the full
-     reviewer set just to prove availability.
-   - The probe passes only when the reviewer's **findings text reaches you**.
-     A spawn the host accepted but whose result never arrived is a failed
-     probe, not a passed one; re-probe under the unnamed spawn shape from
-     *Result Delivery* before reporting anything as blocked.
+   - Run one file-backed worker with a tight scope and time box. A single
+     worker run is enough to prove the canonical path; do not spawn a typed
+     reviewer merely to prove that the worker exists.
+   - The worker probe passes only when `reviewer_worker_report.py` returns
+     `approval_eligible: true`. A fresh output file, process exit code, or
+     succeeded receipt without matching ledger findings is not a passed probe.
+   - If the adapter explicitly selects typed-subagent, The probe passes only when the reviewer's findings text reaches you. A spawn the host
+     accepted but whose result never arrived is a failed probe; re-probe under
+     the unnamed shape from *Result Delivery* before reporting anything as blocked.
    - If you are already a bounded fresh-eye subagent spawned by a parent, do not
      run this probe again unless your assignment explicitly requires nested
      delegation. This includes assigned angle and counterweight reviewers.
@@ -472,11 +495,11 @@ not a terminal success signal.
 
 ## If The Canonical Path Is Blocked
 
-Stop and record the concrete host signal. Treat it as a host/runtime contract
-gap for this run, not as permission to replace the review with a same-agent
-local pass. Do not present a local pass as the canonical fresh-eye review, and
-do not call a same-agent substitute "good enough" just because the probe
-failed.
+Stop and record the concrete worker or host signal. Treat it as a host/runtime contract gap
+for this run, not as permission to replace the review with a
+same-context local pass. Do not present a local pass as the canonical fresh-eye
+review, and do not call a same-context substitute "good enough" just because
+the probe failed.
 
 ## Do Not
 
@@ -485,11 +508,11 @@ failed.
   unless the parent task explicitly asks for nested delegation.
 - Do not treat "I am uncertain if the host supports this" as a block; resolve
   the uncertainty first.
-- Do not claim bounded subagents ran unless the runtime actually exposed and
-  used a subagent/spawn tool. If the only observed tool is shell execution,
-  report the canonical path as blocked by the missing spawn tool surface.
-- Do not silently collapse into a same-agent review and call it the canonical
-  path.
+- Do not claim a typed subagent ran unless the runtime actually exposed and
+  used a subagent/spawn tool. If the adapter selects the worker path, do not
+  reinterpret its receipt as a subagent claim.
+- Do not silently collapse into a same-context review and call it the canonical
+  path; use the worker report or record the concrete worker block.
 - Do not name the blocker as "canonical path unavailable" without the concrete
   signal that made it unavailable.
 - Do not treat a spawn the host accepted, a clean boundary fingerprint, or an

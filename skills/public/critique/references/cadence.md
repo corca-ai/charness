@@ -19,11 +19,12 @@ Use the lightest rung that still protects the next irreversible decision:
    move in the caller artifact. This is recorded in the caller artifact and is
    not an invocation of standalone `critique`.
 3. **Substantial slice or bundle** — run standalone `critique` with bounded
-   fresh-eye subagents once for the meaningful slice or bundle. This covers
+   fresh-eye workers once for the meaningful slice or bundle. The adapter may
+   select typed subagents as an alternate execution path. This covers
    non-trivial workflow, public-skill, prompt, validator, export, release,
    issue-closeout, compatibility, host-proof, install/update, rename, deletion,
    and design-lock decisions.
-4. **Final closeout** — for non-trivial goals, use standalone fresh-eye review
+4. **Final closeout** — for non-trivial goals, use standalone fresh-eye worker review
    to check cross-slice drift, generated/export sync, disposition of surfaced
    improvements, and non-claims. Do not redo every slice-level review unless a
    new risk boundary appeared after the last review.

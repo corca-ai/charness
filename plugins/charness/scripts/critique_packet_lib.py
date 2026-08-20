@@ -178,9 +178,15 @@ def reviewer_tier_evidence(adapter_data: dict[str, Any]) -> dict[str, object]:
         "requested_spawn_fields": dict(requested_fields),
         "host_exposure_state": "pending-parent-spawn",
         "application_state": "unverified-by-packet",
+        "reviewer_runner": adapter_data.get(
+            "reviewer_runner",
+            {"mode": "file-backed-worker", "backend": "host-defaulted", "timeout_seconds": 900},
+        ),
         "instruction": (
             "Review artifacts must record requested_fields_sent, metadata-hidden, "
-            "host-defaulted, unsupported, or applied only when host-confirmed."
+            "host-defaulted, unsupported, or applied only when host-confirmed. "
+            "Consume the worker receipt and delivery ledger; do not infer approval "
+            "from a file or exit code."
         ),
     }
 
@@ -261,6 +267,11 @@ def render_reviewer_tier_evidence(raw: object) -> list[str]:
         rendered_fields = ", ".join(f"{key}={value}" for key, value in sorted(fields.items()))
     else:
         rendered_fields = "none"
+    runner = evidence.get("reviewer_runner", {})
+    if isinstance(runner, dict):
+        runner_text = ", ".join(f"{key}={value}" for key, value in sorted(runner.items()))
+    else:
+        runner_text = "missing"
     return [
         "## Reviewer Tier Evidence",
         "",
@@ -268,6 +279,7 @@ def render_reviewer_tier_evidence(raw: object) -> list[str]:
         f"- **Requested spawn fields**: `{rendered_fields}`",
         f"- **Host exposure state**: `{evidence.get('host_exposure_state', '')}`",
         f"- **Application state**: `{evidence.get('application_state', '')}`",
+        f"- **Reviewer runner**: `{runner_text}`",
         f"- **Instruction**: {evidence.get('instruction', '')}",
     ]
 

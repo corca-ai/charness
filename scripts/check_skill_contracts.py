@@ -45,9 +45,9 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/critique/SKILL.md": (
         "Task-completing repo work always records critique before closeout.",
         "Scale the\npass, not the obligation",
-        "When this standalone `critique` skill runs, it always means a fresh bounded\nsubagent review.",
-        "There\nis no same-agent or local standalone `critique` variant.",
-        "If the host blocks the canonical subagent path before execution, report",
+        "When this standalone `critique` skill runs, its default fresh-eye execution is a Charness-owned\nfile-backed worker",
+        "There is no same-context local standalone `critique` variant.",
+        "apply the stop-instead-of-local-substitute rule when neither the configured",
         "- `Execution`",
     ),
     "skills/public/handoff/SKILL.md": (
@@ -102,7 +102,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/prove/SKILL.md": (
         "re-read `Fixed Decisions` and named acceptance checks",
         "reflected in the delivered slice or explicitly",
-        "Do not call a same-agent review a critique.",
+        "Do not call a same-context review a critique.",
         "never runs the review itself",
     ),
     "skills/public/debug/SKILL.md": (
@@ -210,7 +210,7 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/prove/SKILL.md": (
         "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
         "`Critique: short <scope>`",
-        "`Critique: full <artifact-or-subagent-status>`",
+        "`Critique: full <artifact-or-worker-status>`",
         "`Critique: not-applicable <reason>`",
         "`Critique: blocked <host-signal>`",
     ),

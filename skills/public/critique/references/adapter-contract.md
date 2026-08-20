@@ -27,6 +27,10 @@ version: 1
 repo: <repo-name>
 language: en
 output_dir: charness-artifacts/critique
+reviewer_runner:       # optional; defaults to a file-backed worker
+  mode: file-backed-worker
+  backend: codex_exec   # or claude_p; host-defaulted in portable templates
+  timeout_seconds: 900
 reviewer_tiers:        # optional portable-tier to host-field mapping
   high-leverage:
     model: "<host-specific model>"
@@ -62,6 +66,11 @@ Field semantics:
 - `language` — render language hint for the markdown packet
 - `output_dir` — repo-relative directory where packet artifacts land;
   defaults to `charness-artifacts/critique`
+- `reviewer_runner` — execution boundary for the default fresh-eye run. `mode`
+  is `file-backed-worker` (default) or the legacy `typed-subagent`; `backend`
+  is `codex_exec`, `claude_p`, or `host-defaulted`; `timeout_seconds` is a
+  positive integer. The consumer must read the worker receipt and delivery
+  ledger, never infer approval from an output file or process exit code.
 - `packet_sections` — list of declared sections; empty list is valid
   (signals "no opt-in" same as omitting the field)
 - `reviewer_tiers` — optional mapping from a portable reviewer tier

@@ -48,28 +48,26 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "Deliberately Not Doing" in skill_text
     assert "Task-completing repo work always records critique before closeout." in skill_text
     assert "Scale the\npass, not the obligation" in skill_text
-    # #442 dedup: the subagent-canonical execution mode is pinned via the
-    # step-3 spawn line plus the concept block; spawn enforcement (blocked
-    # protocol, no local substitute) is single-homed in the shared fresh-eye
-    # reference asserted below as capability_text.
-    assert "use bounded fresh-eye subagents with one angle each" in skill_text
-    assert "at least two angle subagents plus one separate counterweight subagent" in skill_text
+    # The default execution mode is now the Charness-owned file-backed worker;
+    # typed subagents remain an optional adapter path.
+    assert "file-backed worker" in skill_text
+    assert "at least two independent angle worker runs plus one separate counterweight" in skill_text
     assert "default to three angles" in skill_text
     assert "rail-1 snapshot/verify around each reviewer spawn" in skill_text
-    assert "stop-instead-of-local-substitute rule when the host cannot" in skill_text
-    assert "no same-agent or local standalone `critique` variant" in skill_text
+    assert "stop-instead-of-local-substitute rule when neither the configured" in skill_text
+    assert "no same-context local standalone `critique` variant" in skill_text
     assert "customer-of-this-capability" in angle_text
     assert "first real use" in angle_text
     assert "stale adapters" in angle_text
     assert "blast-radius" in angle_text
     assert "future maintainer" in angle_text
-    assert "minimum: two contrasting angle subagents plus one separate counterweight" in angle_text
-    assert "canonical critique path is unavailable" in angle_text
-    assert "Do not present a local pass as the canonical fresh-eye review" in capability_text
+    assert "minimum: two contrasting angle worker runs plus one separate counterweight" in angle_text
+    assert "Before a parent reports that path" in angle_text
+    assert "Do not present a local pass as the canonical fresh-eye" in capability_text
     assert "host/runtime contract" in capability_text
     assert "shell-only runner" in capability_text
     assert "model self-report" in capability_text
-    assert "only observed tool is shell execution" in capability_text
+    assert "Availability means an actual host-exposed subagent/spawn tool" in capability_text
     assert "Subagent Delegation" in capability_text
     # #475: the grant is a three-rung ladder, not one source. Pinning the old
     # single-source sentence would re-pin the defect -- a repo without the
@@ -110,7 +108,7 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "`references/cadence.md`" in skill_text
     assert 'python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root .' in skill_text
     assert 'prepare_packet.py" --repo-root . --prepared-for "<short label>" 2>/dev/null || true' not in skill_text
-    assert "The `critique` bootstrap runs the runner before spawning reviewers" in packet_text
+    assert "The `critique` bootstrap runs the runner before starting reviewers" in packet_text
     assert "semantic reviewer question" in packet_text
     assert "Semantic fact or invariant" in semantic_question_text
     assert "Owning boundary" in semantic_question_text

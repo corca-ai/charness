@@ -1,12 +1,12 @@
 # Critique Prepare Packet
 
 The **critique prepare packet** is a deterministic, adapter-driven payload
-that fresh-eye reviewers consume *before* broad repo sampling. It exists
+that fresh-eye worker runs consume *before* broad repo sampling. It exists
 to keep critique focused on judgment instead of repeatedly rediscovering
 enumerable inventory (changed surfaces, adapter subscriptions, doc-link
 graphs, role classifications, deferred concerns).
 
-The packet shape is portable. Charness owns the envelope and the runner;
+The packet shape is portable. Charness owns the envelope and the worker runner;
 each consumer repo's `<repo-root>/.agents/critique-adapter.yaml` decides which
 sections apply and how each section's content is produced.
 
@@ -22,7 +22,7 @@ The prepare runner fires when:
 - the runner is invoked explicitly via
   `python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root .`
 
-The `critique` bootstrap runs the runner before spawning reviewers when the
+The `critique` bootstrap runs the runner before starting reviewers when the
 adapter declares sections. Parent workflows may still prepare a packet earlier,
 but they must pass the packet path/body through and record the consumed path
 rather than silently relying on stale context.
@@ -34,8 +34,8 @@ The packet is emitted as two artifacts:
 - a JSON payload at
   `<output_dir>/<slug>-packet.json` — machine-readable contract
 - a markdown render at
-  `<output_dir>/<slug>-packet.md` — human-readable view that subagent
-  reviewers actually read
+  `<output_dir>/<slug>-packet.md` — human-readable view that worker reviewers
+  actually read
 
 Where `<output_dir>` defaults to `charness-artifacts/critique` (override
 via adapter `output_dir`) and `<slug>` defaults to a date+sequence

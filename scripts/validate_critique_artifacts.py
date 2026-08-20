@@ -96,8 +96,8 @@ FRESH_EYE_PRESENCE_RULE_DATE = date(2026, 7, 5)
 # detail) — presence/form-only per this floor's own boundary, so this is a
 # known, accepted gap rather than a missed one; adding a required nested-run
 # citation is a separate floor-addition call, not folded in here.
-FRESH_EYE_TYPED_VALUES = ("parent-delegated", "nested-delegated", "blocked")
-FRESH_EYE_TYPED_VALUES_SUMMARY = "`parent-delegated` / `nested-delegated` / `blocked <host-signal>`"
+FRESH_EYE_TYPED_VALUES = ("worker-delivered", "parent-delegated", "nested-delegated", "blocked")
+FRESH_EYE_TYPED_VALUES_SUMMARY = "`worker-delivered` / `parent-delegated` / `nested-delegated` / `blocked <host-signal>`"
 # Adversarial-review finding: a typed value whose remainder still carries an
 # unedited `todo` (e.g. a scaffolded `parent-delegated (TODO confirm ...)`)
 # must not satisfy the floor — that is an unedited stub silently claiming

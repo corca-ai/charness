@@ -20,6 +20,13 @@ reviewer_tiers:
     model: gpt-5.6-terra
     reasoning_effort: medium
     fork_turns: none
+# The default execution path is a Charness-owned file-backed worker. The host
+# adapter chooses the concrete CLI; consumers read the worker receipt plus the
+# delivery ledger and never infer approval from an output file or exit code.
+reviewer_runner:
+  mode: file-backed-worker
+  backend: codex_exec
+  timeout_seconds: 900
 # Declared sections opt this repo into the critique prepare-packet
 # contract. See skills/public/critique/references/prepare-packet.md.
 packet_sections:

@@ -96,6 +96,11 @@ def test_live_critique_adapter_pins_codex_high_leverage_default() -> None:
         "reasoning_effort": "medium",
         "fork_turns": "none",
     }
+    assert data["reviewer_runner"] == {
+        "mode": "file-backed-worker",
+        "backend": "codex_exec",
+        "timeout_seconds": 900,
+    }
 
 
 def test_critique_init_adapter_scaffolds_reviewer_tiers(tmp_path) -> None:
@@ -167,6 +172,22 @@ def test_critique_adapter_rejects_unknown_reviewer_tier_field() -> None:
 def test_critique_adapter_warns_on_unknown_reviewer_tier() -> None:
     _, _, warnings = validate_adapter_data({"reviewer_tiers": {"mystery": {"model": "x"}}}, ROOT)
     assert any("mystery" in warning for warning in warnings)
+
+
+def test_critique_adapter_rejects_unknown_runner_mode_and_backend() -> None:
+    _, errors, _ = validate_adapter_data(
+        {
+            "reviewer_runner": {
+                "mode": "mailbox",
+                "backend": "ceal",
+                "timeout_seconds": 0,
+            }
+        },
+        ROOT,
+    )
+    assert any("reviewer_runner.mode must be one of" in error for error in errors)
+    assert any("reviewer_runner.backend must be one of" in error for error in errors)
+    assert any("reviewer_runner.timeout_seconds must be" in error for error in errors)
 
 
 def test_adapter_contract_delegates_concrete_host_defaults_to_owned_assets() -> None:

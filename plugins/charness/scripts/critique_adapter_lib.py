@@ -28,6 +28,9 @@ STRING_FIELDS = ("repo", "language", "output_dir")
 VALID_CONTENT_KINDS = ("static", "script")
 VALID_REVIEWER_TIERS = ("high-leverage", "medium", "standard")
 REVIEWER_TIER_FIELDS = ("model", "reasoning_effort", "service_tier", "fork_turns")
+VALID_REVIEWER_RUNNER_MODES = ("file-backed-worker", "typed-subagent")
+VALID_REVIEWER_BACKENDS = ("codex_exec", "claude_p", "host-defaulted")
+REVIEWER_RUNNER_FIELDS = ("mode", "backend", "timeout_seconds")
 
 
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
@@ -37,6 +40,11 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "language": "en",
         "output_dir": DEFAULT_OUTPUT_DIR,
         "packet_sections": [],
+        "reviewer_runner": {
+            "mode": "file-backed-worker",
+            "backend": "host-defaulted",
+            "timeout_seconds": 900,
+        },
     }
 
 
@@ -176,6 +184,36 @@ def _validate_reviewer_tiers(
     return tiers
 
 
+def _validate_reviewer_runner(raw: Any, *, errors: list[str]) -> dict[str, Any] | None:
+    if not isinstance(raw, dict):
+        errors.append("reviewer_runner must be a mapping")
+        return None
+    for key in sorted(set(raw) - set(REVIEWER_RUNNER_FIELDS)):
+        errors.append(
+            f"reviewer_runner.{key} is not a valid runner field "
+            f"({', '.join(REVIEWER_RUNNER_FIELDS)})"
+        )
+    mode = optional_string(raw.get("mode"), "reviewer_runner.mode", errors)
+    backend = optional_string(raw.get("backend"), "reviewer_runner.backend", errors)
+    timeout = raw.get("timeout_seconds", 900)
+    if not isinstance(timeout, int) or isinstance(timeout, bool) or timeout <= 0:
+        errors.append("reviewer_runner.timeout_seconds must be a positive integer")
+        timeout = 900
+    if mode is not None and mode not in VALID_REVIEWER_RUNNER_MODES:
+        errors.append(
+            f"reviewer_runner.mode must be one of: {', '.join(VALID_REVIEWER_RUNNER_MODES)}"
+        )
+    if backend is not None and backend not in VALID_REVIEWER_BACKENDS:
+        errors.append(
+            f"reviewer_runner.backend must be one of: {', '.join(VALID_REVIEWER_BACKENDS)}"
+        )
+    return {
+        "mode": mode or "file-backed-worker",
+        "backend": backend or "host-defaulted",
+        "timeout_seconds": timeout,
+    }
+
+
 def validate_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -211,6 +249,12 @@ def validate_adapter_data(
         tiers = _validate_reviewer_tiers(tiers_raw, errors=errors, warnings=warnings)
         if tiers is not None:
             validated["reviewer_tiers"] = tiers
+
+    runner_raw = data.get("reviewer_runner")
+    if runner_raw is not None:
+        runner = _validate_reviewer_runner(runner_raw, errors=errors)
+        if runner is not None:
+            validated["reviewer_runner"] = runner
 
     # Repo-owned cross-surface probe for the boundary-ownership checkpoint
     # (#408). Both the critique validator's severity upgrade and the impl
