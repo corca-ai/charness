@@ -1,0 +1,124 @@
+schema_version: issue.run_plan.v1
+envelope_version: charness.run_plan_envelope.v1
+required_reads:
+- path: references/resolve-flow.md
+  why: resolve sequencing, GitHub source-of-truth selection, and read-before-design
+  trigger: before selecting or ordering issues
+  role: engage-always
+  size_bytes: 3801
+- path: references/issue-backend.md
+  why: adapter-selected backend, body-file safety, read/create/close operations
+  trigger: before backend read, carrier validation, or close
+  role: engage-always
+  size_bytes: 16819
+- path: references/closeout-discipline.md
+  why: verified ledger, auto-close carrier, behavior verdict, and final state proof
+  trigger: before publishing or verifying a closeout carrier
+  role: engage-always
+  size_bytes: 22535
+next_action:
+  kind: select_newest_open_issue_from_github_then_read
+gate_packets:
+- id: preflight
+  trust_model: deterministic backend/auth readiness; trust failures, inspect warnings
+  cost_tier: cheap
+  status: pass
+  parallel_group: adapter-readiness
+- id: issue-read
+  trust_model: deterministic backend read; require comments_read=true before design
+  cost_tier: network
+  command: issue_tool.py read --repo <org/repo> --number <n>
+  parallel_group: issue-read
+- id: closeout-draft
+  trust_model: presence/form gate; does not prove behavior or final GitHub state
+  cost_tier: cheap
+  command: issue_tool.py validate-closeout-draft ...
+  parallel_group: carrier-checks
+  shape_command: python3 "$SKILL_DIR/scripts/describe_closeout_draft_shape.py" --repo-root
+    .
+  stub_command: python3 "$SKILL_DIR/scripts/describe_closeout_draft_shape.py" --repo-root
+    . --stub
+  shape_run_when: before drafting the carrier body, not after the validator fails
+- id: closeout-verify
+  trust_model: tracker/carrier verification only; pair with distinct behavior verdict
+  cost_tier: network
+  command: issue_tool.py verify-closeout ... --expect-state CLOSED
+  parallel_group: final-readback
+intent: resolve
+repo_root: /home/hwidong/codes/charness
+target:
+  owner: corca-ai
+  repo: charness
+  full_name: corca-ai/charness
+  source: git-remote:origin
+selector: null
+numbers: null
+selector_source: github-newest-open
+brief_pause:
+  adapter: on-open-decisions
+  flag_override: null
+  effective: on-open-decisions
+selected_backend:
+  id: gh
+  binary: gh
+  binary_path: /home/hwidong/.local/bin/gh
+  found: true
+  commands: null
+backend_ready: true
+on_demand_reads:
+- path: references/causal-review.md
+  why: bug causal review and recurrence critique handoff
+  trigger: classification is bug or likely bug
+  role: classification:bug
+- path: ../../shared/references/fresh-eye-subagent-review.md
+  why: bounded reviewer contract for bug causal review and resolution critique
+  trigger: classification is bug or critique is required
+  role: classification:bug-review-policy
+- path: references/resolution-brief.md
+  why: feature/deferred-work pre-mutation brief and pause rules
+  trigger: classification is feature or deferred-work
+  role: classification:feature,deferred-work
+- path: references/issue-shaping.md
+  why: problem-first issue creation and external-source preservation
+  trigger: resolution discovers a sibling that should become a new issue
+  role: sibling-filing
+classification_actions:
+  bug:
+    action_id: causal_review_before_design
+    fresh_eye_required: true
+    required_reads:
+    - references/causal-review.md
+    - ../../shared/references/fresh-eye-subagent-review.md
+    blocked_behavior: stop_and_report_host_signal
+  feature:
+    action_id: resolution_brief_before_mutation
+    pause_when: open_decisions_non_empty
+    required_reads:
+    - references/resolution-brief.md
+  deferred-work:
+    action_id: resolution_brief_before_mutation
+    pause_when: open_decisions_non_empty
+    required_reads:
+    - references/resolution-brief.md
+  question:
+    action_id: answer_or_discuss
+    review_pass: not_required_by_default
+  decision-needed:
+    action_id: discuss_before_design
+    classification_may_change: true
+  consolidated:
+    action_id: name_the_destination_and_move
+    review_pass: not_required_by_default
+    requires_close_reason: not planned
+    forbidden_carriers:
+    - direct-commit
+    - pr-body
+    required_reads:
+    - references/closeout-discipline.md
+phase_barriers:
+- GitHub issue state is the source of truth for selection and freshness.
+- Do not design before each selected issue has comments_read=true.
+- Do not close before the fix carrier is published and verified through GitHub readback.
+- Do not report CLOSED as behavior proof; render the distinct behavior verdict or
+  typed disposition.
+ok: true

@@ -1,0 +1,128 @@
+ok: true
+repo: corca-ai/charness
+number: 671
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '671'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## Situation
+
+
+    The Charness achieve goal flow allows a goal artifact to carry host-specific absolute
+    checkout paths without a portability declaration or a pursue-readiness failure.
+    On this machine, an existing Worker/Agent goal artifact created on another machine
+    contained `/home/hwidong/codes/ceal-cli` and `/home/hwidong/codes/ceal-agent`,
+    while the actual sibling checkouts are under `/Users/ted/codes/ceal-cli` and `/Users/ted/codes/ceal-agent`.
+
+
+    ## User/operator experience
+
+
+    A user who activates the goal from a session that follows the Gateway repository''s
+    three-repository operating rules can still inherit a path-bearing artifact that
+    points at a different machine. A fresh session may then run commands against nonexistent
+    roots, or an agent may silently substitute paths and lose the intended Worker/Agent
+    ownership boundary. This is especially risky for cross-repository goals whose
+    path values are load-bearing rather than illustrative.
+
+
+    ## Evidence
+
+
+    - The affected artifact is `ceal-cli/charness-artifacts/goals/2026-08-18-worker-agent-ratchet-retirement-and-ports.md`;
+    its scope boundary is at lines 38–40 in the current checkout and names the stale
+    `/home/hwidong/codes/...` roots.
+
+    - On 2026-08-18, `uname -s`/`uname -m` returned `Darwin`/`arm64`; `/Users/ted/codes/ceal-cli`
+    and `/Users/ted/codes/ceal-agent` exist, while both `/home/hwidong/codes/...`
+    roots are absent.
+
+    - Running `python3 .../skills/achieve/scripts/check_goal_artifact.py --repo-root
+    /Users/ted/codes/ceal-cli --pursue-ready --goal-path /Users/ted/codes/ceal-cli/charness-artifacts/goals/2026-08-18-worker-agent-ratchet-retirement-and-ports.md`
+    refused the current draft for missing Before-phase sections and discussion, but
+    reported no path-portability finding. The installed Charness version is 6.2.0.
+
+    - The pursue-readiness implementation validates placeholder removal, required
+    headings, closeout-plan fields, backlog recount, discussion, and cadence; its
+    declared `scope_not_checked` list does not include host-path portability (`skills/achieve/scripts/goal_artifact_pursue.py:239-267`
+    in the installed surface).
+
+    - The failure was caught during manual cross-repository preparation, not by the
+    achieve validator or a deterministic critique gate.
+
+
+    ## Impact
+
+
+    The artifact can look structurally ready while its executable working roots are
+    invalid on the host where it is activated. That creates avoidable activation friction
+    and can undermine the repository ownership boundary the goal is meant to preserve.
+    A reviewer may catch it, but relying on a reviewer is weaker than making the portability
+    contract executable.
+
+
+    ## Expected invariant
+
+
+    Achieve should make the path contract explicit and fail closed when a goal contains
+    host-specific absolute paths without a declared machine binding. Portable goals
+    should prefer repository-relative or logical sibling-root references, or carry
+    a validated host-root mapping. `--pursue-ready` (or the shaping validator) should
+    report the offending path and require either a portable rewrite or an explicit,
+    reviewable machine-bound declaration. The relevant portability review angle should
+    also be present in the default critique packet for cross-repository goals.
+
+
+    ## Scope boundary
+
+
+    This report is about the Charness goal-artifact/critique contract. It does not
+    claim that the affected Ceal goal should remain unedited; the consumer can repair
+    its own artifact immediately while Charness fixes the reusable guard.
+
+
+    ## Weak direction (non-binding)
+
+
+    Consider a deterministic portability check that recognizes absolute paths, distinguishes
+    intentionally machine-bound evidence from executable checkout roots, and verifies
+    the latter against an explicit host/root contract. Add a cross-repository fixture
+    with two different checkout roots and a regression test showing that stale host
+    paths cannot reach pursue-ready without an explicit disposition.
+
+    '
+  comments: []
+  createdAt: '2026-08-18T14:18:24Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1HA
+    name: bug
+    description: Something isn't working
+    color: d73a4a
+  - id: LA_kwDOR9yx7M8AAAACepY1Ow
+    name: test
+    description: Developing a module to test the developed function
+    color: d93f0b
+  number: 671
+  state: OPEN
+  title: achieve should reject host-specific absolute paths in portable goal artifacts
+  updatedAt: '2026-08-18T14:18:24Z'
+  url: https://github.com/corca-ai/charness/issues/671
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

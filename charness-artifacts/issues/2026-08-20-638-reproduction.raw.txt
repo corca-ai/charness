@@ -1,0 +1,3 @@
+rounds_directory_exists: False
+per_round_findings_files: []
+durable_round_findings_present: False

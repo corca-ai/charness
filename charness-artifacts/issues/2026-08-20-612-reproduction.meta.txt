@@ -1,0 +1,4 @@
+command: python3 -m pytest -q tests/test_lesson_loop_wiring.py::test_router_and_gate_agree_about_the_same_declared_session tests/test_doc_authoring_preflight.py::test_broken_fixture_surfaces_all_classes_in_one_pass tests/test_doc_authoring_preflight.py::test_no_drift_clean_fixture_passes_every_real_gate tests/test_doc_authoring_preflight.py::test_no_drift_broken_fixture_matches_real_gate_verdicts
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:50:11+09:00
+exit_code: 0

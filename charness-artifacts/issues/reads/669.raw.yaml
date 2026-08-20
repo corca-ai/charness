@@ -1,0 +1,146 @@
+ok: true
+repo: corca-ai/charness
+number: 669
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '669'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 1
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Situation\n\n`tests/quality_gates/test_standing_pytest_run_execution.py::test_a_wrapper_sigterm_reaps_the_real_child_tree`\n\
+    failed inside a `run-quality.sh --release` lane, and its traceback shows a real\n\
+    race rather than only a slow machine.\n\n## Experience\n\nThe test SIGTERMs the\
+    \ standing-pytest wrapper and asserts the grandchild is reaped.\nIt failed with\
+    \ the marker present — a survivor — and the captured stderr shows why:\n\n```\n\
+    \  File \"/home/hwidong/codes/charness/scripts/subprocess_guard.py\", line 284,\
+    \ in run_monitored_phase\n    with subprocess.Popen(\n  File \"/usr/lib/python3.10/subprocess.py\"\
+    , line 1796, in _execute_child\n    self.pid = _posixsubprocess.fork_exec(\n \
+    \ File \"/home/hwidong/codes/charness/scripts/standing_pytest_run_record.py\"\
+    , line 73, in _raise\n    raise KeyboardInterrupt(f\"standing-pytest terminated\
+    \ by signal {signum}\")\nKeyboardInterrupt: standing-pytest terminated by signal\
+    \ 15\n```\n\nThe signal arrived *inside* `Popen.__init__`, after `fork_exec` had\
+    \ already created\nthe child and before the parent bound `self.pid`. The handler\
+    \ raised out of that\nwindow, so `run_monitored_phase` never obtained a pid to\
+    \ reap and the child's\nprocess tree survived the wrapper.\n\n## Evidence\n\n\
+    - The window is narrow and load-dependent: the test passes in isolation\n  (`1\
+    \ passed in 5.04s`) and failed on worker `gw11` of a heavily parallel release\n\
+    \  lane. It has passed in other release runs in the same session.\n- It is not\
+    \ a false alarm about the assertion. The test's own comment records a\n  2026-08-15\
+    \ probe: with `_terminate_reaps_the_child` disabled the assertion fails\n  and\
+    \ with it in place it passes. Here the reaping code was in place and the\n  assertion\
+    \ still failed, which is the new information.\n- Second, separate load-induced\
+    \ failure in the same lane, recorded for context\n  rather than as the same defect:\n\
+    \  `tests/quality_gates/test_public_skill_yaml_output_contract.py::test_detail_yaml_is_structured[command4]`,\n\
+    \  which also passes in isolation.\n\n## Impact\n\nThe consequence is the one\
+    \ the test's own message names: an enclosing guard's\ntimeout would orphan the\
+    \ whole pytest run. In the gate this reads as a flaky\nrelease blocker; in the\
+    \ failure mode it guards against, it is a real orphaned\nprocess tree.\n\nIt also\
+    \ makes the release lane non-deterministic under load, which costs a full\ngate\
+    \ run (~4 minutes) per retry and trains retrying rather than reading.\n\n## Weak\
+    \ direction (non-binding)\n\nThe gap is between `fork_exec` returning and the\
+    \ parent recording the pid.\nCandidates, both non-binding:\n\n- Block or defer\
+    \ the terminating signals across the `Popen(...)` construction in\n  `run_monitored_phase`\
+    \ and re-raise immediately after the pid is bound, so the\n  handler can never\
+    \ fire in a window where the guard has a child it cannot name.\n- Or have the\
+    \ handler cooperate: record \"termination requested\" and let the\n  monitored\
+    \ phase notice it at its next checkpoint, rather than raising from\n  arbitrary\
+    \ C-call boundaries.\n\nThe second is the more general fix — an exception raised\
+    \ from a signal handler can\nland anywhere, and this is one window of that class\
+    \ rather than the only one.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABPVzjtw
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: 'Second, distinct instance of the same class in the release lane, and this
+      one is diagnosable rather than merely flaky.
+
+
+      `tests/quality_gates/test_public_skill_yaml_output_contract.py::test_detail_yaml_is_structured[command4]`
+      failed twice, on:
+
+
+      ```
+
+      command = (''skills/public/release/scripts/plan_release_run.py'', ''--repo-root'',
+      ''.'')
+
+      E   AssertionError: assert False
+
+      E    +  where False = isinstance(None, dict)
+
+      E    +    where None = yaml.safe_load('''')
+
+      ```
+
+
+      The stdout is **empty**, not malformed. The cause is visible when the same command
+      is run directly under load:
+
+
+      ```
+
+      $ python3 skills/public/release/scripts/plan_release_run.py --repo-root .
+
+      release run planner timed out after 10s
+
+      ```
+
+
+      The planner''s own CLI timeout fires, it writes the timeout line to stderr,
+      and stdout stays empty. The contract test then reports "this command does not
+      emit structured YAML", which is a true statement about the run and a false one
+      about the command.
+
+
+      Two separable problems:
+
+
+      1. **The planner exceeds a 10s budget under contention.** It is read-only and
+      does substantial work (release state, drift, evidence packets, staleness). Whether
+      10s is the right number is a question; that it silently produces *nothing* usable
+      when it is exceeded is the sharper one.
+
+      2. **A timeout is indistinguishable from a malformed-output defect at the contract
+      test''s assertion.** `assert isinstance(yaml.safe_load(detail.stdout), dict)`
+      on empty stdout reports the wrong failure. The test asserts `detail.returncode
+      != 2` already, so the returncode is available; a timeout could be named rather
+      than mis-attributed.
+
+
+      Both surfaced while trying to publish 6.2.0: four resume attempts, two blocked
+      by this and one by the SIGTERM race above, all while an unrelated suite held
+      the machine at load average ~17. The release lane is currently non-deterministic
+      under load, and each attempt costs a full gate run.'
+    createdAt: '2026-08-18T06:28:28Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/669#issuecomment-5324465079
+    viewerDidAuthor: true
+  createdAt: '2026-08-18T06:23:08Z'
+  labels: []
+  number: 669
+  state: OPEN
+  title: standing-pytest guard can orphan a child tree when SIGTERM lands inside Popen's
+    fork_exec window
+  updatedAt: '2026-08-18T06:28:28Z'
+  url: https://github.com/corca-ai/charness/issues/669
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

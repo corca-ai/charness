@@ -1,0 +1,301 @@
+ok: true
+repo: corca-ai/charness
+number: 628
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '628'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 2
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Situation\n\n#620 established that `quality`'s scaffold returns the PREVIOUS\
+    \ review's dated\nfile as its own `write_artifact_path`, and was fixed with a\
+    \ date-coherence gate\nscoped to the quality family. The same producer defect\
+    \ is live in the **debug**\nfamily, and there it can destroy an unrelated open\
+    \ investigation.\n\n## Evidence\n\nObserved 2026-08-14 while preparing a debug\
+    \ artifact for an unrelated cohort:\n\n```\n$ python3 skills/public/debug/scripts/scaffold_debug_artifact.py\
+    \ --repo-root .\nwrite_artifact_path:          charness-artifacts/debug/2026-08-14-lesson-presentation-lost-across-compaction.md\n\
+    write_artifact_role:          current_pointer_target\nwrite_artifact_target_exists:\
+    \ true\nwrite_artifact_effect:        overwrite_existing_content\n```\n\nThat\
+    \ target is a different, unfinished investigation — its own body carries\n`- Resolution:\
+    \ open`, which is precisely why `_resolution()` takes the\ncontinue-in-place branch\
+    \ (`scaffold_debug_artifact.py:182-190`). Following the\nscaffold's own `write_artifact_path`\
+    \ would have overwritten it.\n\nThe correct fresh path is reachable and the resolver\
+    \ already knows it:\n\n```\n$ python3 scripts/resolve_artifact_path.py --repo-root\
+    \ . --skill-id debug \\\n    --slug <new-slug> --intent record\nrecord_artifact_path\
+    \  = charness-artifacts/debug/2026-08-14-<new-slug>.md\nwrite_artifact_effect\
+    \ = create_new_file\n```\n\n## Why this is not just #620 again\n\nFor debug, overwrite-in-place\
+    \ is a legitimate contract when the author is\ngenuinely continuing the open investigation\
+    \ the pointer names\n(`scaffold_artifact_lib.py:141`, `artifact_role: current_pointer`).\
+    \ The defect is\nthat the scaffold cannot tell \"I am continuing THIS investigation\"\
+    \ from \"I am\nstarting a new one\", and its default answer to the ambiguity is\
+    \ the destructive\none. #620's date-coherence gate does not catch this: the overwriting\
+    \ artifact\nwould carry today's date under today's filename and read as coherent.\n\
+    \nDebug is also the family that solved the sibling problem correctly:\n`_resolved_followup_record_payload`\
+    \ (`:227-237`) walks `followup`..`followup-4`\nand raises `SystemExit` rather\
+    \ than overwrite. That mechanism exists for the\nRESOLVED case only.\n\n## Expected\
+    \ behavior\n\nThe scaffold should require the author to state which investigation\
+    \ they are in,\nor default to a new dated record and offer continue-in-place explicitly\
+    \ — the\nsame asymmetry `_resolved_followup_record_payload` already applies one\
+    \ branch\nover.\n\n## Not claimed\n\nNo fix is proposed, and no artifact was lost:\
+    \ the fresh resolver path was used\ninstead. Whether the repair belongs in `_resolution()`,\
+    \ in\n`current_pointer_write_path`, or in the scaffold's payload is a design call\
+    \ this\nreport does not make. Note `current_pointer_write_path` is shared with\n\
+    `plan_debug_run.py` and `resolve_artifact_path.py`, so changing its meaning\n\
+    reaches three callers.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABO1lRFw
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## Additional evidence: the class is wider than the debug family
+
+
+      Measured 2026-08-14 at local `HEAD` (`91be132a9`), running each family''s own
+
+      scaffold with no arguments beyond `--repo-root .`. Three of the four artifact
+
+      families return a destructive default against an already-existing target; only
+
+      `critique` defaults safe:
+
+
+      | family | `write_artifact_path` | `target_exists` | `write_artifact_effect`
+      |
+
+      | --- | --- | --- | --- |
+
+      | debug | `charness-artifacts/debug/2026-08-14-lesson-presentation-lost-across-compaction.md`
+      | true | `overwrite_existing_content` |
+
+      | retro | `charness-artifacts/retro/2026-08-14-session-retro.md` | true | `overwrite_existing_content`
+      |
+
+      | quality | `charness-artifacts/quality/2026-08-14-quality-review.md` | true
+      | `overwrite_existing_content` |
+
+      | critique | `charness-artifacts/critique/2026-08-14-critique-review.md` | false
+      | `create_new_file` |
+
+
+      The `debug` row is this issue''s original observation, unchanged: that target''s
+
+      body still carries `- Resolution: open` (line 129), so it is a live unfinished
+
+      investigation and `_resolution()` still takes the continue-in-place branch.
+
+
+      ### The retro instance (the third one this issue predicted)
+
+
+      `skills/public/retro/scripts/scaffold_retro_artifact.py` points at
+
+      `charness-artifacts/retro/2026-08-14-session-retro.md`, which carries the
+
+      **previous** session''s `Lesson evaluation:` disposition — the line
+
+      `check_lesson_evaluation_continuity.py` counts. Overwriting it does not just
+
+      lose a record; it silently changes what the continuity gate measures.
+
+
+      It was hit and worked around during the #625/#627/#626 slice: the author used
+
+      `resolve_artifact_path.py --intent record` instead, and recorded the deferral
+      in
+
+      that session''s retro Sibling Search
+
+      (`charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md:114-126`).
+
+
+      ### The quality instance, and why #620''s gate does not cover it
+
+
+      `quality`''s scaffold no longer points at the *previous* review''s dated file
+      —
+
+      that specific defect from #620 is fixed. It now points at **today''s**
+
+      `2026-08-14-quality-review.md`, which is `latest.md`''s current target, with
+
+      `overwrite_existing_content`.
+
+
+      This is precisely the gap this issue argued: #620''s date-coherence gate cannot
+
+      catch any row in the table above, because an artifact overwritten on the day
+      it
+
+      was created carries today''s date under today''s filename and reads as coherent.
+
+      So #620''s repair narrowed the quality family''s blast radius by one day and
+      left
+
+      the class intact in three families.
+
+
+      ### Why `critique` is the useful comparison
+
+
+      `critique` is in the same codebase, uses the same resolver, and defaults to
+
+      `create_new_file`. It is an existence proof that the safe default is reachable
+
+      without new machinery — which supports this issue''s "Expected behavior" of
+
+      defaulting to a new dated record and making continue-in-place explicit, rather
+
+      than the reverse.
+
+
+      ### Not claimed
+
+
+      No fix is proposed and nothing was edited. The four rows above are one
+
+      observation each at one commit; they are not a claim about every invocation
+
+      shape (a `--slug` argument, a resolved followup, or a repo with no existing
+
+      same-day artifact will differ). No artifact was lost in producing them.
+
+
+      AI-provenance: measured and written by an agent (Claude Opus 5) in a
+
+      charness `issue` closeout run; commands were the four scaffolds'' own CLI output
+
+      at `91be132a9`.
+
+      '
+    createdAt: '2026-08-14T07:23:15Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/628#issuecomment-5290676503
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABPYaVEQ
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: 'Re-measured today against current `main` while triaging this for closure.
+      **Not closing:
+
+      three of the four rows in the widening comment are fixed, and the quality row
+      is not.**
+
+
+      Reproducing the comment''s exact probe — each family''s own scaffold with no
+      arguments
+
+      beyond `--repo-root`, against a temp repo holding today''s dated record plus
+      a
+
+      `latest.md` symlink to it:
+
+
+      | family | `write_artifact_path` | `target_exists` | `write_artifact_effect`
+      |
+
+      | --- | --- | --- | --- |
+
+      | debug | `…/2026-08-18-debug-review.md` (NEW) | false | `create_new_file` |
+
+      | retro | `…/2026-08-18-session-retro-second.md` | false | `create_new_file`
+      |
+
+      | critique | `…/2026-08-18-critique-review-2.md` | false | `create_new_file`
+      |
+
+      | **quality** | `…/2026-08-18-quality-review.md` | **true** | **`overwrite_existing_content`**
+      |
+
+
+      debug additionally stamps `refused_write_artifact_reason: mismatch` and names
+      the record
+
+      it refused, which is the "offer continue-in-place explicitly" half of the Expected
+      behavior.
+
+
+      So the quality row is still exactly what the comment argued: an artifact overwritten
+      on the
+
+      day it was created carries today''s date under today''s filename and reads as
+      coherent, so
+
+      #620''s date-coherence gate cannot see it.
+
+
+      **What this comment does not settle**: whether quality''s same-day overwrite
+      is the DEFECT or
+
+      a designed continue-in-place like debug''s. `scripts/artifact_subject_identity.py`
+      records
+
+      continue-in-place as deliberate for debug, and the families now disagree about
+      it. That is a
+
+      design call for the owner, not something a re-measurement can decide — but the
+      issue should
+
+      stay open until it is made, because closing now would claim a fix the quality
+      row does not have.
+
+
+      Note on scope: with an explicit differing `--title`, quality DOES route to a
+      new file and
+
+      stamps a refusal. The defect is reachable only through the default invocation,
+      which is the
+
+      one the comment measured and the one an agent runs.
+
+
+      Critique: charness-artifacts/critique/2026-08-18-closing-four-verified-resolved-issues.md
+
+      AI-provenance: agent-authored comment (Claude Code), from a re-measurement run
+      during an
+
+      issue-closeout pass; a bounded read-only review round flagged that the parent''s
+      first probe
+
+      used a `--title` argument and so did not reproduce the reported case.
+
+      '
+    createdAt: '2026-08-18T10:57:07Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/628#issuecomment-5327197457
+    viewerDidAuthor: true
+  createdAt: '2026-08-14T03:21:13Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1HA
+    name: bug
+    description: Something isn't working
+    color: d73a4a
+  number: 628
+  state: OPEN
+  title: debug's scaffold points its write path at an unrelated OPEN investigation,
+    and date coherence cannot catch it
+  updatedAt: '2026-08-18T10:57:07Z'
+  url: https://github.com/corca-ai/charness/issues/628
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

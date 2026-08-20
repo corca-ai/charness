@@ -1,0 +1,77 @@
+ok: true
+repo: corca-ai/charness
+number: 667
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '667'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## Observed problem
+
+
+    During the 2026-08-18 Ceal Worker release (corca-ai/ceal#717), a generic release
+    planner pass reported the Gateway and Agent repositories as not generically releasable,
+    even though both have specialized, previously-proven release lanes (tag-triggered
+    workflows `cealctl-release.yml` / `gateway-protocol-handoff-release.yml` in `corca-ai/ceal`,
+    `ceal-release.yml` in `corca-ai/ceal-cli`, `service-runtime-release.yml` in `corca-ai/ceal-agent`,
+    with tag families `v*`, `gateway-protocol-handoff-v*`, `ceal-v*`, `ceal-agent-service-runtime-v*`).
+    The operator had to re-derive the release path from repository-specific workflows
+    and tags, and a stale handoff nearly produced a wrong-version tag.
+
+
+    ## Why this is a skill-side gap
+
+
+    The planner''s failure mode is reporting a generic-adapter miss as a repo verdict
+    ("not releasable") instead of as a routing outcome ("no generic lane; specialized
+    lane detected at <workflow>, use <command>"). A repo whose release surface is
+    declared in tag-triggered workflows is releasable by inspection of the workflow/tag
+    topology; the generic verdict laundered an adapter limitation into a false repo
+    fact.
+
+
+    ## Desired behavior
+
+
+    When the generic release adapter does not apply, the release skill should inspect
+    the repository''s workflow/tag topology (or a repo-declared release manifest when
+    present) and either route to the specialized lane or report the concrete gap ("tag-triggered
+    workflow found but no adapter mapping"), never a bare "not releasable".
+
+
+    ## Boundaries
+
+
+    - Repo-side mitigation is underway in `corca-ai/ceal` (a read-only `release:pre-tag-preflight
+    --plan` tuple readback); that does not fix the skill''s verdict wording for other
+    repos.
+
+    - Not claiming every planner run misroutes; this is the one observed incident,
+    filed per the ceal repo''s upstream-issue rule.'
+  comments: []
+  createdAt: '2026-08-18T01:27:21Z'
+  labels: []
+  number: 667
+  state: OPEN
+  title: 'release: generic planner reports ''not releasable'' when a repo-specialized
+    release lane exists'
+  updatedAt: '2026-08-18T01:27:21Z'
+  url: https://github.com/corca-ai/charness/issues/667
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

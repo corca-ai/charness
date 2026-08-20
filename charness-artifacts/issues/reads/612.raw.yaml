@@ -1,0 +1,1234 @@
+ok: true
+repo: corca-ai/charness
+number: 612
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '612'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 8
+issue:
+  author:
+    is_bot: true
+    login: app/github-actions
+  body: '<!-- corca-ai/charness-mutation-test-regression -->
+
+    Mutation testing failed on `d2796cf8787f28618e5920b7f36b92f56031741f`.
+
+
+    Workflow run: https://github.com/corca-ai/charness/actions/runs/31655162088
+
+
+    ## Step outcomes
+
+
+    - `Select mutation sample`: **success**
+
+    - `Run mutation`: **success**
+
+    - `Summarize mutation report`: **failure**
+
+
+    The mutation commands completed; the failure below is the summary''s own verdict.
+
+
+    # Mutation Testing Summary
+
+
+    - Status: **FAIL**
+
+    - Mutation score: **PASS** (88.9% reachable score vs 80% threshold)
+
+    - Blocking signals: **FAIL** (changed-line coverage)
+
+    - Total mutants: 125
+
+    - Executable mutants: 109 (total minus skipped)
+
+    - Executed: 109 (100.0% of executable total)
+
+    - Killed: 96
+
+    - Survived: 12
+
+    - Scope gaps (uncovered sampled mutants): 0
+
+    - No mutation possible: 0
+
+    - Incompetent: 1
+
+    - Worker abnormal/exception: 1
+
+    - Skipped: 16
+
+    - Blocking signal: changed lines were left test-uncovered before mutation (budget/capacity
+    drops of covered changed files are advisory, not blocking).
+
+
+    ## Survived Mutants
+
+
+    Top definitions:
+
+    - `main`: 6
+
+    - `preset_rows`: 5
+
+    - `preset_contract`: 1
+
+
+    Top operators:
+
+    - `core/NumberReplacer`: 4
+
+    - `core/ReplaceFalseWithTrue`: 2
+
+    - `core/ReplaceComparisonOperator_Eq_Is`: 2
+
+    - `core/ReplaceAndWithOr`: 2
+
+    - `core/ReplaceComparisonOperator_Eq_LtE`: 1
+
+    - `core/ReplaceComparisonOperator_Eq_GtE`: 1
+
+
+    Sample locations:
+
+    - `scripts/suggest_public_skill_dogfood.py:39` `main` `core/ReplaceFalseWithTrue`
+    - print(json.dumps(report, ensure_ascii=False, indent=2))
+
+    - `scripts/suggest_public_skill_dogfood.py:55` `main` `core/ReplaceFalseWithTrue`
+    - print(json.dumps(report, ensure_ascii=False, indent=2))
+
+    - `scripts/suggest_public_skill_dogfood.py:39` `main` `core/NumberReplacer` -
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+
+    - `scripts/suggest_public_skill_dogfood.py:39` `main` `core/NumberReplacer` -
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+
+    - `scripts/suggest_public_skill_dogfood.py:55` `main` `core/NumberReplacer` -
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+
+    - `scripts/suggest_public_skill_dogfood.py:55` `main` `core/NumberReplacer` -
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+
+    - `skills/public/quality/scripts/quality_preset_reconciliation.py:68` `preset_rows`
+    `core/ReplaceComparisonOperator_Eq_LtE` - if contract["state"] == "metadata-only":
+
+    - `skills/public/quality/scripts/quality_preset_reconciliation.py:70` `preset_rows`
+    `core/ReplaceComparisonOperator_Eq_GtE` - elif contract["state"] == "unavailable":
+
+    - `skills/public/quality/scripts/quality_preset_reconciliation.py:68` `preset_rows`
+    `core/ReplaceComparisonOperator_Eq_Is` - if contract["state"] == "metadata-only":
+
+    - `skills/public/quality/scripts/quality_preset_reconciliation.py:70` `preset_rows`
+    `core/ReplaceComparisonOperator_Eq_Is` - elif contract["state"] == "unavailable":
+
+
+
+    ## Changed Files Excluded Before Mutation
+
+
+    - `skills/public/quality/scripts/quality_catalog_gate_applicability.py`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py`
+
+    - `skills/public/release/scripts/publish_release_cli.py`
+
+    - `skills/public/release/scripts/publish_release_resume.py`
+
+    - `skills/public/release/scripts/publish_release_resume_publish.py`
+
+
+    ### Uncovered changed lines
+
+
+    - `skills/public/quality/scripts/quality_catalog_gate_applicability.py`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py`
+
+    - `skills/public/release/scripts/publish_release_cli.py`
+
+    - `skills/public/release/scripts/publish_release_resume.py`
+
+    - `skills/public/release/scripts/publish_release_resume_publish.py`
+
+
+    ### Selection budget or nodeid (advisory: capacity, not coverage)
+
+
+    - `scripts/readme_proof_ledger_lib.py`
+
+    - `skills/public/issue/scripts/issue_close_comment_floor.py`
+
+    - `skills/public/issue/scripts/issue_closeout_classification_ledger.py`
+
+    - `skills/public/quality/scripts/check_runtime_budget.py`
+
+    - `skills/public/quality/scripts/quality_run_plan_render.py`
+
+    - `skills/public/quality/scripts/runtime_visibility_lib.py`
+
+    - `skills/public/release/scripts/publish_release_artifact.py`
+
+
+    ### Changed-line proof targets
+
+
+    - `skills/public/quality/scripts/quality_catalog_gate_applicability.py:20 except
+    ValueError:`
+
+    - `skills/public/quality/scripts/quality_catalog_gate_applicability.py:21 return
+    None`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py:30 return None`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py:40 raise SystemExit("--resume:
+    prepared claims-review state requires --claims-review-artifact")`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py:49 raise SystemExit("--resume:
+    claims-review evidence must be the direct child of the prepared release record")`
+
+    - `skills/public/release/scripts/publish_release_cli.py:338 raise SystemExit("--claims-review-artifact
+    is only valid with --resume --publish-current")`
+
+    - `skills/public/release/scripts/publish_release_resume.py:155 phase = "prepared-claims-review"`
+
+    - `skills/public/release/scripts/publish_release_resume.py:156 prepared = prepared_head`
+
+    - `skills/public/release/scripts/publish_release_resume.py:171 phase = "prepared-claims-review"`
+
+    - `skills/public/release/scripts/publish_release_resume.py:172 prepared = tagged_prepared`
+
+
+    Score denominator: `killed / (killed + survived)` (reachable mutants only;
+
+    see `skills/public/quality/references/mutation-testing.md` §commands.summary).
+
+    Native Cosmic Ray no-mutation-possible results and Charness filtered
+
+    scope gaps are surfaced as separate blocking signals above and do not
+
+    enter the score. Skipped mutants are explicitly filtered work items and
+
+    also stay out of the score and completion denominators.
+
+
+    ## StrykerJS Mutation Slice
+
+
+    - Status: **PASS** (93.0% reachable score vs 80% threshold)
+
+    - Reachable mutants: 86
+
+    - Killed: 80
+
+    - Survived: 6
+
+    - No coverage: 0
+
+    - Timeout: 0
+
+
+    Survived JS mutants:
+
+    - `scripts/agent-runtime/skill-test-telemetry.mjs:6 `ConditionalExpression``
+
+    - `scripts/agent-runtime/skill-test-telemetry.mjs:14 `MethodExpression``
+
+    - `scripts/agent-runtime/skill-test-telemetry.mjs:19 `ConditionalExpression``
+
+    - `scripts/agent-runtime/skill-test-telemetry.mjs:27 `BlockStatement``
+
+    - `scripts/agent-runtime/skill-test-telemetry.mjs:39 `ConditionalExpression``
+
+    - `scripts/agent-runtime/skill-test-telemetry.mjs:39 `EqualityOperator``
+
+
+
+    # Mutation Sample
+
+
+    - Base SHA: `1c1acd90cb45f4e8fa9f7b1159caca82520c3423`
+
+    - Head SHA: `d2796cf8787f28618e5920b7f36b92f56031741f`
+
+    - Seed: `31655162088:1c1acd90cb45f4e8fa9f7b1159caca82520c3423..d2796cf8787f28618e5920b7f36b92f56031741f`
+
+    - Mutation pool files: 715
+
+    - Mutation pools: core-python 1/164 selected (392 pool), public-skill-python 2/175
+    selected (298 pool), support-skill-python 0/18 selected (25 pool)
+
+    - Eligible files after coverage/mutation-line filters: 357
+
+    - Covered eligible files: 357
+
+    - File coverage floor: 0.85
+
+    - Eligible files after mutation-line filter: 357
+
+    - Executable mutant budget: 120
+
+    - Per-file executable mutant budget: 80
+
+    - Selected executable mutants: 109
+
+    - Test nodeid budget: 40
+
+    - Selected test nodeids: 36
+
+    - Changed pool files: 40
+
+    - Changed eligible files after coverage/mutation-line filters: 22
+
+    - Changed files with uncovered changed lines (blocking): 5
+
+    - Changed-line proof targets: 13
+
+    - Changed files excluded by coverage/mutation-line filters (advisory union): 18
+
+    - Changed files excluded by file coverage floor: 1
+
+    - Changed files excluded by mutation-line coverage: 17
+
+    - Changed files excluded by selection budgets: 7
+
+    - Changed files excluded by per-file mutation budget (advisory): 13
+
+    - Selected: 3/5
+
+    - Test command: `python3 -m pytest -q tests/quality_gates/test_public_skill_dogfood.py::test_public_skill_dogfood_wrappers_match_root_script
+    tests/quality_gates/test_public_skill_dogfood.py::test_public_skill_dogfood_wrappers_report_missing_policy_without_a_traceback
+    ''tests/quality_gates/test_public_skill_yaml_output_contract.py::test_detail_yaml_preserves_hidden_json_compatibility[command1]''
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_declaration_lifecycle_keeps_catalog_gates_when_no_adapter_exists
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_declaration_lifecycle_reports_unavailable_catalog_gates
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_declaration_lifecycle_treats_non_mapping_yaml_as_empty
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_preset_contract_accepts_crlf_and_refuses_external_symlink
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_preset_contract_refuses_a_presets_directory_symlink
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_preset_contract_refuses_malformed_frontmatter
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_preset_contract_reports_a_resolve_oserror
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_preset_reconciliation_distinguishes_applied_missing_and_metadata_only
+    tests/quality_gates/test_quality_declaration_path_resolution.py::test_preset_reconciliation_reports_unavailable_contract_shapes
+    tests/quality_gates/test_quality_run_gate_packets.py::test_quality_run_plan_reports_gate_packet_cost_and_trust
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_brief_carries_demoted_primer_discipline
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_brief_standing_maintainer_prompt_without_final_gate
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_detects_plugin_only_skill_authoring_repo
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_does_not_route_commands_from_invalid_adapter
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_excludes_skill_refs_when_repo_has_no_skills
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_includes_skill_refs_for_skill_authoring_repo
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_lists_all_on_demand_reference_triggers
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_names_unreachable_declared_surface
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_reports_ambiguous_target_skill
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_reports_missing_target_skill
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_resolves_target_skill_for_structural_review
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_routes_declared_commands_and_surfaces_without_claiming_execution
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_surface_reuses_reconciled_catalog_packet_id
+    tests/quality_gates/test_quality_run_planner.py::test_quality_run_plan_uses_adapter_packets_when_generic_runner_is_absent
+    tests/quality_gates/test_quality_run_read_measurement.py::test_quality_required_read_measurement_is_source_plugin_parity_and_never_zero_for_missing
+    tests/quality_gates/test_seed_worktree_adapter.py::test_existing_file_refuses_without_force
+    tests/quality_gates/test_seed_worktree_adapter.py::test_force_overwrites tests/quality_gates/test_seed_worktree_adapter.py::test_repo_root_dot_invocation_writes_file_and_exits_zero
+    tests/test_public_skill_dogfood.py::test_policy_absence_is_typed_in_root_human_output
+    tests/test_public_skill_dogfood.py::test_suggest_cli_warns_on_description_fallback_prompt
+    tests/test_public_skill_dogfood.py::test_suggest_public_skill_dogfood_cli_covers_json_human_and_unknown_paths
+    tests/test_public_skill_dogfood.py::test_suggest_public_skill_dogfood_cli_emits_requested_matrix
+    tests/test_public_skill_dogfood.py::test_suggest_public_skill_dogfood_reports_policy_absence_as_not_applicable`
+
+
+    ## Changed files with uncovered changed lines (blocking)
+
+
+    - `skills/public/quality/scripts/quality_catalog_gate_applicability.py`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py`
+
+    - `skills/public/release/scripts/publish_release_cli.py`
+
+    - `skills/public/release/scripts/publish_release_resume.py`
+
+    - `skills/public/release/scripts/publish_release_resume_publish.py`
+
+
+    ## Changed-line proof targets
+
+
+    - `skills/public/quality/scripts/quality_catalog_gate_applicability.py:20` `except
+    ValueError:`
+
+    - `skills/public/quality/scripts/quality_catalog_gate_applicability.py:21` `return
+    None`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py:30` `return
+    None`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py:40` `raise SystemExit("--resume:
+    prepared claims-review state requires --claims-review-artifact")`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py:49` `raise SystemExit("--resume:
+    claims-review evidence must be the direct child of the prepared release record")`
+
+    - `skills/public/release/scripts/publish_release_cli.py:338` `raise SystemExit("--claims-review-artifact
+    is only valid with --resume --publish-current")`
+
+    - `skills/public/release/scripts/publish_release_resume.py:155` `phase = "prepared-claims-review"`
+
+    - `skills/public/release/scripts/publish_release_resume.py:156` `prepared = prepared_head`
+
+    - `skills/public/release/scripts/publish_release_resume.py:171` `phase = "prepared-claims-review"`
+
+    - `skills/public/release/scripts/publish_release_resume.py:172` `prepared = tagged_prepared`
+
+    - `skills/public/release/scripts/publish_release_resume.py:173` `claims_evidence_commit
+    = tagged_claims_evidence`
+
+    - `skills/public/release/scripts/publish_release_resume_publish.py:80` `cli.commit_final_release_artifact(repo_root,
+    adapter_data=adapter_data, payload=payload, host_payload=host,`
+
+    - `skills/public/release/scripts/publish_release_resume_publish.py:83` `cli.fail_after_post_create_verification(payload,
+    verification_result=verified)`
+
+
+    ## Changed files excluded by file coverage (advisory)
+
+
+    - `scripts/validate_presets.py`
+
+
+    ## Changed files excluded by mutation-line coverage
+
+
+    - `scripts/boundary_bypass_ratchet_lib.py`
+
+    - `scripts/check_boundary_bypass_ratchet.py`
+
+    - `scripts/public_skill_dogfood_lib.py`
+
+    - `scripts/session_start_routing.py`
+
+    - `skills/public/issue/scripts/issue_create.py`
+
+    - `skills/public/issue/scripts/issue_verify_closeout.py`
+
+    - `skills/public/quality/scripts/ci_local_gate_parity_lib.py`
+
+    - `skills/public/quality/scripts/inventory_standing_test_economics.py`
+
+    - `skills/public/quality/scripts/plan_quality_run.py`
+
+    - `skills/public/quality/scripts/quality_catalog_gate_applicability.py`
+
+    - `skills/public/quality/scripts/runtime_budget_lib.py`
+
+    - `skills/public/quality/scripts/standing_test_economics_lib.py`
+
+    - `skills/public/quality/scripts/suggest_public_skill_dogfood.py`
+
+    - `skills/public/release/scripts/publish_release_artifact_sections.py`
+
+    - `skills/public/release/scripts/publish_release_cli.py`
+
+    - `skills/public/release/scripts/publish_release_execute.py`
+
+    - `skills/public/release/scripts/publish_release_resume_publish.py`
+
+
+    ## Changed files excluded by per-file mutation budget (advisory, non-blocking)
+
+
+    - `skills/public/handoff/scripts/plan_handoff_run.py`
+
+    - `scripts/check_quality_tool_fixtures.py`
+
+    - `skills/public/release/scripts/publish_release_resume_closeout.py`
+
+    - `skills/public/issue/scripts/describe_closeout_draft_shape.py`
+
+    - `skills/public/issue/scripts/issue_create_verify.py`
+
+    - `skills/public/release/scripts/publish_release_claims_review.py`
+
+    - `skills/public/issue/scripts/issue_closeout_rung1_floors.py`
+
+    - `skills/public/issue/scripts/issue_verify_closeout_body.py`
+
+    - `skills/public/quality/scripts/surface_marker_lib.py`
+
+    - `skills/public/quality/scripts/quality_declaration_lifecycle.py`
+
+    - `scripts/evidence_boundary_crosswalk.py`
+
+    - `skills/public/issue/scripts/issue_consolidated_closeout.py`
+
+    - `skills/public/release/scripts/publish_release_resume.py`
+
+
+    ## Changed sample
+
+
+    - `scripts/suggest_public_skill_dogfood.py`
+
+    - `skills/public/quality/scripts/quality_preset_reconciliation.py`
+
+
+    ## Fill sample
+
+
+    - `skills/public/setup/scripts/seed_worktree_adapter.py`
+
+
+    '
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOsH-AQ
+    author:
+      login: github-actions
+    authorAssociation: NONE
+    body: "<!-- corca-ai/charness-mutation-test-regression -->\nMutation testing failed\
+      \ on `9b2c20d778021346562e9a11657aee280f6381a7`.\n\nWorkflow run: https://github.com/corca-ai/charness/actions/runs/31700630041\n\
+      \n## Step outcomes\n\n- `Select mutation sample`: **failure**\n- `Run mutation`:\
+      \ **skipped**\n- `Summarize mutation report`: **failure**\n\nThe mutation commands\
+      \ NEVER RAN — an earlier step failed or was skipped. The summary below describes\
+      \ absent artifacts, not a mutation result; read the `Select mutation sample`\
+      \ outcome above and the workflow logs.\n\n\n# Mutation Testing Summary\n\n-\
+      \ Status: **FAIL**\n- Blocking signal: the sampler's coverage-baseline pytest\
+      \ failed before mutation ran; no mutants ran.\n- Failing baseline tests:\n \
+      \ - `tests/test_lesson_selection_preview.py::test_preview_is_flat_seeded_and_accounts_for_archive_fallback`\n\
+      \  - `tests/test_lesson_selection_preview.py::test_preview_renderer_script_entrypoint_exits_successfully`\n\
+      \n## StrykerJS Mutation Slice\n\n- Status: **FAIL** (StrykerJS JSON report missing)\n\
+      - Missing report: `/home/runner/work/charness/charness/reports/mutation/stryker-js.json`\n\
+      - Blocking signal: collateral — the sampler's coverage-baseline pytest failed,\
+      \ so the JS slice was never invoked (see Mutation Testing Summary above).\n\n\
+      \nNo mutation sample manifest was generated."
+    createdAt: '2026-08-13T13:01:08Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/612#issuecomment-5280759297
+    viewerDidAuthor: false
+  - id: IC_kwDOR9yx7M8AAAABOzQBuQ
+    author:
+      login: github-actions
+    authorAssociation: NONE
+    body: "<!-- corca-ai/charness-mutation-test-regression -->\nMutation testing failed\
+      \ on `dad3e4b578f4b6abe9cccd2abc64b68c3e192e2c`.\n\nWorkflow run: https://github.com/corca-ai/charness/actions/runs/31758096339\n\
+      \n## Step outcomes\n\n- `Select mutation sample`: **failure**\n- `Run mutation`:\
+      \ **skipped**\n- `Summarize mutation report`: **failure**\n\nThe mutation commands\
+      \ NEVER RAN — an earlier step failed or was skipped. The summary below describes\
+      \ absent artifacts, not a mutation result; read the `Select mutation sample`\
+      \ outcome above and the workflow logs.\n\n\n# Mutation Testing Summary\n\n-\
+      \ Status: **FAIL**\n- Blocking signal: the sampler's coverage-baseline pytest\
+      \ failed before mutation ran; no mutants ran.\n- Failing baseline tests:\n \
+      \ - `tests/quality_gates/test_publish_state_ledger.py::test_valid_ledger_reconciles_captured_snapshot`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_human_and_json_cli_modes_share_verdict`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_human_and_json_cli_modes_share_refusal`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_invalid_ledger_shape_refuses`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_missing_manifest_refuses`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_invalid_manifest_refuses`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_unreadable_manifest_refuses`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[source-sha-kwargs0-source_claim_mismatch-sources.goal.claim]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[source-manifest-path-kwargs1-source_claim_mismatch-sources.goal.claim]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[source-manifest-sha-kwargs2-source_claim_mismatch-sources.goal.claim]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[pending-kwargs3-source_claim_pending-sources.handoff.claim.pending_publish]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[claim-state-kwargs4-source_claim_state-sources.goal.claim.claim_state]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[ci-failure-kwargs5-ci_not_success-manifest.ci_readback]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[ci-job-kwargs6-ci_job_mismatch-manifest.ci_readback.jobs]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[ci-incomplete-kwargs7-ci_job_mismatch-manifest.ci_readback.jobs]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[open-issue-kwargs8-issues_not_empty-manifest.remote_readback.open_issues.open_count]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_source_claim_shape_refuses[extra-field-<lambda>]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_source_claim_shape_refuses[missing-field-<lambda>]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_source_claim_shape_refuses[wrong-block-<lambda>]`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_manifest_digest_drift_refuses_before_readback`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_source_digest_drift_refuses_before_claim_read`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_surrounding_source_prose_does_not_change_claim_binding`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_missing_source_marker_refuses`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_malformed_source_claim_refuses`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_duplicate_source_marker_refuses`\n\
+      \  - `tests/quality_gates/test_publish_state_ledger.py::test_ledger_private_refusal_branches`\n\
+      \  - `tests/test_retro_scaffold.py::test_retro_scaffold_reports_validator_and_template`\n\
+      \  - `tests/test_retro_scaffold.py::test_exported_retro_scaffold_validator_command_runs_from_consumer_repo`\n\
+      \n## StrykerJS Mutation Slice\n\n- Status: **FAIL** (StrykerJS JSON report missing)\n\
+      - Missing report: `/home/runner/work/charness/charness/reports/mutation/stryker-js.json`\n\
+      - Blocking signal: collateral — the sampler's coverage-baseline pytest failed,\
+      \ so the JS slice was never invoked (see Mutation Testing Summary above).\n\n\
+      \nNo mutation sample manifest was generated."
+    createdAt: '2026-08-14T01:08:01Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/612#issuecomment-5288231353
+    viewerDidAuthor: false
+  - id: IC_kwDOR9yx7M8AAAABO4kg6A
+    author:
+      login: github-actions
+    authorAssociation: NONE
+    body: '<!-- corca-ai/charness-mutation-test-regression -->
+
+      Mutation testing failed on `0a1a534058468287d084303e4727f6afb5b299d7`.
+
+
+      Workflow run: https://github.com/corca-ai/charness/actions/runs/31800625504
+
+
+      ## Step outcomes
+
+
+      - `Select mutation sample`: **success**
+
+      - `Run mutation`: **success**
+
+      - `Summarize mutation report`: **failure**
+
+
+      The mutation commands completed; the failure below is the summary''s own verdict.
+
+
+
+      # Mutation Testing Summary
+
+
+      - Status: **FAIL**
+
+      - Mutation score: **PASS** (94.5% reachable score vs 80% threshold)
+
+      - Blocking signals: **FAIL** (changed-line coverage)
+
+      - Total mutants: 156
+
+      - Executable mutants: 109 (total minus skipped)
+
+      - Executed: 109 (100.0% of executable total)
+
+      - Killed: 103
+
+      - Survived: 6
+
+      - Scope gaps (uncovered sampled mutants): 0
+
+      - No mutation possible: 0
+
+      - Incompetent: 0
+
+      - Skipped: 47
+
+      - Blocking signal: changed lines were left test-uncovered before mutation (budget/capacity
+      drops of covered changed files are advisory, not blocking).
+
+
+      ## Survived Mutants
+
+
+      Top definitions:
+
+      - `main`: 5
+
+      - `_sections_without_owned_headings`: 1
+
+
+      Top operators:
+
+      - `core/ReplaceTrueWithFalse`: 2
+
+      - `core/ReplaceFalseWithTrue`: 2
+
+      - `core/NumberReplacer`: 2
+
+
+      Sample locations:
+
+      - `skills/public/setup/scripts/synthesize_operator_acceptance.py:30` `main`
+      `core/ReplaceTrueWithFalse` - parser.add_argument("--repo-root", type=Path,
+      required=True, help="Repo root whose operator-acceptance doc should be synthesized")
+
+      - `skills/public/setup/scripts/synthesize_operator_acceptance.py:44` `main`
+      `core/ReplaceTrueWithFalse` - sys.stdout.write(json.dumps(payload, ensure_ascii=False,
+      indent=2, sort_keys=True) + "\n")
+
+      - `skills/public/setup/scripts/synthesize_operator_acceptance.py:44` `main`
+      `core/ReplaceFalseWithTrue` - sys.stdout.write(json.dumps(payload, ensure_ascii=False,
+      indent=2, sort_keys=True) + "\n")
+
+      - `skills/public/setup/scripts/synthesize_operator_acceptance.py:44` `main`
+      `core/NumberReplacer` - sys.stdout.write(json.dumps(payload, ensure_ascii=False,
+      indent=2, sort_keys=True) + "\n")
+
+      - `skills/public/setup/scripts/synthesize_operator_acceptance.py:44` `main`
+      `core/NumberReplacer` - sys.stdout.write(json.dumps(payload, ensure_ascii=False,
+      indent=2, sort_keys=True) + "\n")
+
+      - `skills/public/retro/scripts/scaffold_retro_artifact.py:59` `_sections_without_owned_headings`
+      `core/ReplaceFalseWithTrue` - dropping = False
+
+
+
+      ## Changed Files Excluded Before Mutation
+
+
+      - `scripts/command_carrier_discovery.py`
+
+      - `scripts/plugin_preamble.py`
+
+      - `scripts/usage_episode_session_start.py`
+
+
+      ### Uncovered changed lines
+
+
+      - `scripts/command_carrier_discovery.py`
+
+      - `scripts/plugin_preamble.py`
+
+      - `scripts/usage_episode_session_start.py`
+
+
+      ### Selection budget or nodeid (advisory: capacity, not coverage)
+
+
+      - `scripts/check_lesson_evaluation_continuity.py`
+
+      - `scripts/init_lesson_ledger.py`
+
+      - `scripts/slice_closeout_run_command.py`
+
+      - `scripts/suggest_public_skill_dogfood.py`
+
+      - `skills/public/handoff/scripts/prepare_chunk_packet.py`
+
+      - `skills/public/handoff/scripts/prepare_ranker_packet.py`
+
+      - `skills/public/handoff/scripts/propose_merges.py`
+
+      - `skills/public/handoff/scripts/scaffold_handoff_artifact.py`
+
+      - `skills/public/prove/scripts/check_boundary_escalation.py`
+
+      - `skills/public/quality/scripts/check_runtime_budget.py`
+
+
+      ### Changed-line proof targets
+
+
+      - `scripts/command_carrier_discovery.py:194 yield span_lineno, span_text`
+
+      - `scripts/command_carrier_discovery.py:248 except SyntaxError:  # a generated
+      or templated file is not this gate''s to judge`
+
+      - `scripts/command_carrier_discovery.py:249 return`
+
+      - `scripts/command_carrier_discovery.py:298 return None`
+
+      - `scripts/plugin_preamble.py:102 print(f"- Grok: {payload[''update_hints''][''grok'']}")`
+
+      - `scripts/usage_episode_session_start.py:171 parser.add_argument("--host",
+      choices=["claude", "codex", "grok", "unknown"], default="unknown", help="Host
+      that fired the hook; recorded into start.json for downstream analysis.")`
+
+
+      Score denominator: `killed / (killed + survived)` (reachable mutants only;
+
+      see `skills/public/quality/references/mutation-testing.md` §commands.summary).
+
+      Native Cosmic Ray no-mutation-possible results and Charness filtered
+
+      scope gaps are surfaced as separate blocking signals above and do not
+
+      enter the score. Skipped mutants are explicitly filtered work items and
+
+      also stay out of the score and completion denominators.
+
+
+      ## StrykerJS Mutation Slice
+
+
+      - Status: **PASS** (93.0% reachable score vs 80% threshold)
+
+      - Reachable mutants: 86
+
+      - Killed: 80
+
+      - Survived: 6
+
+      - No coverage: 0
+
+      - Timeout: 0
+
+
+      Survived JS mutants:
+
+      - `scripts/agent-runtime/skill-test-telemetry.mjs:6 `ConditionalExpression``
+
+      - `scripts/agent-runtime/skill-test-telemetry.mjs:14 `MethodExpression``
+
+      - `scripts/agent-runtime/skill-test-telemetry.mjs:19 `ConditionalExpression``
+
+      - `scripts/agent-runtime/skill-test-telemetry.mjs:27 `BlockStatement``
+
+      - `scripts/agent-runtime/skill-test-telemetry.mjs:39 `ConditionalExpression``
+
+      - `scripts/agent-runtime/skill-test-telemetry.mjs:39 `EqualityOperator``
+
+
+
+      # Mutation Sample
+
+
+      - Base SHA: `dad3e4b578f4b6abe9cccd2abc64b68c3e192e2c`
+
+      - Head SHA: `0a1a534058468287d084303e4727f6afb5b299d7`
+
+      - Seed: `31800625504:dad3e4b578f4b6abe9cccd2abc64b68c3e192e2c..0a1a534058468287d084303e4727f6afb5b299d7`
+
+      - Mutation pool files: 731
+
+      - Mutation pools: core-python 0/179 selected (406 pool), public-skill-python
+      2/180 selected (300 pool), support-skill-python 0/18 selected (25 pool)
+
+      - Eligible files after coverage/mutation-line filters: 377
+
+      - Covered eligible files: 377
+
+      - File coverage floor: 0.85
+
+      - Eligible files after mutation-line filter: 377
+
+      - Executable mutant budget: 120
+
+      - Per-file executable mutant budget: 80
+
+      - Selected executable mutants: 109
+
+      - Test nodeid budget: 40
+
+      - Selected test nodeids: 40
+
+      - Changed pool files: 93
+
+      - Changed eligible files after coverage/mutation-line filters: 43
+
+      - Changed files with uncovered changed lines (blocking): 3
+
+      - Changed-line proof targets: 6
+
+      - Changed files excluded by coverage/mutation-line filters (advisory union):
+      50
+
+      - Changed files excluded by file coverage floor: 11
+
+      - Changed files excluded by mutation-line coverage: 39
+
+      - Changed files excluded by selection budgets: 12
+
+      - Changed files excluded by per-file mutation budget (advisory): 30
+
+      - Selected: 2/5
+
+      - Test command: `python3 -m pytest -q ''tests/quality_gates/test_public_skill_yaml_output_contract.py::test_default_yaml_is_structured[command2]''
+      tests/quality_gates/test_retro_artifact_validation.py::test_scaffold_drops_adapter_sections_that_collide_with_a_heading_it_owns
+      tests/quality_gates/test_retro_artifact_validation.py::test_scaffolded_retro_validates_unchanged_in_a_repo_that_opted_in
+      tests/quality_gates/test_script_inprocess_behaviors.py::test_setup_synthesize_operator_acceptance_outputs_tiered_draft
+      tests/test_lesson_loop_wiring.py::test_retro_planner_barrier_names_the_solicitation
+      tests/test_lesson_loop_wiring.py::test_retro_planner_degrades_to_not_established_when_it_cannot_read_the_module
+      tests/test_lesson_loop_wiring.py::test_retro_planner_reports_not_configured_for_a_repo_that_never_opted_in
+      tests/test_lesson_loop_wiring.py::test_retro_planner_routes_to_the_declared_session_and_names_the_ordering
+      tests/test_lesson_loop_wiring.py::test_the_solicitation_barrier_is_absent_where_no_evaluator_is_declared
+      tests/test_retro_help.py::test_plan_retro_run_help_explains_repo_root_resolution
+      tests/test_retro_plan.py::test_clean_valid_adapter_does_not_add_adapter_contract
+      tests/test_retro_plan.py::test_continue_existing_when_today_artifact_present
+      tests/test_retro_plan.py::test_every_retro_routes_closeout_telemetry tests/test_retro_plan.py::test_expert_lens_is_always_a_required_read
+      tests/test_retro_plan.py::test_ordinary_and_docs_work_classes tests/test_retro_plan.py::test_retired_weekly_keys_pass_through_without_error
+      tests/test_retro_plan.py::test_retro_plan_bootstrap_reports_missing_runtime
+      tests/test_retro_plan.py::test_retro_plan_has_no_mode_concept tests/test_retro_plan.py::test_retro_plan_infers_work_paths_from_recent_commits
+      tests/test_retro_plan.py::test_retro_plan_infers_work_paths_from_working_tree
+      tests/test_retro_plan.py::test_retro_plan_main_emits_yaml tests/test_retro_plan.py::test_retro_plan_missing_adapter_adds_adapter_contract_read
+      tests/test_retro_plan.py::test_retro_plan_preserves_empty_adapter_evidence tests/test_retro_plan.py::test_retro_plan_promotes_adapter_evidence_with_path_status
+      tests/test_retro_plan.py::test_retro_plan_reads_summary_when_present tests/test_retro_plan.py::test_retro_plan_scaffold_uses_repo_declared_artifact_sections
+      tests/test_retro_plan.py::test_retro_plan_shape_and_scaffold_when_missing tests/test_retro_plan.py::test_retro_plan_surfaces_adapter_metrics_after_persistence
+      tests/test_retro_plan.py::test_retro_plan_work_paths_falls_back_when_surfaces_errors
+      tests/test_retro_plan.py::test_retro_recent_commit_paths_empty_outside_git tests/test_retro_plan.py::test_retro_recent_commit_paths_handles_subprocess_error
+      tests/test_retro_plan.py::test_system_improving_work_briefs_the_engelbart_lens
+      tests/test_retro_scaffold.py::test_payload_for_requires_the_title_to_be_named
+      tests/test_retro_scaffold.py::test_retro_scaffold_appends_only_adapter_declared_sections
+      tests/test_retro_scaffold.py::test_retro_scaffold_reports_validator_and_template
+      tests/test_retro_scaffold.py::test_retro_scaffold_title_with_no_alnum_chars_falls_back_to_retro_slug
+      tests/test_scaffold_inprocess_coverage.py::test_scaffold_main_emits_json_payload_in_process
+      tests/test_scaffold_inprocess_coverage.py::test_scaffold_shim_not_found_raises_import_error
+      tests/test_scaffold_inprocess_coverage.py::test_scaffold_validator_command_repo_local_fallback
+      tests/test_write_artifact_path_single_owner.py::test_every_scaffold_payload_says_what_writing_would_destroy`
+
+
+      ## Changed files with uncovered changed lines (blocking)
+
+
+      - `scripts/command_carrier_discovery.py`
+
+      - `scripts/plugin_preamble.py`
+
+      - `scripts/usage_episode_session_start.py`
+
+
+      ## Changed-line proof targets
+
+
+      - `scripts/command_carrier_discovery.py:194` `yield span_lineno, span_text`
+
+      - `scripts/command_carrier_discovery.py:248` `except SyntaxError:  # a generated
+      or templated file is not this gate''s to judge`
+
+      - `scripts/command_carrier_discovery.py:249` `return`
+
+      - `scripts/command_carrier_discovery.py:298` `return None`
+
+      - `scripts/plugin_preamble.py:102` `print(f"- Grok: {payload[''update_hints''][''grok'']}")`
+
+      - `scripts/usage_episode_session_start.py:171` `parser.add_argument("--host",
+      choices=["claude", "codex", "grok", "unknown"], default="unknown", help="Host
+      that fired the hook; recorded into start.json for downstream analysis.")`
+
+
+      ## Changed files excluded by file coverage (advisory)
+
+
+      - `charness`
+
+      - `scripts/check_prescribed_skill_executed.py`
+
+      - `scripts/classify_push_diff.py`
+
+      - `scripts/eval_setup.py`
+
+      - `scripts/generate_prompt_mutants.py`
+
+      - `scripts/install_machine_local.py`
+
+      - `scripts/plan_risk_interrupt.py`
+
+      - `scripts/plugin_preamble.py`
+
+      - `scripts/usage_episode_session_start.py`
+
+      - `scripts/validate_inventory_consumption_declaration.py`
+
+      - `skills/public/setup/scripts/setup_adapter.py`
+
+
+      ## Changed files excluded by mutation-line coverage
+
+
+      - `scripts/adapter_lib.py`
+
+      - `scripts/announcement_adapter_lib.py`
+
+      - `scripts/check_documented_command_flags.py`
+
+      - `scripts/check_test_repo_copy_invariants.py`
+
+      - `scripts/command_carrier_discovery.py`
+
+      - `scripts/critique_adapter_lib.py`
+
+      - `scripts/narrative_adapter_lib.py`
+
+      - `scripts/plan_cautilus_proof.py`
+
+      - `scripts/public_skill_dogfood_lib.py`
+
+      - `scripts/quality_adapter_lib.py`
+
+      - `scripts/quality_bootstrap_lib.py`
+
+      - `scripts/score_prompt_mutation_survival.py`
+
+      - `scripts/session_start_routing.py`
+
+      - `scripts/setup_adapter_inspect_lib.py`
+
+      - `scripts/validate_quality_artifact.py`
+
+      - `scripts/validate_retro_artifact.py`
+
+      - `scripts/witness_coverage.py`
+
+      - `skills/public/achieve/scripts/achieve_adapter_policy.py`
+
+      - `skills/public/announcement/scripts/record_announcement.py`
+
+      - `skills/public/debug/scripts/plan_debug_run.py`
+
+      - `skills/public/handoff/scripts/draft_goal_from_chunk.py`
+
+      - `skills/public/impl/scripts/survey_verification.py`
+
+      - `skills/public/issue/scripts/issue_create.py`
+
+      - `skills/public/issue/scripts/resolve_adapter.py`
+
+      - `skills/public/quality/scripts/draft_dup_ratchet_triage.py`
+
+      - `skills/public/quality/scripts/dup_ratchet_scan.py`
+
+      - `skills/public/quality/scripts/inventory_adapter_gate_design.py`
+
+      - `skills/public/quality/scripts/plan_quality_run.py`
+
+      - `skills/public/quality/scripts/structural_waste_lib.py`
+
+      - `skills/public/release/scripts/check_fresh_checkout_probes.py`
+
+      - `skills/public/release/scripts/check_requested_review_gate.py`
+
+      - `skills/public/release/scripts/plan_release_run.py`
+
+      - `skills/public/release/scripts/publish_release_adapter_preflight.py`
+
+      - `skills/public/release/scripts/publish_release_artifact_sections.py`
+
+      - `skills/public/release/scripts/publish_release_cli.py`
+
+      - `skills/public/release/scripts/publish_release_execute.py`
+
+      - `skills/public/release/scripts/publish_release_preflight.py`
+
+      - `skills/public/retro/scripts/plan_retro_run.py`
+
+      - `skills/public/setup/scripts/render_skill_routing.py`
+
+
+      ## Changed files excluded by per-file mutation budget (advisory, non-blocking)
+
+
+      - `scripts/lesson_evaluation_continuity_lib.py`
+
+      - `scripts/issue_source_freeze_lib.py`
+
+      - `skills/public/retro/scripts/check_auto_trigger.py`
+
+      - `skills/public/setup/scripts/seed_retro_memory.py`
+
+      - `scripts/boundary_probe_lib.py`
+
+      - `skills/public/quality/scripts/summary_output_lib.py`
+
+      - `skills/public/quality/scripts/check_dup_ratchet.py`
+
+      - `skills/public/handoff/scripts/plan_handoff_run.py`
+
+      - `scripts/simple_skill_adapter_lib.py`
+
+      - `scripts/artifact_run_scope.py`
+
+      - `skills/public/quality/scripts/seed_dup_review.py`
+
+      - `scripts/capability_catalog_sources.py`
+
+      - `scripts/render_lesson_lifecycle_review.py`
+
+      - `scripts/reviewed_input_identity.py`
+
+      - `skills/public/create-skill/scripts/resolve_adapter.py`
+
+      - `scripts/open_lesson_session.py`
+
+      - `skills/public/release/scripts/publish_release_common.py`
+
+      - `scripts/session_start_lesson_context.py`
+
+      - `skills/public/release/scripts/plan_release_run_packets.py`
+
+      - `scripts/critique_enforcement_scope.py`
+
+      - `skills/public/handoff/scripts/chunked_routing_cli.py`
+
+      - `skills/public/release/scripts/publish_release_claims_review.py`
+
+      - `scripts/artifact_validator.py`
+
+      - `scripts/lesson_ledger_lib.py`
+
+      - `scripts/lesson_evaluation_records_lib.py`
+
+      - `scripts/contract_register_lib.py`
+
+      - `skills/public/release/scripts/publish_release_helpers.py`
+
+      - `scripts/proof_semantics_adapter_lib.py`
+
+      - `scripts/seed_lesson_transitions.py`
+
+      - `scripts/subprocess_guard.py`
+
+
+      ## Changed sample
+
+
+      - `skills/public/retro/scripts/scaffold_retro_artifact.py`
+
+
+      ## Fill sample
+
+
+      - `skills/public/setup/scripts/synthesize_operator_acceptance.py`
+
+      '
+    createdAt: '2026-08-14T13:24:48Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/612#issuecomment-5293809896
+    viewerDidAuthor: false
+  - id: IC_kwDOR9yx7M8AAAABO-Jbqg
+    author:
+      login: github-actions
+    authorAssociation: NONE
+    body: "<!-- corca-ai/charness-mutation-test-regression -->\nMutation testing failed\
+      \ on `0a1a534058468287d084303e4727f6afb5b299d7`.\n\nWorkflow run: https://github.com/corca-ai/charness/actions/runs/31853796108\n\
+      \n## Step outcomes\n\n- `Select mutation sample`: **failure**\n- `Run mutation`:\
+      \ **skipped**\n- `Summarize mutation report`: **failure**\n\nThe mutation commands\
+      \ NEVER RAN — an earlier step failed or was skipped. The summary below describes\
+      \ absent artifacts, not a mutation result; read the `Select mutation sample`\
+      \ outcome above and the workflow logs.\n\n\n# Mutation Testing Summary\n\n-\
+      \ Status: **FAIL**\n- Blocking signal: the sampler's coverage-baseline pytest\
+      \ failed before mutation ran; no mutants ran.\n- Failing baseline tests:\n \
+      \ - `tests/test_lesson_loop_wiring.py::test_router_and_gate_agree_about_the_same_declared_session`\n\
+      \n## StrykerJS Mutation Slice\n\n- Status: **FAIL** (StrykerJS JSON report missing)\n\
+      - Missing report: `/home/runner/work/charness/charness/reports/mutation/stryker-js.json`\n\
+      - Blocking signal: collateral — the sampler's coverage-baseline pytest failed,\
+      \ so the JS slice was never invoked (see Mutation Testing Summary above).\n\n\
+      \nNo mutation sample manifest was generated."
+    createdAt: '2026-08-15T00:59:06Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/612#issuecomment-5299657642
+    viewerDidAuthor: false
+  - id: IC_kwDOR9yx7M8AAAABPAsgXw
+    author:
+      login: github-actions
+    authorAssociation: NONE
+    body: "<!-- corca-ai/charness-mutation-test-regression -->\nMutation testing failed\
+      \ on `0a1a534058468287d084303e4727f6afb5b299d7`.\n\nWorkflow run: https://github.com/corca-ai/charness/actions/runs/31884680068\n\
+      \n## Step outcomes\n\n- `Select mutation sample`: **failure**\n- `Run mutation`:\
+      \ **skipped**\n- `Summarize mutation report`: **failure**\n\nThe mutation commands\
+      \ NEVER RAN — an earlier step failed or was skipped. The summary below describes\
+      \ absent artifacts, not a mutation result; read the `Select mutation sample`\
+      \ outcome above and the workflow logs.\n\n\n# Mutation Testing Summary\n\n-\
+      \ Status: **FAIL**\n- Blocking signal: the sampler's coverage-baseline pytest\
+      \ failed before mutation ran; no mutants ran.\n- Failing baseline tests:\n \
+      \ - `tests/test_lesson_loop_wiring.py::test_router_and_gate_agree_about_the_same_declared_session`\n\
+      \n## StrykerJS Mutation Slice\n\n- Status: **FAIL** (StrykerJS JSON report missing)\n\
+      - Missing report: `/home/runner/work/charness/charness/reports/mutation/stryker-js.json`\n\
+      - Blocking signal: collateral — the sampler's coverage-baseline pytest failed,\
+      \ so the JS slice was never invoked (see Mutation Testing Summary above).\n\n\
+      \nNo mutation sample manifest was generated."
+    createdAt: '2026-08-15T12:57:08Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/612#issuecomment-5302329439
+    viewerDidAuthor: false
+  - id: IC_kwDOR9yx7M8AAAABPDR1fg
+    author:
+      login: github-actions
+    authorAssociation: NONE
+    body: "<!-- corca-ai/charness-mutation-test-regression -->\nMutation testing failed\
+      \ on `0a1a534058468287d084303e4727f6afb5b299d7`.\n\nWorkflow run: https://github.com/corca-ai/charness/actions/runs/31917360282\n\
+      \n## Step outcomes\n\n- `Select mutation sample`: **failure**\n- `Run mutation`:\
+      \ **skipped**\n- `Summarize mutation report`: **failure**\n\nThe mutation commands\
+      \ NEVER RAN — an earlier step failed or was skipped. The summary below describes\
+      \ absent artifacts, not a mutation result; read the `Select mutation sample`\
+      \ outcome above and the workflow logs.\n\n\n# Mutation Testing Summary\n\n-\
+      \ Status: **FAIL**\n- Blocking signal: the sampler's coverage-baseline pytest\
+      \ failed before mutation ran; no mutants ran.\n- Failing baseline tests:\n \
+      \ - `tests/test_lesson_loop_wiring.py::test_router_and_gate_agree_about_the_same_declared_session`\n\
+      \n## StrykerJS Mutation Slice\n\n- Status: **FAIL** (StrykerJS JSON report missing)\n\
+      - Missing report: `/home/runner/work/charness/charness/reports/mutation/stryker-js.json`\n\
+      - Blocking signal: collateral — the sampler's coverage-baseline pytest failed,\
+      \ so the JS slice was never invoked (see Mutation Testing Summary above).\n\n\
+      \nNo mutation sample manifest was generated."
+    createdAt: '2026-08-16T00:58:15Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/612#issuecomment-5305038206
+    viewerDidAuthor: false
+  - id: IC_kwDOR9yx7M8AAAABPFoSBQ
+    author:
+      login: github-actions
+    authorAssociation: NONE
+    body: "<!-- corca-ai/charness-mutation-test-regression -->\nMutation testing failed\
+      \ on `d3991855a90128d12476c12002d7f5745fd47310`.\n\nWorkflow run: https://github.com/corca-ai/charness/actions/runs/31947143533\n\
+      \n## Step outcomes\n\n- `Select mutation sample`: **failure**\n- `Run mutation`:\
+      \ **skipped**\n- `Summarize mutation report`: **failure**\n\nThe mutation commands\
+      \ NEVER RAN — an earlier step failed or was skipped. The summary below describes\
+      \ absent artifacts, not a mutation result; read the `Select mutation sample`\
+      \ outcome above and the workflow logs.\n\n\n# Mutation Testing Summary\n\n-\
+      \ Status: **FAIL**\n- Blocking signal: the sampler's coverage-baseline pytest\
+      \ failed before mutation ran; no mutants ran.\n- Failing baseline tests:\n \
+      \ - `tests/test_doc_authoring_preflight.py::test_broken_fixture_surfaces_all_classes_in_one_pass`\n\
+      \  - `tests/test_doc_authoring_preflight.py::test_no_drift_clean_fixture_passes_every_real_gate`\n\
+      \  - `tests/test_doc_authoring_preflight.py::test_no_drift_broken_fixture_matches_real_gate_verdicts`\n\
+      \n## StrykerJS Mutation Slice\n\n- Status: **FAIL** (StrykerJS JSON report missing)\n\
+      - Missing report: `/home/runner/work/charness/charness/reports/mutation/stryker-js.json`\n\
+      - Blocking signal: collateral — the sampler's coverage-baseline pytest failed,\
+      \ so the JS slice was never invoked (see Mutation Testing Summary above).\n\n\
+      \nNo mutation sample manifest was generated."
+    createdAt: '2026-08-16T12:46:14Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/612#issuecomment-5307503109
+    viewerDidAuthor: false
+  - id: IC_kwDOR9yx7M8AAAABPIkqaw
+    author:
+      login: github-actions
+    authorAssociation: NONE
+    body: "<!-- corca-ai/charness-mutation-test-regression -->\nMutation testing failed\
+      \ on `d3991855a90128d12476c12002d7f5745fd47310`.\n\nWorkflow run: https://github.com/corca-ai/charness/actions/runs/31982187624\n\
+      \n## Step outcomes\n\n- `Select mutation sample`: **failure**\n- `Run mutation`:\
+      \ **skipped**\n- `Summarize mutation report`: **failure**\n\nThe mutation commands\
+      \ NEVER RAN — an earlier step failed or was skipped. The summary below describes\
+      \ absent artifacts, not a mutation result; read the `Select mutation sample`\
+      \ outcome above and the workflow logs.\n\n\n# Mutation Testing Summary\n\n-\
+      \ Status: **FAIL**\n- Blocking signal: the sampler's coverage-baseline pytest\
+      \ failed before mutation ran; no mutants ran.\n- Failing baseline tests:\n \
+      \ - `tests/test_doc_authoring_preflight.py::test_broken_fixture_surfaces_all_classes_in_one_pass`\n\
+      \  - `tests/test_doc_authoring_preflight.py::test_no_drift_broken_fixture_matches_real_gate_verdicts`\n\
+      \  - `tests/test_doc_authoring_preflight.py::test_no_drift_clean_fixture_passes_every_real_gate`\n\
+      \n## StrykerJS Mutation Slice\n\n- Status: **FAIL** (StrykerJS JSON report missing)\n\
+      - Missing report: `/home/runner/work/charness/charness/reports/mutation/stryker-js.json`\n\
+      - Blocking signal: collateral — the sampler's coverage-baseline pytest failed,\
+      \ so the JS slice was never invoked (see Mutation Testing Summary above).\n\n\
+      \nNo mutation sample manifest was generated."
+    createdAt: '2026-08-17T00:47:46Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/612#issuecomment-5310589547
+    viewerDidAuthor: false
+  createdAt: '2026-08-13T01:33:43Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACjNwzGA
+    name: mutation-test
+    description: Automated mutation testing findings
+    color: b60205
+  number: 612
+  state: OPEN
+  title: Mutation test regression on main
+  updatedAt: '2026-08-17T00:47:46Z'
+  url: https://github.com/corca-ai/charness/issues/612
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

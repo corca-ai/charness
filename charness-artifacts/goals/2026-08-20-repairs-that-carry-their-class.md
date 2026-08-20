@@ -1,6 +1,6 @@
 # Achieve Goal: Cut the next Charness release without carrying its own failures
 
-Status: draft
+Status: active
 Created: 2026-08-20
 Activation: `/goal @charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`
 
@@ -9,17 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: real release backlog, reshaped and pursue-ready but inert
-  until the operator runs the activation command.
-- Current slice: shaped release-train draft awaiting activation. Slice 0
-  re-reads every open issue, current CI/release state, and all version surfaces
-  before any implementation.
+- Current disposition: active Slice 0 qualification; the activation snapshot and
+  planner receipts are captured, and the intake ledger is being validated before
+  it can be frozen.
+- Current slice: Slice 0 — issue-source snapshot, current reproductions, ledger,
+  and ledger-validator proof. No writer lane is admitted before this lock.
 - Current slice intent: freeze one honest release backlog, distinguish blockers
   from independently shippable repairs and premise-refuted reports, then launch
   disjoint work lanes without weakening the release floor.
-- Next action: activate this artifact, run the Slice 0 issue qualification and
-  release planner, commit the frozen lane ledger, and only then create isolated
-  writer worktrees.
+- Next action: commit the reviewed Slice 0 intake lock with the round-2
+  accepted-unreviewed repairs recorded, then prepare isolated writer lanes from
+  its path table.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -494,45 +494,34 @@ invent a common engine.
 
 ## Backlog Recount
 
-- Counted: 29 open issues through `#680` on 2026-08-20. The active run
-  must replace this shaping view with a fresh, non-truncated Slice 0 snapshot.
-- Claims: the activation-time rows that Slice 0 classifies `release-blocker` or
-  `qualified-repair`, for resolution and per-issue close only after their own
-  proof. Shaping candidates are `#679`, current-live subsets of
-  `#612/#668/#669/#667`, `#635/#637/#638/#639`, `#672/#678`,
-  `#634/#670/#671`, and evidence-qualified `#676/#677`; this is not their final
-  classification.
-- Not claimed: issues whose current premise is refuted, lacks a reproducer, is
-  umbrella-only, or needs a product decision—including the shaping dispositions
-  for `#546/#586/#587/#605/#680` and any unqualified remainder of
-  `#527/#550/#582/#583/#584/#599/#601/#628`. They remain accounted for but are
-  not promised code or closure.
-- **Reproduced/high-priority probes:** `#679` is premise-holds at shaping HEAD.
-  `#612`, `#668`, and `#669` are release/quality candidates whose current
-  blocker status must be re-measured before design. `#667` is cross-repository
-  release-state behavior and qualifies only with a bounded Charness carrier.
-- **Likely independent qualified lanes:** `#635/#638/#639` evidence lifecycle;
-  `#672/#678` semantic truth; `#634/#637/#670/#671` packaging, bootstrap, and
-  discovery. “Likely” is not a claim: Slice 0 supplies the missing executable
-  premise and acceptance owner for each.
-- **Conditional detector work:** `#676` names six historical instances but the
-  current issue table lacks per-instance commit SHAs. `#677` overlaps only at a
-  possible scanner substrate and owns syntactic artifact citations. Neither
-  may ship by weakening its missing-input stop; both may qualify if Slice 0
-  reconstructs and binds an adequate corpus/contract.
-- **Premise-refuted or no-current-reproducer candidates:** `#680` central claim
-  is refuted at shaping HEAD; explicit reviewed paths remain content-hash bound
-  even with zero packet sections, while zero reviewed paths are unusable and
-  refused. `#546`, `#586`, and the original `#605` premise currently lack a
-  live missing-sample/reproducer. `#587`'s proposed serial-aggregate remedy was
-  refuted. These stay open or narrow only from new executable evidence.
-- **Broad or decision-owned candidates:** `#527`, `#550`, `#582`, `#583`,
-  `#584`, `#599`, `#601`, and `#628` need either a bounded remaining carrier,
-  current premise, or operator-owned policy choice. A child repair can update
-  an umbrella without pretending the whole umbrella is closed.
-- **Other cross-host/workflow rows:** `#634/#635/#637/#638/#639/#667/#668/
-  #669/#670/#671` remain distinct until the ledger proves a shared contract.
-  Grouping above is scheduling, never evidence of resolution.
+- Counted: 30 open issues from the non-truncated GitHub snapshot at
+  `charness-artifacts/issues/2026-08-20-open-issues.raw.json`, captured at
+  `2026-08-20T18:47:02+09:00` from HEAD
+  `b9e89480904d16c586c3b1769f81cac3d3a7f214`. Every row has a read receipt with
+  comments and normalized body/comment digests.
+- Current classification: 1 `release-blocker` (`#679`); 9
+  `qualified-repair` (`#635/#638/#639/#670/#671/#672/#676/#677/#678`); 3
+  `already-satisfied` (`#634/#637/#681`); 1 `premise-refuted` (`#680`); 1
+  `decision-required` (`#668`); and 15 `deferred` rows with a named missing
+  reproducer or bounded child. The structured ledger and validator own these
+  counts; this paragraph is only an index.
+- Evidence: the ledger is
+  `charness-artifacts/issues/2026-08-20-next-release-ledger.json` and passes
+  `python3 scripts/check_release_issue_ledger.py --repo-root . --ledger
+  charness-artifacts/issues/2026-08-20-next-release-ledger.json`; its focused
+  refusal suite is `19 passed` in
+  `tests/quality_gates/test_release_issue_ledger.py`.
+- Claims: only the blocker and admitted work packages enter implementation.
+  `#679` reproduces the valid-existing-adapter false red; `#668` remains an
+  operator decision because the current runtime budget passes; `#612/#669` are
+  deferred after current focused checks pass; and `#680` remains scoped to the
+  shaping-head refutation. No row is a closure claim.
+- The 10 admitted work packages are path-budgeted in the ledger. Their future
+  implementation still owes causal notes, focused proof, changed-line proof,
+  and the mandated fresh-eye review; admission is not completion.
+- Intake lock: ready for commit after Slice 0 proof. Round-2 repairs are
+  explicitly accepted-unreviewed under the bounded two-round cap; no third
+  reviewer round is claimed.
 
 ## Operator Decision Queue
 
@@ -587,6 +576,21 @@ invent a common engine.
 
 ## Slice Log
 
+### Slice 0: activation qualification and intake ledger
+
+- Objective: Qualify the activation-time open issue snapshot, preserve immutable planner and issue-read receipts, and validate an exactly-once ledger before writer lanes begin.
+- Why this approach: The release train needs a structured admission boundary so current blockers, qualified repairs, premise refutations, decisions, and missing-input deferrals cannot be laundered through a ticket list or prose count.
+- Commits: Not committed: round 1 fresh-eye review returned seven false-pass classes and round 2 returned six more; both repair sets are recorded before the intake-lock commit, with round-2 repairs explicitly accepted-unreviewed under the two-round cap.
+- What changed: Activated the goal; captured the 30-issue GitHub snapshot and all issue reads with comments; preserved issue, release, and quality planner receipts; recorded current reproductions; added the thin CLI `scripts/check_release_issue_ledger.py`, cohesive evidence and contract modules (`scripts/release_issue_ledger_evidence.py` and `scripts/release_issue_ledger_contract.py`), and focused tests; generated charness-artifacts/issues/2026-08-20-next-release-ledger.json; updated the live backlog recount; then bound raw snapshot hashes/order, source identity metadata, typed dispositions, post-lock exceptions, amendment roots, and issue/package path budgets. The length-gate failure exposed a monolith as a structural smell, so the validator was split by responsibility instead of suppressing the gate.
+- Alternatives rejected: Rejected a #679-only train, a fixed ticket quota, and a prose-only backlog table. The ledger keeps all 30 rows while admitting only 10 path-budgeted work packages.
+- Targeted verification: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json -> pass (30 issues, 10 work packages); python3 -m pytest -q tests/quality_gates/test_release_issue_ledger.py -> 19 passed; Python length and py_compile checks passed.
+- Test duplication pressure: Focused tests cover truncated snapshots, raw snapshot substitution/digest drift, source receipt substitution, duplicate or missing issue coverage, enum refusal, typed admission floors, blocker impact, amendment-root overwrite, post-lock exceptions, freshness non-claims, and path overlap/parent-only violations. The validator's semantic truth and GitHub freshness blind classes remain explicit.
+- Critique: Round 1 bounded reviewer returned and boundary verification was clean. It found snapshot/source identity, admission, exception, amendment-root, path-budget, and schema-binding gaps; all are repaired. Round 2 bounded reviewer returned cleanly at the boundary, found receipt-content, placeholder, timestamp, parent-path, boolean-number, and exception identity/time gaps; those repairs are locally verified and accepted-unreviewed under the two-round cap.
+- Commit-gate smell and repair: the first commit attempt passed code gates but failed staged plugin-mirror drift because the new validator modules were absent from the generated install surface. Regenerated `plugins/charness` and both marketplace manifests, then included those derived surfaces in the same lock attempt.
+- Off-goal findings: No implementation lane started. The #668 operator decision and deferred historical or umbrella rows remain open in the ledger.
+- Lessons carried forward: Applied changed-line-proof-before-broad-quality, positive-effect-cannot-be-cited, detector-blind-class-unstated, goal-closeout-evidence-binding, prose-claim-without-a-reader, bar-recorded-as-prose, green-test-is-not-covered-line, global-probe-for-local-fact, proof-surface-message-drift, and the operator rule that every failure is a smell requiring a structural pattern or pattern-of-patterns repair.
+- Metrics: Activation set: 30 rows; release blockers: 1; qualified repairs: 9; admitted packages: 10; already satisfied: 3; premise refuted: 1; decision required: 1; deferred: 15; focused ledger tests: 19 passed; fresh-eye round 1: repairs required and repaired; round 2: repairs required, locally verified, accepted-unreviewed.
+
 ## Closeout Binding Plan
 
 - Reviewed inputs: this goal, the frozen issue ledger and amendments, current
@@ -617,8 +621,10 @@ invent a common engine.
 
 ## Final Verification
 
-- Not run — this artifact is an inactive draft. The active goal must replace
-  this line with the bound local, external, and tracker readback evidence.
+- Not due. Slice 0 local intake proof is recorded in the ledger, planner
+  receipts, issue-read/reproduction receipts, and Slice 0 log. Integrated
+  semantic proof, release-candidate proof, external readback, and tracker
+  closeout remain unrun.
 
 ## User Verification Instructions
 

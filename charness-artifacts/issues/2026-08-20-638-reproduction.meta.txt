@@ -1,0 +1,4 @@
+command: python3 -c 'from pathlib import Path; root=Path("charness-artifacts/critique/rounds"); paths=sorted(str(p) for p in root.rglob("*") if p.is_file()) if root.exists() else []; print("rounds_directory_exists:",root.exists()); print("per_round_findings_files:",paths); print("durable_round_findings_present:",bool(paths))'
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T19:00:53+09:00
+exit_code: 0

@@ -1,0 +1,76 @@
+ok: true
+repo: corca-ai/charness
+number: 672
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '672'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Situation\n\n`scripts/what_reads_this.py` groups references by kind, and\
+    \ the grouping is what\n[#599](https://github.com/corca-ai/charness/issues/599)\
+    \ said was the point of the tool\n(\"the grouping matters more than the search\"\
+    ). Two of the kinds #599 named are not kinds\nthe tool emits.\n\n## Experience\n\
+    \n`#599` names `listed_skill_ids` as an inverse trap: it looks orphaned and is\
+    \ consumed by\nan assertion on its value at `scripts/eval_setup.py:220`. Running\n\
+    `what_reads_this.py --symbol listed_skill_ids` today DOES find that file — the\
+    \ fatal\nfalse-zero is closed — but reports it as `string-literal`, which is the\
+    \ same kind a\npassing mention in a markdown artifact gets. To learn that the\
+    \ consumer is an assertion\nthat raises, the reader must pass `--detail` and read\
+    \ the line.\n\nThe tool's own fixture shows the collapse: `tests/test_what_reads_this.py:29`\n\
+    (`PAYLOAD = {\"listed_skill_ids\": 3}`, an inert dict key) and `:33` (the assertion\
+    \ that\nmakes the key undeletable) both land in `string-literal`, and the test\
+    \ asserts only\n`kinds[\"string-literal\"] >= 1` — satisfied by either.\n\nRelated,\
+    \ same shape: `_config_key_hits` has a `lookup` arm matching `.get(\"k\")` /\n\
+    `[\"k\"]`, and `_symbol_kind` has none. So `--config-key listed_skill_ids` surfaces\
+    \ the\nlive consumer as `lookup` while `--symbol listed_skill_ids` buries it in\n\
+    `string-literal`. The name is both a Python name and a payload key; nothing tells\
+    \ the\ncaller to try both flags.\n\n## Evidence\n\nFound by a bounded fresh-eye\
+    \ review of the slice that shipped\n`check_adapter_consumer_classification.py\
+    \ --list-consumers`, while judging whether #599\nis closeable. Verified by running\
+    \ both queries against the real tree.\n\n## Impact\n\nThe false-zero half of #599\
+    \ is genuinely closed and that was the fatal half. This is the\nreadability half:\
+    \ the grouping was supposed to make the answer usable without a second\npass,\
+    \ and for the assertion class it does not.\n\n## Weak solution direction\n\nAdd\
+    \ an `assertion` / `value-constraint` kind to `_symbol_kind` (a hit inside an\
+    \ `assert`,\nor inside an `if ...:` whose body raises) and port the `lookup` arm\
+    \ from\n`_config_key_hits`. Acceptance is already writable: `scripts/eval_setup.py:220`\
+    \ must not\nreport the same kind as `tests/test_what_reads_this.py:29`.\n\nTwo\
+    \ smaller residuals from the same review, worth folding in or splitting:\n\n-\
+    \ no AST-scanned-literal kind and no `UNSCANNED_SURFACES` line for it. A literal\
+    \ harvested\n  by a scanner elsewhere (`claim_fidelity_lib.py` AST-scans the handoff\
+    \ planner for\n  `references/<name>.md`) is reported as an ordinary hit, with\
+    \ nothing saying that removing\n  it changes another gate's input. The cheap honest\
+    \ fix is one more unscanned-surfaces\n  line, not full support.\n- `check_adapter_consumer_classification._references_adapter_loader`\
+    \ matches only\n  `ast.Name`/`ast.Attribute`, so a loader reached through an aliased\
+    \ import or `getattr`\n  defeats the rule. Now named in that gate's printed blind\
+    \ class; not yet detected.\n\n## Non-goals\n\nNot proposing to rewrite the kind\
+    \ vocabulary. The shipped axis (lexical position ×\n`source`/`test`/`doc`/`config`/`mirror`\
+    \ surface) is arguably more useful for a deletion\ndecision than the four kinds\
+    \ #599 sketched; this asks for one missing distinction, not a\nredesign."
+  comments: []
+  createdAt: '2026-08-18T15:55:21Z'
+  labels: []
+  number: 672
+  state: OPEN
+  title: 'what_reads_this: a consumer that ASSERTS on a value reports the same kind
+    as a passing mention'
+  updatedAt: '2026-08-18T15:55:21Z'
+  url: https://github.com/corca-ai/charness/issues/672
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

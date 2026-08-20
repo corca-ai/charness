@@ -1,0 +1,177 @@
+ok: true
+repo: corca-ai/charness
+number: 670
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '670'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 1
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## Observation
+
+
+    A consuming repo cannot find out that a packaged validator exists. Nothing tells
+    it, so an unwired validator produces no signal at all — and the gap is filled
+    by a hand-rolled substitute that then drifts away from the packaged contract.
+
+
+    Measured in one consuming repo (`corca-ai/ceal`) today. Of the 12 packaged artifact/closeout
+    validators, 5 are wired through `charness_public_wrapper` and 7 are not:
+
+
+    | wired | unwired |
+
+    | --- | --- |
+
+    | `validate_critique_artifacts.py` | `validate_handoff_artifact.py` |
+
+    | `validate_debug_artifact.py` | `validate_quality_artifact.py` |
+
+    | `validate_ideation_artifact.py` | `validate_quality_closeout_contract.py` |
+
+    | `validate_retro_artifact.py` | `validate_retro_handoff_wiring.py` |
+
+    | `check_artifact_surface_preflight.py` | `check_closeout_classification_parity.py`
+    |
+
+    | | `check_closeout_floor_matrix.py` |
+
+    | | `check_issue_closeout_commit_msg.py` |
+
+
+    The pattern is not random: the repo wired the validators for artifacts it authors
+    often and never noticed the handoff/quality/closeout family.
+
+
+    ## What the silence cost
+
+
+    `validate_handoff_artifact.py` was never wired, so a hand-rolled `scripts/check-handoff-artifact.ts`
+    grew in its place with a raw 100-line cap. The packaged validator counts CONTENT
+    lines and reads `max_content_lines` from `.agents/handoff-adapter.yaml`; its own
+    comments record raw-line counting as the superseded approach, which "was measuring
+    formatting and penalising long reference links while a diary of short lines cost
+    nothing".
+
+
+    So a session rewriting that repo''s handoff spent two passes trimming to satisfy
+    a cap the upstream owner had already reasoned its way out of, while the validator
+    that encodes the current thinking sat one wrapper away and unmentioned. The substitute
+    also disagreed with the packaged authoring preflight the same repo DOES run (raw
+    70), so one gate printed "Validated" for an artifact the other refused.
+
+
+    ## Why this should not be solved per-repo
+
+
+    Each consuming repo building its own "did we wire everything?" check means N implementations
+    of a question only charness can answer, all of them stale the moment charness
+    adds validator N+1. The consuming repo cannot enumerate what it does not know
+    exists.
+
+
+    ## Precedent inside charness
+
+
+    `scripts/check_inventory_declaration_coverage.py` already solves this exact shape
+    one level in, and its docstring states the problem in the same terms:
+
+
+    > a new inventory could ship without ever appearing in the declaration, and the
+    headline-only summary trap would re-open silently. This validator forces a conscious
+    choice for every inventory: either declare `non_headline_fields` (>=2 distinct)
+    or opt out with a non-empty `opt_out_reason`.
+
+
+    The same instrument applied one level out would close this: a declaration surface
+    listing the packaged validators a consuming repo has considered, where each entry
+    is either wired or opted out with a reason, and a check that fails when a packaged
+    validator appears in neither column. `doctor.py` may be the natural home for the
+    reporting half.
+
+
+    ## What would have caught it
+
+
+    Any surface that makes an absent wiring say something. Today the absence is indistinguishable
+    from a deliberate choice, which is why it survived long enough to grow a substitute.
+
+    '
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABPXGjFw
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: 'Correction to the table above, which understates the problem and does so
+      in a way worth recording, because I made the mistake this issue is about.
+
+
+      I built that inventory by listing `plugins/charness/scripts/*.py` only. Packaged
+      validators also live under `plugins/charness/skills/*/scripts/`, and I did not
+      look there. Counting both locations there are ~125 `validate_*`/`check_*` scripts,
+      against 13 wrapped in the consuming repo.
+
+
+      I am deliberately NOT reporting "112 unwired" as the finding, because most of
+      those are charness''s own self-checks (skills, packaging, mutation harness)
+      and not consumer-facing. That is the point: **from the consuming side there
+      is no way to tell the two apart.** The candidate set cannot be enumerated correctly
+      by the repo that needs it — I demonstrated that on myself twice in one session,
+      first by missing a whole directory and then by nearly reporting a number that
+      treats charness''s internal gates as our missing wiring.
+
+
+      A concrete second instance, found because the operator asked whether an unrelated
+      repo-local check had been paying for this:
+
+
+      - `skills/achieve/scripts/check_goal_artifact.py` is a packaged goal-artifact
+      validator. It is not wired in the consuming repo.
+
+      - That repo instead has its own `scripts/check-goal-status-drift.ts`, doing
+      overlapping work with its own status vocabulary.
+
+      - The two disagree on a detail neither side knows the other has: `goal_artifact_lib.read_status()`
+      returns the status verbatim, while the repo-local check lowercases it before
+      matching. Neither is wrong; they simply grew apart, which is what happens when
+      the second one exists because nobody knew the first one did.
+
+
+      So the ask stands and sharpens: the declaration surface needs to say not just
+      *which* packaged validators exist, but which are **consumer-facing**. Without
+      that axis, a repo attempting this audit either under-scans (missing a directory)
+      or over-reports (treating internal gates as gaps), and both failures are silent.
+
+      '
+    createdAt: '2026-08-18T08:47:26Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/670#issuecomment-5325824791
+    viewerDidAuthor: true
+  createdAt: '2026-08-18T08:43:22Z'
+  labels: []
+  number: 670
+  state: OPEN
+  title: Consuming repos cannot learn that a packaged validator exists, so an unwired
+    one stays silent and grows a substitute
+  updatedAt: '2026-08-18T08:47:26Z'
+  url: https://github.com/corca-ai/charness/issues/670
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

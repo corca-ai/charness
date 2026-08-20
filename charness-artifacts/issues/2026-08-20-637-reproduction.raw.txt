@@ -1,0 +1,54 @@
+artifact-surface-preflight: critique
+note: Hand-authored critique record; `## Reviewer Tier Evidence` + `## Structured Findings` enforced when present.
+
+required shape (from the owning scaffold/template/validator — the single source):
+# Critique Review
+Date: 2026-08-20
+
+## Decision Under Review
+
+TODO the change or decision under critique, in one or two lines.
+
+## Failure Angles
+
+- TODO a distinct failure angle and why it could bite.
+
+## Counterweight Pass
+
+- TODO separate the real blockers from over-worry.
+
+## Structured Findings
+
+<!-- allowed enums (substitute only these) — bin: act-before-ship | bundle-anyway | over-worry | valid-but-defer; evidence: strong | moderate | weak | contested; action: fix | file-issue | document | defer. action: file-issue also needs a follow-up: (issue URL or 'deferred ' plus a handoff anchor). -->
+- F1 | bin: act-before-ship | evidence: moderate | ref: TODO path-or-line | action: fix | note: TODO the blocker to fix before shipping
+- F2 | bin: over-worry | evidence: weak | ref: TODO path-or-line | action: defer | note: TODO the concern raised but not folded
+
+## Reviewer Tier Evidence
+
+<!-- allowed Host exposure state: pending-parent-spawn | requested_fields_sent | metadata-hidden | host-defaulted | unsupported | applied. Use applied only with Application state: host-confirmed: plus a concrete signal. -->
+<!-- Every bullet below is a placeholder: a value still opening TODO/TBD is refused, and a pending-parent-spawn Host exposure or Delivery state is refused alongside a parent-delegated/nested-delegated Fresh-Eye Satisfaction (it would claim a completed delegation over a record saying nothing was spawned). Write n/a when the host genuinely exposes no such control. -->
+- Requested tier: TODO replace with the fresh-eye reviewer tier requested (or n/a).
+- Requested spawn fields: TODO replace with the fields sent to the host spawn surface (or n/a).
+- Host exposure state: pending-parent-spawn
+- Application state: TODO replace with the host signal once the reviewer runs (or n/a).
+<!-- allowed Delivery state: findings-received | findings-recovered-from-transcript | spawn-accepted-no-delivery | pending-parent-spawn. Boundary cleanliness is a separate claim and does not imply delivery. -->
+- Delivery state: pending-parent-spawn
+
+## Fresh-Eye Satisfaction
+
+TODO: replace with `parent-delegated`, `nested-delegated`, or a citation of the concrete signal that stopped delegation — after the reviewer actually runs.
+
+## Reviewed Input Identity
+
+<!-- Packet-bound critiques replace this comment with `- Packet consumed: <packet-path>` plus three bullets copied from prepare_packet.py after the reviewed packet is final: Packet path, exact Packet SHA256, and Identity SHA256. That `Packet consumed:` line is what turns the binding floor on. Leave this section comment-only when no packet was consumed. -->
+
+## Boundary Ownership
+
+<!-- allowed Verdict (substitute only these): single-surface | owned-correctly | moved-to-owner | escalated-to-issue-spec. Run the producer/consumer brief at skills/shared/references/boundary-ownership-brief.md. -->
+- Producer: TODO who produces this fact or state.
+- Consumer: TODO the final consumer.
+- Owning surface: TODO the surface that should own the change (a repo-defined label).
+- Verdict: TODO replace with one of single-surface | owned-correctly | moved-to-owner | escalated-to-issue-spec after running the producer/consumer brief.
+
+owning validator: python3 scripts/validate_critique_artifacts.py --repo-root . --paths charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md
+current verdict on charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md: PASS

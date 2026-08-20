@@ -1,0 +1,815 @@
+schema_version: quality.run_plan.v2
+envelope_version: charness.run_plan_envelope.v1
+required_reads:
+- path: references/quality-lenses.md
+  role: required-primer
+  why: Interpret every quality packet through concept, behavior, security, and operability.
+  size_bytes: 7448
+- path: references/surface-contract-review.md
+  role: required-primer
+  why: Separate routed gate receipts from semantic surface coverage and disclose unexamined
+    axes.
+  size_bytes: 1820
+- path: references/proposal-flow.md
+  role: required-primer
+  why: Keep recommendations concrete, sourced, and proportionate.
+  size_bytes: 5860
+- path: references/operability-signals.md
+  role: required-primer
+  why: Read runtime, setup, CI, and maintenance signals as quality evidence.
+  size_bytes: 4388
+- path: references/skill-quality.md
+  role: scope-primer
+  scope: skill-authoring
+  why: Inspect skills as runtime artifacts when the repo authors skills.
+  size_bytes: 4024
+- path: references/skill-ergonomics.md
+  role: scope-primer
+  scope: skill-authoring
+  why: Judge whether skill cores, references, and scripts preserve progressive disclosure.
+  size_bytes: 6231
+next_action:
+  kind: read_primer_refs
+gate_packets:
+- id: read-only-quality
+  command: ./scripts/run-quality.sh --read-only
+  purpose: standing deterministic evidence packet
+  trust_model: hard gate plus advisory sub-packets; green is evidence, not judgment
+  cost_tier: broad
+  parallel_group: serial-critical
+  run_after: required-primer
+  run_when: repo exposes this repo-native command or an equivalent standing quality
+    gate
+- id: runtime-summary
+  command: python3 "$SKILL_DIR/scripts/render_runtime_summary.py" --repo-root . --detail
+  purpose: measured runtime trend source before claiming cost or speed facts
+  trust_model: measurement packet
+  cost_tier: cheap
+  parallel_group: inventories
+  run_when: runtime, slow gate, budget, or cost is in scope
+- id: regenerable-facts
+  command: python3 "$SKILL_DIR/scripts/check_regenerable_facts.py" --repo-root .
+  purpose: refuse a transcribed number in forward-looking prose; conservative defaults
+    do not guess that docs/** is current
+  trust_model: hard on findings or invalid declared scope; unconfigured docs are a
+    typed no-verdict at exit 0, never a clean claim
+  cost_tier: cheap
+  parallel_group: serial-critical
+  run_when: the repo carries forward-looking prose a reader treats as current
+- id: skill-ergonomics
+  command: python3 "$SKILL_DIR/scripts/inventory_skill_ergonomics.py" --repo-root
+    . --summary
+  purpose: advisory skill-surface pressure packet when skills are in scope
+  trust_model: heuristic advisory with false positives and false negatives
+  cost_tier: cheap
+  parallel_group: inventories
+  run_when: skills_in_scope
+- id: lesson-lifecycle-review
+  command: ./scripts/render_lesson_lifecycle_review.py --repo-root .
+  purpose: lesson-lifecycle evidence for the graduate / rewrite-in-place / strengthen-binding
+    judgment the ledger contract assigns to quality
+  trust_model: evidence only, never a verdict; orders by anchored evidence and reports
+    recurrence as context because recurrence cannot discriminate the three dispositions.
+    Exits zero over any validatable ledger including one with nothing to propose;
+    a nonzero exit is a refusal to render -- an unreadable or unreplayable ledger
+    at 1, a helper-provenance refusal at 2 -- never a finding about a lesson
+  cost_tier: cheap
+  parallel_group: inventories
+  run_when: repo exposes this repo-native command declaring a lesson evaluator
+- id: adapter-preflight-1
+  command: python3 scripts/validate_maintainer_setup.py --repo-root .
+  purpose: execute the adapter's declared preflight_commands entry
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: unknown
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-preflight-2
+  command: python3 scripts/doctor.py
+  purpose: execute the adapter's declared preflight_commands entry
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: unknown
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-gate-1
+  command: ./scripts/run-quality.sh
+  purpose: execute the adapter's declared gate_commands entry
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: unknown
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-review-1
+  command: ./scripts/run-quality.sh --review
+  purpose: execute the adapter's declared review_commands entry
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: review
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-security-1
+  command: ./scripts/check-secrets.sh
+  purpose: execute the adapter's declared security_commands entry
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: unknown
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-security-2
+  command: python3 scripts/check_supply_chain.py --repo-root .
+  purpose: execute the adapter's declared security_commands entry
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: unknown
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-cli-probe-1
+  command: ./charness --help
+  purpose: exercise one adapter-declared installable CLI probe
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: cheap
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-cli-probe-2
+  command: ./charness doctor --help
+  purpose: exercise one adapter-declared installable CLI probe
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: cheap
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-cli-probe-3
+  command: ./charness --version
+  purpose: exercise one adapter-declared installable CLI probe
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: cheap
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-cli-probe-4
+  command: env CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS=1 python3 scripts/doctor.py --repo-root
+    . --skip-release-probe
+  purpose: exercise one adapter-declared installable CLI probe
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: cheap
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+- id: adapter-canonical-docs
+  command: python3 "$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py" --repo-root
+    . --summary --doc-path AGENTS.md --doc-path CLAUDE.md --doc-path docs/handoff.md
+  purpose: inspect each adapter-declared canonical Markdown surface
+  trust_model: repo-declared route; planner inclusion proves reachability only, and
+    execution remains not-run until a later receipt says otherwise
+  cost_tier: cheap
+  parallel_group: adapter-declared
+  run_after: required-primer
+  run_when: declared by the resolved quality adapter
+repo_root: /home/hwidong/codes/charness
+brief:
+  purpose: load-bearing residue of demoted primers, carried inline so a run keeps
+    the discipline without a mandatory prose read; open detail_ref only on trigger
+  inventory_dispatch:
+    detail_ref: references/inventory-dispatch.md
+    consumption: Run a focused inventory only when the quality question brings its
+      surface into scope; advisory inventories are review prompts, not mandates. Use
+      `--summary` YAML for every dispatch script's first-read triage and switch to
+      `--detail` YAML only when a finding needs full attribution or disposition. YAML
+      is the only structured output contract; the removed hidden JSON mode is not
+      a supported programmatic seam. The existing YAML contract test derives every
+      dispatch script command from the routing document and inventories every inventory_*.py
+      script so new entries cannot bypass the contract. An inventory cited in the
+      artifact's `## Commands Run` must engage >=2 declared non-headline fields (one
+      is enough when only one is declared; validate-inventory-consumption enforces).
+      Inventory scripts resolve under `$SKILL_DIR/scripts/`; detail_refs under `references/`.
+    areas:
+    - area: cli-operator-surface
+      scope: repo ships or changes an operator CLI, command registry, or installable
+        entrypoint
+      inventories:
+      - inventory_cli_ergonomics.py
+      - inventory_cli_side_effect_probes.py
+      detail_refs:
+      - cli-ergonomics-smells.md
+      - installable-cli-probes.md
+    - area: docs-readability
+      scope: first-touch/entrypoint docs or reader-facing public specs are in scope
+      inventories:
+      - inventory_entrypoint_docs_ergonomics.py
+      - inventory_public_spec_quality.py
+      detail_refs:
+      - entrypoint-docs-ergonomics.md
+      - public-spec-layering.md
+    - area: skills
+      scope: the repo authors public or support skills
+      inventories:
+      - inventory_skill_ergonomics.py
+      - suggest_public_skill_dogfood.py
+      detail_refs:
+      - skill-quality.md
+      - skill-ergonomics.md
+    - area: runtime-test-economics
+      scope: slow tests, runtime cost, budgets, or broad test/spec economics are in
+        scope
+      inventories:
+      - inventory_standing_gate_verbosity.py
+      - inventory_standing_test_economics.py
+      - inventory_command_dominance.py
+      - inventory_structural_waste.py
+      - inventory_ci_recoverable_gates.py
+      - render_runtime_summary.py
+      detail_refs:
+      - standing-gate-verbosity.md
+      - testability-and-selection.md
+      - proof-path-efficiency.md
+      - cost-dominance.md
+      - executable-spec-economics.md
+      - ci-recoverable-gate-triage.md
+    - area: agent-production-runtime
+      scope: repo evidence shows a production LLM/agent serving path (serving-path
+        client, model routing/fallback, runtime telemetry); never eval fixtures, skill
+        docs, or offline scaffolding
+      inventories:
+      - recommend_behavior_test.py
+      detail_refs:
+      - agent-production-runtime.md
+      - behavior-testing.md
+    - area: source-hygiene
+      scope: dual implementations, clone families, brittle source guards, lint suppressions,
+        dead code, gitignore hygiene, hardcoded polyglot discovery lists, or boundary-bypass
+        ratchets are in scope
+      inventories:
+      - inventory_dual_implementation.py
+      - inventory_brittle_source_guards.py
+      - inventory_lint_ignores.py
+      - inventory_nose_clones.py
+      - inventory_gitignore_scan_hygiene.py
+      - inventory_hardcoded_discovery.py
+      - run_dead_code_advisory.py
+      detail_refs:
+      - dual-implementation-parity.md
+      - brittle-source-guards.md
+      - lint-ignore-discipline.md
+      - dup-ratchet.md
+      - boundary-bypass-ratchet.md
+      - quality-signal-scorecard.md
+    - area: adapter-gate-design
+      scope: adapter policy or gate design is in scope
+      inventories:
+      - inventory_adapter_gate_design.py
+      detail_refs:
+      - adapter-gate-review.md
+    - area: security-supply-chain
+      scope: security posture or supply-chain proof separation is in scope
+      detail_refs:
+      - security-overview.md
+      - security-npm.md
+      - security-pnpm.md
+      - security-uv.md
+    - area: coverage-eval-depth
+      scope: coverage floors, prompt/content assets, or eval depth are in scope
+      detail_refs:
+      - coverage-floor-policy.md
+      - prompt-asset-policy.md
+  gate_classification:
+    closeout_states:
+      healthy: present, runnable, high-signal for the seam it covers
+      weak: present but easy to game, too shallow for the claimed confidence, duplicated
+        by a better gate, OR a green non-shallow gate STILL paying standing runtime
+        after a cheaper, more-direct proof now covers the same seam (cost-redundancy
+        alone makes a working gate weak)
+      missing: should exist for the current risk surface but is absent or only implied
+      deferred: useful later, not the next highest-leverage gate for the current state
+    note: 'these four states are the required ## Healthy / ## Weak / ## Missing /
+      ## Deferred closeout sections; classify every gate before recommending moves'
+    ranking_is_advisory: Recommended Next Quality Moves ordering is an inference-layer
+      proxy — answer its interpretation question for THIS repo before trusting the
+      rank
+    candidate_floor: exceptional; needs explicit north-star + floor-addition-restraint
+      provenance
+    detail_ref: references/gate-classification.md
+  automation_promotion:
+    cases:
+      AUTO_EXISTING: already enforced by a meaningful deterministic gate; do not re-report
+        as a manual finding without added repo interpretation
+      AUTO_CANDIDATE: should become a deterministic gate; propose the gate before
+        more policy prose
+      NON_AUTOMATABLE: still needs judgment/tradeoffs/human review; belongs in prose
+        findings and proposals
+    inference_layer_rule: for any inference-layer advisory (clone %, ergonomics heuristics,
+      rankings, length/pressure smells, runtime trends) answer its self-declared interpretation
+      question for THIS repo before repeating/ranking/escalating; each inventory emits
+      its own question at run time
+    detail_ref: references/automation-promotion.md
+  maintainer_local_enforcement:
+    field_discipline: record a Maintainer-Local Enforcement disposition; 'Unclear'
+      is not acceptable — default to `missing` until the gap is closed or explicitly
+      deferred with a reason
+    detail_ref: references/maintainer-local-enforcement.md
+    final_gates_detected:
+    - scripts/run-quality.sh
+    prompt: 'DETECTED a canonical final gate (scripts/run-quality.sh): before calling
+      operability healthy, record HOW it is enforced before push in maintainer clones
+      (checked-in hook + clone validator, a repo-owned installer, or an explicit documented
+      decision to omit hooks with a named CI owner). A green gate that clones can
+      push around is an enforcement gap that happens to compile.'
+declaration_lifecycle:
+  status: configured
+  adapter:
+    found: true
+    valid: true
+    path: /home/hwidong/codes/charness/.agents/quality-adapter.yaml
+    errors: []
+    warnings: []
+  presets:
+  - preset: python-quality
+    declaration_state: declared
+    repo_signal_detected: true
+    reconciliation_state: metadata-only
+    reconciliation_reason: preset declares no reconciliation prescription
+  - preset: specdown-quality
+    declaration_state: declared
+    repo_signal_detected: true
+    reconciliation_state: metadata-only
+    reconciliation_reason: preset declares no reconciliation prescription
+  commands:
+  - field: preflight_commands
+    command: python3 scripts/validate_maintainer_setup.py --repo-root .
+    declaration_state: declared
+    routing_state: routed
+    execution_state: not-run
+    packet_id: adapter-preflight-1
+  - field: preflight_commands
+    command: python3 scripts/doctor.py
+    declaration_state: declared
+    routing_state: routed
+    execution_state: not-run
+    packet_id: adapter-preflight-2
+  - field: gate_commands
+    command: ./scripts/run-quality.sh
+    declaration_state: declared
+    routing_state: routed
+    execution_state: not-run
+    packet_id: adapter-gate-1
+  - field: review_commands
+    command: ./scripts/run-quality.sh --review
+    declaration_state: declared
+    routing_state: routed
+    execution_state: not-run
+    packet_id: adapter-review-1
+  - field: security_commands
+    command: ./scripts/check-secrets.sh
+    declaration_state: declared
+    routing_state: routed
+    execution_state: not-run
+    packet_id: adapter-security-1
+  - field: security_commands
+    command: python3 scripts/check_supply_chain.py --repo-root .
+    declaration_state: declared
+    routing_state: routed
+    execution_state: not-run
+    packet_id: adapter-security-2
+  surfaces:
+  - surface: installable_cli
+    declaration_state: declared
+    routing_state: routed
+    packet_ids:
+    - adapter-cli-probe-1
+    - adapter-cli-probe-2
+    - adapter-cli-probe-3
+    - adapter-cli-probe-4
+  - surface: bundled_skill
+    declaration_state: declared
+    routing_state: routed
+    packet_ids:
+    - skill-ergonomics
+  - surface: AGENTS.md
+    kind: canonical_markdown_surface
+    declaration_state: declared
+    target_state: present
+    routing_state: routed
+    packet_ids:
+    - adapter-canonical-docs
+  - surface: CLAUDE.md
+    kind: canonical_markdown_surface
+    declaration_state: declared
+    target_state: present
+    routing_state: routed
+    packet_ids:
+    - adapter-canonical-docs
+  - surface: docs/handoff.md
+    kind: canonical_markdown_surface
+    declaration_state: declared
+    target_state: present
+    routing_state: routed
+    packet_ids:
+    - adapter-canonical-docs
+  skills:
+  - path: skills/public/achieve/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/announcement/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/create-cli/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/create-skill/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/critique/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/debug/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/gather/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/handoff/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/hitl/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/hotl/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/ideation/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/impl/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/issue/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/narrative/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/prove/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/quality/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/release/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/retro/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/setup/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/public/spec/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/support/markdown-preview/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  - path: skills/support/web-fetch/SKILL.md
+    kind: checked-in-skill
+    routing_state: routed
+    packet_id: skill-ergonomics
+  declared_skill_paths: []
+  unavailable_catalog_gates: []
+  gaps: []
+  applicable_catalog_gate_ids:
+  - read-only-quality
+  - runtime-summary
+  - regenerable-facts
+  - skill-ergonomics
+  - lesson-lifecycle-review
+skills_in_scope: true
+skill_scope_reason: found 22 checked-in skill package(s)
+sample_skill_paths:
+- skills/public/achieve/SKILL.md
+- skills/public/announcement/SKILL.md
+- skills/public/create-cli/SKILL.md
+- skills/public/create-skill/SKILL.md
+- skills/public/critique/SKILL.md
+- skills/public/debug/SKILL.md
+- skills/public/gather/SKILL.md
+- skills/public/handoff/SKILL.md
+structural_review_packet:
+  required: true
+  target_skill:
+    requested: null
+    status: unspecified
+    path: null
+    note: No target skill was provided; answer the structural packet for the selected
+      quality scope before recommending fixes.
+  write_artifact_signals:
+  - 'Target boundary:'
+  - 'Ambient repo findings:'
+  - 'prose review result:'
+  - 'structural review result:'
+  - 'Recommended Next Quality Moves:'
+  quality_move_card:
+    applies_to: recommended moves only
+    fields:
+    - capability_needed
+    - current_centers
+    - next_center
+    - transformation
+    - proof_boundary
+    - enforcement_posture
+    move_types:
+    - cleanup-delete
+    - merge-or-split-ownership
+    - helper-extraction
+    - interface-narrowing
+    - dogfood-or-evidence-packet
+    - gate-reuse
+    - floor-candidate
+    - defer-watch
+    - no-op
+    enforcement_postures:
+    - advisory
+    - describe-first
+    - existing-gate-reuse
+    - candidate-floor
+    - no-gate
+    default_enforcement_posture: advisory-or-no-gate
+    candidate_floor_requirement: explicit north-star plus floor-addition-restraint
+      record
+  questions:
+  - id: capability_needed
+    question: What user or downstream-agent capability is weak or missing for this
+      target?
+    artifact_signal: Record the capability before naming the move; do not start from
+      a gate or authoring form.
+  - id: sequencing_applicability
+    question: Does order affect correctness, uncertainty reduction, or downstream
+      unlocks here, or should the generative-sequence lens stay unused?
+    artifact_signal: Use ../../../shared/references/generative-sequence.md only when
+      the failure is sequencing-shaped.
+  - id: current_centers
+    question: Which current centers already help the capability, and which one should
+      be strengthened next?
+    artifact_signal: Record current centers and the next center before choosing a
+      transformation.
+  - id: quality_move_card
+    question: For each recommended quality move, what is the bounded transformation,
+      proof boundary, and enforcement posture?
+    artifact_signal: Apply the move card only to recommended moves, not every finding.
+  - id: enforcement_posture
+    question: Is the posture advisory, describe-first, existing-gate-reuse, candidate-floor,
+      or no-gate?
+    artifact_signal: Default missing or uncertain posture to advisory/no-gate; candidate-floor
+      requires north-star plus floor-addition-restraint provenance.
+  - id: authoring_form_relevance
+    question: Do helper ownership, core-vs-reference, dogfood, or ergonomics issues
+      explain the weak capability, or are they ambient/non-claims?
+    artifact_signal: Use authoring/form questions only when they explain the consumer
+      capability weakness.
+  interpretation:
+    measures: a required judgment packet over the target skill, not another heuristic
+      score
+    proxy_for: whether the quality run reached capability-first judgment before recommending
+      moves
+    blind_spots: the packet enforces that questions are answered, not that the answers
+      are correct; it must not become form-filling for every finding
+    interpretation_question: did the answers identify the next quality move or justify
+      no quality move with evidence?
+gate_plan: report_first
+phase_barriers:
+- Read declaration_lifecycle before gates; declared-only, unreachable, missing, and
+  not-run are not covered verdicts.
+- Read required_reads before broad gates.
+- The brief carries the load-bearing classification/automation/maintainer-enforcement
+  discipline and the inventory-dispatch routing index (concern area -> inventories
+  + detail_refs) inline; apply it and open a brief detail_ref only when its trigger
+  fires.
+- Answer structural_review_packet before broad recommendations; separate target findings
+  from ambient repo gate failures.
+- Run deterministic gates as evidence packets, then analyze the report against the
+  primer refs before fixing.
+- Use gate trust_model/cost_tier/parallel_group to decide whether to trust, parallelize,
+  or manually inspect a packet.
+- Open on-demand refs only when a concrete gate, inventory, source, or operator finding
+  matches their trigger.
+on_demand_reads:
+- path: references/inventory-dispatch.md
+  role: on-demand
+  trigger: a concern area needs its per-inventory review discipline or the clone-family/structural-signal
+    depth beyond the planner brief's dispatch index
+- path: references/gate-classification.md
+  role: on-demand
+  trigger: the planner brief's gate-state or weak-vs-missing discipline is contested,
+    or a candidate-floor recommendation needs its full provenance rule
+- path: references/automation-promotion.md
+  role: on-demand
+  trigger: adding a new advisory/inventory or inference-layer surface, or an inference-layer
+    advisory needs its full per-surface interpretation/registration protocol beyond
+    the brief
+- path: references/maintainer-local-enforcement.md
+  role: on-demand
+  trigger: a canonical final gate's pre-push enforcement, CI/local gate parity, or
+    gate-policy markers (scheduled-deeper-check, local-gate-subset-mirror) need judging
+    beyond the brief prompt
+- path: references/adapter-contract.md
+  role: on-demand
+  trigger: adapter missing, invalid, stale, or under-specified
+- path: references/adapter-gate-review.md
+  role: on-demand
+  trigger: adapter or gate recommendation needs enforcement-tier review
+- path: references/agent-production-runtime.md
+  role: on-demand
+  trigger: production agent runtime, provider policy, fallback, telemetry, or serving-path
+    risk
+- path: references/dup-ratchet.md
+  role: on-demand
+  trigger: dup-ratchet failure, scanner skew, baseline update, or clone-family interpretation
+- path: references/bootstrap-escalations.md
+  role: on-demand
+  trigger: bootstrap path needs non-default escalation, hidden setup work, adapter
+    repair, or operator-facing bootstrap judgment
+- path: references/bootstrap-posture.md
+  role: on-demand
+  trigger: quality adapter bootstrap or setup-state repair
+- path: references/boundary-bypass-ratchet.md
+  role: on-demand
+  trigger: boundary-bypass inventory, ratchet, or exemption review
+- path: references/brittle-source-guards.md
+  role: on-demand
+  trigger: brittle source guard finding or matcher migration
+- path: references/standing-gate-verbosity.md
+  role: on-demand
+  trigger: standing gate output, runtime, progress signal, or failure detail review
+- path: references/testability-and-selection.md
+  role: on-demand
+  trigger: slow tests, affected-test selection, mutation workload, or broad test economics
+- path: references/proof-path-efficiency.md
+  role: on-demand
+  trigger: a slow-proof fix changes a runner, wrapper, process boundary, validator
+    route, fixture runtime, or execution policy
+- path: references/cost-dominance.md
+  role: on-demand
+  trigger: a command is prescribed, queued, or spawned and a cheaper command already
+    proves the same thing
+- path: references/cautilus-on-demand.md
+  role: on-demand
+  trigger: cautilus evaluate fixture, observation, or skill-experiment is being considered
+- path: references/behavior-testing.md
+  role: on-demand
+  trigger: deterministic gates cannot honestly prove an agent/user behavior seam
+- path: references/ci-recoverable-gate-triage.md
+  role: on-demand
+  trigger: slow local gate pressure raises CI recoverability as an option
+- path: references/cli-ergonomics-smells.md
+  role: on-demand
+  trigger: CLI ergonomics, command archetype, or mutating-probe review
+- path: references/coverage-floor-policy.md
+  role: on-demand
+  trigger: coverage-floor inventory or policy finding
+- path: references/dual-implementation-parity.md
+  role: on-demand
+  trigger: dual implementation smell or parity-harness question
+- path: references/entrypoint-docs-ergonomics.md
+  role: on-demand
+  trigger: entrypoint documentation ergonomics review
+- path: references/executable-spec-economics.md
+  role: on-demand
+  trigger: executable-spec runtime, duplication, or layering review
+- path: references/installable-cli-probes.md
+  role: on-demand
+  trigger: installable CLI probe, doctor, help, or lifecycle ownership review
+- path: references/lint-ignore-discipline.md
+  role: on-demand
+  trigger: lint-ignore inventory or retained-suppression decision
+- path: references/mutation-testing.md
+  role: on-demand
+  trigger: mutation-testing adapter, workflow, summary, or sampling review
+- path: references/prompt-asset-policy.md
+  role: on-demand
+  trigger: prompt asset inventory or prompt-regression proof
+- path: references/public-spec-layering.md
+  role: on-demand
+  trigger: public spec layering, smoke duplication, or source-guard pressure review
+- path: references/quality-signal-scorecard.md
+  role: on-demand
+  trigger: structural quality cleanup candidate scoring
+- path: references/security-overview.md
+  role: on-demand
+  trigger: security posture or supply-chain proof separation is in scope
+- path: references/security-npm.md
+  role: on-demand
+  trigger: package.json, package-lock.json, npm audit, or npm supply-chain risk is
+    in scope
+- path: references/security-pnpm.md
+  role: on-demand
+  trigger: pnpm-lock.yaml, pnpm audit, or pnpm-managed supply-chain risk is in scope
+- path: references/security-uv.md
+  role: on-demand
+  trigger: uv.lock, pyproject uv configuration, or uv-managed supply-chain risk is
+    in scope
+- path: references/standing-doc-provenance.md
+  role: on-demand
+  trigger: standing-doc provenance finding or policy review
+- path: references/unit-test-quality.md
+  role: on-demand
+  trigger: unit test body quality or fixture/assertion review
+on_demand_trigger_map:
+  references/inventory-dispatch.md: a concern area needs its per-inventory review
+    discipline or the clone-family/structural-signal depth beyond the planner brief's
+    dispatch index
+  references/gate-classification.md: the planner brief's gate-state or weak-vs-missing
+    discipline is contested, or a candidate-floor recommendation needs its full provenance
+    rule
+  references/automation-promotion.md: adding a new advisory/inventory or inference-layer
+    surface, or an inference-layer advisory needs its full per-surface interpretation/registration
+    protocol beyond the brief
+  references/maintainer-local-enforcement.md: a canonical final gate's pre-push enforcement,
+    CI/local gate parity, or gate-policy markers (scheduled-deeper-check, local-gate-subset-mirror)
+    need judging beyond the brief prompt
+  references/adapter-contract.md: adapter missing, invalid, stale, or under-specified
+  references/adapter-gate-review.md: adapter or gate recommendation needs enforcement-tier
+    review
+  references/agent-production-runtime.md: production agent runtime, provider policy,
+    fallback, telemetry, or serving-path risk
+  references/dup-ratchet.md: dup-ratchet failure, scanner skew, baseline update, or
+    clone-family interpretation
+  references/bootstrap-escalations.md: bootstrap path needs non-default escalation,
+    hidden setup work, adapter repair, or operator-facing bootstrap judgment
+  references/bootstrap-posture.md: quality adapter bootstrap or setup-state repair
+  references/boundary-bypass-ratchet.md: boundary-bypass inventory, ratchet, or exemption
+    review
+  references/brittle-source-guards.md: brittle source guard finding or matcher migration
+  references/standing-gate-verbosity.md: standing gate output, runtime, progress signal,
+    or failure detail review
+  references/testability-and-selection.md: slow tests, affected-test selection, mutation
+    workload, or broad test economics
+  references/proof-path-efficiency.md: a slow-proof fix changes a runner, wrapper,
+    process boundary, validator route, fixture runtime, or execution policy
+  references/cost-dominance.md: a command is prescribed, queued, or spawned and a
+    cheaper command already proves the same thing
+  references/cautilus-on-demand.md: cautilus evaluate fixture, observation, or skill-experiment
+    is being considered
+  references/behavior-testing.md: deterministic gates cannot honestly prove an agent/user
+    behavior seam
+  references/ci-recoverable-gate-triage.md: slow local gate pressure raises CI recoverability
+    as an option
+  references/cli-ergonomics-smells.md: CLI ergonomics, command archetype, or mutating-probe
+    review
+  references/coverage-floor-policy.md: coverage-floor inventory or policy finding
+  references/dual-implementation-parity.md: dual implementation smell or parity-harness
+    question
+  references/entrypoint-docs-ergonomics.md: entrypoint documentation ergonomics review
+  references/executable-spec-economics.md: executable-spec runtime, duplication, or
+    layering review
+  references/installable-cli-probes.md: installable CLI probe, doctor, help, or lifecycle
+    ownership review
+  references/lint-ignore-discipline.md: lint-ignore inventory or retained-suppression
+    decision
+  references/mutation-testing.md: mutation-testing adapter, workflow, summary, or
+    sampling review
+  references/prompt-asset-policy.md: prompt asset inventory or prompt-regression proof
+  references/public-spec-layering.md: public spec layering, smoke duplication, or
+    source-guard pressure review
+  references/quality-signal-scorecard.md: structural quality cleanup candidate scoring
+  references/security-overview.md: security posture or supply-chain proof separation
+    is in scope
+  references/security-npm.md: package.json, package-lock.json, npm audit, or npm supply-chain
+    risk is in scope
+  references/security-pnpm.md: pnpm-lock.yaml, pnpm audit, or pnpm-managed supply-chain
+    risk is in scope
+  references/security-uv.md: uv.lock, pyproject uv configuration, or uv-managed supply-chain
+    risk is in scope
+  references/standing-doc-provenance.md: standing-doc provenance finding or policy
+    review
+  references/unit-test-quality.md: unit test body quality or fixture/assertion review

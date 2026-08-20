@@ -1,0 +1,4 @@
+command: python3 scripts/check_artifact_surface_preflight.py --repo-root . --path charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md --type critique
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:51:50+09:00
+exit_code: 0

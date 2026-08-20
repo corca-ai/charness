@@ -1,0 +1,2 @@
+KeyResolution(key='max_content_lines', state='reader', readers=('skills/public/handoff/scripts/resolve_adapter.py',), detail='parsed by 1 module(s) that read this adapter')
+KeyResolution(key='max_artifact_lines', state='reader', readers=('scripts/quality_adapter_lib.py', 'skills/public/debug/scripts/resolve_adapter.py'), detail='parsed by 2 module(s) that read this adapter')

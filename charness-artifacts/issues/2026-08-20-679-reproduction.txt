@@ -1,0 +1,182 @@
+probe_root: /tmp/charness-679-probe.bFbbDk
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:48:53+09:00
+
+CASE missing adapter
+found: false
+valid: true
+path: null
+data:
+  version: 1
+  repo: missing
+  language: en
+  output_dir: charness-artifacts/impl
+  verification_tools: []
+  ui_verification_tools: []
+  verification_install_proposals: []
+  truth_surfaces: []
+errors: []
+warnings:
+- No impl adapter found. Using inferred defaults and manual verification discovery.
+- Create .agents/impl-adapter.yaml to record repo-preferred self-verification tools.
+searched_paths:
+- /tmp/charness-679-probe.bFbbDk/missing/.agents/impl-adapter.yaml
+field_state:
+  verification_tools: unset
+  ui_verification_tools: unset
+  verification_install_proposals: unset
+  truth_surfaces: unset
+resolve_missing_exit: 0
+/tmp/charness-679-probe.bFbbDk/missing/.agents/impl-adapter.yaml
+init_missing_exit: 0
+found: true
+valid: true
+path: /tmp/charness-679-probe.bFbbDk/missing/.agents/impl-adapter.yaml
+data:
+  version: 1
+  repo: missing
+  language: en
+  output_dir: charness-artifacts/impl
+  verification_tools: []
+  ui_verification_tools: []
+  verification_install_proposals: []
+  truth_surfaces: []
+  preset_id: portable-defaults
+  customized_from: portable-defaults
+errors: []
+warnings:
+- No verification_tools configured; impl bootstrap must survey repo-local proof paths
+  manually
+- No ui_verification_tools configured; UI work may rely on weaker generic browser-path
+  discovery
+searched_paths:
+- /tmp/charness-679-probe.bFbbDk/missing/.agents/impl-adapter.yaml
+field_state:
+  verification_tools: explicit-empty
+  ui_verification_tools: explicit-empty
+  verification_install_proposals: explicit-empty
+  truth_surfaces: explicit-empty
+resolve_after_init_exit: 0
+
+CASE valid customized adapter
+found: true
+valid: true
+path: /tmp/charness-679-probe.bFbbDk/valid/.agents/impl-adapter.yaml
+data:
+  version: 1
+  repo: charness
+  language: en
+  output_dir: charness-artifacts/impl
+  verification_tools: []
+  ui_verification_tools: []
+  verification_install_proposals: []
+  truth_surfaces: []
+  preset_id: portable-defaults
+  customized_from: portable-defaults
+errors: []
+warnings:
+- No verification_tools configured; impl bootstrap must survey repo-local proof paths
+  manually
+- No ui_verification_tools configured; UI work may rely on weaker generic browser-path
+  discovery
+searched_paths:
+- /tmp/charness-679-probe.bFbbDk/valid/.agents/impl-adapter.yaml
+field_state:
+  verification_tools: explicit-empty
+  ui_verification_tools: explicit-empty
+  verification_install_proposals: explicit-empty
+  truth_surfaces: explicit-empty
+resolve_valid_exit: 0
+Adapter already exists at /tmp/charness-679-probe.bFbbDk/valid/.agents/impl-adapter.yaml. Use --force to overwrite.
+init_valid_exit: 1
+found: true
+valid: true
+path: /tmp/charness-679-probe.bFbbDk/valid/.agents/impl-adapter.yaml
+data:
+  version: 1
+  repo: charness
+  language: en
+  output_dir: charness-artifacts/impl
+  verification_tools: []
+  ui_verification_tools: []
+  verification_install_proposals: []
+  truth_surfaces: []
+  preset_id: portable-defaults
+  customized_from: portable-defaults
+errors: []
+warnings:
+- No verification_tools configured; impl bootstrap must survey repo-local proof paths
+  manually
+- No ui_verification_tools configured; UI work may rely on weaker generic browser-path
+  discovery
+searched_paths:
+- /tmp/charness-679-probe.bFbbDk/valid/.agents/impl-adapter.yaml
+field_state:
+  verification_tools: explicit-empty
+  ui_verification_tools: explicit-empty
+  verification_install_proposals: explicit-empty
+  truth_surfaces: explicit-empty
+resolve_after_valid_init_exit: 0
+valid_sha_before: 8f2f09505d275bd8ac83bc712ec5c2a578e03e10d64ffd296c638cb0144bedbc
+valid_sha_after: 8f2f09505d275bd8ac83bc712ec5c2a578e03e10d64ffd296c638cb0144bedbc
+valid_stat_before: 242:1787219333:664
+valid_stat_after: 242:1787219333:664
+valid_bytes_match_source_exit: 0
+
+CASE invalid adapter
+found: true
+valid: false
+path: /tmp/charness-679-probe.bFbbDk/invalid/.agents/impl-adapter.yaml
+data:
+  version: 1
+  repo: invalid
+  language: en
+  output_dir: charness-artifacts/impl
+  verification_tools: []
+  ui_verification_tools: []
+  verification_install_proposals: []
+  truth_surfaces: []
+errors:
+- version must be an integer
+warnings:
+- No verification_tools configured; impl bootstrap must survey repo-local proof paths
+  manually
+- No ui_verification_tools configured; UI work may rely on weaker generic browser-path
+  discovery
+searched_paths:
+- /tmp/charness-679-probe.bFbbDk/invalid/.agents/impl-adapter.yaml
+field_state:
+  verification_tools: unset
+  ui_verification_tools: unset
+  verification_install_proposals: unset
+  truth_surfaces: unset
+resolve_invalid_exit: 0
+Adapter already exists at /tmp/charness-679-probe.bFbbDk/invalid/.agents/impl-adapter.yaml. Use --force to overwrite.
+init_invalid_exit: 1
+found: true
+valid: false
+path: /tmp/charness-679-probe.bFbbDk/invalid/.agents/impl-adapter.yaml
+data:
+  version: 1
+  repo: invalid
+  language: en
+  output_dir: charness-artifacts/impl
+  verification_tools: []
+  ui_verification_tools: []
+  verification_install_proposals: []
+  truth_surfaces: []
+errors:
+- version must be an integer
+warnings:
+- No verification_tools configured; impl bootstrap must survey repo-local proof paths
+  manually
+- No ui_verification_tools configured; UI work may rely on weaker generic browser-path
+  discovery
+searched_paths:
+- /tmp/charness-679-probe.bFbbDk/invalid/.agents/impl-adapter.yaml
+field_state:
+  verification_tools: unset
+  ui_verification_tools: unset
+  verification_install_proposals: unset
+  truth_surfaces: unset
+resolve_after_invalid_init_exit: 0

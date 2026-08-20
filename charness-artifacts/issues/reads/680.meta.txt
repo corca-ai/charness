@@ -1,0 +1,4 @@
+command: python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 680
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:47:18+09:00
+exit_code: 0

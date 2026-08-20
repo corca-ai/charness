@@ -1,0 +1,81 @@
+ok: true
+repo: corca-ai/charness
+number: 677
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '677'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Structural pattern\n\nA durable artifact (`charness-artifacts/**`, and\
+    \ goal/critique/quality/retro records\ngenerally) asserts `path:line` facts about\
+    \ the tree in prose. Nothing reads those\nassertions, so a wrong citation is corrected\
+    \ only by a reviewer who happens to check —\nand the reviewer is the most expensive\
+    \ detector this repo owns.\n\n## Triggering instances\n\nAll three from one shaping\
+    \ session (`2026-08-19`, goal\n`charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`),\
+    \ found by two\nbounded reviewers and re-verified by hand:\n\n| citation | claimed\
+    \ | actual |\n|---|---|---|\n| `scripts/adapter_lib.py:188` | \"`resolve_declared_adapter`\
+    \ is the combined form the sixteen `#673` resolvers use\" | one caller in the\
+    \ repo (`resolve_adapter_payload`, line 241). `adapter_version_verdict.py:134-137`\
+    \ says the door is REACHABLE for sixteen — reachable is not called-by |\n| `scripts/slice_closeout_advisories.py:517-586`\
+    \ | \"`advise_repair_parity` … silent with no snapshot\" | lines 555-568 are a\
+    \ repair that REMOVED that silence and print the reason by name. The claim was\
+    \ read off the function's stale docstring (529-530) over the live code below it\
+    \ |\n| `scripts/check_adapter_consumer_classification.py:115-116` | \"four consumers\
+    \ read through them\" (the gate's OWN comment, which the artifact then copied)\
+    \ | five — `validate_adapters.py:302` was missing, and it calls `load_yaml_file`\
+    \ bare a second time at line 292 |\n\nNine findings in that session were citation\
+    \ defects; four were load-bearing on a design\ndecision. The last row is the sharpest:\
+    \ the wrong count lives in a comment inside the\ngate whose stated rule is that\
+    \ a count must never be read off prose.\n\n## Proposed direction (design call\
+    \ is the operator's)\n\nA deliberately SYNTACTIC check over agent-authored artifacts:\
+    \ for each `path:line` an\nartifact asserts, does the path exist, does the line\
+    \ exist, and does that line contain\nthe identifier the surrounding sentence names.\
+    \ It does not judge whether the claim is\ntrue — the third row above would still\
+    \ pass, since line 517 exists and the function is\nnamed there. It would have\
+    \ caught the first row and the general dead-reference class.\n\nTwo things to\
+    \ settle before building:\n\n1. **Reconcile with the semantic detector.** Slice\
+    \ 1 of\n   `charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`\
+    \ reads a diff\n   and asks whether a repair's own code contains the class its\
+    \ new refusal names. Both\n   read a surface and ask \"does the cited thing contain\
+    \ what the text claims\". Shipping\n   both without deciding whether they are\
+    \ one engine is `one-engine-per-pattern` at the\n   tooling layer.\n2. **Where\
+    \ it runs.** Slice-closeout advisory (reporting-only) is the obvious layer;\n\
+    \   pre-commit would redden the corpus of historical artifacts, which must not\
+    \ be\n   rewritten.\n\n## Relationship to existing work\n\nSame family as #599\
+    \ (\"no command answers 'what reads this?'\"). The one working precedent\nin this\
+    \ repo is `check_probe_record.py --replay-stimulus`, which mechanically replays\
+    \ a\nrecord's own claims — and it exists because thirteen review rounds paid for\
+    \ it by hand.\n\n## Not claimed\n\nThis does not claim the check would have caught\
+    \ all nine defects; three of the nine were\nsemantic (an overstated scope, a wrong\
+    \ count copied from a real comment, an evidence\nchannel that structurally cannot\
+    \ answer what it was pointed at) and are invisible to a\nsyntactic reader. It\
+    \ claims the syntactic subset is real, recurring, and cheap.\n\nRecorded from\
+    \ `charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md`\n\
+    `## Sibling Search` and `## Portable Candidate`."
+  comments: []
+  createdAt: '2026-08-19T10:10:31Z'
+  labels: []
+  number: 677
+  state: OPEN
+  title: A durable artifact asserts path:line facts about the tree and nothing reads
+    them
+  updatedAt: '2026-08-19T10:10:31Z'
+  url: https://github.com/corca-ai/charness/issues/677
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

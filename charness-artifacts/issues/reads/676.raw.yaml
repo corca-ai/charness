@@ -1,0 +1,148 @@
+ok: true
+repo: corca-ai/charness
+number: 676
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '676'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## What was measured
+
+
+    One goal (`2026-08-19-adapter-debt-tooling-and-remainder`) produced **six independent
+
+    instances of a repair shipping the class it repaired**, across three unrelated
+    surfaces.
+
+    Every one was found by the SECOND bounded review round — the most expensive detector
+    this
+
+    repo owns — and none by a gate.
+
+
+    | slice | surface | the repair | the class it carried |
+
+    |---|---|---|---|
+
+    | 1 (`#674`) | probe-record detector | variant generator for a declaration ablation
+    | emitted a YAML **flow sequence**, the exact shape the detector exists to catch,
+    so it measured nothing |
+
+    | 1 | same | the fix for that | **suffixed the inline comment** instead of the
+    value, and `strip_inline_comment` removes it again — a literal no-op |
+
+    | 1 | same | the fix for that | **type-invalid variants** for booleans, floats,
+    quoted and block scalars, so the validator fell back to the same default |
+
+    | 2 (`#673`) | adapter loader contract | a new consumer guard | invented a **third
+    refusal wording** where `unhonored_cause` / `unhonored_remedy` exist so callers
+    do not |
+
+    | 2 | same | the unregister-on-failure arm | a bare `del sys.modules[key]` reproduces
+    **"the second error hiding the first"**, the shape its own comment two lines above
+    names |
+
+    | 3 (`#675`) | census gate | the level vocabulary | **mislabelled its own first
+    row** (`guarded-by-caller` for a row covered by its callee), and the gate **forbade
+    a legitimate two-hop chain**, so the manifest quietly omitted a real caller rather
+    than recording it |
+
+
+    The last one is the sharpest: a gate that refuses a legitimate shape does not
+    produce a
+
+    refusal, it produces an input bent to fit the gate. That is the measurement distortion
+
+    `#675` was filed to stop, reproduced by `#675`''s own resolution.
+
+
+    ## Why this is not "write more carefully"
+
+
+    Three unrelated subsystems, one goal, six instances. That makes it a property
+    of how repairs
+
+    are written here rather than of any one author or surface. And the current detector
+    is a
+
+    bounded review round: six rounds across nine reviewer reports, three of which
+    existed only
+
+    to read the previous round''s repairs.
+
+
+    The pattern also has a stable shape worth exploiting: **the repair''s own new
+    code contains
+
+    an instance of the input class its new refusal names.** That is checkable without
+
+    understanding the domain.
+
+
+    ## Proposed direction (design call is the operator''s)
+
+
+    A pre-commit or slice-closeout affordance rather than another review round: when
+    a slice''s
+
+    diff ADDS a refusal, emit the refused input class and ask whether the repair''s
+    own new code
+
+    contains it. It does not need to be a blocker to pay for itself — the six instances
+    above
+
+    were all visible from the diff plus the refusal message.
+
+
+    Designed as slice 1 of
+
+    `charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`.
+
+
+    ## Not claimed
+
+
+    This does not say the six instances were avoidable by more care; each was found
+    and fixed
+
+    before shipping, by the process working as designed. It says the process that
+    found them is
+
+    the most expensive one available, and that the pattern is regular enough to be
+    worth a
+
+    cheaper detector.
+
+
+    Recorded from `charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md`
+
+    `## Sibling Search` and `## Persisted`.
+
+    '
+  comments: []
+  createdAt: '2026-08-19T07:50:35Z'
+  labels: []
+  number: 676
+  state: OPEN
+  title: A repair keeps shipping the class it repairs, and only the second review
+    round catches it
+  updatedAt: '2026-08-19T07:50:35Z'
+  url: https://github.com/corca-ai/charness/issues/676
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

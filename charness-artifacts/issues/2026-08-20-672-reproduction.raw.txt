@@ -1,0 +1,41 @@
+target_kind: symbol
+target: listed_skill_ids
+listing: git
+files_scanned: 6108
+reference_count: 36
+reference_kinds:
+  definition: 1
+  direct-name: 6
+  import: 1
+  string-literal: 28
+files_with_references:
+- charness-artifacts/audit/2026-08-10-umbrella-class-survival-review.md
+- charness-artifacts/critique/2026-08-11-deletable-surfaces-sweep.md
+- charness-artifacts/critique/2026-08-11-umbrella-class-disposition-plan.md
+- charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md
+- charness-artifacts/issues/reads/584.raw.yaml
+- charness-artifacts/issues/reads/599.raw.yaml
+- charness-artifacts/issues/reads/672.raw.yaml
+- charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md
+- scripts/eval_setup.py
+- scripts/what_reads_this.py
+- skills/public/setup/scripts/render_skill_routing.py
+- tests/quality_gates/test_setup_render_skill_routing.py
+- tests/test_what_reads_this.py
+unscanned_surfaces:
+- the exported `plugins/**` mirror, which reads what the source reads (pass --include-mirrors
+  to include it)
+- git history — a consumer in a deleted or older revision is invisible here
+- consumer repositories outside this checkout, including installed copies of this
+  package
+- 'names composed at runtime: f-strings, `getattr`, and paths built from variables'
+- binary files and any file that is not valid UTF-8
+- '`node_modules/**`, `mutants/**`, and cache directories, which are vendored or scratch
+  copies'
+- 'files whose extension is outside this tool''s text allowlist: tracked `.jsonl`
+  ledgers and `.html` templates are valid UTF-8 and are NOT scanned'
+- 'for a path query: extension-only globs such as `*.json`, which match this file
+  but say nothing about it'
+- 'for a path query: globs written outside source, config, and test files — a pattern
+  in prose is not a program that opens the file'
+zero_result_caveat: null

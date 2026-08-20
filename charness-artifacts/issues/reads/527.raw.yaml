@@ -1,0 +1,255 @@
+ok: true
+repo: corca-ai/charness
+number: 527
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '527'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 1
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## 관찰 대상
+
+
+    외부 비교 기준: [mattpocock/skills](https://github.com/mattpocock/skills) (로컬 `../skills`,
+    HEAD 기준).
+
+
+    | | skills (A) | charness (B) |
+
+    |---|---|---|
+
+    | 공개 스킬 수 | 35 | 22 (`skills/public`) |
+
+    | SKILL.md 총 라인 | 2,381 | 3,428 |
+
+    | 스킬 트리 파일 수 | — | 928 (`skills/**`, md 23,432줄) |
+
+    | 사람이 읽는 스킬별 문서 | 25/25 (100%) | 0/22 |
+
+    | 스킬 성숙도 축 | 5개 버킷 + 승격 규칙 | 없음 (public/support/shared는 성숙도 아님) |
+
+    | 호출 모드 잠금 필드 | 9개 스킬에 적용 | 없음 |
+
+
+    격차 대부분을 만드는 구조적 차이 하나: **A는 "사람이 이 스킬을 쓸지 판단하려고 읽는 것"과 "에이전트가 실행하는 것"을 서로 다른 두
+    아티팩트로 분리하고 템플릿으로 강제한다**(`SKILL.md` vs `docs/<bucket>/<skill>.md`, 규약은 `.agents/writing-docs.md`
+    96줄). charness에는 에이전트 실행 절반만 있다.
+
+
+    이 이슈는 관찰 기록 + 제안이다. 채택 시 관찰 1·2·3은 각각 별도 이슈로 쪼개는 게 맞다.
+
+
+    ## 관찰
+
+
+    ### 1. 공개 스킬 22개 중 사람용 판단 문서가 0개다
+
+
+    - A: `.agents/writing-docs.md`가 승격 버킷 스킬마다 `docs/<bucket>/<skill>.md`를 강제하고, 4개
+    섹션(What it does / When to reach for it / Common questions / It''s working if)을
+    필수로 둔다. `docs/engineering/` 18개 + `docs/productivity/` 7개 = 25개로 `.claude-plugin/plugin.json`의
+    엔트리와 1:1.
+
+    - B: `find skills/public -name ''*.md'' ! -name SKILL.md` → 182개, **전부 `references/*.md`(에이전트용
+    절차)**. `docs/*.md` 33개는 전부 메인테이너/설계 문서(`deferred-decisions.md`, `prescribed-skill-closeout-contract.md`,
+    `product-success-metrics.md`).
+
+    - 결과: 사용자가 `impl` / `debug` / `achieve` 중 무엇을 쓸지 판단할 때 읽을 문서가 README의 한 줄 불릿과
+    `SKILL.md` 본문뿐이다.
+
+
+    ### 2. "It''s working if" 신호가 리포 어디에도 없다
+
+
+    `grep -ril "working if" docs skills README.md AGENTS.md` → 0건. A는 이 섹션을 "SKILL.md를
+    열지 않고 확인 가능한 관찰 신호"로 정의하고 필수 두 섹션 중 하나로 둔다.
+
+
+    charness의 `prove` / `hotl`은 **에이전트가 자기 자신에게 강제하는 계약**이지, 사람이 진행 중인 세션을 훑어보고 "지금
+    제대로 굴러가는 중인가"를 판정하는 평문 체크리스트가 아니다. 둘은 다른 물건이고, 후자가 없다.
+
+
+    ### 3. 호출 모드가 하네스에 의해 강제되지 않는다
+
+
+    - A: `.agents/invocation.md`(20줄)가 `disable-model-invocation: true`(frontmatter)
+    + `policy.allow_implicit_invocation: false`(`agents/openai.yaml`) 쌍을 잠금으로 규정,
+    9개 스킬에 적용.
+
+    - B: `grep -ril "disable-model-invocation\|allow_implicit_invocation" .` → 0건.
+    `skills/public/release/SKILL.md`의 frontmatter는 `name` + `description`뿐이다.
+
+    - 가장 파괴적인 두 스킬의 게이트가 본문 산문에만 있다: `skills/public/release/SKILL.md:61`("Do not push,
+    tag, or announce a release without explicit user confirmation"), `skills/public/issue/SKILL.md:54`.
+    모델이 조용히 건너뛸 수 있는 층이다.
+
+    - 이건 charness 자신의 선호(증거 아티팩트, critique 게이트, closeout 원장 — 신뢰 대신 강제 검사)와 정면으로 어긋난다.
+    문서 격차가 아니라 안전 격차다.
+
+
+    ### 4. 스킬 성숙도/은퇴 경로가 없다
+
+
+    - A: `CLAUDE.md`가 5개 버킷과 승격 규칙을 정의. `skills/in-progress/README.md`는 베타 계약을 평문으로("plugin/README에서
+    제외, 경고 없이 바뀌거나 사라질 수 있음"), `skills/deprecated/README.md`는 은퇴 계약을 3줄로 명시.
+
+    - B: 유일한 분류축은 public/support/shared(`docs/support-skill-policy.md`)이고 이건 성숙도가
+    아니라 개념-vs-도구 축이다. `grep -ril "incubating\|experimental" docs AGENTS.md README.md`
+    → 0건. 검증 안 된 공개 스킬을 피드백용으로 내보내는 절차도, 자를 때의 계약도 없다.
+
+
+    ### 5. README 첫 화면이 아픔 대신 기계와 조직 브랜딩으로 시작한다
+
+
+    - A: `README.md:15-17`에서 통증과 차별점("not vibe coding", 무거운 프레임워크에 대한 입장)을 두 문장으로
+    말하고 25줄에서 설치로 넘어간다.
+
+    - B: `README.md:3-4`는 메커니즘만("repo instructions, skills, scripts, checks를 반복 가능한
+    워크플로로"), 이어서 Corca / AX팀 / 핵심 철학, 그리고 추상 명사 8개짜리 Core Concepts 리스트. **누가 어떤 통증
+    때문에 이걸 쓰는지가 첫 화면에 없다.** 실제 대상 독자 정의는 `docs/product-success-metrics.md:30`에 있는데
+    내부 baseline 추적 문서에 묻혀 있다. README 스스로 자기를 "first-touch orientation surface"라 부르는데도
+    그렇다.
+
+
+    ### 6. `charness doctor`는 A에 없는 우위인데 온보딩에서 저평가돼 있다
+
+
+    `README.md:42-53`의 `charness doctor` / `charness update`는 구조화 YAML 출력 + `--detail`에
+    `scripts/doctor.py`, `scripts/doctor_lib.py`, 테스트까지 붙은 실물이다. A에는 소비자용 등가물이 없다(`claude
+    plugin validate`는 메인테이너 전용). 그런데 B에서는 일반 CLI 명령 불릿 중 하나로 나열될 뿐, "설치 직후 이걸 실행해
+    성공을 확인하라"로 프레이밍되지 않는다.
+
+
+    ## 제안 (의존 순서)
+
+
+    1. **[small] 파괴적 스킬의 호출 모드 게이트 결정** — `release`, `issue`(close/resolve)에 하네스가
+    읽는 필드 추가(frontmatter 또는 어댑터 정책). 22개 전부가 아니라 소수 스킬로 한정. 문서 격차가 아니라 정확성/안전 격차이므로
+    가장 상류. → 관찰 3.
+
+    2. **[medium] charness 고유의 최소 사람용 문서 템플릿 정의** — A의 4섹션이 아니라 2섹션: "무엇을 하는가 / 형제
+    스킬 대신 언제 집는가"와 "It''s working if"(SKILL.md 없이 확인 가능한 신호). 22개를 템플릿 없이 쓰면 드리프트가
+    확정이므로 3번보다 먼저. 산출물: `docs/writing-skill-docs.md`.
+
+    3. **[large] 공개 스킬 22개 사람용 문서 백필** — `docs/skills/<name>.md`. "언제 집는가"와 실제 질문은
+    `gh issue list` / `handoff` / `retro` 아티팩트에서 채굴(A의 개인 위키 의존은 복제하지 않는다). `SKILL.md`/`references`와
+    제3의 진실 소스가 되지 않도록 `docs/duplicate-detection-strategy.md`의 중복 스캐너를 통과시킬 것.
+
+    4. **[small] README 재배열** — 설치 블록 바로 뒤에 "지금 `charness doctor`를 실행해 설치를 확인하라".
+    독립적, 언제든 랜딩 가능. → 관찰 6.
+
+    5. **[small] Quick Start 앞에 통증/대상 독자 2~4문장** — `docs/product-success-metrics.md:30-45`의
+    내용을 평문으로 옮기면 된다. 순수 산문 재배열. → 관찰 5.
+
+    6. **[medium] 성숙도 축 추가** — `docs/support-skill-policy.md`의 States에 "incubating"
+    추가 + 공개 스킬 은퇴 계약 3줄. 1번과 같은 per-skill 메타데이터 표면에 얹힐 가능성이 높으니 1번 뒤에.
+
+
+    ## 검토 후 기각한 것
+
+
+    - **모든 SKILL.md에서 Python bootstrap을 걷어내고 A처럼 산문 워크플로로** — 기각. bootstrap은 A가 구조적으로
+    갖지 않는 문제(다중 런타임 `$SKILL_DIR` 해석, 어댑터 기반 리포별 커스터마이즈, 감사 아티팩트 스캐폴딩)를 담당한다. 비용 축은
+    `scripts/run_skill_efficiency_ab.py`가 이미 측정 중이다.
+
+    - **`ask-matt`류 독립 라우터 스킬 신설** — 기각. `docs/workflow-routes.md`(75줄)와 `AGENTS.md`의
+    Work Phase Map이 같은 땅을 덮고, `AGENTS.md:23`은 "긴 체크인 카탈로그로 만들지 말 것"을 명시적 설계 입장으로 못박고
+    있다. `scripts/capability_catalog.py`와도 중복.
+
+    - **`debug`/`quality` 도입부 산문을 라우터 문서로 추출** — 기각. 정독해 보면 대부분이 제거 가능한 철학이 아니라 교차
+    스킬 조율 포인터이고, 파일 하나만 로드하는 bounded 서브에이전트가 그걸 잃는다. 추출이 필요하면 2026-06-23 quality-catalog-redesign이
+    `references/catalog.yaml`로 옮긴 선례를 따를 것.
+
+    - **setup을 A의 3문항 인터뷰로 축소** — 기각. 근거로 삼은 "스크립트 9개" 주장이 검증 과정에서 틀렸다(대부분 선택적 seam).
+    남는 실제 격차는 "A의 질문에는 기본값이 명시돼 있고 `greenfield-flow.md`의 질문에는 없다" 하나뿐이며 별건으로 처리 가능.
+
+    - **A의 managed-vs-editable 설치 철학 문구 복제** — 기각. A는 동일 파일을 편집 의미가 반대인 두 경로로 배포하기
+    때문에 필요한 문구다. charness에는 그 이중성이 없다.
+
+
+    ## 복제하면 안 되는 것
+
+
+    - A의 퍼블리싱 규약을 문자 그대로(aihero.dev 절대 링크 강제, H1 금지, 저자 언급 금지, 특정 외부 "AI Coding Dictionary"
+    링크 의무). 뒤에 사이트가 없는 상태에서 가져오면 기능 없는 제약만 남는다.
+
+    - A의 `~/repos/matt/personal-wiki` 같은 비버전 개인 머신 경로를 질문 소스로 삼는 방식. 팀 리포에서 재현·감사
+    불가.
+
+    - A의 문서 길이를 목표치로 삼는 것. A의 스킬은 얕고 페이지는 9~13KB인데 `skills/public/achieve`는 reference만
+    8개다. 1:1 길이 이식은 복잡도를 축소 보고하게 된다.
+
+    - 설치 후 검증 없는 A의 모델. `charness doctor`는 이미 우위인 지점이므로 약화시키지 말 것.
+
+
+    ## 열린 질문
+
+
+    1. 호출 모드 게이트(1번)는 SKILL.md frontmatter, 어댑터 정책, capability catalog 중 어디에 두는가.
+    그리고 `release`/`issue` 외에 무엇을 잠글지 누가 정하는가.
+
+    2. 22개 문서(3번)의 소유자는 누구이며, `create-skill` 저작 계약의 상시 요구사항이 되는가 아니면 썩을 수 있는 일회성 백필인가.
+
+    3. "It''s working if"는 독립 문서인가, `prove` 원장에 접붙이는가. 후자면 `prove`의 중복본이 되지 않게 구조적으로
+    어떻게 분리하는가.
+
+    4. 22개 스킬 규모에서 성숙도 축(6번)의 태깅 오버헤드가 값을 하는가, 아니면 이른 프로세스인가.
+
+
+    ---
+
+
+    <sub>비교 관찰은 dynamic workflow(sonnet, 25 에이전트: 관찰 4축 → 발견 20건 → 반증 패스 → 종합)로 수행.
+    반증 패스에서 5건 기각, 3개 에이전트는 스키마 재시도 한도 초과로 실패해 해당 발견은 반증 검증 없이 제외됨.</sub>
+
+    '
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOifMYw
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: 'Backlog-cohort disposition: this issue remains OPEN as an operator-owned
+      `unproven-defer`, not a closure claim. The fresh issue re-read confirms it is
+      an enhancement proposal with no comments and four unresolved product choices:
+      invocation-lock owner/scope, human documentation lifecycle/scope, observable
+      success signal, and maturity/retirement policy.\n\nDecision brief: `charness-artifacts/issue/2026-08-13-issue-527-brief.md`
+      at local commit `c992c88f`. Existing release/issue confirmation and closeout
+      boundaries remain in force; this carrier does not claim a reproduced escape
+      or a harness field decision.\n\nOwner: repository operator. Revisit before #527
+      moves into an implementation brief, or when the operator selects a minimum viable
+      boundary. No push, release, hosted proof, or issue closure is claimed.'
+    createdAt: '2026-08-12T18:02:07Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/527#issuecomment-5270654051
+    viewerDidAuthor: true
+  createdAt: '2026-08-06T23:01:15Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACkYd9IA
+    name: enhancement
+    description: ''
+    color: ededed
+  number: 527
+  state: OPEN
+  title: 사람이 스킬을 고를 때 읽을 문서가 0개, 파괴적 스킬의 호출 잠금도 0개 — mattpocock/skills 대조 관찰
+  updatedAt: '2026-08-12T18:02:08Z'
+  url: https://github.com/corca-ai/charness/issues/527
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

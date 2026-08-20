@@ -1,0 +1,4 @@
+command: python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --detail
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:45:50+09:00
+exit_code: 0

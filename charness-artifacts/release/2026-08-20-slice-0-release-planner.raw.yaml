@@ -1,0 +1,170 @@
+schema_version: release.run_plan.v1
+envelope_version: charness.run_plan_envelope.v1
+required_reads:
+- path: references/index.md
+  why: Manual progressive-disclosure map for release references.
+  size_bytes: 1030
+- path: references/version-policy.md
+  why: Use when choosing or checking a target bump.
+  size_bytes: 3090
+- path: references/critique-boundary.md
+  why: Read before task-completing release mutation; planner currently lacks critique
+    proof.
+  size_bytes: 8691
+- path: references/publication-boundary.md
+  why: Tag, workflow, public visibility, and issue-close boundaries are not terminal
+    green.
+  size_bytes: 6849
+- path: references/install-refresh.md
+  why: Adapter declares a post-publish install refresh command.
+  size_bytes: 1727
+- path: references/real-host-proof.md
+  why: Adapter declares release-time real-host proof triggers.
+  size_bytes: 2404
+next_action:
+  kind: inspect_only
+  reason: No target selector was provided; review current release state and choose
+    publish-current/part/set-version.
+gate_packets:
+- id: current-release
+  trust_model: hard drift facts; its embedded fresh-checkout block is `not_established`
+    (declared, not run here)
+  cost_tier: cheap
+  command: python3 "$SKILL_DIR/scripts/current_release.py" --repo-root .
+  purpose: release surface, version drift, worktree, and declared fresh-checkout probes
+  run_when: always before release mutation
+- id: fresh-checkout-probes
+  trust_model: executed probe verdict; exit 1 on a failing probe, exit 3 if invoked
+    without --run-probes
+  cost_tier: cheap
+  command: python3 "$SKILL_DIR/scripts/check_fresh_checkout_probes.py" --repo-root
+    . --run-probes --detail
+  purpose: execute the repo-declared fresh-checkout probes in a temp clone of this
+    branch
+  run_when: always; the publish helper re-runs them after the version bump, before
+    tag push
+- id: real-host-proof
+  trust_model: trigger detector, not the proof itself; exit 3 and no `required` key
+    when the changed scope is empty
+  cost_tier: cheap
+  command: python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root . --detail
+  purpose: determine whether release-time human/host proof is required
+  run_when: always before closeout claims
+- id: requested-review-gate
+  trust_model: advisory when no requested_review_commands are configured
+  cost_tier: cheap
+  command: python3 "$SKILL_DIR/scripts/check_requested_review_gate.py" --repo-root
+    . --skip-commands --detail
+  purpose: surface configured requested-review enforcement posture
+  run_when: before publish; execute commands in the publish helper
+repo_root: /home/hwidong/codes/charness
+mode: inspect
+branch: main
+remote: origin
+adapter:
+  found: true
+  valid: true
+  path: /home/hwidong/codes/charness/.agents/release-adapter.yaml
+  warnings: []
+  errors: []
+release_state:
+  adapter:
+    found: true
+    valid: true
+    path: /home/hwidong/codes/charness/.agents/release-adapter.yaml
+    warnings: []
+  package_id: charness
+  packaging_manifest_path: /home/hwidong/codes/charness/packaging/charness.json
+  checked_in_plugin_root: /home/hwidong/codes/charness/plugins/charness
+  surface_versions:
+    packaging_manifest: 6.2.0
+    claude_plugin: 6.2.0
+    codex_plugin: 6.2.0
+    claude_marketplace_version: 6.2.0
+    codex_marketplace_source_path: ./plugins/charness
+  git_status:
+  - ' M charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md'
+  - ' M charness-artifacts/retro/lesson-ledger.json'
+  - ?? charness-artifacts/quality/2026-08-20-slice-0-quality-planner.meta.txt
+  - ?? charness-artifacts/quality/2026-08-20-slice-0-quality-planner.raw.yaml
+  - ?? charness-artifacts/release/2026-08-20-slice-0-release-planner.raw.yaml
+  - ?? charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.json
+  - ?? charness-artifacts/retro/lesson-session-receipts/2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234.md
+  fresh_checkout_probes:
+    status: not_established
+    reason: fresh_checkout_probes are declared but this invocation did not run them,
+      so nothing was established about them
+    remediation: Re-run with --run-probes for an established verdict, or read the
+      release publish helper's own probe run (it executes them before tag push). This
+      listing is not a pass.
+    fresh_checkout_probes:
+    - ./charness --help >/dev/null
+    - ./charness goal check --help >/dev/null
+    - python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null
+    - python3 scripts/closeout_bundle.py --help >/dev/null
+    - python3 scripts/validate_retro_handoff_wiring.py --help >/dev/null
+  absent_surfaces: []
+  required_release_surfaces:
+  - claude_plugin
+  - codex_plugin
+  - claude_marketplace_version
+  - codex_marketplace_source_path
+  unpublished_release_surfaces: []
+  undeclared_absent_surfaces: []
+  absence_corroboration: not-applicable
+  drift: []
+target:
+  current_version: 6.2.0
+  target_version: null
+  previous_version: null
+  selector: null
+  tag_name: null
+evidence_packets:
+  fresh_checkout:
+    status: not_established
+    reason: fresh_checkout_probes are declared but this invocation did not run them,
+      so nothing was established about them
+    remediation: Re-run with --run-probes for an established verdict, or read the
+      release publish helper's own probe run (it executes them before tag push). This
+      listing is not a pass.
+    fresh_checkout_probes:
+    - ./charness --help >/dev/null
+    - ./charness goal check --help >/dev/null
+    - python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null
+    - python3 scripts/closeout_bundle.py --help >/dev/null
+    - python3 scripts/validate_retro_handoff_wiring.py --help >/dev/null
+  real_host:
+    required: false
+    evaluation_scope: evaluated
+    surface_hits: []
+    path_hits: []
+    checklist: []
+    reason: Configured release-time real-host proof triggers were evaluated against
+      7 changed path(s) and none matched.
+    evidence_scope: worktree
+    evidence_previous_version: null
+    evidence_provenance:
+      path_count: 7
+      paths_sha256: e66f93de919172ad6a647b7fc04b84d44f656709e5b1cb070d1c907d8201379c
+  requested_review:
+    status: ok
+    artifact_path: charness-artifacts/release/latest.md
+    artifact_exists: true
+    unavailable_hits: []
+    waiver_hits: []
+    requested_review_commands: []
+    requested_review_policy: advisory-only
+    configuration_status: advisory_only
+    command_results: []
+    blockers: []
+    warnings: []
+prepared_claims_review: null
+publish_packets: []
+blockers: []
+phase_barriers:
+- Read required_reads before release mutation.
+- Run report-first gate_packets before broad release work.
+- Run publish-dry-run before publish-execute.
+- Do not parallelize sync/export/bump/install/update/git mutation with validators.
+- Treat public release verification and issue closeout as irreversible-boundary evidence,
+  not terminal green.

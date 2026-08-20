@@ -1,0 +1,131 @@
+ok: true
+repo: corca-ai/charness
+number: 599
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '599'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 2
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Situation\n\nThere is no command in this repo that answers \"what reads\
+    \ this?\" — given a symbol, a file\npath, or a config key, print every reference\
+    \ outside the target's own tests and its\n`plugins/charness/**` mirror.\n\n##\
+    \ Experience\n\nOver one session, **seven removal-or-keep proposals were wrong**,\
+    \ and every one was\nanswerable by a single grep that was never run:\n\n- six\
+    \ proposed deletions, each refuted by a file the proposer had not opened\n  (`recount_residue_lib.py:63-67`,\
+    \ `dup_ratchet_lib.py:305`,\n  `boundary_bypass_ratchet_lib.py:132-139`, `docs/deferred-decisions.md:685-703`,\n\
+    \  `outcome-assertions.json`, `claim_fidelity_lib.py:390-403`);\n- one proposed\
+    \ KEEP, defended on a claim three greps refute\n  (`claim_fidelity_lib.py:151`\
+    \ resolves the substance judge per directory).\n\nThe reader searches that settled\
+    \ them cost four bounded-reviewer spawns. The same session\nalso hit the inverse\
+    \ trap: `listed_skill_ids` and\n`evals/cautilus/contract-effectiveness.fixture.json`\
+    \ both look orphaned and are consumed —\none by an assertion (`scripts/eval_setup.py:220-224`),\
+    \ one by a directory glob\n(`scripts/cautilus_scenarios_lib.py:46`). A plain `grep\
+    \ <name>` finds neither.\n\n## Evidence\n\n`charness-artifacts/retro/2026-08-11-session-retro.md`\
+    \ — `## Waste`, second bullet, and the\nEngelbart counterfactual. `charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md`\n\
+    carries the per-item consumer greps that had to be run by hand afterward.\n\n\
+    ## Impact\n\nThe structural pattern is one this repo already recorded about a\
+    \ different method:\n*a method that requires re-reading a record has no tool,\
+    \ so it degrades to memory*\n(`charness-artifacts/retro/recent-lessons.md`, on\
+    \ backlog re-verification). The consumer\nsearch is that sentence about deletion.\
+    \ Until it has a command, every deletion proposal\neither pays for it in reviewer\
+    \ tokens or ships wrong.\n\n## Weak solution direction\n\nA `consumers <symbol|path|key>`\
+    \ command that reports references grouped by kind — direct\nname reference, glob/directory\
+    \ consumption, assertion-on-value, AST-scanned literal — and\nexcludes the target's\
+    \ own tests and mirrors by default with a flag to include them. The\ngrouping\
+    \ matters more than the search: three of this session's traps were consumers that\
+    \ a\nname grep cannot see. Whether it belongs in `scripts/` or as a `quality`\
+    \ inventory is open.\n\nA cheaper first step worth considering instead: make the\
+    \ **removal proposal shape** carry\nthe search, so a proposal without a consumer\
+    \ grep is refused by the artifact validator\nrather than by a reviewer. That fixes\
+    \ the discipline without building the tool, and the two\nare not exclusive.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOPTLig
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '**Scope widened by operator ruling 2026-08-11: concept-vocabulary renames
+      belong here.**
+
+
+      The #598 ruling deletes `domain_language_contract` as a capability. Its vocabulary
+      arm had two halves, and only one is being replaced by derivation:
+
+
+      - **CLI names** — replaced by a derived check that every documented `charness
+      <subcommand>` resolves to a real subcommand. No hand-maintained list.
+
+      - **Concept vocabulary** (`support skill` vs `support capability` vs `integration`)
+      — routed **here**, not gated.
+
+
+      The reason it is not a gate: `domain_language_contract` could only ever enforce
+      answers you already had. It required you to declare, in advance, that three
+      phrases are the same concept — which means it could never *discover* that they
+      are. Two of charness''s three declared terms carried no `deprecated_aliases`
+      at all, only advisory allowed-aliases, which is the shape of a question rather
+      than a rule.
+
+
+      Renaming a concept is the same job this issue already asks for: **show me everywhere
+      this name appears so I can finish the rename.** A `consumers <symbol|path|key>`
+      command serves it directly, and serves the discovery half that no declaration-based
+      gate can reach. So the scope note is: the command should accept a bare phrase,
+      not only a symbol or path, so a vocabulary rename is answerable the same way
+      a symbol rename is.
+
+
+      Full ruling: `charness-artifacts/spec/2026-08-11-six-operator-rulings.md`.'
+    createdAt: '2026-08-11T07:58:25Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/599#issuecomment-5250534282
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOiL-Jw
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '2026-08-13 premise re-read: existing scripts/removed_name_consumers.py
+      is a narrow closeout advisory for deleted Python module-level names. It detects
+      textual module.NAME/from-import candidates over Python files, but does not answer
+      #599’s requested symbol/path/key/phrase query, directory/glob consumption, assertion-on-value
+      readers, or source/plugin exclusion contract. Therefore it is not evidence that
+      the issue is fixed and a generic consumers command is still a new capability
+      decision. Disposition: unproven-defer pending a bounded query schema and false-positive
+      policy. Owner: Charness quality/operator-discovery boundary. Revisit when a
+      concrete removal/rename slice needs one of the unrepresented reader classes,
+      or an operator approves the command’s result taxonomy. Issue remains OPEN.'
+    createdAt: '2026-08-12T17:42:57Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/599#issuecomment-5270339111
+    viewerDidAuthor: true
+  createdAt: '2026-08-11T00:08:21Z'
+  labels: []
+  number: 599
+  state: OPEN
+  title: No command answers 'what reads this?' — seven wrong removal proposals in
+    one session, each refuted by one grep
+  updatedAt: '2026-08-12T17:42:57Z'
+  url: https://github.com/corca-ai/charness/issues/599
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

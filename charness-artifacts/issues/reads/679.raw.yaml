@@ -1,0 +1,129 @@
+ok: true
+repo: corca-ai/charness
+number: 679
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '679'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## Situation
+
+
+    The installed `charness:impl` 6.2.0 skill documents this bootstrap sequence for
+    every invocation:
+
+
+    1. `resolve_adapter.py --repo-root .`
+
+    2. `init_adapter.py --repo-root .`
+
+    3. `resolve_adapter.py --repo-root .`
+
+
+    In a normal consuming repository that already has a valid `.agents/impl-adapter.yaml`,
+    step 1 reports `found: true` and `valid: true`, but step 2 exits 1 with:
+
+
+    ```text
+
+    Adapter already exists at /home/hwidong/codes/ceal/.agents/impl-adapter.yaml.
+    Use --force to overwrite.
+
+    ```
+
+
+    ## Experience
+
+
+    Following the skill literally creates a failing command on every implementation
+    run after initial setup. The only remediation named by the command is `--force`,
+    which would overwrite a valid consumer-owned adapter and is not an appropriate
+    routine bootstrap action.
+
+
+    The consuming repo requires agents to treat every failed command as a structural
+    signal before retrying or routing around it. This turns an otherwise healthy `impl`
+    start into recurring failure triage and makes it unclear whether the skill expects
+    callers to ignore the exit code, conditionally skip initialization, or mutate
+    the adapter.
+
+
+    ## Evidence
+
+
+    - Installed skill: Charness 6.2.0, `skills/impl/SKILL.md`, Bootstrap step 2.
+
+    - First command: `python3 <skill-dir>/scripts/resolve_adapter.py --repo-root .`
+    → exit 0, adapter found and valid.
+
+    - Second command: `python3 <skill-dir>/scripts/init_adapter.py --repo-root .`
+    → exit 1 with the message above.
+
+    - A second `resolve_adapter.py` still reports the original adapter valid, confirming
+    that no migration or repair was needed.
+
+
+    ## Impact
+
+
+    - Every established consumer pays a false-red bootstrap cost.
+
+    - Agents may learn to ignore a documented command failure, weakening the meaning
+    of later real bootstrap failures.
+
+    - The `--force` hint invites destructive replacement of consumer customization.
+
+    - The documented sequence is not safely copy-pastable as an exit-code-checked
+    workflow.
+
+
+    ## Weak direction
+
+
+    One possible direction is to make initialization an idempotent no-op when an existing
+    adapter is valid, while preserving refusal for conflicts. Another is to make the
+    `impl` bootstrap conditional on the first resolver payload (`found: false`). The
+    owning design should choose the smaller contract; the issue is the current unconditional
+    sequence plus nonzero existing-file result, not a requirement for either mechanism.
+
+
+    ## Acceptance boundary
+
+
+    A consuming repo with a valid existing impl adapter can follow the documented
+    bootstrap exactly, with every command returning success and without rewriting
+    the adapter. Missing and invalid/conflicting adapter cases must remain explicit
+    and safe.
+
+
+    '
+  comments: []
+  createdAt: '2026-08-20T09:02:19Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1HA
+    name: bug
+    description: Something isn't working
+    color: d73a4a
+  number: 679
+  state: OPEN
+  title: impl bootstrap fails on every valid existing adapter
+  updatedAt: '2026-08-20T09:02:19Z'
+  url: https://github.com/corca-ai/charness/issues/679
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

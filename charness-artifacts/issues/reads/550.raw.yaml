@@ -1,0 +1,93 @@
+ok: true
+repo: corca-ai/charness
+number: 550
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '550'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 1
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Observed\n\nCollapsing 17 hand-copied adapter `version` checks into one\
+    \ shared\n`validate_adapter_version()` call made the duplicate ratchet fire with\
+    \ **18 new\ncode families**. Reading the members shows the slice did not *add*\
+    \ duplication —\nit *revealed* duplication that was always there.\n\nThe 6-line\
+    \ inline version block sat in the middle of each resolver's\n`validate_adapter_data`\
+    \ body and split an otherwise byte-identical\npreamble/epilogue into two runs,\
+    \ each below the clone detector's threshold.\nReplacing it with a single line\
+    \ joined them into one qualifying clone.\n\nTwo members, side by side after the\
+    \ change:\n\n```\n# skills/public/debug/scripts/resolve_adapter.py:50-73\ndef\
+    \ validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[...]:\n\
+    \    errors: list[str] = []\n    warnings: list[str] = []\n    validated = infer_repo_defaults(repo_root)\n\
+    \    validate_adapter_version(data, validated, errors)\n    for field in STRING_FIELDS:\n\
+    \        value = optional_string(data.get(field), field, errors)\n        if value\
+    \ is not None:\n            validated[field] = value\n    ...                \
+    \                    # <- the only genuinely per-skill part\n    if data.get(\"\
+    repo\") == \"CHANGE_ME\":\n        warnings.append(\"repo is still set to CHANGE_ME\"\
+    )\n    return validated, errors, warnings\n```\n\n`skills/public/gather/scripts/resolve_adapter.py:100-117`\
+    \ is the same function\nwith a different middle. So are `hitl`, `hotl`, `impl`,\
+    \ `create-skill`,\n`release`, `retro`, and `scripts/simple_skill_adapter_lib.py`.\n\
+    \nExactly one line per family came from the version slice. The rest is\npre-existing.\n\
+    \n## Evidence path\n\n```\npython3 skills/public/quality/scripts/check_dup_ratchet.py\
+    \ --repo-root . --detail\ngit show <the version-reconciliation commit>~1:skills/public/debug/scripts/resolve_adapter.py\n\
+    ```\n\nCompare any two flagged members against their pre-slice versions: the shared\n\
+    lines are unchanged in both.\n\n## Why this is filed rather than fixed\n\nThe\
+    \ 18 families were scoped-accepted into `dup-ratchet-baseline.json` (not\nclassified\
+    \ `intentional`, because they *are* fixable) so the slice that revealed\nthem\
+    \ would not also have to repair them. Accepting them keeps the ratchet honest\n\
+    about today's tree; it does not bless the duplication.\n\n## Suggested direction\
+    \ (not a decision)\n\nThe shared shape is a resolver contract: `errors`/`warnings`\
+    \ init,\n`infer_repo_defaults`, the shared field-contract checks, the `CHANGE_ME`\n\
+    warning, and the `(validated, errors, warnings)` return. Only the middle varies.\n\
+    This is the same \"one shared contract check, applied consistently\" move the\n\
+    version slice just proved on a single field, extended to the resolver body.\n\n\
+    Worth doing only if it does not flatten the per-skill middles into a\nconfiguration\
+    \ language — the middles are where each resolver's real contract\nlives, and hiding\
+    \ them would trade visible duplication for invisible coupling.\n\n## Non-claims\n\
+    \n- No consumer repo was read; this is a charness-internal maintainability finding.\n\
+    - No verdict behavior is wrong today. Nothing escapes because of this.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOiBTqw
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '2026-08-13 premise re-read: the described resolver duplication remains
+      visible, but the current duplicate ratchet does not identify that resolver family
+      as a new or newly-revealed target. Its present hard arm lists 12 unrelated,
+      untouched code families, with no changed resolver member; resolving this requires
+      a bounded equivalence map and consumer contract tests, not a broad cleanup alongside
+      the active cohort. Disposition: unproven-defer. Owner: Charness quality-policy/adapter-maintenance
+      boundary. Revisit when a concrete duplicate-family report names the resolver
+      members or an adapter change requires touching this common preamble. Issue remains
+      OPEN pending that carrier and cohort closeout.'
+    createdAt: '2026-08-12T17:27:17Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/550#issuecomment-5270164395
+    viewerDidAuthor: true
+  createdAt: '2026-08-07T09:35:46Z'
+  labels: []
+  number: 550
+  state: OPEN
+  title: Adapter resolver bodies are near-identical, revealed once the duplicated
+    version block stopped splitting them
+  updatedAt: '2026-08-12T17:27:17Z'
+  url: https://github.com/corca-ai/charness/issues/550
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

@@ -1,0 +1,645 @@
+status: pass
+export_root: plugins/charness
+scanned_python_files: 790
+documented_entrypoint_count: 90
+unguarded_entrypoint_imports: []
+declared_distributions:
+- jsonschema
+- packaging
+- pyyaml
+advisory_unshipped_path_sites:
+- kind: unshipped-path
+  path: plugins/charness/scripts/capability_catalog_resolver.py
+  line: 15
+  segment: plugins
+  literal: plugins/cache
+- kind: unshipped-path
+  path: plugins/charness/scripts/capability_catalog_resolver.py
+  line: 29
+  segment: plugins
+  literal: plugins/charness/skills
+- kind: unshipped-path
+  path: plugins/charness/scripts/capability_catalog_resolver.py
+  line: 29
+  segment: plugins
+  literal: plugins/charness/skills
+- kind: unshipped-path
+  path: plugins/charness/scripts/capability_catalog_sources.py
+  line: 248
+  segment: plugins
+  literal: plugins/charness
+- kind: unshipped-path
+  path: plugins/charness/scripts/cautilus_scenarios_lib.py
+  line: 46
+  segment: evals
+  literal: evals/cautilus
+- kind: unshipped-path
+  path: plugins/charness/scripts/check_coverage.py
+  line: 297
+  segment: charness
+  literal: charness
+- kind: unshipped-path
+  path: plugins/charness/scripts/check_coverage_extra_lib.py
+  line: 311
+  segment: skills
+  literal: skills/demo
+- kind: unshipped-path
+  path: plugins/charness/scripts/check_coverage_lib.py
+  line: 306
+  segment: skills
+  literal: skills/demo
+- kind: unshipped-path
+  path: plugins/charness/scripts/check_coverage_lib.py
+  line: 202
+  segment: integrations
+  literal: integrations/locks/demo.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/check_doc_links.py
+  line: 167
+  segment: skills
+  literal: skills/shared
+- kind: unshipped-path
+  path: plugins/charness/scripts/check_plugin_import_smoke.py
+  line: 28
+  segment: packaging
+  literal: packaging/charness.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/check_plugin_import_smoke.py
+  line: 36
+  segment: packaging
+  literal: packaging/charness.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/check_plugin_import_smoke.py
+  line: 43
+  segment: plugins
+  literal: plugins
+- kind: unshipped-path
+  path: plugins/charness/scripts/eval_issue_scenarios.py
+  line: 68
+  segment: evals
+  literal: evals/cautilus/issue-146-sibling-search.fixture.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/eval_issue_scenarios.py
+  line: 69
+  segment: evals
+  literal: evals/cautilus/issue-148-sibling-search.fixture.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/final_bundle_preflight_lib.py
+  line: 174
+  segment: plugins
+  literal: plugins/charness
+- kind: unshipped-path
+  path: plugins/charness/scripts/helper_provenance_lib.py
+  line: 47
+  segment: charness
+  literal: charness/.claude-plugin/plugin.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/packaging_lib.py
+  line: 222
+  segment: skills
+  literal: skills/shared
+- kind: unshipped-path
+  path: plugins/charness/scripts/plugin_preamble.py
+  line: 68
+  segment: packaging
+  literal: packaging/charness.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/plugin_preamble.py
+  line: 55
+  segment: packaging
+  literal: packaging/charness.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/plugin_preamble.py
+  line: 36
+  segment: packaging
+  literal: packaging/charness.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/portable_command_carrier.py
+  line: 106
+  segment: plugins
+  literal: plugins
+- kind: unshipped-path
+  path: plugins/charness/scripts/render_cli_reference.py
+  line: 47
+  segment: charness
+  literal: charness
+- kind: unshipped-path
+  path: plugins/charness/scripts/repo_layout.py
+  line: 63
+  segment: charness
+  literal: charness/support-skills
+- kind: unshipped-path
+  path: plugins/charness/scripts/run_evals.py
+  line: 94
+  segment: evals
+  literal: evals/fixtures/skill-valid
+- kind: unshipped-path
+  path: plugins/charness/scripts/run_evals.py
+  line: 98
+  segment: evals
+  literal: evals/fixtures/profile-valid
+- kind: unshipped-path
+  path: plugins/charness/scripts/run_evals.py
+  line: 102
+  segment: evals
+  literal: evals/fixtures/doc-links-valid
+- kind: unshipped-path
+  path: plugins/charness/scripts/run_evals.py
+  line: 273
+  segment: evals
+  literal: evals/fixtures/skill-valid/skills/public/demo/SKILL.md
+- kind: unshipped-path
+  path: plugins/charness/scripts/run_evals.py
+  line: 274
+  segment: evals
+  literal: evals/fixtures/profile-valid/profiles/minimal.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/run_evals.py
+  line: 275
+  segment: evals
+  literal: evals/fixtures/doc-links-valid/README.md
+- kind: unshipped-path
+  path: plugins/charness/scripts/standing_pytest_basetemp.py
+  line: 45
+  segment: charness
+  literal: charness/pytest-tmp
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_attention_state_visibility.py
+  line: 179
+  segment: skills
+  literal: skills/shared
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_maintainer_setup.py
+  line: 442
+  segment: packaging
+  literal: packaging/charness.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_maintainer_setup.py
+  line: 442
+  segment: plugins
+  literal: plugins/charness
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_packaging.py
+  line: 24
+  segment: packaging
+  literal: packaging/plugin.schema.json
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_packaging_install_surface.py
+  line: 78
+  segment: plugins
+  literal: plugins
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_packaging_install_surface.py
+  line: 155
+  segment: plugins
+  literal: plugins
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_packaging_install_surface.py
+  line: 101
+  segment: skills
+  literal: skills/shared
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_public_skill_validation.py
+  line: 23
+  segment: scripts
+  literal: scripts/resolve_adapter.py
+- kind: unshipped-path
+  path: plugins/charness/scripts/validate_public_skill_validation.py
+  line: 24
+  segment: scripts
+  literal: scripts/init_adapter.py
+- kind: unshipped-path
+  path: plugins/charness/skills/quality/references/find_inline_prompt_bulk.py
+  line: 82
+  segment: scripts
+  literal: scripts/resolve_adapter.py
+- kind: unshipped-path
+  path: plugins/charness/skills/quality/scripts/plan_quality_run.py
+  line: 105
+  segment: plugins
+  literal: plugins
+- kind: unshipped-path
+  path: plugins/charness/skills/release/scripts/current_release.py
+  line: 57
+  segment: .claude-plugin
+  literal: .claude-plugin/marketplace.json
+- kind: unshipped-path
+  path: plugins/charness/skills/release/scripts/current_release.py
+  line: 254
+  segment: .claude-plugin
+  literal: .claude-plugin/marketplace.json
+advisory_path_note: 'ADVISORY: not a verdict. each entry is an exported module reading
+  a repo-root path the export does not ship, but this arm cannot yet tell a module
+  reading its OWN tree from a maintainer tool scanning whatever tree the operator
+  named -- so the list contains both real delivery bugs and correct code. Read it
+  as an inventory to work from, never as a count of defects.'
+advisory_undeclared_dependencies: []
+advisory_dependency_note: 'ADVISORY: inventory, not a verdict. every top-level third-party
+  import in the export whose distribution no shipped requirements file names. Reported
+  so the surface is visible; NOT a claim that the listed modules are safe once declared,
+  and NOT a claim that the unlisted ones are.'
+consumer_doc_repo_root_instructions: []
+advisory_module_prose_repo_root_instructions:
+- doc: integrations/tools/agent-browser.json
+  line: 52
+  script: agent_browser_runtime_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/agent_browser_runtime_guard.py
+- doc: integrations/tools/agent-browser.json
+  line: 58
+  script: agent_browser_runtime_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/agent_browser_runtime_guard.py
+- doc: scripts/agent_browser_runtime_guard.py
+  line: 31
+  script: agent_browser_runtime_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/agent_browser_runtime_guard.py
+- doc: scripts/build_debug_seam_risk_index.py
+  line: 163
+  script: build_debug_seam_risk_index.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/build_debug_seam_risk_index.py
+- doc: scripts/build_debug_seam_risk_index.py
+  line: 169
+  script: build_debug_seam_risk_index.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/build_debug_seam_risk_index.py
+- doc: scripts/capture_issue_source.py
+  line: 11
+  script: capture_issue_source.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/capture_issue_source.py
+- doc: scripts/cautilus_adapter_lib.py
+  line: 85
+  script: validate_adapters.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_adapters.py
+- doc: scripts/cautilus_adapter_lib.py
+  line: 86
+  script: validate_public_skill_validation.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_public_skill_validation.py
+- doc: scripts/cautilus_adapter_lib.py
+  line: 87
+  script: validate_cautilus_scenarios.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_cautilus_scenarios.py
+- doc: scripts/cautilus_adapter_lib.py
+  line: 95
+  script: eval_cautilus_scenarios.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/eval_cautilus_scenarios.py
+- doc: scripts/cautilus_adapter_lib.py
+  line: 98
+  script: eval_cautilus_scenarios.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/eval_cautilus_scenarios.py
+- doc: scripts/check_artifact_surface_preflight.py
+  line: 493
+  script: check_artifact_surface_preflight.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_artifact_surface_preflight.py
+- doc: scripts/check_bootstrap_shim_consistency.py
+  line: 12
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: scripts/check_bootstrap_shim_consistency.py
+  line: 139
+  script: check_bootstrap_shim_consistency.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_bootstrap_shim_consistency.py
+- doc: scripts/check_changed_line_mutation_coverage.py
+  line: 20
+  script: check_changed_line_mutation_coverage.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_changed_line_mutation_coverage.py
+- doc: scripts/check_changed_line_mutation_coverage.py
+  line: 23
+  script: check_changed_line_mutation_coverage.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_changed_line_mutation_coverage.py
+- doc: scripts/check_changed_line_mutation_coverage.py
+  line: 216
+  script: suggest_mutation_coverage_command.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/suggest_mutation_coverage_command.py
+- doc: scripts/check_changed_line_mutation_coverage.py
+  line: 218
+  script: run_slice_closeout.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/run_slice_closeout.py
+- doc: scripts/check_changed_line_mutation_coverage.py
+  line: 249
+  script: check_mutation_run_proof.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_mutation_run_proof.py
+- doc: scripts/check_closeout_floor_matrix.py
+  line: 203
+  script: check_closeout_floor_matrix.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_closeout_floor_matrix.py
+- doc: scripts/check_mutation_run_proof.py
+  line: 18
+  script: check_mutation_run_proof.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_mutation_run_proof.py
+- doc: scripts/check_mutation_run_proof.py
+  line: 20
+  script: check_mutation_run_proof.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_mutation_run_proof.py
+- doc: scripts/check_mutation_run_proof.py
+  line: 26
+  script: check_mutation_run_proof.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_mutation_run_proof.py
+- doc: scripts/check_mutation_run_proof.py
+  line: 30
+  script: check_mutation_run_proof.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_mutation_run_proof.py
+- doc: scripts/check_runtime_budget_universe.py
+  line: 274
+  script: quality_label_universe.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/quality_label_universe.py
+- doc: scripts/check_skill_surface_preflight.py
+  line: 263
+  script: validate_skills.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_skills.py
+- doc: scripts/check_skill_surface_preflight.py
+  line: 273
+  script: check_doc_links.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_doc_links.py
+- doc: scripts/check_skill_surface_preflight.py
+  line: 278
+  script: validate_skill_ergonomics.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_skill_ergonomics.py
+- doc: scripts/check_skill_surface_preflight.py
+  line: 283
+  script: check_skill_ownership_overlap.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_skill_ownership_overlap.py
+- doc: scripts/check_skill_surface_preflight.py
+  line: 288
+  script: validate_attention_state_visibility.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_attention_state_visibility.py
+- doc: scripts/check_skill_surface_preflight.py
+  line: 296
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: scripts/check_skill_surface_preflight.py
+  line: 304
+  script: check_doc_links.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_doc_links.py
+- doc: scripts/check_staged_mirror_drift.py
+  line: 79
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: scripts/classify_push_diff.py
+  line: 7
+  script: classify_push_diff.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/classify_push_diff.py
+- doc: scripts/closeout_bundle.py
+  line: 32
+  script: closeout_bundle.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/closeout_bundle.py
+- doc: scripts/closeout_bundle_lib.py
+  line: 215
+  script: validate_current_pointer_freshness.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_current_pointer_freshness.py
+- doc: scripts/eval_cautilus_scenarios.py
+  line: 67
+  script: run_evals.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/run_evals.py
+- doc: scripts/final_bundle_preflight_lib.py
+  line: 219
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: scripts/final_bundle_preflight_lib.py
+  line: 348
+  script: run_slice_closeout.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/run_slice_closeout.py
+- doc: scripts/helper_provenance_lib.py
+  line: 194
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: scripts/measure_evidence_residual.py
+  line: 15
+  script: measure_evidence_residual.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/measure_evidence_residual.py
+- doc: scripts/outcome_judge_cmd.py
+  line: 19
+  script: grade_skill_outcome.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/grade_skill_outcome.py
+- doc: scripts/outcome_judge_cmd.py
+  line: 20
+  script: outcome_judge_cmd.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/outcome_judge_cmd.py
+- doc: scripts/plan_cautilus_proof.py
+  line: 107
+  script: suggest_public_skill_dogfood.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/suggest_public_skill_dogfood.py
+- doc: scripts/prepush_close_keyword_guard.py
+  line: 53
+  script: prepush_close_keyword_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/prepush_close_keyword_guard.py
+- doc: scripts/prepush_close_keyword_guard.py
+  line: 154
+  script: prepush_close_keyword_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/prepush_close_keyword_guard.py
+- doc: scripts/prepush_close_keyword_guard.py
+  line: 386
+  script: prepush_close_keyword_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/prepush_close_keyword_guard.py
+- doc: scripts/public_skill_dogfood_validation_lib.py
+  line: 119
+  script: suggest_public_skill_dogfood.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/suggest_public_skill_dogfood.py
+- doc: scripts/quality_bootstrap_detect.py
+  line: 82
+  script: validate_maintainer_setup.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_maintainer_setup.py
+- doc: scripts/quality_bootstrap_detect.py
+  line: 83
+  script: doctor.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/doctor.py
+- doc: scripts/quality_bootstrap_detect.py
+  line: 90
+  script: check_github_actions.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_github_actions.py
+- doc: scripts/quality_bootstrap_detect.py
+  line: 97
+  script: check_supply_chain.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_supply_chain.py
+- doc: scripts/render_cli_reference.py
+  line: 86
+  script: render_cli_reference.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/render_cli_reference.py
+- doc: scripts/render_cli_reference.py
+  line: 93
+  script: render_cli_reference.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/render_cli_reference.py
+- doc: scripts/run_slice_closeout.py
+  line: 80
+  script: agent_browser_runtime_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/agent_browser_runtime_guard.py
+- doc: scripts/run_slice_closeout.py
+  line: 84
+  script: agent_browser_runtime_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/agent_browser_runtime_guard.py
+- doc: scripts/session_start_lesson_context.py
+  line: 112
+  script: seed_lesson_transitions.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/seed_lesson_transitions.py
+- doc: scripts/slice_closeout_advisories.py
+  line: 101
+  script: check_changed_line_mutation_coverage.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_changed_line_mutation_coverage.py
+- doc: scripts/slice_closeout_advisories.py
+  line: 104
+  script: check_mutation_run_proof.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_mutation_run_proof.py
+- doc: scripts/slice_closeout_advisories.py
+  line: 126
+  script: check_skill_surface_preflight.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_skill_surface_preflight.py
+- doc: scripts/slice_closeout_advisories.py
+  line: 147
+  script: check_doc_authoring_preflight.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_doc_authoring_preflight.py
+- doc: scripts/slice_closeout_commit_advisories.py
+  line: 200
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: scripts/specdown_ephemeral_config.py
+  line: 23
+  script: specdown_ephemeral_config.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/specdown_ephemeral_config.py
+- doc: scripts/staged_commit_gate_plan.py
+  line: 32
+  script: validate_skill_ergonomics.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_skill_ergonomics.py
+- doc: scripts/staged_commit_gate_plan.py
+  line: 33
+  script: check_boundary_bypass_ratchet.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/check_boundary_bypass_ratchet.py
+- doc: scripts/tool_recommendation_lib.py
+  line: 33
+  script: doctor.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/doctor.py
+- doc: scripts/validate_evidence_boundary_crosswalk.py
+  line: 19
+  script: validate_evidence_boundary_crosswalk.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_evidence_boundary_crosswalk.py
+- doc: scripts/validate_issue_source_freeze.py
+  line: 9
+  script: validate_issue_source_freeze.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/validate_issue_source_freeze.py
+- doc: scripts/validate_maintainer_setup.py
+  line: 399
+  script: prepush_close_keyword_guard.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/prepush_close_keyword_guard.py
+- doc: scripts/validate_packaging_install_surface.py
+  line: 171
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: scripts/validate_packaging_install_surface.py
+  line: 181
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: scripts/validate_public_skill_validation.py
+  line: 69
+  script: suggest_public_skill_validation.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/suggest_public_skill_validation.py
+- doc: skills/critique/adapter.example.yaml
+  line: 33
+  script: render_critique_section_changed_surfaces.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/render_critique_section_changed_surfaces.py
+- doc: skills/quality/scripts/command_dominance_lib.py
+  line: 9
+  script: run_standing_pytest.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/run_standing_pytest.py
+- doc: skills/quality/scripts/command_dominance_lib.py
+  line: 126
+  script: run_standing_pytest.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/run_standing_pytest.py
+- doc: skills/release/adapter.example.yaml
+  line: 10
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: skills/release/scripts/init_adapter.py
+  line: 35
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: skills/release/scripts/resolve_adapter.py
+  line: 184
+  script: sync_root_plugin_manifests.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/sync_root_plugin_manifests.py
+- doc: skills/retro/adapter.example.yaml
+  line: 15
+  script: render_critique_section_changed_surfaces.py
+  site_class: module-prose
+  remedy: python3 <plugin-dir>/scripts/render_critique_section_changed_surfaces.py
+advisory_module_prose_note: 'ADVISORY: not a verdict. Each entry is a `python3 scripts/X`
+  string in an exported .py file or under a `scripts/` directory. Many are maintainer
+  tools describing their own in-repo invocation, where rewriting to `<plugin-dir>/`
+  would make the correct instruction wrong; others are consumer guidance that happens
+  to live in a docstring, and an EXECUTED command string is indistinguishable from
+  either. This arm cannot tell them apart -- the split is by file location, a declaration
+  and not a measurement. Read it as an inventory to work from, never as a count of
+  defects.'

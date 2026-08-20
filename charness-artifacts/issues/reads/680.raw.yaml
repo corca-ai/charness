@@ -1,0 +1,140 @@
+ok: true
+repo: corca-ai/charness
+number: 680
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '680'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## Situation
+
+
+    The `charness:critique` workflow can prepare a review packet that reports `Sections:
+    0` even when the caller supplies a concrete implementation target and reviewed
+    paths. The workflow then treats the packet SHA and reviewed-input identity as
+    fresh-eye evidence, although the packet contains none of the implementation inputs
+    the reviewer was asked to inspect.
+
+
+    Observed from the installed Charness 6.2.0 plugin while reviewing Ceal''s duplicate-debt
+    worklist generator on 2026-08-20.
+
+
+    ## Experience
+
+
+    The critique adapter resolved an empty `packet_sections` list. Running the documented
+    packet preparation path produced:
+
+
+    - `charness-artifacts/critique/2026-08-20-090817-packet.md`
+
+    - packet SHA `b9fbabeba4136f5b08b63190ac18c794046db97953f84b1791fabada07517ad6`
+
+    - reviewed-input identity SHA `20634a499b067ee172dd5cb95d2b3f0628f53c91167ee21a9248eca7ef936ff7`
+
+
+    The rendered packet explicitly says `Sections: 0`. A fresh-eye reviewer correctly
+    flagged that the identity therefore did not freeze the implementation inputs.
+    The caller had to compensate by giving reviewers repository paths outside the
+    packet, weakening the packet''s role as the durable reviewed-input boundary.
+
+
+    ## Evidence
+
+
+    The concrete review target included these paths, but the packet did not carry
+    their contents or identities as sections:
+
+
+    - `scripts/build-duplicate-debt-worklist.ts`
+
+    - `scripts/build-duplicate-debt-worklist.test.ts`
+
+    - `docs/implementation/quality-gates.md`
+
+    - `package.json`
+
+    - `charness-artifacts/goals/2026-08-20-verified-duplicate-debt-retirement.md`
+
+    - `charness-artifacts/quality/2026-08-20-verified-duplicate-debt-worklist.json`
+
+
+    Re-check in the consumer repo:
+
+
+    ```bash
+
+    rg -n ''Sections: 0|No packet sections were declared'' charness-artifacts/critique/2026-08-20-090817-packet.md
+
+    ```
+
+
+    The same search has a positive control in that packet: `rg -n ''Packet SHA|Reviewed-input
+    identity'' ...` returns the declared identities.
+
+
+    Duplicate search performed before filing:
+
+
+    - positive control: `corca-ai/charness#679` was readable
+
+    - searches for `critique packet sections input identity` and `Sections: 0` found
+    no issue describing this packet-boundary defect; the only textual hit was unrelated
+    mutation-regression issue #612
+
+
+    Source identity: installed Charness plugin version 6.2.0 under the Codex plugin
+    cache; observed from consumer repository `corca-ai/ceal`. No private media is
+    required to reproduce the text-only failure.
+
+
+    ## Impact
+
+
+    The workflow can present a stable packet SHA without actually binding the code
+    or artifacts being reviewed. That makes later boundary verification and critique
+    closeout appear stronger than the durable evidence supports, and forces callers
+    to rely on prompt-only path lists that are not part of the packet identity.
+
+
+    ## Weak solution direction
+
+
+    Fail closed when a code/design critique would produce zero packet sections, or
+    automatically include the declared reviewed paths in the reviewed-input identity.
+    If zero sections are intentionally valid, render a typed downgrade that forbids
+    claiming the packet as implementation-input freeze evidence.
+
+
+    '
+  comments: []
+  createdAt: '2026-08-20T09:14:07Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1HA
+    name: bug
+    description: Something isn't working
+    color: d73a4a
+  number: 680
+  state: OPEN
+  title: critique can freeze an empty packet while claiming reviewed-input identity
+  updatedAt: '2026-08-20T09:14:07Z'
+  url: https://github.com/corca-ai/charness/issues/680
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

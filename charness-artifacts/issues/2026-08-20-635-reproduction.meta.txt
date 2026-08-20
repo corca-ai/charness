@@ -1,0 +1,4 @@
+command: python3 -c 'from pathlib import Path; roots=[Path("skills/public/achieve"),Path("skills/public/retro/references/lesson-evaluation.md")]; files=[p for root in roots for p in ([root] if root.is_file() else root.rglob("*.md"))]; print("achieve_or_retro_lesson_files:",len(files)); print("bundle_path_mentions_in_achieve:",sum("bundle_path" in p.read_text(encoding="utf-8") for p in files if str(p).startswith("skills/public/achieve"))); print("retro_reader_mentions:",[str(p) for p in files if "bundle_path" in p.read_text(encoding="utf-8")][:10])'
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T19:00:53+09:00
+exit_code: 0

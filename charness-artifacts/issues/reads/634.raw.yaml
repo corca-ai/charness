@@ -1,0 +1,377 @@
+ok: true
+repo: corca-ai/charness
+number: 634
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '634'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 2
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## What happened
+
+
+    A session on another machine ran a charness tool, hit `ModuleNotFoundError: No
+    module named ''yaml''`, went looking for a dependency declaration, concluded there
+    was none in either the repo or the package, and installed PyYAML into the user
+    site as a one-off — recording "does not reproduce on a new machine" as a residual
+    risk.
+
+
+    Half of that diagnosis is wrong, and the wrong half is the one that matters.
+
+
+    ## What is actually true
+
+
+    The REPO declares its Python dependencies, precisely:
+
+
+    - `packaging/bootstrap-python.json` → `required_modules: ["jsonschema", "packaging",
+    "yaml"]`, `runtime_dir: ".charness/bootstrap-python"`, `requirements_file: "packaging/bootstrap-requirements.txt"`
+
+    - `packaging/bootstrap-requirements.txt` → `PyYAML>=6,<7`, `jsonschema>=4.18,<6`,
+    `packaging>=24,<26`
+
+    - `scripts/bootstrap_runtime.py` installs them into a repo-local runtime
+
+
+    So there IS a reproducible path, and it is pinned.
+
+
+    ## The defect
+
+
+    The export does not ship it.
+
+
+    - `plugins/charness/scripts/bootstrap_runtime.py` — the installer — **is** exported.
+
+    - `packaging/bootstrap-python.json` and `packaging/bootstrap-requirements.txt`
+    — the two files it reads — **are not**. There is no `plugins/charness/packaging/`
+    directory at all.
+
+
+    Measured:
+
+
+    ```
+
+    $ python3 -c "import pathlib; p=pathlib.Path(''plugins/charness''); print(list(p.rglob(''bootstrap-python.json'')),
+    list(p.rglob(''bootstrap-requirements.txt'')))"
+
+    [] []
+
+    ```
+
+
+    `load_contract` raises `missing bootstrap runtime contract` when that file is
+    absent, so on a consuming repo the bootstrap path is dead on arrival. Meanwhile
+    **37 exported scripts** do a bare `import yaml`:
+
+
+    ```
+
+    $ grep -rln "import yaml" plugins/charness/ --include=''*.py'' | wc -l
+
+    37
+
+    ```
+
+
+    `scripts/yaml_output.py` degrades gracefully on the WRITE side (it falls back
+    to compact JSON when PyYAML is absent), which is why this surfaces as a scattered
+    read-side failure rather than one obvious one.
+
+
+    ## Why it matters beyond one missing file
+
+
+    This is the third instance of one class in this release:
+
+
+    1. `check_docs_graph.py` shipped with a bar measured on charness''s own docs tree
+    while the ratchet record and its test stayed unexported (fixed in S6).
+
+    2. The `quality` skill exports the runtime-budget apparatus but not the fast standing
+    runner, so a consumer inherits the ledger without the speed and nothing says so
+    (recorded as S6b''s consumer half).
+
+    3. This.
+
+
+    The general shape: **an exported artifact depends on a repo-root file the export
+    does not ship**, so it is broken or silently mis-calibrated for every consumer
+    while working perfectly here. Nothing gates it — the sync tool copies what it
+    is told to copy and never asks whether what it copied can run.
+
+
+    ## Suggested scope (not a design)
+
+
+    - Export the dependency contract alongside the installer, or make the installer
+    degrade with a message that names what to install.
+
+    - Give the class a detector, so instance four is caught by a gate rather than
+    by a stranded session on another machine.
+
+
+    Reported from a real consuming-machine failure; repo-side facts above are measured
+    on `main` at 54654b032.'
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABPAY8NQ
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## Measured inventory — the class is systemic, and the gate that should
+      catch it is blind by construction
+
+
+      A read-only sweep of the whole export changes the scope of this issue. Three
+      claims below are re-verified by hand, not taken from the sweep.
+
+
+      ### 1. The reported crash has a documented-entrypoint instance
+
+
+      `plugins/charness/skills/gather/scripts/gather_public_url.py:13` is a bare top-level
+      `import yaml`, and that script is a documented entrypoint — `skills/gather/SKILL.md:51`
+      tells a consumer to run it. So the failure the original report hit is reachable
+      from the export''s own instructions, not only from internal tooling.
+
+
+      Recount across the export, unguarded top-level imports of the three hard deps:
+
+
+      ```
+
+      yaml: 25 files   jsonschema: 8 files   packaging: 2 files
+
+      ```
+
+
+      Optional deps are handled correctly (`cosmic_ray`, `tomli`, `curl_cffi`, `patchright`,
+      `pytest`, `xdist` are all guarded). The gap is specific to the three the bootstrap
+      contract pins — the ones whose declaration does not ship.
+
+
+      ### 2. Why every consumer path resolves wrong
+
+
+      `scripts/runtime_bootstrap.py` `repo_root_from_script` returns `Path(script).resolve().parent.parent`.
+      For `plugins/charness/scripts/x.py` that is **the plugin root**, not the consumer''s
+      repo. So a default-`--repo-root` read in any exported script resolves against
+      a tree with no `packaging/`, `docs/`, `tests/`, `evals/`, `.githooks/`, `charness-artifacts/`.
+
+
+      `scripts/packaging_lib.py` `export_plugin_tree` copies `scripts/` wholesale
+      with no filtering — 411 Python files, of which ~230 are named by no exported
+      SKILL.md, reference, preset, profile, or manifest.
+
+
+      ### 3. The gate that should have caught this is green *because of* the defect''s
+      cause
+
+
+      `scripts/validate_packaging_install_surface.py:143-174` re-runs `export_plugin_tree`
+      into a tmpdir and diffs it against the checked-in tree:
+
+
+      ```python
+
+      expected_files = collect_files(generated_plugin_root)   # produced BY the exporter
+
+      actual_files   = collect_files(plugin_root, ...)
+
+      ```
+
+
+      **Its oracle is the exporter itself.** Anything the exporter omits is absent
+      from both sides, so the diff is empty. It is a fixed-point check on the generator,
+      not a self-sufficiency check on the artifact. `check_staged_mirror_drift.py`,
+      `validate_packaging_committed.py`, the pre-push hook, and the CI job all feed
+      different snapshots into that same oracle and inherit the identical blind spot.
+
+
+      The only completeness assertions that exist are four hand-typed `require_file`
+      calls (`:108-119`), all Python modules, added reactively after specific breaks.
+      No entry for a data file or a directory — so `packaging/bootstrap-python.json`
+      is uncovered until someone types a fifth.
+
+
+      Compounding: `tests/repo_copy.py` clones the whole repo including `packaging/`
+      into fixtures, and `tests/charness_cli/test_bootstrap_runtime.py:32` explicitly
+      `shutil.copy2`s `bootstrap-python.json` into its tmp repo. The test that would
+      have caught this manufactures the dependency it should have proven absent.
+
+
+      ### 4. The nearest-miss gate has the right shape and the wrong constant
+
+
+      `scripts/check_export_safe_imports.py` is the only check that reasons about
+      path literals in exported source, and its docstring frames this exact class.
+      But `_forbidden_path_literal:123-124` accepts only `text == "skills/public"`
+      or `text.startswith("skills/public/")`. It never generalizes to "any export-rooted
+      literal whose first segment is not in the exporter''s shipped set."
+
+
+      **Both building blocks for the missing check already exist and nothing joins
+      them**: that AST walker (`_is_export_rooted`), and `export_plugin_tree`''s enumeration
+      of what actually ships.
+
+
+      ### 5. Other instances worth scoping with the fix
+
+
+      - **11 instruction sites** tell a consumer to run `python3 scripts/<x>.py` cwd-relative,
+      against the export''s own 100+ correct `"$SKILL_DIR/..."` convention. Two of
+      the eleven are adapter `command:` values — i.e. they land in consumer config
+      and persist.
+
+      - **Shell-gate guard coverage is 6 of 9.** `check-markdown.sh`, `check-shell.sh`,
+      `check-secrets.sh`, `check-links-internal.sh`, `check-links-external.sh`, `install-git-hooks.sh`
+      refuse loudly outside the authoring repo (#618). `check-python-lint.sh`, `run-quality.sh`,
+      and `self-validate-install-update.sh` do not — and `run-quality.sh` is what
+      `skills/quality/references/catalog.yaml:130` points a consumer at.
+
+      - `docs/public-skill-validation.json` and `docs/public-skill-dogfood.json` are
+      read by exported validators and not exported — the same ratchet-record shape
+      as instance 1.
+
+
+      ### Explicitly FINE-BY-DESIGN, so the list is complete
+
+
+      `.agents/*-adapter.yaml`, `charness-artifacts/**`, `docs/handoff.md`, `docs/roadmap.md`,
+      `.charness/`, `skills/support/generated/`, and the `.github/workflows` readers
+      are all **consumer-owned** — they are seeded or scanned at runtime, and shipping
+      filled copies would overwrite consumer config. Relative markdown links inside
+      the export measured clean: 0 broken. All three root `.py` shims ship byte-identical,
+      and no exported module imports an unexported sibling.
+
+
+      ### Correction to the original report
+
+
+      Instance 1 (`check_docs_graph.py`) is **closed** as of `54654b032` — the exported
+      gate defaults to 0 and reads charness''s bar from an unexported ratchet record.
+      It stays listed here as evidence that the class recurs, not as open work.'
+    createdAt: '2026-08-15T11:26:08Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/634#issuecomment-5302008885
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABPBEkHA
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## Partial progress, and the honest score: 2 of ~16 enumerated items
+
+
+      Landed in `d2daec03f` (S6c of the 6.0.0 release scope). **This issue stays open.**
+
+
+      ### What is repaired
+
+
+      1. **The dependency contract now travels with the installer that reads it.**
+      `packaging_lib.export_bootstrap_dependency_contract` ships `packaging/bootstrap-python.json`
+      and `packaging/bootstrap-requirements.txt` into `plugins/charness/packaging/`,
+      so `load_contract` no longer raises `missing bootstrap runtime contract` on
+      a consumer machine. Only those two files — the rest of `packaging/` is release
+      plumbing that means nothing to a consumer.
+
+      2. **The documented `gather` entrypoint no longer raises bare.** `gather_public_url.py`
+      guards its `import yaml` and names the pinned declaration plus how to install
+      it into the interpreter actually running the script.
+
+
+      ### What was built to catch instance four — and what it does NOT do
+
+
+      `check_export_self_sufficiency.py` reads the **checked-in export** rather than
+      re-running the exporter, which is the blindness this issue documented: the packaging
+      validator''s oracle is the exporter, so anything the exporter omits is absent
+      from both sides of its diff.
+
+
+      It ships with **one arm refusing**, and both severities were decided by bounded
+      review rather than staged:
+
+
+      - **Blocking — availability, not declaration.** An unguarded third-party import
+      in a script the export TELLS a consumer to run (named by an exported `SKILL.md`,
+      reference, or adapter) is refused. The first build asked whether the export
+      *declared* the package anywhere; shipping one requirements file satisfied that
+      for the entire export at a stroke while dozens of bare imports kept raising
+      the exact error reported here. Declaration is not availability. A requirements
+      file installs nothing.
+
+      - **Advisory — unshipped repo-root path literals.** Enumerated, not refused.
+      Review falsified its classification in both directions: it excused a real gap
+      the moment the slice shipped a `packaging/` directory, and it reported maintainer
+      tools scanning an operator-supplied root, which is correct code. It cannot yet
+      tell "reads its own tree" from "scans whatever tree the caller passed", and
+      a release-blocking gate over a falsified classification would have made its
+      own escape hatch routine.
+
+
+      ### What this does NOT close, stated rather than implied away
+
+
+      The detector reads Python `/`-chain literals and import statements. It cannot
+      see a markdown or YAML instruction site, a shell gate, an `os.path.join`, or
+      a wholly computed path. So from this issue''s own inventory:
+
+
+      - **the 11 cwd-relative `python3 scripts/<x>.py` instruction sites**, two of
+      which land in consumer adapter config — not repaired, and not detectable by
+      what shipped
+
+      - **the 3 unguarded shell gates** (`check-python-lint.sh`, `run-quality.sh`,
+      `self-validate-install-update.sh`) — same
+
+      - **`docs/public-skill-validation.json` / `docs/public-skill-dogfood.json` readers**
+      — same
+
+      - **the remaining bare third-party imports across the export** — real risk,
+      reported as an inventory only
+
+
+      An adversarial reviewer scored the slice at 2 of roughly 16 enumerated items.
+      Closing on that would assert behaviour the tree does not have.
+
+      '
+    createdAt: '2026-08-15T14:42:07Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/634#issuecomment-5302723612
+    viewerDidAuthor: true
+  createdAt: '2026-08-15T11:18:54Z'
+  labels: []
+  number: 634
+  state: OPEN
+  title: Exported plugin ships the bootstrap installer but not the dependency contract
+    it reads
+  updatedAt: '2026-08-15T14:42:07Z'
+  url: https://github.com/corca-ai/charness/issues/634
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

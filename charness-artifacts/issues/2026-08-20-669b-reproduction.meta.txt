@@ -1,0 +1,4 @@
+command: python3 -m pytest -q "tests/quality_gates/test_public_skill_yaml_output_contract.py::test_detail_yaml_is_structured[command4]"
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:49:50+09:00
+exit_code: 0

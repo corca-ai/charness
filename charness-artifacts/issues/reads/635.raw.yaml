@@ -1,0 +1,126 @@
+ok: true
+repo: corca-ai/charness
+number: 635
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '635'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## What happened
+
+
+    The shipped retro reference tells retro to recover a lesson session''s frozen
+    bundle
+
+    "from the affected work''s durable artifact":
+
+
+    > When the evaluator persists a session bundle, recover the explicit session ID
+
+    > and bundle path from the affected work''s durable artifact, then load the frozen
+
+    > bundle before judging effects. Do not substitute a newest-file guess, mutable
+
+    > lesson source, or host transcript search.
+
+
+    (`skills/public/retro/references/lesson-evaluation.md:10-13`, mirrored at
+
+    `plugins/charness/skills/retro/references/lesson-evaluation.md`.)
+
+
+    Nothing shipped tells anyone to WRITE that citation. Grepping `skills/public/achieve/**`
+
+    returns no lesson-bundle instruction, and the SessionStart hook context emits
+    the declare
+
+    command without a bundle path (`scripts/session_start_lesson_context.py`). The
+    only place
+
+    the path template appears is `docs/development.md:121-125`, which the plugin deliberately
+
+    does not ship.
+
+
+    So the consumer half of the contract is a read instruction with no matching write
+
+    instruction. A consuming repo that follows the shipped retro reference exactly
+    can be
+
+    told to recover a citation that its own work artifacts were never asked to carry.
+
+
+    ## Why this is worth a separate issue
+
+
+    #617 asked for three surfaces to reference the bundle by session id: the command,
+    the
+
+    work workflow, and retro. The command was repaired in the commit that closed #617,
+    and
+
+    retro already worked. The work-workflow third is owned by a different skill package,
+    so
+
+    it was escalated rather than folded in — recorded as F4 in
+
+    `charness-artifacts/critique/2026-08-17-issue-617-closeout.md` with verdict
+
+    `escalated-to-issue-spec`.
+
+
+    ## Not claimed
+
+
+    No fix proposed, and the right shape is genuinely open. Two directions look plausible
+
+    from outside: instruct the work/`achieve` surface to cite session id and bundle
+    path in
+
+    its durable artifact, or drop the "from the affected work''s durable artifact"
+    phrasing in
+
+    the retro reference in favour of whatever recovery path actually exists
+
+    (`lesson_session_routing` already emits `bundle_path` per unclaimed session, which
+    may
+
+    make the citation unnecessary rather than missing). Which is right depends on
+    whether the
+
+    work artifact is meant to be the binding record or merely a convenience, and this
+    report
+
+    does not decide that.
+
+
+    Found by a bounded fresh-eye reviewer during the #617 closeout.
+
+    '
+  comments: []
+  createdAt: '2026-08-17T01:44:25Z'
+  labels: []
+  number: 635
+  state: OPEN
+  title: The shipped retro reference reads a bundle citation no shipped surface asks
+    anyone to write
+  updatedAt: '2026-08-17T01:44:25Z'
+  url: https://github.com/corca-ai/charness/issues/635
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

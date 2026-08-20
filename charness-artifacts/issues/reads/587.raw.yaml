@@ -1,0 +1,180 @@
+ok: true
+repo: corca-ai/charness
+number: 587
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '587'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 2
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## RETARGETED 2026-08-10 — the original framing below is superseded\n\nThe\
+    \ remedy this issue proposed was measured and refuted, and the diagnosis merged\
+    \ three\ndifferent causes under one word. The measurement is in the\n[2026-08-10\
+    \ comment](https://github.com/corca-ai/charness/issues/587#issuecomment-5235395842);\n\
+    in short: the mutation-coverage gate already reports every blocking file and every\n\
+    uncovered line in one run, and a planted two-file experiment converged in a single\n\
+    repair pass (12.7s -> repair -> 9.1s clean).\n\n**The real remaining question,\
+    \ and the only thing this issue now asks:**\n\n> Iteration #2 of the 13 was, in\
+    \ this issue's own words, \"a tooling gap that made the\n> gate **wrong about\
+    \ the code**.\" What was that gap?\n\nThat is a false blocker, which is a different\
+    \ and more serious defect than a gate that\nreports serially — a gate that is\
+    \ wrong about the code costs a repair that was never\nneeded. One stated explanation\
+    \ for it does not survive reading: \"the mapper could not\nsee new tests\" is\
+    \ refuted by `scripts/run_standing_pytest.py:17-22,278-286`, where\n`tests/test_*.py`\
+    \ is a glob expanded at call time, so a new top-level test file IS\nvisible to\
+    \ target expansion.\n\nAnswering this needs the original session's record, not\
+    \ this tree.\n\n**What is NOT being asked any more:** an `--all-blockers` pre-push\
+    \ mode, and widening\nthe mutation-coverage gate's per-file reporting. The first\
+    \ addresses cost that is\nirreducible (a repair's own lint errors and its own\
+    \ new changed lines cannot be\nreported before the repair exists); the second\
+    \ fixes behavior that already works.\n\n**Why this stays open rather than closing:**\
+    \ the measured cost — 13 push attempts, ~20\nminutes of one session — is real,\
+    \ and closing would drop the signal along with the\nrefuted remedy.\n\n---\n\n\
+    # Original report (superseded framing, preserved)\n\n## Observed\n\nThe COMMIT-time\
+    \ gate aggregate surfaces every failing gate at once, and this repo's\nimplementation\
+    \ discipline says why in prose:\n\n> if a commit *is* rejected by one of these\
+    \ gates, run the aggregate to surface\n> **all** of them at once rather than fix-and-retry\
+    \ one rejection at a time —\n> serial single-gate rejections after a green suite\
+    \ are pure waste the aggregate\n> removes.\n\nThe PRE-PUSH path has no equivalent.\
+    \ `run-quality.sh` reports a summary line\n(`85 passed, 2 failed (FAILED: ...)`),\
+    \ which does name every failing label — but\nseveral of those gates emit findings\
+    \ that are only actionable one repair at a time,\nand the loop is: fix one, re-run\
+    \ the full ~95s gate, discover the next.\n\n## Measured cost, one session\n\n\
+    Landing a single bundle took **13 push attempts**. The blockers arrived serially:\n\
+    \n1. `check-runtime-budget` (a drifted bar)\n2. `check-changed-line-mutation-coverage`\
+    \ (mapper could not see new tests)\n3. `check-changed-line-mutation-coverage`\
+    \ again (real gaps, once the mapper worked)\n4. `ruff` (import ordering in the\
+    \ tests written for #3)\n5. `check-changed-line-mutation-coverage` a third time\
+    \ (one remaining branch)\n\nEach iteration paid the full pre-push run. Roughly\
+    \ 20 minutes of the session was\ngate re-runs discovering one blocker at a time,\
+    \ on a change whose broad suite had\nalready been green.\n\nNote #2 and #3 are\
+    \ the same label reporting different causes, which is the sharpest\npart: the\
+    \ first was a tooling gap that made the gate wrong about the code, the\nsecond\
+    \ was the gate being right — and there was no way to see both at once.\n\n## Why\
+    \ this is not just \"read the summary line\"\n\nThe summary DOES list all failing\
+    \ labels. What it cannot do is tell you that fixing\nlabel A will reveal a second,\
+    \ different failure in label A. `check-changed-line-mutation-coverage`\nrecomputes\
+    \ its target set after each repair, so its next answer is not visible until\n\
+    the previous one is fixed.\n\n## Suggested direction (not a decision)\n\n- A pre-push\
+    \ `--all-blockers` mode that runs the failing gates' analysis to\n  completion\
+    \ rather than stopping at the first actionable finding per label.\n- Or: for the\
+    \ mutation-coverage gate specifically, report the FULL uncovered set for\n  every\
+    \ changed pool file rather than the first blocking file's lines, so the\n  repair\
+    \ can be done in one pass.\n\nThe second is narrower and may capture most of the\
+    \ cost — 3 of the 5 iterations\nabove were that one gate.\n\n## Non-claims\n\n\
+    The 13 attempts include two that failed for reasons unrelated to serialisation\
+    \ (a\ngenuinely drifted budget, and a lint error I introduced while fixing the\
+    \ previous\nblocker). A perfect aggregate would not have reduced this to one attempt\
+    \ — I would\nestimate three or four. I have not measured whether other sessions\
+    \ hit this shape;\nthis is one session's cost, recorded because it was unusually\
+    \ visible.\n\nAI-provenance: authored by an agent session, from that session's\
+    \ retro.\n\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOA3NAg
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: "## Measured: the narrower proposed remedy fixes a defect that does not\
+      \ exist\n\nThis issue's suggested direction says the mutation-coverage gate\
+      \ reports \"the first\nblocking file's lines\" and that widening it \"may capture\
+      \ most of the cost — 3 of the 5\niterations above were that one gate.\" Both\
+      \ halves were tested today.\n\n**Read first.** `classify_changed_line_scope_gap`\
+      \ iterates the whole\n`changed_before_coverage` set and collects every gap file\n\
+      (`scripts/mutation_changed_files_lib.py:52-62`).\n`changed_line_scope_gap_targets`\
+      \ returns, per file, the exact uncovered changed lines\nwith their source text\
+      \ (`:83-97`). The gate then builds `blocking_detail` over the\nwhole `blocking`\
+      \ list (`scripts/check_changed_line_mutation_coverage.py:387-391`).\nThere is\
+      \ no first-file-only path.\n\n**Then measured, on a throwaway branch.** Uncovered\
+      \ changed lines were planted in two\ndifferent pool files (`scripts/check_docs_graph.py`,\
+      \ `scripts/evidence_boundary_crosswalk.py`),\ncommitted, and the real pre-push\
+      \ lane run:\n\n- **Iteration 1** — 12.7s, exit 1. Reported `blocking: [both\
+      \ files]`, and for each file\n  every uncovered line (5 and 5) with source text.\n\
+      - **One repair pass** covering everything it listed — two tests, no production\
+      \ edits.\n- **Iteration 2** — 9.1s, exit 0, `blocking: []`, `analyzed 2 / changed\
+      \ 2`, \"clean --\n  every mapped changed pool file's changed lines are covered\"\
+      .\n\nOne report, one repair pass, converged. The gate hands over a complete\
+      \ work list.\n\n## So what did cost the 13 attempts\n\nThis issue's own account\
+      \ already separates two things that the \"serialisation\" framing\nmerges. Iteration\
+      \ #2 was \"a tooling gap that made the gate **wrong about the code**\" —\na\
+      \ false blocker, which is a different defect from a gate that reports incompletely.\n\
+      Iterations #4 (ruff on the tests written for #3) and any repair that edits production\n\
+      code are a third thing again: **new work that could not have been reported before\
+      \ the\nrepair existed**. You cannot lint code you have not written, and you\
+      \ cannot measure the\ncoverage of lines you have not yet changed.\n\nThat part\
+      \ is not reducible by an `--all-blockers` mode. It is reducible by running the\n\
+      gates against the repair before pushing, which this repo already has in\n`scripts/run_slice_closeout.py`.\n\
+      \n## What this issue should probably become\n\nEither narrowed to the false-blocker\
+      \ half (what the iteration-#2 tooling gap actually\nwas, since \"the mapper\
+      \ could not see new tests\" does not survive reading\n`run_standing_pytest.py:17-22,278-286`\
+      \ — `tests/test_*.py` is a glob expanded at call\ntime, so a new top-level test\
+      \ file is visible to target expansion), or closed and\nre-filed against whatever\
+      \ the real recurring blocker turns out to be.\n\n## Non-claims\n\nThe experiment\
+      \ covers ONE repair shape: adding tests to cover the lines the gate\nlisted.\
+      \ It does NOT establish what happens when the repair edits production code in\
+      \ a\npool file, which would introduce new changed lines and could genuinely\
+      \ require a second\nreport. It does not reproduce the original 13-attempt session,\
+      \ and it does not identify\nthe iteration-#2 tooling gap — only that one stated\
+      \ explanation for it is refuted.\nTimings are from one machine (`local-linux-x86_64-36cpu`)\
+      \ and are the gate alone, not\nthe ~95s full pre-push run.\n\nAI-provenance:\
+      \ authored by an agent session.\n"
+    createdAt: '2026-08-10T03:00:28Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/587#issuecomment-5235395842
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOgdXOA
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## 2026-08-12 explicit disposition: unproven-defer
+
+
+      The issue was re-read with its existing measurement. The original serial-aggregate
+      remedy is refuted, and the remaining claim is a possible false blocker in an
+      unavailable original session record. Current-tree inspection refutes one proposed
+      explanation (new top-level tests are expanded at call time), but cannot recover
+      what actually caused iteration #2.
+
+
+      Disposition: **unproven-defer**. Owner: mutation-coverage lane / release operator.
+      Revisit trigger: recover the original session record, or obtain a reproducible
+      current false blocker with a captured command, changed-path set, and expected-versus-actual
+      gate result. Until then this issue remains OPEN; neither the old remedy nor
+      a clean current run proves the historical defect resolved.
+
+
+      AI-provenance: authored by an agent session.'
+    createdAt: '2026-08-12T14:57:38Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/587#issuecomment-5268526904
+    viewerDidAuthor: true
+  createdAt: '2026-08-09T23:16:37Z'
+  labels: []
+  number: 587
+  state: OPEN
+  title: a false blocker in the pre-push mutation-coverage lane cost repairs that
+    were never needed (the 'serial aggregate' framing is refuted)
+  updatedAt: '2026-08-12T14:57:38Z'
+  url: https://github.com/corca-ai/charness/issues/587
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

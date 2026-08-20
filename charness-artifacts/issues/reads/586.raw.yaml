@@ -1,0 +1,316 @@
+ok: true
+repo: corca-ai/charness
+number: 586
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '586'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 3
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Structural pattern\n\nA check exists, its tests pass, and it never runs\
+    \ on the path the caller uses. The\ntests exercise the function DIRECTLY; the\
+    \ wired path never reaches the code. So the\nsuite is green, the reviewer reading\
+    \ the module finds it correct, and the check is\ninert in production.\n\nThis\
+    \ is distinct from \"the check is wrong\". The check is usually right. What is\n\
+    missing is any signal that it is *reachable* from the surface an operator invokes.\n\
+    \n## Triggering instances\n\nSix in one goal (2026-08-10, `re-verify-the-backlog-and-retire-the-unchosen-constraint`):\n\
+    \n1. **`consolidated` classification** — added to `KNOWN_CLASSIFICATIONS` and\
+    \ a ledger\n   table while `issue_verify_closeout.CLASSIFICATIONS`, the `issue_tool`\
+    \ argparse\n   choices, the draft validator's second copy, and the commit-message\
+    \ regex all\n   still refused it. The commit hook's `_infer_classification` then\
+    \ fell through to\n   `bug`, demanding exactly the repair claims the disposition\
+    \ exists to forbid.\n2. **The four consolidation readbacks** — wired into `verify_closeout`\
+    \ but NOT into\n   `close-with-comment`, which is the one carrier a consolidated\
+    \ close is REQUIRED\n   to use.\n3. **`REQUIRED_CLOSE_REASON`** — declared by\
+    \ the module that owns the disposition\n   and read by nobody, so closes would\
+    \ have landed publicly as `completed`.\n4. **The self-reference check** — `evaluate`\
+    \ defaulted `self_number` to `None` and\n   guarded on `is not None`, so it fired\
+    \ only in the module's own direct-call test.\n5. **`release_surface_tokens`**\
+    \ — comment told consumers to declare bespoke release\n   surfaces, the resolver\
+    \ read them, the tests exercised the library function, and\n   the only production\
+    \ caller passed no `repo_root`. Advertised and dead.\n6. **Two more stale classification\
+    \ vocabularies** in the `release` skill, found only\n   because a release was\
+    \ being cut.\n\nEvery one was caught by a bounded review round or an ad-hoc probe.\
+    \ **None was\ncaught by the test suite**, because in each case a green test existed\
+    \ for the very\ncode that never ran.\n\n## Why this is worth a structural guard\n\
+    \nThe repair applied each time was local — add a test that goes through the wired\n\
+    surface. That works and does not generalise: the next check will ship the same\
+    \ way,\nbecause nothing asks \"is this reachable?\" at the moment it is added.\n\
+    \nNote the changed-line mutation gate did not catch these either. It measures\
+    \ whether\na changed line is COVERED, and these lines were covered — by the direct-call\
+    \ test.\nCoverage and reachability-from-the-caller are different questions.\n\n\
+    ## Suggested direction (not a decision)\n\nOptions, roughly cheapest first:\n\n\
+    1. **A vocabulary-parity check.** Several instances are one shape: a value added\
+    \ to\n   one enumeration and not its siblings. A gate asserting that the classification\n\
+    \   vocabularies agree across their copies would have caught 1 and 6, and is\n\
+    \   mechanical.\n2. **A reachability advisory on new proof surfaces.** The repo\
+    \ already has a\n   new-proof-surface advisory that fires on added files in proof-surface\
+    \ families.\n   It could additionally ask whether any test reaches the new code\
+    \ through a\n   production entry point rather than by loading the module directly.\n\
+    3. **Nothing, and rely on bounded review.** Defensible — review caught all six.\
+    \ But\n   review is per-slice and expensive, and this pattern recurred within\
+    \ a single goal\n   after being named twice.\n\n## Non-claims\n\nNo consumer repo\
+    \ inspected. I have not measured how often this shape occurs outside\nthe one\
+    \ goal that produced these six, so \"recurs\" is established within that window\n\
+    and not beyond it. Option 1 is the only one I would call clearly cheap; 2 may\n\
+    over-fire and I have not prototyped it.\n\nAI-provenance: authored by an agent\
+    \ session, from that goal's retro Sibling Search.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABN_3uDw
+    author:
+      login: coderabbitai
+    authorAssociation: NONE
+    body: "<!-- This is an auto-generated issue plan by CodeRabbit -->\n\n<details>\n\
+      <summary>⚠️ Possible Duplicate Issue(s)</summary>\n\n- https://github.com/corca-ai/charness/issues/564\n\
+      </details>\n\n---\n<details>\n<summary>\U0001F4DD Issue Planner</summary>\n\n\
+      <sub>Check the box below or use the `@coderabbitai plan` command to generate\
+      \ an implementation plan and prompts that you can use with your favorite coding\
+      \ assistant.</sub>\n\n- [ ] <!-- {\"checkboxId\": \"8d4f2b9c-3e1a-4f7c-a9b2-d5e8f1c4a7b9\"\
+      } --> Create Plan\n</details>\n\n\n---\n<details>\n<summary> \U0001F9EA Issue\
+      \ enrichment is currently in open beta.</summary>\n\n\nYou can configure auto-planning\
+      \ by selecting labels in the issue_enrichment configuration.\n\nTo disable automatic\
+      \ issue enrichment, add the following to your `.coderabbit.yaml`:\n```yaml\n\
+      issue_enrichment:\n  auto_enrich:\n    enabled: false\n```\n</details>\n\n\U0001F4AC\
+      \ Have feedback or questions? Drop into our [discord](https://discord.gg/coderabbit)!"
+    createdAt: '2026-08-09T23:16:33Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/586#issuecomment-5234355727
+    viewerDidAuthor: false
+  - id: IC_kwDOR9yx7M8AAAABOA7Meg
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## Measured: both cheap candidate guards have near-zero current findings
+
+
+      Probing before designing, because the last two attempts in this family were
+      built
+
+      first and probed after. Two of the three options in this issue were measured
+      today.
+
+
+      **Option 1, vocabulary-parity: 0 divergences right now.** All six classifications
+
+      (`bug`, `feature`, `deferred-work`, `question`, `decision-needed`, `consolidated`)
+
+      are present in every carrier that enumerates them — `issue_verify_closeout.CLASSIFICATIONS`,
+
+      `issue_closeout_classification_ledger.CLASSIFICATION_FIELDS`,
+
+      `check_issue_closeout_commit_msg`''s regex, `release_issue_closeout_message`,
+      and
+
+      `publish_release_cli`. The two instances this option was ranked to cover (#1
+      and #6 in
+
+      the list above) are both already repaired, so a parity gate built today would
+      ship with
+
+      nothing to catch.
+
+
+      **The adjacent "advertised and dead" signal: 9 across the whole tree.** Across
+      704
+
+      production Python files and 5,493 top-level functions, exactly **9** functions
+      are
+
+      referenced by `tests/` and by no other production code:
+
+
+      ```
+
+      scripts/critique_adapter_lib.py:280            adapter_has_sections
+
+      scripts/quality_adapter_lib.py:317             is_deliberately_absent
+
+      scripts/proof_semantics_adapter_lib.py:302     acceptance_classes
+
+      scripts/prompt_mutant_lib.py:184               mutant_ref_name
+
+      scripts/check_markdown_inline_code.py:49       find_wrapped_inline_code
+
+      skills/shared/scripts/run_plan_envelope.py:172 build_linear_envelope
+
+      skills/public/quality/scripts/run_dead_code_advisory.py:100  _dataclass_field_locations
+
+      skills/public/quality/scripts/surface_marker_lib.py:139      module_release_only_files
+
+      skills/public/issue/scripts/issue_consolidation_readback.py:158 verify_consolidation
+
+      ```
+
+
+      0.16% of the surface. I read the most suspicious one end to end —
+
+      `verify_consolidation`, in the very module instance #2 of this issue already
+      repaired
+
+      once. Its docstring promises that a raising `fetch` is reported as a readback
+      that did
+
+      not run. No production caller uses it: the wired path is `readbacks_for_closeout`.
+
+      **But that path carries the equivalent guard** (`:216-220` catches, sets `payload
+      =
+
+      None`, and lets `evaluate_destination` report the problems). So it is a superseded
+
+      helper, not an inert check — a maintenance trap, not a live defect.
+
+
+      ## What this changes about the guard question
+
+
+      The six instances in the triggering goal were not one shape. Only two were "a
+      value in
+
+      one enumeration and not its siblings". The others were reachability conditions
+      a
+
+      name-reference scan cannot see: a `self_number=None` default that made a check
+      fire
+
+      only in its own direct-call test, a production caller that passed no `repo_root`,
+      and
+
+      readbacks wired into one carrier but not the one the disposition requires. Neither
+
+      cheap guard detects any of those.
+
+
+      So both cheap options are **regression guards with no current finding**. That
+      is not an
+
+      argument against building one, but it is exactly the condition under which a
+      constant or
+
+      a heuristic gets fitted to its own test fixtures — the failure this repo recorded
+      twice
+
+      in the goal that filed this issue.
+
+
+      Meanwhile option 3 ("rely on bounded review") gained evidence rather than losing
+      it.
+
+      Every one of the six was caught by a bounded round or an ad-hoc probe. Two more
+      were
+
+      found and repaired today, in #572''s slice — `check_docs_graph.py`''s exit-code
+      mapping
+
+      and its only external-tool invocation, both green under direct-call tests and
+      never run
+
+      on the wired path — and both were found by reading, not by a gate. The count
+      keeps
+
+      going up and the detector keeps being the same one.
+
+
+      ## Non-claims
+
+
+      The 9-function scan is a token-reference approximation: a function reached only
+      through
+
+      `getattr`, a dispatch table keyed by string, or a subprocess entry point would
+      be
+
+      miscounted, and one referenced anywhere in production by name — including in
+      a comment
+
+      — is counted as reached. It says nothing about whether a referenced function
+      is reached
+
+      on the path an operator actually invokes, which is this issue''s real question.
+      No
+
+      consumer repo was inspected. The vocabulary probe covers the closeout classification
+
+      vocabulary only, not the other enumerations in the tree.
+
+
+      AI-provenance: authored by an agent session.
+
+      '
+    createdAt: '2026-08-10T03:13:04Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/586#issuecomment-5235461242
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOg4Hig
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## 2026-08-13 disposition: deferred work; issue remains open
+
+
+      I re-read the issue and tested its named current candidate rather than adding
+      a detector from the historical examples.
+
+
+      `verify_consolidation()` is test-only, but it is a superseded helper rather
+      than an inert production check. Both actual consolidated-close consumers call
+      the equivalent `readbacks_for_closeout()` loop: `issue_close.py` before its
+      irreversible comment/close boundary and `issue_verify_closeout.py` when rendering
+      the closeout verdict. `python3 -m pytest tests/quality_gates/test_issue_consolidation_readback.py
+      -q` passed 28 tests, including the wired-loop fetch-failure/refusal path.
+
+
+      The prior vocabulary-parity probe still has zero divergences, and a name-reference
+      reachability heuristic has known dynamic-call/comment/subprocess false classifications.
+      There is therefore no current reproducer to justify a generic guard; implementing
+      one now would be speculative feature work, not a repair.
+
+
+      Revisit trigger: a newly named production entry point whose direct-call test
+      passes while its operator path demonstrably bypasses the check. The next slice
+      should add a wired-path regression at that concrete entry point and then re-evaluate
+      whether an abstraction is warranted.
+
+
+      Fresh-eye review independently agreed: no live defect in the inspected closeout
+      paths; no claim is made about external-host-only paths. Debug record: `charness-artifacts/debug/2026-08-13-debug-review.md`.
+
+
+      AI-provenance: authored by an agent session.'
+    createdAt: '2026-08-12T15:35:00Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/586#issuecomment-5268965258
+    viewerDidAuthor: true
+  createdAt: '2026-08-09T23:16:14Z'
+  labels: []
+  number: 586
+  state: OPEN
+  title: a check that passes its own direct-call test while never firing on the wired
+    path
+  updatedAt: '2026-08-12T15:35:00Z'
+  url: https://github.com/corca-ai/charness/issues/586
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

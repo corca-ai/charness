@@ -1,0 +1,66 @@
+ok: true
+repo: corca-ai/charness
+number: 681
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '681'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Situation\n\n`check_goal_artifact.py` can report that a goal has no `Gate\
+    \ cadence:` line while simultaneously returning the exact detected cadence line\
+    \ and text in the same `cadence_owner` payload.\n\nObserved with installed Charness\
+    \ 6.2.0 in consumer repository `corca-ai/ceal` on 2026-08-20.\n\n## Experience\n\
+    \nThe active goal contains this operating-frame entry:\n\n```markdown\n- Gate\
+    \ cadence: final broad gates once after the reviewed family queue reaches\n  zero;\
+    \ pre-push only at the final bundle.\n```\n\nRunning the canonical checker returned\
+    \ `ok: true`, but its nested cadence result was internally contradictory:\n\n\
+    ```yaml\ncadence_owner:\n  applies: false\n  ok: true\n  reason: 'not applicable:\
+    \ `## Active Operating Frame` states no `Gate cadence:` line ...'\n  cadence:\n\
+    \    line: 20\n    text: final broad gates once after the reviewed family queue\
+    \ reaches zero; pre-push only at the final bundle.\n```\n\n## Evidence\n\nReproduction\
+    \ in the consumer repo:\n\n```bash\npython3 /home/hwidong/.codex/plugins/cache/local/charness/6.2.0/skills/achieve/scripts/check_goal_artifact.py\
+    \ \\\n  --repo-root . \\\n  --goal-path charness-artifacts/goals/2026-08-20-verified-duplicate-debt-retirement.md\n\
+    ```\n\nThe goal line is positively controlled with:\n\n```bash\nrg -n 'Gate cadence:|final\
+    \ broad gates' charness-artifacts/goals/2026-08-20-verified-duplicate-debt-retirement.md\n\
+    ```\n\nDuplicate search before filing:\n\n- positive control: `corca-ai/charness#680`\
+    \ was readable\n- searches for `cadence_owner applies false Gate cadence` and\
+    \ `no Gate cadence line cadence found` returned no issues\n\nSource identity:\
+    \ installed Charness plugin version 6.2.0. No private media or credentialed source\
+    \ is needed.\n\n## Impact\n\nAn agent cannot tell whether cadence ownership was\
+    \ intentionally ruled inapplicable or silently skipped by a parser/condition bug.\
+    \ The payload's `ok: true` can let a real cadence ownership check appear complete\
+    \ while its reason contradicts the evidence it already parsed.\n\n## Weak solution\
+    \ direction\n\nDerive `applies` and the human reason from the same parsed cadence\
+    \ value, and add a fixture where a wrapped `- Gate cadence:` bullet is found and\
+    \ must make the cadence-owner rule applicable (or produce a distinct, truthful\
+    \ non-applicability reason).\n\n"
+  comments: []
+  createdAt: '2026-08-20T09:28:48Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1HA
+    name: bug
+    description: Something isn't working
+    color: d73a4a
+  number: 681
+  state: OPEN
+  title: goal checker says Gate cadence is absent while returning the detected line
+  updatedAt: '2026-08-20T09:28:48Z'
+  url: https://github.com/corca-ai/charness/issues/681
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

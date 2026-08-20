@@ -1,0 +1,175 @@
+ok: true
+repo: corca-ai/charness
+number: 582
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '582'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 2
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## The shared gap\n\nThis repo's proof and evidence machinery for closeout\
+    \ and for external claims is\nbuilt and operated as **prose plus hand-run steps**\
+    \ rather than as schema'd,\nmachine-checked artifacts. Four surfaces show the\
+    \ same shape from four angles.\n\n## Members\n\n- **#524** — the external-capability\
+    \ proof ladder's five levels exist only as\n  prose: no machine-readable registry,\
+    \ no `proves` / `does_not_prove` fields, no\n  extension point for a consumer\
+    \ to declare a narrower class under a level. A real\n  consumer had to invent\
+    \ its own 21-class taxonomy and hand-map it back, with 15 of\n  those collapsing\
+    \ into one charness level.\n- **#525** — external claims (README, operator-acceptance\
+    \ doc, public-skill\n  descriptions) are not bound to evidence by anything machine-checkable.\n\
+    \  `docs/readme-proof.md` defines the right concepts and no validator, hook, or\
+    \ CI\n  reads it, so evidence-path drift is silent.\n- **#514** — assembling closeout\
+    \ evidence still requires manual sequencing across\n  runtime diagnosis, critique-packet\
+    \ identity, and mutation-producer commands, each\n  with its own failure mode.\n\
+    - **#535** — digest-binding surfaces ship without a one-command re-bind, so\n\
+    \  staleness is discharged by hand. (Its issue-source-freeze instance is already\n\
+    \  fixed by a `refreeze` command; the critique-packet instance and the general\
+    \ rule\n  remain.)\n\n## Why these are one gap and not four defects\n\nThey cross-reference\
+    \ each other's boundaries in their own text — #524 and #525\neach say \"this differs\
+    \ from #514\" — which is what a real family looks like rather\nthan an after-the-fact\
+    \ grouping. Each is a place where proof-related state that\nshould be a checked\
+    \ artifact is instead a document a human maintains.\n\n## What resolving this\
+    \ looks like\n\nNot one PR. It means treating \"is this a schema'd, validated\
+    \ artifact or a prose\nledger?\" as the standing question whenever a proof/claim/evidence\
+    \ surface is\ntouched, and taking the members roughly in dependency order: the\
+    \ vocabulary\n(#524) and the claim binding (#525) first, since #514 and #535 consume\
+    \ identity\nconcepts those two would formalize.\n\n## Non-claims\n\nNo consumer\
+    \ repo was inspected for this umbrella. The grouping is from a reading\nof all\
+    \ four bodies; it does not assert that any member is closable, and no member's\n\
+    premise was re-verified against the current tree beyond what its own issue records.\n\
+    \n\n---\n\n## Status 2026-08-11 — every member is CLOSED and this umbrella is\
+    \ the only home of what is left\n\nAll four members read `CLOSED` / `NOT_PLANNED`\
+    \ through the backend. That is the\n`consolidated` disposition, which **claims\
+    \ nothing about the defect**. Do not read the\nclosed member list as \"fixed\"\
+    . Verified against the tree by a bounded read-only\nreviewer; record:\n[class-survival\
+    \ review](https://github.com/corca-ai/charness/blob/main/charness-artifacts/audit/2026-08-10-umbrella-class-survival-review.md).\n\
+    \n**Class verdict: REMAINS.**\n\n- **#524 — NOT FIXED.** The external-capability\
+    \ proof ladder\n  (`skills/shared/references/external-capability-proof-ladder.md`)\
+    \ has zero machine\n  readers; a repo-wide grep for its level names returns no\
+    \ `.py`/`.json`/`.yaml`/`.sh`\n  hit. The repo owns a *different* schema'd ladder\n\
+    \  (`scripts/proof_semantics_adapter_lib.py`) and ships no adapter for itself.\n\
+    \  **Disposition: IGNORE — declined for cost, not because the problem is unreal.**\
+    \ An\n  earlier draft dismissed it as unreal using survivorship reasoning (\"\
+    the consumer\n  hand-mapped it and it worked\"); that is evidence the workaround\
+    \ was survivable.\n- **#525 — PARTIALLY FIXED, residual carried here.** `docs/readme-proof.md`\
+    \ IS now read\n  by a failing gate (`specs/readme-proof.spec.md`, queued in `run-quality.sh`),\
+    \ so\n  \"nothing reads it\" is false. But that gate checks string presence and\
+    \ row shape only\n  and never opens an evidence path. Live drift already in the\
+    \ file: `:36-42` forbids\n  claim discovery while `:80-82` instructs running it,\
+    \ and the gate passes either way.\n  **Disposition: BUILD — resolve each cited\
+    \ evidence path, fail when one does not\n  exist.** This is the one new-code item\
+    \ across all four umbrellas.\n- **#514 — DECLINED by operator decision, not fixed.**\
+    \ `closeout_bundle.py` /\n  `final_bundle_preflight.py` predate the close, behavior\
+    \ channels are recorded rather\n  than run, and the evidence-boundary matrix it\
+    \ turns on was left unscheduled while its\n  crosswalk instance was retired. **Disposition:\
+    \ record as declined.**\n- **#535 — INSTANCE fixed, RULE not.** `validate_issue_source_freeze.py\
+    \ refreeze` exists;\n  nothing enumerates digest-binding surfaces and requires\
+    \ each to declare a re-bind.\n  **Disposition: IGNORE with a reopen trigger.**\n\
+    \n**Not previously listed here, and it is this class's largest instance:**\n`.agents/quality-adapter.yaml:123-652`\
+    \ — ~530 lines of hand-maintained prose sizing ~120\nmachine-checked numbers.\
+    \ The numbers are checked; the reasoning that sizes them is not.\nIt is also the\
+    \ one instance where no deletion is available, which is why a\ndeletion-biased\
+    \ plan dropped it. Recorded, not sliced.\n\n**This umbrella retires by ruling,\
+    \ not by repair.** Its own body says so: \"Not one PR. It\nmeans treating [this]\
+    \ as the standing question whenever a proof/claim/evidence surface is\ntouched.\"\
+    \ It closes when #525's residual ships and the three rulings above are recorded\
+    \ —\nnot when the members close, which already happened and proved nothing.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABN_wTUA
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '**Correction: this umbrella absorbed 3 of its 4 named members, not 4.**
+
+
+      `#524`, `#525` and `#535` are closed as `not planned` and moved here. **`#514`
+      is
+
+      still OPEN and did not move.**
+
+
+      Why: `#514` is protected by this repo''s evidence-boundary crosswalk, which
+      refused
+
+      the close with `matrix_incomplete` — "the crosswalk is in ''bootstrap'' state;
+      the
+
+      acceptance matrix that would evidence closing #514 does not exist yet". The
+      gate
+
+      covers exactly three issues (`#514`, `#515`, `#518`) and it is a deliberate
+
+      protection, not an obstacle to route around. Building that acceptance matrix
+      is
+
+      real work and is not part of a consolidation.
+
+
+      So `#514` stays in this umbrella''s description as a member of the FAMILY, and
+
+      remains separately open as an issue. Whoever picks this up should treat it as
+
+      in-scope for the shared gap and out-of-scope for "already consolidated".
+
+
+      Recording it here rather than leaving the member list to imply otherwise: an
+
+      umbrella that names four members while three moved is exactly the kind of record
+
+      that reads as done and is not.
+
+      '
+    createdAt: '2026-08-09T22:44:53Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/582#issuecomment-5234234192
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOhQekg
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: 'Local proof recorded at commit 28be0bf2 (GitHub #582 remains OPEN; this
+      is not a closure claim). The live #525 residual is repaired narrowly: the existing
+      README Proof Ledger Specdown reader now requires each exact Claim Ledger Evidence
+      cell to contain existing, relative, path-backed Markdown references, and refuses
+      empty, malformed, prose-only, escaping, fragment, or missing-target evidence.
+      It does not claim semantic proof that a cited path supports the claim. Focused
+      proof: 59 focused tests plus a full local Specdown run (4 specs, 8 cases); two
+      bounded fresh-eye rounds ran, and the R2 final-consumer scope repair is accepted-unreviewed
+      under the verdict-logic cap. Resolution critique: charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md.
+      #524 taxonomy and #535 generic rebind remain separate deliberate non-implementations,
+      so this umbrella stays OPEN pending their independently evidenced rulings and
+      final cohort readback.'
+    createdAt: '2026-08-12T16:10:38Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/582#issuecomment-5269364370
+    viewerDidAuthor: true
+  createdAt: '2026-08-09T22:41:17Z'
+  labels: []
+  number: 582
+  state: OPEN
+  title: 'umbrella: proof and evidence infrastructure is prose, not schema'
+  updatedAt: '2026-08-12T16:10:39Z'
+  url: https://github.com/corca-ai/charness/issues/582
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

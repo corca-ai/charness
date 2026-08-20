@@ -1,0 +1,145 @@
+ok: true
+repo: corca-ai/charness
+number: 601
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '601'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 1
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Situation\n\nThe `quality` skill inspects a repo's gates, test confidence,\
+    \ and concept\nintegrity. In a repo whose **product is a CLI**, the test harness\
+    \ reliably grows\na specific pathology that `quality` does not currently look\
+    \ for, and it is\ninvisible to every gate that repo already runs: the suite is\
+    \ green, the ratchets\nare green, and the only symptom is that broad proof becomes\
+    \ slow enough that\npeople stop running it at the boundary where it matters.\n\
+    \nI hit this today in a sibling repo and had to hand-measure to find out why.\n\
+    Nothing in `quality` pointed at it.\n\n## Experience\n\nAn agent ran the broad\
+    \ unit suite as a release-boundary proof. It took roughly\nfifteen minutes, gave\
+    \ no progress signal beyond dots, and produced no per-shard\nattribution. The\
+    \ operator's reaction was the useful part:\n\n> 릴리즈 할 때마다 이렇게 되면 너무 불리하군.\n> (If\
+    \ it's like this every release, that's a serious handicap.)\n\nThen, when the\
+    \ agent proposed deferring to the existing \"already optimized, do\nnot revisit\
+    \ by intuition\" comment in the runner, the operator pushed back with\nthe actual\
+    \ principle:\n\n> 기억에 의존하는 대신 코드가 뭔가 보장해주면 좋겠음.\n> (Rather than depending on memory,\
+    \ I'd like the code to guarantee something.)\n\nBoth reactions generalize. Neither\
+    \ is specific to that repo.\n\n## Evidence\n\nMeasured 2026-08-11 in the private\
+    \ sibling repo `corca-ai/ceal`. Figures are\nreproduced here verbatim so this\
+    \ issue stands alone without repo access.\n\n**Wall clock is concentrated in a\
+    \ tiny minority of files.**\n\n| shard | wall clock | files |\n| --- | --- | ---\
+    \ |\n| `heavy` | 546 s | 22 (process-isolated, files serial) |\n| 8 × `fast:*`\
+    \ | ~316 s total | 958 |\n| `execution-surface` | 55 s | — |\n\n2% of the files\
+    \ account for roughly 63% of the wall clock.\n\n**Those 22 files spawn the real\
+    \ binary 226 times.**\n`bin/*.test.mjs` contains 226 real-binary spawn sites —\
+    \ 127 in\n`bin/cealctl.test.mjs`, 72 in `bin/ceal.test.mjs`, the rest spread across\n\
+    apply / doctor / status / credential-auth.\n\n**Most of those spawns assert a\
+    \ pure function of argv.** A representative case:\n\n```js\nconst { stdout, stderr\
+    \ } = await runCealctl([\"--help\"], { homeDir });\nassert.equal(stderr, \"\"\
+    );\nassert.match(stdout, /usage: cealctl <command> \\[options\\]/);\n```\n\nHelp\
+    \ text, usage strings, and `--json` payload shape are argv → stdout. Each\nassertion\
+    \ pays a full Node process boot to prove something no process is needed\nto prove.\
+    \ This is not sloppiness — spawning the real binary is the *obvious* way\nto test\
+    \ a CLI, which is exactly why the pathology is systematic.\n\n**Harness invariants\
+    \ exist as comments, not as checks.** In the same repo:\n\n- a CONCURRENCY INVARIANT\
+    \ documented in a header comment (\"each split file\n  registers exactly ONE parent\
+    \ test wrapped in `{ concurrency: ... }`\"), whose\n  breach is N×N oversubscription\
+    \ of real binaries — enforced by prose;\n- the fast/heavy tier boundary: nothing\
+    \ stops a new spawning test from landing\n  in the fast tier, or a help-only test\
+    \ from sitting in the heavy one, although\n  \"does this file import the spawn\
+    \ helpers\" is a static fact;\n- no budget on the spawn count, so once it is cut\
+    \ it does not stay cut;\n- the background proof-job runner dies with its launcher,\
+    \ so a killed\n  foreground caller loses the run *and* leaves a name lock behind;\n\
+    - reclaiming that lock then requires an operator to check `/proc` for the\n  recorded\
+    \ launcher and child process group by hand, even though the runner\n  wrote both\
+    \ PIDs into the lock file itself.\n\nThe repo had already optimized this surface\
+    \ once (an isolation audit raised\nin-file CLI concurrency and cut a block from\
+    \ ~63 s to ~26 s) and correctly wrote\n\"revisit only with a fresh isolation audit\
+    \ + flake proof, never by intuition.\"\nThat comment is right and it still did\
+    \ not survive contact — the next agent read\nit as \"settled\" rather than \"\
+    constrained\", which is the failure mode of any rule\nthat lives in prose.\n\n\
+    ## Impact\n\n- **Broad proof gets avoided at the release boundary.** A gate that\
+    \ is too slow\n  to run is functionally absent, and it is absent precisely when\
+    \ the stakes are\n  highest. Agents will reach for targeted tests and call it\
+    \ proof.\n- **The class is generic, not local.** Any repo that ships a CLI accumulates\n\
+    \  real-spawn tests for pure-render assertions, because that is the natural way\n\
+    \  to write them. `charness` itself ships CLIs; so does every repo `create-cli`\n\
+    \  bootstraps.\n- **Comment-only invariants do not survive agent turnover.** This\
+    \ is the general\n  version of the operator's point: an invariant a human must\
+    \ remember is one an\n  agent will breach without any gate objecting.\n- `quality`\
+    \ is the skill positioned to notice all three, and today it notices\n  none of\
+    \ them.\n\n## Weak direction (non-binding)\n\nRecording candidate shapes only;\
+    \ the receiving agent should choose the design.\n\n- a detection that flags the\
+    \ ratio of real-subprocess spawn sites to assertions\n  that only inspect `stdout`\
+    \ / `stderr` / exit code — the pure-render spawns are\n  the convertible ones;\n\
+    - shard or file wall-clock skew as a reported quality signal, so \"2% of files,\n\
+    \  63% of the clock\" surfaces without hand-measuring;\n- a check for harness\
+    \ invariants stated in comments adjacent to\n  concurrency/isolation flags with\
+    \ no corresponding executable check — the\n  \"memory vs code\" gap, stated generally;\n\
+    - possibly a `create-cli` counterpart: when a repo bootstraps a CLI, establish\n\
+    \  the contract-vs-render test split up front rather than retrofitting it.\n\n\
+    I am **not** asking charness to fix the sibling repo; that work is tracked\nlocally\
+    \ there. The question this issue asks is whether `quality` should own this\ndetection\
+    \ class, and if so which parts.\n\n## Source\n\nSource origin: internal engineering\
+    \ session in a private sibling repository.\nSource identity: `corca-ai/ceal` (private),\
+    \ roadmap row `C6` in\n`docs/roadmap.md`, harness at `scripts/run-unit-tests.mjs`\
+    \ and\n`scripts/agent-runtime/ceal-cli-test-support.mjs`, job runner at\n`scripts/run-proof-job.mjs`;\
+    \ measured 2026-08-11.\nSource text: the two operator quotations above are reproduced\
+    \ verbatim.\nRe-read obligation: the numbers here are a point-in-time measurement\
+    \ of one repo\non a 4-core host; re-measure before treating any threshold as a\
+    \ default.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOiMr9Q
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '2026-08-13 premise re-read: Charness already has an advisory inventory
+      for one narrow related class (subprocess tests of import-safe entrypoints),
+      but #601 proposes materially different signals: real-binary pure-render spawns,
+      per-shard wall-clock skew, and comment-only harness invariants. The cited 226-spawn/63%-wall-clock
+      evidence is a private sibling point-in-time measurement; no current Charness
+      fixture, reader contract, or threshold establishes a safe generic detector.
+      Treating static subprocess inventory as proof of those classes would be false
+      precision. Disposition: unproven-defer. Owner: quality capability/measurement
+      boundary. Revisit when an opt-in repo-owned timing/spawn inventory supplies
+      a concrete producer plus representative fixture, or a Charness CLI harness reproduces
+      a named class. Issue remains OPEN.'
+    createdAt: '2026-08-12T17:43:42Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/601#issuecomment-5270350837
+    viewerDidAuthor: true
+  createdAt: '2026-08-11T05:47:56Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1Jg
+    name: feature request
+    description: Request to add new functions
+    color: '569020'
+  - id: LA_kwDOR9yx7M8AAAACepY1Ow
+    name: test
+    description: Developing a module to test the developed function
+    color: d93f0b
+  number: 601
+  state: OPEN
+  title: 'quality: detect the CLI test-harness pathology (real-binary spawns for pure-render
+    assertions, and invariants that live only in comments)'
+  updatedAt: '2026-08-12T17:43:42Z'
+  url: https://github.com/corca-ai/charness/issues/601
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

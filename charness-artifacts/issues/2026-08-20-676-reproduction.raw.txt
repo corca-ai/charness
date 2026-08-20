@@ -1,0 +1,9 @@
+a12ba86f5 fix(probe): fold round 2 — three repairs shipped the class they repaired
+ scripts/check_probe_record.py                      |  25 +-
+ scripts/probe_record_lib.py                        |  23 ++
+ scripts/probe_stimulus_documents.py                | 324 +++++++++++++++++++++
+ scripts/probe_stimulus_replay.py                   | 303 +++++--------------
+ .../test_probe_record_corpus_replays.py            |  42 ++-
+ .../test_release_planner_version_refusal.py        |   2 +-
+ tests/test_probe_stimulus_replay.py                | 103 ++++++-
+ 7 files changed, 563 insertions(+), 259 deletions(-)

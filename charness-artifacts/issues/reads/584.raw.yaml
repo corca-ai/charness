@@ -1,0 +1,241 @@
+ok: true
+repo: corca-ai/charness
+number: 584
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '584'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 3
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## The shared gap\n\nTwo harness surfaces already receive the input needed\
+    \ to compute real state, and\nemit static text instead — pushing a decidable computation\
+    \ onto the consuming\nagent's judgment.\n\n## Members\n\n- **#531** — the SessionStart\
+    \ hook receives `cwd` in its payload and uses it only\n  for a debug log line,\
+    \ then emits an identical constant directive for every repo\n  and every session\
+    \ state. A trivially decidable question (does `docs/handoff.md`\n  exist?) is\
+    \ handed to the model as prose instead: \"skip this branch if the file\n  doesn't\
+    \ exist.\"\n- **#532** — the shared planner envelope makes `cost_tier` mandatory\
+    \ for gate\n  packets and has no size or cost field for `read()` entries, though\
+    \ the planner\n  has already resolved each path and `st_size` is free. Measured:\
+    \ a planner can\n  require an agent read ~210KB with zero cost signal, while cheap\
+    \ shell gates are\n  fully labeled.\n\n## Why these are one gap and not two defects\n\
+    \nSame shape and same remedy pattern: the surface HAS the input, and computing\
+    \ the\nanswer is cheaper than the prose that replaces it. Neither is a documentation\n\
+    problem — writing better instructions would leave the computation undone.\n\n\
+    ## Deliberately NOT included\n\n`#527` was grouped here by an earlier audit and\
+    \ does not belong wholesale. Only\none of its six observations (destructive skills\
+    \ gating their most dangerous\nbehavior in SKILL.md prose rather than a harness-read\
+    \ invocation lock) matches\nthis shape; the other five are human-facing documentation\
+    \ and skill-maturity\nconcerns with different artifacts, owners, and costs. `#527`'s\
+    \ own author asks\nfor it to be split, and that split should happen before any\
+    \ of it moves here.\n\n## What resolving this looks like\n\nFor each surface,\
+    \ move the decidable fact from prose into something the harness\nitself computes\
+    \ and acts on.\n\n## Non-claims\n\nNo consumer repo inspected. This umbrella does\
+    \ not claim `#527`'s safety\nobservation belongs here — it claims that IF `#527`\
+    \ is split, that one piece\nwould.\n\n\n---\n\n## Status 2026-08-11 — both members\
+    \ CLOSED as `consolidated`; both defects are LIVE\n\nBoth members read `CLOSED`\
+    \ / `NOT_PLANNED` — the `consolidated` disposition, which\n**claims nothing about\
+    \ the defect**. Verified against the tree; record:\n[class-survival review](https://github.com/corca-ai/charness/blob/main/charness-artifacts/audit/2026-08-10-umbrella-class-survival-review.md).\n\
+    \n- **#531 — NOT FIXED, verbatim.** `scripts/session_start_routing.py:42` still\
+    \ ships\n  \"skip this branch if the file doesn't exist\", and `build_additional_context()`\
+    \ at `:58`\n  takes **no arguments** — structurally incapable of varying by repo.\
+    \ `cwd` reaches\n  exactly one line, the debug log at `:111`. The plugin mirror\
+    \ carries it identically, so\n  this is live in consumer sessions. `tests/test_session_start_routing.py:72-91`\
+    \ feeds a\n  real `cwd` and asserts the constant, so the defect is TEST-PINNED\
+    \ and a green gate is\n  not evidence of repair. The design record that rejected\
+    \ the fix\n  (`charness-artifacts/spec/session-start-hook-host-split.md:63-71,119-123`,\
+    \ \"Rejected on\n  hook-safety\") says on its own `:3-5` that its required fresh-eye\
+    \ critique was never\n  obtained — and the safety argument does not survive the\
+    \ file, which already wraps\n  everything in `try/except` and returns 0 unconditionally\
+    \ (`:109-114`).\n  **Disposition: BUILD, and it is IRREVERSIBLE, not session-local.**\
+    \ It must resolve the\n  adapter's `artifact_path` (`skills/public/handoff/scripts/plan_handoff_run.py:108`),\
+    \ NOT\n  hardcode `is_file(\"docs/handoff.md\")` — a hardcoded probe would silently\
+    \ suppress branch\n  (1) in any consumer repo with a non-default path, trading\
+    \ a harmless over-emission for a\n  silent under-emission. A first draft proposed\
+    \ exactly that hardcoded probe.\n- **#532 — NOT FIXED.** `skills/shared/scripts/run_plan_envelope.py:66-91`\
+    \ — `read()` still\n  accepts no size or cost field, while `_validate_gate_packets:209-217`\
+    \ mandates\n  `cost_tier` and `_validate_reads:198-206` requires only `path`/`why`.\
+    \ No planner emits a\n  size. **Disposition: do both** — add the cost signal AND\
+    \ shrink the unearned read set.\n  `plan_quality_run.py:296-303` builds `required_reads`\
+    \ from `catalog.yaml`'s 25+ paths\n  with no existence probe, which is what produces\
+    \ the ~210KB figure. A draft proposed\n  dropping the label instead of pricing\
+    \ it; the repo's own precedent refutes \"unearned\",\n  since it already decided\
+    \ a cost signal is worth mandating for the other packet type.\n\n**Class instances\
+    \ outside both members:**\n\n- `skills/public/setup/scripts/render_skill_routing.py:45-55`\
+    \ — takes `public_skill_ids`,\n  never references it, hardcodes `listed_skill_ids\
+    \ = []`, and writes its static block into\n  a **consumer's** AGENTS.md. **Only\
+    \ the unused PARAMETER is dead**; the `listed_skill_ids`\n  payload key has live\
+    \ consumers (`scripts/eval_setup.py:220-224` raises unless it is `[]`).\n- `skills/public/quality/scripts/plan_quality_run.py:327`\
+    \ — constant `next_action` over\n  branches the same function already computed.\
+    \ Low stakes.\n\n**This umbrella stays open until #531 and #532 ship.** Closing\
+    \ it would launder two live\nconsumer-facing defects.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOgbViQ
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## 2026-08-12 tracker disposition: split, still open
+
+
+      The umbrella was re-read after the current local commits. It remains **OPEN**
+      and no close is claimed.
+
+
+      - SessionStart routing is locally repaired in `e3822458`: configured adapter/artifact
+      lookup now discovers the repository root from nested `cwd`, preserves the no-`cwd`
+      portable fallback, and has source-plus-plugin regression coverage. This is local
+      behavioral evidence only until final push/readback.
+
+      - The former #532 remains unimplemented despite its `CLOSED / NOT_PLANNED` state.
+      Its live successor contract is `charness-artifacts/spec/planner-required-read-cost-contract.md`,
+      whose implementation status is not started. A closed consolidation does not
+      prove the read-cost defect fixed.
+
+
+      Disposition: **split**. Owner: the SessionStart routing and planner-envelope
+      boundaries. Revisit/close condition: implement the planner read-cost contract,
+      prove it through its actual planner consumers, publish its tracker-visible disposition,
+      then perform final GitHub readback for the SessionStart repair. Until then,
+      this umbrella is not closable.
+
+
+      AI-provenance: authored by an agent session.'
+    createdAt: '2026-08-12T14:54:50Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/584#issuecomment-5268493705
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOhdzDg
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: 'Local proof recorded for the remaining #532 successor slice (commit 76a39544).
+      The shared run-plan envelope now validates an additive required-read measurement
+      disclosure. Representative quality and handoff planners resolve their declared
+      skill/repo bases and emit either size_bytes or typed unavailable state; source
+      and shipped-plugin fixtures cover both base forms, missing/escape/directory/stat-failure
+      behavior, and quality human output. Two fresh-eye rounds ran; R1 added plugin
+      mixed-base proof and aligned the representative acceptance scope, and R2 found
+      the symlink-loop RuntimeError path, repaired as typed stat-failed under the
+      two-round cap. Focused 80 tests, full read-only quality gate, and pre-commit
+      passed. This remains OPEN: debug/retro/issue/gather rollout, direct-to-default
+      readback, and full 22-issue cohort closeout are still pending. Resolution record:
+      charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md.'
+    createdAt: '2026-08-12T16:32:02Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/584#issuecomment-5269582606
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOmBtFQ
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## 2026-08-13 closeout review: held back from the cohort carrier (issue
+      remains OPEN)
+
+
+      This umbrella was staged for the final direct-to-default closeout carrier and
+      then
+
+      pulled, on the cohort ledger''s own rule rather than on new evidence.
+
+
+      The execution ledger''s **Umbrella Closure Contract** states that an umbrella
+      may
+
+      close only after every enumerated cited item is `proven` or `not-applicable`,
+      and
+
+      that it stays open while any cited child is `premise-needed`, `unproven-defer`,
+      or
+
+      `split`. This row''s own recorded disposition is:
+
+
+      > local proof — SessionStart routing plus #532''s representative quality/handoff
+
+      > planner read-cost slice are proven; **broader planner rollout remains a
+
+      > deliberate widening follow-up**.
+
+
+      A deliberate widening follow-up is not `proven` and not `not-applicable`. The
+
+      `local proof` label was accurate about what shipped and was mistaken as closure
+
+      eligibility when this batch was first assembled; the umbrella contract is the
+
+      stricter rule and it governs.
+
+
+      What is genuinely proven and not in question: the SessionStart configured-artifact
+
+      routing, and the #532 successor slice measuring representative quality and handoff
+
+      planner read costs under both source and shipped-plugin layouts, with two fresh-eye
+
+      rounds recorded in
+
+      `charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md`.
+
+
+      ### Disposition
+
+
+      `split` / partial. Owner: the run-plan envelope and planner surfaces.
+
+
+      Revisit trigger: either the debug, retro, issue, and gather planner rollout
+      lands
+
+      and every enumerated cited item reaches `proven`, or the remaining rollout is
+
+      recorded as an independently owned work item and explicitly dispositioned
+
+      `not-applicable` to this umbrella — at which point the umbrella contract is
+
+      satisfied and this can close.
+
+
+      No push, release, or issue closure is claimed by this comment.
+
+
+      AI-provenance: authored by an agent session.
+
+      '
+    createdAt: '2026-08-13T00:25:00Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/584#issuecomment-5274365205
+    viewerDidAuthor: true
+  createdAt: '2026-08-09T22:41:58Z'
+  labels: []
+  number: 584
+  state: OPEN
+  title: 'umbrella: a harness surface discards state it already has and emits prose
+    instead'
+  updatedAt: '2026-08-13T00:25:00Z'
+  url: https://github.com/corca-ai/charness/issues/584
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

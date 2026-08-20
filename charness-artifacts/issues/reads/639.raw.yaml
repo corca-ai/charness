@@ -1,0 +1,99 @@
+ok: true
+repo: corca-ai/charness
+number: 639
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '639'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## What happened
+
+
+    An opened lesson session with no closing disposition blocks the pre-push continuity
+    gate for every LATER author, not for the one who opened it. This has now recurred
+    twice in three days: `2026-08-16-s9` and `2026-08-17-3bbe7879` were each opened
+    by one session and inherited unclaimed by a stranger, whose only honest disposition
+    was `presentation-unproven` — a status that says nothing about what the opening
+    session actually did.
+
+
+    ## Experience
+
+
+    The gate fires at push time, where only a different author is present. That author
+    cannot truthfully write any evaluated status for a session they did not run, so
+    the violation can only be cleared with a dispositions-of-record artifact that
+    exists solely to unblock the gate (see `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`,
+    which states this explicitly).
+
+
+    ## Impact
+
+
+    - The enforcement lands on the wrong actor: state opened by one session is only
+    enforceable against another.
+
+    - Each recurrence costs a disposition artifact whose entire content is "not mine,
+    cannot evaluate."
+
+    - The honest-disposition vocabulary gets diluted by entries that exist for gate
+    mechanics, not for evaluation truth.
+
+
+    ## Evidence
+
+
+    - `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`
+    — the second inherited disposition, which itself files this improvement and names
+    the structural pattern.
+
+    - `charness-artifacts/retro/recent-lessons.md` Next-Time Checklist carries the
+    same entry with both triggering instances.
+
+
+    ## Weak solution direction (optional)
+
+
+    Surface outstanding unclaimed lesson sessions at session START — where the opener
+    (or the first session that can still take ownership) sees them — instead of at
+    push time. The SessionStart lesson-context hook already runs at the right moment
+    and already reads the ledger; whether it warns, blocks, or auto-suggests a disposition
+    is the owner''s call.
+
+
+    Related, same surface, smaller: `scripts/session_start_lesson_context.py` copies
+    the `_SESSION_ID` regex without the reserved-id exclusion, so a host payload of
+    literally `none` yields a suggested `--session-id none` declare command the ledger
+    then refuses loudly (found by the #633 closeout reviewer; UX dead-end, not a bypass).
+
+
+    AI-provenance: agent-authored (Claude Code session, 2026-08-18, operator bae.hwidong@corca.ai).
+
+    '
+  comments: []
+  createdAt: '2026-08-17T22:58:24Z'
+  labels: []
+  number: 639
+  state: OPEN
+  title: Unclaimed lesson sessions surface at push time, where only a stranger can
+    (dishonestly) clear them
+  updatedAt: '2026-08-17T22:58:24Z'
+  url: https://github.com/corca-ai/charness/issues/639
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

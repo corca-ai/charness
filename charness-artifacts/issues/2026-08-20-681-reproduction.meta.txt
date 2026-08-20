@@ -1,0 +1,4 @@
+command: python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:49:02+09:00
+exit_code: 0

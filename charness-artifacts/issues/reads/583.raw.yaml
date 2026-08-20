@@ -1,0 +1,127 @@
+ok: true
+repo: corca-ai/charness
+number: 583
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '583'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 1
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## The shared gap\n\nTwo verification surfaces each lost the property they\
+    \ were built to check, and\nkept reporting green. Nothing checks the **premise**\
+    \ of a test — only its\nassertions — so a test can drift out of correspondence\
+    \ with the mechanism or the\nreality it exists to verify and pass anyway.\n\n\
+    ## Members\n\n- **#568** — the `pickup` / `pickup-ambiguous` eval pair was built\
+    \ to discriminate\n  clear from ambiguous handoff routing. An upstream planner\
+    \ change (a declared\n  `--pickup-target` replacing keyword matching on invocation\
+    \ text) collapsed both\n  arms to the same outcome. Neither arm hard-fails, so\
+    \ nothing flags the collapse;\n  the spec files' own comments already document\
+    \ it.\n- **#569** — tests asserting an external tool's output shape were written\
+    \ from the\n  author's belief rather than a captured run. The belief happened\
+    \ to be right both\n  times, but nothing in the repo would have caught it otherwise,\
+    \ and one instance\n  concealed a live fail-open. (The two cited instances now\
+    \ have captured fixtures;\n  the open ask is the general rule, not the examples.)\n\
+    \n## Why these are one gap and not two defects\n\nBoth are \"a green that says\
+    \ nothing\" — #568 uses that phrase itself. In each case\nthe assertion still\
+    \ runs and still passes while the thing it was written to prove\nhas quietly stopped\
+    \ being true. That is a different failure from a wrong\nassertion, and it is invisible\
+    \ to every gate the repo has.\n\n## What resolving this looks like\n\nFor each\
+    \ surface class, decide what would make a stale premise fail LOUDLY:\na captured-fixture\
+    \ requirement for external-tool assertions (#569's own suggested\nshape), and\
+    \ an explicit re-scoping or retirement decision for the eval pair\n(#568). The\
+    \ two are independent fixes; grouping them is about noticing the\npattern, not\
+    \ merging the resolutions.\n\n## Non-claims\n\nNo consumer repo inspected. Neither\
+    \ member's remedy is chosen here — #568 names\nthree candidate repairs and this\
+    \ umbrella does not pick one.\n\n\n---\n\n## Status 2026-08-11 — both members\
+    \ CLOSED as `consolidated`; the class REMAINS\n\nBoth members read `CLOSED` /\
+    \ `NOT_PLANNED` — the `consolidated` disposition, which\n**claims nothing about\
+    \ the defect**. Verified against the tree by a bounded read-only\nreviewer; record:\n\
+    [class-survival review](https://github.com/corca-ai/charness/blob/main/charness-artifacts/audit/2026-08-10-umbrella-class-survival-review.md).\n\
+    \n- **#568 — NOT FIXED; discrimination RELOCATED, not restored.** Both specs are\
+    \ still\n  registered (`evals/cautilus/claim-fidelity-registry.json:59-67`) and\
+    \ both arms produce\n  the same planner output. `pickup.spec.json:10-11` has empty\
+    \ `requiredCommandFragments`\n  AND empty `requiredSummaryFragments`, so the CLEAR\
+    \ arm cannot fail on anything.\n  Real discriminating tests exist elsewhere —\
+    \ `tests/test_handoff_plan.py:442-472` — but\n  those assert what the PLANNER\
+    \ emits, while the eval asserted whether an agent actually\n  opened the reference.\
+    \ **A unit test is not an eval.** No collapse detector exists.\n  **Disposition\
+    \ (RETRACTED 2026-08-11): delete NEITHER spec.**\n  A draft proposed deleting\
+    \ both, then narrowed to `pickup.spec.json`. Both are wrong.\n  `pickup-ambiguous.spec.json`\
+    \ is the only `engage-always` forcer of\n  `continuation-sequence.md`, so deleting\
+    \ it reds `validate-scenario-conditional-reads`\n  and makes `tests/quality_gates/test_scenario_conditional_reads.py:125-162`\
+    \ — whose\n  fixture `unlink()`s that exact file — error instead of fail. And\n\
+    \  `evals/cautilus/handoff-claim-fidelity/outcome-assertions.json` records\n \
+    \ `pickup.spec.json`'s empty deterministic floor as a deliberate, capture-verified\
+    \ floor\n  **MOVE** to the substance judge, not a collapse: \"the pickup.spec.json\
+    \ deterministic\n  floor move (RCF `[workflow-trigger.md]` -> `[]` on this substance\
+    \ floor) ... rides a\n  fresh ask-before-run capture that VERIFIES this instrument\
+    \ grades correctly.\" That\n  judge set holds for all four intents, so deleting\
+    \ the pickup scenario removes the only\n  registered pickup-intent vehicle for\
+    \ `pickup-starts-named-workflow` and\n  `trigger-fidelity-no-invention`.\n  **The\
+    \ real residue is neither spec.** It is that no collapse detector exists, and\
+    \ that\n  `pickup-ambiguous.spec.json:2` still carries an uncorrected draft comment\
+    \ while its\n  sibling carries the correction. Both are edits.\n\n- **#569 — EXAMPLES\
+    \ fixed, RULE not built.** One captured fixture exists, not two.\n  **Disposition:\
+    \ no new gate — declined for cost.** An earlier draft justified this by\n  citing\
+    \ the north star's \"a gate that checks gates\" anti-pattern; that citation points\n\
+    \  the other way, because the same clause ends \"the teeth here are a distinct\
+    \ observer\n  **and a scope a verdict must name**\", and a fixture requirement\
+    \ is exactly a scope a\n  verdict must name. The honest reason is cost, not prohibition.\n\
+    \  **And the fallback is misdescribed:** `scripts/check_quality_tool_fixtures.py:112-115`\n\
+    \  returns 0 on an EMPTY fixture set and is not queued in `run-quality.sh`. That\
+    \ fail-open is filed as `#597`; its repair is cheaper than the rule that was declined.\n\
+    \n**Class evidence — nothing in this repo checks the PREMISE of a test.** The\n\
+    `Premise-residue:` seam is NOT that mechanism and is NOT a defect: `recount_residue_lib.py:63-67`\n\
+    says the marker is human-authored by design (\"the whole point is that a human\
+    \ wrote down\nWHY\"), and the fail-open once suspected there was already repaired\
+    \ at\n`recount_premise_lib.py:80-87`. A draft that proposed deleting it was refuted.\
+    \ **This\numbrella stays open until a premise-checking mechanism exists or a ruling\
+    \ retires the\nask.**\n\n\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOhHoCw
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: 'Current re-read disposition: GitHub remains OPEN; this is not a closure
+      claim. The cited pickup.spec.json and pickup-ambiguous.spec.json files are no
+      longer in the tree. Current handoff fidelity uses the directory-scoped outcome-assertions.json
+      substance judge, with spec.json, refresh.spec.json, and judge-intent.spec.json
+      as remaining vehicles. The cited empty-fixture fail-open is also no longer current:
+      #597 repaired the quality-fixture checker and its runner wiring. No concrete,
+      bounded premise-checking mechanism for every test is established by the umbrella
+      evidence, so a generic gate would be speculative. Revisit only with a live test
+      premise that has a named producer, first reader, and falsifiable failure fixture;
+      then open an owned issue or repair rather than treating this umbrella text as
+      proof.'
+    createdAt: '2026-08-12T15:57:13Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/583#issuecomment-5269219339
+    viewerDidAuthor: true
+  createdAt: '2026-08-09T22:41:31Z'
+  labels: []
+  number: 583
+  state: OPEN
+  title: 'umbrella: a verification surface can silently stop verifying what it claims
+    to'
+  updatedAt: '2026-08-12T15:57:13Z'
+  url: https://github.com/corca-ai/charness/issues/583
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

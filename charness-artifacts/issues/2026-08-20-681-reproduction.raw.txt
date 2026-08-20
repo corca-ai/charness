@@ -1,0 +1,34 @@
+ok: true
+cadence_owner:
+  applies: true
+  ok: true
+  reason: 'one owner: `## User Acceptance` does not restate the gate cadence'
+  cadence:
+    line: 35
+    text: lane commits use focused checks plus `run_slice_closeout.py --skip-broad-pytest`;
+      the integrated pre-release tree runs changed-line proof before standing/release/broad
+      gates; the frozen semantic candidate receives the pre-bump critique; version/export/release-
+      record mutation creates a distinct release candidate which must be committed
+      and re-proven before publication dry-run or external probes.
+  findings: []
+status: active
+missing_sections: []
+portability_missing_sections: []
+issues: []
+path: /home/hwidong/codes/charness/charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md
+phase_brief:
+  phase: during
+  lifecycle_file: references/lifecycle-during.md
+  lifecycle_section: '## During'
+  goal_artifact_sections:
+  - '## Helper Scripts'
+  closeout_handoff: when this run starts closeout, run describe_goal_closeout_shape.py
+    and read lifecycle-after.md
+  note: Read only the named lifecycle_file (the goal's current-phase file) for the
+    goal's current status (plus the short `lifecycle.md` `## Honest Proof Discipline`
+    coda); other phases' depth loads when the phase changes. goal_artifact_sections
+    are the phase-relevant depth in references/goal-artifact.md.
+head_freshness:
+  ok: true
+  head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+  findings: []

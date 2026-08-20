@@ -1,0 +1,1346 @@
+{
+  "schema_version": "charness.release-issue-ledger.v1",
+  "repo": "corca-ai/charness",
+  "captured_at": "2026-08-20T18:47:02+09:00",
+  "head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+  "issue_count": 30,
+  "list_truncated": false,
+  "activation_issue_snapshot": {
+    "path": "charness-artifacts/issues/2026-08-20-open-issues.raw.json",
+    "numbers": [
+      681,
+      680,
+      679,
+      678,
+      677,
+      676,
+      672,
+      671,
+      670,
+      669,
+      668,
+      667,
+      639,
+      638,
+      637,
+      635,
+      634,
+      628,
+      612,
+      605,
+      601,
+      599,
+      587,
+      586,
+      584,
+      583,
+      582,
+      550,
+      546,
+      527
+    ],
+    "count": 30,
+    "list_truncated": false,
+    "raw_sha256": "5ae55170d4c628302602eaa709e0379a3e06957dc41372641c5eea21733677d0",
+    "numbers_sha256": "05456cc328079f99ee2d3534441dbef704c1fce71ad3d16415182bb61ebe8c80"
+  },
+  "normalization_policy": "github-issue-v1; body line endings/NBSP/trailing whitespace normalized; comments canonicalized by id/author/created_at/body",
+  "issues": [
+    {
+      "number": 681,
+      "url": "https://github.com/corca-ai/charness/issues/681",
+      "title": "goal checker says Gate cadence is absent while returning the detected line",
+      "state": "open",
+      "updated_at": "2026-08-20T09:28:48Z",
+      "source_read_path": "charness-artifacts/issues/reads/681.raw.yaml",
+      "body_sha256": "00a5b8fa42b895bb03322ff921cd259de43f51281752f595b7c96da5cc086216",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-source-pass",
+        "exact_command": "python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-681-reproduction.raw.txt"
+      },
+      "classification": "already-satisfied",
+      "release_impact": "current source checker passes",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "already-satisfied",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 680,
+      "url": "https://github.com/corca-ai/charness/issues/680",
+      "title": "critique can freeze an empty packet while claiming reviewed-input identity",
+      "state": "open",
+      "updated_at": "2026-08-20T09:14:07Z",
+      "source_read_path": "charness-artifacts/issues/reads/680.raw.yaml",
+      "body_sha256": "17a0202acbd26a42d2ae9726e9589be8b91f0571f612735e7bbcb2e1cc092281",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "shaping-head-refutation",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 680",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/680.raw.yaml"
+      },
+      "classification": "premise-refuted",
+      "release_impact": "shaping contract separates reviewed-input identity from packet section count",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 680"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "premise-refuted",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "refutation_scope": "shaping HEAD and the observed explicit reviewed-path packet"
+    },
+    {
+      "number": 679,
+      "url": "https://github.com/corca-ai/charness/issues/679",
+      "title": "impl bootstrap fails on every valid existing adapter",
+      "state": "open",
+      "updated_at": "2026-08-20T09:02:19Z",
+      "source_read_path": "charness-artifacts/issues/reads/679.raw.yaml",
+      "body_sha256": "3ad7581ca9b201117d67070edf369fa04b6c2c821962b2390c37f7d394151dac",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-reproducer",
+        "exact_command": "python3 skills/public/impl/scripts/init_adapter.py --repo-root /tmp/charness-679-probe.bFbbDk/valid",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-679-reproduction.txt"
+      },
+      "classification": "release-blocker",
+      "release_impact": "release-blocker: valid existing adapter makes documented init step exit 1",
+      "acceptance_owner": "impl skill owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p0-679",
+      "allowed_paths": [
+        "skills/public/impl/SKILL.md",
+        "skills/public/impl/scripts/init_adapter.py",
+        "tests/test_impl_bootstrap.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_impl_bootstrap.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-679-reproduction.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "release-blocker",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 678,
+      "url": "https://github.com/corca-ai/charness/issues/678",
+      "title": "The adapter key registry cannot tell a key's READER from its REFUSER, so a retired key reports as live",
+      "state": "open",
+      "updated_at": "2026-08-19T12:03:36Z",
+      "source_read_path": "charness-artifacts/issues/reads/678.raw.yaml",
+      "body_sha256": "a5939e0dc13606e37aadb0056062981c145b836dc1b1efa1434a99afb297c4dc",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "python3 -c adapter-key-reader-refuser-probe",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-678-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "quality tooling owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p3-678",
+      "allowed_paths": [
+        "scripts/adapter_key_registry.py",
+        "tests/test_adapter_key_registry.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_adapter_key_registry.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-678-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 677,
+      "url": "https://github.com/corca-ai/charness/issues/677",
+      "title": "A durable artifact asserts path:line facts about the tree and nothing reads them",
+      "state": "open",
+      "updated_at": "2026-08-19T10:10:31Z",
+      "source_read_path": "charness-artifacts/issues/reads/677.raw.yaml",
+      "body_sha256": "9cc0ba95bad2bb4d57c5549562cb8e8974e648df58ac76caaae8b196d09be52f",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "rg -n path-line-citations charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "artifact validation owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p3-677",
+      "allowed_paths": [
+        "scripts/check_artifact_citations.py",
+        "tests/test_artifact_citations.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_artifact_citations.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 676,
+      "url": "https://github.com/corca-ai/charness/issues/676",
+      "title": "A repair keeps shipping the class it repairs, and only the second review round catches it",
+      "state": "open",
+      "updated_at": "2026-08-19T07:50:35Z",
+      "source_read_path": "charness-artifacts/issues/reads/676.raw.yaml",
+      "body_sha256": "1f075e6f308c1f49290862df5ced340cdc0fc4cc3acaec01b71135a8f4bd43ba",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "git show --format=fuller --stat --oneline a12ba86f5 -- scripts skills tests",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-676-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "quality proof-surface owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p3-676",
+      "allowed_paths": [
+        "scripts/slice_closeout_advisories.py",
+        "tests/test_slice_closeout_advisories.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_slice_closeout_advisories.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-676-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 672,
+      "url": "https://github.com/corca-ai/charness/issues/672",
+      "title": "what_reads_this: a consumer that ASSERTS on a value reports the same kind as a passing mention",
+      "state": "open",
+      "updated_at": "2026-08-18T15:55:21Z",
+      "source_read_path": "charness-artifacts/issues/reads/672.raw.yaml",
+      "body_sha256": "423a3b1f74c9ac41467365fd49f2e923e0a969476c8aa30fe83f885a72aa1fd8",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "python3 scripts/what_reads_this.py --symbol listed_skill_ids",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-672-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "quality tooling owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p3-672",
+      "allowed_paths": [
+        "scripts/what_reads_this.py",
+        "tests/test_what_reads_this.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_what_reads_this.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-672-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 671,
+      "url": "https://github.com/corca-ai/charness/issues/671",
+      "title": "achieve should reject host-specific absolute paths in portable goal artifacts",
+      "state": "open",
+      "updated_at": "2026-08-18T14:18:24Z",
+      "source_read_path": "charness-artifacts/issues/reads/671.raw.yaml",
+      "body_sha256": "75519c65c4a633462a5e179acb470b8283eef377cba7af9d6f570ac7bb47b757",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "rg -n absolute-checkout-path charness-artifacts/goals docs",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-671-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "achieve skill owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p4-671",
+      "allowed_paths": [
+        "skills/public/achieve/scripts/goal_path_portability.py",
+        "tests/test_goal_path_portability.py"
+      ],
+      "dependencies": [
+        "p2-635"
+      ],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_goal_path_portability.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-671-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 670,
+      "url": "https://github.com/corca-ai/charness/issues/670",
+      "title": "Consuming repos cannot learn that a packaged validator exists, so an unwired one stays silent and grows a substitute",
+      "state": "open",
+      "updated_at": "2026-08-18T08:47:26Z",
+      "source_read_path": "charness-artifacts/issues/reads/670.raw.yaml",
+      "body_sha256": "c76c0dede525d8e4af98610cffe76287dd4cdc96ee5af824e0d8adff0079927f",
+      "comments_sha256": "a185ab0779b9ea918725f5a18f6c75a18b1da457de09fb7b6847dcb295bd50fe",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "python3 -c consumer-validator-catalog-probe",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-670-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "quality packaging owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p4-670",
+      "allowed_paths": [
+        "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "scripts/check_consumer_validator_catalog.py",
+        "tests/test_consumer_validator_catalog.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_consumer_validator_catalog.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-670-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 669,
+      "url": "https://github.com/corca-ai/charness/issues/669",
+      "title": "standing-pytest guard can orphan a child tree when SIGTERM lands inside Popen's fork_exec window",
+      "state": "open",
+      "updated_at": "2026-08-18T06:28:28Z",
+      "source_read_path": "charness-artifacts/issues/reads/669.raw.yaml",
+      "body_sha256": "de5b33c0d1913c4ad9026595b57078fa332810b4a8cd5554686936d890b35828",
+      "comments_sha256": "a81024bb4f99e7eb9b288368a69b9b53633840eadaa67baf060ec9e174169b2d",
+      "premise": {
+        "verdict": "current-focused-pass",
+        "exact_command": "python3 -m pytest -q tests/quality_gates/test_standing_pytest_run_execution.py::test_a_wrapper_sigterm_reaps_the_real_child_tree",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-669a-reproduction.raw.txt"
+      },
+      "classification": "deferred",
+      "release_impact": "current focused timeout contract passes; current blocker not reproduced",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/quality_gates/test_standing_pytest_run_execution.py::test_a_wrapper_sigterm_reaps_the_real_child_tree"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "current-supported-path-passes"
+    },
+    {
+      "number": 668,
+      "url": "https://github.com/corca-ai/charness/issues/668",
+      "title": "pytest runtime budget: the REVISIT TRIGGER has fired — profile or shrink the standing set, do not relevel",
+      "state": "open",
+      "updated_at": "2026-08-18T06:48:14Z",
+      "source_read_path": "charness-artifacts/issues/reads/668.raw.yaml",
+      "body_sha256": "9520fc26c99812affb0f25176b05e2fc6f6e44a9f1f75cbee6a2fee4d68b1d9c",
+      "comments_sha256": "8b9df16a6204d2d6d2ce92d055312e4300cc56d50b2ea6bd7374101fa957a1f2",
+      "premise": {
+        "verdict": "current-budget-pass",
+        "exact_command": "python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root . --detail",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-668-reproduction.raw.yaml"
+      },
+      "classification": "decision-required",
+      "release_impact": "current runtime budget passes; wall-time policy remains an operator decision",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root . --detail"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "decision-required",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "decision_owner": "release operator",
+      "decision_question": "Should the runtime quality contract use wall-time blocking, CPU-time, or advisory semantics?"
+    },
+    {
+      "number": 667,
+      "url": "https://github.com/corca-ai/charness/issues/667",
+      "title": "release: generic planner reports 'not releasable' when a repo-specialized release lane exists",
+      "state": "open",
+      "updated_at": "2026-08-18T01:27:21Z",
+      "source_read_path": "charness-artifacts/issues/reads/667.raw.yaml",
+      "body_sha256": "e4a8072d7c91452ebe655cc1dbefcb275d644bcfbad48a570df832832b8240ce",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 667",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/667.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 667"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 639,
+      "url": "https://github.com/corca-ai/charness/issues/639",
+      "title": "Unclaimed lesson sessions surface at push time, where only a stranger can (dishonestly) clear them",
+      "state": "open",
+      "updated_at": "2026-08-17T22:58:24Z",
+      "source_read_path": "charness-artifacts/issues/reads/639.raw.yaml",
+      "body_sha256": "7c3040cb2f7fe88034b77d8ac8514193dadd402fad160dcca8fe66f4333b75a0",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "python3 scripts/session_start_lesson_context.py --repo-root . --session-id 2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-639-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "lesson lifecycle owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p2-639",
+      "allowed_paths": [
+        "scripts/session_start_lesson_context.py",
+        "tests/test_session_start_lesson_context.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_session_start_lesson_context.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-639-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 638,
+      "url": "https://github.com/corca-ai/charness/issues/638",
+      "title": "Critique review rounds leave no durable per-round record, so later rounds re-derive earlier rounds' findings",
+      "state": "open",
+      "updated_at": "2026-08-17T22:58:17Z",
+      "source_read_path": "charness-artifacts/issues/reads/638.raw.yaml",
+      "body_sha256": "0e5f61e854ec06351f67dae685bdef7cee6d53b4c394ecf0eaa85ab7fce5901b",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "python3 -c durable-round-findings-probe",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-638-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "critique skill owner",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p2-638",
+      "allowed_paths": [
+        "skills/public/critique/SKILL.md",
+        "skills/public/critique/scripts/record_round_findings.py",
+        "tests/test_critique_round_findings.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_critique_round_findings.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-638-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 637,
+      "url": "https://github.com/corca-ai/charness/issues/637",
+      "title": "critique artifact preflight cannot render the repo scaffold shape",
+      "state": "open",
+      "updated_at": "2026-08-17T04:32:22Z",
+      "source_read_path": "charness-artifacts/issues/reads/637.raw.yaml",
+      "body_sha256": "e1c361473cf7cb3688bb907c28522893159aab5c82db5a6d9a80f66e261b8316",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-source-pass",
+        "exact_command": "python3 scripts/check_artifact_surface_preflight.py --repo-root . --path charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md --type critique",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-637-reproduction.raw.txt"
+      },
+      "classification": "already-satisfied",
+      "release_impact": "current preflight and owning validator pass",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 scripts/check_artifact_surface_preflight.py --repo-root . --path charness-artifacts/critique/2026-08-20-broad-release-goal-packet.md --type critique"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "already-satisfied",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 635,
+      "url": "https://github.com/corca-ai/charness/issues/635",
+      "title": "The shipped retro reference reads a bundle citation no shipped surface asks anyone to write",
+      "state": "open",
+      "updated_at": "2026-08-17T01:44:25Z",
+      "source_read_path": "charness-artifacts/issues/reads/635.raw.yaml",
+      "body_sha256": "641da11f9a78d5c415e6fa44a5cbe5e1f840582d6d098477e39767bb23335955",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "premise": {
+        "verdict": "current-contract-gap",
+        "exact_command": "python3 -c bundle-path-shipped-writer-probe",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-635-reproduction.raw.txt"
+      },
+      "classification": "qualified-repair",
+      "release_impact": "release-train-quality: qualified release-train repair",
+      "acceptance_owner": "achieve and retro skill owners",
+      "acceptance_assertions": [
+        "current issue acceptance boundary is executable",
+        "focused proof covers the named contract"
+      ],
+      "lane_id": "p2-635",
+      "allowed_paths": [
+        "skills/public/achieve/SKILL.md",
+        "skills/public/achieve/references/lifecycle-during.md",
+        "tests/test_achieve_lesson_citation.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_achieve_lesson_citation.py"
+      ],
+      "release_content_evidence_path": "charness-artifacts/issues/2026-08-20-635-reproduction.raw.txt",
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "qualified-repair",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 634,
+      "url": "https://github.com/corca-ai/charness/issues/634",
+      "title": "Exported plugin ships the bootstrap installer but not the dependency contract it reads",
+      "state": "open",
+      "updated_at": "2026-08-15T14:42:07Z",
+      "source_read_path": "charness-artifacts/issues/reads/634.raw.yaml",
+      "body_sha256": "caae06ac3d185b6b3fd8cd3f831f90456e81d26b6d4f3ccd3057c1d7683df5fc",
+      "comments_sha256": "1473728fb1c5ecbac098ff13cc148de1889dc91cf2e19466d854e94bc20da9cd",
+      "premise": {
+        "verdict": "current-source-pass",
+        "exact_command": "python3 scripts/check_export_self_sufficiency.py --repo-root .",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-634-reproduction.raw.txt"
+      },
+      "classification": "already-satisfied",
+      "release_impact": "current export self-sufficiency checker passes",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 scripts/check_export_self_sufficiency.py --repo-root ."
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "already-satisfied",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214"
+    },
+    {
+      "number": 628,
+      "url": "https://github.com/corca-ai/charness/issues/628",
+      "title": "debug's scaffold points its write path at an unrelated OPEN investigation, and date coherence cannot catch it",
+      "state": "open",
+      "updated_at": "2026-08-18T10:57:07Z",
+      "source_read_path": "charness-artifacts/issues/reads/628.raw.yaml",
+      "body_sha256": "a95ad3f489ee7958ec0eefbc6599622a5f2de3deaf5e2e13fc78b1eaf8dcf64b",
+      "comments_sha256": "f9e50b4a502dd508ae60e0cc3545bcec1ed2b1c49e7a60682356cb2a70bbf199",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 628",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/628.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 628"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 612,
+      "url": "https://github.com/corca-ai/charness/issues/612",
+      "title": "Mutation test regression on main",
+      "state": "open",
+      "updated_at": "2026-08-17T00:47:46Z",
+      "source_read_path": "charness-artifacts/issues/reads/612.raw.yaml",
+      "body_sha256": "e7f5772e048528fc8a804ace7b1ef33354176c1561af32448c6ce5b826274687",
+      "comments_sha256": "0c4715946647abdabf8506e8463bf9eab1969c475d16ec4314d84d9cc076316e",
+      "premise": {
+        "verdict": "current-focused-pass",
+        "exact_command": "python3 -m pytest -q tests/quality_gates/test_standing_pytest_run_execution.py::test_a_wrapper_sigterm_reaps_the_real_child_tree tests/test_doc_authoring_preflight.py",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/2026-08-20-612-reproduction.raw.txt"
+      },
+      "classification": "deferred",
+      "release_impact": "current targeted regression set passes; historical comments do not reproduce",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/quality_gates/test_standing_pytest_run_execution.py::test_a_wrapper_sigterm_reaps_the_real_child_tree tests/test_doc_authoring_preflight.py"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "current-supported-path-passes"
+    },
+    {
+      "number": 605,
+      "url": "https://github.com/corca-ai/charness/issues/605",
+      "title": "check_documented_command_flags: the trim-back loop's guardian tests no longer reach it, and no live trigger could be constructed",
+      "state": "open",
+      "updated_at": "2026-08-14T03:20:52Z",
+      "source_read_path": "charness-artifacts/issues/reads/605.raw.yaml",
+      "body_sha256": "48173acd6399cb6de5280e07c3a7faa4645d8fb039cb6e096b3bb42837a33950",
+      "comments_sha256": "2e26a2dd4addea596cebec1dc9957ee594ab2b2cdcdd1381979f16134f37678d",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 605",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/605.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 605"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 601,
+      "url": "https://github.com/corca-ai/charness/issues/601",
+      "title": "quality: detect the CLI test-harness pathology (real-binary spawns for pure-render assertions, and invariants that live only in comments)",
+      "state": "open",
+      "updated_at": "2026-08-12T17:43:42Z",
+      "source_read_path": "charness-artifacts/issues/reads/601.raw.yaml",
+      "body_sha256": "3400abc6dd5424a6ff8648c10d719352698fbb5880eb19ee3543ae5a48a31e71",
+      "comments_sha256": "441c03a709c4c07e1c1aac5aad5fc1080980a10a07563d24dd0d181b32b5d7ea",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 601",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/601.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 601"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 599,
+      "url": "https://github.com/corca-ai/charness/issues/599",
+      "title": "No command answers 'what reads this?' — seven wrong removal proposals in one session, each refuted by one grep",
+      "state": "open",
+      "updated_at": "2026-08-12T17:42:57Z",
+      "source_read_path": "charness-artifacts/issues/reads/599.raw.yaml",
+      "body_sha256": "33b296ff41a3a23ea893c1b71f3263c6afbbe108d88590fa39d281690ac1f6e0",
+      "comments_sha256": "bcd8fb82afa5d50b7a524b3e0c76842b31a8e5b7abb1083e843f592b2a1665f2",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 599",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/599.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 599"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 587,
+      "url": "https://github.com/corca-ai/charness/issues/587",
+      "title": "a false blocker in the pre-push mutation-coverage lane cost repairs that were never needed (the 'serial aggregate' framing is refuted)",
+      "state": "open",
+      "updated_at": "2026-08-12T14:57:38Z",
+      "source_read_path": "charness-artifacts/issues/reads/587.raw.yaml",
+      "body_sha256": "56f62cf50256e018fdf200f2dc0aebd795b9826e12d10453776620ffa2d1c097",
+      "comments_sha256": "86d4e95b920b1a0bfeafc181cd8ae38da61e202ce52bc72dddb4c62630238f45",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 587",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/587.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 587"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 586,
+      "url": "https://github.com/corca-ai/charness/issues/586",
+      "title": "a check that passes its own direct-call test while never firing on the wired path",
+      "state": "open",
+      "updated_at": "2026-08-12T15:35:00Z",
+      "source_read_path": "charness-artifacts/issues/reads/586.raw.yaml",
+      "body_sha256": "4b62bebdb2ade606e675f2a69776f417f939e38fb143da1a1da9a72c1e80c2f0",
+      "comments_sha256": "49780479512ae95af95b4f43622c14f5aa8cb59abf5890eda1dd50625bd6a56e",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 586",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/586.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 586"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 584,
+      "url": "https://github.com/corca-ai/charness/issues/584",
+      "title": "umbrella: a harness surface discards state it already has and emits prose instead",
+      "state": "open",
+      "updated_at": "2026-08-13T00:25:00Z",
+      "source_read_path": "charness-artifacts/issues/reads/584.raw.yaml",
+      "body_sha256": "57436111a2d18f981bf7c620355aad296da0306a46eb19c846172c909f04f3cf",
+      "comments_sha256": "919e5903978602d3ccd6e977bdd54aa61acacda1637c59a2639daf4c93e8a987",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 584",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/584.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 584"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 583,
+      "url": "https://github.com/corca-ai/charness/issues/583",
+      "title": "umbrella: a verification surface can silently stop verifying what it claims to",
+      "state": "open",
+      "updated_at": "2026-08-12T15:57:13Z",
+      "source_read_path": "charness-artifacts/issues/reads/583.raw.yaml",
+      "body_sha256": "8bf6186e57e8d7bfaf826e38db0eedde7aed73d68c960ae5043c1772122aa406",
+      "comments_sha256": "5a8c72fd9204e17c442782aa5eceee3c044a0017f24f59d18dcef1ddcc346082",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 583",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/583.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 583"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 582,
+      "url": "https://github.com/corca-ai/charness/issues/582",
+      "title": "umbrella: proof and evidence infrastructure is prose, not schema",
+      "state": "open",
+      "updated_at": "2026-08-12T16:10:39Z",
+      "source_read_path": "charness-artifacts/issues/reads/582.raw.yaml",
+      "body_sha256": "e119986a512fade86b302a5ad5b94abd2d0bd9ff52115d03382dd2a2987e0782",
+      "comments_sha256": "0965458a863f602b0baaea7828f539c3c46eb9fd2e6d20bad008426d10ba91f0",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 582",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/582.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 582"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 550,
+      "url": "https://github.com/corca-ai/charness/issues/550",
+      "title": "Adapter resolver bodies are near-identical, revealed once the duplicated version block stopped splitting them",
+      "state": "open",
+      "updated_at": "2026-08-12T17:27:17Z",
+      "source_read_path": "charness-artifacts/issues/reads/550.raw.yaml",
+      "body_sha256": "786771b6bcb897fe5fb59d3edca47cc1927b303f117b54c288161ef8c3b3ded3",
+      "comments_sha256": "21947d2f88630fc75603e49f7b36cf595459a95a7606bb2a6c22d5998eb316fa",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 550",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/550.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 550"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 546,
+      "url": "https://github.com/corca-ai/charness/issues/546",
+      "title": "a budgeted runtime label with no sample is a WARN, so an unenforceable bar reads as protection forever",
+      "state": "open",
+      "updated_at": "2026-08-14T03:21:29Z",
+      "source_read_path": "charness-artifacts/issues/reads/546.raw.yaml",
+      "body_sha256": "5db144f57a752fc688260ab10d5a3924d303e71cbdb5a6ae3a6913d7b08b432b",
+      "comments_sha256": "aa16931976de69f6d47af750a679c35fdb2a90edb4cb46cb541154af374f73de",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 546",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/546.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 546"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    },
+    {
+      "number": 527,
+      "url": "https://github.com/corca-ai/charness/issues/527",
+      "title": "사람이 스킬을 고를 때 읽을 문서가 0개, 파괴적 스킬의 호출 잠금도 0개 — mattpocock/skills 대조 관찰",
+      "state": "open",
+      "updated_at": "2026-08-12T18:02:08Z",
+      "source_read_path": "charness-artifacts/issues/reads/527.raw.yaml",
+      "body_sha256": "aa281986e7590b6a0b933ad5fcbd0e9db1bfe9a87b12f76bdde62caca045e9b0",
+      "comments_sha256": "5eedd457baf352aa86541deb7bbb472f85cf4e29edadddbab396f0379c5c27f5",
+      "premise": {
+        "verdict": "current-reproducer-not-established",
+        "exact_command": "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 527",
+        "exit": 0,
+        "evidence_path": "charness-artifacts/issues/reads/527.raw.yaml"
+      },
+      "classification": "deferred",
+      "release_impact": "activation read has no bounded current supported-path reproducer or acceptance-ready child",
+      "acceptance_owner": "activation triage owner",
+      "acceptance_assertions": [],
+      "lane_id": "unassigned",
+      "allowed_paths": [],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number 527"
+      ],
+      "release_content_evidence_path": null,
+      "post_publication_closeout_path": null,
+      "close_disposition": "leave-open",
+      "amendments": [],
+      "locked_classification": "deferred",
+      "locked_head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+      "defer_reason": "missing-current-reproducer"
+    }
+  ],
+  "work_packages": [
+    {
+      "package_id": "p2-635",
+      "issue_numbers": [
+        635
+      ],
+      "lane_id": "p2-635",
+      "status": "admitted",
+      "allowed_paths": [
+        "skills/public/achieve/SKILL.md",
+        "skills/public/achieve/references/lifecycle-during.md",
+        "tests/test_achieve_lesson_citation.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_achieve_lesson_citation.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-635-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p2-638",
+      "issue_numbers": [
+        638
+      ],
+      "lane_id": "p2-638",
+      "status": "admitted",
+      "allowed_paths": [
+        "skills/public/critique/SKILL.md",
+        "skills/public/critique/scripts/record_round_findings.py",
+        "tests/test_critique_round_findings.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_critique_round_findings.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-638-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p2-639",
+      "issue_numbers": [
+        639
+      ],
+      "lane_id": "p2-639",
+      "status": "admitted",
+      "allowed_paths": [
+        "scripts/session_start_lesson_context.py",
+        "tests/test_session_start_lesson_context.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_session_start_lesson_context.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-639-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p4-670",
+      "issue_numbers": [
+        670
+      ],
+      "lane_id": "p4-670",
+      "status": "admitted",
+      "allowed_paths": [
+        "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "scripts/check_consumer_validator_catalog.py",
+        "tests/test_consumer_validator_catalog.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_consumer_validator_catalog.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-670-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p4-671",
+      "issue_numbers": [
+        671
+      ],
+      "lane_id": "p4-671",
+      "status": "admitted",
+      "allowed_paths": [
+        "skills/public/achieve/scripts/goal_path_portability.py",
+        "tests/test_goal_path_portability.py"
+      ],
+      "dependencies": [
+        "p2-635"
+      ],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_goal_path_portability.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-671-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p3-672",
+      "issue_numbers": [
+        672
+      ],
+      "lane_id": "p3-672",
+      "status": "admitted",
+      "allowed_paths": [
+        "scripts/what_reads_this.py",
+        "tests/test_what_reads_this.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_what_reads_this.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-672-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p3-676",
+      "issue_numbers": [
+        676
+      ],
+      "lane_id": "p3-676",
+      "status": "admitted",
+      "allowed_paths": [
+        "scripts/slice_closeout_advisories.py",
+        "tests/test_slice_closeout_advisories.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_slice_closeout_advisories.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-676-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p3-677",
+      "issue_numbers": [
+        677
+      ],
+      "lane_id": "p3-677",
+      "status": "admitted",
+      "allowed_paths": [
+        "scripts/check_artifact_citations.py",
+        "tests/test_artifact_citations.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_artifact_citations.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-677-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p3-678",
+      "issue_numbers": [
+        678
+      ],
+      "lane_id": "p3-678",
+      "status": "admitted",
+      "allowed_paths": [
+        "scripts/adapter_key_registry.py",
+        "tests/test_adapter_key_registry.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_adapter_key_registry.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-678-reproduction.raw.txt"
+    },
+    {
+      "package_id": "p0-679",
+      "issue_numbers": [
+        679
+      ],
+      "lane_id": "p0-679",
+      "status": "admitted",
+      "allowed_paths": [
+        "skills/public/impl/SKILL.md",
+        "skills/public/impl/scripts/init_adapter.py",
+        "tests/test_impl_bootstrap.py"
+      ],
+      "dependencies": [],
+      "proof_commands": [
+        "python3 -m pytest -q tests/test_impl_bootstrap.py"
+      ],
+      "acceptance_assertions": [
+        "issue acceptance remains bound to current evidence"
+      ],
+      "release_content_carrier": "charness-artifacts/issues/2026-08-20-679-reproduction.txt"
+    }
+  ],
+  "parent_only_paths": [
+    ".charness",
+    ".git",
+    "plugins/charness",
+    "packaging",
+    "docs/generated",
+    "charness-artifacts/issues",
+    "charness-artifacts/quality",
+    "charness-artifacts/release",
+    "version.py",
+    "__version__.py"
+  ],
+  "freshness_note": "GitHub freshness is re-read before issue closeout and before publication; this ledger validates the captured activation snapshot only and never substitutes for the live tracker.",
+  "release_planner_receipt": {
+    "command": "python3 skills/public/release/scripts/plan_release_run.py --repo-root . --detail",
+    "raw_output_path": "charness-artifacts/release/2026-08-20-slice-0-release-planner.raw.yaml",
+    "meta_path": "charness-artifacts/release/2026-08-20-slice-0-release-planner.meta.txt",
+    "head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+    "captured_at": "2026-08-20T18:45:50+09:00",
+    "exit_code": 0,
+    "raw_sha256": "56849a464a200c7c4b72df7f027c82272002aa9d352be8132679ce182792637b",
+    "meta_sha256": "8dff95b5bf7a0d0269b71c30da58559573c8fca878e5c1afbb04a60526eb86b9"
+  },
+  "quality_planner_receipt": {
+    "command": "python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --detail",
+    "raw_output_path": "charness-artifacts/quality/2026-08-20-slice-0-quality-planner.raw.yaml",
+    "meta_path": "charness-artifacts/quality/2026-08-20-slice-0-quality-planner.meta.txt",
+    "head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+    "captured_at": "2026-08-20T18:45:50+09:00",
+    "exit_code": 0,
+    "raw_sha256": "2fa50f79bc2e5b59f83d40e1c2f9cad3c4b5469270ad35389e0cfd20c6d2a31d",
+    "meta_sha256": "ca65b8266169a73ad4fb378de8e0128d4c8cc3de9236749bf871e0c9f230ed8c"
+  },
+  "issue_plan_receipt": {
+    "command": "python3 skills/public/issue/scripts/issue_tool.py plan --repo-root . --intent resolve",
+    "raw_output_path": "charness-artifacts/issues/2026-08-20-issue-plan.raw.txt",
+    "meta_path": "charness-artifacts/issues/2026-08-20-issue-plan.meta.txt",
+    "head_sha": "b9e89480904d16c586c3b1769f81cac3d3a7f214",
+    "captured_at": "2026-08-20T18:45:57+09:00",
+    "exit_code": 0,
+    "raw_sha256": "e1592de2a495612a72d52940ecf3937f93e35a860caf12cd99707355a206fad1",
+    "meta_sha256": "1a39acfd10027dd992f42f4d1cd84d709913a9e80f26cc7f763304ac18b11349"
+  },
+  "post_lock_exceptions": []
+}

@@ -1,0 +1,77 @@
+ok: true
+repo: corca-ai/charness
+number: 637
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '637'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Problem\n\nWhile recording a new critique decision artifact in `corca-ai/ceal`,\
+    \ the\nartifact-surface preflight could not render the required critique scaffold\n\
+    shape because it resolved the owner to a repository-local path that does not\n\
+    exist:\n\n`/home/ubuntu/ceal/skills/public/critique/scripts/scaffold_critique_artifact.py`\n\
+    \nThe same preflight then reported the actual repo-owned critique validator as\n\
+    passing for the artifact.\n\n## Observed behavior\n\n- Artifact: `charness-artifacts/critique/2026-08-17-2026-08-17-32kib-carrier-decision.md`\n\
+    - Command:\n\n  ```bash\n  python3 /home/ubuntu/.codex/plugins/cache/local/charness/6.0.0/scripts/check_artifact_surface_preflight.py\
+    \ \\\n    --repo-root /home/ubuntu/ceal \\\n    --path charness-artifacts/critique/2026-08-17-2026-08-17-32kib-carrier-decision.md\
+    \ \\\n    --type critique\n  ```\n\n- Output included:\n\n  ```text\n  could not\
+    \ render scaffold skills/public/critique/scripts/scaffold_critique_artifact.py:\n\
+    \  python3: can't open file '/home/ubuntu/ceal/skills/public/critique/scripts/scaffold_critique_artifact.py':\
+    \ [Errno 2] No such file or directory\n  ```\n\n- The same output also reported:\n\
+    \n  ```text\n  owning validator: python3 scripts/validate_critique_artifacts.py\
+    \ --repo-root . --paths <artifact>\n  current verdict ...: PASS\n  ```\n\n## Impact\n\
+    \nThe operator cannot tell whether the critique artifact's required shape was\n\
+    actually inspected or whether the preflight merely fell through to the\nvalidator.\
+    \ This creates avoidable uncertainty at the exact authoring boundary\nwhere the\
+    \ tool is supposed to expose the shape before validation. It also\nteaches a future\
+    \ session to trust a missing or stale owner path, while the\ninstalled Charness\
+    \ skill is the source that supplied the scaffold and\nvalidator contract.\n\n\
+    ## Expected behavior\n\nThe critique preflight should resolve the scaffold from\
+    \ the same declared\nowner/source used by the installed critique skill, or clearly\
+    \ report that the\nshape renderer is unavailable as a distinct non-pass condition.\
+    \ A passing\nvalidator should not be accompanied by an unqualified “could not\
+    \ render\nscaffold” warning without identifying which contract is authoritative.\n\
+    \n## Reproduction\n\nRepository: `corca-ai/ceal`\n\nSource commit: `5523b4248`\
+    \ (`docs: clarify leased carrier byte budgets`)\n\nCommands:\n\n```bash\npython3\
+    \ /home/ubuntu/.codex/plugins/cache/local/charness/6.0.0/scripts/check_artifact_surface_preflight.py\
+    \ \\\n  --repo-root /home/ubuntu/ceal \\\n  --path charness-artifacts/critique/2026-08-17-2026-08-17-32kib-carrier-decision.md\
+    \ \\\n  --type critique\npython3 scripts/validate_critique_artifacts.py --repo-root\
+    \ . \\\n  --paths charness-artifacts/critique/2026-08-17-2026-08-17-32kib-carrier-decision.md\n\
+    ```\n\nObserved result: the preflight could not open its scaffold path, while\
+    \ the\npath-scoped critique validator returned `Validated 1 critique artifact(s).`\n\
+    \n## Weak solution direction\n\nMake the artifact-surface registry resolve the\
+    \ scaffold through the installed\nskill/package owner or a repo-owned declared\
+    \ path, and add a consumer test for\nan installed-layout critique preflight where\
+    \ scaffold rendering and\npath-scoped validation agree. If rendering is intentionally\
+    \ unavailable in a\nconsumer repo, make that state typed and non-misleading rather\
+    \ than silently\ncontinuing with a PASS-shaped report.\n"
+  comments: []
+  createdAt: '2026-08-17T04:32:22Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1HA
+    name: bug
+    description: Something isn't working
+    color: d73a4a
+  number: 637
+  state: OPEN
+  title: critique artifact preflight cannot render the repo scaffold shape
+  updatedAt: '2026-08-17T04:32:22Z'
+  url: https://github.com/corca-ai/charness/issues/637
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

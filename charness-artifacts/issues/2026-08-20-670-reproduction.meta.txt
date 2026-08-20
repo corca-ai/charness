@@ -1,0 +1,4 @@
+command: python3 -c 'from pathlib import Path; files=sorted(p for p in Path("plugins/charness").rglob("*.py") if p.name.startswith(("validate_","check_"))); print("packaged_validator_like_scripts:",len(files)); print("wrapper_mentions:",[str(p) for p in Path(".").rglob("*.py") if "charness_public_wrapper" in p.read_text(encoding="utf-8",errors="ignore")][:20]); print("consumer_validator_catalog_present:",Path("skills/public/quality/references/consumer-validator-catalog.yaml").is_file())'
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T19:00:54+09:00
+exit_code: 0

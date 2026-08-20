@@ -1,0 +1,82 @@
+ok: true
+repo: corca-ai/charness
+number: 678
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '678'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 0
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## What was measured\n\n`scripts/adapter_key_registry.py` exists to answer\
+    \ \"what is this adapter key?\" and it\ncarries a `RETIRED_KEYS` map whose own\
+    \ comment states the purpose:\n\n> A retired key is NOT unknown: an operator who\
+    \ still declares one deserves \"this was\n> removed\", not \"this looks like a\
+    \ typo\".\n\nOn 2026-08-19 the prose-artifact size budgets changed unit and three\
+    \ keys were retired\n(`max_content_lines`, `max_artifact_lines`, and the same\
+    \ key in the quality adapter).\n`RETIRED_KEYS` is still `{}`, and the registry\
+    \ answers:\n\n```\nmax_content_lines  -> state='reader'  readers=('skills/public/handoff/scripts/resolve_adapter.py',)\n\
+    max_artifact_lines -> state='reader'  readers=('scripts/quality_adapter_lib.py',\n\
+    \                                               'skills/public/debug/scripts/resolve_adapter.py')\n\
+    ```\n\n`state='reader'` with the detail `parsed by N module(s) that read this\
+    \ adapter`. That is\nfalse in the sense that matters: nothing reads those keys'\
+    \ VALUES. The named modules\ncontain the key's literal only in order to REFUSE\
+    \ it.\n\n## Why registering them does not fix it\n\n`audit_registry` (`scripts/adapter_key_registry.py:457-461`)\
+    \ refuses a retired key that\nstill has readers:\n\n> `RETIRED_KEYS[{key!r}] is\
+    \ marked retired but {len(readers)} module(s) still read it`\n\nand `find_readers`\
+    \ counts a refusal site as a reader, because a refusal site necessarily\nnames\
+    \ the key. So the two halves of the registry disagree by construction the moment\
+    \ a\nkey is retired in the only way a retirement can be enforced. Registering\
+    \ the three keys\nmakes the audit red; not registering them leaves the operator-facing\
+    \ verdict wrong.\n\n## The actual gap\n\n`find_readers` classifies a module by\
+    \ whether the key's literal appears in it. It cannot\ndistinguish:\n\n- a module\
+    \ that **reads the value** (`data.get(KEY)`, `optional_int(data.get(KEY), ...)`)\n\
+    - a module that **refuses the key** (`if KEY in data: errors.append(...)`)\n\n\
+    Both are \"the key appears here\". This is the same class as the retired keys\
+    \ themselves:\na mechanism whose verdict is keyed on a signal too coarse to discriminate\
+    \ what the\nverdict claims. `scripts/new_proof_surface_advisory.py`'s `DEFECT_CLASSES`\
+    \ names it (b),\n\"verdict keyed on a field that is constant or coarse where it\
+    \ must discriminate\".\n\n## Proposed direction (design call is the operator's)\n\
+    \nThe cheapest discriminator is probably structural rather than textual: a refusal\
+    \ site\nmatches `<KEY> in data` / `<KEY> in <mapping>` and never binds the value.\
+    \ Whether that\nbelongs in `find_readers` (so `resolve_key` answers `retired`\
+    \ and the audit stays green)\nor in a separate `REFUSER` classification is the\
+    \ design question.\n\nWhatever the shape, `resolve_key` should be able to answer\
+    \ `retired` for a key whose\nonly mentions are refusals, and `audit_registry`\
+    \ should not then contradict it.\n\n## Not claimed\n\nThis does not claim any\
+    \ consuming repo has been misled yet — the registry is an\ninspection surface,\
+    \ not a gate, and the three refusals themselves work correctly (an\nadapter declaring\
+    \ a retired key resolves `valid: false` with a message naming the\nreplacement).\
+    \ It claims the registry's own answer is wrong today, that it went wrong the\n\
+    moment the first key was retired, and that the retirement could not have been\
+    \ done any\nother way.\n\nRelated: the same slice found that `scripts/validate_adapters.py`\
+    \ runs the full resolver\nonly for `cautilus-`, `critique-`, `retro-` and `quality-adapter.yaml`,\
+    \ so a\n`.agents/handoff-adapter.yaml` or `.agents/debug-adapter.yaml` carrying\
+    \ a retired key is\nnot refused by the commit-time adapter gate at all. Same family,\
+    \ separate decision.\n\nFound by a bounded review of `1b6227c88`; the `resolve_key`\
+    \ output above was run by the\nparent against that commit."
+  comments: []
+  createdAt: '2026-08-19T12:03:36Z'
+  labels: []
+  number: 678
+  state: OPEN
+  title: The adapter key registry cannot tell a key's READER from its REFUSER, so
+    a retired key reports as live
+  updatedAt: '2026-08-19T12:03:36Z'
+  url: https://github.com/corca-ai/charness/issues/678
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

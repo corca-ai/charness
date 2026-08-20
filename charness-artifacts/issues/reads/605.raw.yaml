@@ -1,0 +1,174 @@
+ok: true
+repo: corca-ai/charness
+number: 605
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '605'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 2
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "Found by a bounded fresh-eye review during the 2026-08-11 ruling-1 slice.\
+    \ Filed rather than resolved: the honest state is UNPROVEN, and both available\
+    \ actions (delete it, or pin a test to it) need evidence I do not have.\n\n##\
+    \ The loop\n\n`scripts/check_documented_command_flags.py`, end of `_resolve_paths`:\n\
+    \n```python\nfor index, (_, _, script, _, _) in enumerate(invocations):\n    while\
+    \ paths[index] and probe.result((script, *paths[index])).returncode != 0:\n  \
+    \      paths[index] = paths[index][:-1]\n```\n\nIts stated job: a resolved subparser\
+    \ path is only trusted while it still reports help, so a path the walk over-descended\
+    \ into is trimmed instead of reported as \"the documented command is not runnable\"\
+    .\n\n## What the review found\n\nNeither test that claims to prove it reaches\
+    \ it any more:\n\n- `test_documented_command_flags.py` `CHOICES_NOT_SUBCOMMANDS_SCRIPT`\
+    \ — that parser declares no positionals, so its `--help` has no choice-set row\
+    \ at all; `subcommand_choices` returns empty, the walk breaks at depth 0, and\
+    \ the `while` never iterates. The test docstring's stated mechanism no longer\
+    \ occurs.\n- `BRACES_AND_SUBPARSERS_SCRIPT` — the documented `--mode alpha` has\
+    \ `--mode` in `options_with_values`, so `alpha` is consumed as a flag value and\
+    \ never becomes a candidate. Path stays `()`.\n\nThe proximate cause is this slice's\
+    \ narrowing of `subcommand_choices` to lines whose first non-space char is `{`\
+    \ (previously: a scan of the whole `--help` text). The narrowing is correct on\
+    \ its own terms — it removed three false positives — but it also removed most\
+    \ of what could produce a bogus descent, and the trim-back was the net under exactly\
+    \ that.\n\n## What I could not establish\n\nFor the trim-back to fire, the walk\
+    \ must descend into a token that IS in a depth-N choice set while `<script> <token>\
+    \ --help` exits non-zero. Under the narrowed reader the only sources of a choice\
+    \ set are a subparsers row and a `choices=` positional row, and I could not construct\
+    \ a trigger for either:\n\n- subparsers name -> `--help` succeeds by construction.\n\
+    - `choices=` positional value -> verified against real argparse that `x.py alpha\
+    \ --help` exits **0** and prints the top-level help, so the probe is clean and\
+    \ no trim happens.\n\nAdded `test_a_choices_positional_value_is_judged_as_a_flag_scope_not_as_an_unrunnable_command`,\
+    \ which covers the `choices=`-positional shape and asserts the absence of the\
+    \ \"not runnable\" finding — but that test passes whether or not the loop exists,\
+    \ so it does not close this.\n\n## Why it is not just deleted\n\n\"I could not\
+    \ construct a trigger\" is not \"there is no trigger\", and this repo's own lesson\
+    \ is that a removal proposal without proof of no consumer is malformed. The loop\
+    \ is cheap and its failure mode if wrongly removed is a blocking false red on\
+    \ a correct doc.\n\n## Decision needed\n\nEither find the live trigger and pin\
+    \ a test that fails without the loop, or establish that the narrowed `subcommand_choices`\
+    \ makes a bogus descent impossible and remove the loop with that argument recorded.\
+    \ Until one of those, it stands as unproven safety net."
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABOgdYQg
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## 2026-08-12 explicit disposition: unproven-defer
+
+
+      The issue was re-read. The two guardian tests no longer reach the trim-back
+      loop, and no live trigger or bounded impossibility proof has been established.
+      Removing the loop would be a behavioral change without evidence that no valid
+      command-help shape needs it; pinning a test would be equally artificial without
+      a trigger.
+
+
+      Disposition: **unproven-defer**. Owner: documented-command checker / docs author.
+      Revisit trigger: either construct a real parser/help shape where a discovered
+      choice makes `<script> <path> --help` fail and pin it, or prove from the narrowed
+      `subcommand_choices` grammar that bogus descent is impossible and record the
+      removal argument. This issue remains OPEN until one evidence path exists.
+
+
+      AI-provenance: authored by an agent session.'
+    createdAt: '2026-08-12T14:57:39Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/605#issuecomment-5268527170
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOz_5rQ
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## New measurement, from a widened population
+
+
+      The 2026-08-14 slice widened `check_documented_command_flags.py` past markdown
+      to
+
+      Python argv lists, adapter YAML, surface-manifest command strings, and tests.
+      That
+
+      is the strongest natural experiment available for this issue: it roughly
+
+      quadrupled the invocation population without changing `subcommand_choices`.
+
+
+      Instrumented the loop directly (counting entries and trims, rather than diffing
+
+      report output, so a trim that produced an identical verdict would still be
+
+      visible):
+
+
+      ```
+
+      TRIMBACK_INSTRUMENT invocations=1165 nonempty_paths=199 trims=0
+
+      ```
+
+
+      So the guard was reachable and evaluated **199 times** across five carrier kinds,
+
+      and trimmed **zero** times. Report output with and without the loop is byte
+
+      identical over this repo.
+
+
+      ## What this does and does not settle
+
+
+      It does not close this issue. The issue''s own standard is "find the live trigger
+
+      and pin a test that fails without the loop, OR establish that the narrowed
+
+      `subcommand_choices` makes a bogus descent impossible and remove the loop with
+
+      that argument recorded." 0/199 is neither — it is a stronger negative than the
+
+      original "I could not construct a trigger", not an impossibility argument.
+
+
+      What it adds: the negative now holds over token sequences that were never authored
+
+      as documentation (Python argv list elements, YAML command strings), which is
+      where
+
+      a bogus descent was most plausible if one existed.
+
+
+      The loop was left untouched by that slice, deliberately.
+
+      '
+    createdAt: '2026-08-14T03:20:52Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/605#issuecomment-5289015725
+    viewerDidAuthor: true
+  createdAt: '2026-08-11T10:28:40Z'
+  labels: []
+  number: 605
+  state: OPEN
+  title: 'check_documented_command_flags: the trim-back loop''s guardian tests no
+    longer reach it, and no live trigger could be constructed'
+  updatedAt: '2026-08-14T03:20:52Z'
+  url: https://github.com/corca-ai/charness/issues/605
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

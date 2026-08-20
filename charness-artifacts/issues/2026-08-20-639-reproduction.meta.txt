@@ -1,0 +1,4 @@
+command: python3 scripts/session_start_lesson_context.py --repo-root . --session-id 2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:52:23+09:00
+exit_code: 0

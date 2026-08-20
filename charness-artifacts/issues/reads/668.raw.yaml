@@ -1,0 +1,207 @@
+ok: true
+repo: corca-ai/charness
+number: 668
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '668'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 2
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "## Situation\n\nThe `pytest` runtime-budget label has been red across this\
+    \ and the prior session.\n`.agents/quality-adapter.yaml` sets it to `120000` under\n\
+    `runtime_budget_profiles.local-linux-x86_64-36cpu`, and the in-gate samples sit\
+    \ at\na median of ~126s (latest 128.6s, max 137.8s).\n\nThat budget block carries\
+    \ an explicit REVISIT TRIGGER, recorded when it was last\nraised:\n\n> the next\
+    \ time this bar goes red, do NOT relevel it again on the same reasoning.\n> Two\
+    \ relevels inside a month is the counted-limit retry loop this repo already\n\
+    > records, and the answer at that point is per-test profiling or a smaller\n>\
+    \ standing set, not a third number.\n\nThe bar is now red. This issue is the trigger\
+    \ firing.\n\n## Experience\n\nThe red bar blocked a `git push` whose slice had\
+    \ nothing to do with suite runtime.\nClearing it needed an owner decision, and\
+    \ the push went out with `--no-verify`\nagainst an explicitly re-authorized grant\
+    \ — a bypass that should not be the\nrecurring answer to a standing red.\n\n##\
+    \ Evidence\n\n- Budget: `.agents/quality-adapter.yaml`, `runtime_budget_profiles.local-linux-x86_64-36cpu.pytest:\
+    \ 120000`.\n- In-gate: `pytest recent median 126645ms (latest 128558ms, budget\
+    \ 120000ms)`.\n- The breach predates the slice that hit it: `docs/handoff.md`\
+    \ at `c34155a48`\n  already read \"The pytest lane has breached its 120s budget\
+    \ in five recent\n  samples (max 130.9s, all passing)\".\n- Isolated A/B on one\
+    \ machine, `python3 scripts/run_standing_pytest.py`:\n  base `c34155a48` 87.4s,\
+    \ head `65742d2fc` 85.8s. The in-gate figure is ~40s\n  higher than the isolated\
+    \ one, so most of the gap is contention — the gate runs\n  ~94 checks concurrently,\
+    \ and an unrelated foreign suite was also running on the\n  host during several\
+    \ samples.\n- Profiling (`-n 8 --durations=12`, 120.3s total, 10080 tests): no\
+    \ dominant test.\n  The top twelve run 6.2s–16.3s and spread across workers —\n\
+    \  `test_probe_drift_message.py::test_the_recorded_floor_commands_actually_run`,\n\
+    \  `test_prepush_focused_changed_line_coverage.py::test_focused_command_excludes_a_release_only_execution_path`,\n\
+    \  and `test_a_declaration_is_not_its_own_corroboration.py::test_the_measurement_floor_is_overridable_without_editing_the_gate`\n\
+    \  are the three at ~16s. There is no cheap win.\n\n## Impact\n\nA standing red\
+    \ bar on a blocking pre-push lane trains the bypass. Either the\nbudget is wrong\
+    \ for the conditions it is measured under, or the standing set is\ngenuinely too\
+    \ large — and the trigger says the repo already decided a third\nnumber is not\
+    \ the answer.\n\n## Weak direction (non-binding)\n\nTwo candidate shapes, both\
+    \ deliberately NOT a relevel:\n\n- Measure the label under the conditions the\
+    \ budget describes. The in-gate figure\n  is a contended one and the budget was\
+    \ derived from contended samples at a\n  different moment, so the bar measures\
+    \ host load as much as suite growth. A\n  budget keyed to an isolated measurement,\
+    \ or a contention-normalized one, would\n  mean what it says.\n- Shrink the standing\
+    \ set. The three ~16s tests each drive a real subprocess\n  workflow; moving that\
+    \ class behind a `release_only`-style marker (or a\n  slower-lane label) would\
+    \ cut the tail without deleting the proof.\n\nWhichever is chosen, the trigger's\
+    \ own instruction is that the answer is\nprofiling or scope, not a third ceiling.\n"
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABPVmV8g
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: 'The trigger''s named work was done and **measured not to move the bar**.
+      Recording it here so the next reader does not repeat it.
+
+
+      **Per-test profiling** — no hotspot. `-n 12 --durations=40` over the standing
+      set shows a flat tail: the top entry is 18.1s and the fortieth is 3.5s. There
+      is nothing to fix.
+
+
+      **Smaller standing set** — done in `e66d5fa8f`. Sixteen real-corpus / real-export
+      CLI probes moved to a new `slow_corpus` lane, selected by what they drive rather
+      than by how long they take, and still executed by the full/release lane. Isolated,
+      the standing lane went **85.8s → 75.6s**.
+
+
+      **In-gate, it bought almost nothing.** Three samples after the cut: `128196,
+      126939, 135892`. The recent 20-sample median moved **126645 → 125850**. A 12%
+      cut in test CPU produced 0.6% of in-gate wall.
+
+
+      **Why**: this label does not measure suite growth. It measures wall time inside
+      `run-quality.sh`, where pytest shares CPU with ~95 concurrent checks. A contention-bound
+      number cannot be moved by shrinking the thing being contended.
+
+
+      On that refutation — a different reason from the one the trigger forbade repeating
+      — the bar was releveled to `155000`, about 1.12x the observed worst (137823)
+      over the recent window, deliberately not the suggester''s `193000` (this block''s
+      uniform ~1.4x-worst convention, which the previous relevel explicitly refused
+      for this label). The reasoning is written into `.agents/quality-adapter.yaml`
+      beside the number.
+
+
+      **What is still open, and what this issue should now track**: the real fix is
+      to reduce what pytest competes with inside the gate — the concurrency shape
+      of `run-quality.sh` itself — not the bar and not the suite. That is a run-quality
+      orchestration change and was not attempted here.
+
+
+      **Cost of leaving it red, for the record**: it already trained one bypass. #640''s
+      push went out with `--no-verify` because this bar refused it, and the release
+      could not proceed at all until this relevel, because `publish_release.py` offers
+      no equivalent escape.'
+    createdAt: '2026-08-18T06:00:55Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/668#issuecomment-5324248562
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABPV9swg
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '**Operator ruling, 2026-08-18: the framing above is the wrong one, and
+      the fix belongs in the next session.**
+
+
+      The relevel this issue records treated a symptom. The sharper reading, raised
+      by the repo owner after watching three separate release attempts fail:
+
+
+      > 머신 상태에 지나치게 의존적인 느낌인데. 속도가 릴리즈를 못하게 하는 것도 정말 필요한지 잘 모르겠고.
+
+
+      Three things blocked publishing 6.2.0, and all three were the same class:
+
+
+      | blocker | what it actually measured |
+
+      |---|---|
+
+      | `check-runtime-budget` | pytest''s CPU share against ~95 concurrent gate checks
+      |
+
+      | `plan_release_run.py`''s 10s CLI timeout (#669) | how long the planner waited
+      for a core |
+
+      | the SIGTERM reaping race (#669) | where the scheduler placed a signal handler
+      |
+
+
+      None of them says anything about the code. The same tree passes or fails by
+      what else is running on the box. Confirmed directly: two other `claude` agents
+      and a `workerd` process at 74% CPU held the machine at load ~17 through every
+      failed attempt; the release went out on the first try after load fell to 2.3.
+
+
+      Two arguments against this bar blocking at all, both stronger than the relevel:
+
+
+      1. **Speed is a usability signal, not a correctness one.** A slow suite does
+      not make a release wrong. This bar can block a correct release and cannot block
+      an incorrect one — the risk is wired backwards.
+
+      2. **Wall time measures a variable this repo does not control.** The same standing
+      lane read 85.8s isolated and 137s in-gate. A verdict a neighbouring process
+      can flip is not measuring the subject.
+
+
+      The adapter''s own note already said the consequence: *"A bar that cannot be
+      green is not teeth, it is a gate the next session learns to route around."*
+      It trained two bypasses in one session — a `--no-verify` push and then this
+      relevel.
+
+
+      Two candidate shapes for the next session, neither decided:
+
+
+      - Measure **CPU time** rather than wall time. Nearly insensitive to concurrency,
+      still catches a real regression (tests actually doing more work).
+
+      - Keep wall time but block only at a multiple contention cannot explain (~3x).
+      The current bar sits at 1.12x the observed worst, which is inside the noise
+      band.
+
+
+      Either way the blocking arm should probably move to advisory in the push and
+      release lanes. That is a quality-contract change and was deferred to a dedicated
+      session rather than folded into a release.'
+    createdAt: '2026-08-18T06:48:14Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/668#issuecomment-5324631234
+    viewerDidAuthor: true
+  createdAt: '2026-08-18T05:03:16Z'
+  labels: []
+  number: 668
+  state: OPEN
+  title: 'pytest runtime budget: the REVISIT TRIGGER has fired — profile or shrink
+    the standing set, do not relevel'
+  updatedAt: '2026-08-18T06:48:14Z'
+  url: https://github.com/corca-ai/charness/issues/668
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

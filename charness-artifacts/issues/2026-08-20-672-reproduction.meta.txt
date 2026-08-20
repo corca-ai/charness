@@ -1,0 +1,4 @@
+command: python3 scripts/what_reads_this.py --symbol listed_skill_ids
+head_sha: b9e89480904d16c586c3b1769f81cac3d3a7f214
+captured_at: 2026-08-20T18:49:21+09:00
+exit_code: 0

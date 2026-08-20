@@ -1,0 +1,527 @@
+ok: true
+repo: corca-ai/charness
+number: 546
+read_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '546'
+- --comments
+- --json
+- number,title,body,comments,labels,state,url,author,createdAt,updatedAt
+comments_read: true
+comment_count: 5
+issue:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: '## Observed
+
+
+    A budgeted runtime label that never gets a sample in the selected profile is
+
+    reported as a WARN and the gate exits 0. The bar is real, committed, and
+
+    unenforceable, and nothing ever says so louder than a warning line that scrolls
+
+    past inside an ~85-gate run.
+
+
+    `skills/public/quality/scripts/runtime_budget_lib.py`: `_checked_entry` returns
+
+    `status="no-sample"`, which is collected into `missing_samples` and rendered as
+
+    `WARN  <label>: no sample yet (budget <n>ms)`.
+
+
+    `skills/public/quality/scripts/check_runtime_budget.py`: `main` returns nonzero
+
+    only for `profile_config_errors` and `violations`. `missing_samples` is never
+
+    consulted, so it cannot affect the exit code.
+
+
+    `runtime_visibility_lib` does not cover this either: it fires only when the
+
+    budgets dict is entirely empty, not when one declared bar has no sample.
+
+
+    ## Why this matters
+
+
+    The failure is silent and permanent. A label that is renamed, conditionally
+
+    queued and then never queued, or moved behind an opt-in keeps its bar in the
+
+    adapter forever. The bar reads as protection in review — someone deliberately
+
+    sized it — while the gate has no way to fail on it. That is the exact shape the
+
+    repo''s own design standard calls out: a declaration that no executable reader
+
+    ever reconciles.
+
+
+    Contrast the sibling case, which IS armed: a profile that has samples but no
+
+    `budgets` block is a hard `profile_config_errors` block. The mirror case, a
+
+    budget with no samples, is a warning. The asymmetry looks accidental rather than
+
+    decided.
+
+
+    ## Evidence path
+
+
+    1. Add a budget for a label that is never queued in the selected profile.
+
+    2. Run `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root
+    .`.
+
+    3. Observe `WARN ... no sample yet` and exit code 0.
+
+
+    ## Impact
+
+
+    Unknown-sized today: nobody can currently answer "how many committed bars are
+
+    unenforceable on this machine" without reading the report by hand, because the
+
+    gate does not count them. That number is itself the first thing worth measuring.
+
+
+    ## Weak direction — non-binding
+
+
+    Options rather than a decision: count `missing_samples` and report it as a number
+
+    in the summary so it is at least legible; or fail when a bar has had no sample
+
+    for N consecutive runs (staleness rather than absence, so a first run on a new
+
+    machine is not blocked); or treat a bar for a label that the runner does not queue
+
+    at all as a configuration error, which is a different and more tractable check
+
+    than absence-of-sample. A refusal on plain absence would fire on every fresh
+
+    machine and should probably be avoided.
+
+
+    *Provenance: found by a delegated bounded review while resolving #544, which
+
+    partitioned runtime samples by gate-set regime. Not introduced by that change
+    and
+
+    not fixable inside its scope; the regime work cannot drive a label into this state,
+
+    because a regimed run means the label simply was not measured under the enforced
+
+    regime.*
+
+    '
+  comments:
+  - id: IC_kwDOR9yx7M8AAAABN9Qe4A
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## 2026-08-09 measured disposition: re-scoped, no gate change
+
+
+      Current profile `local-linux-x86_64-36cpu` reports 28 configured budgets, `missing_samples:
+      []`, `violations: []`, exit 0. An independent reviewer re-ran both detail and
+      summary and confirmed the count.
+
+
+      The active goal set the decision boundary before implementation: if the current
+      count is zero, arming a new failure on plain absence is unproven and would primarily
+      punish fresh machines/profiles. That condition fired, so this slice makes **no
+      runtime-budget gate change**.
+
+
+      This does not refute the mechanism: synthetic tests still prove a declared budget
+      with no sample renders WARN and exits 0. The zero is scoped to this machine/profile/time;
+      another profile or future label drift may reproduce it. Re-scoped outcome: retain
+      the issue as the measured future counterexample, but do not turn absence into
+      a blocker without a real current population or a staleness/queue-membership
+      predicate.'
+    createdAt: '2026-08-09T12:52:27Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/546#issuecomment-5231615712
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABN_2C0w
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: "## One of this issue's three options is now refuted, by measurement\n\n\
+      I built the cheapest option — fail the gate when a budgeted label has no sample\
+      \ —\nput it to a bounded fresh-eye review, got HOLD, confirmed the decisive\
+      \ finding by\nrunning a probe, and **reverted it**. This issue stays open. What\
+      \ it has now that\nit did not is a refuted option with a reason, rather than\
+      \ three untested guesses.\n\n### What was built\n\n`unenforceable_budgets`:\
+      \ budgeted labels no profile has ever sampled, exiting 1,\nwith `missing_samples`\
+      \ keeping its warning meaning. The discriminator between \"dead\nlabel\" and\
+      \ \"fresh machine\" was: has the SELECTED profile sampled anything else.\n\n\
+      ### Why it does not work\n\n**It hard-fails a fresh machine's first run, which\
+      \ is the outcome this issue\nexplicitly warns against.** `check-runtime-budget`\
+      \ is queued second-to-last in\n`run-quality.sh`, and samples are written to\
+      \ `runtime-signals.json` as the run\nproceeds. So by the time the gate executes,\
+      \ the profile HAS sampled ~80 labels —\nthe guard reads \"this machine has run\"\
+      \ — while the history is still partial for\nthis very run.\n\nMeasured against\
+      \ this repo's own 36-CPU budget block, with every label seeded\nexcept `run-quality-read-only`\
+      \ (which `print_final_summary` records *after* this\ngate):\n\n```\nexit: 1\n\
+      unenforceable runtime budget: run-quality-read-only is budgeted but no profile\
+      \ has\never recorded a sample for it, so the bar can never be exceeded and can\
+      \ never fail.\n```\n\n**And six labels in this repo's own adapter are legitimately\
+      \ conditional.**\n`run-quality-read-only-release`, `run-quality-full-release`,\
+      \ `pytest-release`\n(release path), `dead-code-advisory` (opt-in), `check-coverage`\
+      \ and\n`run-quality-full` (mode-gated). A second maintainer box reporting the\
+      \ same profile\nid and running only pre-push read-only would fail permanently\
+      \ on those, with a\nmessage telling the operator to delete budgets that are\
+      \ correct — and\n`CHARNESS_QUALITY_LABELS` is an allowlist, so the only escape\
+      \ is `--no-verify`.\n\n### Why I reverted instead of iterating\n\nThese are\
+      \ not implementation bugs. They say the chosen discriminator is wrong:\n**sample\
+      \ history cannot distinguish a dead label from an unexercised run mode**,\n\
+      because that information is not in the signals file. No amount of guarding fixes\n\
+      that.\n\n### What would work, now specified rather than guessed\n\n- Classify\
+      \ against the runner's **declared gate inventory** rather than the\n  recorded\
+      \ sample window.\n- Add an adapter-declared exemption for conditional labels\
+      \ (release-path,\n  env-gated, mode-gated).\n- Ship an operator escape matching\
+      \ the existing `CHARNESS_SEED_FIXTURE_ADVISORY`\n  precedent — this repo already\
+      \ has prose for the sibling case: \"a gate whose\n  remediation names a flag\
+      \ the operator cannot pass is a gate that lies at the\n  moment it blocks.\"\
+      \n\nFull record, including three further defects found (a timing-log fallback\
+      \ that\nbreaks the discriminator, a crash on a malformed profile entry, and\
+      \ two tests that\npassed through the wrong branch):\n`charness-artifacts/critique/2026-08-10-issue-546-unenforceable-budget-critique.md`.\n\
+      \n### Non-claims\n\nThe defect this issue reports is REAL and unfixed — a budget\
+      \ nothing queues is zero\nprotection wearing the word WARN. Nothing here weakens\
+      \ that. I did not build the\ndeclared-inventory approach, and I did not verify\
+      \ it would work; it is the\nreviewer's recommendation, not a tested design.\n\
+      \nAI-provenance: authored by an agent session.\n"
+    createdAt: '2026-08-09T23:09:37Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/546#issuecomment-5234328275
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOFWy0A
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## Shipped: the rename half. This issue stays open for the other two.
+
+
+      The design that reached implementation is not the one this issue''s comments
+      discuss.
+
+      Sample history was refused again — for the reason the [revert
+
+      critique](https://github.com/corca-ai/charness/blob/main/charness-artifacts/critique/2026-08-10-issue-546-unenforceable-budget-critique.md)
+
+      established: it cannot distinguish a dead label from an unexercised run mode.
+      Instead
+
+      the reconciliation now asks a question that needs no history at all: **does
+
+      `run-quality.sh` still know this budgeted label''s name?**
+
+
+      `scripts/quality_label_universe.py` derives the label set from three sources
+      — `queue_*`
+
+      call sites with literal labels (dispatcher bodies excluded), the four COMPUTED
+
+      `run-quality-<mode>[-release]` aggregate labels, and adapter `startup_probes`
+      with
+
+      `class: standing`. `scripts/check_runtime_budget_universe.py` refuses a budgeted
+      label
+
+      outside it, across the **union of all four budget blocks** — `profile_budgets`
+      returns
+
+      exactly one block per run, so a single-profile reader never reaches the aarch64
+      block
+
+      the adapter itself records as never sampled.
+
+
+      **Neither defect that killed the previous attempt can recur.** Membership reads
+      no
+
+      history, so a fresh machine''s first run answers identically to one with a year
+      of
+
+      samples. And a conditional label is in the runner''s text whether or not its
+      condition
+
+      held, so the six legitimately conditional labels are unaffected. Measured before
+
+      arming: all 38 budgeted labels across all four blocks resolve, so this refuses
+      nothing
+
+      that previously passed.
+
+
+      ## What is still unfixed, which is most of this issue
+
+
+      This issue''s body names three rot modes. **The gate decides one.**
+
+
+      A label the runner still names but never RUNS — conditionally queued, or moved
+      behind
+
+      an opt-in — is in the universe and passes. `dead-code-advisory` is the live
+      in-repo
+
+      instance: budgeted at 12500ms, queued only under `CHARNESS_QUALITY_DEAD_CODE=1`,
+      never
+
+      sampled in an ordinary run, and **the new gate reports it green**. That is stated
+      in
+
+      the gate''s own pass line, its docstring, and the test module docstring, so
+      nobody
+
+      reads the green as coverage.
+
+
+      Deciding that half needs an adapter-declared expectation — a `conditional:`
+      marker
+
+      naming the condition — because the runner does not have the information either:
+      it
+
+      lives in operator intent. The new reader makes such a marker *verifiable* rather
+      than
+
+      an unchecked annotation, which is why this order was chosen, but it does not
+      replace
+
+      it.
+
+
+      ## Also changed
+
+
+      `check_timing_layer_completeness` now consumes the same reader instead of its
+      own
+
+      `queue_selected`-only regex. It was under-counting: three gates reaching the
+      queue
+
+      through `queue_timed` and `queue_agent_browser_runtime_gate` had never been
+      required
+
+      to carry a timing verdict, so an exhaustiveness gate was not exhaustive.
+
+
+      Filed rather than folded in: #595 — `latest_spikes` and `runtime_visibility_findings`
+
+      are computed, rendered, and read by no exit path. Same class as this issue,
+      same file.
+
+
+      ## Non-claims
+
+
+      Consumer repos are NOT covered and still carry this defect. `check_runtime_budget.py`
+
+      is installed into repos with no `run-quality.sh`, whose label universe is whatever
+
+      their own runner declares; the new gate lives in `scripts/` and is deliberately
+      not
+
+      part of the installed quality skill, because shipping a reader that only understands
+
+      this runner would either refuse every consumer budget or no-op silently.
+
+
+      Two bounded review rounds ran, and the round reading the repairs found a different
+
+      class than the round reading the design — including that the first round''s
+      own repair
+
+      shipped a documented fail-open branch that was dead code, so the real behavior
+      was
+
+      fail-closed with a wrong remedy. Both repaired; round-2 repairs are recorded
+      as
+
+      accepted-unreviewed per the two-round cap. Record:
+
+      `charness-artifacts/critique/2026-08-10-issue-546-label-universe-implementation-critique.md`.
+
+
+      Not yet pushed. `pytest tests/quality_gates` is 5817 passed locally.
+
+
+      AI-provenance: authored by an agent session.
+
+      '
+    createdAt: '2026-08-10T12:21:50Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/546#issuecomment-5240107728
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABOgXXjg
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## 2026-08-12 goal recheck: narrowed live residue remains open
+
+
+      Re-read the issue and all three prior comments, then re-ran the repository-owned
+      reader on the current tree:
+
+
+      - `check_runtime_budget_universe.py --json`: armed, 37 budgeted labels reconciled
+      against 102 runner labels, `unknown_labels: []`.
+
+      - Selected `check-runtime-budget-universe` quality lane: pass (81ms).
+
+      - Current selected profile: 27 budgets, zero missing samples and violations;
+      the one latest-only spike is now explicitly advisory under #595 rather than
+      a hidden verdict path.
+
+
+      This confirms the shipped membership repair covers renamed/retired/typoed labels
+      without the false-red behavior that invalidated the history-based design. It
+      does **not** solve the remaining intentional boundary: a label that is declared
+      and conditionally queued but never runs still needs adapter-declared execution
+      expectation/owner intent. Consumer repos also remain outside this repository-only
+      reader.
+
+
+      Disposition: **unproven-defer** for the conditional/consumer half; owner is
+      the quality adapter/runtime contract. Revisit when an adapter-declared conditional-label
+      schema (including consumer runner inventory) is specified, or a live named-but-never-run
+      counterexample is measured. This issue is not closed by the current recheck.
+
+
+      AI-provenance: authored by an agent session.'
+    createdAt: '2026-08-12T14:49:14Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/546#issuecomment-5268428686
+    viewerDidAuthor: true
+  - id: IC_kwDOR9yx7M8AAAABO0AHIQ
+    author:
+      login: spilist
+    authorAssociation: MEMBER
+    body: '## A live instance, measured 2026-08-14
+
+
+      The 2026-08-14 slice widened `check_documented_command_flags.py` from markdown-only
+
+      to five carrier kinds. Measured cost, uncontended, same machine:
+
+
+      | | wall | user CPU | parallelism |
+
+      | --- | --- | --- | --- |
+
+      | before (`git show HEAD:`) | 1.235s | 15.21s | 1415% |
+
+      | after | 5.36s | 29.86s | 635% |
+
+
+      **1.97x the CPU, and it parallelizes worse.**
+
+
+      `check_runtime_budget.py` grades on the recent-sample median. The recorded samples
+
+      for this label on `local-linux-x86_64-36cpu` are median 4823ms / max 5080ms
+      —
+
+      **all taken with the old gate**. Projected new contended median is roughly
+
+      4823 x 1.97 = **~9.5s against the 9000ms bar** at `.agents/quality-adapter.yaml:427`.
+
+      The `local-linux-x86_64-4cpu` profile is in the same position: bar 27000 at
+      `:510`,
+
+      recorded samples 14366-19073ms, projected ~28-38s.
+
+
+      ## Why this is exactly this issue''s shape
+
+
+      The gate exits **0 today**, and will keep exiting 0 until roughly half the
+
+      20-sample window refills. So the run that INTRODUCES the regression passes,
+      and a
+
+      later unrelated run fails — with nothing in between saying the bar stopped
+
+      describing the thing it guards.
+
+
+      This is the mirror image of the `no-sample` case this issue reports: there,
+      a bar
+
+      with no sample reads as protection; here, a bar with only STALE samples reads
+      as
+
+      protection. Both are "the number on the bar is not currently constraining
+
+      anything, and only a WARN-or-silence says so."
+
+
+      A candidate signal, offered rather than proposed: a budgeted label whose recorded
+
+      samples all predate the last change to the measured command is in the same
+
+      epistemic state as a label with no samples at all.
+
+
+      ## Not claimed
+
+
+      Nothing was re-levelled and the gate was not touched. Re-level versus optimize
+      is
+
+      a `quality` routing decision under this repo''s own work-routing rule, not a
+
+      unilateral bar edit.
+
+      '
+    createdAt: '2026-08-14T03:21:29Z'
+    includesCreatedEdit: false
+    isMinimized: false
+    minimizedReason: ''
+    reactionGroups: []
+    url: https://github.com/corca-ai/charness/issues/546#issuecomment-5289019169
+    viewerDidAuthor: true
+  createdAt: '2026-08-07T06:48:11Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACepY1HA
+    name: bug
+    description: Something isn't working
+    color: d73a4a
+  number: 546
+  state: OPEN
+  title: a budgeted runtime label with no sample is a WARN, so an unenforceable bar
+    reads as protection forever
+  updatedAt: '2026-08-14T03:21:29Z'
+  url: https://github.com/corca-ai/charness/issues/546
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
