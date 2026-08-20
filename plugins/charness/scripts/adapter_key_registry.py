@@ -80,7 +80,10 @@ SHARED_CORE_KEYS = ("version", "repo", "language", "output_dir", "preset_id", "p
 # Keys deliberately withdrawn. A retired key is NOT unknown: an operator who still
 # declares one deserves "this was removed", not "this looks like a typo". Each entry
 # carries the reason, because a bare list rots into a place to hide names.
-RETIRED_KEYS: dict[str, str] = {}
+RETIRED_KEYS: dict[str, str] = {
+    "max_content_lines": "retired on 2026-08-19; use max_content_words instead",
+    "max_artifact_lines": "retired on 2026-08-19; use max_artifact_words instead",
+}
 
 # Keys whose reader resolves them dynamically (built name, table lookup) so a literal
 # scan cannot see the read. Each names the module that owns it; `audit_registry` checks
@@ -187,42 +190,93 @@ def _reader_literals(repo_root: Path, files: list[Path] | None) -> list[tuple[st
     return _LITERALS_CACHE[repo_root]
 
 
+_KEY_USAGE_CACHE: dict[Path, tuple[set[str], set[str]]] = {}
+
+
+def _string_values(node: ast.AST) -> set[str]:
+    return {item.value for item in ast.walk(node) if isinstance(item, ast.Constant) and isinstance(item.value, str)}
+
+
+def _key_value(node: ast.AST, aliases: dict[str, str]) -> set[str]:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return {node.value}
+    if isinstance(node, ast.Name) and node.id in aliases:
+        return {aliases[node.id]}
+    return set()
+
+
+def _key_usage(path: Path) -> tuple[set[str], set[str]]:
+    """Return ``(refusal candidates, structural value reads)`` for one module."""
+    cached = _KEY_USAGE_CACHE.get(path)
+    if cached is not None:
+        return cached
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+    except (OSError, SyntaxError, ValueError):
+        _KEY_USAGE_CACHE[path] = (set(), set())
+        return _KEY_USAGE_CACHE[path]
+
+    aliases: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            continue
+        targets, value = (node.targets, node.value) if isinstance(node, ast.Assign) else ((node.target,), node.value)
+        if isinstance(value, ast.Constant) and isinstance(value.value, str):
+            for target in targets:
+                for name in (item.id for item in ast.walk(target) if isinstance(item, ast.Name)):
+                    aliases[name] = value.value
+
+    nodes = list(ast.walk(tree))
+    refused = {
+        key
+        for node in nodes
+        if isinstance(node, ast.Compare)
+        and any(isinstance(operator, (ast.In, ast.NotIn)) for operator in node.ops)
+        for operand in (node.left, *node.comparators)
+        for key in _key_value(operand, aliases)
+    }
+    refused.update(
+        key
+        for node in nodes
+        if isinstance(node, (ast.Assign, ast.AnnAssign))
+        for targets, value in ((node.targets, node.value) if isinstance(node, ast.Assign) else ((node.target,), node.value),)
+        if any(
+            name.id.upper().startswith("RETIRED")
+            for target in targets
+            for name in ast.walk(target)
+            if isinstance(name, ast.Name)
+        )
+        for key in _string_values(value)
+    )
+    reads = {
+        key for node in nodes if isinstance(node, ast.Subscript) for key in _key_value(node.slice, aliases)
+    }
+    reads.update(
+        key
+        for node in nodes
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in {"get", "pop", "setdefault"}
+        for argument in node.args[:1]
+        for key in _key_value(argument, aliases)
+    )
+
+    _KEY_USAGE_CACHE[path] = (refused, reads)
+    return _KEY_USAGE_CACHE[path]
+
+
 def find_readers(
     repo_root: Path, key: str, *, files: list[Path] | None = None
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    """Return ``(parsing readers, text-asserting readers)`` for ``key``.
-
-    The split is the point, and this repo has a live instance of why. A module that reads
-    `data["comparison_command_templates"]` USES the value. A module that greps the raw
-    adapter text for the snippet `"comparison_command_templates:"` only asserts the line
-    is PRESENT -- it never parses it, never runs it, and would pass on a declaration whose
-    value is empty, malformed, or nonsense. Counting the second as a reader is the exact
-    false green this whole goal exists to remove: presence checked, meaning never
-    reconciled.
-
-    Quoted matching specifically: a bare word match would count the key appearing in
-    prose or as a substring of a longer identifier, and every key would look owned.
-
-    KNOWN LIMIT, stated rather than implied: any string constant equal to the key counts
-    as a parse -- including one in a docstring, an error message, an OUTPUT payload the
-    module builds, or an unrelated dict that happens to share the name. Measured: of the
-    thirteen modules matching `surfaces`, only three concern the setup adapter's
-    `surfaces`; the rest read `.agents/surfaces.json`, the hotl adapter, or merely emit a
-    dict with that key. So the bias is toward reporting a key as OWNED, which means this
-    UNDER-reports gaps rather than inventing them -- the safe direction for a warn tier,
-    and part of why `unknown` is the state that got armed. The cost of that direction is
-    a stated non-claim: an armed `unknown` stays SILENT for a typo whose name happens to
-    collide with any unrelated string constant in `scripts/` or `skills/`. Found the hard way twice: this module's own
-    docstring quotes a key and the first run counted itself as that key's reader, and a
-    bounded review found the unrelated-dict case the first write-up had missed.
-    """
-    prefix = f"{key}:"
+    """Return value readers and raw-text assertions, excluding refusal-only mentions."""
     parsing: list[str] = []
     asserting: list[str] = []
     for relative, literals in _reader_literals(repo_root, files):
-        if key in literals:
+        path = repo_root / relative
+        refused, reads = _key_usage(path)
+        if key in reads or (key in literals and key not in refused):
             parsing.append(relative)
-        elif any(literal.startswith(prefix) for literal in literals):
+        elif any(literal.startswith(f"{key}:") for literal in literals):
             asserting.append(relative)
     return tuple(parsing), tuple(asserting)
 
