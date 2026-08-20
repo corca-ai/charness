@@ -665,7 +665,8 @@ invent a common engine.
 - Commits: timeout repair `345ec2a7b`; consumer coverage `e00898cf9`; validator
   and lesson-hook entry coverage `69c1a3ec7`; shared child runner extraction
   `2ff21b39e`; reviewed duplicate-family classifications `b44d6df16`; closed
-  timeout RCA and ledger event `e29735316`.
+  timeout RCA and ledger event `e29735316`; parallel coverage-runtime
+  isolation `d6381e3d5`; canonical lesson-routing test binding `933ac9f32`.
 - What changed: The fresh-checkout producer explicitly opts out of the shared
   10-second alarm while retaining 120/300-second owned subprocess bounds, and
   its regression pins that policy. Session child execution now has one shared
@@ -682,6 +683,12 @@ invent a common engine.
   Immutable changed-line proof at frozen source HEAD
   `2ff21b39e10a1ee1b2aaceae3b6d58263a792a5b` passed with 10,766 tests,
   `analyzed=20/changed=20`, and `blocking=[]`.
+- Integrated quality exposed a parallel producer race: broad and focused
+  coverage producers shared hidden runtime files. `d6381e3d5` namespaces those
+  files by report stem and extends retention ownership; `933ac9f32` makes the
+  focused mapper bind the canonical lesson-routing module. Focused mutation and
+  retention suites passed, and the post-fix focused changed-line proof at
+  `933ac9f32` passed 22/22 files with `blocking=[]`.
 - RCA conversion: `charness-artifacts/debug/2026-08-20-fresh-checkout-probe-timeout.md`
   is resolved and `charness-artifacts/metrics/rca-ledger.jsonl` records the
   converted class `release-fresh-checkout-aggregate-timeout-boundary` with a
@@ -691,12 +698,18 @@ invent a common engine.
   no fresh-eye approval is claimed and no same-agent pass substitutes for it.
   No version bump, tag, push, publication, hosted/install readback, issue
   closure, or Cautilus evaluation is claimed. The current code truth is
-  `e29735316`; the release surface remains `6.2.0`.
+  `933ac9f32`; the release surface remains `6.2.0`.
 - Lessons carried forward: A generic timeout applied across unlike producer
   workflows is a shared-contract smell; a green focused suite without changed
   lines is an evidence-measurement smell; and a ratchet exception without a
   family-specific rationale is a memory smell. Each now has a producer seam,
   direct coverage, or durable classification rather than a silent waiver.
+- Continuity closeout: the two receipted lesson sessions are separately bound
+  by `charness-artifacts/retro/2026-08-21-session-retro.md` and
+  `charness-artifacts/retro/2026-08-21-goal-continuation-retro.md`; the
+  continuity reconciler reports zero violations. The final release Auto-Retro
+  remains pending until external release/readback work, so this does not flip
+  the goal terminal status.
 
 ## Closeout Binding Plan
 
@@ -739,10 +752,14 @@ invent a common engine.
   issue-read/reproduction receipts, and Slice 0 log. Integrated semantic
   candidate critique, version/release-candidate proof, external readback, and
   tracker closeout remain unrun; this goal is therefore still active.
-- Slice 4 continuation proof is recorded at current code truth `e29735316`:
+- Slice 4 continuation proof is recorded at current code truth `933ac9f32`:
   default fresh-checkout probes passed (5/5), debug/RCA/spec/mirror surfaces
-  validate, duplicate ratchet is clean, and real-host trigger evaluation is
-  explicitly non-required for the current changed range. Full broad quality,
+  validate, duplicate ratchet is clean, real-host trigger evaluation is
+  explicitly non-required for the current changed range, and focused
+  changed-line coverage is clean across 22/22 files. The first integrated broad
+  quality run recorded 94 passes and two failures; the coverage failure was
+  structurally repaired as the parallel runtime collision above, while the
+  lesson continuity failure is now reconciled. A fresh full broad quality run,
   semantic-candidate fresh-eye critique, version mutation, publication, and
   external readback remain open.
 
@@ -756,7 +773,11 @@ invent a common engine.
 
 ## Auto-Retro
 
-- Not started. Complete after release readback and before goal closeout; include
+- Slice 4 session retros are persisted and goal-bound at
+  `charness-artifacts/retro/2026-08-21-session-retro.md` and
+  `charness-artifacts/retro/2026-08-21-goal-continuation-retro.md`.
+  Complete the final release retro after release readback and before goal
+  closeout; include
   lane/integration waste, findings that changed the candidate, and any workflow
   repair that should become a successor issue.
 

@@ -1965,6 +1965,54 @@
       "lesson_id": "agent-authored-score-role",
       "outcome": "changed-an-action",
       "anchor": "Authored six operational lesson-score events from observed goal edits before writing the session disposition; otherwise I would have deferred factual effect scoring to the user or left the opened session unclaimed."
+    },
+    {
+      "event_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
+      "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran the immutable changed-line proof immediately after commit 2ff21b39e and before the broad quality lane; otherwise the broad lane would have been the first place to discover unmeasured changed lines and would have forced another broad rerun before coverage repair."
+    },
+    {
+      "event_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234-goal-closeout-evidence-binding",
+      "session_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
+      "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "lesson_id": "goal-closeout-evidence-binding",
+      "outcome": "changed-an-action",
+      "anchor": "Bound this retro and the Slice 4 evidence to the active goal artifact before closeout; otherwise I would have cited stale Slice 3 evidence and reached the completion boundary with an artifact that belonged to another goal."
+    },
+    {
+      "event_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234-green-test-is-not-covered-line",
+      "session_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
+      "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "After the focused changed-line run exposed unmapped session-start routing lines, changed the test to import the canonical scripts module and reran the mapper; otherwise a green focused test would have been accepted as coverage without proving the named lines."
+    },
+    {
+      "event_id": "2026-08-20-goal-continuation-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-20-goal-continuation",
+      "source_retro": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Kept the changed-line proof ahead of the final broad lane after the continuation; otherwise the parallel coverage collision would have made the broad verdict the first diagnostic and required another broad rerun before the structural fix."
+    },
+    {
+      "event_id": "2026-08-20-goal-continuation-goal-closeout-evidence-binding",
+      "session_id": "2026-08-20-goal-continuation",
+      "source_retro": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+      "lesson_id": "goal-closeout-evidence-binding",
+      "outcome": "changed-an-action",
+      "anchor": "Kept the continuation evidence bound to the active goal and created a sibling retro for this receipt; otherwise one retro would have silently claimed two sessions and weakened the closeout evidence boundary."
+    },
+    {
+      "event_id": "2026-08-20-goal-continuation-green-test-is-not-covered-line",
+      "session_id": "2026-08-20-goal-continuation",
+      "source_retro": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "Required the changed-line mapper to identify the canonical session-start source after its focused test was green; otherwise the continuation could have closed on test success without proving the named source lines."
     }
   ],
   "lessons": {
@@ -2091,10 +2139,10 @@
     "goal-closeout-evidence-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
       "transition_id": "seed-goal-closeout-evidence-binding",
-      "score_total": 3,
-      "score_count": 3,
+      "score_total": 5,
+      "score_count": 5,
       "outcome_counts": {
-        "changed-an-action": 2,
+        "changed-an-action": 4,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2256,10 +2304,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": 1,
-      "score_count": 13,
+      "score_total": 3,
+      "score_count": 15,
       "outcome_counts": {
-        "changed-an-action": 7,
+        "changed-an-action": 9,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -2301,10 +2349,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 6,
-      "score_count": 6,
+      "score_total": 8,
+      "score_count": 8,
       "outcome_counts": {
-        "changed-an-action": 6,
+        "changed-an-action": 8,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
