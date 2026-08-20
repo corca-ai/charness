@@ -1154,6 +1154,36 @@
         ]
       },
       "snapshot_sha256": "13442dbfdf30d3ae296551cd2a064ca73f832d5a0919e65d29d338bd6f52bcab"
+    },
+    {
+      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "changed-line-proof-before-broad-quality",
+          "bar-recorded-as-prose",
+          "goal-closeout-evidence-binding",
+          "proof-surface-message-drift",
+          "premises-not-debt",
+          "detector-blind-class-unstated",
+          "green-test-is-not-covered-line",
+          "global-probe-for-local-fact",
+          "agent-authored-score-role",
+          "positive-effect-cannot-be-cited"
+        ]
+      },
+      "snapshot_sha256": "1eb57f86f94fc1b383f1a6a6c01b1d2defa9b67c8d1f145325f2a46007d481a5"
     }
   ],
   "score_events": [
@@ -1827,6 +1857,54 @@
       "lesson_id": "isolated-agent-base-mismatch",
       "outcome": "changed-an-action",
       "anchor": "My three bounded reviewers were NOT worktree-isolated, but the base-ambiguity half transferred: I named `dd671ec1e` as the base ref in all three briefs, and in the round-2 brief additionally stated that the target file was UNCOMMITTED working-tree content. Both reviewers then reported their reading base explicitly as a limitation (\"I read the worktree, not `git show dd671ec1e:<path>`\"), which is why I re-verified their factual findings myself before folding. Otherwise: an unbriefed reviewer reads whatever is on disk and reports line numbers as facts about a commit, and I would have folded five citation corrections without knowing which tree they were measured against."
+    },
+    {
+      "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-premises-not-debt",
+      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
+      "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
+      "lesson_id": "premises-not-debt",
+      "outcome": "changed-an-action",
+      "anchor": "Changed the release goal from ticket accumulation to an exactly-once premise ledger with #680 explicitly refuted at shaping HEAD; otherwise the runbook would have treated every open report as implementation debt."
+    },
+    {
+      "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-detector-blind-class-unstated",
+      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
+      "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "changed-an-action",
+      "anchor": "Changed the #676/#677/#678 work packages to name blind classes and negative controls before implementation; otherwise the broad goal invited one universal scanner with unstated escapes."
+    },
+    {
+      "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
+      "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Changed the release train cadence to commit each semantic slice, run changed-line proof, and only then enter standing/release/broad gates; otherwise the lower-capacity executor could repeat the documented broad-first waste."
+    },
+    {
+      "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-goal-closeout-evidence-binding",
+      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
+      "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
+      "lesson_id": "goal-closeout-evidence-binding",
+      "outcome": "changed-an-action",
+      "anchor": "Changed closeout to bind the semantic candidate and the distinct post-bump release candidate separately, then require hosted and install readbacks; otherwise an existing local artifact could be mistaken for release completion evidence."
+    },
+    {
+      "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-green-test-is-not-covered-line",
+      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
+      "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "Changed every qualified package contract to require changed-line evidence plus mutation or counterfactual proof rather than a passing regression alone; otherwise a lower-capacity executor could call an unexercised branch fixed."
+    },
+    {
+      "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-agent-authored-score-role",
+      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
+      "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
+      "lesson_id": "agent-authored-score-role",
+      "outcome": "changed-an-action",
+      "anchor": "Authored six operational lesson-score events from observed goal edits before writing the session disposition; otherwise I would have deferred factual effect scoring to the user or left the opened session unclaimed."
     }
   ],
   "lessons": {
@@ -1953,10 +2031,10 @@
     "goal-closeout-evidence-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
       "transition_id": "seed-goal-closeout-evidence-binding",
-      "score_total": 2,
-      "score_count": 2,
+      "score_total": 3,
+      "score_count": 3,
       "outcome_counts": {
-        "changed-an-action": 1,
+        "changed-an-action": 2,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2073,10 +2151,10 @@
     "agent-authored-score-role": {
       "source_retro": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
       "transition_id": "seed-agent-authored-score-role",
-      "score_total": 1,
-      "score_count": 1,
+      "score_total": 2,
+      "score_count": 2,
       "outcome_counts": {
-        "changed-an-action": 1,
+        "changed-an-action": 2,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2118,10 +2196,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": 0,
-      "score_count": 12,
+      "score_total": 1,
+      "score_count": 13,
       "outcome_counts": {
-        "changed-an-action": 6,
+        "changed-an-action": 7,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -2163,10 +2241,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 5,
-      "score_count": 5,
+      "score_total": 6,
+      "score_count": 6,
       "outcome_counts": {
-        "changed-an-action": 5,
+        "changed-an-action": 6,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2208,10 +2286,10 @@
     "premises-not-debt": {
       "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
       "transition_id": "seed-premises-not-debt",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2328,10 +2406,10 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 6,
-      "score_count": 12,
+      "score_total": 7,
+      "score_count": 13,
       "outcome_counts": {
-        "changed-an-action": 9,
+        "changed-an-action": 10,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,

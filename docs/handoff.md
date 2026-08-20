@@ -44,8 +44,8 @@
   `--require-evaluated` alone does NOT replay, by operator ruling 2026-08-19.
 - **A red on [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) means
   investigate a HANG** — the 120s wall clock is only a backstop, not an expected red.
-- **Issue triage ran against current HEAD**; `#628`, `#673` and three umbrellas await an
-  owner readback. Inventory: `gh issue list --repo corca-ai/charness --state open`.
+- **Release-goal shaping read 29 open issues through `#680` at `38775dfeb`.** Activation
+  must recount; the goal separates claims, refutations, decisions, and conditional work.
 - **Nothing reads a `path:line` an artifact asserts**
   ([#677](https://github.com/corca-ai/charness/issues/677)). Verify citations BEFORE
   spawning a reviewer; a round is a costly grep.
@@ -61,30 +61,22 @@
 
 ## Next Session
 
-1. **The successor goal is SHAPED and inert; activation is the operator's call.**
-   `/goal @charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md` is
-   `pursue_ready`, scoped to detector-plus-two-spends (`#676`), with four operator rulings
-   in its `## Discuss Before Activation`. Slice 0 is a STOP: no six per-instance SHAs in
-   `#676`'s table, no corpus, goal halts there.
-2. **Its round-2 repairs are `accepted-unreviewed`** under the two-round cap; the `## Goal`
-   rewrite and the negative-control requirement are where a third instance would sit.
-3. **The blind-consumer count is FIVE, not four**, and the census recount CANNOT evidence
-   slice 2b. Sources: that goal's `## User Acceptance` item 8 and `## Off-Goal Findings`.
-4. **The last goal closed at three of five slices**; acceptance item 4 is PARTIAL, item 5
-   NOT met —
-   [adapter debt tooling and remainder](../charness-artifacts/goals/2026-08-19-adapter-debt-tooling-and-remainder.md) holds the verdicts.
-5. **Seventeen debt rows remain**, not the old plan's nineteen. Recount them; each row's
-   consequence is one row of the
-   [census manifest](../scripts/adapter-consumer-classification.json), never a number here.
-6. **[#668](https://github.com/corca-ai/charness/issues/668) is still an operator ruling** —
-   should the pytest bar measure wall time at all. Read `#546` in the same sitting.
-7. **The SKILL.md budgets are the last line-based prose caps** (200 total / 160 core), and
-   `PRESSURE_EXEMPT_BUDGET` means entries while charging lines. Neither is migrated. Also
-   open: [#678](https://github.com/corca-ai/charness/issues/678), where the key registry
-   cannot tell a key's reader from its refuser, so the retired keys report as live.
-8. **Reconcile [#677](https://github.com/corca-ai/charness/issues/677) with that goal's
-   slice 1 before building either** — both ask whether a cited thing contains what the
-   text claims, so shipping both is `one-engine-per-pattern` at the tooling layer.
+1. **Activate the broad, inert, `pursue_ready` release goal:**
+   `/goal @charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`.
+   A lower-capacity executor should follow `## Execution Runbook` literally.
+2. The [release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
+   holds Slice 0's recount, raw planner receipts, exactly-once ledger, reviewed validator,
+   intake-lock commit, and no-writer-before-lock boundary.
+3. **Release-path work goes first:** `#679` is reproduced at shaping HEAD;
+   `#612/#668/#669/#667` become blockers only after live reproduction. `#669a` orphan
+   reaping and conditional `#669b` timeout attribution are separate packages.
+4. **Then execute every qualified disjoint package.** The goal fixes entry files, tests,
+   branches, path ownership, amendment rules, and non-work candidates for evidence,
+   semantic inspection, packaging/discovery, and conditional `#634/#676/#677` work.
+5. The [release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
+   holds the planner-selected bump, separate semantic/release candidates, scoped final
+   release grant, ambiguous-push resume, distinct hosted/install proof, post-release issue
+   closure, and the ungranted Cautilus boundary.
 
 ## Discuss
 

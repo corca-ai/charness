@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- This artifact reviews the reshaping of an inactive single-issue goal into the next-release operating contract. (source: `charness-artifacts/retro/2026-08-20-release-goal-shaping.md`)
 - Slices 1 and 2 of the probe-provenance goal, plus the precondition that unblocked pre-push. (source: `charness-artifacts/retro/2026-08-19-session-retro.md`)
-- The goal was to build the mechanical detector thirteen bounded review rounds had paid for by hand, spend it on the resolver split that kept every consumer guard blind on two of three doors, give the census a verdict vocabulary that says what it means, and then finish the remaining nineteen adapter-consumer rows. (source: `charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md`)
 
 ## Repeat Traps
 
@@ -49,5 +49,5 @@
 - `charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md`
 - `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
-- `charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md`
 - `charness-artifacts/retro/2026-08-19-session-retro.md`
+- `charness-artifacts/retro/2026-08-20-release-goal-shaping.md`
