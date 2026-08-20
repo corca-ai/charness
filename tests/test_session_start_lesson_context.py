@@ -12,6 +12,7 @@ it is append-only with a committed-prefix check, so a bad write is unrepairable.
 
 from __future__ import annotations
 
+import builtins
 import json
 import subprocess
 import sys
@@ -475,6 +476,72 @@ def test_session_id_is_the_seed_and_falls_back_when_the_host_id_is_unusable(
         today="2026-08-14",
     )
     assert reserved == absent
+
+
+def test_session_id_falls_back_when_the_candidate_grammar_check_rejects_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The second grammar check owns malformed host/date combinations too."""
+
+    class CandidateRejectingGrammar:
+        @staticmethod
+        def fullmatch(value: str):
+            return object() if value == "host-1" else None
+
+    monkeypatch.setattr(lesson_context, "_SESSION_ID", CandidateRejectingGrammar())
+    fallback = lesson_context.derive_session_id(
+        {"session_id": "host-1", "source": "startup"},
+        repo_root=tmp_path,
+        today="2026-08-14",
+    )
+
+    assert fallback.startswith("2026-08-14-")
+
+
+def test_parse_preview_uses_json_when_yaml_is_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+    original_import = builtins.__import__
+
+    def without_yaml(name, *args, **kwargs):
+        if name == "yaml":
+            raise ImportError("yaml intentionally unavailable")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", without_yaml)
+
+    assert lesson_context._parse_preview('{"preview_text": "", "items": []}') == {
+        "preview_text": "",
+        "items": [],
+    }
+
+
+@pytest.mark.parametrize(
+    ("parsed", "expected_fragment"),
+    [
+        (ValueError("bad preview"), "could not be parsed"),
+        ({"items": []}, "no `preview_text`"),
+    ],
+)
+def test_successful_preview_with_unreadable_payload_is_not_established(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    parsed: object,
+    expected_fragment: str,
+) -> None:
+    repo = _seeded_repo(tmp_path)
+    monkeypatch.setattr(lesson_context, "_run_preview", lambda _repo, _seed: (0, "ignored", ""))
+    if isinstance(parsed, BaseException):
+        monkeypatch.setattr(
+            lesson_context,
+            "_parse_preview",
+            lambda _output, error=parsed: (_ for _ in ()).throw(error),
+        )
+    else:
+        monkeypatch.setattr(lesson_context, "_parse_preview", lambda _output, value=parsed: value)
+
+    context = lesson_context.build_lesson_context(repo, {"session_id": "host-1"})
+
+    assert context["state"] == lesson_context.STATE_NOT_ESTABLISHED
+    assert expected_fragment in context["cause"]
 
 
 def test_building_the_context_never_writes_to_the_ledger(tmp_path: Path) -> None:

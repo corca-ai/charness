@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
 
 from scripts import check_consumer_validator_catalog as catalog_check
+from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -165,6 +168,50 @@ def test_report_lists_only_explicit_consumer_facing_paths(tmp_path: Path) -> Non
 
     assert report["consumer_facing_validators"] == ["scripts/validate_demo.py"]
     assert report["excluded_count"] == 1
+
+
+def test_cli_main_emits_a_structured_success_report(tmp_path: Path) -> None:
+    repo = _fixture_repo(tmp_path)
+    _write_catalog(repo, [_entry("scripts/check_demo.py")])
+
+    result = run_loaded_script_main(
+        "check_consumer_validator_catalog.py",
+        catalog_check,
+        "--repo-root",
+        str(repo),
+    )
+
+    assert result.returncode == 0
+    assert "status: pass" in result.stdout
+    assert result.stderr == ""
+
+
+def test_cli_main_reports_catalog_failure_without_traceback(tmp_path: Path) -> None:
+    result = run_loaded_script_main(
+        "check_consumer_validator_catalog.py",
+        catalog_check,
+        "--repo-root",
+        str(tmp_path),
+    )
+
+    assert result.returncode == 1
+    assert "status: fail" in result.stderr
+    assert "catalog is missing" in result.stderr
+
+
+def test_script_entrypoint_calls_main_when_loaded_as_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = _fixture_repo(tmp_path)
+    _write_catalog(repo, [_entry("scripts/check_demo.py")])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["check_consumer_validator_catalog.py", "--repo-root", str(repo)],
+    )
+
+    with pytest.raises(SystemExit) as raised:
+        runpy.run_path(str(ROOT / "scripts/check_consumer_validator_catalog.py"), run_name="__main__")
+
+    assert raised.value.code == 0
 
 
 def _valid_header() -> dict[str, object]:
