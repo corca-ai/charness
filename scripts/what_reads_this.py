@@ -26,6 +26,7 @@ it on demand, for three input kinds, before the deletion is proposed.
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 import sys
 from pathlib import Path, PurePosixPath
@@ -116,14 +117,143 @@ def _read(path: Path) -> str | None:
         return None
 
 
-def _symbol_kind(line: str, name: str, column: int) -> str:
+def _node_contains(node: ast.AST, position: tuple[int, int]) -> bool:
+    """Whether an AST node spans a 1-based ``(line, UTF-8 byte column)``."""
+    if not all(hasattr(node, field) for field in ("lineno", "col_offset", "end_lineno", "end_col_offset")):
+        return False
+    return (node.lineno, node.col_offset) <= position < (node.end_lineno, node.end_col_offset)
+
+
+def _contains_node(container: ast.AST, candidate: ast.AST) -> bool:
+    return container is candidate or any(node is candidate for node in ast.walk(container))
+
+
+def _block_contains_raise(statements: list[ast.stmt]) -> bool:
+    """Whether a branch refuses through a raise, excluding nested definitions."""
+    pending: list[ast.AST] = list(statements)
+    while pending:
+        node = pending.pop()
+        if isinstance(node, ast.Raise):
+            return True
+        if isinstance(node, (ast.AsyncFunctionDef, ast.ClassDef, ast.FunctionDef, ast.Lambda)):
+            continue
+        pending.extend(ast.iter_child_nodes(node))
+    return False
+
+
+class _PythonReferenceContext:
+    """Structural context for symbol/config-key occurrences in Python code.
+
+    Lexical references remain visible on every supported text surface. This
+    context only upgrades a quoted occurrence when Python proves it is a mapping
+    key or participates in a value-refusing condition, keeping an inert payload
+    key and an error-message mention distinct from a live consumer.
+    """
+
+    def __init__(self, text: str, surface: str) -> None:
+        self._tree: ast.AST | None = None
+        self._parents: dict[ast.AST, ast.AST] = {}
+        if surface not in ("source", "test"):
+            return
+        try:
+            tree = ast.parse(text)
+        except (SyntaxError, TypeError, ValueError):
+            return
+        self._tree = tree
+        for parent in ast.walk(tree):
+            for child in ast.iter_child_nodes(parent):
+                self._parents[child] = parent
+
+    @property
+    def parseable(self) -> bool:
+        return self._tree is not None
+
+    def _candidate(self, line: str, line_no: int, column: int) -> ast.AST | None:
+        if self._tree is None:
+            return None
+        position = (line_no, len(line[:column].encode("utf-8")))
+        candidates = [node for node in ast.walk(self._tree) if _node_contains(node, position)]
+        if not candidates:
+            return None
+        # Pick the leaf occurrence, not the enclosing comparison/call.
+        return min(
+            candidates,
+            key=lambda node: (
+                node.end_lineno - node.lineno,
+                node.end_col_offset - node.col_offset
+                if node.end_lineno == node.lineno
+                else node.end_col_offset,
+            ),
+        )
+
+    def _ancestors(self, node: ast.AST) -> list[ast.AST]:
+        ancestors: list[ast.AST] = []
+        while node in self._parents:
+            node = self._parents[node]
+            ancestors.append(node)
+        return ancestors
+
+    def kind(self, line: str, line_no: int, column: int) -> str | None:
+        node = self._candidate(line, line_no, column)
+        if node is None:
+            return None
+        ancestors = self._ancestors(node)
+        for parent in ancestors:
+            if isinstance(parent, ast.Assert) and _contains_node(parent.test, node):
+                return "value-constraint"
+            if isinstance(parent, ast.If) and _contains_node(parent.test, node):
+                if _block_contains_raise(parent.body) or _block_contains_raise(parent.orelse):
+                    return "value-constraint"
+        for parent in ancestors:
+            if isinstance(parent, ast.Call) and isinstance(parent.func, ast.Attribute) and parent.func.attr == "get":
+                if parent.args and _contains_node(parent.args[0], node):
+                    return "lookup"
+            if isinstance(parent, ast.Subscript) and _contains_node(parent.slice, node):
+                return "lookup"
+        return None
+
+
+def _lookup_column(line: str, name: str, column: int) -> bool:
+    quoted = re.escape(name)
+    pattern = re.compile(rf"(?:\.\s*get\s*\(\s*|\[\s*)['\"](?P<key>{quoted})['\"]")
+    return any(match.start("key") <= column < match.end("key") for match in pattern.finditer(line))
+
+
+def _fallback_structural_kind(line: str, name: str, column: int) -> str | None:
+    """Classify simple non-AST-readable code without broad line-wide matches."""
+    if _lookup_column(line, name, column):
+        if re.match(r"\s*assert\b", line) or (
+            re.match(r"\s*if\b", line) and re.search(r"\braise\b", line)
+        ):
+            return "value-constraint"
+        return "lookup"
+    if re.match(r"\s*assert\b", line) and "," not in line:
+        return "value-constraint"
+    if re.match(r"\s*if\b", line) and re.search(r"\braise\b", line):
+        return "value-constraint"
+    return None
+
+
+def _symbol_kind(
+    line: str,
+    name: str,
+    column: int,
+    structural_kind: str | None = None,
+    *,
+    use_fallback: bool = True,
+) -> str:
     """How this occurrence of ``name`` reads, from the line around it.
 
-    Deliberately shallow — a line, not a parse. The categories exist so a reader
-    can tell "three files define it" from "three files call it" at a glance; a
-    misfiled category costs a second look, while a missing consumer costs a wrong
-    deletion, and only the latter is what this tool is for.
+    AST context is supplied when the file is parseable Python; the line fallback
+    keeps shell-like or incomplete source useful without turning a whole line's
+    unrelated string into evidence. The categories exist so a reader can tell
+    "three files define it" from "three files call it" at a glance; a misfiled
+    category costs a second look, while a missing consumer costs a wrong deletion.
     """
+    if use_fallback:
+        structural_kind = structural_kind or _fallback_structural_kind(line, name, column)
+    if structural_kind is not None:
+        return structural_kind
     stripped = line.lstrip()
     if re.match(rf"(?:async\s+)?def\s+{re.escape(name)}\b", stripped) or re.match(rf"class\s+{re.escape(name)}\b", stripped):
         return "definition"
@@ -140,12 +270,30 @@ def _symbol_kind(line: str, name: str, column: int) -> str:
 
 
 def _symbol_hits(text: str, name: str, surface: str) -> list[dict[str, object]]:
-    del surface  # a symbol reads the same in a doc as in a source file
     pattern = re.compile(rf"(?<![\w]){re.escape(name)}(?![\w])")
+    matches = [
+        (line_no, line, match)
+        for line_no, line in enumerate(text.splitlines(), start=1)
+        for match in pattern.finditer(line)
+    ]
+    context = _PythonReferenceContext(text, surface) if matches else None
     hits: list[dict[str, object]] = []
-    for line_no, line in enumerate(text.splitlines(), start=1):
-        for match in pattern.finditer(line):
-            hits.append({"kind": _symbol_kind(line, name, match.start()), "line": line_no, "source": line.strip()[:200]})
+    for line_no, line, match in matches:
+        structural_kind = context.kind(line, line_no, match.start()) if context is not None else None
+        use_fallback = context is None or (not context.parseable and surface in ("source", "test"))
+        hits.append(
+            {
+                "kind": _symbol_kind(
+                    line,
+                    name,
+                    match.start(),
+                    structural_kind,
+                    use_fallback=use_fallback,
+                ),
+                "line": line_no,
+                "source": line.strip()[:200],
+            }
+        )
     return hits
 
 
@@ -251,15 +399,17 @@ def _path_hits(text: str, target: str, surface: str) -> list[dict[str, object]]:
 
 
 def _config_key_hits(text: str, key: str, surface: str) -> list[dict[str, object]]:
-    del surface  # a key is declared in config and consumed in source; both count
+    del surface  # config-key keeps its established lookup vocabulary
     quoted = re.escape(key)
+    target_pattern = re.compile(rf"(?<![\w-]){quoted}(?![\w-])")
     hits: list[dict[str, object]] = []
     for line_no, line in enumerate(text.splitlines(), start=1):
         entry = {"line": line_no, "source": line.strip()[:200]}
         if re.match(rf"\s*-?\s*['\"]?{quoted}['\"]?\s*:", line):
             hits.append({"kind": "key-declaration", **entry})
             continue
-        if re.search(rf"""(?:\.get\(|\[)\s*['"]{quoted}['"]""", line):
+        columns = [match.start() for match in target_pattern.finditer(line)]
+        if any(_lookup_column(line, key, column) for column in columns):
             hits.append({"kind": "lookup", **entry})
             continue
         if re.search(rf"""['"]{quoted}['"]""", line):

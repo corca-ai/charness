@@ -91,6 +91,62 @@ def test_a_symbol_answer_separates_definition_import_and_assertion_on_value(tmp_
     assert kinds["definition"] >= 1
     assert kinds["import"] >= 1
     assert kinds["string-literal"] >= 1
+    assert kinds["value-constraint"] == 1
+
+
+def test_a_symbol_does_not_call_an_inert_payload_key_a_value_constraint(tmp_path: Path) -> None:
+    payload = _payload(_fixture_repo(tmp_path), target_kind="symbol", target="listed_skill_ids")
+    consumer = next(entry for entry in payload["references"] if entry["file"] == "scripts/consumer.py")
+
+    by_line = {hit["line"]: hit["kind"] for hit in consumer["hits"]}
+    assert by_line[5] == "string-literal"  # PAYLOAD = {"listed_skill_ids": 3}
+    assert by_line[9] == "value-constraint"  # compact.get(...) != [] then raises
+    assert by_line[10] == "string-literal"  # the error message does not read the value
+
+
+def test_symbol_and_config_key_share_mapping_lookup_semantics(tmp_path: Path) -> None:
+    repo = _fixture_repo(tmp_path)
+    (repo / "scripts" / "lookup.py").write_text(
+        "def read(config):\n"
+        "    return config.get(\"listed_skill_ids\"), config[\"listed_skill_ids\"]\n",
+        encoding="utf-8",
+    )
+
+    symbol = _payload(repo, target_kind="symbol", target="listed_skill_ids")
+    symbol_entry = next(entry for entry in symbol["references"] if entry["file"] == "scripts/lookup.py")
+    assert {hit["kind"] for hit in symbol_entry["hits"]} == {"lookup"}
+
+    config_key = _payload(repo, target_kind="config-key", target="listed_skill_ids")
+    config_entry = next(entry for entry in config_key["references"] if entry["file"] == "scripts/lookup.py")
+    assert {hit["kind"] for hit in config_entry["hits"]} == {"lookup"}
+
+
+def test_the_real_eval_setup_consumer_is_value_constraint_not_string_literal() -> None:
+    source = (ROOT / "scripts" / "eval_setup.py").read_text(encoding="utf-8")
+    hits = WRT._symbol_hits(source, "listed_skill_ids", "source")
+    line_220 = next(hit for hit in hits if hit["line"] == 220)
+
+    assert line_220["kind"] == "value-constraint"
+    config_hits = WRT._config_key_hits(source, "listed_skill_ids", "source")
+    config_line_220 = next(hit for hit in config_hits if hit["line"] == 220)
+    assert config_line_220["kind"] == "lookup"
+
+
+def test_ast_assertion_is_a_value_constraint_and_embedded_fixture_text_is_not(tmp_path: Path) -> None:
+    source = (
+        'FIXTURE = """\n'
+        'if config.get("listed_skill_ids") != []:\n'
+        '    raise AssertionError("listed_skill_ids")\n'
+        '"""\n'
+        'assert config["listed_skill_ids"] == []\n'
+    )
+    hits = WRT._symbol_hits(source, "listed_skill_ids", "source")
+
+    assert {hit["line"]: hit["kind"] for hit in hits} == {
+        2: "string-literal",
+        3: "string-literal",
+        5: "value-constraint",
+    }
 
 
 def test_a_path_answer_finds_a_consumer_that_never_names_the_path(tmp_path: Path) -> None:
