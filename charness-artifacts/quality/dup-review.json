@@ -5046,6 +5046,188 @@
       "note": "the argparse CLI-entrypoint boilerplate family, RE-FINGERPRINTED for the third time in this goal because `check_adapter_consumer_classification.main()` changed again (#675 round-2 fold: the unprovable ordering removed, the UPSTREAM callout added). Every other member is UNTOUCHED. Same family and same reason as a2a04eacbcea76ec, 04fc34c123ef7b4e, 6b90d0e84b83b2c2 and f96082ddc7b569a1 -- the matched run is `def main() -> int`, `ArgumentParser(description=__doc__.splitlines()[0])`, a `--repo-root` argument, per-gate flags, `parse_args()` and a `return 0` tail, while every body diverges. THAT THIS FAMILY RE-FINGERPRINTS ON EVERY main() EDIT is itself the signal: the identity is content-based, so a gate whose main() grows a line rejoins under a new id and owes a fresh classification. Recorded here rather than absorbed.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "04ebe7b9242d9208",
+      "note": "small three-line guard/return idioms across independent quality gates. The matched spans carry different verdict owners and inputs; extracting a generic guard would couple unrelated error contracts for no behavioral reduction. The full inventory reports 11 members; the gate's locations are retained as the review evidence.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0e52f0a2a35df2ad",
+      "note": "portable per-skill adapter entrypoint copies (`init_adapter.py`, `resolve_adapter.py`, and the corresponding review adapter). Each script must remain directly executable in the exported skill layout and owns a different adapter schema; importing one source-side helper would make the installed package depend on the authoring tree. The inventory reports 13 members and this disposition covers the full family, not only its six sampled locations.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "14c595616903625f",
+      "note": "one-line `Assign`/`AnnAssign` target unpacking in two passes of the adapter-key AST reader. The passes consume different registries (aliases versus field registries); a helper for syntactic unpacking would add an abstraction without sharing reader policy. The surrounding AST reader has direct tests for both passes.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "169d366a4444986f",
+      "note": "the one-line non-empty-value guard shared by two independent release-ledger evidence parsers. Each parser reports a field-specific contract and then diverges into timestamp or receipt semantics; a shared validator would hide the owning label rather than remove a policy duplication.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1ba7d9daa2ebecf9",
+      "note": "small CLI boundary shape shared by four directly executable gates. Their parser flags, payload schemas, and nonzero meanings are independent; a parameterized main wrapper would move the contract away from each operator command. This is the same intentional standalone-entrypoint class already recorded elsewhere in this overlay.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2efad70ec746dcb5",
+      "note": "small AST assignment/field-collection idiom shared by unrelated adapter-key and pointer-writing readers. The values, failure behavior, and owning proof surfaces differ; a common helper would couple two structural scanners for an idiom-sized span.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "426f19056487feef",
+      "note": "same-file scanner predicates whose lexical shape is coincidental: `_is_candidate_path` classifies citation targets while `_check_one` owns the full citation verdict. The latter cannot be reduced to the former without erasing its disposition, path, range, and identifier checks.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "44219b873586b31e",
+      "note": "parallel issue-ledger contract/evidence checks with separate source and activation boundaries. The matching span is a small structural guard, not a shared verdict; keeping it beside each owner preserves the contract that the two readers can fail independently.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "452a37b3ba2f7262",
+      "note": "portable sibling/module loaders in achieve and handoff skill scripts. The loader is the mechanism that makes each exported script self-contained; extracting it into the source repo would remove the very portability boundary it establishes. The inventory reports 13 members and the family is accepted as a package-layout contract, not as a blanket acceptance of their downstream logic.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4d3e1f331ec0db77",
+      "note": "two adapter-key AST reader comprehensions that both collect values but answer different questions (field access versus intentional reader sections). Combining them would merge distinct structural signals and weaken the reader's explicit ownership boundary.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "51974c2d33957e15",
+      "note": "small SHA-256 helper bodies in independent portable producers. They hash different evidence domains and have no shared import owner; a repository-wide hash helper would create a hidden dependency in scripts that must run from exported skill trees. The repeated cryptographic primitive is intentional and tested at each evidence boundary.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5b64ab57a7f423f4",
+      "note": "two small path/citation predicates with different input grammars and callers. The common conditional shape is below the useful extraction threshold and a helper would obscure which surface is deciding candidate versus citation validity.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5cab1ad973a8e943",
+      "note": "same-file fallback lookup and membership regexes are deliberately separate: one recognizes value reads and the other recognizes refusal membership when AST parsing has failed. Their similar regex setup does not imply one semantic predicate, and combining them would recreate the fallback parser's ambiguity.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6835c78f72f7f137",
+      "note": "small advisory guard shapes in independent closeout/pointer surfaces. Each message is owned by the advisory that knows its evidence; a shared formatter would couple non-blocking guidance without reducing a meaningful rule.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6bbcf5bc48870cf3",
+      "note": "release-ledger contract and pre-push close-keyword guard both use a bounded refusal block, but one validates activation data and the other protects commit-message semantics. They must remain independently portable and independently testable.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7268804a6e85db69",
+      "note": "small adapter-key read-update comprehensions within one AST classifier. The matching syntax is shared, while the fields and consumer calls represent separate reader operations; extraction would turn a clear local scan into a generic callback seam.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "78a4f6b7c1e5246a",
+      "note": "fallback structural classifier functions intentionally separate lookup, membership, and structural classification. They are the small state-machine steps used when AST parsing is unavailable; folding them would make malformed-source behavior less explicit and harder to test.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8c79b02f535995a6",
+      "note": "same-file issue-ledger path loops with different ownership: one checks issue footprints and the other checks work-package footprints. They look alike because both enforce overlap policy, but merging them would erase the two schema labels and their distinct error messages.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8cd47e1061387a8b",
+      "note": "independent repo-relative target readers in three proof surfaces. They all need to reject non-repo paths, but their source schemas and degradation dispositions differ; a common path helper would move verdict policy across skill boundaries.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9fc6a60d51c4374b",
+      "note": "two portable relative-path helpers in closeout and critique. They serve different artifact readers and preserve independent exported-package operation; the three-line lexical overlap is not a duplicated policy owner.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a9665f2f4ce02bf4",
+      "note": "small same-file release-ledger loops that validate different path collections. The repetition follows two schema-owned collections and is kept explicit so an allowed-path rule cannot silently leak into a package-path rule.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ad0959267a0f68fc",
+      "note": "receipt metadata validation and inventory budget-label loading are unrelated readers that happen to normalize mappings and report errors. They have different input sources and verdict semantics; a shared loader would hide the boundary rather than improve it.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c8fef51ce7d1f6c5",
+      "note": "canonical JSON serialization helpers in issue, lesson-ledger, and release evidence domains. The stable serialization is part of each domain's digest contract; moving it into one cross-domain utility would create a hidden coupling in evidence identity.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e22e2e0cefeb63b7",
+      "note": "small direct CLI/reporting boundary shared by the consumer-validator catalog and skill-efficiency command. These commands accept different schemas and verdict meanings; a shared entrypoint would make one command's contract implicit in another.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ecaf03f372209bdc",
+      "note": "git-base existence probes in two closeout advisory surfaces. Both intentionally degrade when their own base ref is unavailable, but one advises new mutation-pool modules while the other builds repair-parity evidence. Their different base/refusal contracts are why the probe remains local.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "eea381fd31e74de3",
+      "note": "small classification/path-boundary guard shared by push-diff and goal portability checks. The conditions are independent safety policies and the span is idiom-sized; extracting it would couple two proof surfaces with no common verdict.",
+      "reviewed_at": "2026-08-20",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
