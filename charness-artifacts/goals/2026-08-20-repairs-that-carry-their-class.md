@@ -9,17 +9,18 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active Slice 3 repair integration is focused-green after
- both bounded fresh-eye rounds; final commit, changed-line proof, and standing
- closeout remain before this slice can be marked closed.
+- Current disposition: active Slice 3 repair integration is locally proven after
+ both bounded fresh-eye rounds, semantic integration, changed-line proof, and
+ release-only proof; the broader release goal remains active at its external
+ candidate/readback boundaries.
 - Current slice: Slice 3 — parallel P2/P3 repair lanes #672/#676/#677/#678,
   serialized parent integration, and generated-surface synchronization.
 - Current slice intent: make each repair carry the failure class it addresses,
   keep helper-only work from masquerading as a consumer, and finish the
   changed-line/fresh-eye proof before the semantic candidate advances.
-- Next action: commit the repaired source/export/ledger truth surfaces, rerun
- Slice 3 changed-line and standing proof from its explicit base, then bind the
- closeout receipt without claiming release or hosted readback.
+- Next action: bind the Slice 3 closeout receipt to the verified commits and
+ continue with the semantic-candidate critique and later release/hosted gates;
+ do not claim publication or external readback from this local proof.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -624,14 +625,14 @@ invent a common engine.
 
 - Objective: Integrate the four disjoint P2/P3 lanes #672, #676, #677, and #678 while ensuring each detector distinguishes its named failure class and every helper has a real consumer.
 - Why this approach: The lanes had independent path budgets and could be authored concurrently, but generated mirrors, ledger amendments, and closeout wiring belong to the parent. The parent therefore serialized only integration and truth-surface updates after parallel worker proof.
-- Commits: worker results remain distinct from parent integration: #672 worker `2e840dc89` -> parent `c4b9c48c4`; #676 worker `df3c5a456` -> parent `f82dc7967`; #677 helper `d88c42595` -> parent `53cf7d618`, then consumer/ledger integration `d0e10a28b`; #678 worker `5820b7654` -> parent `d7973bc0a`. Later parent truth-surface repairs are `ef10a94ea`, `beecb5769`, `f6c4ed340`, `c8d4eefe1`, `0407e1338`, and `e7fc1e6d8`; the current repair set remains uncommitted until final proof.
+- Commits: worker results remain distinct from parent integration: #672 worker `2e840dc89` -> parent `c4b9c48c4`; #676 worker `df3c5a456` -> parent `f82dc7967`; #677 helper `d88c42595` -> parent `53cf7d618`, then consumer/ledger integration `d0e10a28b`; #678 worker `5820b7654` -> parent `d7973bc0a`. Later parent truth-surface repairs are `ef10a94ea`, `beecb5769`, `f6c4ed340`, `c8d4eefe1`, `0407e1338`, `e7fc1e6d8`, and semantic repair commit `b2f9a6407`; fallback coverage commits are `ff192f63a`, `63c3996c9`, and `9dbda5097`.
 - What changed: #672 now uses parseable Python structure to distinguish value constraints and lookups from inert mentions. #676 exposes refusal/detector input classes through a non-blocking closeout advisory and negative controls. #677 syntactically checks changed durable-artifact citations, reports semantic blind spots, and is wired into slice closeout as reporting-only; a helper-only intermediate was explicitly amended to `partial-child-shipped` before being promoted after consumer readback. #678 separates adapter value readers from refusal-only/retired-key mentions through one AST usage classification.
 - Alternatives rejected: Rejected source-only commits blocked by mirror drift, `--no-verify`, mechanically shaving files under the length bar, treating #677's unconsumed helper as complete, blocking historical artifact rewrites, and merging the distinct citation/class-detection engines without a shared false-positive policy.
-- Structural failures and repairs: #676's first class-hint test included the mapping key `reason`; the classifier boundary was corrected. The length gate then exposed responsibility overload in both #676 and #678, so parity and AST usage were split into cohesive modules. The second fresh-eye round found a shared base-propagation gap, silent/crashing parity failure states, an ImportFrom alias false positive, five adapter/reference classifier blind classes, ledger premise/receipt drift, and issue/package proof drift; these were repaired at the shared consumer, parser, and validator boundaries. #672/#677/#678 worker commits initially hit the expected staged-mirror refusal; the parent regenerated and staged the derived plugin copies. A closeout plan first reported no scope without a committed-base selector, then `--paths` readback established the selected goal with `status=checked`, `issues=[]`, and `semantic_scope=syntactic-only`. The first integrated changed-line producer exposed a pre-existing standing JSON-stdout violation in the Slice 0 ledger CLI; the CLI now uses the shared YAML renderer, while the critique writer's intentional standalone JSON-as-YAML fallback is explicitly registered.
-- Targeted verification: #672 focused `24 passed`; #676 focused `12 passed` plus its secondary consumer suite `33 passed`; #677 focused `16 passed` with the supported-entrypoint proof still bound to the explicit campaign base; #678 focused `43 passed`. The combined focused/consumer bundle measured `201 passed`; ledger validation, ruff, compile, and source/plugin sync passed. The final explicit-base changed-line run and standing closeout remain the stop gate for this slice.
+- Structural failures and repairs: #676's first class-hint test included the mapping key `reason`; the classifier boundary was corrected. The length gate then exposed responsibility overload in both #676 and #678, so parity and AST usage were split into cohesive modules. The second fresh-eye round found a shared base-propagation gap, silent/crashing parity failure states, an ImportFrom alias false positive, five adapter/reference classifier blind classes, ledger premise/receipt drift, and issue/package proof drift; these were repaired at the shared consumer, parser, and validator boundaries. #672/#677/#678 worker commits initially hit the expected staged-mirror refusal; the parent regenerated and staged the derived plugin copies. A closeout plan first reported no scope without a committed-base selector, then `--paths` readback established the selected goal with `status=checked`, `issues=[]`, and `semantic_scope=syntactic-only`. The first integrated changed-line producer exposed a pre-existing standing JSON-stdout violation in the Slice 0 ledger CLI; the CLI now uses the shared YAML renderer, while the critique writer's intentional standalone JSON-as-YAML fallback is explicitly registered. Final changed-line retries then exposed an uncovered standalone import branch, an unbound fallback module in the test map, and four malformed-input fallback branches; each became a direct consumer/counterexample test before the clean proof.
+- Targeted verification: #672 focused `24 passed`; #676 focused `12 passed` plus its secondary consumer suite `33 passed`; #677 focused `16 passed` with the supported-entrypoint proof still bound to the explicit campaign base; #678 focused `43 passed`. The pre-fallback focused/consumer bundle measured `201 passed`; the final reader-focused suite measured `26 passed`. Ledger validation, ruff, compile, and source/plugin sync passed. Final changed-line receipt (`/tmp/charness-s3-changed-line-final7.log`) is `status: clean`, explicit base `988f068f6`, `analyzed=10/changed=10`, `blocking=[]`, consumer return code `0`, with standing pytest passing. Final release-only receipt (`/tmp/charness-slice-3-release-final2.log`) is `103 passed, 10749 deselected`.
 - Test duplication pressure: The workers' green tests were not accepted as composition proof. Parent integration added a closeout consumer test, recorded the helper-only gap as an amendment, and preserved the distinction between syntactic citation presence and semantic truth/count claims. Length warnings remain visible as structural smells rather than being hidden by whitespace changes.
 - Critique/non-claims: Round 1 code, consumer/export, and goal-claim findings are durably recorded and repaired. Round 2 code, consumer/export, and goal/ledger findings were delivered, recorded, and repaired; their repair set is accepted-unreviewed under the two-round cap, not a third-round approval. Boundary results are parent-attributed because the parent changed the shared checkout after the reviewer snapshots. Cautilus, hosted release, install/update readback, issue closure, and publication remain unrun. The #671 fresh-eye delivery failure remains explicitly unproven from Slice 2.
-- Metrics: Four lanes integrated; current focused proof is `24 + 12 + 16 + 43`, with #676 secondary consumer proof `33` and combined focused/consumer bundle `201 passed`; #677/#678 premise commands now match their receipts; package proof/path propagation is validator-enforced; generated source/plugin parity passes; final changed-line and standing closeout are pending.
+- Metrics: Four lanes integrated; lane proof is `24 + 12 + 16 + 43`, with #676 secondary consumer proof `33`; the pre-fallback combined focused/consumer bundle was `201 passed`, final reader-focused proof `26 passed`, changed-line is clean across all 10 mapped files, standing pytest passed, and release-only is `103 passed` with `10749 deselected`; #677/#678 premise commands match their receipts; package proof/path propagation is validator-enforced; generated source/plugin parity passes. External release, install/update, hosted readback, issue closeout, and publication remain open.
 
 ## Closeout Binding Plan
 
@@ -663,10 +664,15 @@ invent a common engine.
 
 ## Final Verification
 
-- Not due. Slice 0 local intake proof is recorded in the ledger, planner
-  receipts, issue-read/reproduction receipts, and Slice 0 log. Integrated
-  semantic proof, release-candidate proof, external readback, and tracker
-  closeout remain unrun.
+- Slice 3 local proof is complete at `9dbda5097`: semantic repair commit
+  `b2f9a6407`, fallback import coverage `ff192f63a`, direct fallback mapping
+  `63c3996c9`, and malformed-branch coverage `9dbda5097`. The explicit-base
+  changed-line receipt is clean across all 10 mapped files with standing pytest
+  passing; release-only is `103 passed, 10749 deselected`.
+- Slice 0 local intake proof remains recorded in the ledger, planner receipts,
+  issue-read/reproduction receipts, and Slice 0 log. Integrated semantic
+  candidate critique, version/release-candidate proof, external readback, and
+  tracker closeout remain unrun; this goal is therefore still active.
 
 ## User Verification Instructions
 
