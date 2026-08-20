@@ -31,11 +31,31 @@ from tests.test_lesson_ledger import _ledger, _retro
 ROOT = Path(__file__).resolve().parents[1]
 REFRESH_SCRIPT = ROOT / "skills/public/retro/scripts/refresh_recent_lessons.py"
 INIT_LEDGER_SCRIPT = ROOT / "scripts/init_lesson_ledger.py"
+OPEN_SESSION_SCRIPT = ROOT / "scripts/open_lesson_session.py"
 
 
 def _refresh(repo: Path) -> None:
     result = subprocess.run(
         [sys.executable, str(REFRESH_SCRIPT), "--repo-root", str(repo)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def _declare(repo: Path, session_id: str) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(OPEN_SESSION_SCRIPT),
+            "--repo-root",
+            str(repo),
+            "--session-id",
+            session_id,
+            "--seed",
+            session_id,
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -185,6 +205,50 @@ def test_opted_in_repo_injects_verbatim_preview_bytes_and_the_declare_command(
     # The honest ceiling has to travel WITH the payload, not live only in a docstring.
     assert "EMITTED" in context["text"]
     assert "presentation-unproven" in context["text"]
+    assert context["unclaimed_sessions"] == []
+
+
+def test_session_start_surfaces_unclaimed_session_without_claiming_or_writing_it(
+    tmp_path: Path,
+) -> None:
+    repo = _seeded_repo(tmp_path)
+    _declare(repo, "2026-08-14-host-1")
+    ledger = repo / "charness-artifacts/retro/lesson-ledger.json"
+    before = ledger.read_bytes()
+
+    context = lesson_context.build_lesson_context(repo, {"session_id": "host-2"})
+
+    assert context["unclaimed_sessions"] == [
+        {
+            "session_id": "2026-08-14-host-1",
+            "bundle_path": (
+                "charness-artifacts/retro/lesson-session-receipts/2026-08-14-host-1.md"
+            ),
+        }
+    ]
+    assert "Outstanding declared lesson session" in context["text"]
+    assert "2026-08-14-host-1" in context["text"]
+    assert "does not claim, score, or disposition it" in context["text"]
+    assert ledger.read_bytes() == before
+
+
+def test_session_start_keeps_routing_failure_loud_instead_of_calling_it_empty(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _seeded_repo(tmp_path)
+
+    def fail_router(_repo: Path) -> dict[str, object]:
+        raise OSError("router unavailable")
+
+    monkeypatch.setattr(lesson_context, "_run_unclaimed_sessions", fail_router)
+
+    context = lesson_context.build_lesson_context(repo, {"session_id": "host-1"})
+
+    assert context["state"] == lesson_context.STATE_EVALUATED
+    assert context["unclaimed_sessions"] is None
+    assert "router unavailable" in context["unclaimed_sessions_cause"]
+    assert "could not establish" in context["text"]
+    assert "no outstanding work" in context["text"]
 
 
 def test_every_selected_lesson_is_injected_verbatim_and_in_order(tmp_path: Path) -> None:
@@ -365,14 +429,19 @@ def test_missing_preview_script_is_not_established_not_silent(
 
 
 def test_suggested_session_id_grammar_matches_the_ledger_validator() -> None:
-    """The stdlib-only copy of the id grammar must never drift from the real one.
+    """The stdlib-only copy keeps the lexical grammar and owns the sentinel exclusion.
 
     `session_start_lesson_context` cannot import the continuity library (it runs
     inside a host SessionStart path and must not be able to fail on a repo import),
-    so the regex is copied. Copied is fine; DRIFTED is not — a drifted copy would
-    make the hook suggest an id `validate_session_id` refuses at declare time.
+    so the regex is copied. The ledger's regex accepts the `none` sentinel because
+    the validator excludes it at the semantic boundary; the hook excludes it before
+    producing an operator command, so it cannot suggest a known refusal.
     """
-    assert lesson_context._SESSION_ID.pattern == continuity._SESSION_ID.pattern
+    for value in ("host-1", "2026-08-14-host-1", "a.b_c-2"):
+        assert lesson_context._SESSION_ID.fullmatch(value)
+        assert continuity._SESSION_ID.fullmatch(value)
+    assert lesson_context._SESSION_ID.fullmatch("none") is None
+    assert continuity._SESSION_ID.fullmatch("none")
 
 
 def test_session_id_is_the_seed_and_falls_back_when_the_host_id_is_unusable(
@@ -400,6 +469,12 @@ def test_session_id_is_the_seed_and_falls_back_when_the_host_id_is_unusable(
     assert absent == lesson_context.derive_session_id(
         {"source": "startup"}, repo_root=tmp_path, today="2026-08-14"
     )
+    reserved = lesson_context.derive_session_id(
+        {"session_id": lesson_context.RESERVED_SESSION_ID, "source": "startup"},
+        repo_root=tmp_path,
+        today="2026-08-14",
+    )
+    assert reserved == absent
 
 
 def test_building_the_context_never_writes_to_the_ledger(tmp_path: Path) -> None:

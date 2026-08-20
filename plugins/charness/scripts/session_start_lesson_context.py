@@ -69,6 +69,10 @@ LEDGER_RELATIVE = Path("charness-artifacts/retro/lesson-ledger.json")
 PREVIEW_SCRIPT_NAME = "render_lesson_selection_preview.py"
 OPEN_SESSION_SCRIPT_NAME = "open_lesson_session.py"
 SEED_SCRIPT_NAME = "seed_lesson_transitions.py"
+RETRO_PLAN_SCRIPT_RELATIVE = (
+    Path("skills") / "public" / "retro" / "scripts" / "plan_retro_run.py",
+    Path("skills") / "retro" / "scripts" / "plan_retro_run.py",
+)
 REFRESH_SCRIPT_RELATIVE = (
     Path("skills") / "public" / "retro" / "scripts" / "refresh_recent_lessons.py",
     Path("skills") / "retro" / "scripts" / "refresh_recent_lessons.py",
@@ -80,6 +84,7 @@ REFRESH_SCRIPT_RELATIVE = (
 # with a few thousand retros. Bounded all the same -- an unbounded rebuild inside
 # a session-start hook is a hung host session.
 LESSON_PREVIEW_TIMEOUT_SECONDS = 8
+LESSON_ROUTING_TIMEOUT_SECONDS = 8
 
 # The same three words `check_auto_trigger.py` and `check_boundary_escalation.py`
 # already speak, spelled as literals for the same reason they are: this module
@@ -93,12 +98,12 @@ STATE_NOT_ESTABLISHED = "not-established"
 UNDETERMINED_EXIT = 3
 
 # Copied from `lesson_evaluation_continuity_lib._SESSION_ID` rather than imported,
-# because this module is stdlib-only by contract (see the docstring). The copy is
-# pinned equal to the original by
-# `tests/test_session_start_lesson_context.py::test_suggested_session_id_grammar_matches_the_ledger_validator`,
-# so a change to the ledger's id grammar fails a test instead of silently making
-# the hook suggest an id `declare_session` will refuse.
-_SESSION_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+# because this module is stdlib-only by contract (see the docstring). The lexical
+# grammar is the same, but the SessionStart producer owns one extra boundary: the
+# ledger's `none` sentinel is legal only in a `missing-start` disposition and must
+# never be suggested as a real session id.
+RESERVED_SESSION_ID = "none"
+_SESSION_ID = re.compile(r"(?!none\Z)[A-Za-z0-9][A-Za-z0-9._-]*")
 
 # Owned here, and imported by `scripts/init_lesson_ledger.py`, so the sentence a
 # fresh opt-in reads at `init` time and the sentence the hook prints when the
@@ -187,6 +192,12 @@ def _seed_command(repo_root: Path) -> str:
     return f"python3 {_sibling_script(SEED_SCRIPT_NAME)} --repo-root {repo_root}"
 
 
+def _retro_plan_script() -> Path | None:
+    """Find the canonical retro router in the source or installed tree."""
+    tree = _script_tree_root()
+    return next((tree / path for path in RETRO_PLAN_SCRIPT_RELATIVE if (tree / path).is_file()), None)
+
+
 def _utc_date() -> str:
     return datetime.now(timezone.utc).date().isoformat()
 
@@ -215,9 +226,11 @@ def derive_session_id(payload: dict[str, Any], *, repo_root: Path, today: str | 
     date_text = today or _utc_date()
     raw = payload.get("session_id")
     if isinstance(raw, str) and raw.strip():
-        candidate = f"{date_text}-{raw.strip()}"
-        if _SESSION_ID.fullmatch(candidate):
-            return candidate
+        host_id = raw.strip()
+        if _SESSION_ID.fullmatch(host_id):
+            candidate = f"{date_text}-{host_id}"
+            if _SESSION_ID.fullmatch(candidate):
+                return candidate
     material = f"{repo_root}\0{payload.get('source')}".encode("utf-8", "replace")
     return f"{date_text}-{hashlib.sha256(material).hexdigest()[:12]}"
 
@@ -264,6 +277,61 @@ def _parse_preview(stdout: str) -> Any:
     except ImportError:
         return json.loads(stdout)
     return yaml.safe_load(stdout)
+
+
+def _run_unclaimed_sessions(repo_root: Path) -> dict[str, Any]:
+    """Read canonical retro routing without changing lesson state.
+
+    The retro planner delegates membership to the same shared helper that the
+    continuity gate uses. Calling that owner through its CLI keeps this hook
+    stdlib-only and prevents a second ledger/receipt/disposition rule from
+    drifting away from the gate.
+    """
+    script = _retro_plan_script()
+    if script is None:
+        raise OSError("no `plan_retro_run.py` beside the SessionStart module")
+    environment = {**os.environ, "CHARNESS_REPO_ROOT": str(_script_tree_root())}
+    completed = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(repo_root)],
+        capture_output=True,
+        timeout=LESSON_ROUTING_TIMEOUT_SECONDS,
+        check=False,
+        env=environment,
+    )
+    if completed.returncode != 0:
+        raise OSError(
+            f"`{script.name}` exited {completed.returncode}: "
+            f"{_first_line(completed.stderr.decode('utf-8', 'replace'))}"
+        )
+    try:
+        payload = _parse_preview(completed.stdout.decode("utf-8", "replace"))
+        lesson_session = payload.get("lesson_session") if isinstance(payload, dict) else None
+    except Exception as exc:  # noqa: BLE001 -- unreadable routing is not an empty answer
+        raise ValueError(f"`{script.name}` emitted unreadable output ({type(exc).__name__}: {exc})") from exc
+    if not isinstance(lesson_session, dict):
+        raise ValueError(f"`{script.name}` emitted no `lesson_session` routing payload")
+    if lesson_session.get("configuration_status") == "no-unclaimed-session":
+        return {"state": "no-unclaimed-session", "sessions": []}
+    rows = lesson_session.get("sessions")
+    if lesson_session.get("state") != STATE_EVALUATED or not isinstance(rows, list):
+        raise ValueError(
+            "retro routing is not established "
+            f"({lesson_session.get('configuration_status') or lesson_session.get('state')}): "
+            f"{lesson_session.get('reason') or 'no reason reported'}"
+        )
+    if not all(
+        isinstance(row, dict)
+        and isinstance(row.get("session_id"), str)
+        and isinstance(row.get("bundle_path"), str)
+        for row in rows
+    ):
+        raise ValueError("retro routing emitted a session without id or frozen bundle path")
+    sessions = [
+        {"session_id": row["session_id"], "bundle_path": row["bundle_path"]} for row in rows
+    ]
+    if not sessions:
+        raise ValueError("retro routing claimed evaluated state but emitted no sessions")
+    return {"state": STATE_EVALUATED, "sessions": sessions}
 
 
 def _first_line(text: str) -> str:
@@ -376,7 +444,11 @@ def build_lesson_context(repo_root: Path | None, payload: dict[str, Any]) -> dic
             f"`{PREVIEW_SCRIPT_NAME}` exited 0 but emitted no `preview_text`, so there are no "
             "lesson bytes to present.",
         )
-    return _evaluated(repo_root, ledger, seed, preview)
+    try:
+        routing = _run_unclaimed_sessions(repo_root)
+    except (OSError, ValueError, TypeError, subprocess.TimeoutExpired) as exc:
+        routing = {"state": STATE_NOT_ESTABLISHED, "cause": f"{type(exc).__name__}: {exc}."}
+    return _evaluated(repo_root, ledger, seed, preview, routing)
 
 
 def _declare_command(repo_root: Path, session_id: str) -> str:
@@ -386,7 +458,35 @@ def _declare_command(repo_root: Path, session_id: str) -> str:
     )
 
 
-def _evaluated(repo_root: Path, ledger: Path, seed: str, preview: dict[str, Any]) -> dict[str, Any]:
+def _routing_details(repo_root: Path, routing: dict[str, Any]) -> tuple[str, list[dict[str, str]] | None]:
+    if routing["state"] == STATE_EVALUATED:
+        rows = "\n".join(
+            f"  session_id: `{row['session_id']}`\n  frozen_bundle: `{row['bundle_path']}`"
+            for row in routing["sessions"]
+        )
+        return (
+            "\n\nOutstanding declared lesson session(s) still need an owner before the next push "
+            "gate. Inspect the frozen bundle and carry the session into the retro workflow; "
+            "SessionStart routing does not claim, score, or disposition it:\n"
+            f"{rows}\nUse the canonical router beside this hook."
+        ), routing["sessions"]
+    if routing["state"] != "not-established":
+        return "", []
+    return (
+        "\n\nSession-start could not establish whether a previously declared lesson session is "
+        "unclaimed. Do not read this as no outstanding work or write an automatic disposition. "
+        f"Cause: {routing['cause']}",
+        None,
+    )
+
+
+def _evaluated(
+    repo_root: Path,
+    ledger: Path,
+    seed: str,
+    preview: dict[str, Any],
+    routing: dict[str, Any],
+) -> dict[str, Any]:
     """The preview ran. Either it selected lessons, or the ledger is still empty.
 
     ONE subprocess answers both questions. The preview command carries its rendered
@@ -398,43 +498,37 @@ def _evaluated(repo_root: Path, ledger: Path, seed: str, preview: dict[str, Any]
     preview_text: str = preview["preview_text"]
     items = preview.get("items")
     has_items = isinstance(items, list) and bool(items)
+    notice, unclaimed_sessions = _routing_details(repo_root, routing)
+    result: dict[str, Any] = {"state": STATE_EVALUATED, "ledger_path": str(ledger), "session_id": seed}
     if not has_items:
-        return {
-            "state": STATE_EVALUATED,
-            "ledger_path": str(ledger),
-            "session_id": seed,
-            "eligible_lessons_present": False,
-            "text": (
+        result.update(
+            eligible_lessons_present=False,
+            text=(
                 f"charness lesson loop (state: {STATE_EVALUATED}): this repo declares a lesson "
                 "evaluator, but the selection preview chose 0 eligible lessons, so no list can be "
                 f"presented and no session can be declared yet. {seed_lesson_next_step(repo_root)}"
             ),
-        }
-    declare = _declare_command(repo_root, seed)
-    # The preview bytes go in VERBATIM and UNTRUNCATED. They are
-    # `charness.lesson-session-preview.text.v1` -- the exact bytes
-    # `open_lesson_session.py` freezes into the session bundle and digests into the
-    # emission receipt. Truncating or reformatting them would make a later receipt
-    # attest bytes that were never shown, which is a worse lie than showing none.
-    # The single `rstrip()` removes only the renderer's trailing newline before the
-    # blank-line separator; no item line, no ordering, and no character inside the
-    # list is touched. Do NOT extend it to a top-N slice or a rewrap.
-    return {
-        "state": STATE_EVALUATED,
-        "ledger_path": str(ledger),
-        "session_id": seed,
-        "eligible_lessons_present": True,
-        "declare_command": declare,
-        "preview_byte_count": len(preview_text.encode("utf-8")),
-        "text": (
-            f"charness lesson loop (state: {STATE_EVALUATED}): this repo declares a lesson "
-            "evaluator. The list below is exactly what a declared session would freeze — read it "
-            "before the work.\n\n"
-            f"{preview_text.rstrip()}\n\n"
-            f"Declare this session before the work if it will end in a retro:\n{declare}\n\n"
-            f"{_EMISSION_CEILING}"
-        ),
-    }
+        )
+    else:
+        declare = _declare_command(repo_root, seed)
+        # The preview bytes go in VERBATIM and UNTRUNCATED: they are the exact bytes
+        # `open_lesson_session.py` freezes into the bundle and digests into the receipt.
+        result.update(
+            eligible_lessons_present=True,
+            declare_command=declare,
+            preview_byte_count=len(preview_text.encode("utf-8")),
+            text=(
+                f"charness lesson loop (state: {STATE_EVALUATED}): this repo declares a lesson "
+                "evaluator. The list below is exactly what a declared session would freeze — read it "
+                f"before the work.\n\n{preview_text.rstrip()}\n\n"
+                f"Declare this session before the work if it will end in a retro:\n{declare}"
+            ),
+        )
+    result["text"] += notice + (f"\n\n{_EMISSION_CEILING}" if has_items else "")
+    result["unclaimed_sessions"] = unclaimed_sessions
+    if unclaimed_sessions is None:
+        result["unclaimed_sessions_cause"] = routing["cause"]
+    return result
 
 
 def main(argv: list[str] | None = None) -> int:
