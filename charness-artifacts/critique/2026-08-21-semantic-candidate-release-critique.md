@@ -8,14 +8,15 @@ envelope, so the reviews used unnamed `codex exec --sandbox read-only` channels
 and parent boundary fingerprints. The final owner-bound round consumed the
 current repaired packet and found the verdict logic sound, while identifying a
 proof-identity binding gap and one diagnostic wording drift. The diagnostic
-repair was made in `3cc29d5ea`; the replacement review then confirmed the
-remaining stale-proof-identity blocker. Exact-HEAD changed-line and broad
-receipts are now rebound to `ea6737b30`; a replacement packet must read that
-truth surface before semantic lock.
+repair was made in `3cc29d5ea`; a parent reproduction then found that embedded
+target markers could still escape the exact owner-token contract. That escape
+is repaired in `a1aeb90ed`, with focused coverage in `19e62aea8`. Exact-HEAD
+changed-line and broad receipts now bind `19e62aea8`; a replacement packet must
+read that truth surface before semantic lock.
 
 ## Decision Under Review
 
-Whether to lock the integrated semantic candidate at `ea6737b30` before version
+Whether to lock the integrated semantic candidate at `19e62aea8` before version
 mutation, tag, publication, or external readback.
 
 Success requires a bounded fresh-eye release critique with separate angle and
@@ -161,10 +162,21 @@ The final owner-bound round also found that `fanout-stopped` over-described
 malformed/token/help failures as owner/flag failures; `3cc29d5ea` now emits the
 general preflight-failure diagnosis and tests it.
 
+The parent then reproduced a second wrong-owner form: `--input={target:other}`
+was expanded by the generic token expander without being counted by the exact
+owner-token check. The owning seam now refuses embedded and nested target
+markers as `target-token` errors in both `argv` and `help_argv`; the 25-test
+focused suite and the durable targeted-mutant receipt cover those branches.
+
+During evidence assembly, an operator inspection also guessed the unsupported
+`git status --staged` flag. It was rejected before changing state and corrected
+to `git diff --cached --name-only`; this is recorded as a command-surface
+inspection smell, not as proof or a repository mutation.
+
 The serialized current-head changed-line proof is `23/23`, `blocking=[]`, at
-`ea6737b30`, with the durable receipt at
+`19e62aea8`, with the durable receipt at
 `charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md`.
-The serialized broad quality run is `96 passed, 0 failed` in `165.3s`, with
+The serialized broad quality run is `96 passed, 0 failed` in `166.9s`, with
 the durable receipt at
 `charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md`. An
 earlier concurrent broad/changed-line attempt produced a no-verdict race through
@@ -198,19 +210,20 @@ substitute or Cautilus evaluation is claimed.
 ## Reviewed Input Identity
 
 - Packet consumed by the latest replacement review:
-  `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v5-packet.json`
-- Packet path: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v5-packet.json`
-- Packet SHA256: `1e90e58dfef9f22543452f5082a10aa474ed5420636aed3cf98562981e253ce0`
-- Identity SHA256: `7c7e1adbf68d8a08ef7a09c16b35dc808c9cd2971855adc7191ee1cb1dfc1e08`
+  `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v8-packet.json`
+- Packet SHA256: `edd9caed834d16b0676f0d57faf177ff1c20f7c0aea0863b3026d6f3f8a47fe4`
+- Identity SHA256: `912a6e04c7fd94f4b083e0dd8b65ea5523941893b42e22735031fcb266fdefea`
 - The v5 review bound the packet itself to `ea6737b30`, but found that the
   changed-line and broad-quality receipts cited older proof trees. Those
-  receipts are now rebound; a new packet and fresh-eye round must consume the
-  synchronized surfaces.
+  receipts are now rebound. A new packet and fresh-eye round must consume the
+  synchronized `19e62aea8` surfaces, including the standalone target-token
+  refusal and its focused coverage.
 
 ## Operator Action Required
 
 - Do not mutate version or release surfaces until the replacement packet for
-  `ea6737b30` has its own fresh-eye read and integrated verification lock.
+  `19e62aea8` has its own fresh-eye read and integrated verification lock.
 - Re-run the exact post-critique verification lock before any external-boundary
   action; hosted/install readback, issue closure, publication, and Cautilus
   remain unrun.

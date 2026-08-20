@@ -13,7 +13,7 @@ runs the activation command.
   active at the evidence-binding semantic-candidate boundary after absorbing
   the release-proof timeout, consumer-coverage, duplicate-seam, and command-
   surface repairs. Exact-HEAD changed-line and broad quality receipts now bind
-  `ea6737b30`; the semantic candidate still awaits the replacement packet's
+  `19e62aea8`; the semantic candidate still awaits the replacement packet's
   fresh-eye lock, and the broader release goal remains active at its version,
   publication, and external-readback edges.
 - Current slice: Slice 4 — reconcile the frozen ledger and exports, preserve
@@ -28,7 +28,11 @@ runs the activation command.
   repaired at `7b277c3d0`, the follow-up refusal tests are at `c29d338d8`, and
   diagnostic drift is corrected at `3cc29d5ea`. The replacement review then
   exposed stale proof identity as a truth-surface smell; the changed-line and
-  broad receipts are now rebound to `ea6737b30`. Any new failure returns to the
+  broad receipts are now rebound to `19e62aea8`. A parent reproduction also
+  exposed embedded `{target:...}` markers as an owner-binding escape; the
+  standalone-token refusal is repaired at `a1aeb90ed` and its argv/help,
+  nested-token, and expansion-error coverage is committed at `19e62aea8`.
+  Any new failure returns to the
   owning seam and carries its recurrence class into a gate, test, or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
@@ -778,10 +782,10 @@ invent a common engine.
 - Objective: make wrong path, ref, owner, and flag invocations fail before a
   parallel fan-out can escape, including the pattern where a failed preflight
   continues probing later commands.
-- What changed: `scripts/command_plan_preflight.py`, its twenty-one focused regression
+- What changed: `scripts/command_plan_preflight.py`, its twenty-five focused regression
   tests, the parent parallel-execution contract, and the durable plan at
   `charness-artifacts/critique/command-plans/2026-08-21-goal-fanout.json`.
-- Targeted verification: focused tests passed `21`; ruff, Python length, doc
+- Targeted verification: focused tests passed `25`; ruff, Python length, doc
   links, documented-command flags, critique-all, diff check, and the actual
   five-target/full-ref preflight passed. Round 1 found two structural gaps;
   the repaired surface was read in round 2 with clean boundary verification
@@ -790,14 +794,17 @@ invent a common engine.
   `help_argv`, malformed commands refuse structurally, and relative plans
   resolve from `--repo-root`. The follow-up changed-line run is clean across
   `23/23` mapped files with `blocking=[]` at current proof HEAD
-  `3cc29d5ea`; the round-2 test additions are
-  accepted-unreviewed under the repository's two-round cap.
+  `19e62aea8`; the new nested-token and expansion-error tests also discharge
+  the changed-line blocking targets. The round-2 test additions are
+  accepted-unreviewed under the repository's two-round cap. The exact line-274
+  targeted-mutant result is preserved in
+  `charness-artifacts/quality/2026-08-21-command-plan-targeted-mutant-proof.md`.
 - Non-claims: the preflight does not run planned commands or prove runtime,
   installed, hosted, external, issue-closeout, publication, or Cautilus truth.
 
 ### Slice 4 integrated verification after command-plan repairs
 
-- Current source truth: `ea6737b30b770d454a0ec2a1d45338efdf559ce6`.
+- Current source truth: `19e62aea829e4d40b1ede2d1e2273ea067963dd1`.
 - Changed-line proof: the serialized current-head receipt at
   `charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md`
   is `clean`, with `23/23` changed-pool files covered, `blocking=[]`, and
@@ -805,7 +812,7 @@ invent a common engine.
 - Broad quality: the durable receipt at
   `charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md`
   records `./scripts/run-quality.sh --read-only` passing `96` checks with
-  `0` failures in `165.3s` at the same HEAD. Runtime remains advisory under
+  `0` failures in `166.9s` at the same HEAD. Runtime remains advisory under
   #668; the result is not a claim that the budget is clean.
 - Fresh checkout: the corrected owner command
   `python3 skills/public/release/scripts/check_fresh_checkout_probes.py
@@ -861,7 +868,7 @@ invent a common engine.
   `5a170113d`, with the command-plan implementation repairs at `7b277c3d0`,
   coverage completion at `c29d338d8`, and diagnostic repair at `3cc29d5ea`.
   The latest exact-HEAD verification is now recorded at
-  `ea6737b30b770d454a0ec2a1d45338efdf559ce6`: default fresh-checkout probes
+  `19e62aea829e4d40b1ede2d1e2273ea067963dd1`: default fresh-checkout probes
   passed (5/5), the changed-line receipt is clean across `23/23` files, and
   the durable broad receipt records `96 passed, 0 failed`. The latest
   replacement packet and fresh-eye round must still read this synchronized

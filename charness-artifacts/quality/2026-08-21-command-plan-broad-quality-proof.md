@@ -5,12 +5,12 @@ Date: 2026-08-21
 ## Receipt
 
 - Command: `./scripts/run-quality.sh --read-only`
-- Resolved HEAD SHA: `ea6737b30b770d454a0ec2a1d45338efdf559ce6`
+- Resolved HEAD SHA: `19e62aea829e4d40b1ede2d1e2273ea067963dd1`
 - Status: `clean`
 - Quality summary: `96 passed, 0 failed`
-- Elapsed: `165.3s`
-- Raw operator log: `/tmp/charness-final-head-quality-current.log`
-- Raw log SHA-256: `4644ccfa36ddbc44398c44606493d7caecf58fa54b7d16a7985d9cf0762ce1a3`
+- Elapsed: `166.9s`
+- Raw operator log: `/tmp/charness-final-head-quality-19e62aea.log`
+- Raw log SHA-256: `c1644da1be124f10c35f6fd10f9754326401d735003f05d4826a92faf6fb97f5`
 - Internal changed-line consumer: passed; no blocking verdict
 
 ## Execution Boundary

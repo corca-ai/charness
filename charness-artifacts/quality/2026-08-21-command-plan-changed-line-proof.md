@@ -6,15 +6,15 @@ Date: 2026-08-21
 
 - Command: `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --refuse-unestablished`
 - Base SHA: `38775dfeb8d1e5574663d7ef461d19a63e252841`
-- Resolved HEAD SHA: `ea6737b30b770d454a0ec2a1d45338efdf559ce6`
+- Resolved HEAD SHA: `19e62aea829e4d40b1ede2d1e2273ea067963dd1`
 - Status: `clean`
 - Analyzed changed-pool files: `23`
 - Changed files: `23`
 - Blocking targets: `[]`
 - Consumer return code: `0`
-- Standing pytest: passed (`76.9s`)
-- Raw operator log: `/tmp/charness-final-head-changed-line-current.log`
-- Raw log SHA-256: `70aa8f42b2f9ab077ae19ea1c24800b5850fd9d86723f97ea03db987ede13536`
+- Standing pytest: passed (`78.3s`)
+- Raw operator log: `/tmp/charness-final-head-changed-line-19e62aea.log`
+- Raw log SHA-256: `827b0d8242b5c28a58495a72cf16a9396e623aeb246f4c2cfe1e2587b7ff5d07`
 
 ## Execution Boundary
 
