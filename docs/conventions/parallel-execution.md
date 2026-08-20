@@ -56,7 +56,9 @@ installed state, hosted state, or external truth.
 
 Each command must declare `owner_target` and use exactly
 `{target:<owner_target>}` in `argv`; an explicit `help_argv` must use the same
-token, or the checker refuses the command. This binds the planned invocation and
+standalone token, or the checker refuses the command. Embedded forms such as
+`--input={target:<id>}` are target-token refusals rather than path substitutions.
+This binds the planned invocation and
 its help owner to one resolved path instead of allowing a copied literal or
 wrong-owner probe to produce a false green. Keep the plan under the repo root;
 relative plan paths are resolved from `--repo-root`, and preserve the report with

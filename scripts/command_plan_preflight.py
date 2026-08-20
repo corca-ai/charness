@@ -255,6 +255,32 @@ def _target_tokens(raw_argv: Any) -> list[str]:
     ]
 
 
+def _standalone_target_token_errors(command_id: str, surface: str, raw_argv: Any) -> list[dict[str, Any]]:
+    if not isinstance(raw_argv, list):
+        return []
+    for token in raw_argv:
+        if not isinstance(token, str) or TARGET_TOKEN_PREFIX not in token:
+            continue
+        if not (token.startswith(TARGET_TOKEN_PREFIX) and token.endswith(TARGET_TOKEN_SUFFIX)):
+            return [
+                _error(
+                    "target-token",
+                    f"{command_id}: {surface} target tokens must be standalone argv entries",
+                    token=token,
+                )
+            ]
+        inner = token[len(TARGET_TOKEN_PREFIX) : -len(TARGET_TOKEN_SUFFIX)]
+        if TARGET_TOKEN_PREFIX in inner or TARGET_TOKEN_SUFFIX in inner:
+            return [
+                _error(
+                    "target-token",
+                    f"{command_id}: {surface} target tokens must contain one target id",
+                    token=token,
+                )
+            ]
+    return []
+
+
 def _validate_owner_binding(
     command_id: str,
     owner_target: Any,
@@ -275,6 +301,9 @@ def _validate_owner_binding(
         return [_error("owner-binding", f"{command_id}: owner_target must be a non-empty target id")]
     if owner_target not in targets:
         return [_error("owner-binding", f"{command_id}: owner_target is unresolved: {owner_target}")]
+    argv_token_errors = _standalone_target_token_errors(command_id, "argv", raw_argv)
+    if argv_token_errors:
+        return argv_token_errors
     expected = [owner_target]
     argv_targets = _target_tokens(raw_argv)
     if argv_targets != expected:
@@ -287,6 +316,9 @@ def _validate_owner_binding(
             )
         ]
     if raw_help_argv is not None:
+        help_token_errors = _standalone_target_token_errors(command_id, "help_argv", raw_help_argv)
+        if help_token_errors:
+            return help_token_errors
         help_targets = _target_tokens(raw_help_argv)
         if help_targets != expected:
             return [

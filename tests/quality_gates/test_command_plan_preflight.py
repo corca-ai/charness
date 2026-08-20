@@ -411,6 +411,26 @@ def test_owner_binding_rejects_literal_or_mismatched_help_paths(tmp_path: Path) 
         assert errors[0]["code"] == "owner-binding"
 
 
+@pytest.mark.parametrize("surface", ["argv", "help_argv"])
+def test_owner_binding_rejects_embedded_target_tokens(tmp_path: Path, surface: str) -> None:
+    module = _load_preflight_module()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _demo(repo)
+    command = {
+        "id": f"embedded-{surface}",
+        "owner_target": "demo",
+        "argv": ["python3", "{target:demo}"],
+    }
+    if surface == "argv":
+        command["argv"] = ["python3", "{target:demo}", "--input={target:other}"]
+    else:
+        command["help_argv"] = ["python3", "{target:demo}", "--input={target:other}", "--help"]
+    observation, errors = module._probe_command(repo, command, {"demo": "scripts/demo.py", "other": "scripts/demo.py"})
+    assert observation["status"] == "fail"
+    assert errors[0]["code"] == "target-token"
+
+
 def test_malformed_command_is_structured_refusal_and_relative_plan_uses_repo_root(tmp_path: Path) -> None:
     module = _load_preflight_module()
     repo = tmp_path / "repo"
