@@ -33,6 +33,7 @@ _draft_frame = _load_sibling("goal_artifact_draft_frame")
 _markdown = _load_sibling("goal_artifact_markdown")
 _metric_window = _load_sibling("goal_metric_window_lib")
 _policy = _load_sibling("achieve_adapter_policy")
+_portability_gate = _load_sibling("goal_artifact_portability_gate")
 _pursue = _load_sibling("goal_artifact_pursue")
 _scaffold = _load_sibling("goal_artifact_scaffold")
 _timebox = _load_sibling("goal_artifact_timebox")
@@ -383,7 +384,7 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
         # `## User Acceptance`.
         clause = "contradictory: " + cadence["reason"]
         report["reason"] = clause if pass_reason else report["reason"] + "; " + clause
-    return report
+    return _portability_gate.apply_pursue_floor(report, text)
 
 
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
@@ -450,6 +451,10 @@ def check_goal(text: str) -> dict[str, Any]:
             + ", ".join(portability_missing)
             + " — every goal keeps these headings (use `N/A — <reason>` if a section is empty)"
         )
+    path_portability = _portability_gate.check(text)
+    portability_issue = _portability_gate.check_issue(path_portability)
+    if portability_issue:
+        issues.append(portability_issue)
     cadence = check_cadence_owner(text, status=status)
     if not cadence["ok"]:
         issues.append("gate-cadence owner floor — " + cadence["reason"])
@@ -459,5 +464,6 @@ def check_goal(text: str) -> dict[str, Any]:
         "status": status,
         "missing_sections": missing,
         "portability_missing_sections": portability_missing,
+        "path_portability": path_portability,
         "issues": issues,
     }

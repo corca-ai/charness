@@ -97,6 +97,53 @@ def test_check_goal_reports_missing_portability() -> None:
     assert any("portability" in issue.lower() for issue in result["issues"])
 
 
+def test_check_goal_rejects_executable_absolute_checkout_path() -> None:
+    body = _goal_with_table(["| 1 | a | now | x | planned |"])
+    body = body.replace("## Goal\n", "## Goal\nRun `/home/hwidong/codes/demo-repo` next.\n", 1)
+
+    result = gal.check_goal(body)
+
+    assert result["ok"] is False
+    assert result["path_portability"]["ok"] is False
+    assert (
+        result["path_portability"]["executable_paths"][0]["path"]
+        == "/home/hwidong/codes/demo-repo"
+    )
+    assert any("path portability" in issue for issue in result["issues"])
+
+
+def test_pursue_readiness_shares_the_path_portability_floor() -> None:
+    body = _goal_with_table(["| 1 | a | now | x | planned |"])
+    body = body.replace("## Goal\n", "## Goal\nUse `/home/hwidong/codes/demo-repo` next.\n", 1)
+
+    result = gal.pursue_readiness(body)
+
+    assert result["pursue_ready"] is False
+    assert result["activation_ready"] is False
+    assert result["path_portability"]["ok"] is False
+    assert "path portability floor" in result["reason"]
+
+
+def test_evidence_absolute_path_is_observable_without_refusal() -> None:
+    body = _goal_with_table(
+        ["| 1 | a | now | x | planned |"], portability=_PORTABILITY_BODY
+    )
+    body = body.replace(
+        "## Final Verification\n",
+        "## Final Verification\nObserved reproduction at `/home/hwidong/codes/demo-repo`.\n",
+        1,
+    )
+
+    result = gal.check_goal(body)
+
+    assert result["ok"] is True
+    assert result["path_portability"]["ok"] is True
+    assert (
+        result["path_portability"]["intentional_evidence"][0]["path"]
+        == "/home/hwidong/codes/demo-repo"
+    )
+
+
 def test_check_goal_passes_with_portability_sections_present() -> None:
     body = _goal_with_table(
         [
