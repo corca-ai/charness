@@ -37,19 +37,21 @@ uncommitted mutation-pool files.
 - Dup-ratchet first found a duplicated source/installed layout branch. A shared
   `_layout_relative` helper removed that structural duplicate; the remaining
   independent CLI lifecycle families were classified with explicit rationale.
-- The final read-only quality rerun passed 96 checks, but changed-line mutation
-  returned `status: blocked` because five mutation-pool files were uncommitted.
-  It listed blocking lines in `scripts/check_consumer_validator_catalog.py`.
+- Before commit, mutation refused dirty mutation-pool files; after commit,
+  pytest passed in 143.7s, mutation analyzed 32 files, and three files still
+  had uncovered changed lines. The focused repair suite now passes 101 tests.
 - Wrong or unavailable calls included nonexistent critique/debug scaffold paths,
   the wrong mirror checker name, source-layout paths passed to the exported
   checker, a doubled plugin path, a nonexistent attention-state validator
   path, and a positional debug-artifact path passed to a `--paths` CLI. The
-  last call was rejected by argparse; the corrected flag form passed. Correct
-  paths were found before treating any result as proof.
+  last call was rejected by argparse; the corrected flag form passed. The seam
+  index also rejected a non-schema `Next Step` and backticked handoff path; a
+  focused test exposed an undefined `ROOT` and marker-shape assumption. All
+  were corrected before treating any result as proof.
 
 ## Reproduction
 
-Focused catalog and capability tests pass after repair:
+Focused catalog/capability tests pass:
 
 `python3 -m pytest -q tests/test_consumer_validator_catalog.py tests/test_capability_catalog.py tests/charness_cli/test_codex_cache_refresh.py tests/quality_gates/test_packaging_validation.py tests/quality_gates/test_staged_commit_gate_plan.py`
 
@@ -62,15 +64,11 @@ refusal, not an analyzed-code verdict.
 
 ## Candidate Causes
 
-- Invocation cause: callers inferred paths from skill names or source layout
-  instead of resolving the owning root.
-- Contract cause: the catalog and adoption declaration were treated as
-  descriptive metadata without a fail-closed consumer readback or staged
-  ownership check.
-- Concurrency cause: workers shared relative temporary paths and cache-prune
-  state without serialized ownership.
-- Integration cause: a new top-level contract file was added without entering
-  the closeout surface registry.
+- Invocation cause: callers inferred paths instead of resolving the owning root.
+- Contract cause: catalog/adoption metadata lacked fail-closed readback and
+  staged ownership.
+- Concurrency cause: workers shared relative temporary paths and cache state.
+- Integration cause: a new contract file lacked closeout surface ownership.
 - Proof cause: mutation coverage was requested before the semantic candidate
   was committed, so a clean result would have silently omitted changed files;
   one validator call also used the wrong CLI shape.
@@ -79,8 +77,8 @@ refusal, not an analyzed-code verdict.
 
 The failures are one recurring class: a boundary accepted a name, path, CLI
 shape, or state observation without binding it to the owning root and the
-evidence channel that makes the observation complete. Disconfirmer: run the source and
-installed checker defaults, fail the CLI on a missing adoption declaration,
+evidence channel that makes the observation complete. Disconfirmer: run source
+and installed defaults, fail the CLI on missing adoption,
 run the closeout readiness test, and run mutation proof after a commit that
 contains the mutation pool. If any succeeds while the relevant owner is absent,
 the hypothesis is false and the responsible boundary remains under-specified.
@@ -111,10 +109,9 @@ commit boundary.
 ## Invariant Proof
 
 - Invariant: a consumer-validator result is trustworthy only when catalog,
-  package root, adoption declaration, and staged ownership agree.
-- Producer proof: the checker validates source and installed layouts, exact
-  invocation tokens, catalog completeness, adoption cardinality, and optional
-  index presence.
+  package root, adoption, and staged ownership agree.
+- Producer proof: the checker validates layouts, exact invocation tokens,
+  completeness, adoption cardinality, and index presence.
 - Final-consumer proof: the capability CLI exposes detailed entries and returns
   nonzero for a blocked catalog; the quality runner invokes the required
   adoption check.
@@ -130,7 +127,8 @@ The first quality run showed standing pytest, closeout ownership, and mutation
 proof observing different parts of one contract. No structural owner tied the
 new `.agents` declaration to closeout verification, and mutation could start
 against a dirty candidate. The dedicated surface and commit-before-mutation
-sequence close those gaps at their owners.
+sequence close those gaps at their owners; focused consumer tests close the
+remaining branch proof gap.
 
 ## Sibling Search
 
@@ -160,10 +158,11 @@ sequence close those gaps at their owners.
 
 - Resolution: open
 - Critique Required: yes
-- Next Step: commit the semantic repair candidate, rerun changed-line mutation
-  and full quality, then bind a delivered fresh-eye review before release or
-  goal closeout.
-- Handoff Artifact: `charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`
+- Next Step: spec
+- Action: commit the semantic repair candidate, rerun changed-line mutation and
+  full quality, then bind a delivered fresh-eye review before release or goal
+  closeout.
+- Handoff Artifact: charness-artifacts/spec/2026-08-20-fresh-checkout-probe-timeout.md
 
 ## Prevention
 

@@ -10,24 +10,21 @@ runs the activation command.
 ## Active Operating Frame
 
 - Current disposition: Slice 3 is locally proven and archived; the prior Slice
-  4 semantic-candidate lock is reopened by the #670 consumer-validator and
-  quality-boundary repair set. The source/export implementation is focused
-  green and standing pytest is green, while the latest changed-line mutation
-  gate correctly refuses the dirty worktree. The broader release goal remains
-  active at its version, publication, external-readback, issue-closeout, and
-  fresh-eye delivery edges.
-- Current slice: Slice 5 — integrate the consumer-validator catalog, adoption
-  contract, cache/TMPDIR race repairs, and closeout-surface ownership before
-  committing the new semantic candidate.
+  4 semantic-candidate lock was repaired and committed as `dbdebcfe7`. Its
+  post-commit quality run exposed two proof smells: a stale debug seam index and
+  three mutation files with uncovered changed lines. The focused repair is now
+  green but uncommitted. The broader release goal remains active at its version,
+  publication, external-readback, issue-closeout, and fresh-eye delivery edges.
+- Current slice: Slice 5 — close the post-commit mutation and debug-index proof
+  gaps for the consumer-validator catalog and quality-boundary repair.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: commit the current semantic repair candidate, rerun the
-  changed-line mutation proof against committed files, then rerun the required
-  broad/release checks. Obtain a delivered bounded fresh-eye result before
-  version mutation; any new failure returns to its owning seam and carries its
-  recurrence class into a gate, test, or spec.
+- Next action: stage and commit the focused proof repair, rerun staged gates,
+  changed-line mutation, and broad quality. Obtain a delivered bounded fresh-eye
+  result before version mutation; any new failure returns to its owning seam and
+  carries its recurrence class into a gate, test, or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -858,20 +855,22 @@ invent a common engine.
   refusals; and the nonexistent attention-state validator path explored by the
   reviewer was not treated as proof. A positional debug-artifact path passed to
   the `--paths` validator CLI was also rejected, then rerun with the declared
-  flag. These are durable failure evidence, not incidental command noise.
+  flag. Focused repair authoring also corrected an undefined `ROOT` and an
+  export-marker newline assumption. These are durable failure evidence, not
+  incidental command noise.
 - Focused proof: catalog/capability/CLI/packaging/staged tests and ruff passed;
   the latest combined focused catalog/capability/CLI/packaging/staged run was
   `161 passed`. Direct source and exported checker readback passed with `133`
   packaged validators, `133` decisions, `14` consumer-facing entries, `119`
   excluded, `13` declared wired, and `1` opt-out. Retry boundary fingerprint
   verified `clean` with `drift: []`.
-- Integrated proof: the latest `TMPDIR=/tmp ./scripts/run-quality.sh
-  --read-only` completed `96 passed, 1 failed`. Standing pytest passed; all
-  other reported checks and dup-ratchet passed. The sole failure was the
-  changed-line mutation gate's deliberate dirty-worktree refusal: five
-  mutation-pool files, including `scripts/check_consumer_validator_catalog.py`,
-  were uncommitted, so the gate returned `status: blocked` and required a
-  commit before mutation proof. This is not a green mutation claim.
+- Integrated proof: the post-commit `TMPDIR=/tmp ./scripts/run-quality.sh
+  --read-only` completed `95 passed, 2 failed`. Standing pytest passed in
+  `143.7s`; mutation analyzed `32/32` changed pool files but blocked three
+  files for uncovered changed lines. The other failure was the debug seam index,
+  which rejected the artifact's interrupt contract. Focused repair coverage is
+  now `101 passed`, with the index regenerated; this candidate is not yet
+  committed or broadly re-proven.
 - Critique and delivery: round 1 fresh-eye returned BLOCK and its repair set
   is recorded at `charness-artifacts/critique/rounds/2026-08-21-consumer-validator-round-1.md`.
   The first round-2 reviewer and one unnamed retry failed to deliver a final
@@ -884,9 +883,10 @@ invent a common engine.
   actually called is claimed. The semantic candidate must be re-bound after
   commit and after a delivered fresh-eye result.
 - Metrics: 133 packaged decisions / 14 consumer-facing / 13 wired / 1 opted
-  out; focused `161 passed`; standing pytest pass; integrated quality `96/97`
-  checks with mutation blocked by dirty-candidate refusal; dup-ratchet clean;
-  source/export checker readback pass; fresh-eye round 2 delivery unproven.
+  out; catalog focused `161 passed`; repair focused `101 passed`; standing
+  pytest pass; latest integrated quality `95/97` with mutation and seam-index
+  failures repaired but not yet re-proven; dup-ratchet clean; source/export
+  checker readback pass; fresh-eye round 2 delivery unproven.
 
 ## Closeout Binding Plan
 

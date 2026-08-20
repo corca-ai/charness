@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 147,
-  "indexed_artifact_count": 134,
+  "source_artifact_count": 148,
+  "indexed_artifact_count": 135,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 15,
     "host-disproves-local": 5,
     "none": 58,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 5
+    "repeated-symptom": 6
   },
   "generalization_pressure_counts": {
     "factor-now": 8,
-    "monitor": 110,
+    "monitor": 111,
     "none": 16
   },
   "entries": [
@@ -1882,6 +1882,20 @@
       "next_step": "impl",
       "handoff_artifact": "charness-artifacts/spec/2026-08-20-issue-679-impl-bootstrap-idempotence.md",
       "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-21-validator-catalog-quality-races.md",
+      "is_current_pointer": false,
+      "interrupt_id": "consumer-validator-catalog-quality-races-2026-08-21",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "seam": "source path or temporary base -> child cwd/cache -> verifier verdict",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-20-fresh-checkout-probe-timeout.md",
+      "forced": true
     },
     {
       "artifact_path": "charness-artifacts/debug/latest.md",

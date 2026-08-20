@@ -222,6 +222,49 @@ def test_catalog_lists_local_and_synced_support_skills(tmp_path: Path) -> None:
     assert by_id["synced-helper"]["layer"] == "synced support skill"
 
 
+def test_consumer_validator_catalog_resolves_installed_layout(tmp_path: Path, monkeypatch) -> None:
+    installed = tmp_path / "installed"
+    (installed / "scripts").mkdir(parents=True)
+    monkeypatch.setattr(catalog, "__file__", str(installed / "scripts" / "capability_catalog.py"))
+    captured: dict[str, object] = {}
+
+    def fake_validate(owner_root: Path, **kwargs: object) -> dict[str, object]:
+        captured.update(owner_root=owner_root, **kwargs)
+        return {"status": "pass"}
+
+    monkeypatch.setattr(catalog.check_consumer_validator_catalog, "validate_catalog", fake_validate)
+    result = catalog._consumer_validator_catalog(installed)
+
+    assert result == {"status": "pass"}
+    assert captured["owner_root"] == installed
+    assert captured["package_root"] == installed
+    assert captured["catalog_path"] == installed / "skills/quality/references/consumer-validator-catalog.yaml"
+
+
+def test_consumer_validator_catalog_maps_catalog_errors_to_blocked(monkeypatch) -> None:
+    def fail_validate(*_args: object, **_kwargs: object) -> dict[str, object]:
+        raise catalog.check_consumer_validator_catalog.CatalogError("bad catalog")
+
+    monkeypatch.setattr(catalog.check_consumer_validator_catalog, "validate_catalog", fail_validate)
+    result = catalog._consumer_validator_catalog(Path(__file__).resolve().parents[1])
+
+    assert result["status"] == "blocked"
+    assert result["error"] == "bad catalog"
+
+
+def test_catalog_cli_returns_nonzero_for_a_blocked_consumer_catalog(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    monkeypatch.setattr(
+        catalog,
+        "list_catalog",
+        lambda *_args, **_kwargs: {"consumer_validator_catalog": {"status": "blocked"}},
+    )
+
+    assert catalog_main(["list", "--repo-root", str(tmp_path)]) == 1
+    assert "status: blocked" in capsys.readouterr().out
+
+
 def test_catalog_loads_canonical_adapter(tmp_path: Path) -> None:
     agents = tmp_path / ".agents"
     agents.mkdir()

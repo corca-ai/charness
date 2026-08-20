@@ -13,6 +13,7 @@ import yaml
 
 import scripts.check_consumer_validator_catalog as consumer_validator_catalog_module
 import scripts.export_plugin as export_plugin_module
+import scripts.packaging_lib as packaging_lib
 import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module
 import scripts.validate_packaging as validate_packaging_module
 import scripts.validate_packaging_install_surface as validate_packaging_install_surface_module
@@ -20,6 +21,19 @@ from tests.repo_copy import clone_seeded_charness_repo
 from tests.script_main import run_loaded_script_main
 
 from .support import EVAL_REGISTRY, ROOT, run_script
+
+
+def test_exported_consumer_validator_catalog_rewrite_is_fail_closed(tmp_path: Path) -> None:
+    catalog_path = tmp_path / "skills/quality/references/consumer-validator-catalog.yaml"
+    catalog_path.parent.mkdir(parents=True)
+
+    catalog_path.write_text("\npackage_root: .\n", encoding="utf-8")
+    packaging_lib.rewrite_exported_consumer_validator_catalog(tmp_path)
+    assert catalog_path.read_text(encoding="utf-8") == "\npackage_root: .\n"
+
+    catalog_path.write_text("\npackage_root: unexpected\n", encoding="utf-8")
+    with pytest.raises(packaging_lib.PackagingError, match="expected source-relative"):
+        packaging_lib.rewrite_exported_consumer_validator_catalog(tmp_path)
 
 
 def make_demo_packaging_repo(

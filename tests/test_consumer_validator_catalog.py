@@ -325,6 +325,24 @@ def _valid_header() -> dict[str, object]:
         (lambda value: value.update(adoption_policy=None), "adoption_policy"),
         (
             lambda value: value.update(
+                adoption_policy={
+                    "declaration_path": "wrong.yaml",
+                    "exactly_one_of": ["wired", "opt_out_reason"],
+                }
+            ),
+            "adoption declaration path",
+        ),
+        (
+            lambda value: value.update(
+                adoption_policy={
+                    "declaration_path": ".agents/consumer-validator-adoption.yaml",
+                    "exactly_one_of": ["wired"],
+                }
+            ),
+            "adoption policy",
+        ),
+        (
+            lambda value: value.update(
                 consumer_contract={"source": "packaged", "selection_field": "", "no_substitute": "y"}
             ),
             "selection_field",
@@ -383,6 +401,40 @@ def test_entry_validation_rejects_untrusted_shapes(entry, message: str) -> None:
     with pytest.raises(catalog_check.CatalogError, match=message):
         catalog_check._validate_entry(
             entry,
+            index=1,
+            catalog_path=Path("catalog.yaml"),
+            discovered={"scripts/check_demo.py"},
+            declared={},
+        )
+
+
+def test_consumer_entry_rejects_unstable_duplicate_and_malformed_ids() -> None:
+    invalid_id = _entry("scripts/check_demo.py", consumer_facing=True)
+    invalid_id["id"] = "Check_Demo"
+    with pytest.raises(catalog_check.CatalogError, match="stable lower-kebab-case"):
+        catalog_check._validate_entry(
+            invalid_id,
+            index=1,
+            catalog_path=Path("catalog.yaml"),
+            discovered={"scripts/check_demo.py"},
+            declared={},
+        )
+
+    duplicate = _entry("scripts/check_demo.py", consumer_facing=True)
+    with pytest.raises(catalog_check.CatalogError, match="duplicate validator id"):
+        catalog_check._validate_entry(
+            duplicate,
+            index=1,
+            catalog_path=Path("catalog.yaml"),
+            discovered={"scripts/check_demo.py"},
+            declared={"scripts/other.py": {"id": duplicate["id"]}},
+        )
+
+    malformed = _entry("scripts/check_demo.py", consumer_facing=True)
+    malformed["invocation"] = "python3 <plugin-root>/scripts/check_demo.py 'unterminated"
+    with pytest.raises(catalog_check.CatalogError, match="shell-tokenizable"):
+        catalog_check._validate_entry(
+            malformed,
             index=1,
             catalog_path=Path("catalog.yaml"),
             discovered={"scripts/check_demo.py"},
@@ -457,6 +509,25 @@ def test_adoption_path_cannot_be_retargeted_by_a_relative_or_named_path(tmp_path
         catalog_check.validate_catalog(repo, adoption_path=adoption.with_name("other.yaml"))
 
 
+def test_staged_adoption_reports_outside_root_and_git_errors(tmp_path: Path, monkeypatch) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    adoption = repo / catalog_check.DEFAULT_ADOPTION_REL
+    adoption.parent.mkdir(parents=True)
+    adoption.write_text("schema_version: 1\n", encoding="utf-8")
+    outside = tmp_path / "outside" / catalog_check.DEFAULT_ADOPTION_REL
+
+    with pytest.raises(catalog_check.CatalogError, match="inside the repo root"):
+        catalog_check._require_staged_adoption(repo, outside)
+
+    def fail_git(*_args: object, **_kwargs: object) -> object:
+        raise OSError("git unavailable")
+
+    monkeypatch.setattr(catalog_check.subprocess, "run", fail_git)
+    with pytest.raises(catalog_check.CatalogError, match="could not verify staged"):
+        catalog_check._require_staged_adoption(repo, adoption)
+
+
 @pytest.mark.parametrize(
     "entry",
     [
@@ -476,4 +547,68 @@ def test_adoption_rejects_ambiguous_or_false_wiring(tmp_path: Path, entry: dict[
             repo,
             adoption_path=catalog_check.DEFAULT_ADOPTION_REL,
             require_adoption=True,
+        )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (lambda text: text.replace("schema_version: 1", "schema_version: 2"), "schema_version"),
+        (lambda text: text.replace("catalog_id: consumer-validator-catalog", "catalog_id: other"), "catalog_id"),
+        (lambda text: text.replace("validators:\n", "validators: {}\n"), "validators.*list"),
+    ],
+)
+def test_adoption_rejects_invalid_header_shapes(tmp_path: Path, mutation, message: str) -> None:
+    repo = _fixture_repo(tmp_path)
+    entry = _entry("scripts/check_demo.py", consumer_facing=True)
+    _write_catalog(repo, [entry])
+    adoption = _write_adoption(repo, [{"id": entry["id"], "wired": True}])
+    adoption.write_text(mutation(adoption.read_text(encoding="utf-8")), encoding="utf-8")
+
+    with pytest.raises(catalog_check.CatalogError, match=message):
+        catalog_check.validate_catalog(
+            repo,
+            adoption_path=catalog_check.DEFAULT_ADOPTION_REL,
+            require_adoption=True,
+        )
+
+
+def test_adoption_requires_a_decision_for_every_consumer_validator(tmp_path: Path) -> None:
+    repo = _fixture_repo(
+        tmp_path,
+        candidates=("scripts/check_demo.py", "scripts/validate_demo.py"),
+    )
+    entries = [
+        _entry("scripts/check_demo.py", consumer_facing=True),
+        _entry("scripts/validate_demo.py", consumer_facing=True),
+    ]
+    _write_catalog(repo, entries)
+    _write_adoption(repo, [{"id": entries[0]["id"], "wired": True}])
+
+    with pytest.raises(catalog_check.CatalogError, match="missing an adoption decision"):
+        catalog_check.validate_catalog(
+            repo,
+            adoption_path=catalog_check.DEFAULT_ADOPTION_REL,
+            require_adoption=True,
+        )
+
+
+@pytest.mark.parametrize(
+    ("entry", "seen", "expected", "message"),
+    [
+        ([], set(), {"check-demo"}, "must be a mapping"),
+        ({"id": "check-demo", "wired": True}, {"check-demo"}, {"check-demo"}, "duplicate"),
+        ({"id": "other", "wired": True}, set(), {"check-demo"}, "not a consumer-facing"),
+    ],
+)
+def test_adoption_entry_rejects_nonmapping_duplicate_and_unknown(
+    entry, seen: set[str], expected: set[str], message: str
+) -> None:
+    with pytest.raises(catalog_check.CatalogError, match=message):
+        catalog_check._validate_adoption_entry(
+            entry,
+            index=1,
+            path=Path(".agents/consumer-validator-adoption.yaml"),
+            expected_ids=expected,
+            seen=seen,
         )
