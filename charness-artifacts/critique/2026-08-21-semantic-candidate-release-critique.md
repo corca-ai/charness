@@ -7,12 +7,15 @@ separate process contexts. The host exposes no typed Agent/spawn/Ceal worker
 envelope, so the reviews used unnamed `codex exec --sandbox read-only` channels
 and parent boundary fingerprints. The final owner-bound round consumed the
 current repaired packet and found the verdict logic sound, while identifying a
-proof-identity binding gap and one diagnostic wording drift; both were repaired
-and rerun by the parent. A replacement packet is required before semantic lock.
+proof-identity binding gap and one diagnostic wording drift. The diagnostic
+repair was made in `3cc29d5ea`; the replacement review then confirmed the
+remaining stale-proof-identity blocker. Exact-HEAD changed-line and broad
+receipts are now rebound to `ea6737b30`; a replacement packet must read that
+truth surface before semantic lock.
 
 ## Decision Under Review
 
-Whether to lock the integrated semantic candidate at `def088cf9` before version
+Whether to lock the integrated semantic candidate at `ea6737b30` before version
 mutation, tag, publication, or external readback.
 
 Success requires a bounded fresh-eye release critique with separate angle and
@@ -43,7 +46,9 @@ found no release-blocking defect in the reviewed packet. The command-plan
 repair then received a first round that found ref/help/short-flag continuation
 gaps and a second round that read the repairs. The final owner-bound round found
 no remaining owner-binding blocker, but caught stale proof identity and a
-diagnostic-label mismatch; the parent repaired both.
+diagnostic-label mismatch. The diagnostic label was repaired; the replacement
+packet review caught the remaining current-HEAD evidence drift, which is now
+being repaired through exact-HEAD receipts and synchronized truth surfaces.
 
 ## Counterweight Pass
 
@@ -157,9 +162,11 @@ malformed/token/help failures as owner/flag failures; `3cc29d5ea` now emits the
 general preflight-failure diagnosis and tests it.
 
 The serialized current-head changed-line proof is `23/23`, `blocking=[]`, at
-`3cc29d5ea`, with the durable receipt at
+`ea6737b30`, with the durable receipt at
 `charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md`.
-The serialized broad quality run is `96 passed, 0 failed` in `167.7s`. An
+The serialized broad quality run is `96 passed, 0 failed` in `165.3s`, with
+the durable receipt at
+`charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md`. An
 earlier concurrent broad/changed-line attempt produced a no-verdict race through
 shared mutation state; it is not used as proof. The final runs were serialized.
 Runtime remains an explicit #668 advisory, not a clean-budget claim or a version
@@ -190,17 +197,20 @@ substitute or Cautilus evaluation is claimed.
 
 ## Reviewed Input Identity
 
-- Packet consumed: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-packet.json`
-- Packet path: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-packet.json`
-- Packet SHA256: `437cae4ae72bd71a608063d021312c866b89d4d4d8ef1b9f7e0bb5121fe00cc3`
-- Identity SHA256: `a9c83957de85a0c841539cf0d10c557a23f861c61ba8244ed1cdbe61cbc7286b`
-- The final packet is the identity to be consumed by the replacement
-  fresh-eye review; it is not substituted by the earlier v3 packet.
+- Packet consumed by the latest replacement review:
+  `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v5-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-21-semantic-candidate-final-v5-packet.json`
+- Packet SHA256: `1e90e58dfef9f22543452f5082a10aa474ed5420636aed3cf98562981e253ce0`
+- Identity SHA256: `7c7e1adbf68d8a08ef7a09c16b35dc808c9cd2971855adc7191ee1cb1dfc1e08`
+- The v5 review bound the packet itself to `ea6737b30`, but found that the
+  changed-line and broad-quality receipts cited older proof trees. Those
+  receipts are now rebound; a new packet and fresh-eye round must consume the
+  synchronized surfaces.
 
 ## Operator Action Required
 
-- Do not mutate version or release surfaces until the final packet for
-  `def088cf9` has its own fresh-eye read and integrated verification lock.
+- Do not mutate version or release surfaces until the replacement packet for
+  `ea6737b30` has its own fresh-eye read and integrated verification lock.
 - Re-run the exact post-critique verification lock before any external-boundary
   action; hosted/install readback, issue closure, publication, and Cautilus
   remain unrun.

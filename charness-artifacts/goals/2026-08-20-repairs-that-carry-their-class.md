@@ -10,24 +10,26 @@ runs the activation command.
 ## Active Operating Frame
 
 - Current disposition: Slice 3 is locally proven and archived; Slice 4 remains
-  active at the integrated semantic-candidate boundary after absorbing the
-  release-proof timeout, consumer-coverage, and duplicate-seam repairs. The
-  semantic candidate is not frozen yet, and the broader release goal remains
-  active at its version, publication, and external-readback edges.
+  active at the evidence-binding semantic-candidate boundary after absorbing
+  the release-proof timeout, consumer-coverage, duplicate-seam, and command-
+  surface repairs. Exact-HEAD changed-line and broad quality receipts now bind
+  `ea6737b30`; the semantic candidate still awaits the replacement packet's
+  fresh-eye lock, and the broader release goal remains active at its version,
+  publication, and external-readback edges.
 - Current slice: Slice 4 — reconcile the frozen ledger and exports, preserve
-  the lesson-session provenance, and bind the semantic candidate before the
-  mandatory release critique.
+  the lesson-session provenance, bind current-HEAD verification evidence, and
+  lock the semantic candidate before the mandatory release critique.
 - Current slice intent: turn the locally proven repair tree into one fixed,
   source/export/ledger-consistent semantic candidate without smuggling in a
   version bump or treating a local green gate as public release proof.
-- Next action: rebuild the semantic packet after the owner-binding and
-  diagnostic repairs, obtain a fresh-eye read of that exact tree, rerun
-  integrated verification, and bind the semantic candidate lock. The bounded
-  review found an argv/help-owner escape; it is repaired at `7b277c3d0`, the
-  follow-up refusal tests are at `c29d338d8`, and diagnostic drift is corrected
-  at `3cc29d5ea`. Any new failure
-  returns to the owning seam and carries its recurrence class into a gate, test,
-  or spec.
+- Next action: regenerate the semantic packet after the exact-HEAD evidence
+  rebinding, obtain a fresh-eye read of that packet, and bind the semantic
+  candidate lock. The bounded review found an argv/help-owner escape; it is
+  repaired at `7b277c3d0`, the follow-up refusal tests are at `c29d338d8`, and
+  diagnostic drift is corrected at `3cc29d5ea`. The replacement review then
+  exposed stale proof identity as a truth-surface smell; the changed-line and
+  broad receipts are now rebound to `ea6737b30`. Any new failure returns to the
+  owning seam and carries its recurrence class into a gate, test, or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -795,21 +797,24 @@ invent a common engine.
 
 ### Slice 4 integrated verification after command-plan repairs
 
-- Current source truth: `3cc29d5ea9f4e82d87cc6c5c0356c95f5569ccd6`.
+- Current source truth: `ea6737b30b770d454a0ec2a1d45338efdf559ce6`.
 - Changed-line proof: the serialized current-head receipt at
   `charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md`
   is `clean`, with `23/23` changed-pool files covered, `blocking=[]`, and
-  consumer return code `0`.
-- Broad quality: `./scripts/run-quality.sh --read-only` passed `96` checks with
-  `0` failures in `167.7s`. Runtime remains advisory under #668; the result is
-  not a claim that the budget is clean.
+  consumer return code `0` at the exact current HEAD.
+- Broad quality: the durable receipt at
+  `charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md`
+  records `./scripts/run-quality.sh --read-only` passing `96` checks with
+  `0` failures in `165.3s` at the same HEAD. Runtime remains advisory under
+  #668; the result is not a claim that the budget is clean.
 - Fresh checkout: the corrected owner command
   `python3 skills/public/release/scripts/check_fresh_checkout_probes.py
   --repo-root . --run-probes --detail` passed all five declared probes.
 - Execution-smell repair: an attempted concurrent changed-line/broad run
   produced a no-verdict coverage race because both producers share mutation
   state. The broad run was then rerun alone and the changed-line proof was rerun
-  alone before it; the final receipts above are serialized, not the raced run.
+  alone before it at the exact current HEAD; the final receipts above are
+  serialized, not the raced run.
 
 ## Closeout Binding Plan
 
@@ -852,18 +857,15 @@ invent a common engine.
   issue-read/reproduction receipts, and Slice 0 log. Integrated semantic
   candidate critique, version/release-candidate proof, external readback, and
   tracker closeout remain unrun; this goal is therefore still active.
-- Slice 4 integrated proof remains recorded at code truth `5a170113d`:
-  default fresh-checkout probes passed (5/5), debug/RCA/spec/mirror surfaces
-  validate, duplicate ratchet is clean, real-host trigger evaluation is
-  explicitly non-required for the current changed range, focused changed-line
-  coverage is clean across 22/22 files, and the integrated broad quality run is
-  `96 passed, 0 failed`. The command-plan repair is committed at
-  `7b277c3d0` with coverage completion at `c29d338d8` and diagnostic repair at
-  `3cc29d5ea`, including malformed-entry
-  refusal, exact `owner_target` binding, same-owner help probes, and
-  repo-root-relative plan resolution. A new packet
-  and fresh-eye round must still read that exact tree; integrated verification
-  must be rerun before any version mutation.
+- Historical Slice 4 integrated proof remains recorded at code truth
+  `5a170113d`, with the command-plan implementation repairs at `7b277c3d0`,
+  coverage completion at `c29d338d8`, and diagnostic repair at `3cc29d5ea`.
+  The latest exact-HEAD verification is now recorded at
+  `ea6737b30b770d454a0ec2a1d45338efdf559ce6`: default fresh-checkout probes
+  passed (5/5), the changed-line receipt is clean across `23/23` files, and
+  the durable broad receipt records `96 passed, 0 failed`. The latest
+  replacement packet and fresh-eye round must still read this synchronized
+  evidence before any version mutation.
 
 ## User Verification Instructions
 
