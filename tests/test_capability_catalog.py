@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import runpy
+import shutil
 import sys
 from pathlib import Path
 
@@ -235,6 +236,14 @@ def test_catalog_cli_dispatches_all_commands_and_direct_script_bootstraps_path(
 ) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
+    adoption = repo / ".agents"
+    adoption.mkdir()
+    shutil.copy2(
+        Path(__file__).resolve().parents[1]
+        / ".agents"
+        / "consumer-validator-adoption.yaml",
+        adoption / "consumer-validator-adoption.yaml",
+    )
     assert _repo_root(None) == Path.cwd().resolve()
     assert catalog_main(["list", "--repo-root", str(repo)]) == 0
     capsys.readouterr()
@@ -326,7 +335,9 @@ def test_catalog_cli_dispatches_to_the_selected_handler(
     seen: list[str] = []
 
     monkeypatch.setattr(
-        catalog, "list_catalog", lambda _root: seen.append("list") or {"command": "list"}
+        catalog,
+        "list_catalog",
+        lambda _root, **_kwargs: seen.append("list") or {"command": "list"},
     )
     monkeypatch.setattr(
         catalog, "refresh_catalog", lambda _root: seen.append("refresh") or {"command": "refresh"}
@@ -363,7 +374,7 @@ def test_catalog_cli_summary_emits_compact_yaml(monkeypatch, tmp_path: Path, cap
     monkeypatch.setattr(
         catalog,
         "list_catalog",
-        lambda _root: {
+        lambda _root, **_kwargs: {
             "inventory": {
                 "adapter": {"valid": True},
                 "public_skills": [{"id": "quality", "description": "omit"}],

@@ -79,6 +79,33 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
         # an unclassified broad-only check. Flips only on these two files.
         gates.extend(_timing_pull_gate(repo_root, "check-timing-layer-completeness", "scripts/check_timing_layer_completeness.py", "--repo-root", str(repo_root)))
     if any(
+        path in {
+            ".agents/consumer-validator-adoption.yaml",
+            "scripts/check_consumer_validator_catalog.py",
+            "skills/public/quality/references/consumer-validator-catalog.yaml",
+            "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
+        }
+        or path.startswith("plugins/charness/scripts/")
+        or (
+            path.startswith(("scripts/", "skills/public/", "plugins/charness/"))
+            and Path(path).name.startswith(("check_", "validate_"))
+        )
+        for path in paths
+    ):
+        gates.extend(
+            _timing_pull_gate(
+                repo_root,
+                "check-consumer-validator-catalog",
+                "scripts/check_consumer_validator_catalog.py",
+                "--repo-root",
+                str(repo_root),
+                "--adoption-path",
+                ".agents/consumer-validator-adoption.yaml",
+                "--require-adoption",
+                "--require-staged-adoption",
+            )
+        )
+    if any(
         path == "scripts/validate_quality_reference_catalog.py"
         or path.startswith("skills/public/quality/references/")
         for path in present

@@ -30,6 +30,9 @@ def _entry(path: str, *, consumer_facing: bool = False) -> dict[str, object]:
         "reason": "an explicit fixture decision",
     }
     if consumer_facing:
+        entry["id"] = path.rsplit("/", 1)[-1].removesuffix(".py").replace("_", "-")
+        entry["artifact_type"] = "consumer-artifact"
+        entry["adoption_policy"] = "wire-or-opt-out"
         entry["purpose"] = "validates a consumer-authored artifact"
         entry["invocation"] = f"python3 <plugin-root>/{path}"
     return entry
@@ -42,6 +45,7 @@ def _write_catalog(repo: Path, entries: list[dict[str, object]]) -> Path:
         "\n".join(
             [
                 "schema_version: 1",
+                "catalog_id: consumer-validator-catalog",
                 "package_root: plugins/charness",
                 "candidate_patterns:",
                 "  - '**/check_*.py'",
@@ -53,6 +57,11 @@ def _write_catalog(repo: Path, entries: list[dict[str, object]]) -> Path:
                 "  source: packaged",
                 "  selection_field: consumer_facing",
                 "  no_substitute: use the packaged validator instead of a consumer-specific substitute",
+                "adoption_policy:",
+                "  declaration_path: .agents/consumer-validator-adoption.yaml",
+                "  exactly_one_of:",
+                "    - wired",
+                "    - opt_out_reason",
                 "validators:",
                 *[
                     f"  - path: {entry['path']}\n"
@@ -60,7 +69,10 @@ def _write_catalog(repo: Path, entries: list[dict[str, object]]) -> Path:
                     f"    decision: {entry['decision']}\n"
                     f"    reason: {entry['reason']}"
                     + (
-                        f"\n    purpose: {entry['purpose']}\n"
+                        f"\n    id: {entry['id']}\n"
+                        f"    artifact_type: {entry['artifact_type']}\n"
+                        f"    adoption_policy: {entry['adoption_policy']}\n"
+                        f"    purpose: {entry['purpose']}\n"
                         f"    invocation: '{entry['invocation']}'"
                         if entry["consumer_facing"]
                         else ""
@@ -84,6 +96,13 @@ def test_live_catalog_has_a_decision_for_every_packaged_candidate() -> None:
     assert report["consumer_facing_count"] == 14
     assert "scripts/validate_handoff_artifact.py" in report["consumer_facing_validators"]
     assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
+    assert "handoff-artifact" in report["consumer_validator_ids"]
+    handoff = next(
+        entry for entry in report["consumer_validator_entries"] if entry["id"] == "handoff-artifact"
+    )
+    assert handoff["artifact_type"]
+    assert handoff["purpose"]
+    assert handoff["invocation"].startswith("python3 <plugin-root>/")
 
 
 def test_new_packaged_validator_cannot_stay_silent(tmp_path: Path) -> None:
@@ -133,6 +152,31 @@ def test_consumer_entry_must_explain_the_packaged_invocation(tmp_path: Path) -> 
     _write_catalog(repo, [entry])
 
     with pytest.raises(catalog_check.CatalogError, match="invocation.*packaged path"):
+        catalog_check.validate_catalog(repo)
+
+    entry["invocation"] = "python3 <plugin-root>/scripts/check_demo.py.backup"
+    _write_catalog(repo, [entry])
+    with pytest.raises(catalog_check.CatalogError, match="invocation.*packaged path"):
+        catalog_check.validate_catalog(repo)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("id", "", "id.*non-empty string"),
+        ("artifact_type", "", "artifact_type.*non-empty string"),
+        ("adoption_policy", "manual", "adoption_policy.*wire-or-opt-out"),
+    ],
+)
+def test_consumer_entry_requires_public_contract_fields(
+    tmp_path: Path, field: str, value: object, message: str
+) -> None:
+    repo = _fixture_repo(tmp_path)
+    entry = _entry("scripts/check_demo.py", consumer_facing=True)
+    entry[field] = value
+    _write_catalog(repo, [entry])
+
+    with pytest.raises(catalog_check.CatalogError, match=message):
         catalog_check.validate_catalog(repo)
 
 
@@ -217,6 +261,7 @@ def test_script_entrypoint_calls_main_when_loaded_as_main(tmp_path: Path, monkey
 def _valid_header() -> dict[str, object]:
     return {
         "schema_version": 1,
+        "catalog_id": "consumer-validator-catalog",
         "package_root": "plugins/charness",
         "candidate_patterns": list(catalog_check.EXPECTED_CANDIDATE_PATTERNS),
         "scanner_exclusions": [
@@ -230,6 +275,10 @@ def _valid_header() -> dict[str, object]:
             "selection_field": "consumer_facing",
             "no_substitute": "use packaged validator",
         },
+        "adoption_policy": {
+            "declaration_path": ".agents/consumer-validator-adoption.yaml",
+            "exactly_one_of": ["wired", "opt_out_reason"],
+        },
         "validators": [],
     }
 
@@ -238,6 +287,7 @@ def _valid_header() -> dict[str, object]:
     ("mutate", "message"),
     [
         (lambda value: value.update(schema_version=2), "schema_version"),
+        (lambda value: value.update(catalog_id="other"), "catalog_id"),
         (lambda value: value.update(package_root="other"), "package_root"),
         (lambda value: value.update(candidate_patterns=["**/check_*.py"]), "fixed scanner scope"),
         (lambda value: value.update(scanner_exclusions=None), "scanner_exclusions"),
@@ -272,6 +322,7 @@ def _valid_header() -> dict[str, object]:
             ),
             "source.*packaged",
         ),
+        (lambda value: value.update(adoption_policy=None), "adoption_policy"),
         (
             lambda value: value.update(
                 consumer_contract={"source": "packaged", "selection_field": "", "no_substitute": "y"}
@@ -314,7 +365,18 @@ def test_loader_and_discovery_failures_are_attributed(tmp_path: Path, monkeypatc
         ([], "must be a mapping"),
         ({"path": "../escape"}, "normalized relative POSIX"),
         ({"path": "scripts/check_demo.py", "consumer_facing": False, "decision": "unknown", "reason": "x"}, "decision"),
-        ({"path": "scripts/check_demo.py", "consumer_facing": True, "decision": "publish", "reason": "x"}, "purpose"),
+        (
+            {
+                "path": "scripts/check_demo.py",
+                "consumer_facing": True,
+                "decision": "publish",
+                "reason": "x",
+                "id": "check-demo",
+                "artifact_type": "artifact",
+                "adoption_policy": "wire-or-opt-out",
+            },
+            "purpose",
+        ),
     ],
 )
 def test_entry_validation_rejects_untrusted_shapes(entry, message: str) -> None:
@@ -325,4 +387,93 @@ def test_entry_validation_rejects_untrusted_shapes(entry, message: str) -> None:
             catalog_path=Path("catalog.yaml"),
             discovered={"scripts/check_demo.py"},
             declared={},
+        )
+
+
+def _write_adoption(repo: Path, entries: list[dict[str, object]]) -> Path:
+    path = repo / catalog_check.DEFAULT_ADOPTION_REL
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "schema_version: 1\n"
+        "catalog_id: consumer-validator-catalog\n"
+        "validators:\n"
+        + "".join(
+            f"  - id: {entry['id']}\n"
+            + (f"    wired: {str(entry['wired']).lower()}\n" if "wired" in entry else "")
+            + (f"    opt_out_reason: {entry['opt_out_reason']}\n" if "opt_out_reason" in entry else "")
+            for entry in entries
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_required_adoption_declares_exactly_one_decision_for_each_consumer(tmp_path: Path) -> None:
+    repo = _fixture_repo(tmp_path)
+    entry = _entry("scripts/check_demo.py", consumer_facing=True)
+    _write_catalog(repo, [entry])
+
+    with pytest.raises(catalog_check.CatalogError, match="adoption declaration is missing"):
+        catalog_check.validate_catalog(
+            repo,
+            adoption_path=catalog_check.DEFAULT_ADOPTION_REL,
+            require_adoption=True,
+        )
+
+    adoption = _write_adoption(repo, [{"id": entry["id"], "wired": True}])
+    report = catalog_check.validate_catalog(repo, adoption_path=adoption, require_adoption=True)
+    assert report["adoption"]["status"] == "pass"
+    assert report["adoption"]["wired_count"] == 1
+    assert report["adoption"]["decisions"] == [{"id": entry["id"], "wired": True}]
+
+
+def test_staged_adoption_requires_an_index_entry(tmp_path: Path) -> None:
+    import subprocess
+
+    repo = _fixture_repo(tmp_path)
+    entry = _entry("scripts/check_demo.py", consumer_facing=True)
+    _write_catalog(repo, [entry])
+    adoption = _write_adoption(repo, [{"id": entry["id"], "wired": True}])
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+
+    with pytest.raises(catalog_check.CatalogError, match="must be staged"):
+        catalog_check.validate_catalog(
+            repo,
+            adoption_path=adoption,
+            require_adoption=True,
+            require_staged_adoption=True,
+        )
+
+
+def test_adoption_path_cannot_be_retargeted_by_a_relative_or_named_path(tmp_path: Path) -> None:
+    repo = _fixture_repo(tmp_path)
+    entry = _entry("scripts/check_demo.py", consumer_facing=True)
+    _write_catalog(repo, [entry])
+    adoption = _write_adoption(repo, [{"id": entry["id"], "wired": True}])
+
+    with pytest.raises(catalog_check.CatalogError, match="adoption path must"):
+        catalog_check.validate_catalog(repo, adoption_path=Path("../other.yaml"))
+    with pytest.raises(catalog_check.CatalogError, match="adoption path must"):
+        catalog_check.validate_catalog(repo, adoption_path=adoption.with_name("other.yaml"))
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        {"id": "check-demo", "wired": True, "opt_out_reason": "both"},
+        {"id": "check-demo"},
+        {"id": "check-demo", "wired": False},
+    ],
+)
+def test_adoption_rejects_ambiguous_or_false_wiring(tmp_path: Path, entry: dict[str, object]) -> None:
+    repo = _fixture_repo(tmp_path)
+    catalog_entry = _entry("scripts/check_demo.py", consumer_facing=True)
+    _write_catalog(repo, [catalog_entry])
+    _write_adoption(repo, [entry])
+
+    with pytest.raises(catalog_check.CatalogError, match="exactly one|must be true"):
+        catalog_check.validate_catalog(
+            repo,
+            adoption_path=catalog_check.DEFAULT_ADOPTION_REL,
+            require_adoption=True,
         )

@@ -10,6 +10,7 @@ GATE_NAME="run-quality"
 GATE_CONSEQUENCE="This runner drives every gate from its own root, so a package root that is not the git
 root would run the whole standing lane against the exported plugin tree instead of the
 repository under test."
+RUN_QUALITY_LAUNCH_CWD="$PWD"
 # Builtin-only, no `dirname`: this is the FIRST thing every gate does, and a run with
 # an empty PATH (a real fixture shape) would otherwise die on a missing external
 # command before the gate could report anything of its own. The existence check is
@@ -79,6 +80,28 @@ case "$RUN_QUALITY_MODE" in
     ;;
 esac
 export CHARNESS_QUALITY_MODE="$RUN_QUALITY_MODE"
+
+# Child gates and xdist workers may change cwd to a temporary checkout. A relative
+# TMPDIR would then resolve to a different path in each worker, producing bare mktemp
+# failures and letting one worker's cleanup race another gate's file scan. Resolve it
+# once at the runner boundary, create the requested parent, and keep quality-run state
+# outside the repository so tracked/untracked population scanners cannot ingest it.
+RUN_QUALITY_TMP_BASE="${TMPDIR:-/tmp}"
+if [[ "$RUN_QUALITY_TMP_BASE" != /* ]]; then
+  RUN_QUALITY_TMP_BASE="$RUN_QUALITY_LAUNCH_CWD/$RUN_QUALITY_TMP_BASE"
+fi
+if ! mkdir -p -- "$RUN_QUALITY_TMP_BASE"; then
+  echo "run-quality: TMPDIR cannot be created: $RUN_QUALITY_TMP_BASE" >&2
+  exit 2
+fi
+RUN_QUALITY_TMP_BASE="$(cd "$RUN_QUALITY_TMP_BASE" && pwd -P)"
+case "$RUN_QUALITY_TMP_BASE/" in
+  "$REPO_ROOT"|"$REPO_ROOT/"*)
+    echo "run-quality: TMPDIR must be outside the repository: $RUN_QUALITY_TMP_BASE" >&2
+    exit 2
+    ;;
+esac
+export TMPDIR="$RUN_QUALITY_TMP_BASE"
 
 # Every gate command below writes to a per-phase file so concurrent checks cannot
 # interleave their output. Before this line existed, that useful buffering made a
@@ -1134,6 +1157,10 @@ queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_by
 # accepted-risk count on every run so the remaining debt stays decided rather than
 # forgotten.
 queue_selected "check-adapter-consumer-classification" python3 scripts/check_adapter_consumer_classification.py --repo-root "$REPO_ROOT"
+# Every packaged check_/validate_ script needs a consumer-facing decision, public
+# contract metadata, and an explicit consumer adoption decision. This is the
+# catalog's self-check; a new validator cannot become silent by omission.
+queue_selected "check-consumer-validator-catalog" python3 scripts/check_consumer_validator_catalog.py --repo-root "$REPO_ROOT" --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption
 queue_selected "check-closeout-floor-matrix" python3 scripts/check_closeout_floor_matrix.py --repo-root "$REPO_ROOT"
 # The floor matrix holds ONE copy of the classification vocabulary (its own
 # declaration). This holds the other five, which is #586's recorded instance:

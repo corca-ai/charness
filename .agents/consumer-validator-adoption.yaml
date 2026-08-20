@@ -1,0 +1,35 @@
+# Charness is also a consumer of the packaged validator contract. Every
+# consumer-facing catalog entry gets one explicit decision here: `wired: true`
+# or a non-empty `opt_out_reason`. This prevents a newly published validator
+# from becoming silent merely because no current quality lane mentions it.
+schema_version: 1
+catalog_id: consumer-validator-catalog
+validators:
+  - id: artifact-surface-preflight
+    wired: true
+  - id: artifact-citations
+    wired: true
+  - id: closeout-classification-parity
+    wired: true
+  - id: closeout-floor-matrix
+    wired: true
+  - id: issue-closeout-commit-message
+    wired: true
+  - id: critique-artifact
+    wired: true
+  - id: debug-artifact
+    wired: true
+  - id: handoff-artifact
+    wired: true
+  - id: ideation-artifact
+    wired: true
+  - id: quality-artifact
+    wired: true
+  - id: quality-closeout-contract
+    wired: true
+  - id: retro-artifact
+    wired: true
+  - id: retro-handoff-wiring
+    opt_out_reason: "No Charness-owned quality lane currently consumes retro handoff wiring directly; consumers using that handoff must decide independently."
+  - id: goal-artifact
+    wired: true

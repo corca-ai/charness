@@ -107,6 +107,20 @@
       ],
       "rationale": "Repos without command-doc contracts get an explicit skipped status and reason."
     },
+    "scripts/check_consumer_validator_catalog.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "structured_warning",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "not_configured",
+        "consumer-validator adoption declaration is missing"
+      ],
+      "rationale": "An inventory target without the consumer-validator adoption declaration is explicit `not_configured` state, not a clean catalog pass; the CLI payload and nonzero result keep the missing adoption contract visible."
+    },
     "scripts/check_coverage.py": {
       "states": [
         "disabled"

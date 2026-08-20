@@ -9,33 +9,25 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: Slice 3 is locally proven and archived; Slice 4 remains
-  active at the evidence-binding semantic-candidate boundary after absorbing
-  the release-proof timeout, consumer-coverage, duplicate-seam, and command-
-  surface repairs. Exact-HEAD focused, changed-line, and broad quality
-  receipts now bind `19e62aea8`; the v9 replacement packet received a clean
-  fresh-eye PASS and the semantic candidate verification lock completed at
-  target HEAD `0784bb041`. The semantic candidate is locally locked; the
-  broader release goal remains active at its version, publication, and
-  external-readback edges.
-- Current slice: Slice 4 — reconcile the frozen ledger and exports, preserve
-  the lesson-session provenance, bind current-HEAD verification evidence, and
-  lock the semantic candidate before the mandatory release critique.
-- Current slice intent: turn the locally proven repair tree into one fixed,
-  source/export/ledger-consistent semantic candidate without smuggling in a
-  version bump or treating a local green gate as public release proof.
-- Next action: keep the semantic candidate bound to `0784bb041`; any
-  phase-scoped version/release mutation must create a distinct release
-  candidate, then commit and re-prove it. The bounded review found an argv/help-owner escape; it is
-  repaired at `7b277c3d0`, the follow-up refusal tests are at `c29d338d8`, and
-  diagnostic drift is corrected at `3cc29d5ea`. The replacement review then
-  exposed stale proof identity as a truth-surface smell; the changed-line and
-  broad receipts are now rebound to `19e62aea8`. A parent reproduction also
-  exposed embedded `{target:...}` markers as an owner-binding escape; the
-  standalone-token refusal is repaired at `a1aeb90ed` and its argv/help,
-  nested-token, and expansion-error coverage is committed at `19e62aea8`.
-  Any new failure returns to the
-  owning seam and carries its recurrence class into a gate, test, or spec.
+- Current disposition: Slice 3 is locally proven and archived; the prior Slice
+  4 semantic-candidate lock is reopened by the #670 consumer-validator and
+  quality-boundary repair set. The source/export implementation is focused
+  green and standing pytest is green, while the latest changed-line mutation
+  gate correctly refuses the dirty worktree. The broader release goal remains
+  active at its version, publication, external-readback, issue-closeout, and
+  fresh-eye delivery edges.
+- Current slice: Slice 5 — integrate the consumer-validator catalog, adoption
+  contract, cache/TMPDIR race repairs, and closeout-surface ownership before
+  committing the new semantic candidate.
+- Current slice intent: turn every observed wrong path, fail-open inventory,
+  race, and dirty-proof result into an owning boundary with executable
+  detection, while preserving source/export parity and refusing public-release
+  claims from local proof.
+- Next action: commit the current semantic repair candidate, rerun the
+  changed-line mutation proof against committed files, then rerun the required
+  broad/release checks. Obtain a delivered bounded fresh-eye result before
+  version mutation; any new failure returns to its owning seam and carries its
+  recurrence class into a gate, test, or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -629,7 +621,7 @@ invent a common engine.
 - Commits: #639 worker 20d09d732 integrated as 73cf9ce6a; #670 worker 6acd71ea0 integrated as 5c9192af1; #671 helper 2e752fddf integrated as 352ed2e7c, consumer wiring ee04dd391, coverage repair 449a32162.
 - What changed: SessionStart now routes unclaimed lesson sessions through the canonical retro planner without claiming or silently treating routing failure as empty. Quality ships an explicit packaged consumer-validator catalog with a fixed scanner boundary. Achieve classifies absolute checkout-root paths, preserves intentional evidence, and shares one masked portability gate across check_goal and pursue_readiness.
 - Alternatives rejected: Rejected --no-verify, source-only commits blocked by mirror drift, pure #671 helper completion without a live consumer, filesystem existence as portability proof, and mechanically shaving goal_artifact_lib below its hard limit. The #671 gate was split into a cohesive sibling after the length gate exposed responsibility accretion.
-- Targeted verification: Focused: #639 22 passed plus ruff; #670 10 passed, 132 decisions and 13 consumer-facing validators; #671 7 helper tests, 48 initial integrated tests, then 21 portability plus 71 related achieve tests after coverage repair. Standing pytest passed with consumer returncode 0. Integrated changed-line proof from 73cf9ce6a first blocked gate/helper branches, then reran clean with blocking=[] and consumer_returncode=0. Ledger, plugin links, staged mirror, and pursue-ready checks passed.
+- Targeted verification: Focused: #639 22 passed plus ruff; #670's later catalog repair reports 133 decisions and 14 consumer-facing validators; #671 7 helper tests, 48 initial integrated tests, then 21 portability plus 71 related achieve tests after coverage repair. Standing pytest passed with consumer returncode 0. Integrated changed-line proof from 73cf9ce6a first blocked gate/helper branches, then reran clean with blocking=[] and consumer_returncode=0. Ledger, plugin links, staged mirror, and pursue-ready checks passed.
 - Test duplication pressure: The first integrated changed-line proof exposed four unmeasured paths: sibling-loader refusal, evidence-section classification, unusable standalone disposition, and executable-reference enumeration. Those tests were added at the producer/consumer boundary, converting a green functional suite into measured changed-line coverage. A nonexistent test path was also attempted once and recorded as a command-surface smell.
 - Critique: Two unnamed fresh-eye attempts for the integrated #671 verdict surface did not deliver findings and were shut down after boundary verification showed no undeclared drift. This is a delivery failure, not approval; #671 fresh-eye remains UNPROVEN and no same-agent substitute was used. The source/plugin boundary stayed clean.
 - Off-goal findings: #679 sibling init-idempotence remains a named follow-up; external host/install, hosted readback, issue closeout, release publication, and Cautilus are not claimed. #672, #676, #677, and #678 moved into Slice 3; their worker worktrees are retained as receipts, while parent integration is serialized here.
@@ -840,6 +832,61 @@ invent a common engine.
   `xargs` plan also put `--plan-only` after greedy `--paths`, and argparse
   refused it before execution. The corrected plan puts all flags before
   `--paths` and excludes untracked intermediate packets from the lock.
+
+### Slice 5: consumer-validator-and-quality-boundary-repairs
+
+- Objective: Carry the #670 catalog contract through source, exported package,
+  consumer inventory, adoption decisions, closeout ownership, and proof timing;
+  repair every wrong-path, cache/TMPDIR race, and false-green smell observed
+  while integrating the slice.
+- Structural repairs: the checker now resolves source versus installed layout
+  through one helper, validates exact `python3 <plugin-root>/...` invocations,
+  stable consumer IDs and metadata, catalog completeness, and exactly one
+  `wired: true` or `opt_out_reason` decision. The capability CLI requires the
+  adoption contract and returns nonzero for a blocked inventory. The staged
+  gate requires the declaration in the index. The quality runner resolves
+  relative TMPDIR from launch cwd, creates and canonicalizes an absolute base,
+  and refuses repo-local temp state. Seed-cache pruning now owns a root lock
+  across prune and entry-lock acquisition, with a cross-hash multiprocess
+  regression. A dedicated `.agents/surfaces.json` surface owns the new
+  declaration and its verifier; duplicate layout branches were collapsed and
+  independent CLI families were explicitly classified.
+- Wrong-call smells repaired: nonexistent critique packet and debug scaffold
+  paths were corrected; the mirror checker name was corrected; a wrong spec
+  patch anchor was abandoned for the debug artifact owner; source-layout and
+  doubled-plugin paths passed to installed/source checkers were identified as
+  refusals; and the nonexistent attention-state validator path explored by the
+  reviewer was not treated as proof. A positional debug-artifact path passed to
+  the `--paths` validator CLI was also rejected, then rerun with the declared
+  flag. These are durable failure evidence, not incidental command noise.
+- Focused proof: catalog/capability/CLI/packaging/staged tests and ruff passed;
+  the latest combined focused catalog/capability/CLI/packaging/staged run was
+  `161 passed`. Direct source and exported checker readback passed with `133`
+  packaged validators, `133` decisions, `14` consumer-facing entries, `119`
+  excluded, `13` declared wired, and `1` opt-out. Retry boundary fingerprint
+  verified `clean` with `drift: []`.
+- Integrated proof: the latest `TMPDIR=/tmp ./scripts/run-quality.sh
+  --read-only` completed `96 passed, 1 failed`. Standing pytest passed; all
+  other reported checks and dup-ratchet passed. The sole failure was the
+  changed-line mutation gate's deliberate dirty-worktree refusal: five
+  mutation-pool files, including `scripts/check_consumer_validator_catalog.py`,
+  were uncommitted, so the gate returned `status: blocked` and required a
+  commit before mutation proof. This is not a green mutation claim.
+- Critique and delivery: round 1 fresh-eye returned BLOCK and its repair set
+  is recorded at `charness-artifacts/critique/rounds/2026-08-21-consumer-validator-round-1.md`.
+  The first round-2 reviewer and one unnamed retry failed to deliver a final
+  report; the retry boundary was clean, but round 2 remains unproven rather
+  than PASS or BLOCK. The delivery failures and host-only temp-path errors are
+  recorded in the round-2 record. No same-agent substitute was used.
+- Non-claims: no version bump, release-candidate commit, tag, push, public
+  publication, managed install/update readback, hosted readback, issue closure,
+  Cautilus evaluation, or runtime proof that every `wired` declaration is
+  actually called is claimed. The semantic candidate must be re-bound after
+  commit and after a delivered fresh-eye result.
+- Metrics: 133 packaged decisions / 14 consumer-facing / 13 wired / 1 opted
+  out; focused `161 passed`; standing pytest pass; integrated quality `96/97`
+  checks with mutation blocked by dirty-candidate refusal; dup-ratchet clean;
+  source/export checker readback pass; fresh-eye round 2 delivery unproven.
 
 ## Closeout Binding Plan
 

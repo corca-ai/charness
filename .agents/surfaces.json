@@ -332,6 +332,39 @@
       ]
     },
     {
+      "surface_id": "consumer-validator-catalog",
+      "description": "Explicit packaged consumer-validator inventory, adoption decisions, and the installed/source-layout checker that enforces the contract.",
+      "source_paths": [
+        ".agents/consumer-validator-adoption.yaml",
+        "scripts/check_consumer_validator_catalog.py",
+        "scripts/capability_catalog.py",
+        "scripts/packaging_lib.py",
+        "scripts/run-quality.sh",
+        "scripts/staged_commit_gate_plan.py",
+        "skills/public/quality/references/consumer-validator-catalog.yaml"
+      ],
+      "derived_paths": [
+        "plugins/charness/scripts/check_consumer_validator_catalog.py",
+        "plugins/charness/scripts/capability_catalog.py",
+        "plugins/charness/scripts/packaging_lib.py",
+        "plugins/charness/scripts/run-quality.sh",
+        "plugins/charness/scripts/staged_commit_gate_plan.py",
+        "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml"
+      ],
+      "sync_commands": [
+        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+      ],
+      "verify_commands": [
+        "python3 scripts/check_consumer_validator_catalog.py --repo-root . --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption",
+        "python3 -m pytest -q tests/test_consumer_validator_catalog.py tests/test_capability_catalog.py"
+      ],
+      "notes": [
+        "The adoption declaration is a contract input, not proof that a consumer runtime calls every wired validator; the checker reports declaration shape separately from runtime behavior.",
+        "Source and exported catalogs intentionally use different package roots; validate both layouts before release or installation readback."
+      ],
+      "generated_markdown": []
+    },
+    {
       "surface_id": "public-skill-policy",
       "description": "Public skill classification policy and validator that must stay aligned with the current public skill set.",
       "source_paths": [

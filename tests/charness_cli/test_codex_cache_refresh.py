@@ -349,10 +349,17 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
     finally:
         module.sys.path[:] = original_path
 
+    adoption = tmp_path / ".agents"
+    adoption.mkdir()
+    shutil.copy2(
+        CLI.parent / ".agents" / "consumer-validator-adoption.yaml",
+        adoption / "consumer-validator-adoption.yaml",
+    )
     args = argparse.Namespace(repo_root=tmp_path, summary=False)
     assert module.cmd_catalog_list(args) == 0
     full = yaml.safe_load(capsys.readouterr().out)
     assert "public_skills" in full["inventory"]
+    assert full["consumer_validator_catalog"]["catalog_id"] == "consumer-validator-catalog"
     assert "counts" not in full["inventory"]
     args.summary = True
     assert module.cmd_catalog_list(args) == 0
@@ -364,6 +371,10 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
 
     missing = tmp_path / "missing-refresh-root"
     invalid_args = argparse.Namespace(repo_root=missing)
+    invalid_list_args = argparse.Namespace(repo_root=missing, summary=False)
+    assert module.cmd_catalog_list(invalid_list_args) == 2
+    list_error = capsys.readouterr()
+    assert "does not exist" in list_error.out
     assert module.cmd_catalog_refresh(invalid_args) == 2
     error = capsys.readouterr()
     assert "does not exist" in error.out
@@ -410,6 +421,12 @@ def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path
 
     consumer_repo = tmp_path / "consumer"
     consumer_repo.mkdir()
+    consumer_agents = consumer_repo / ".agents"
+    consumer_agents.mkdir()
+    shutil.copy2(
+        CLI.parent / ".agents" / "consumer-validator-adoption.yaml",
+        consumer_agents / "consumer-validator-adoption.yaml",
+    )
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     result = subprocess.run(
@@ -449,6 +466,18 @@ def test_charness_catalog_refresh_invalid_roots_subprocess_contract(tmp_path: Pa
     assert "does not exist" in missing_payload["error"]
     assert "Traceback" not in missing_result.stdout
     assert not missing.exists()
+
+    list_result = run_cli(
+        "catalog",
+        "list",
+        "--repo-root",
+        str(missing),
+    )
+    assert list_result.returncode == 2
+    list_payload = yaml.safe_load(list_result.stdout)
+    assert list_payload["repo_root"] == str(missing.resolve())
+    assert "does not exist" in list_payload["error"]
+    assert "Traceback" not in list_result.stdout
 
     file_root = tmp_path / "refresh-file-root"
     file_root.write_text("not a directory\n", encoding="utf-8")

@@ -30,6 +30,7 @@ SEED_CACHE_KEEP = 3
 #: A source hash is the first 32 chars of a sha256 digest. Pruning matches this shape and
 #: nothing else, so an unrelated directory under the cache root is never removed.
 _HASH_DIR = re.compile(r"^[0-9a-f]{32}$")
+_PRUNE_LOCK_NAME = ".prune.lock"
 
 
 def _keep_count() -> int:
@@ -129,8 +130,8 @@ def _last_used(entry: Path) -> float:
         return 0.0
 
 
-def _prune(cache_root: Path, *, current: str, keep: int) -> list[str]:
-    """Drop least-recently-used source-hash entries beyond ``keep``. Returns what it removed.
+def _prune_unlocked(cache_root: Path, *, current: str, keep: int) -> list[str]:
+    """Drop least-recently-used source-hash entries beyond ``keep``.
 
     Never removes ``current`` -- the caller is about to read it -- and never removes an
     entry whose per-name lock is held, because a concurrent process may be mid-build there.
@@ -170,19 +171,41 @@ def _prune(cache_root: Path, *, current: str, keep: int) -> list[str]:
     return removed
 
 
+def _prune(cache_root: Path, *, current: str, keep: int) -> list[str]:
+    """Drop least-recently-used source-hash entries beyond ``keep`` safely.
+
+    The cache-root lock closes the TOCTOU window between a pruner checking an entry's
+    per-name lock and a builder acquiring that lock. Callers that are about to build hold
+    the same root lock until their per-entry lock is acquired, then release the root lock
+    while the potentially expensive builder runs.
+    """
+    cache_root.mkdir(parents=True, exist_ok=True)
+    with filelock.FileLock(str(cache_root / _PRUNE_LOCK_NAME)):
+        return _prune_unlocked(cache_root, current=current, keep=keep)
+
+
 def get_or_build(name: str, builder: Callable[[Path], None]) -> Path:
     cache_root = _user_cache_root()
     cache_dir = cache_root / source_hash()
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    _touch_used(cache_dir)
-    # Before the build, so a machine that is already too full to build has its own stale
-    # entries reclaimed first. The failure this prevents does not look like a full disk: it
-    # looks like a nondeterministic set of fixture `git commit` calls returning 1.
-    _prune(cache_root, current=cache_dir.name, keep=_keep_count())
     final = cache_dir / name
     ready = cache_dir / f"{name}.ready"
     lock_path = cache_dir / f"{name}.lock"
-    with filelock.FileLock(str(lock_path)):
+    prune_lock = filelock.FileLock(str(cache_root / _PRUNE_LOCK_NAME))
+    build_lock = filelock.FileLock(str(lock_path))
+    cache_root.mkdir(parents=True, exist_ok=True)
+    # Pruning and acquiring the per-entry lock must be one transaction. Otherwise another
+    # process can pass the lock check, remove this entry, and win the per-entry lock before
+    # this process reaches it. Release the root lock after acquisition so different source
+    # hashes can still build in parallel.
+    with prune_lock:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        _touch_used(cache_dir)
+        # Before the build, so a machine that is already too full to build has its own stale
+        # entries reclaimed first. The failure this prevents does not look like a full disk: it
+        # looks like a nondeterministic set of fixture `git commit` calls returning 1.
+        _prune_unlocked(cache_root, current=cache_dir.name, keep=_keep_count())
+        build_lock.acquire()
+    try:
         if ready.is_file() and final.is_dir():
             return final
         if ready.exists():
@@ -192,4 +215,6 @@ def get_or_build(name: str, builder: Callable[[Path], None]) -> Path:
         final.mkdir()
         builder(final)
         ready.write_text("ok", encoding="utf-8")
+    finally:
+        build_lock.release()
     return final

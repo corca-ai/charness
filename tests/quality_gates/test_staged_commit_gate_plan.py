@@ -444,6 +444,21 @@ def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_onl
     assert "check-timing-layer-completeness" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/run-quality.sh"])}
 
 
+def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> None:
+    trigger_paths = [
+        ".agents/consumer-validator-adoption.yaml",
+        "scripts/check_consumer_validator_catalog.py",
+        "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
+        "scripts/check_demo.py",
+        "skills/public/achieve/scripts/check_goal_artifact.py",
+        "plugins/charness/skills/achieve/scripts/check_goal_artifact.py",
+    ]
+    for path in trigger_paths:
+        assert "check-consumer-validator-catalog" in _labels([path]), path
+    assert "check-consumer-validator-catalog" not in _labels(["docs/usage.md"])
+
+
 def test_quality_reference_catalog_parity_fires_for_quality_reference_surface() -> None:
     assert "validate-quality-reference-catalog" in _labels(["skills/public/quality/references/index.md"])
     assert "validate-quality-reference-catalog" in _labels(["skills/public/quality/references/catalog.yaml"])

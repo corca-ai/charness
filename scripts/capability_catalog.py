@@ -11,6 +11,7 @@ from pathlib import Path
 if str(Path(__file__).resolve().parent.parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from scripts import check_consumer_validator_catalog
 from scripts.capability_catalog_artifact import persist_catalog, read_only_result
 from scripts.capability_catalog_resolver import resolve_skill_path
 from scripts.capability_catalog_sources import build_inventory
@@ -35,8 +36,50 @@ def _repo_root(value: Path | None) -> Path:
     return (value or Path.cwd()).expanduser().resolve()
 
 
-def list_catalog(repo_root: Path) -> dict[str, object]:
-    return {"inventory": build_inventory(repo_root), "artifacts": read_only_result()}
+def list_catalog(repo_root: Path, *, require_adoption: bool = False) -> dict[str, object]:
+    root = _repo_root(repo_root)
+    if not root.exists() or not root.is_dir():
+        raise CatalogRepoRootError(root)
+    return {
+        "inventory": build_inventory(root),
+        "consumer_validator_catalog": _consumer_validator_catalog(
+            root, require_adoption=require_adoption
+        ),
+        "artifacts": read_only_result(),
+    }
+
+
+def catalog_is_blocked(payload: dict[str, object]) -> bool:
+    value = payload.get("consumer_validator_catalog")
+    return isinstance(value, dict) and value.get("status") == "blocked"
+
+
+def _consumer_validator_catalog(
+    repo_root: Path, *, require_adoption: bool = False
+) -> dict[str, object]:
+    """Read the packaged validator contract owned by this Charness checkout."""
+
+    owner_root = Path(__file__).resolve().parent.parent
+    if (owner_root / "plugins" / "charness").is_dir():
+        package_root = owner_root / "plugins" / "charness"
+        catalog_path = owner_root / check_consumer_validator_catalog.DEFAULT_CATALOG_REL
+    else:
+        package_root = owner_root
+        catalog_path = owner_root / "skills" / "quality" / "references" / "consumer-validator-catalog.yaml"
+    try:
+        return check_consumer_validator_catalog.validate_catalog(
+            owner_root,
+            catalog_path=catalog_path,
+            package_root=package_root,
+            adoption_path=repo_root / check_consumer_validator_catalog.DEFAULT_ADOPTION_REL,
+            require_adoption=require_adoption,
+        )
+    except check_consumer_validator_catalog.CatalogError as exc:
+        return {
+            "status": "blocked",
+            "catalog_path": str(catalog_path),
+            "error": str(exc),
+        }
 
 
 def summarize_catalog(payload: dict[str, object]) -> dict[str, object]:
@@ -85,6 +128,7 @@ def summarize_catalog(payload: dict[str, object]) -> dict[str, object]:
                 ("id", "summary", "path"),
             ),
         },
+        "consumer_validator_catalog": payload.get("consumer_validator_catalog", {}),
         "artifacts": payload.get("artifacts", {}),
     }
 
@@ -135,7 +179,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "list":
-            payload = list_catalog(_repo_root(args.repo_root))
+            payload = list_catalog(_repo_root(args.repo_root), require_adoption=True)
             if args.summary:
                 payload = summarize_catalog(payload)
         elif args.command == "refresh":
@@ -157,6 +201,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     emit_yaml(payload)
     if args.command == "resolve-skill-path" and payload.get("resolved_path") is None:
+        return 1
+    if args.command == "list" and catalog_is_blocked(payload):
         return 1
     return 0
 

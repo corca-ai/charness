@@ -33,8 +33,8 @@ positional arguments:
                         preserving the managed checkout and CLI.
     task                Claim, submit, abort, or inspect a repo-local agent
                         task envelope.
-    catalog             Inspect or refresh deterministic installed capability
-                        inventory and resolve stale skill paths.
+    catalog             Inspect capability inventory, packaged consumer-
+                        validator adoption, or stale skill paths.
     capability          Resolve repo-local logical capabilities through
                         `<repo-root>/.charness/local/capability.json` and
                         inspect provider readiness.
@@ -311,7 +311,7 @@ usage: charness catalog [-h] {list,refresh,resolve-skill-path} ...
 
 positional arguments:
   {list,refresh,resolve-skill-path}
-    list                Read installed public/support/synced/integration
+    list                Read capability and packaged consumer-validator
                         inventory without writing artifacts.
     refresh             Write the canonical capability catalog current-pointer
                         artifacts.
@@ -330,7 +330,8 @@ usage: charness catalog list [-h] --repo-root REPO_ROOT [--summary]
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
-  --summary             Emit compact hidden support/integration inventory.
+  --summary             Project support/integration inventory while retaining
+                        the validator catalog contract.
 ```
 
 ## `charness catalog refresh`

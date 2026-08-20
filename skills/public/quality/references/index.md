@@ -66,5 +66,8 @@ gates.
 - `references/find_inline_prompt_bulk.py` — inline prompt/content inventory helper.
 - `references/inventory-consumer-fields.json` — inventory-consumption field declaration.
 - `references/consumer-validator-catalog.yaml` — explicit consumer-facing validator
-  catalog used to detect under-enumerated quality checks.
+  catalog used to detect under-enumerated quality checks and exposed through the
+  read-only `charness catalog list --repo-root <repo>` inventory. Consumers declare
+  exactly one `wired` or `opt_out_reason` decision per listed validator in
+  `<authoring-repo>/.agents/consumer-validator-adoption.yaml`.
 - `references/validate_spec_pytest_references.py` — executable-spec pytest reference validator.

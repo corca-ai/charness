@@ -40,7 +40,9 @@ def test_least_recently_used_entries_are_dropped_beyond_the_cap(tmp_path: Path) 
 
     removed = seed_cache._prune(tmp_path, current=current, keep=3)
 
-    survivors = sorted(path.name for path in tmp_path.iterdir())
+    survivors = sorted(
+        path.name for path in tmp_path.iterdir() if seed_cache._HASH_DIR.match(path.name)
+    )
     # `keep` counts the current entry, so two others survive: the two most recently USED.
     assert current in survivors
     assert sorted(survivors) == sorted([current, HASHES[0], HASHES[1]])

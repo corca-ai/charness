@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+import scripts.check_consumer_validator_catalog as consumer_validator_catalog_module
 import scripts.export_plugin as export_plugin_module
 import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module
 import scripts.validate_packaging as validate_packaging_module
@@ -227,6 +228,38 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
     assert (repo / ".agents" / "plugins" / "marketplace.json").exists()
 
     validate = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
+    assert validate.returncode == 0, validate.stderr
+
+
+@pytest.mark.release_only
+def test_exported_consumer_validator_catalog_uses_installed_package_root(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+
+    result = run_loaded_script_main(
+        "sync_root_plugin_manifests.py",
+        sync_root_plugin_manifests_module,
+        "--repo-root",
+        str(repo),
+    )
+
+    assert result.returncode == 0, result.stderr
+    source_catalog = repo / "skills/public/quality/references/consumer-validator-catalog.yaml"
+    exported_catalog = repo / "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml"
+    assert "package_root: plugins/charness" in source_catalog.read_text(encoding="utf-8")
+    assert "package_root: ." in exported_catalog.read_text(encoding="utf-8")
+
+    validate = run_loaded_script_main(
+        "check_consumer_validator_catalog.py",
+        consumer_validator_catalog_module,
+        "--repo-root",
+        str(repo / "plugins/charness"),
+        "--catalog-path",
+        str(exported_catalog),
+        "--package-root",
+        str(repo / "plugins/charness"),
+    )
     assert validate.returncode == 0, validate.stderr
 
 

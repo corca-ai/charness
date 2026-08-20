@@ -5235,6 +5235,41 @@
       "note": "repo-owned standalone CLI bootstrap shared by check_artifact_surface_preflight and command_plan_preflight: import the repo-local runtime, emit YAML, resolve the script's repo root, and load the shared path-portability seam. These commands own different artifact/command-plan verdicts and must remain directly executable in source and collapsed plugin layouts; extracting the bootstrap would couple independent operator entrypoints without changing their domain logic.",
       "reviewed_at": "2026-08-21",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5154705372bef213",
+      "note": "short refusal/report blocks in independently owned proof surfaces. The shared shape is a local guard plus its own verdict text; extracting it would hide which command owns the path and failure contract. The family members are unchanged and this catalog checker member appeared only because its consumer-facing metadata report expanded in the current slice.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6c3e17d81e34f0bf",
+      "note": "direct quality-command CLI/reporting boundary shared across unrelated validators. Each command remains independently executable and owns a different catalog, adapter, or mutation verdict; a common wrapper would hide the accepted schema and failure meaning. The new catalog member is the same standalone-entrypoint idiom, not a duplicated policy owner.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8aba75411d272423",
+      "note": "a shorter sub-span of the independently executable CLI/reporting boundary accepted as 6c3e17d81e34f0bf. It is the same command-local argument/error/emit contract and does not share catalog verdict policy with the other members.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c8864d885ba9e1e5",
+      "note": "independent CLI refusal/report boundaries in the consumer-validator catalog checker and skill-efficiency runner. Both must preserve their own command's schema and failure text; a shared wrapper would couple unrelated proof surfaces and weaken direct installed-package entrypoints.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e04315a5ef1f800d",
+      "note": "standalone argparse/main/report contracts across independent adapter, mutation-coverage, retro-wiring, and consumer-validator proof surfaces. The overlap is command-local lifecycle shape, not shared verdict policy; extracting it would hide each surface's refusal semantics and break portable direct execution.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

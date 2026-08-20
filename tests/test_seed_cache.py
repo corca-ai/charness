@@ -28,6 +28,28 @@ def _concurrent_seed_worker(
     result_queue.put((result / "complete.txt").read_text(encoding="utf-8"))
 
 
+def _cross_hash_seed_worker(
+    cache_root: str,
+    source_hash: str,
+    start_event,
+    started_queue,
+    release_event,
+    result_queue,
+) -> None:
+    os.environ["CHARNESS_TEST_SEED_CACHE_ROOT"] = cache_root
+    os.environ["CHARNESS_TEST_SEED_CACHE_KEEP"] = "1"
+    seed_cache._SOURCE_HASH = source_hash
+    start_event.wait(timeout=10)
+
+    def build(destination: Path) -> None:
+        started_queue.put(source_hash)
+        release_event.wait(timeout=10)
+        (destination / "complete.txt").write_text("complete\n", encoding="utf-8")
+
+    result = seed_cache.get_or_build("shared", build)
+    result_queue.put((source_hash, (result / "complete.txt").read_text(encoding="utf-8")))
+
+
 def test_seed_cache_builds_once_across_processes(tmp_path: Path) -> None:
     context = multiprocessing.get_context("spawn")
     start_event = context.Event()
@@ -50,6 +72,53 @@ def test_seed_cache_builds_once_across_processes(tmp_path: Path) -> None:
     assert [worker.exitcode for worker in workers] == [0, 0]
     assert counter.read_text(encoding="utf-8").splitlines() == ["build"]
     assert sorted(result_queue.get(timeout=2) for _ in workers) == ["complete\n", "complete\n"]
+
+
+def test_seed_cache_pruning_does_not_delete_a_different_hash_build(
+    tmp_path: Path,
+) -> None:
+    """Root pruning and per-entry lock acquisition must be one transaction.
+
+    With only the per-entry lock, a second source hash can observe the first hash between
+    its prune and lock acquisition and delete the directory before its builder starts.
+    """
+    context = multiprocessing.get_context("spawn")
+    start_event = context.Event()
+    release_event = context.Event()
+    started_queue = context.Queue()
+    result_queue = context.Queue()
+    workers = [
+        context.Process(
+            target=_cross_hash_seed_worker,
+            args=(
+                str(tmp_path / "cache"),
+                source_hash,
+                start_event,
+                started_queue,
+                release_event,
+                result_queue,
+            ),
+        )
+        for source_hash in ("a" * 32, "b" * 32)
+    ]
+
+    try:
+        for worker in workers:
+            worker.start()
+        start_event.set()
+        assert sorted(started_queue.get(timeout=15) for _ in workers) == ["a" * 32, "b" * 32]
+        assert (tmp_path / "cache" / ("a" * 32)).is_dir()
+        assert (tmp_path / "cache" / ("b" * 32)).is_dir()
+    finally:
+        release_event.set()
+        for worker in workers:
+            worker.join(timeout=15)
+
+    assert [worker.exitcode for worker in workers] == [0, 0]
+    assert sorted(result_queue.get(timeout=2) for _ in workers) == [
+        ("a" * 32, "complete\n"),
+        ("b" * 32, "complete\n"),
+    ]
 
 
 def test_seed_cache_rebuilds_stale_ready_marker(

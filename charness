@@ -5088,11 +5088,15 @@ def _load_catalog_lib():
 
 def cmd_catalog_list(args: argparse.Namespace) -> int:
     catalog = _load_catalog_lib()
-    payload = catalog.list_catalog(args.repo_root.resolve())
+    try:
+        payload = catalog.list_catalog(args.repo_root.resolve(), require_adoption=True)
+    except catalog.CatalogRepoRootError as exc:
+        emit_yaml({"error": str(exc), "repo_root": str(exc.repo_root)})
+        return 2
     if args.summary:
         payload = catalog.summarize_catalog(payload)
     emit_yaml(payload)
-    return 0
+    return 1 if catalog.catalog_is_blocked(payload) else 0
 
 
 def cmd_catalog_refresh(args: argparse.Namespace) -> int:
@@ -5328,18 +5332,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     catalog_parser = subparsers.add_parser(
         "catalog",
-        help="Inspect or refresh deterministic installed capability inventory and resolve stale skill paths.",
+        help="Inspect capability inventory, packaged consumer-validator adoption, or stale skill paths.",
     )
     catalog_subparsers = catalog_parser.add_subparsers(dest="catalog_command", required=True)
 
     catalog_list_parser = catalog_subparsers.add_parser(
-        "list", help="Read installed public/support/synced/integration inventory without writing artifacts."
+        "list", help="Read capability and packaged consumer-validator inventory without writing artifacts."
     )
     catalog_list_parser.add_argument("--repo-root", type=Path, required=True)
     catalog_list_parser.add_argument(
         "--summary",
         action="store_true",
-        help="Emit compact hidden support/integration inventory.",
+        help="Project support/integration inventory while retaining the validator catalog contract.",
     )
     catalog_list_parser.set_defaults(func=cmd_catalog_list)
 

@@ -163,6 +163,31 @@ def rewrite_support_capability_path(capability_path: Path) -> None:
     write_json(capability_path, data)
 
 
+def rewrite_exported_consumer_validator_catalog(plugin_root: Path) -> None:
+    """Make the exported catalog describe the installed package root.
+
+    The authoring catalog is rooted at ``plugins/charness`` while the exported
+    plugin is itself the package root. Leaving the source-relative value in the
+    generated copy makes installed inventory fail before it can inspect the
+    consumer declaration. Keep this rewrite narrow and fail closed if the
+    catalog shape it owns changes underneath the exporter.
+    """
+
+    catalog_path = plugin_root / "skills" / "quality" / "references" / "consumer-validator-catalog.yaml"
+    if not catalog_path.is_file():
+        return
+    contents = catalog_path.read_text(encoding="utf-8")
+    source_marker = "\npackage_root: plugins/charness\n"
+    exported_marker = "\npackage_root: .\n"
+    if source_marker not in contents:
+        if exported_marker in contents:
+            return
+        raise PackagingError(
+            f"{catalog_path}: expected source-relative consumer-validator package_root"
+        )
+    catalog_path.write_text(contents.replace(source_marker, exported_marker, 1), encoding="utf-8")
+
+
 def checked_in_plugin_root(manifest: dict) -> Path:
     return Path(manifest["codex"]["repo_marketplace"]["default_source_path"].removeprefix("./"))
 
@@ -218,6 +243,7 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     exported_skills_root.mkdir(parents=True, exist_ok=True)
     for skill_dir in sorted(path for path in public_skills_root.iterdir() if path.is_dir()):
         copy_tree(skill_dir, exported_skills_root / skill_dir.name)
+    rewrite_exported_consumer_validator_catalog(plugin_root)
 
     shared_refs_root = repo_root / "skills" / "shared"
     replace_tree_if_present(shared_refs_root, plugin_root / "shared")

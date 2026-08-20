@@ -112,6 +112,23 @@ and the existing result-state vocabulary.
   focused tests reveal an unbounded producer path; do not choose `default_seconds=0`
   without proving all owned subprocesses remain bounded.
 
+## Current Slice Carry-Forward (2026-08-21)
+
+- Interrupt Source: `fresh-checkout-release-proof-timeout-2026-08-20`.
+- Carry-forward status: resolved at the producer boundary; the source and
+  `plugins/charness` copy both opt out of the unrelated 10-second aggregate
+  default while retaining the 120/300-second owned subprocess bounds.
+- Evidence already bound: the exact default fresh-checkout probe run completed
+  with five probe results and zero return codes after the repair. This is local
+  proof only; it does not establish installed, hosted, or published behavior.
+- Structural lesson: a generic timeout failure was a shared-contract smell, not
+  a reason to widen the global timeout. Any later release slice must rerun the
+  producer proof after its source, mirror, or release surfaces change.
+- Current next step: continue only after this carry-forward is present; the
+  active release slice now audits the #670 consumer-validator contract. That
+  work must preserve the same fail-closed rule: an unestablished catalog or
+  discovery result is not a successful release claim.
+
 ## Canonical Artifact
 
 `charness-artifacts/debug/2026-08-20-fresh-checkout-probe-timeout.md` records the
