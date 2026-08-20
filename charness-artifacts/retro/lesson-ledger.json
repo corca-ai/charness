@@ -1274,6 +1274,36 @@
         ]
       },
       "snapshot_sha256": "8d08058ad72e21884c9c7f1bc7b6a2fab056fa812288754158b9a6f60940b306"
+    },
+    {
+      "session_id": "2026-08-21-release-candidate",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-21-release-candidate",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "proof-surface-message-drift",
+          "detector-blind-class-unstated",
+          "changed-line-proof-before-broad-quality",
+          "goal-closeout-evidence-binding",
+          "agent-authored-score-role",
+          "prose-claim-without-a-reader",
+          "positive-effect-cannot-be-cited",
+          "green-test-is-not-covered-line",
+          "global-probe-for-local-fact",
+          "bar-recorded-as-prose"
+        ]
+      },
+      "snapshot_sha256": "d71ef201bc986439255aeb266b92366225bef025864bd6a986ea10c7e058b5ed"
     }
   ],
   "score_events": [
@@ -2043,6 +2073,22 @@
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
       "anchor": "Required the changed-line mapper to identify the canonical session-start source after its focused test was green; otherwise the continuation could have closed on test success without proving the named source lines."
+    },
+    {
+      "event_id": "2026-08-21-release-candidate-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-21-release-candidate",
+      "source_retro": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "I ran changed-line proof before broad quality and used its 23/23 receipt to lock the candidate; otherwise the broad result could have masked changed-surface uncertainty."
+    },
+    {
+      "event_id": "2026-08-21-release-candidate-goal-closeout-evidence-binding",
+      "session_id": "2026-08-21-release-candidate",
+      "source_retro": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "lesson_id": "goal-closeout-evidence-binding",
+      "outcome": "changed-an-action",
+      "anchor": "I bound the goal to the current verification-lock artifact and reran its validator; otherwise a merely existing artifact could have been accepted instead of goal-owned evidence."
     }
   ],
   "lessons": {
@@ -2169,10 +2215,10 @@
     "goal-closeout-evidence-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
       "transition_id": "seed-goal-closeout-evidence-binding",
-      "score_total": 5,
-      "score_count": 5,
+      "score_total": 6,
+      "score_count": 6,
       "outcome_counts": {
-        "changed-an-action": 4,
+        "changed-an-action": 5,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2334,10 +2380,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": 3,
-      "score_count": 15,
+      "score_total": 4,
+      "score_count": 16,
       "outcome_counts": {
-        "changed-an-action": 9,
+        "changed-an-action": 10,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,

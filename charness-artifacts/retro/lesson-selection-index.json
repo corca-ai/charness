@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-21",
-  "source_artifact_count": 543,
-  "candidate_count": 2201,
+  "source_artifact_count": 545,
+  "candidate_count": 2208,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1712,6 +1712,58 @@
       ]
     },
     {
+      "candidate_id": "current_focus:301c2a3fa8a5",
+      "kind": "current_focus",
+      "lesson": "This work unit prepared the semantic candidate for the planned 6.3.0 release and began the distinct release-candidate boundary.",
+      "normalized_key": "this work unit prepared the semantic candidate for the planned 6 3 0 release",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This work unit prepared the semantic candidate for the planned 6.3.0 release and began the distinct release-candidate boundary."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:28b6a3e70e1d",
+      "kind": "next_improvement",
+      "lesson": "keep the release planner, critique packet, and publish gate on one structured target-identity contract; do not infer release scope from a semantic-candidate filename.",
+      "normalized_key": "keep the release planner critique packet and publish gate on one structured target identity",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "keep the release planner, critique packet, and publish gate on one structured target-identity contract; do not infer release scope from a semantic-candidate filename."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:128b608f8790",
       "kind": "next_improvement",
       "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path.",
@@ -1760,6 +1812,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "make the session-start workflow surface any outstanding declared session before opening another one, while preserving the no-auto-write rule; `Structural pattern: state opened by one actor and enforceable only against a later stranger. Triggering instance(s): 2026-08-20 session receipt and prior 2026-08-18 recurrence. Destination: issue #639.`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b2c7b0ecf232",
+      "kind": "next_improvement",
+      "lesson": "preserve #639 as the owner of the recurring session lifecycle gap; this retro demonstrates the gate/router contract and is not an issue-close claim. recurs: unclaimed-session-disposition.",
+      "normalized_key": "preserve 639 as the owner of the recurring session lifecycle gap this retro demonstrates",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "preserve #639 as the owner of the recurring session lifecycle gap; this retro demonstrates the gate/router contract and is not an issue-close claim. recurs: unclaimed-session-disposition."
         }
       ]
     },
@@ -1816,6 +1894,32 @@
       ]
     },
     {
+      "candidate_id": "class:4c54df075d9e",
+      "kind": "next_improvement",
+      "lesson": "resolve the skill root and verify every helper path exists before running a copyable command; bind every release artifact to the release target before dry-run. remains a diagnostic class for this workflow.",
+      "normalized_key": "resolve the skill root and verify every helper path exists before running a copyable",
+      "recurrence_class": "wrong-path-and-target-binding",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "resolve the skill root and verify every helper path exists before running a copyable command; bind every release artifact to the release target before dry-run. remains a diagnostic class for this workflow."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:dbcfd39cc949",
       "kind": "next_improvement",
       "lesson": "run command-plan preflight before every independent fan-out, including validator and artifact paths",
@@ -1864,6 +1968,84 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "A short SHA was supplied once to the real-host checker and an obsolete option once to spec-evidence validation. Both were corrected by reading the command surface, but they show that copyable proof commands should bind their input grammar near the caller."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bd155aca9abf",
+      "kind": "repeat_trap",
+      "lesson": "Read-only audits ran in parallel; append-only lesson ledger writes ran serially. This kept useful fan-out while preserving the shared-writer rule.",
+      "normalized_key": "read only audits ran in parallel append only lesson ledger writes ran serially this",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Read-only audits ran in parallel; append-only lesson ledger writes ran serially. This kept useful fan-out while preserving the shared-writer rule."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9a457a8f7d88",
+      "kind": "repeat_trap",
+      "lesson": "The first release dry-run supplied a semantic candidate critique to a release gate. Its refusal correctly exposed that a valid artifact for one boundary is not a valid artifact for another. The pattern is target identity being left to filename/context rather than bound by the caller.",
+      "normalized_key": "the first release dry run supplied a semantic candidate critique to a release gate",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The first release dry-run supplied a semantic candidate critique to a release gate. Its refusal correctly exposed that a valid artifact for one boundary is not a valid artifact for another. The pattern is target identity being left to filename/context rather than bound by the caller."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2bd7a5b71464",
+      "kind": "repeat_trap",
+      "lesson": "Two helper calls used flattened root paths instead of the skill-resolved `$SKILL_DIR/scripts/...` path: `prepare_critique_packet.py` and `scripts/scaffold_debug_artifact.py`. Both failed immediately. The structural smell is a missing path-existence preflight before copyable skill commands.",
+      "normalized_key": "two helper calls used flattened root paths instead of the skill resolved skill dir",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Two helper calls used flattened root paths instead of the skill-resolved `$SKILL_DIR/scripts/...` path: `prepare_critique_packet.py` and `scripts/scaffold_debug_artifact.py`. Both failed immediately. The structural smell is a missing path-existence preflight before copyable skill commands."
         }
       ]
     },
