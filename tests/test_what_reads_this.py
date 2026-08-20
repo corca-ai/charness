@@ -17,6 +17,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from scripts import what_reads_this_fallback as FALLBACK
 from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -100,6 +101,18 @@ def test_standalone_loader_uses_the_flat_fallback_module(monkeypatch) -> None:
 
     assert module._fallback.__name__ == "what_reads_this_fallback"
     assert module._fallback_structural_kind is module._fallback.structural_kind
+
+
+def test_fallback_module_is_a_directly_measured_consumer() -> None:
+    line = 'if "target" not in config: raise AssertionError("target")'
+    spans = FALLBACK.string_spans('FIXTURE = "target"\n')
+
+    assert FALLBACK.lookup_column('return config.get("target")', "target", 19)
+    assert FALLBACK.membership_column(line, "target", 4)
+    assert FALLBACK.inside_string_literal('raise ValueError("target")', 19)
+    assert FALLBACK.structural_kind(line, "target", 4) == "value-constraint"
+    assert spans
+    assert FALLBACK.position_in_string_span(spans, 1, 10)
 
 
 def test_a_symbol_answer_separates_definition_import_and_assertion_on_value(tmp_path: Path) -> None:
