@@ -113,6 +113,10 @@ def test_fallback_module_is_a_directly_measured_consumer() -> None:
     assert FALLBACK.structural_kind(line, "target", 4) == "value-constraint"
     assert spans
     assert FALLBACK.position_in_string_span(spans, 1, 10)
+    assert not FALLBACK.inside_string_literal('raise ValueError("target")', 0)
+    assert FALLBACK.inside_string_literal('unterminated = "target', 100)
+    assert FALLBACK.structural_kind('note = "target"', "target", 8) == "string-literal"
+    assert FALLBACK.string_spans("if (") == []
 
 
 def test_a_symbol_answer_separates_definition_import_and_assertion_on_value(tmp_path: Path) -> None:
