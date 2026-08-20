@@ -10,21 +10,20 @@ runs the activation command.
 ## Active Operating Frame
 
 - Current disposition: Slice 3 is locally proven and archived; the prior Slice
-  4 semantic-candidate lock was repaired and committed as `dbdebcfe7`. Its
-  post-commit quality run exposed two proof smells: a stale debug seam index and
-  three mutation files with uncovered changed lines. The focused repair is now
-  green but uncommitted. The broader release goal remains active at its version,
+  4 semantic-candidate lock was repaired and committed as `dbdebcfe7`, then its
+  focused proof repair was committed as `5b0828beb`. The post-repair local proof
+  is green. The broader release goal remains active at its version,
   publication, external-readback, issue-closeout, and fresh-eye delivery edges.
-- Current slice: Slice 5 — close the post-commit mutation and debug-index proof
-  gaps for the consumer-validator catalog and quality-boundary repair.
+- Current slice: Slice 5 — local semantic and proof-boundary verification is
+  complete; prepare the distinct installed/fresh-eye/release boundary checks.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: stage and commit the focused proof repair, rerun staged gates,
-  changed-line mutation, and broad quality. Obtain a delivered bounded fresh-eye
-  result before version mutation; any new failure returns to its owning seam and
-  carries its recurrence class into a gate, test, or spec.
+- Next action: preserve the green local receipt, run installed/fresh-checkout
+  readback and the available delivered fresh-eye boundary, then decide whether
+  the release candidate may be version-mutated. Any new failure returns to its
+  owning seam and carries its recurrence class into a gate, test, or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -856,21 +855,21 @@ invent a common engine.
   reviewer was not treated as proof. A positional debug-artifact path passed to
   the `--paths` validator CLI was also rejected, then rerun with the declared
   flag. Focused repair authoring also corrected an undefined `ROOT` and an
-  export-marker newline assumption. These are durable failure evidence, not
-  incidental command noise.
+  export-marker newline assumption. A guessed `current_release.py --detail`
+  flag was also rejected by argparse; the planner's declared no-detail form is
+  the valid call. These are durable failure evidence, not incidental command
+  noise.
 - Focused proof: catalog/capability/CLI/packaging/staged tests and ruff passed;
   the latest combined focused catalog/capability/CLI/packaging/staged run was
   `161 passed`. Direct source and exported checker readback passed with `133`
   packaged validators, `133` decisions, `14` consumer-facing entries, `119`
   excluded, `13` declared wired, and `1` opt-out. Retry boundary fingerprint
   verified `clean` with `drift: []`.
-- Integrated proof: the post-commit `TMPDIR=/tmp ./scripts/run-quality.sh
-  --read-only` completed `95 passed, 2 failed`. Standing pytest passed in
-  `143.7s`; mutation analyzed `32/32` changed pool files but blocked three
-  files for uncovered changed lines. The other failure was the debug seam index,
-  which rejected the artifact's interrupt contract. Focused repair coverage is
-  now `101 passed`, with the index regenerated; this candidate is not yet
-  committed or broadly re-proven.
+- Integrated proof: the repaired `TMPDIR=/tmp ./scripts/run-quality.sh
+  --read-only` completed `97 passed, 0 failed` in `278.7s`. Standing pytest
+  passed in `139.4s`; changed-line mutation passed in `253.9s` with `32/32`
+  changed pool files analyzed and no blocking lines; the debug seam index and
+  inventory declaration checks passed. Focused repair coverage was `101 passed`.
 - Critique and delivery: round 1 fresh-eye returned BLOCK and its repair set
   is recorded at `charness-artifacts/critique/rounds/2026-08-21-consumer-validator-round-1.md`.
   The first round-2 reviewer and one unnamed retry failed to deliver a final
@@ -883,9 +882,8 @@ invent a common engine.
   actually called is claimed. The semantic candidate must be re-bound after
   commit and after a delivered fresh-eye result.
 - Metrics: 133 packaged decisions / 14 consumer-facing / 13 wired / 1 opted
-  out; catalog focused `161 passed`; repair focused `101 passed`; standing
-  pytest pass; latest integrated quality `95/97` with mutation and seam-index
-  failures repaired but not yet re-proven; dup-ratchet clean; source/export
+  out; catalog focused `161 passed`; repair focused `101 passed`; integrated
+  quality `97/97`; mutation `32/32` clean; dup-ratchet clean; source/export
   checker readback pass; fresh-eye round 2 delivery unproven.
 
 ## Closeout Binding Plan
