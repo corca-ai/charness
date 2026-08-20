@@ -11,19 +11,21 @@ runs the activation command.
 
 - Current disposition: Slice 3 is locally proven and archived; the prior Slice
   4 semantic-candidate lock was repaired and committed as `dbdebcfe7`, then its
-  focused proof repair was committed as `5b0828beb`. The post-repair local proof
-  is green. The broader release goal remains active at its version,
-  publication, external-readback, issue-closeout, and fresh-eye delivery edges.
-- Current slice: Slice 5 — local semantic and proof-boundary verification is
-  complete; prepare the distinct installed/fresh-eye/release boundary checks.
+  focused proof repair was committed as `5b0828beb`. Slice 5 local proof and the
+  planner-required fresh-checkout probes are now green. The broader release goal
+  remains active at its version, publication, external-readback, issue-closeout,
+  and fresh-eye delivery edges.
+- Current slice: Slice 5 — local semantic and fresh-checkout verification is
+  complete; the installed/fresh-eye/release boundary remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: preserve the green local receipt, run installed/fresh-checkout
-  readback and the available delivered fresh-eye boundary, then decide whether
-  the release candidate may be version-mutated. Any new failure returns to its
-  owning seam and carries its recurrence class into a gate, test, or spec.
+- Next action: preserve the green local and fresh-checkout receipts, re-run the
+  release planner against this unchanged semantic candidate, and resolve the
+  missing delivered fresh-eye boundary before deciding whether version mutation
+  is authorized. Any new failure returns to its owning seam and carries its
+  recurrence class into a gate, test, or spec.
 - Target version: undecided until the Slice 0 qualified set and the integrated
   Slice 4 surface are read by the release planner. `6.3.0` is the shaping
   forecast because likely lanes add public discovery/evidence capability; use
@@ -491,8 +493,8 @@ invent a common engine.
 | 1 | Turn each qualified row into one work package; write the exact per-path owner table; split or serialize every overlap; create and doctor isolated writer worktrees | Scheduling labels are not code ownership, especially around critique, exports, and shared helpers | Approved path table including shared/generated/parent-only surfaces; worktree receipts; causal notes and focused commands per package | completed |
 | 2 | Execute P0/P1 release-path packages first: `#679` and any live `#612/#668/#669/#667`; close focused proof and integrate each commit serially | A release train cannot compensate for a broken entrypoint or nondeterministic publication machinery | Supported-path, process-tree, timeout-attribution, runtime-semantic, and current mutation evidence; no unresolved reproduced blocker | completed |
 | 3 | Execute every other qualified P2/P3/P4 package concurrently where path budgets are disjoint; integrate serially and run required proof-surface review rounds | This maximizes shipped repairs without pretending unlike issues share a design | Per-package regression/mutation/counterexample; lane closeout; generated impact; round records; parent integration proof | completed |
-| 4 | Amend any disproved/cannot-ship rows; reconcile umbrellas/refutations; sync exports/generated docs; freeze and commit the integrated semantic candidate | Global proof needs a fixed semantic tree and truthful non-claims | Final ledger containing every frozen row exactly once plus separately identified blocker exceptions/amendments; source/export review; semantic candidate SHA | in progress |
-| 5 | Prove and critique the semantic candidate: changed-line first, then exact planner-required standing/release/broad gates; run the mandatory critique roster and conditional round 2 | Independent green packages do not prove composition; critique must read semantics before the bump obscures the diff | Gate logs/receipts; packet/fingerprints/round records; mutation proof; semantic verification lock. Any semantic repair returns to Slice 4 | not started |
+| 4 | Amend any disproved/cannot-ship rows; reconcile umbrellas/refutations; sync exports/generated docs; freeze and commit the integrated semantic candidate | Global proof needs a fixed semantic tree and truthful non-claims | Final ledger containing every frozen row exactly once plus separately identified blocker exceptions/amendments; source/export review; semantic candidate SHA | completed |
+| 5 | Prove and critique the semantic candidate: changed-line first, then exact planner-required standing/release/broad gates; run the mandatory critique roster and conditional round 2 | Independent green packages do not prove composition; critique must read semantics before the bump obscures the diff | Gate logs/receipts; packet/fingerprints/round records; mutation proof; semantic verification lock. Any semantic repair returns to Slice 4 | completed with fresh-eye round 2 unproven |
 | 6 | Re-run planner on the locked semantic candidate; select the bump; mutate version/export/release-record/note surfaces; commit the release candidate; run all planner-required post-bump checks, fresh-checkout/real-host probes, and publication dry-run on that exact commit | The release candidate is different from the pre-bump semantic candidate and owes its own proof | Version rationale/consistency; generated diff; release record; exact release-candidate SHA; post-bump lock; claims review; dry-run; tag target. Any semantic change returns to Slice 4 | not started |
 | 7 | Publish only the locked release candidate; handle ambiguity through resume; perform hosted/public and separate install/update/doctor readback; then close only proven issues with post-release carriers; reconcile handoff and retro | The goal ends at externally verified release truth, not local green or tag creation | Remote/tag/release/install identifiers; same-proxy flags; issue comments/state readbacks; final ledger; handoff; Auto-Retro; complete closeout | not started |
 
@@ -857,7 +859,10 @@ invent a common engine.
   flag. Focused repair authoring also corrected an undefined `ROOT` and an
   export-marker newline assumption. A guessed `current_release.py --detail`
   flag was also rejected by argparse; the planner's declared no-detail form is
-  the valid call. These are durable failure evidence, not incidental command
+  the valid call. A no-scope `check_real_host_proof.py --detail` call returned
+  an empty evaluation scope and was rerun with the goal path, establishing
+  `required: false` on an evaluated scope rather than misreading the empty
+  result as proof. These are durable failure evidence, not incidental command
   noise.
 - Focused proof: catalog/capability/CLI/packaging/staged tests and ruff passed;
   the latest combined focused catalog/capability/CLI/packaging/staged run was
@@ -870,6 +875,11 @@ invent a common engine.
   passed in `139.4s`; changed-line mutation passed in `253.9s` with `32/32`
   changed pool files analyzed and no blocking lines; the debug seam index and
   inventory declaration checks passed. Focused repair coverage was `101 passed`.
+- Fresh-checkout proof: the planner-required
+  `check_fresh_checkout_probes.py --run-probes --detail` completed with
+  `status: passed`, five declared probes, five `returncode: 0` results, and no
+  blockers. This is local temporary-checkout evidence only; it does not
+  establish managed install/update or hosted/public readback.
 - Critique and delivery: round 1 fresh-eye returned BLOCK and its repair set
   is recorded at `charness-artifacts/critique/rounds/2026-08-21-consumer-validator-round-1.md`.
   The first round-2 reviewer and one unnamed retry failed to deliver a final
