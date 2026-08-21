@@ -21,6 +21,11 @@ retro-path child is represented by #686 and must be read independently.
 
 ## Qualification Checkpoints
 
+The current requalification join is recorded in
+`charness-artifacts/issues/2026-08-21-current-requalification.md`. It keeps
+the historical post-lock reproducer separate from current source, installed,
+and host observations; it is not an issue-close or publication receipt.
+
 - #681: the live issue was re-read with comments and preserved at
   `charness-artifacts/issues/reads/681.raw.yaml`; current source search finds
   the cadence-owner parser and related tests. Re-run the canonical goal checker
@@ -42,6 +47,17 @@ retro-path child is represented by #686 and must be read independently.
 - #687: source-of-truth readback and the issue-first RCA are complete; the
   Charness child remains contingent on R1 admission fields, and the host
   terminal explanation remains a runtime non-claim.
+
+## Current Source/Install Split
+
+- #682/#683: source-side continuation contracts are present and their exact
+  current positive controls are in the requalification packet; bare empty
+  basis and guessed flags remain explicit non-verdict failures.
+- #685/#686: current source passes the repaired contract, while installed
+  Charness 6.2.0 still reproduces the warning/path mismatch. Do not discharge
+  either release exception before a candidate install/update readback.
+- #687: typed Charness non-delivery states are source-proven; the host-side
+  terminal event channel is not available in this checkout.
 
 ## R1 Admission Result
 

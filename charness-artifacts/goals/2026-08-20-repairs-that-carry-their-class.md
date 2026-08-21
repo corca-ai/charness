@@ -18,8 +18,11 @@ runs the activation command.
 - Current slice: R2 — evidence and delivery reliability remains in progress;
   the portable file-backed reviewer default, consumer approval boundary,
   YAML CLI channel, and process-group timeout repair are committed, but the
-  current-open post-lock exceptions (#682, #683, #685, #686, and #687) still
-  require current requalification and/or repair before R3 candidate freeze.
+  current-open post-lock exceptions (#682, #683, #685, #686, and #687) now have
+  a current requalification packet. #682/#683/#685/#686 have Charness-side
+  source repairs present; their historical exception rows remain until the
+  release candidate's distinct installed readback proves the shipped surface.
+  #687 remains a Charness child plus an explicitly unproven host dependency.
   The fresh-eye/retro basis handoff repair is now committed at `33e556043`, and
   the parallel focused-coverage writer isolation repair is committed at
   `abaf88682`; the installed/fresh-eye/release boundary remains open.
@@ -28,11 +31,12 @@ runs the activation command.
   detection, including per-run output namespaces for parallel producers, while
   preserving source/export parity and refusing public-release claims from local
   proof.
-- Next action: requalify the five post-lock exception rows against the current
-  clean tree in parallel, then repair the live #682/#683/#685/#686 seams (and
-  bind #687's Charness child) behind disjoint path budgets. Reconcile each
-  amendment, run focused and changed-line proof, and only then regenerate the
-  semantic packet for the R3 planner. The required round-2 semantic read
+- Next action: consume
+  `charness-artifacts/issues/2026-08-21-current-requalification.md` as the
+  R2 join, run focused and changed-line proof over the current source repairs,
+  and regenerate the semantic packet for the R3 planner. Keep the historical
+  exception rows until candidate/install evidence discharges them. The required
+  round-2 semantic read
   delivered through typed worker/report rails but all three reviewer verdicts
   were `block`; its boundary rail was quarantined because
   `.charness/reviewer-round-2/` was not ignored. Under the two-round cap,
@@ -1042,6 +1046,29 @@ boundary at once while parent-only truth surfaces remain serialized.
 - Off-goal findings: No version bump, release candidate, tag, push, publication, managed install/update readback, hosted readback, issue closure, or Cautilus evaluation is claimed.
 - Lessons carried forward: A producer that names a path owes the consequence of writing there through the single owner, not just the path string. Generated indexes are truth surfaces and stale artifacts must be regenerated. Link-only and gitignored-evidence failures are structural boundary signals, not cosmetic noise.
 - Metrics: The prior full semantic-range broad run had 93 passed and 4 failures: two stale-snapshot truth-surface failures now repaired, four full-range mutation blockers, and one duplication signal removed by deleting the unnecessary alias. The post-repair focused run-quality lane passed concurrently with the direct producer; no collision/no-verdict occurred. No release or fresh-eye approval claim is made.
+
+### R2 continuation: current-open exception requalification
+
+- Objective: distinguish historical post-lock reproductions from current source,
+  installed, and host behavior before the release candidate is frozen.
+- Evidence: `charness-artifacts/issues/2026-08-21-current-requalification.md`
+  records the current tree `331c4a23032821436b47b3104fb2b80452c12266`, fresh
+  GitHub reads for #681–#687, exact current commands, and the source-versus-
+  installed split for #685/#686.
+- Result: #681 remains `already-satisfied`; #682's explicit committed range,
+  #683's emitted `verify_before` continuation, #685's stem normalization, and
+  #686's `$SKILL_DIR` installed-path carrier are present in the source tree.
+  The installed Charness 6.2.0 copy still reproduces #685/#686, so those rows
+  remain historical release exceptions until the candidate's fresh install
+  readback. #687's typed Charness non-delivery states are shipped, while the
+  host terminal event remains non-claim.
+- Structural smell retained: a clean-tree bare auto-retro invocation is still
+  `state: not-established` and exit 3, never a false `no retro owed`; a clean
+  source check is not installed proof; and a fingerprint or process receipt is
+  not fresh-eye approval. The packet keeps these states machine-distinct.
+- Next proof: focused lane, exact changed-line proof, semantic packet refresh,
+  then the release planner's candidate/version boundary. No version, tag, push,
+  publication, issue close, or fresh-eye approval is claimed here.
 
 ## Closeout Binding Plan
 

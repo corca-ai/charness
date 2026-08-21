@@ -24,6 +24,10 @@
   the worker/consumer changes, focused evidence, timeout non-claim, and fresh-eye delivery state.
 - The [#687 debug/spec pair](../charness-artifacts/debug/2026-08-21-fresh-eye-interrupted-delivery.md) holds
   the causal delivery boundary and the Charness/host ownership split.
+- The [current-open requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md)
+  separates historical post-lock reproductions from current source,
+  installed, and host evidence for #681–#687. It is not an issue-close or
+  publication receipt.
 - The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
   the converted classes for media-versus-verdict confusion, process-tree
   timeout leakage, provider-schema closure, and the reviewer-runtime output
@@ -52,23 +56,6 @@
   carrier binding, identity joins, stale/collision refusal, bounded cleanup,
   and serialized ledger transitions are now implemented in both source and
   installed plugin layouts.
-- The latest stable-tree `./scripts/run-quality.sh --read-only` receipt completed
-  with `96 passed, 0 failed, 1 UNPROVEN` before the final counterexample commit;
-  its sole unproven arm was changed-line mutation. The committed exact-base
-  rerun at `362221694` is now clean across `52/52` mapped pool files with no
-  blocking targets. The focused reviewer/observer/preflight bundle is `92
-  passed`, dup-ratchet is clean, packaging and docs links pass, and the
-  historical docs-graph failure is repaired.
-- The [round-2 boundary debug record](../charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md)
-  records that the verifier returned `boundary-drift` because expected
-  file-backed outputs were under an unignored `.charness/reviewer-round-2/`
-  directory. The ignore rule and regression test are now present, but that
-  review window remains quarantined and must not be relabeled clean.
-- `git status --short` is the current worktree check; the last committed closeout at
-  `abaf88682` passed
-  mirror, standalone-import, contract, lint, and the staged pre-commit checks. The
-  exact-base changed-line result is owned by this candidate, with `1/1` mapped
-  pool file and no blocking targets.
 - The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep the next run
   sensitive to wrong calls, timeout loss, and repairing inside an open review window.
 - The [current closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
@@ -91,9 +78,10 @@
    older dirty-worktree `UNPROVEN` receipt as changed-line proof, and do not
    confuse the direct producer's advisory coverage warning with the runner's
    typed verdict.
-4. Activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
-   its `## Active Operating Frame` names the remaining R2 rebinding and
-   qualified disjoint lanes.
+4. Read the [current-open requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md),
+   then activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
+   its `## Active Operating Frame` names the remaining R2 proof and R3
+   candidate boundary.
 5. Read the [goal runbook](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
    for P0 #679 reproduction first, then fan out only lanes with a current reproducer, owner,
    acceptance, disjoint path budget, and proof plan; serialize exports, ledger, generated docs,
