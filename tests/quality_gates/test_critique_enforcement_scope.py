@@ -3,9 +3,11 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
+import pytest
 import yaml
 
 from scripts import critique_enforcement_scope as _scope
+from scripts import critique_reviewer_evidence as _evidence
 
 from .support import ROOT, run_script
 
@@ -223,6 +225,112 @@ def test_worker_delivered_rejects_non_sha256_report_identity(tmp_path: Path) -> 
 
     assert result.returncode == 1
     assert "lowercase SHA-256 identity" in result.stderr
+
+
+def _carrier_fields(report_path: str, report_identity: str = "e" * 64) -> dict[str, str]:
+    return {
+        "worker report": report_path,
+        "worker report identity": report_identity,
+        "worker report approval": "approval_eligible: true",
+        "worker report delivery": "findings-received",
+        "worker report packet identity": "a" * 64,
+        "worker report input identity": "c" * 64,
+        "worker report parent receipt identity": "d" * 64,
+        "worker report findings identity": "b" * 64,
+    }
+
+
+_DEFAULT_REPO_ROOT = object()
+
+
+def _validate_carrier(
+    repo: Path, fields: dict[str, str], *, repo_root: Path | None | object = _DEFAULT_REPO_ROOT
+) -> None:
+    _evidence.validate_worker_delivery_evidence(
+        Path("artifact.md"),
+        "",
+        "worker-delivered",
+        section_field_map=lambda *_args: fields,
+        repo_root=repo if repo_root is _DEFAULT_REPO_ROOT else repo_root,
+    )
+
+
+def _write_report(repo: Path, content: bytes, relative: str = "report.yaml") -> Path:
+    report = repo / relative
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_bytes(content)
+    return report
+
+
+def _approval_report(**overrides: object) -> bytes:
+    payload = {
+        "schema_version": "charness.reviewer_worker_report.v1",
+        "execution_mode": "file-backed-worker",
+        "approval_eligible": True,
+        "delivery_state": "findings-received",
+        "receipt_ok": True,
+        "ledger_ok": True,
+        "provenance_ok": True,
+        "packet_identity": "a" * 64,
+        "reviewed_input_identity": "c" * 64,
+        "parent_receipt_identity": "d" * 64,
+        "findings_identity": "b" * 64,
+    }
+    payload.update(overrides)
+    return yaml.safe_dump(payload, sort_keys=False).encode("utf-8")
+
+
+def test_worker_delivered_requires_repo_root_for_report_carrier(tmp_path: Path) -> None:
+    fields = _carrier_fields("report.yaml")
+    with pytest.raises(_evidence.ValidationError, match="without the repository root"):
+        _validate_carrier(tmp_path, fields, repo_root=None)
+
+
+def test_worker_delivered_rejects_unsafe_report_path(tmp_path: Path) -> None:
+    fields = _carrier_fields("../report.yaml")
+    with pytest.raises(_evidence.ValidationError, match="repo-relative path"):
+        _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_rejects_missing_report_carrier(tmp_path: Path) -> None:
+    fields = _carrier_fields("missing/report.yaml")
+    with pytest.raises(_evidence.ValidationError, match="does not exist inside"):
+        _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_rejects_report_identity_mismatch(tmp_path: Path) -> None:
+    report = _write_report(tmp_path, _approval_report())
+    fields = _carrier_fields(str(report.relative_to(tmp_path)), "0" * 64)
+    with pytest.raises(_evidence.ValidationError, match="SHA-256 does not match"):
+        _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_rejects_unreadable_report_yaml(tmp_path: Path) -> None:
+    report = _write_report(tmp_path, b"\xff")
+    fields = _carrier_fields(str(report.relative_to(tmp_path)), hashlib.sha256(report.read_bytes()).hexdigest())
+    with pytest.raises(_evidence.ValidationError, match="not readable YAML"):
+        _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_rejects_non_mapping_report_carrier(tmp_path: Path) -> None:
+    report = _write_report(tmp_path, b"- just-a-list\n")
+    fields = _carrier_fields(str(report.relative_to(tmp_path)), hashlib.sha256(report.read_bytes()).hexdigest())
+    with pytest.raises(_evidence.ValidationError, match="must contain a mapping"):
+        _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_rejects_report_without_approval_proof(tmp_path: Path) -> None:
+    report = _write_report(tmp_path, _approval_report(ledger_ok=False))
+    fields = _carrier_fields(str(report.relative_to(tmp_path)), hashlib.sha256(report.read_bytes()).hexdigest())
+    with pytest.raises(_evidence.ValidationError, match="does not prove approval"):
+        _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_rejects_report_identity_join_mismatch(tmp_path: Path) -> None:
+    report = _write_report(tmp_path, _approval_report(packet_identity="f" * 64))
+    fields = _carrier_fields(str(report.relative_to(tmp_path)), hashlib.sha256(report.read_bytes()).hexdigest())
+    with pytest.raises(_evidence.ValidationError, match="identity joins do not match"):
+        _validate_carrier(tmp_path, fields)
 
 
 def test_blocked_fresh_eye_line_may_keep_a_pending_spawn_record(tmp_path: Path) -> None:
