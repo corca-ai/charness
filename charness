@@ -3897,6 +3897,11 @@ def reconcile_usage_episodes_host_hooks(
     return {"status": "runner_error", "error": "reconcile runner produced no JSON payload"}
 
 
+def _host_delivery_failed(payload: object) -> bool:
+    """Promote only an explicit host-delivery readback failure to exit 1."""
+    return isinstance(payload, dict) and payload.get("status") == "failed"
+
+
 def cmd_init(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
@@ -4019,7 +4024,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         event="init",
         projector=lambda data: project_runtime_response(data, event="init"),
     )
-    return 0
+    return 1 if _host_delivery_failed(codex_host_install) else 0
 
 
 def cmd_update(args: argparse.Namespace) -> int:
@@ -4183,7 +4188,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         event="update",
         projector=lambda data: project_runtime_response(data, event="update"),
     )
-    return 1 if tool_update_failed else 0
+    return 1 if tool_update_failed or _host_delivery_failed(codex_cache_refresh) else 0
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:

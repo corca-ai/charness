@@ -28,6 +28,15 @@
   separates historical post-lock reproductions from current source,
   installed, and host evidence for #681–#687. It is not an issue-close or
   publication receipt.
+- The blocked [R3 release-readiness critique](../charness-artifacts/critique/2026-08-21-r3-release-readiness.md)
+  found a real process-success-versus-host-delivery exit gap in root `charness
+  init/update`, plus status-surface and candidate-install proof gaps. Its four
+  file-backed worker findings were delivered with clean boundary verification;
+  all verdicts were `block`, not approval.
+- The [root CLI repair](../charness) is currently in the working tree: explicit
+  host-delivery `failed` now returns exit 1 from `init/update`, while `skipped`
+  and `unavailable` remain typed optional states. Commit and reprove it before
+  regenerating the semantic packet.
 - The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
   the converted classes for media-versus-verdict confusion, process-tree
   timeout leakage, provider-schema closure, and the reviewer-runtime output
@@ -78,16 +87,21 @@
    older dirty-worktree `UNPROVEN` receipt as changed-line proof, and do not
    confuse the direct producer's advisory coverage warning with the runner's
    typed verdict.
-4. Read the [current-open requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md),
+4. Read the [current-open requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md)
+   and the [blocked R3 release critique](../charness-artifacts/critique/2026-08-21-r3-release-readiness.md),
    then activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
-   its `## Active Operating Frame` names the remaining R2 proof and R3
-   candidate boundary.
+   its `## Active Operating Frame` names the root-CLI repair, normalized status
+   axes, and remaining candidate/install boundary.
 5. Read the [goal runbook](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
    for P0 #679 reproduction first, then fan out only lanes with a current reproducer, owner,
    acceptance, disjoint path budget, and proof plan; serialize exports, ledger, generated docs,
    version, release, index, and proof truth surfaces.
-6. Keep version/export/release-record mutation, tag, push, and publication on hold until all
-   claimed lanes are integrated and the [goal release boundary](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md) is re-proven.
+6. Run the focused host-delivery tests, commit the root CLI repair and docs
+   status normalization, then run changed-line proof and regenerate the exact-
+   head packet before the next release-bound critique. Keep
+   version/export/release-record mutation, tag, push, and publication on hold
+   until the [goal release boundary](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
+   is re-proven.
 7. Do not claim fresh-eye approval unless the [consumer report](../skills/shared/scripts/reviewer_worker_report.py)
    accepts a typed successful receipt and matching current-packet delivery ledger; timeout,
    exit code, transcript, screen output, or any other media alone is non-delivery.

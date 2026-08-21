@@ -130,6 +130,9 @@ Acceptance:
   personal marketplace entry
 - `charness doctor` distinguishes “surface prepared” from “host install/enable
   still required”
+- `charness init` and `charness update` return nonzero for an explicit failed
+  host-install/cache-readback status; optional `skipped` or `unavailable`
+  host states remain typed in YAML rather than being treated as failures
 - `charness tool install/update/doctor` leave machine-readable lock state for
   external dependencies and any remaining manual steps
 - `charness update` refreshes the installed CLI itself before judging downstream

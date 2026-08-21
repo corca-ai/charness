@@ -8,16 +8,35 @@ reads returned `comments_read: true` (the closed #684 read is retained
 separately). This packet records current behavior only. It does not
 close a GitHub issue, replace the activation ledger, or claim publication.
 
+Candidate join: the semantic documentation candidate is
+`22ea27d7847d7f44d8258cae19fea7bf0ee5c4d5`. The exact range
+`331c4a23032821436b47b3104fb2b80452c12266..22ea27d7847d7f44d8258cae19fea7bf0ee5c4d5`
+contains only goal, current-open, current-requalification, and handoff
+documentation/evidence paths; no `charness`, `skills/`, `plugins/`,
+`packaging/`, or other source/export path changed. Therefore the source
+observations below join to that candidate only as an explicit no-source-diff
+provenance fact. They are not fresh installed or host proof for the candidate.
+
+## First Reader Outcome
+
+The release train repairs one operator-facing failure class: a successful
+process, source mirror, clean fingerprint, or old installed cache must never be
+read as proof that behavior was delivered. Current status is pre-version and
+not release-ready. There is no actionable upgrade or rollback until a version
+is selected and published; the next irreversible proof is a managed candidate
+install/update followed by `charness version`, `charness doctor --detail`, and
+semantic `#685/#686` readback.
+
 ## Disposition Matrix
 
-| Issue | Current observation | Current disposition | Remaining boundary |
-| --- | --- | --- | --- |
-| #681 | Current goal checker returns `ok: true`, `cadence_owner.applies: true`, and the detected cadence line in one coherent payload. | `already-satisfied` requalified | Consumer installed-version readback and issue closeout remain. |
-| #682 | Bare post-commit trigger check returns `state: not-established`, exit 3, and no `triggered`; explicit `HEAD^..HEAD` evaluation returns exit 0 with `state: evaluated`. Current prove/retro guidance and planner emit the explicit committed basis. | Charness-side repair present; retain historical blocker evidence until carrier is integrated into the release candidate. | The empty-basis command must remain visibly non-verdict; final candidate closeout must read the planner packet, not a bare invocation. |
-| #683 | Snapshot emits `verify_before` and exact `verify_args`; `verify --before <custom-path>` succeeds for a fresh isolated window. The guessed `--snapshot` flag is rejected, as it should be. | Charness-side handoff repair present; retain historical blocker evidence until candidate proof. | Boundary drift and findings delivery remain separate; no approval follows from a clean fingerprint. |
-| #685 | Current source normalizes a stem to `.md` without the contradictory warning. Installed Charness 6.2.0 still emits the warning, exit 0. | Source repair present; installed/public proof pending. | Fresh managed install/update readback must show the repaired behavior. |
-| #686 | Current source planner emits `python3 "$SKILL_DIR/scripts/check_auto_trigger.py"`, `path: scripts/check_auto_trigger.py`, `available: true`, and `ok: true`. Installed Charness 6.2.0 still emits the source-layout path as unavailable while returning `ok: true`. | Source/export repair present; installed/public proof pending. | Fresh managed install/update readback must show flattened-path resolution and fail-closed readiness. |
-| #687 | Charness delivery state machine has typed terminal states for interruption, timeout, channel loss, and transcript recovery; no host event trace proves the observed Codex episode's terminal state. | `partial-child-shipped` / host non-claim | A host-side terminal event channel is still external to Charness and cannot be claimed from source tests. |
+| Issue | Source | Checked-in export | Installed/public | Host | Release status |
+| --- | --- | --- | --- | --- | --- |
+| #681 | Checker returns `ok: true`, `cadence_owner.applies: true`, and no findings. | No source/export change required by requalification. | Installed/tracker readback pending. | Not applicable. | `already-satisfied` source; not tracker-closed. |
+| #682 | Explicit committed-range basis evaluates; bare empty basis remains `not-established`. | Prove/planner committed-basis carrier present; exact candidate package proof pending. | Old installed copy not used as candidate proof. | Not applicable. | Release exception retained until candidate proof. |
+| #683 | Snapshot emits exact `verify --before` continuation; supported replay is clean. | Handoff/fingerprint carrier present; exact candidate package proof pending. | No candidate installed readback. | Not applicable. | Release exception retained; clean fingerprint is not approval. |
+| #685 | Source normalizes stem to `.md` without warning. | Checked-in source/export repair present; target-bound export/package proof pending. | Installed 6.2.0 still warns and exits 0; candidate readback pending. | Host install not run for candidate. | Release exception retained. |
+| #686 | Source planner emits `$SKILL_DIR/scripts/check_auto_trigger.py`, flattened path, and `available: true`. | Checked-in source/export repair present; target-bound export/package proof pending. | Installed 6.2.0 emits source-layout unavailable path while `ok: true`; candidate readback pending. | Host install not run for candidate. | Release exception retained. |
+| #687 | Typed interruption/timeout/channel-loss/recovery states are present. | Charness child is exportable; host event is not a Charness source fact. | Candidate install/readback pending. | Host terminal event remains explicitly unproven. | Charness prevention may ship; host resolution is not claimed. |
 
 ## Exact Current Checks
 
@@ -131,3 +150,12 @@ post-lock exception reproductions remain retained in the release ledger until
 the candidate's source/export proof and the distinct installed readback are
 bound. Version mutation, publication, issue closeout, and host-side #687
 resolution remain unclaimed.
+
+## Operator Upgrade Boundary
+
+Before publication, no update or rollback command is actionable. After a
+candidate is published, the first-reader path is `charness update`, then
+`charness version` and `charness doctor --detail`; the release record must bind
+the installed `#685/#686` semantic probes. Rollback means reinstalling the
+previous published version and repeating version/doctor readback. A successful
+process without those readbacks is not a completed upgrade.

@@ -125,6 +125,23 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
     assert doctor_detail["raw_probe_dump"] == "full host probe evidence"
 
 
+def test_init_and_update_fail_on_explicit_host_delivery_failure(tmp_path: Path, monkeypatch, capsys) -> None:
+    module = load_charness_module("charness_host_delivery_exit_under_test")
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _patch_runtime_dependencies(module, monkeypatch, repo_root, tmp_path / "home")
+    monkeypatch.setattr(module, "maybe_install_codex_host", lambda **_kwargs: {"status": "failed", "reason": "post-readback"})
+    args = _runtime_args(tmp_path / "home", repo_root)
+
+    assert module.cmd_init(args) == 1
+    init_payload = yaml.safe_load(capsys.readouterr().out)
+    assert init_payload["codex_host_install"]["status"] == "failed"
+
+    assert module.cmd_update(args) == 1
+    update_payload = yaml.safe_load(capsys.readouterr().out)
+    assert update_payload["codex_cache_refresh"]["status"] == "failed"
+
+
 def test_task_and_uninstall_paths_emit_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
     module = load_charness_module("charness_yaml_task_uninstall_under_test")
     repo_root = tmp_path / "repo"

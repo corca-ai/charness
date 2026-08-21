@@ -26,31 +26,35 @@ runs the activation command.
   The fresh-eye/retro basis handoff repair is now committed at `33e556043`, and
   the parallel focused-coverage writer isolation repair is committed at
   `abaf88682`; the installed/fresh-eye/release boundary remains open.
+  The R3 release-readiness critique then found a second instance of the same
+  process-success-versus-delivery class at the root `charness init/update`
+  exit boundary; its repair is now in the working tree with focused regression
+  coverage and must be committed before candidate re-proof.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, including per-run output namespaces for parallel producers, while
   preserving source/export parity and refusing public-release claims from local
   proof.
-- Next action: consume
-  `charness-artifacts/issues/2026-08-21-current-requalification.md` as the
-  R2 join, run focused and changed-line proof over the current source repairs,
-  and regenerate the semantic packet for the R3 planner. Keep the historical
-  exception rows until candidate/install evidence discharges them. The required
-  round-2 semantic read
-  delivered through typed worker/report rails but all three reviewer verdicts
-  were `block`; its boundary rail was quarantined because
-  `.charness/reviewer-round-2/` was not ignored. Under the two-round cap,
-  repairs from that round are accepted-unreviewed; no third fresh-eye round,
-  approval, or version mutation is claimed.
+- Next action: commit the root CLI host-delivery exit repair and normalized
+  source/export/install status surfaces, then run focused and changed-line
+  proof, regenerate the packet at the new exact head, and rerun the bounded
+  release critique. Keep the historical exception rows until candidate/install
+  evidence discharges them. The pre-version R3 critique is durably recorded at
+  `charness-artifacts/critique/2026-08-21-r3-release-readiness.md`; all four
+  typed worker verdicts were `block`, so no approval or version mutation is
+  claimed. Its boundary window verified clean. The prior verdict-surface
+  two-round cap remains respected; a new release-boundary critique is required
+  after these repairs, not a same-agent substitution.
 - Large-slice rule: completed issue-level history remains auditable, but future
   work is scheduled by capability boundary rather than ticket count. Each macro
   slice owns one user-visible outcome and its shared contract; independent
   issue lanes run concurrently inside it, while the parent serializes ledger,
   exports, proof, version, and release truth surfaces.
-- Target version: undecided until the Slice 0 qualified set and the integrated
-  Slice 4 surface are read by the release planner. `6.3.0` is the shaping
-  forecast because likely lanes add public discovery/evidence capability; use
-  the lightest honest bump and record the rationale in the release record.
+- Target version: undecided until the repaired semantic candidate is read by
+  the release planner. A patch from `6.2.0` is currently plausible because the
+  remaining root-CLI change is a failure-contract repair; use the lightest
+  honest bump and record the rationale in the release record. No `6.3.0`
+  forecast is operative.
 - Intake lock: Slice 0 owns the activation-time open-issue snapshot. After its
   ledger commit, newly opened issues join this train only when they reproduce
   against the release candidate and block build, install, update, or a claimed
@@ -1069,6 +1073,31 @@ boundary at once while parent-only truth surfaces remain serialized.
 - Next proof: focused lane, exact changed-line proof, semantic packet refresh,
   then the release planner's candidate/version boundary. No version, tag, push,
   publication, issue close, or fresh-eye approval is claimed here.
+
+### R3 blocked release critique and delivery-exit repair
+
+- Finding: the file-backed release critique consumed packet identity
+  `80d8bee2d001bbee87544c865c94375201bd9f2eab5cd9d6e940f6106782f40e` and
+  reviewed-input identity
+  `8c19268780e88e3890b26e07aa952d7a048a0510cd4eeff5e02f9b2834faebb9`. Four
+  independent workers (Gawande, Minto, Raskin, counterweight) delivered typed
+  `block` findings with clean boundary verification; no approval is claimed.
+- Structural class carried forward: a nested `codex_host_install` or
+  `codex_cache_refresh` status of `failed` could be rendered in YAML while the
+  root `init/update` process returned 0. The root CLI now promotes only that
+  explicit host-delivery failure to exit 1, while preserving optional
+  `skipped`/`unavailable` states; focused regression coverage exercises both
+  commands.
+- Evidence-surface repair: current-open historical admission notes are now
+  labeled as historical, the current requalification separates source,
+  checked-in export, installed/public, host, and release status, and the
+  `331c4a230..22ea` docs-only join is explicit. First-reader upgrade/rollback
+  non-claims are recorded.
+- Still blocked: commit and prove the source repair; prepare a new exact-head
+  packet and release critique; run target-bound packaging, candidate
+  install/update/version/doctor, `#685/#686` semantic readback, and any planner-
+  required real-host checklist. No version, tag, push, publication, issue
+  closeout, or host-side `#687` terminal-event claim is made.
 
 ## Closeout Binding Plan
 

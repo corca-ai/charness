@@ -51,6 +51,11 @@ is a compact status and next-action summary; use a command's `--detail` flag,
 for example `charness update all --detail`, when the full host or tool
 diagnostic evidence is needed.
 
+`charness init` and `charness update` return nonzero when their explicit host
+install/cache readback reports `status: failed`; a zero exit does not hide a
+known delivery failure. Optional host states such as `skipped` or
+`unavailable` remain distinct and require the YAML next action when present.
+
 For the full command surface, see [CLI Reference](./docs/generated/cli-reference.md).
 
 ## Workflow Routes
