@@ -17,7 +17,7 @@ session retro is still owed and this record is not a substitute for it.
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `README.md`, `scripts/capability_catalog.py`, `skills/public/release/scripts/check_fresh_checkout_probes.py`, `skills/public/release/scripts/check_real_host_proof.py`, `skills/public/release/scripts/check_requested_review_gate.py`, `skills/public/release/scripts/current_release.py`, `skills/public/release/scripts/plan_release_run.py`, `skills/public/release/scripts/publish_release_args.py`, `skills/public/release/scripts/publish_release_common.py`, `skills/public/release/scripts/publish_release_resume_closeout.py`, `skills/public/release/scripts/release_closeout_authorization.py`, `skills/public/release/scripts/release_closeout_floors.py`, `skills/public/release/scripts/release_issue_closeout.py`, `skills/public/release/scripts/resolve_adapter.py`, `skills/support/web-fetch/scripts/route_public_fetch_routes.py`.
-- Evaluated changed paths: 858.
+- Evaluated changed paths: 861.
 
 ## Waste
 
