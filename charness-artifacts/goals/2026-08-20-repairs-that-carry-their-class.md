@@ -95,6 +95,9 @@ runs the activation command.
   2 mapped changed-pool files, every changed line covered,
   `blocking_targets: {}`, and standing pytest passing. This is
   semantic-candidate local proof only.
+- The current pre-version boundary critique is
+  `charness-artifacts/critique/2026-08-21-r3-current-candidate-release-critique.md`;
+  it records `accepted-unreviewed-under-round-cap`, not fresh-eye approval.
 - Earlier pointers `1e81fb31bc8017e09f58f905b8c7b41e8545ad00`,
   `abaf886822a851c1081ec889f6733c02b627e525`, and `0784bb041` are historical
   evidence, not current candidate joins.
