@@ -13,6 +13,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/shared/scripts/run_reviewer_worker.py"
+RESULT_SCHEMA = ROOT / "skills/shared/references/bounded-review-result.schema.json"
 
 
 def _executable(path: Path, body: str) -> None:
@@ -46,6 +47,27 @@ def _common(tmp_path: Path) -> dict[str, Path]:
         "receipt": tmp_path / "receipt.json",
         "report": tmp_path / "report.yaml",
     }
+
+
+def _object_schemas(node: object) -> list[dict[str, object]]:
+    if isinstance(node, dict):
+        found = [node] if node.get("type") == "object" else []
+        for value in node.values():
+            found.extend(_object_schemas(value))
+        return found
+    if isinstance(node, list):
+        found: list[dict[str, object]] = []
+        for value in node:
+            found.extend(_object_schemas(value))
+        return found
+    return []
+
+
+def test_bounded_review_schema_is_provider_strict_for_every_object() -> None:
+    schema = json.loads(RESULT_SCHEMA.read_text(encoding="utf-8"))
+    objects = _object_schemas(schema)
+    assert objects
+    assert all(item.get("additionalProperties") is False for item in objects)
 
 
 def test_file_backed_runner_binds_receipt_ledger_and_report(tmp_path: Path) -> None:

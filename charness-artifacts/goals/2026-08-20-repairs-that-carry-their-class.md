@@ -987,6 +987,11 @@ boundary at once while parent-only truth surfaces remain serialized.
   subcommands/flags, wrong ledger filenames, and mismatched round snapshot ids
   were all recorded as command-boundary failures and corrected through help,
   inventory, or schema validation. They are not omitted as operator typos.
+- Round-2 fan-out exposed a second provider-schema class: Codex rejected the
+  checked-in schema's nested `additionalProperties: true` objects before any
+  reviewer response. The schema is now closed recursively in source and plugin
+  mirrors, with a focused provider-strictness regression; this invalidates the
+  prior packet binding and requires a new exact candidate proof and packet.
 - Non-claims: no release/publication, install or hosted readback, typed host
   application, issue closure, version mutation, or fresh-eye approval of the
   repaired surface is claimed.

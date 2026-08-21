@@ -40,7 +40,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": ["id", "severity", "summary", "evidence", "action"],
         "properties": {
           "id": {"type": "string", "minLength": 1},
@@ -55,7 +55,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": ["concern", "bin", "disposition"],
         "properties": {
           "concern": {"type": "string", "minLength": 1},

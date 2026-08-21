@@ -38,6 +38,11 @@ parent-context findings delivery; file-backed execution must not impersonate it.
   identities into the final report.
 - The worker did not reject colliding result/receipt/stdout/stderr paths and
   cleanup was timeout-only on POSIX.
+- The first round-2 file-backed fan-out then failed at the provider boundary:
+  Codex rejected the checked-in response schema because its nested `findings`
+  and `counterweight_triage` objects allowed `additionalProperties: true`.
+  All three attempts became typed `backend-failed` / non-delivery states before
+  a reviewer response existed.
 
 ## Reproduction
 
@@ -109,7 +114,9 @@ transport observation escaped as semantic approval.
 - The prior semantic packet omitted some final verdict consumers and was made
   before the candidate was fully locked.
 - The prior manual worker invocation used a temporary schema, so provider schema
-  validity was not tested before fan-out.
+  validity was not tested before fan-out. The checked-in schema also lacked a
+  recursive provider-closure assertion, so a top-level-valid schema could still
+  be rejected by `codex exec`.
 
 ## Prevention
 
@@ -124,6 +131,9 @@ transport observation escaped as semantic approval.
 - Treat provider schema rejection, unknown CLI subcommands/flags, wrong ledger
   paths, and wrong source-layout paths as command-boundary failures and record
   the corrected owning interface before proceeding.
+- Keep every object in the checked-in worker response schema closed for the
+  provider, mirror that schema, and test the recursive closure before fan-out;
+  a JSON Schema validator accepting the shape locally is not provider acceptance.
 
 ## Non-Claims
 
