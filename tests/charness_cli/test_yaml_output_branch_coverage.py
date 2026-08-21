@@ -268,6 +268,8 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
 
     module._mark_external_tool_update_failure({}, scope="self")
     payload: dict[str, object] = {
+        "home_root": "/tmp/home",
+        "repo_root": "/tmp/repo",
         "tool_update": {
             "results": {
                 "zeta": {"update": {"status": "updated-not-ready"}},
@@ -280,6 +282,130 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
     assert payload["tool_update"]["failed_tool_ids"] == ["alpha", "zeta"]
     assert payload["next_action"]["recovery_command"] == "charness update all --detail"
     assert payload["next_action"]["scope"] == "all"
+    assert payload["next_action"]["recovery_command_args"][:3] == ["charness", "update", "all"]
+    assert payload["next_action"]["recovery_context"] == {"home_root": "/tmp/home", "repo_root": "/tmp/repo"}
+
+    doctor_payload: dict[str, object] = {
+        "home_root": "/tmp/home",
+        "repo_root": "/tmp/repo",
+        "codex_cache_root": "/tmp/home/.codex/plugins/cache",
+        "codex_marketplace_path": "/tmp/home/.agents/plugins/marketplace.json",
+        "codex_host_guidance": {"status": "installed", "manual_action_required": False, "message": "stale"},
+        "host_next_steps": {},
+        "next_action": {},
+    }
+    module._mark_host_delivery_failure(
+        doctor_payload,
+        {"status": "failed", "reason": "content-readback-failed"},
+        command="update",
+        scope="all",
+    )
+    assert doctor_payload["next_action"]["recovery_command_args"] == [
+        "charness",
+        "update",
+        "all",
+        "--home-root",
+        "/tmp/home",
+        "--repo-root",
+        "/tmp/repo",
+        "--detail",
+    ]
+    assert doctor_payload["next_action"]["recovery_context"]["codex_cache_root"] == "/tmp/home/.codex/plugins/cache"
+
+
+def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path: Path) -> None:
+    module = load_charness_module("charness_delivery_provenance_fail_closed_under_test")
+    cache_root = tmp_path / "cache"
+    manifest_path = cache_root / "local" / "charness" / "1.0.0" / ".codex-plugin" / "plugin.json"
+    manifest_path.parent.mkdir(parents=True)
+    manifest_path.write_text("not-json\n", encoding="utf-8")
+    entries = module.codex_cache_entries(cache_root)
+    assert entries[0]["manifest_status"] == "invalid"
+    assert module.build_codex_host_guidance(
+        codex_available=True,
+        codex_marketplace_path=tmp_path / "marketplace.json",
+        source_version="1.0.0",
+        cache_entries=entries,
+        config_entries=[{"plugin_id": "charness@local", "enabled": True}],
+    )["reason"] == "invalid-cache-manifest"
+
+    source_root = tmp_path / "source"
+    copied_root = tmp_path / "copied"
+    source_root.mkdir()
+    copied_root.mkdir()
+    (source_root / "payload.txt").write_text("source\n", encoding="utf-8")
+    (copied_root / "payload.txt").write_text("stale\n", encoding="utf-8")
+    delivery: dict[str, object] = {"status": "attempted"}
+    readback = module._record_post_delivery_readback(
+        delivery,
+        {
+            "plugin_root": str(source_root),
+            "codex_cache_entries": [
+                {
+                    "marketplace": "local",
+                    "plugin": "charness",
+                    "version": "1.0.0",
+                    "version_dir": str(copied_root),
+                    "manifest_version": "1.0.0",
+                    "manifest_status": "valid",
+                }
+            ],
+            "codex_enabled_plugin_ids": ["charness@local"],
+            "codex_source_version": "1.0.0",
+        },
+        phase="update",
+    )
+    assert readback is None
+    assert delivery["delivery_verified"] is False
+    assert delivery["post_delivery_readback"] == {"status": "failed", "phase": "update"}
+
+
+def test_doctor_surfaces_latest_failed_delivery_and_compact_projection_keeps_proof(tmp_path: Path) -> None:
+    module = load_charness_module("charness_doctor_latest_failure_projection_under_test")
+    home_root = tmp_path / "home"
+    module.write_host_state(
+        home_root,
+        key="last_update",
+        payload={"checkout_git_head": "commit-1"},
+        delivery={"status": "failed", "reason": "content-readback-failed", "delivery_verified": False},
+        operation_status="failed",
+        operation_scope="all",
+    )
+    payload = {
+        "hosts": {"codex": True},
+        "codex_host_guidance": {"status": "installed", "manual_action_required": False, "message": "stale"},
+        "claude_host_guidance": {},
+        "grok_host_guidance": {},
+        "repo_onboarding": {},
+        "host_next_steps": {},
+    }
+    module._apply_latest_host_operation(payload, home_root=home_root)
+    assert payload["codex_host_guidance"]["status"] == "failed"
+    assert payload["latest_host_operation"]["operation_scope"] == "all"
+    assert payload["next_action"]["status"] == "failed"
+
+    projected = module.project_runtime_response(
+        {
+            "codex_cache_manifest_status": "valid",
+            "codex_cache_refresh": {
+                "status": "refreshed",
+                "delivery_verified": True,
+                "verification": "same-version-content-readback",
+                "source_content_sha256": "source-digest",
+                "cache_content_sha256": "cache-digest",
+            },
+            "next_action": {
+                "status": "failed",
+                "recovery_command_args": ["charness", "update", "--home-root", "/tmp/home", "--detail"],
+                "recovery_context": {"home_root": "/tmp/home", "repo_root": "/tmp/repo"},
+            },
+        },
+        event="update",
+    )
+    assert projected["codex_cache_manifest_status"] == "valid"
+    assert projected["codex_cache_refresh"]["delivery_verified"] is True
+    assert projected["codex_cache_refresh"]["verification"] == "same-version-content-readback"
+    assert projected["next_action"]["recovery_context"]["repo_root"] == "/tmp/repo"
 
 
 def test_same_version_verified_readback_skips_refresh_call(tmp_path: Path, monkeypatch) -> None:

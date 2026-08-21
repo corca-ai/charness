@@ -218,8 +218,16 @@ def render_markdown(packet: dict[str, Any]) -> str:
         lines.append(f"- **Adapter**: `{packet['adapter_path']}`")
     if "reviewed_input_identity" in packet:
         identity = packet["reviewed_input_identity"]
+        identity = identity if isinstance(identity, dict) else {}
+        reviewed_paths = identity.get("reviewed_paths", [])
+        excluded_paths = identity.get("auto_excluded_paths", [])
+        reviewed_paths = reviewed_paths if isinstance(reviewed_paths, list) else []
+        excluded_paths = excluded_paths if isinstance(excluded_paths, list) else []
         lines.append(f"- **Reviewed input identity**: `{identity.get('identity_sha256', '')}`")
-        lines.append(f"- **Reviewed paths**: {len(identity.get('reviewed_paths', []))}")
+        lines.append(f"- **Reviewed paths**: {len(reviewed_paths)}")
+        lines.extend(f"  - `{path}`" for path in reviewed_paths if isinstance(path, str))
+        lines.append(f"- **Auto-excluded paths**: {len(excluded_paths)}")
+        lines.extend(f"  - `{path}`" for path in excluded_paths if isinstance(path, str))
     lines.append(f"- **Sections**: {packet['section_count']}")
     lines.append(f"- **Shape validation ok**: {packet['ok']}")
     lines.append("- **Release approval**: not claimed")

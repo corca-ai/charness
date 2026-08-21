@@ -86,7 +86,9 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
         text=True,
         env=env,
     )
-    assert update_result.returncode == 0, update_result.stderr
+    # A successful updater command is not enough: blocking post-update doctor
+    # findings now fail the aggregate operation and carry typed recovery data.
+    assert update_result.returncode == 1, update_result.stderr
     payload = yaml.safe_load(update_result.stdout)
     assert payload["package_id"] == "charness"
     assert payload["scope"] == "all"
@@ -99,7 +101,7 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert "STEP: updating tracked external tools" in update_result.stderr
     assert "STEP: syncing support surfaces" in update_result.stderr
     assert "STEP: refreshing tool doctor state" in update_result.stderr
-    assert "DONE: update complete" in update_result.stderr
+    assert "FAILED: update incomplete" in update_result.stderr
 
     detail_result = subprocess.run(
         [
@@ -118,7 +120,7 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
         text=True,
         env=env,
     )
-    assert detail_result.returncode == 0, detail_result.stderr
+    assert detail_result.returncode == 1, detail_result.stderr
     detail_payload = yaml.safe_load(detail_result.stdout)
     assert detail_payload["response_level"] == "detail"
     assert detail_payload["tool_update"]["results"]["agent-browser"]["update"]["status"] in {"updated", "refreshed"}

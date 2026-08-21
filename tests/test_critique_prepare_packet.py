@@ -331,6 +331,31 @@ packet_sections:
     assert "not a release-readiness or reviewer-verdict approval" in md
 
 
+def test_render_markdown_distinguishes_reviewed_and_auto_excluded_paths(tmp_path: Path) -> None:
+    packet = {
+        "kind": "charness.critique_prepare_packet",
+        "version": 1,
+        "repo": "rt",
+        "generated_at": "2026-01-01T00:00:00Z",
+        "prepared_for": "unit",
+        "section_count": 0,
+        "ok": True,
+        "sections": [],
+        "reviewed_input_identity": {
+            "identity_sha256": "identity",
+            "reviewed_paths": ["README.md"],
+            "auto_excluded_paths": ["generated-packet.md"],
+        },
+    }
+
+    md = render_markdown(packet)
+
+    assert "**Reviewed paths**: 1" in md
+    assert "  - `README.md`" in md
+    assert "**Auto-excluded paths**: 1" in md
+    assert "  - `generated-packet.md`" in md
+
+
 def test_charness_packet_carries_the_semantic_reviewer_question() -> None:
     adapter = load_adapter(REPO_ROOT)
     packet = build_packet(adapter=adapter, repo_root=REPO_ROOT, prepared_for="unit")

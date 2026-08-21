@@ -23,6 +23,9 @@ BLOCKING_DOCTOR_DISPOSITIONS = {
     "blocking-install-needed",
     "blocking-failure",
 }
+TOOL_UPDATE_FAILURE_STATUSES = frozenset({"failed", "updated-not-ready", "refreshed-not-ready"})
+TOOL_SUPPORT_FAILURE_STATUSES = frozenset({"failed", "error", "runner_error", "invalid", "not-ready"})
+TOOL_DOCTOR_FAILURE_STATUSES = frozenset({"failed", "unhealthy", "not-ready"})
 SCRIPT_PATH = Path(__file__).resolve()
 EMBEDDED_REPO_ROOT = SCRIPT_PATH.parent if (SCRIPT_PATH.parent / "packaging" / f"{PACKAGE_ID}.json").is_file() else None
 TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
@@ -1591,10 +1594,13 @@ def _codex_cache_entries(cache_root: Path, *, plugin_glob: str) -> list[dict[str
         plugin_root = manifest_path.parents[2]
         marketplace_root = manifest_path.parents[3]
         manifest_version = None
+        manifest_status = "invalid"
         try:
-            manifest_version_value = json.loads(manifest_path.read_text(encoding="utf-8")).get("version")
-            if isinstance(manifest_version_value, str):
+            manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest_version_value = manifest_payload.get("version") if isinstance(manifest_payload, dict) else None
+            if isinstance(manifest_version_value, str) and manifest_version_value:
                 manifest_version = manifest_version_value
+                manifest_status = "valid"
         except (OSError, json.JSONDecodeError):
             manifest_version = None
         entries.append(
@@ -1605,6 +1611,7 @@ def _codex_cache_entries(cache_root: Path, *, plugin_glob: str) -> list[dict[str
                 "version_dir": str(version_root),
                 "manifest_path": str(manifest_path),
                 "manifest_version": manifest_version or "",
+                "manifest_status": manifest_status,
             }
         )
     return entries
@@ -1966,6 +1973,31 @@ def _same_version_cache_readback(doctor_payload: dict[str, object]) -> dict[str,
     }
 
 
+def _record_post_delivery_readback(
+    delivery: dict[str, object],
+    doctor_payload: dict[str, object],
+    *,
+    phase: str,
+) -> dict[str, object] | None:
+    readback = _same_version_cache_readback(doctor_payload)
+    if readback is None:
+        delivery.update(
+            {
+                "delivery_verified": False,
+                "verification": "post-refresh-content-readback",
+                "post_delivery_readback": {"status": "failed", "phase": phase},
+            }
+        )
+        return None
+    delivery.update(readback)
+    delivery["post_delivery_readback"] = {
+        "status": "verified",
+        "phase": phase,
+        "verification": readback.get("verification"),
+    }
+    return readback
+
+
 def _mark_host_delivery_failure(
     doctor_payload: dict[str, object],
     delivery: dict[str, object],
@@ -1992,6 +2024,25 @@ def _mark_host_delivery_failure(
     doctor_payload["codex_host_guidance"] = guidance
     doctor_payload["host_next_steps"] = build_host_next_steps(doctor_payload)
     doctor_payload["next_action"] = build_doctor_next_action(doctor_payload)
+    home_root = doctor_payload.get("home_root")
+    repo_root = doctor_payload.get("repo_root")
+    recovery_args = ["charness", command]
+    if scope and scope != "self":
+        recovery_args.append(scope)
+    if isinstance(home_root, str) and home_root:
+        recovery_args.extend(["--home-root", home_root])
+    if isinstance(repo_root, str) and repo_root:
+        recovery_args.extend(["--repo-root", repo_root])
+    recovery_args.append("--detail")
+    next_action = doctor_payload.get("next_action")
+    if isinstance(next_action, dict):
+        next_action["recovery_command_args"] = recovery_args
+        next_action["recovery_context"] = {
+            "home_root": home_root,
+            "repo_root": repo_root,
+            "codex_cache_root": doctor_payload.get("codex_cache_root"),
+            "codex_marketplace_path": doctor_payload.get("codex_marketplace_path"),
+        }
 
 
 def maybe_install_codex_host(
@@ -2050,27 +2101,46 @@ def maybe_install_codex_host(
     return result
 
 
+def _tool_doctor_result_is_blocking(result: dict[str, object]) -> bool:
+    status = result.get("doctor_status")
+    disposition = result.get("doctor_disposition")
+    return status in TOOL_DOCTOR_FAILURE_STATUSES or disposition in BLOCKING_DOCTOR_DISPOSITIONS
+
+
+def _tool_result_failure_phases(result: dict[str, object]) -> list[str]:
+    phases: list[str] = []
+    update = result.get("update")
+    if isinstance(update, dict) and update.get("status") in TOOL_UPDATE_FAILURE_STATUSES:
+        phases.append("update")
+    support = result.get("support")
+    if isinstance(support, dict) and support.get("status") in TOOL_SUPPORT_FAILURE_STATUSES:
+        phases.append("support")
+    doctor = result.get("doctor")
+    if isinstance(doctor, dict) and _tool_doctor_result_is_blocking(doctor):
+        phases.append("doctor")
+    return phases
+
+
 def _mark_external_tool_update_failure(payload: dict[str, object], *, scope: str) -> None:
     tool_update = payload.get("tool_update")
     if not isinstance(tool_update, dict):
         return
     results = tool_update.get("results")
     failed_tool_ids: list[str] = []
+    failure_phases: dict[str, list[str]] = {}
     if isinstance(results, dict):
         for tool_id, result in results.items():
             if not isinstance(tool_id, str) or not isinstance(result, dict):
                 continue
-            update = result.get("update")
-            if isinstance(update, dict) and update.get("status") in {
-                "failed",
-                "updated-not-ready",
-                "refreshed-not-ready",
-            }:
+            failed_for_tool = _tool_result_failure_phases(result)
+            if failed_for_tool:
                 failed_tool_ids.append(tool_id)
+                failure_phases[tool_id] = failed_for_tool
     failed_tool_ids.sort()
     tool_update["status"] = "failed"
     tool_update["failure_scope"] = scope
     tool_update["failed_tool_ids"] = failed_tool_ids
+    tool_update["failure_phases"] = {tool_id: failure_phases[tool_id] for tool_id in failed_tool_ids}
     command = "charness update all --detail" if scope == "all" else "charness update --detail"
     message = (
         f"External tool update failed for scope `{scope}`. Inspect the typed YAML result and retry with `{command}`."
@@ -2101,6 +2171,18 @@ def _mark_external_tool_update_failure(payload: dict[str, object], *, scope: str
     next_action["scope"] = scope
     next_action["recovery_command"] = command
     next_action["failed_tool_ids"] = failed_tool_ids
+    home_root = payload.get("home_root")
+    repo_root = payload.get("repo_root")
+    recovery_args = ["charness", "update"]
+    if scope != "self":
+        recovery_args.append(scope)
+    if isinstance(home_root, str) and home_root:
+        recovery_args.extend(["--home-root", home_root])
+    if isinstance(repo_root, str) and repo_root:
+        recovery_args.extend(["--repo-root", repo_root])
+    recovery_args.append("--detail")
+    next_action["recovery_command_args"] = recovery_args
+    next_action["recovery_context"] = {"home_root": home_root, "repo_root": repo_root}
 
 
 def codex_config_entries(config_path: Path) -> list[dict[str, object]]:
@@ -2140,6 +2222,19 @@ def build_codex_host_guidance(
             source_version=source_version,
         )
         cache_manifest_version = primary_cache.get("manifest_version") if isinstance(primary_cache, dict) else None
+        cache_manifest_status = primary_cache.get("manifest_status") if isinstance(primary_cache, dict) else None
+        if isinstance(primary_cache, dict) and cache_manifest_status is None:
+            cache_manifest_status = "valid" if cache_manifest_version else "invalid"
+        if cache_manifest_status == "invalid":
+            return {
+                "status": "needs-refresh",
+                "manual_action_required": True,
+                "reason": "invalid-cache-manifest",
+                "message": (
+                    "Codex has a charness cache directory whose plugin manifest is missing, malformed, or versionless. "
+                    "Treat the cache as unverified; run `charness update` to replace it and rerun `charness doctor --detail` before starting a new Codex session."
+                ),
+            }
         stale_enabled_ids: list[str] = []
         for plugin_id in enabled_plugin_ids:
             if plugin_id == primary_plugin_id:
@@ -2497,6 +2592,78 @@ def install_surface(
     return payload
 
 
+def _latest_host_operation(home_root: Path) -> tuple[str, dict[str, object]] | None:
+    state = read_host_state(home_root)
+    entries = [
+        (key, value)
+        for key in ("last_update", "last_init")
+        if isinstance(value := state.get(key), dict)
+    ]
+    if not entries:
+        return None
+    key_order = {"last_init": 0, "last_update": 1}
+    key, entry = max(
+        entries,
+        key=lambda item: (
+            item[1].get("recorded_at", ""),
+            key_order.get(item[0], -1),
+        ),
+    )
+    return key, entry
+
+
+def _apply_latest_host_operation(payload: dict[str, object], *, home_root: Path) -> None:
+    latest = _latest_host_operation(home_root)
+    if latest is None:
+        return
+    key, entry = latest
+    delivery = entry.get("delivery")
+    latest_summary: dict[str, object] = {
+        "key": key,
+        "recorded_at": entry.get("recorded_at"),
+        "operation_status": entry.get("operation_status"),
+        "operation_scope": entry.get("operation_scope"),
+        "delivery_status": entry.get("delivery_status"),
+        "delivery_verified": entry.get("delivery_verified"),
+    }
+    if isinstance(delivery, dict):
+        latest_summary["delivery_reason"] = delivery.get("reason")
+        latest_summary["delivery_error"] = delivery.get("error")
+    payload["latest_host_operation"] = latest_summary
+    delivery_status = entry.get("delivery_status")
+    delivery_failed = (
+        delivery_status == "failed"
+        or (isinstance(delivery, dict) and delivery.get("status") == "failed")
+        or (
+            entry.get("delivery_verified") is not True
+            and delivery_status in {"attempted", "installed", "refreshed"}
+        )
+    )
+    if not delivery_failed:
+        return
+    guidance = payload.get("codex_host_guidance")
+    hosts = payload.get("hosts")
+    if not isinstance(guidance, dict) or not isinstance(hosts, dict) or hosts.get("codex") is not True:
+        return
+    reason = latest_summary.get("delivery_reason") or latest_summary.get("delivery_status") or "unverified"
+    scope = entry.get("operation_scope")
+    command = "update all" if scope == "all" else "update"
+    guidance.update(
+        {
+            "status": "failed",
+            "manual_action_required": True,
+            "reason": "latest-operation-failed",
+            "message": (
+                f"The latest Codex host operation (`charness {command}`) is not verified ({reason}). "
+                "Do not treat the cache as installed; inspect `charness doctor --detail` and retry the recorded recovery command."
+            ),
+        }
+    )
+    payload["codex_host_guidance"] = guidance
+    payload["host_next_steps"] = build_host_next_steps(payload)
+    payload["next_action"] = build_doctor_next_action(payload)
+
+
 def build_doctor_payload(
     *,
     home_root: Path,
@@ -2508,6 +2675,7 @@ def build_doctor_payload(
     cli_path: Path,
     claude_wrapper_path: Path,
     include_repo_onboarding: bool = True,
+    include_latest_host_operation: bool = True,
 ) -> dict[str, object]:
     source_manifest_present = has_source_manifest(repo_root)
     version_provenance = build_version_provenance(
@@ -2519,6 +2687,7 @@ def build_doctor_payload(
     version_state = read_version_state(home_root)
     payload: dict[str, object] = {
         "package_id": PACKAGE_ID,
+        "home_root": str(home_root),
         "repo_root": str(repo_root),
         "managed_checkout": managed_checkout,
         "target_repo_root": str(target_repo_root),
@@ -2595,6 +2764,11 @@ def build_doctor_payload(
     payload["codex_cache_manifest_version"] = (
         primary_cache.get("manifest_version") if isinstance(primary_cache, dict) else None
     )
+    payload["codex_cache_manifest_status"] = (
+        primary_cache.get("manifest_status")
+        if isinstance(primary_cache, dict) and primary_cache.get("manifest_status") in {"valid", "invalid"}
+        else ("valid" if payload["codex_cache_manifest_version"] else "invalid" if primary_cache else None)
+    )
     payload["codex_enabled_plugin_id"] = primary_plugin_id
     payload["codex_source_cache_drift"] = bool(
         payload["codex_source_version"]
@@ -2636,6 +2810,8 @@ def build_doctor_payload(
         }
     payload["host_next_steps"] = build_host_next_steps(payload)
     payload["next_action"] = build_doctor_next_action(payload)
+    if include_latest_host_operation:
+        _apply_latest_host_operation(payload, home_root=home_root)
     return payload
 
 
@@ -3376,12 +3552,19 @@ def run_tool_update_flow(
             for tool_id in sorted(set([*update_map.keys(), *support_map.keys(), *doctor_map.keys()]))
         },
     }
-    failed = any(
-        isinstance(result, dict)
-        and isinstance(result.get("update"), dict)
-        and result["update"].get("status") in {"failed", "updated-not-ready", "refreshed-not-ready"}
-        for result in payload["results"].values()
-    )
+    failed_tool_ids: list[str] = []
+    failure_phases: dict[str, list[str]] = {}
+    for tool_id, result in payload["results"].items():
+        if not isinstance(tool_id, str) or not isinstance(result, dict):
+            continue
+        phases = _tool_result_failure_phases(result)
+        if phases:
+            failed_tool_ids.append(tool_id)
+            failure_phases[tool_id] = phases
+    failed_tool_ids.sort()
+    failed = bool(failed_tool_ids)
+    payload["failed_tool_ids"] = failed_tool_ids
+    payload["failure_phases"] = {tool_id: failure_phases[tool_id] for tool_id in failed_tool_ids}
     return payload, failed
 
 
@@ -3916,7 +4099,7 @@ def project_tool_response(payload: dict[str, object], *, event: str) -> dict[str
         "tool_count": len(projected_results),
         "status_counts": dict(sorted(status_counts.items())),
     }
-    for key in ("status", "failure_scope", "failed_tool_ids"):
+    for key in ("status", "failure_scope", "failed_tool_ids", "failure_phases"):
         if key in payload:
             response[key] = payload[key]
     if len(projected_results) <= 1:
@@ -3970,6 +4153,8 @@ def _compact_next_action(payload: object) -> dict[str, object] | None:
             "scope",
             "recovery_command",
             "failed_tool_ids",
+            "recovery_command_args",
+            "recovery_context",
         ),
     )
 
@@ -3979,7 +4164,23 @@ def _compact_release_check(payload: object) -> dict[str, object] | None:
 
 
 def _compact_host_refresh(payload: object) -> dict[str, object] | None:
-    return _compact_mapping(payload, ("status", "action", "method", "reason", "error"))
+    return _compact_mapping(
+        payload,
+        (
+            "status",
+            "action",
+            "method",
+            "reason",
+            "error",
+            "delivery_verified",
+            "verification",
+            "source_content_sha256",
+            "cache_content_sha256",
+            "post_refresh_cache_manifest_version",
+            "post_refresh_drift",
+            "post_refresh_host_status",
+        ),
+    )
 
 
 def _compact_session_staleness(payload: object) -> dict[str, object] | None:
@@ -4009,6 +4210,7 @@ def project_runtime_response(payload: dict[str, object], *, event: str) -> dict[
         "checkout_git_head",
         "codex_source_version",
         "codex_cache_manifest_version",
+        "codex_cache_manifest_status",
         "codex_source_cache_drift",
         "codex_enabled_plugin_id",
         "codex_enabled_plugin_ids",
@@ -4127,6 +4329,8 @@ def cmd_init(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=False,
     )
+    payload["home_root"] = str(home_root)
+    payload["repo_root"] = str(Path(checkout["repo_root"]))
     if cli_reexec_state is not None:
         payload["cli_reexec"] = cli_reexec_state
     host_hooks_reconcile = reconcile_usage_episodes_host_hooks(
@@ -4170,6 +4374,7 @@ def cmd_init(args: argparse.Namespace) -> int:
             codex_marketplace_path=codex_marketplace_path,
             cli_path=cli_path,
             claude_wrapper_path=claude_wrapper_path,
+            include_latest_host_operation=False,
         )
         codex_host_install["post_install_cache_manifest_version"] = doctor_payload.get(
             "codex_cache_manifest_version"
@@ -4177,8 +4382,11 @@ def cmd_init(args: argparse.Namespace) -> int:
         codex_host_install["post_install_host_status"] = doctor_payload.get("codex_host_guidance", {}).get(
             "status"
         )
+        _record_post_delivery_readback(codex_host_install, doctor_payload, phase="init")
         if (
-            doctor_payload.get("codex_host_guidance", {}).get("status") != "installed"
+            codex_host_install.get("delivery_verified") is not True
+            or doctor_payload.get("codex_cache_manifest_status") != "valid"
+            or doctor_payload.get("codex_host_guidance", {}).get("status") != "installed"
             or doctor_payload.get("codex_source_cache_drift")
         ):
             codex_host_install["status"] = "failed"
@@ -4199,6 +4407,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["checkout_version"] = doctor_payload["checkout_version"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
+    payload["codex_cache_manifest_status"] = doctor_payload.get("codex_cache_manifest_status")
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     payload["target_repo_root"] = str(target_repo_root)
     if _host_delivery_failed(codex_host_install):
@@ -4272,6 +4481,8 @@ def cmd_update(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=True,
     )
+    payload["home_root"] = str(home_root)
+    payload["repo_root"] = str(Path(checkout["repo_root"]))
     if cli_reexec_state is not None:
         payload["cli_reexec"] = cli_reexec_state
     host_hooks_reconcile = reconcile_usage_episodes_host_hooks(
@@ -4313,12 +4524,19 @@ def cmd_update(args: argparse.Namespace) -> int:
             cli_path=cli_path,
             claude_wrapper_path=claude_wrapper_path,
             include_repo_onboarding=include_repo_onboarding,
+            include_latest_host_operation=False,
         )
         codex_cache_refresh["post_refresh_cache_manifest_version"] = doctor_payload.get("codex_cache_manifest_version")
         codex_cache_refresh["post_refresh_drift"] = doctor_payload.get("codex_source_cache_drift")
         post_status = doctor_payload.get("codex_host_guidance", {}).get("status")
         codex_cache_refresh["post_refresh_host_status"] = post_status
-        if doctor_payload.get("codex_source_cache_drift") or post_status != "installed":
+        _record_post_delivery_readback(codex_cache_refresh, doctor_payload, phase="update")
+        if (
+            codex_cache_refresh.get("delivery_verified") is not True
+            or doctor_payload.get("codex_cache_manifest_status") != "valid"
+            or doctor_payload.get("codex_source_cache_drift")
+            or post_status != "installed"
+        ):
             codex_cache_refresh["status"] = "failed"
             codex_cache_refresh["reason"] = (
                 "install-incomplete"
@@ -4354,6 +4572,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["checkout_version"] = doctor_payload["checkout_version"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
+    payload["codex_cache_manifest_status"] = doctor_payload.get("codex_cache_manifest_status")
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     payload["target_repo_root"] = str(target_repo_root)
     if _host_delivery_failed(codex_cache_refresh):
@@ -4399,7 +4618,7 @@ def cmd_update(args: argparse.Namespace) -> int:
             precomputed_support_results=payload.get("support_sync"),
         )
         payload["tool_update"] = tool_update_payload
-        if tool_update_payload["results"]:
+        if tool_update_payload["results"] and not tool_update_failed:
             payload.setdefault("completed_actions", []).append("external_tools_updated")
     update_failed = tool_update_failed or _host_delivery_failed(codex_cache_refresh)
     if tool_update_failed:
