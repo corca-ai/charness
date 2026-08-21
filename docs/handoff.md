@@ -20,8 +20,6 @@
 
 ## Current State
 
-- The [R2 slice record](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md) holds
-  the worker/consumer changes, focused evidence, timeout non-claim, and fresh-eye delivery state.
 - The [#687 debug/spec pair](../charness-artifacts/debug/2026-08-21-fresh-eye-interrupted-delivery.md) holds
   the causal delivery boundary and the Charness/host ownership split.
 - The [current-open requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md)
@@ -33,11 +31,18 @@
   init/update`, plus status-surface and candidate-install proof gaps. Its four
   file-backed worker findings were delivered with clean boundary verification;
   all verdicts were `block`, not approval.
-- [Root CLI repair](../charness) is committed at `1e81fb31b`: failed host
-  delivery exits 1; failed/skipped delivery cannot advance provenance; retries
-  cannot be suppressed by old success. Failure output carries a typed retry
-  action. Focused tests and the staged commit floor passed; regenerate the
-  packet at the exact integrated candidate head before release critique.
+- [Root CLI repair](../charness) is committed in the integrated semantic
+  candidate `7676ec51aeed99e215106dd8490332e57db80d07` (the code repair itself
+  is `b0028acc1`): failed host delivery exits 1; failed/skipped delivery cannot
+  advance provenance; retries cannot be suppressed by old success. Same-version
+  cache claims now require content readback, and failure output carries typed
+  scope/retry state. Its exact packet is
+  `../charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-exact-packet.json`
+  (SHA256 `90d89c6721f86aeaeccfc8ffaacaa90471c03a6b93936cd89ae12b71070220ee`,
+  reviewed-input identity
+  `21b105b641d5f5aabfe7c02469b7daf531676bdb8cc17ab63814c631cec4bc79`).
+  Candidate package/install/host proof remains pending; the older `1e81fb31b`
+  pointer is historical.
 - The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
   the converted classes for media-versus-verdict confusion, process-tree
   timeout leakage, provider-schema closure, and the reviewer-runtime output
@@ -47,8 +52,9 @@
 - The [changed-line consumer-gap debug record](../charness-artifacts/debug/2026-08-21-changed-line-review-consumer-gaps.md)
   records the post-commit counterexample repair; the exact-base rerun is now
   clean at `362221694` with `blocking_targets: {}`.
-- The fresh-eye/retro basis handoff slice is committed at `33e556043`, and the
-  parallel focused-coverage writer isolation repair is committed at `abaf88682`;
+- The fresh-eye/retro basis handoff slice is committed at historical `33e556043`,
+  and the parallel focused-coverage writer isolation repair is committed at
+  historical `abaf88682`;
   the [current quality receipt](../charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md)
   records both proofs. It covers explicit retro paths/refs, typed boundary
   verify continuation, the file-backed critique/prove contract, and an external
@@ -84,7 +90,7 @@
    including `recurrence-class: parallel-coverage-runtime-collision` and
    `recurrence-class: unclaimed-session-disposition`.
 3. Re-read the [goal's final-verification proof plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
-   and the current parallel-output receipt at `abaf88682`; do not reuse the
+   and the current exact semantic candidate/packet join above; do not reuse the
    older dirty-worktree `UNPROVEN` receipt as changed-line proof, and do not
    confuse the direct producer's advisory coverage warning with the runner's
    typed verdict.
@@ -97,8 +103,9 @@
    for P0 #679 reproduction first, then fan out only lanes with a current reproducer, owner,
    acceptance, disjoint path budget, and proof plan; serialize exports, ledger, generated docs,
    version, release, index, and proof truth surfaces.
-6. Refresh the requalification join; regenerate the exact-head packet, rerun
-   release critique, then execute candidate/install proof. Keep
+6. The exact semantic candidate and packet are bound above. Run the second
+   bounded review against that exact packet, then execute candidate/install
+   proof. Keep
    version/export/release-record mutation, tag, push, and publication on hold
    until the [goal release boundary](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
    is re-proven.

@@ -1,7 +1,7 @@
 # Current Requalification Packet: Issues #681–#687
 
-Captured: 2026-08-21T18:45:00+09:00
-Source candidate: `1e81fb31bc8017e09f58f905b8c7b41e8545ad00`
+Captured: 2026-08-21T19:22:28+09:00
+Source candidate: `7676ec51aeed99e215106dd8490332e57db80d07`
 Source of issue truth: the durable current GitHub reads in
 `charness-artifacts/issues/reads/{681,682,683,685,686,687}.raw.yaml`; all six
 reads returned `comments_read: true` (the closed #684 read is retained
@@ -14,11 +14,18 @@ historical no-source-diff evidence. It is not the current candidate and must
 not be used as installed or host proof.
 
 Candidate-bound status join: the current source candidate is
-`1e81fb31bc8017e09f58f905b8c7b41e8545ad00`, which includes the root
-host-delivery exit/provenance repair, failure-aware retry guidance, packet
-shape-only labeling, and their focused regression coverage. The matrix below
-still records candidate package/install/host proof as pending; this source join
-does not claim those boundaries.
+`7676ec51aeed99e215106dd8490332e57db80d07`, the exact semantic candidate
+containing the root host-delivery exit/provenance repair, same-version content
+readback, scoped recovery, failure-aware init/update output, and focused
+regression coverage. Its exact packet is
+`charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-exact-packet.json`
+with packet SHA256
+`90d89c6721f86aeaeccfc8ffaacaa90471c03a6b93936cd89ae12b71070220ee` and
+reviewed-input identity
+`21b105b641d5f5aabfe7c02469b7daf531676bdb8cc17ab63814c631cec4bc79`.
+The matrix below still records candidate package/install/host proof as
+pending; this source join does not claim those boundaries. The earlier
+`1e81fb31bc8017e09f58f905b8c7b41e8545ad00` pointer is historical.
 
 ## First Reader Outcome
 

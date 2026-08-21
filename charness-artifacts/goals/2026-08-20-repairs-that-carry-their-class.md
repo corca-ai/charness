@@ -29,17 +29,19 @@ runs the activation command.
   The R3 release-readiness critique then found a second instance of the same
   process-success-versus-delivery class at the root `charness init/update`
   exit boundary; its repair plus retry provenance and failure-aware operator
-  output is committed at `1e81fb31b` with focused regression coverage and a
-  clean staged commit floor. Candidate re-proof remains open.
+  output is carried by the exact semantic candidate
+  `7676ec51aeed99e215106dd8490332e57db80d07`, with focused regression coverage
+  and a clean changed-line proof. The second bounded review and
+  candidate/install boundary remain open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, including per-run output namespaces for parallel producers, while
   preserving source/export parity and refusing public-release claims from local
   proof.
-- Next action: regenerate the packet at the exact integrated candidate head and
-  rerun the bounded release critique against the committed repair, then proceed
-  to the candidate/install proof boundary. Keep the historical exception rows until
-  candidate/install evidence discharges them. The pre-version R3 critique is
+- Next action: run the second bounded review against the exact packet bound in
+  `## Current Candidate Join`, then proceed to the candidate/install proof
+  boundary. Keep the historical exception rows until candidate/install evidence
+  discharges them. The pre-version R3 critique is
   durably recorded at
   `charness-artifacts/critique/2026-08-21-r3-release-readiness.md`; all four
   typed worker verdicts were `block`, so no approval or version mutation is
@@ -77,6 +79,28 @@ runs the activation command.
 - History boundary: keep this frame current; move completed detail to
   `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`, and
   `## Auto-Retro`.
+
+## Current Candidate Join
+
+- The authoritative semantic candidate is
+  `7676ec51aeed99e215106dd8490332e57db80d07`, spanning
+  `f98a4e8e2936ab60870018ec1b3722d475a458e7..7676ec51aeed99e215106dd8490332e57db80d07`.
+- Its exact review packet is
+  `charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-exact-packet.json`
+  (packet SHA256
+  `90d89c6721f86aeaeccfc8ffaacaa90471c03a6b93936cd89ae12b71070220ee`,
+  reviewed-input identity
+  `21b105b641d5f5aabfe7c02469b7daf531676bdb8cc17ab63814c631cec4bc79`).
+- The changed-line proof for that exact candidate is `status: clean`, with
+  `1/1` mapped changed pool files, `blocking_targets: {}`, and standing pytest
+  passing. This is semantic-candidate local proof only.
+- Earlier pointers `1e81fb31bc8017e09f58f905b8c7b41e8545ad00`,
+  `abaf886822a851c1081ec889f6733c02b627e525`, and `0784bb041` are historical
+  evidence, not current candidate joins.
+- Release claims remain explicitly unbound: no version mutation, release
+  candidate publication, tag/push, fresh-eye approval, managed install/update
+  readback, hosted/public readback, issue closure, host-side #687 resolution,
+  or Cautilus evaluation is claimed.
 
 ## Goal
 
@@ -1057,7 +1081,7 @@ boundary at once while parent-only truth surfaces remain serialized.
 - Objective: distinguish historical post-lock reproductions from current source,
   installed, and host behavior before the release candidate is frozen.
 - Evidence: `charness-artifacts/issues/2026-08-21-current-requalification.md`
-  records source candidate `1e81fb31bc8017e09f58f905b8c7b41e8545ad00`, fresh
+  records source candidate `7676ec51aeed99e215106dd8490332e57db80d07`, fresh
   GitHub reads for #681–#687, exact current commands, and the source-versus-
   installed split for #685/#686.
 - Result: #681 remains `already-satisfied`; #682's explicit committed range,
@@ -1071,9 +1095,10 @@ boundary at once while parent-only truth surfaces remain serialized.
   `state: not-established` and exit 3, never a false `no retro owed`; a clean
   source check is not installed proof; and a fingerprint or process receipt is
   not fresh-eye approval. The packet keeps these states machine-distinct.
-- Next proof: focused lane, exact changed-line proof, semantic packet refresh,
-  then the release planner's candidate/version boundary. No version, tag, push,
-  publication, issue close, or fresh-eye approval is claimed here.
+- Next proof: second bounded review against the exact packet, then target-bound
+  packaging and candidate install/readback before the release planner's
+  candidate/version boundary. No version, tag, push, publication, issue close,
+  or fresh-eye approval is claimed here.
 
 ### R3 blocked release critique and delivery-exit repair
 
@@ -1095,11 +1120,12 @@ boundary at once while parent-only truth surfaces remain serialized.
   `331c4a230..22ea` docs-only join is explicitly historical. First-reader
   maintainer-candidate and post-publication operator upgrade/rollback
   non-claims are recorded.
-- Still blocked: prepare a new exact-head
-  packet and release critique; run target-bound packaging, candidate
-  install/update/version/doctor, `#685/#686` semantic readback, and any planner-
-  required real-host checklist. No version, tag, push, publication, issue
-  closeout, or host-side `#687` terminal-event claim is made.
+- Still blocked: the exact semantic packet is now prepared at candidate
+  `7676ec51aeed99e215106dd8490332e57db80d07`, but its second bounded review,
+  target-bound packaging, candidate install/update/version/doctor,
+  `#685/#686` semantic readback, and planner-required real-host checklist
+  remain open. No version, tag, push, publication, issue closeout, or host-side
+  `#687` terminal-event claim is made.
 
 ## Closeout Binding Plan
 
@@ -1166,7 +1192,14 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 ## Final Verification
 
-- Current integrated candidate `abaf886822a851c1081ec889f6733c02b627e525` has
+- The current exact semantic candidate is
+  `7676ec51aeed99e215106dd8490332e57db80d07`, bound to
+  `charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-exact-packet.json`.
+  Its changed-line proof is clean (`1/1` mapped pool file,
+  `blocking_targets: {}`, standing pytest passed). This does not claim
+  fresh-eye approval, installed/public proof, version mutation, or release.
+
+- Historical integrated candidate `abaf886822a851c1081ec889f6733c02b627e525` had
   a direct changed-line receipt from base `33e556043174ce6e32d25da51e8397e18e941613`
   with `status: clean`, `1/1` mapped pool file, `blocking_targets: {}`, and
   standing pytest passed. At the same time, the runner-owned focused lane
