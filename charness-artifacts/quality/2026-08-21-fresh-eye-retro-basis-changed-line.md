@@ -47,6 +47,9 @@ parallel focused-coverage producer output ownership.
   ./scripts/run-quality.sh --read-only` returned `1 passed, 0 failed` in
   `230.3s`; its report was under an external per-run temp namespace and did not
   collide with the direct producer's default report/runtime paths.
+- The subsequent committed-tree broad `./scripts/run-quality.sh --read-only`
+  returned `97 passed, 0 failed` in `300.8s`; its standing pytest passed in
+  `149.9s` and its full changed-line producer passed in `275.9s`.
 - Focused current runner/mutation/prepush/staged-plan bundle: 107 passed before
   the test-module split; final post-split focused bundle: 38 passed. Commit
   preflight for `abaf88682`: passed.
@@ -54,7 +57,8 @@ parallel focused-coverage producer output ownership.
   rendered by `render_runtime_summary.py`; focused producer stdout and the
   generated focused-coverage receipt are supplementary.
 - runtime hot spots: direct changed-line producer runtime was 71.8 seconds;
-  the concurrent runner-owned focused lane was 230.3 seconds.
+  the concurrent runner-owned focused lane was 230.3 seconds; the committed
+  broad run was 300.8 seconds end to end.
 - coverage gate: exact-base changed-line coverage is clean for 1/1 mapped file
   with no blocking targets; the current-head proof from base `b6567606e` was
   `status: noop` because no eligible mutation-pool file changed.

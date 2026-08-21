@@ -1117,6 +1117,11 @@ boundary at once while parent-only truth surfaces remain serialized.
   report/runtime had disjoint write surfaces. This proves the repaired
   parallel producer boundary, not broad release, fresh-eye approval, or
   external proof.
+- The subsequent committed-tree broad `./scripts/run-quality.sh --read-only`
+  receipt is `97 passed, 0 failed` in `300.8s`; its standing pytest passed in
+  `149.9s`, its full changed-line producer passed in `275.9s`, and the remaining
+  length/ratio/markdown/nose findings are advisory-only. This is local quality
+  proof, not fresh-eye approval, installed-host proof, or release/publication.
 
 - Prior Slice 7 candidate `33e556043174ce6e32d25da51e8397e18e941613` had
   a clean exact-base changed-line receipt at

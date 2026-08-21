@@ -42,8 +42,10 @@
   claimed.
 - The current direct changed-line proof is `status: clean` from base `33e556043`
   with `1/1` mapped pool file; the focused `run-quality` lane passed concurrently
-  with `1 passed, 0 failed` in `230.3s`. This is producer-boundary proof, not a
-  broad release or fresh-eye verdict.
+  with `1 passed, 0 failed` in `230.3s`.
+- Broad `./scripts/run-quality.sh --read-only` completed
+  with `97 passed, 0 failed` in `300.8s` (pytest `149.9s`, full changed-line
+  `275.9s`). Length/ratio/markdown/nose findings remain advisory.
 - The [portable file-backed delivery repair](../charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md)
   is committed at `cce985d6f`, with refusal-branch coverage at `458080160`.
   Adapter authority, typed report
