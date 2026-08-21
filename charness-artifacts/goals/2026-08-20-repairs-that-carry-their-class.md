@@ -20,7 +20,8 @@ runs the activation command.
   YAML CLI channel, and process-group timeout repair are committed, but the
   current-open post-lock exceptions (#682, #683, #685, #686, and #687) still
   require current requalification and/or repair before R3 candidate freeze.
-  The installed/fresh-eye/release boundary remains open.
+  The fresh-eye/retro basis handoff repair is now committed at `33e556043`;
+  the installed/fresh-eye/release boundary remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
@@ -1012,6 +1013,20 @@ boundary at once while parent-only truth surfaces remain serialized.
   application, issue closure, version mutation, or fresh-eye approval of the
   repaired surface is claimed.
 
+### Slice 7: fresh-eye-and-retro-basis-handoff
+
+- Objective: Make critique/prove fresh-eye enforcement and retro auto-trigger consumers carry explicit, typed evidence without confusing process/media success, empty diff, or guessed continuation flags with a verdict.
+- Why this approach: The failure class crossed skill guidance, planner packets, installed-layout resolution, and reviewer-boundary receipts. A cohesive source/plugin slice keeps the independent-context contract and the change-basis contract aligned at their consumers.
+- Commits: Committed as 33e556043 (Repair fresh-eye and retro basis handoffs).
+- What changed: Standalone critique remains file-backed by default; typed-subagent is an explicit adapter branch, and prove binds its typed carrier without same-context fallback. Retro planner packets now carry explicit paths or HEAD^..HEAD basis, and boundary snapshots emit verify_before plus exact verify_args. Source and plugin mirrors are synchronized.
+- Alternatives rejected: Rejected treating a spawned process, non-empty output, delivery_complete, or bare post-commit trigger invocation as approval/evaluation. Rejected --no-verify and shaving core/length gates. A guessed ledger path and a missing required --ledger flag were recorded as command-boundary smells and corrected through file inventory and help-shaped invocation.
+- Targeted verification: Focused critique/prove/worker/report/fingerprint/retro suites: 175 passed. Commit preflight: 23 commands passed, including validate_skills, run_evals, mirror drift, docs/link checks, standalone imports, and boundary ratchet. Exact-base changed-line proof passed clean: base a1e69e812, resolved HEAD 33e556043, 3/3 mapped pool files, blocking_targets {}, standing pytest passed. Packaging and source/plugin parity passed.
+- Test duplication pressure: Added planner tests for explicit, recent-commit, and basis-less trigger scopes; installed-plan coverage; receipt continuation fields; and skill/reference contract coverage. Length/headroom failures exposed responsibility and core-surface pressure; planner trigger logic moved to retro_plan_trigger.py and detailed trigger semantics moved to the existing reference.
+- Critique: No new fresh-eye approval is claimed: the active verdict-surface two-round cap was already consumed. Round-2 repair status remains accepted-unreviewed-under-round-cap; the typed worker/report contract still rejects approval when delivery is absent or mismatched.
+- Off-goal findings: No version bump, release candidate, tag, push, publication, managed install/update readback, hosted readback, issue closure, or Cautilus evaluation is claimed.
+- Lessons carried forward: A mandatory fresh-eye contract should name the independent context and typed consumer proof, not imply a host spawn. A post-commit planner must carry a committed basis because an empty working tree is not an empty slice. Wrong path and wrong flag failures belong in the same command-boundary recurrence class as stale output and non-empty checks.
+- Metrics: Focused related tests: 175 passed. Exact changed-line: 3/3 mapped files clean. Commit: 33e556043. Broad quality rerun is in progress and will be recorded separately.
+
 ## Closeout Binding Plan
 
 - Reviewed inputs: this goal, the frozen issue ledger and amendments, current
@@ -1076,6 +1091,14 @@ boundary at once while parent-only truth surfaces remain serialized.
   schema, timeout, cwd, atomic-publish, and typed-receipt contract.
 
 ## Final Verification
+
+- Current integrated candidate `33e556043174ce6e32d25da51e8397e18e941613` has
+  a clean exact-base changed-line receipt at
+  `charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md`:
+  base `a1e69e8125b9fac962fdf1f4d0b32aa0cc4f9647`, 3/3 mapped pool files,
+  `blocking_targets: {}`, and standing pytest passed. Focused related tests
+  are 175 passed; commit preflight completed 23 commands. This proves the
+  mapped retro planner pool, not fresh-eye approval or release/external proof.
 
 - The latest stable-tree broad gate receipt completed with `96 passed, 0
   failed, 1 UNPROVEN` before the final counterexample commit. Standing pytest
