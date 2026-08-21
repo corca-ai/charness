@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
+
+import yaml
 
 from scripts import critique_enforcement_scope as _scope
 
@@ -128,12 +131,37 @@ def test_worker_delivered_requires_the_combined_report_carrier(tmp_path: Path) -
 
 def test_worker_delivered_requires_report_approval_and_result_identities(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
+    report = repo / "charness-artifacts" / "critique" / "reports" / "attempt.yaml"
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": "charness.reviewer_worker_report.v1",
+                "execution_mode": "file-backed-worker",
+                "approval_eligible": True,
+                "delivery_state": "findings-received",
+                "receipt_ok": True,
+                "ledger_ok": True,
+                "provenance_ok": True,
+                "packet_identity": "a" * 64,
+                "reviewed_input_identity": "c" * 64,
+                "parent_receipt_identity": "d" * 64,
+                "findings_identity": "b" * 64,
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    report_identity = hashlib.sha256(report.read_bytes()).hexdigest()
     tier = (
         _TIER_BLOCK.format(host="host-defaulted", delivery="findings-received")
         + "- Worker report: charness-artifacts/critique/reports/attempt.yaml\n"
+        + f"- Worker report identity: {report_identity}\n"
         + "- Worker report approval: approval_eligible: true\n"
         + "- Worker report delivery: findings-received\n"
         + f"- Worker report packet identity: {'a' * 64}\n"
+        + f"- Worker report input identity: {'c' * 64}\n"
+        + f"- Worker report parent receipt identity: {'d' * 64}\n"
         + f"- Worker report findings identity: {'b' * 64}\n"
     )
     relpath = _artifact(repo, "2026-07-28-worker-report.md", _body(fresh="worker-delivered", tier=tier))
@@ -145,9 +173,12 @@ def _valid_worker_report_tier(*, approval: str = "approval_eligible: true", deli
     return (
         _TIER_BLOCK.format(host="host-defaulted", delivery="findings-received")
         + "- Worker report: charness-artifacts/critique/reports/attempt.yaml\n"
+        + f"- Worker report identity: {'e' * 64}\n"
         + f"- Worker report approval: {approval}\n"
         + f"- Worker report delivery: {delivery}\n"
         + f"- Worker report packet identity: {packet}\n"
+        + f"- Worker report input identity: {'c' * 64}\n"
+        + f"- Worker report parent receipt identity: {'d' * 64}\n"
         + f"- Worker report findings identity: {'b' * 64}\n"
     )
 

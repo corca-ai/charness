@@ -23,7 +23,7 @@ same-agent substitute was used.
 
 - Packet path: `charness-artifacts/critique/2026-08-06-041231-packet.json`
 - Packet SHA256: `d08dfe70f2c8a26e1de8716cf9e661f63dd89acf89a59f74b31ec480b8aa3745`
-- Packet Markdown SHA256: `4009f48ed0db1ea35f3e0b25a99c52b8acbef91d74d7518ae4968e357970b199`
+- Packet Markdown SHA256: `fd7b86dbfd92c6b422b6474bfec70e18f0ff2e20d8ef0218d3a46efbad041f68`
 - Identity SHA256: `41c19a8f070e034996cda4fd78eb6537beeed88990f17089e74b9ef692e7e2f5`
 - Reviewed path: `charness-artifacts/spec/2026-08-06-final-bundle-preflight-contract.md`
 

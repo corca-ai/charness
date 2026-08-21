@@ -18,7 +18,11 @@ SCRIPT = ROOT / "skills/shared/scripts/reviewer_worker_report.py"
 
 def _receipt(tmp_path: Path, *, status: str = "succeeded") -> Path:
     output = tmp_path / "result.json"
-    output.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    output.write_text(
+        '{"verdict":"PASS","packet_sha256":"packet-1",'
+        '"reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}\n',
+        encoding="utf-8",
+    )
     payload = {
         "schema_version": "charness.reviewer_worker.v1",
         "run_id": "worker-1",
@@ -34,6 +38,7 @@ def _receipt(tmp_path: Path, *, status: str = "succeeded") -> Path:
         "scope": "scope-1",
         "packet_identity": "packet-1",
         "reviewed_input_identity": "a" * 64,
+        "parent_receipt_identity": "parent-1",
         "execution_mode": "file-backed-worker",
         "prompt_sha256": "b" * 64,
         "schema_sha256": "c" * 64,

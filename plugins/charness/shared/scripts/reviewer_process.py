@@ -8,6 +8,7 @@ import signal
 import subprocess
 from typing import Any
 
+PROCESS_CLEANUP_TIMEOUT_SECONDS = 5.0
 
 def terminate_process_group(process: subprocess.Popen[Any]) -> None:
     """Hard-stop a backend and descendants when a bounded run expires."""
@@ -24,13 +25,26 @@ def terminate_process_group(process: subprocess.Popen[Any]) -> None:
             subprocess.run(
                 ["taskkill", "/PID", str(process.pid), "/T", "/F"],
                 check=False,
+                timeout=PROCESS_CLEANUP_TIMEOUT_SECONDS,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-        except FileNotFoundError:
-            process.kill()
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            try:
+                process.kill()
+            except ProcessLookupError:
+                pass
     try:
-        process.wait(timeout=5)
+        process.wait(timeout=PROCESS_CLEANUP_TIMEOUT_SECONDS)
     except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait()
+        try:
+            process.kill()
+        except ProcessLookupError:
+            pass
+        try:
+            process.wait(timeout=PROCESS_CLEANUP_TIMEOUT_SECONDS)
+        except subprocess.TimeoutExpired:
+            # The OS has not reaped the child yet. Do not turn cleanup into an
+            # unbounded second timeout; the typed receipt still records the
+            # original worker result and the caller can diagnose the orphan.
+            pass

@@ -19,13 +19,12 @@ Task-completing repo work always records critique before closeout. Scale the
 pass, not the obligation: use the risk boundary or meaningful slice as the
 review unit, not every commit. See `references/cadence.md`.
 
-When this standalone `critique` skill runs, its default fresh-eye execution is a Charness-owned file-backed worker; typed-subagent remains optional.
-There is no same-context local standalone `critique` variant.
-The rule is: apply the stop-instead-of-local-substitute rule when neither the configured worker nor the optional typed-subagent path can provide a separate fresh-eye context.
-
-Fresh-eye execution branches, reports, ledgers, and no-same-context rules live in
-`references/adapter-contract.md` and `../../shared/references/fresh-eye-subagent-review.md`;
-missing delivery is a typed block, never a local substitute.
+Compatibility contract: When this standalone `critique` skill runs, its default fresh-eye execution is a Charness-owned
+file-backed worker. There is no same-context local standalone `critique` variant.
+The rule is: apply the stop-instead-of-local-substitute rule when neither the configured
+worker nor the optional typed-subagent path can provide a separate fresh-eye context.
+Adapter, typed-carrier, and refusal details live in
+`references/adapter-contract.md` and `../../shared/references/fresh-eye-subagent-review.md`.
 
 Delegated reviewer fast path: read
 `../../shared/references/disposition-reviewer-brief.md` before treating the
@@ -101,13 +100,16 @@ history.
    - choose angles that can disagree meaningfully, not five near-duplicates
    - use the target reference's `Anchor Angle Distribution`; see also `references/angle-selection.md`
 3. Run the angle pass.
-   - Resolve `reviewer_runner.mode` and stay on that branch; see
-     `references/adapter-contract.md` for schema/report versus host-spawn delivery.
-   - Bind prepared-packet identity; use rail-1 snapshot/verify around each reviewer spawn.
-     Parent-head movement is drift. Keep counterweight separate
-     and follow the full delivery path in `../../shared/references/fresh-eye-subagent-review.md`.
-   - Record each round with `record_round_findings.py`; mismatched snapshots and
-     same-context substitutes refuse.
+   - Resolve the adapter's fresh-eye branch and consume its typed carrier; caller
+     flags cannot cross that branch. See `references/adapter-contract.md` for
+     the execution and delivery contract.
+   - use bounded fresh-eye subagents with one angle each; in the default
+     file-backed mode this means one-shot Charness workers whose typed reports
+     are delivered through the report/receipt/ledger carrier. The phrase
+     "subagent" names the fresh context contract, not permission to downgrade
+     to a same-context reread.
+   - Bind prepared-packet identity; use rail-1 snapshot/verify around each reviewer spawn; parent-head movement is drift. Keep counterweight separate and follow `../../shared/references/fresh-eye-subagent-review.md`.
+   - Record each round with `record_round_findings.py --window-id <id> --boundary-snapshot <path>`; mismatched snapshots and same-context substitutes refuse. The next round `n+1` reads as prior evidence the recorded findings before choosing a new bounded lens.
 4. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available

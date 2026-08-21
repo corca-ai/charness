@@ -32,8 +32,13 @@ def _common(tmp_path: Path) -> dict[str, Path]:
             {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["kind", "reason"],
-                "properties": {"kind": {"type": "string", "const": "review"}, "reason": {"type": "string"}},
+                "required": ["kind", "reason", "packet_sha256", "reviewed_input_identity_sha256"],
+                "properties": {
+                    "kind": {"type": "string", "const": "review"},
+                    "reason": {"type": "string"},
+                    "packet_sha256": {"type": "string"},
+                    "reviewed_input_identity_sha256": {"type": "string"},
+                },
             }
         ),
         encoding="utf-8",
@@ -72,6 +77,11 @@ def test_bounded_review_schema_is_provider_strict_for_every_object() -> None:
 
 def test_file_backed_runner_binds_receipt_ledger_and_report(tmp_path: Path) -> None:
     files = _common(tmp_path)
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nreviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n",
+        encoding="utf-8",
+    )
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     _executable(
@@ -82,7 +92,7 @@ while [ "$#" -gt 0 ]; do
   if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
   shift
 done
-printf '%s\n' '{"kind":"review","reason":"fresh"}' > "$out"
+printf '%s\n' '{"kind":"review","reason":"fresh","packet_sha256":"packet-1","reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' > "$out"
 """,
     )
     env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
@@ -124,6 +134,71 @@ printf '%s\n' '{"kind":"review","reason":"fresh"}' > "$out"
     assert report["approval_eligible"] is True
     assert report["execution_mode"] == "file-backed-worker"
     assert yaml.safe_load(files["report"].read_text(encoding="utf-8"))["approval_eligible"] is True
+
+
+def test_file_backed_runner_rejects_caller_backend_override(tmp_path: Path) -> None:
+    files = _common(tmp_path)
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nreviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n",
+        encoding="utf-8",
+    )
+    command = [
+        sys.executable,
+        str(SCRIPT),
+        "--repo-root", str(tmp_path),
+        "--backend", "claude_p",
+        "--prompt-file", str(files["prompt"]),
+        "--schema-file", str(files["schema"]),
+        "--scope", "scope-1",
+        "--packet-identity", "packet-1",
+        "--reviewed-input-identity", "a" * 64,
+        "--attempt-id", "attempt-1",
+        "--parent-receipt-identity", "parent-1",
+        "--boundary-fingerprint", "boundary-1",
+        "--ledger-file", str(files["ledger"]),
+        "--output-file", str(files["output"]),
+        "--receipt-file", str(files["receipt"]),
+        "--report-file", str(files["report"]),
+    ]
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
+    payload = yaml.safe_load(result.stdout)
+    assert result.returncode == 2
+    assert payload["status"] == "runner-invalid"
+    assert "authoritative" in payload["error"]
+
+
+def test_file_backed_runner_does_not_turn_explicit_zero_timeout_into_adapter_default(tmp_path: Path) -> None:
+    files = _common(tmp_path)
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nreviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n",
+        encoding="utf-8",
+    )
+    command = [
+        sys.executable,
+        str(SCRIPT),
+        "--repo-root", str(tmp_path),
+        "--backend", "codex_exec",
+        "--prompt-file", str(files["prompt"]),
+        "--schema-file", str(files["schema"]),
+        "--scope", "scope-1",
+        "--packet-identity", "packet-1",
+        "--reviewed-input-identity", "a" * 64,
+        "--attempt-id", "attempt-1",
+        "--parent-receipt-identity", "parent-1",
+        "--boundary-fingerprint", "boundary-1",
+        "--ledger-file", str(files["ledger"]),
+        "--output-file", str(files["output"]),
+        "--receipt-file", str(files["receipt"]),
+        "--report-file", str(files["report"]),
+        "--timeout-seconds", "0",
+    ]
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
+    payload = yaml.safe_load(result.stdout)
+    assert result.returncode == 2
+    assert payload["status"] == "runner-invalid"
+    assert "timeout_seconds" in payload["error"]
 
 
 def test_file_backed_runner_refuses_typed_subagent_mode(tmp_path: Path) -> None:

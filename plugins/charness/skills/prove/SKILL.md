@@ -76,7 +76,9 @@ verification preferences or `truth_surfaces`.
    - every task-completing repo slice records critique before closeout; scale the pass instead of asking whether it is needed
    - record `Critique: short <scope>` for small local-risk slices, or `Critique: full <artifact-or-worker-status>` after using standalone `critique` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
    - `critique` always means a fresh bounded review, never a same-context pass;
-     consume its proof according to the critique delivery contract. Use
+     the critique adapter selects the file-backed worker or typed-subagent
+     branch and its typed carrier is the authority. Caller flags cannot turn a
+     failed worker/report into a same-context approval. Consume its proof according to the critique delivery contract. Use
      `Critique: not-applicable <reason>` only for inspect/status/routing-only
      requests that do not complete repo work.
    - if critique delivery is blocked after the capability check, stop and record

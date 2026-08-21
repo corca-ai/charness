@@ -5270,6 +5270,20 @@
       "note": "standalone argparse/main/report contracts across independent adapter, mutation-coverage, retro-wiring, and consumer-validator proof surfaces. The overlap is command-local lifecycle shape, not shared verdict policy; extracting it would hide each surface's refusal semantics and break portable direct execution.",
       "reviewed_at": "2026-08-21",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2581506b53dc92d7",
+      "note": "portable per-skill resolve_adapter entrypoints intentionally repeat the direct-execution bootstrap and adapter resolution shape. Each exported skill owns its adapter schema and must remain standalone in the installed plugin; extracting this boundary would reintroduce an authoring-layout dependency.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "37acf6e98ae3d544",
+      "note": "critique and retro artifact scaffolders intentionally carry parallel standalone templates for their different artifact contracts. The overlap is portability/scaffold shape, while their required sections, validators, and evidence semantics remain skill-owned; extraction would hide those public skill boundaries.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

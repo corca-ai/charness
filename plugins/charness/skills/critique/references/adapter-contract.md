@@ -74,8 +74,11 @@ Field semantics:
   `../../../shared/references/bounded-review-result.schema.json` and emits the
   combined worker report. Typed-subagent mode is a separate host branch; the
   file-backed runner refuses it rather than silently changing proof mode. The
-  consumer must read the combined worker report and delivery ledger, never
-  infer approval from an output file, delivery CLI field, or process exit code.
+  adapter is authoritative: a caller may not override the selected mode,
+  concrete backend, or timeout for one invocation. `host-defaulted` delegates
+  only the concrete backend choice to the host. The consumer must read the
+  combined worker report and delivery ledger, never infer approval from an
+  output file, delivery CLI field, or process exit code.
 - `packet_sections` — list of declared sections; empty list is valid
   (signals "no opt-in" same as omitting the field)
 - `reviewer_tiers` — optional mapping from a portable reviewer tier

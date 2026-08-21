@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
-import re
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
+
+try:
+    from reviewer_delivery_history import validate_history
+except ImportError:
+    from skills.shared.scripts.reviewer_delivery_history import validate_history
+
+try:
+    from reviewer_delivery_fields import _sha256, bound_fields
+except ImportError:
+    from skills.shared.scripts.reviewer_delivery_fields import _sha256, bound_fields
 
 SCHEMA_VERSION = "charness.reviewer_delivery.v1"
 SPAWN_ACCEPTED = "spawn-accepted"
@@ -47,7 +56,6 @@ _ALLOWED_TRANSITIONS = {
     SPAWN_ACCEPTED: frozenset(CANONICAL_STATES[1:]),
     RUNNING: frozenset(CANONICAL_STATES[2:]),
 }
-_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _EXECUTION_MODES = frozenset({"file-backed-worker", "typed-subagent"})
 
 
@@ -65,13 +73,6 @@ def _text(value: object, label: str) -> str:
     return value.strip()
 
 
-def _sha256(value: object, label: str) -> str:
-    text = _text(value, label).lower()
-    if not _SHA256_RE.fullmatch(text):
-        raise DeliveryError(f"{label} must be a lowercase SHA-256 identity")
-    return text
-
-
 def _attempt_id(value: object | None = None) -> str:
     candidate = uuid.uuid4().hex if value is None else _text(value, "attempt_id")
     if len(candidate) > 128 or any(char.isspace() for char in candidate):
@@ -83,68 +84,12 @@ def _event_id() -> str:
     return uuid.uuid4().hex
 
 
-def _event(event: dict[str, Any]) -> dict[str, Any]:
-    if not isinstance(event, dict) or not _text(event.get("event_id"), "event_id"):
-        raise DeliveryError("history and observations require event_id")
-    return event
-
-
-def _validate_history(
-    history: list[dict[str, Any]], observations: list[dict[str, Any]], state: str
-) -> None:
-    if not history:
-        raise DeliveryError("history must contain the initial spawn-accepted event")
-    if history[0].get("state") != SPAWN_ACCEPTED:
-        raise DeliveryError("history must begin with spawn-accepted")
-    event_ids: set[str] = set()
-    for item in [*history, *observations]:
-        _event(item)
-        if item["event_id"] in event_ids:
-            raise DeliveryError(f"duplicate event_id: {item['event_id']}")
-        event_ids.add(item["event_id"])
-    prior_state = history[0]["state"]
-    for item in history[1:]:
-        event_state = item.get("state")
-        if event_state not in CANONICAL_STATES:
-            raise DeliveryError(f"history contains unknown canonical state: {event_state}")
-        if event_state not in _ALLOWED_TRANSITIONS.get(prior_state, frozenset()):
-            raise DeliveryError(f"history contains invalid transition `{prior_state}` -> `{event_state}`")
-        prior_state = event_state
-    if prior_state != state:
-        raise DeliveryError("history final state does not match attempt state")
-
-
-def _bound_fields(payload: dict[str, Any], state: str) -> dict[str, Any]:
-    findings = (_sha256(payload["findings_identity"], "findings_identity")
-                if payload.get("findings_identity") is not None else None)
-    if state == FINDINGS_RECEIVED and findings is None:
-        raise DeliveryError("findings-received history requires findings_identity")
-    if state != FINDINGS_RECEIVED and findings is not None:
-        raise DeliveryError("findings_identity is only valid for findings-received")
-    reviewed_input_identity = (_sha256(payload["reviewed_input_identity"], "reviewed_input_identity")
-                               if payload.get("reviewed_input_identity") is not None else None)
-    execution_mode = payload.get("execution_mode")
-    if execution_mode is not None:
-        execution_mode = _text(execution_mode, "execution_mode")
-        if execution_mode not in _EXECUTION_MODES:
-            raise DeliveryError(f"unknown execution_mode: {execution_mode}")
-    prompt_sha256 = (_sha256(payload["prompt_sha256"], "prompt_sha256")
-                     if payload.get("prompt_sha256") is not None else None)
-    schema_sha256 = (_sha256(payload["schema_sha256"], "schema_sha256")
-                     if payload.get("schema_sha256") is not None else None)
-    retry_of = _attempt_id(payload["retry_of"]) if payload.get("retry_of") is not None else None
-    retry_count = payload.get("retry_count", 0)
-    if not isinstance(retry_count, int) or retry_count < 0:
-        raise DeliveryError("retry_count must be a non-negative integer")
+def _event_context(attempt: "DeliveryAttempt") -> dict[str, Any]:
     return {
-        "findings_identity": findings,
-        "reviewed_input_identity": reviewed_input_identity,
-        "execution_mode": execution_mode,
-        "backend": _text(payload["backend"], "backend") if payload.get("backend") is not None else None,
-        "prompt_sha256": prompt_sha256,
-        "schema_sha256": schema_sha256,
-        "retry_of": retry_of,
-        "retry_count": retry_count,
+        "attempt_id": attempt.attempt_id,
+        "scope": attempt.scope,
+        "packet_identity": attempt.packet_identity,
+        "parent_receipt_identity": attempt.parent_receipt_identity,
     }
 
 
@@ -214,6 +159,7 @@ class DeliveryAttempt:
                 "signal": attempt.observed_signal,
                 "terminal": False,
                 "recorded_at": when,
+                **_event_context(attempt),
             }
         )
         return attempt
@@ -246,10 +192,33 @@ class DeliveryAttempt:
         observations = payload.get("observations", [])
         if not isinstance(history, list) or not isinstance(observations, list):
             raise DeliveryError("history and observations must be lists")
-        _validate_history(history, observations, state)
-        fields = _bound_fields(payload, state)
+        try:
+            fields = bound_fields(
+                payload,
+                state,
+                findings_received=FINDINGS_RECEIVED,
+                execution_modes=_EXECUTION_MODES,
+                attempt_id=_attempt_id,
+            )
+        except ValueError as exc:
+            raise DeliveryError(str(exc)) from exc
+        normalized_attempt_id = _attempt_id(payload["attempt_id"])
+        try:
+            validate_history(
+                history,
+                observations,
+                state,
+                normalized_attempt_id,
+                fields["findings_identity"],
+                spawn_accepted=SPAWN_ACCEPTED,
+                canonical_states=CANONICAL_STATES,
+                terminal_states=TERMINAL_STATES,
+                allowed_transitions=_ALLOWED_TRANSITIONS,
+            )
+        except ValueError as exc:
+            raise DeliveryError(str(exc)) from exc
         return cls(
-            attempt_id=_attempt_id(payload["attempt_id"]),
+            attempt_id=normalized_attempt_id,
             scope=_text(payload["scope"], "scope"),
             packet_identity=_text(payload["packet_identity"], "packet_identity"),
             parent_receipt_identity=_text(payload["parent_receipt_identity"], "parent_receipt_identity"),
@@ -301,7 +270,14 @@ class DeliveryAttempt:
     def delivery_complete(self) -> bool:
         return self.state == APPROVAL_STATE and self.terminal and self.findings_identity is not None
 
-    def _apply_transition(self, state: str, signal: str, recorded_at: str) -> None:
+    def _apply_transition(
+        self,
+        state: str,
+        signal: str,
+        recorded_at: str,
+        *,
+        event_fields: dict[str, Any] | None = None,
+    ) -> None:
         state = _text(state, "state")
         signal = _text(signal, "signal")
         recorded_at = _text(recorded_at, "recorded_at")
@@ -317,15 +293,17 @@ class DeliveryAttempt:
         self.observed_signal = signal
         self.terminal = state in TERMINAL_STATES
         self.recorded_at = recorded_at
-        self.history.append(
-            {
-                "event_id": _event_id(),
-                "state": state,
-                "signal": signal,
-                "terminal": self.terminal,
-                "recorded_at": recorded_at,
-            }
-        )
+        event = {
+            "event_id": _event_id(),
+            "state": state,
+            "signal": signal,
+            "terminal": self.terminal,
+            "recorded_at": recorded_at,
+            **_event_context(self),
+        }
+        if event_fields:
+            event.update(event_fields)
+        self.history.append(event)
 
     def transition(self, state: str, signal: str, recorded_at: str) -> None:
         if state == FINDINGS_RECEIVED:
@@ -355,6 +333,7 @@ class DeliveryAttempt:
                     "state": "late-or-duplicate-findings",
                     "signal": "findings arrived after the attempt was terminal",
                     "recorded_at": when,
+                    **_event_context(self),
                     **supplied,
                 }
             )
@@ -372,11 +351,23 @@ class DeliveryAttempt:
                 when,
             )
             self.observations.append(
-                {"event_id": _event_id(), "state": "foreign-findings", "recorded_at": when, **supplied}
+                {
+                    "event_id": _event_id(),
+                    "state": "foreign-findings",
+                    "signal": "findings provenance did not match the attempt",
+                    "recorded_at": when,
+                    **_event_context(self),
+                    **supplied,
+                }
             )
             return False
         self.findings_identity = supplied["findings_identity"]
-        self._apply_transition(FINDINGS_RECEIVED, "findings received in parent context", when)
+        self._apply_transition(
+            FINDINGS_RECEIVED,
+            "findings received in parent context",
+            when,
+            event_fields={"findings_identity": self.findings_identity},
+        )
         return True
 
     def record_recovery(self, signal: str, recorded_at: str) -> None:
@@ -387,5 +378,6 @@ class DeliveryAttempt:
                 "signal": _text(signal, "signal"),
                 "recorded_at": _text(recorded_at, "recorded_at"),
                 "delivery_complete": False,
+                **_event_context(self),
             }
         )

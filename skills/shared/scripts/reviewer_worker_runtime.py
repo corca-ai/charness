@@ -108,7 +108,13 @@ def _schema_validator(schema_path: Path) -> tuple[Any, dict[str, Any]]:
         raise WorkerError("invalid-schema", f"invalid JSON schema: {exc}") from exc
 
 
-def _validate_result(path: Path, validator: Any) -> dict[str, Any]:
+def _validate_result(
+    path: Path,
+    validator: Any,
+    *,
+    packet_identity: str,
+    reviewed_input_identity: str,
+) -> dict[str, Any]:
     if not path.exists():
         raise WorkerError("result-missing", f"backend did not write a result: {path}")
     if path.stat().st_size == 0:
@@ -123,6 +129,16 @@ def _validate_result(path: Path, validator: Any) -> dict[str, Any]:
         raise WorkerError("schema-invalid", f"backend result failed JSON Schema validation: {exc}") from exc
     if not isinstance(payload, dict):
         raise WorkerError("schema-invalid", "review result must be a JSON object")
+    if payload.get("packet_sha256") != packet_identity:
+        raise WorkerError(
+            "schema-invalid",
+            "review result packet_sha256 does not match the invocation packet identity",
+        )
+    if payload.get("reviewed_input_identity_sha256") != reviewed_input_identity:
+        raise WorkerError(
+            "schema-invalid",
+            "review result reviewed_input_identity_sha256 does not match the invocation input identity",
+        )
     return payload
 
 
@@ -141,9 +157,10 @@ def preflight(args: Any) -> dict[str, Path | float | str]:
             raise WorkerError("input-invalid", f"{label} is not a file: {path}")
     if not isinstance(args.timeout_seconds, (int, float)) or not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
         raise WorkerError("input-invalid", "timeout_seconds must be finite and greater than zero")
+    all_paths = (prompt, schema, output, receipt, stdout, stderr)
+    if len({str(path) for path in all_paths}) != len(all_paths):
+        raise WorkerError("input-invalid", "worker input and artifact paths must resolve to distinct files")
     artifact_paths = (output, receipt, stdout, stderr)
-    if len({str(path) for path in artifact_paths}) != len(artifact_paths):
-        raise WorkerError("input-invalid", "worker artifact paths must resolve to distinct files")
     existing = [path for path in artifact_paths if path.exists()]
     if existing:
         rendered = ", ".join(str(path) for path in existing)
@@ -205,7 +222,8 @@ def run(args: Any, paths: dict[str, Path | float | str], run_id: str, started_at
     assert isinstance(stdout, Path)
     assert isinstance(stderr, Path)
     validator, _ = _schema_validator(schema)
-    output.parent.mkdir(parents=True, exist_ok=True)
+    for path in (output, stdout, stderr):
+        path.parent.mkdir(parents=True, exist_ok=True)
     temp_fd, temp_name = tempfile.mkstemp(prefix=f".{output.name}.{run_id}.", suffix=".pending", dir=output.parent)
     os.close(temp_fd)
     temp_output = Path(temp_name)
@@ -246,7 +264,12 @@ def run(args: Any, paths: dict[str, Path | float | str], run_id: str, started_at
             raise WorkerError("backend-failed", f"backend exited with code {exit_code}", exit_code=exit_code)
         if args.backend == "claude_p":
             _normalize_claude(raw_output, temp_output)
-        _validate_result(temp_output, validator)
+        _validate_result(
+            temp_output,
+            validator,
+            packet_identity=args.packet_identity,
+            reviewed_input_identity=args.reviewed_input_identity,
+        )
         os.replace(temp_output, output)
     except WorkerError as exc:
         status = exc.status
@@ -282,6 +305,7 @@ def run(args: Any, paths: dict[str, Path | float | str], run_id: str, started_at
         "scope": args.scope,
         "packet_identity": args.packet_identity,
         "reviewed_input_identity": args.reviewed_input_identity,
+        "parent_receipt_identity": args.parent_receipt_identity,
         "execution_mode": args.execution_mode,
         "prompt_sha256": sha256(prompt),
         "schema_sha256": sha256(schema),

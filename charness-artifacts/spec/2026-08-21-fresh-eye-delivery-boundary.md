@@ -48,6 +48,12 @@ Charness-owned prevention and diagnostics for issue #687, while qualifying the
 current open issue refresh (#681, #682, #683, #685, #686, #687) in parallel
 lanes. It does not claim to repair Codex itself.
 
+The active continuation also closes the portable file-backed worker approval
+chain: adapter-selected mode/backend authority, result/receipt/parent identity
+joins, a real combined-report carrier, stale-output refusal, input/output
+collision refusal, bounded cleanup, serialized ledger transitions, explicit
+zero-timeout preservation, and installed plugin-layout path resolution.
+
 ## Fixed Decisions
 
 - Reviewer calls use unnamed, bounded, one-shot requests with no descendants
@@ -121,10 +127,22 @@ unproven and is not discharged by this new slice.
 5. The portable backend runner refuses stale artifacts, validates JSON Schema,
    uses a finite subprocess timeout, resolves paths before `cwd`, and emits a
    typed receipt for every terminal outcome. (Verification type: `integration`.)
-6. The current-open refresh has a disposition and source read for every live
+6. A caller cannot override adapter-selected mode/backend, and the combined
+   report cannot render a typed-subagent or mismatched file-backed attempt as
+   approval-eligible. (Verification type: `unit` and `integration`.)
+7. Result, receipt, parent receipt, packet, input, findings, and report
+   identities form one non-replayable join; a foreign receipt, stale result,
+   forged history, absent report carrier, or independently edited findings
+   identity is refused. (Verification type: `unit` and `integration`.)
+8. Worker input paths cannot collide with output paths, stale pre-existing
+   receipts cannot survive a refusal as approval, cleanup is bounded for every
+   wait, ledger transitions are serialized, explicit timeout zero is preserved,
+   and the source runner works from the installed plugin layout.
+   (Verification type: `integration`.)
+9. The current-open refresh has a disposition and source read for every live
    issue; each admitted repair has an acceptance owner, path budget, proof,
    and release carrier. (Verification type: `manual` and `integration`.)
-7. The release candidate proves source/export parity, changed-line and broad
+10. The release candidate proves source/export parity, changed-line and broad
    gates, delivered fresh-eye evidence where required, and explicit non-claims
    for host, install, hosted, and unresolved issue boundaries. (Verification
    type: `e2e`.)
@@ -175,23 +193,26 @@ unproven and is not discharged by this new slice.
 
 ## Critique
 
-- Interrupt Source: fresh-eye-interrupted-delivery-2026-08-21
-- Seam Summary: subagent spawn/wait/interruption status -> parent findings delivery -> fresh-eye closeout verdict
-- Chosen Next Step: critique
+- Interrupt Source: reviewer-boundary-runtime-output-unignored-2026-08-21
+- Seam Summary: worker output path -> git status -> boundary verifier -> critique closeout
+- Chosen Next Step: impl
 - Current Packet: `charness-artifacts/critique/2026-08-21-r2-delivery-spec-current-packet.json`
 - Current Packet SHA: `4d71a52036fe0822767e863a1a3f19a4387c219ef60217e486197fe512497776`
 - Fresh-Eye Result: delivered `BLOCK`; boundary verify drifted because the
   parent wrote implementation files during the review window, so the result is
   consumed as repair input and is not an approval.
-- Impl Status: blocked
-- Repair State: repair-in-progress after delivered BLOCK; no release approval
-  or fresh-eye PASS is claimed.
-- Impl Status Reason: the current review delivered a BLOCK and its boundary
-  fingerprint was quarantined after parent writes; implementation is limited
-  to consuming the repair findings before a clean second review round.
-- What Disproving Observation Is Resolved: the unnamed retry rules out treating
-  named-mailbox routing as the sole explanation; it does not prove the exact
-  runtime Interrupted event.
+- Impl Status: allowed
+- Repair State: the runtime-output ownership gap is repaired in `.gitignore`
+  and its boundary regression test; the semantic mode/identity/ledger/runtime
+  blockers remain the active implementation slice. No release approval or
+  fresh-eye PASS is claimed.
+- Impl Status Reason: the risk interrupt required the spec to carry forward the
+  new boundary class before ordinary implementation could continue; the old
+  round remains quarantined and its three reviewer verdicts are `block`.
+- What Disproving Observation Is Resolved: `git check-ignore` and the focused
+  boundary suite prove the canonical runtime output directory is ignored while
+  source-like untracked files remain visible as drift. This does not prove the
+  semantic approval-chain blockers are fixed.
 
 ## Canonical Artifact
 
@@ -201,7 +222,8 @@ unproven and is not discharged by this new slice.
 ## First Implementation Slice
 
 Implement the Charness-owned portable worker envelope, state/ledger, and
-deterministic fake-host refusal path. Keep backend selection outside the
-contract; `codex exec` and `claude -p` are merely adapter inputs. Then integrate
-the open-issue refresh lanes and re-run the shared proof surface before any
-version mutation.
+deterministic fake-host refusal path. Keep provider-specific details outside
+the portable contract, but make adapter-selected mode/backend authoritative.
+Bind every identity through the combined report and close stale-output,
+collision, timeout, concurrency, and installed-layout seams before integrating
+the open-issue refresh lanes or mutating any version surface.

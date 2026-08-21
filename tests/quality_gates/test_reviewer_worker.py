@@ -31,8 +31,13 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path]:
             {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["kind", "reason"],
-                "properties": {"kind": {"const": "review"}, "reason": {"type": "string"}},
+                "required": ["kind", "reason", "packet_sha256", "reviewed_input_identity_sha256"],
+                "properties": {
+                    "kind": {"const": "review"},
+                    "reason": {"type": "string"},
+                    "packet_sha256": {"type": "string"},
+                    "reviewed_input_identity_sha256": {"type": "string"},
+                },
             }
         ),
         encoding="utf-8",
@@ -75,6 +80,8 @@ def _run(
             "p" * 64,
             "--reviewed-input-identity",
             "i" * 64,
+            "--parent-receipt-identity",
+            "parent-1",
             "--timeout-seconds",
             timeout,
             "--run-id",
@@ -101,7 +108,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 cat >/dev/null
-printf '%s\n' '{"kind":"review","reason":"fresh"}' > "$out"
+printf '%s\n' '{"kind":"review","reason":"fresh","packet_sha256":"pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}' > "$out"
 """,
     )
     old_path = os.environ["PATH"]
@@ -168,6 +175,32 @@ printf '%s\n' '{"kind":"not-the-contract"}' > "$out"
     assert not output.exists()
 
 
+def test_result_identity_mismatch_is_schema_invalid_even_when_provider_schema_allows_it(tmp_path: Path) -> None:
+    workspace, prompt, schema, output, receipt = _inputs(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _executable(
+        bin_dir / "codex",
+        """#!/bin/sh
+out=""
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
+  shift
+done
+printf '%s\n' '{"kind":"review","reason":"wrong packet","packet_sha256":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}' > "$out"
+""",
+    )
+    old_path = os.environ["PATH"]
+    os.environ["PATH"] = f"{bin_dir}:{old_path}"
+    try:
+        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, output, receipt)
+    finally:
+        os.environ["PATH"] = old_path
+    assert result.returncode == 1
+    assert json.loads(receipt.read_text(encoding="utf-8"))["status"] == "schema-invalid"
+    assert not output.exists()
+
+
 def test_timeout_is_finite_and_typed_without_timeout_binary_fallback(tmp_path: Path) -> None:
     workspace, prompt, schema, output, receipt = _inputs(tmp_path)
     bin_dir = tmp_path / "bin"
@@ -223,7 +256,7 @@ def test_claude_structured_output_is_normalized_and_schema_checked(tmp_path: Pat
         bin_dir / "claude",
         """#!/bin/sh
 cat >/dev/null
-printf '%s\n' '{"is_error":false,"structured_output":{"kind":"review","reason":"claude"}}'
+printf '%s\n' '{"is_error":false,"structured_output":{"kind":"review","reason":"claude","packet_sha256":"pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}}'
 """,
     )
     old_path = os.environ["PATH"]

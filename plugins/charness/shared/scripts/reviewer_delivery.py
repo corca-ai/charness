@@ -7,6 +7,8 @@ import argparse
 import json
 import os
 import tempfile
+import time
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -41,6 +43,7 @@ for _state_name in (
     globals()[_state_name] = getattr(_state, _state_name)
 
 SCHEMA_VERSION = "charness.reviewer_delivery.v1"
+LEDGER_LOCK_TIMEOUT_SECONDS = 5.0
 
 
 @dataclass
@@ -173,6 +176,48 @@ def _write(path: Path, ledger: DeliveryLedger) -> None:
         raise
 
 
+@contextmanager
+def ledger_lock(path: Path):
+    """Serialize ledger read-modify-write operations with a bounded wait."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = path.with_name(f".{path.name}.lock")
+    started = time.monotonic()
+    with lock_path.open("a+b") as handle:
+        handle.seek(0)
+        if not handle.read(1):
+            handle.seek(0)
+            handle.write(b"0")
+            handle.flush()
+        handle.seek(0)
+        while True:
+            try:
+                if os.name == "posix":
+                    import fcntl
+
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                else:
+                    import msvcrt
+
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                break
+            except (BlockingIOError, OSError) as exc:
+                if time.monotonic() - started >= LEDGER_LOCK_TIMEOUT_SECONDS:
+                    raise DeliveryError(f"timed out acquiring ledger lock: {lock_path}") from exc
+                time.sleep(0.01)
+        try:
+            yield
+        finally:
+            if os.name == "posix":
+                import fcntl
+
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            else:
+                import msvcrt
+
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+
+
 def _emit(payload: dict[str, Any]) -> None:
     emit_yaml(payload)
 
@@ -232,61 +277,61 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     path = Path(args.ledger)
     try:
-        ledger = _read(path)
-        if args.command == "start":
-            attempt = ledger.start(
-                scope=args.scope,
-                packet_identity=args.packet_identity,
-                parent_receipt_identity=args.parent_receipt_identity,
-                boundary_fingerprint=args.boundary_fingerprint,
-                reviewed_input_identity=args.reviewed_input_identity,
-                execution_mode=args.execution_mode,
-                backend=args.backend,
-                prompt_sha256=args.prompt_sha256,
-                schema_sha256=args.schema_sha256,
-                attempt_id=args.attempt_id,
-                recorded_at=args.recorded_at,
-            )
-            _write(path, ledger)
-            _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False})
-            return 0
-        if args.command == "transition":
-            attempt = ledger.require(args.attempt_id)
-            attempt.transition(args.state, args.signal, args.recorded_at or utc_now())
-            _write(path, ledger)
-            _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete})
-            return 0
-        if args.command == "findings":
-            attempt = ledger.require(args.attempt_id)
-            accepted = attempt.record_findings(
-                scope=args.scope,
-                packet_identity=args.packet_identity,
-                parent_receipt_identity=args.parent_receipt_identity,
-                findings_identity=args.findings_identity,
-                recorded_at=args.recorded_at or utc_now(),
-            )
-            _write(path, ledger)
-            _emit({"ok": accepted, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete})
-            return 0 if accepted else 1
-        if args.command == "recover":
-            attempt = ledger.require(args.attempt_id)
-            attempt.record_recovery(args.signal, args.recorded_at or utc_now())
-            _write(path, ledger)
-            _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False})
-            return 0
-        if args.command == "retry":
-            attempt = ledger.retry(args.from_attempt, new_attempt_id=args.attempt_id, recorded_at=args.recorded_at)
-            _write(path, ledger)
-            _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False})
-            return 0
-        if args.command == "show":
-            if args.attempt_id:
+        with ledger_lock(path):
+            ledger = _read(path)
+            if args.command == "start":
+                attempt = ledger.start(
+                    scope=args.scope,
+                    packet_identity=args.packet_identity,
+                    parent_receipt_identity=args.parent_receipt_identity,
+                    boundary_fingerprint=args.boundary_fingerprint,
+                    reviewed_input_identity=args.reviewed_input_identity,
+                    execution_mode=args.execution_mode,
+                    backend=args.backend,
+                    prompt_sha256=args.prompt_sha256,
+                    schema_sha256=args.schema_sha256,
+                    attempt_id=args.attempt_id,
+                    recorded_at=args.recorded_at,
+                )
+                _write(path, ledger)
+                payload = {"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False}
+            elif args.command == "transition":
                 attempt = ledger.require(args.attempt_id)
-                _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete})
+                attempt.transition(args.state, args.signal, args.recorded_at or utc_now())
+                _write(path, ledger)
+                payload = {"ok": True, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete}
+            elif args.command == "findings":
+                attempt = ledger.require(args.attempt_id)
+                accepted = attempt.record_findings(
+                    scope=args.scope,
+                    packet_identity=args.packet_identity,
+                    parent_receipt_identity=args.parent_receipt_identity,
+                    findings_identity=args.findings_identity,
+                    recorded_at=args.recorded_at or utc_now(),
+                )
+                _write(path, ledger)
+                payload = {"ok": accepted, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete}
+            elif args.command == "recover":
+                attempt = ledger.require(args.attempt_id)
+                attempt.record_recovery(args.signal, args.recorded_at or utc_now())
+                _write(path, ledger)
+                payload = {"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False}
+            elif args.command == "retry":
+                attempt = ledger.retry(args.from_attempt, new_attempt_id=args.attempt_id, recorded_at=args.recorded_at)
+                _write(path, ledger)
+                payload = {"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False}
+            elif args.command == "show":
+                if args.attempt_id:
+                    attempt = ledger.require(args.attempt_id)
+                    payload = {"ok": True, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete}
+                else:
+                    payload = {"ok": True, "ledger": ledger.to_dict()}
             else:
-                _emit({"ok": True, "ledger": ledger.to_dict()})
-            return 0
-        raise DeliveryError(f"unsupported command: {args.command}")
+                raise DeliveryError(f"unsupported command: {args.command}")
+        _emit(payload)
+        if args.command == "findings" and not payload["ok"]:
+            return 1
+        return 0
     except DeliveryError as exc:
         _emit({"ok": False, "error": str(exc)})
         return 2

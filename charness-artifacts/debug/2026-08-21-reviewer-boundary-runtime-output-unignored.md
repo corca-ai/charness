@@ -32,7 +32,7 @@ an unauthorized reviewer worktree mutation without weakening `critique`/`prove`.
 ## Reproduction
 
 Run the round-2 verifier against
-`.charness/reviewer-boundary/2026-08-21-r2-semantic-candidate-provider-schema-round-2b.json`
+`.charness/reviewer-boundary/2026-08-21-r2-semantic-candidate-provider-schema-round-2b.json` <!-- reproduction-source -->
 with window id `r2-semantic-candidate-provider-schema-round-2b`. It returns
 `boundary-drift` and lists the worker runtime files as untracked additions.
 
@@ -58,7 +58,7 @@ false.
 
 ## Verification
 
-Confirmed the hypothesis at the boundary: `.charness/reviewer-round-2/...`
+Confirmed the hypothesis at the boundary: `.charness/reviewer-round-2/...` <!-- reproduction-source -->
 was absent from `git status --ignored`, while the verifier explicitly emitted
 `untracked-added` for it. The repair adds the directory to `.gitignore` and a
 quality test checks the exact rule. The full round must be re-snapshotted before

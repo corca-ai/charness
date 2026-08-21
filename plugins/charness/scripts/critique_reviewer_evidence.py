@@ -23,9 +23,12 @@ skills/shared/references/fresh-eye-subagent-review.md.
 
 from __future__ import annotations
 
+import hashlib
 import re
 from datetime import date
 from pathlib import Path
+
+import yaml
 
 from runtime_bootstrap import import_repo_module
 
@@ -57,9 +60,12 @@ DELIVERY_STATE_RULE_DATE = date(2026, 7, 26)
 DELIVERY_STATE_FIELD = "delivery state"
 WORKER_REPORT_FIELDS = (
     "worker report",
+    "worker report identity",
     "worker report approval",
     "worker report delivery",
     "worker report packet identity",
+    "worker report input identity",
+    "worker report parent receipt identity",
     "worker report findings identity",
 )
 DELIVERY_STATE_VALUES = (
@@ -263,6 +269,7 @@ def validate_worker_delivery_evidence(
     fresh_eye_status: str,
     *,
     section_field_map,
+    repo_root: Path | None = None,
 ) -> None:
     """Bind ``worker-delivered`` to the combined worker report carrier.
 
@@ -279,8 +286,8 @@ def validate_worker_delivery_evidence(
     if missing:
         raise ValidationError(
             f"{path}: `worker-delivered` requires the durable worker report carrier fields: {missing}. "
-            "Record the report path, approval_eligible: true, findings-received, packet identity, "
-            "and findings/result identity."
+            "Record the report path and identity, approval_eligible: true, findings-received, "
+            "and every joined packet/input/parent/result identity."
         )
     if fields["worker report approval"].strip().lower() != "approval_eligible: true":
         raise ValidationError(
@@ -292,9 +299,62 @@ def validate_worker_delivery_evidence(
             f"{path}: worker-delivered requires `Worker report delivery: findings-received`; "
             "a spawned or recovered worker is not a delivered report."
         )
-    for field in ("worker report packet identity", "worker report findings identity"):
+    for field in (
+        "worker report identity",
+        "worker report packet identity",
+        "worker report input identity",
+        "worker report parent receipt identity",
+        "worker report findings identity",
+    ):
         value = fields[field].strip().lower()
         if not re.fullmatch(r"[0-9a-f]{64}", value):
             raise ValidationError(
                 f"{path}: `{field}` must carry a lowercase SHA-256 identity from the combined worker report."
             )
+    if repo_root is None:
+        raise ValidationError(
+            f"{path}: worker-delivered cannot be validated without the repository root needed to read its report carrier."
+        )
+    report_value = fields["worker report"].strip().strip("`")
+    report_path = Path(report_value)
+    if report_path.is_absolute() or ".." in report_path.parts:
+        raise ValidationError(f"{path}: worker report must be a repo-relative path inside the repository")
+    report_file = (repo_root / report_path).resolve()
+    if repo_root.resolve() not in report_file.parents or not report_file.is_file():
+        raise ValidationError(f"{path}: worker report carrier does not exist inside the repository: {report_value}")
+    report_identity = hashlib.sha256(report_file.read_bytes()).hexdigest()
+    if report_identity != fields["worker report identity"].strip().lower():
+        raise ValidationError(f"{path}: worker report carrier SHA-256 does not match its recorded identity")
+    try:
+        report = yaml.safe_load(report_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        raise ValidationError(f"{path}: worker report carrier is not readable YAML: {exc}") from exc
+    if not isinstance(report, dict):
+        raise ValidationError(f"{path}: worker report carrier must contain a mapping")
+    required_report = {
+        "schema_version": "charness.reviewer_worker_report.v1",
+        "execution_mode": "file-backed-worker",
+        "approval_eligible": True,
+        "delivery_state": "findings-received",
+        "receipt_ok": True,
+        "ledger_ok": True,
+        "provenance_ok": True,
+    }
+    mismatches = [key for key, expected in required_report.items() if report.get(key) != expected]
+    if mismatches:
+        raise ValidationError(
+            f"{path}: worker report carrier does not prove approval for fields: {mismatches}"
+        )
+    report_fields = {
+        "worker report packet identity": report.get("packet_identity"),
+        "worker report input identity": report.get("reviewed_input_identity"),
+        "worker report parent receipt identity": report.get("parent_receipt_identity"),
+        "worker report findings identity": report.get("findings_identity"),
+    }
+    mismatches = [
+        field
+        for field, expected in report_fields.items()
+        if expected != fields[field].strip().lower()
+    ]
+    if mismatches:
+        raise ValidationError(f"{path}: worker report carrier identity joins do not match: {mismatches}")

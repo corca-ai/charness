@@ -65,9 +65,28 @@ def _failure_receipt(
         "scope": args.scope,
         "packet_identity": args.packet_identity,
         "reviewed_input_identity": args.reviewed_input_identity,
+        "parent_receipt_identity": args.parent_receipt_identity,
         "execution_mode": args.execution_mode,
+        "timeout_seconds": args.timeout_seconds,
         "error": error,
     }
+
+
+def _safe_receipt_path(args: argparse.Namespace) -> Path | None:
+    """Return a writable receipt target without overwriting an input or stale file."""
+    try:
+        receipt = resolve(args.receipt_file, "receipt_file")
+        if receipt.exists():
+            return None
+        inputs = {
+            resolve(args.prompt_file, "prompt_file"),
+            resolve(args.schema_file, "schema_file"),
+        }
+        if receipt in inputs:
+            return None
+        return receipt
+    except WorkerError:
+        return None
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -81,10 +100,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--stdout-file")
     parser.add_argument("--stderr-file")
     parser.add_argument("--timeout-seconds", type=float, default=DEFAULT_TIMEOUT_SECONDS)
-    parser.add_argument("--attempt-id")
-    parser.add_argument("--scope")
-    parser.add_argument("--packet-identity")
-    parser.add_argument("--reviewed-input-identity")
+    parser.add_argument("--attempt-id", required=True)
+    parser.add_argument("--scope", required=True)
+    parser.add_argument("--packet-identity", required=True)
+    parser.add_argument("--reviewed-input-identity", required=True)
+    parser.add_argument("--parent-receipt-identity", required=True)
     parser.add_argument(
         "--execution-mode",
         choices=("file-backed-worker", "typed-subagent"),
@@ -98,9 +118,8 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     run_id = args.run_id or uuid.uuid4().hex
     started_at = now()
-    receipt_path: Path | None = None
+    receipt_path: Path | None = _safe_receipt_path(args)
     try:
-        receipt_path = resolve(args.receipt_file, "receipt_file")
         receipt = run(args, preflight(args), run_id, started_at)
     except WorkerError as exc:
         receipt = _failure_receipt(
@@ -124,8 +143,14 @@ def main(argv: list[str] | None = None) -> int:
             exit_code=None,
             error=f"unexpected worker error: {exc}",
         )
-    if receipt_path is not None and not receipt_path.exists():
-        atomic_write_json(receipt_path, receipt)
+    if receipt_path is not None:
+        try:
+            atomic_write_json(receipt_path, receipt)
+        except OSError:
+            # The YAML stream is still the typed observable. Never replace an
+            # existing artifact merely to make the file-backed channel look
+            # complete; the consumer will fail closed on the missing receipt.
+            pass
     emit_yaml(receipt)
     return 0 if receipt.get("status") == SUCCESS else 1
 

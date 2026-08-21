@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import json
+import threading
+import time
+
 import pytest
 
 from skills.shared.scripts import reviewer_delivery as delivery
@@ -140,5 +144,31 @@ def test_forged_history_is_rejected_on_readback() -> None:
             "recorded_at": "2026-08-21T00:00:02Z",
         }
     )
-    with pytest.raises(delivery.DeliveryError, match="history final state"):
+    with pytest.raises(delivery.DeliveryError, match="parent attempt_id"):
         delivery.DeliveryLedger.from_dict(payload)
+
+
+def test_ledger_lock_serializes_concurrent_read_modify_write(tmp_path) -> None:
+    path = tmp_path / "delivery.json"
+
+    def add_attempt(index: int) -> None:
+        with delivery.ledger_lock(path):
+            ledger = delivery._read(path)
+            ledger.start(
+                attempt_id=f"a{index}",
+                scope=f"scope-{index}",
+                packet_identity=f"packet-{index}",
+                parent_receipt_identity=f"receipt-{index}",
+                boundary_fingerprint=f"fingerprint-{index}",
+                recorded_at=f"2026-08-21T00:00:0{index}Z",
+            )
+            time.sleep(0.01)
+            delivery._write(path, ledger)
+
+    threads = [threading.Thread(target=add_attempt, args=(index,)) for index in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert {attempt["attempt_id"] for attempt in payload["attempts"]} == {"a0", "a1"}

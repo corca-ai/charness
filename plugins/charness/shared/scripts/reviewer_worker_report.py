@@ -35,6 +35,32 @@ class ReportError(ValueError):
     """Input cannot support a trustworthy consumer report."""
 
 
+def _validate_result_output(receipt: dict[str, Any], attempt: Any) -> tuple[bool, str]:
+    output_value = receipt.get("output_file")
+    if not isinstance(output_value, str) or not output_value:
+        return False, "successful receipt has no output_file"
+    output = Path(output_value).expanduser().resolve()
+    if receipt.get("output_fresh") is not True or not output.is_file():
+        return False, "successful receipt does not prove a fresh output file"
+    expected_hash = receipt.get("output_sha256")
+    if not isinstance(expected_hash, str) or _sha256(output) != expected_hash:
+        return False, "worker output hash does not match the typed receipt"
+    expected_size = receipt.get("output_size")
+    if not isinstance(expected_size, int) or output.stat().st_size != expected_size:
+        return False, "worker output size does not match the typed receipt"
+    try:
+        result = json.loads(output.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return False, f"worker output is not readable JSON: {exc}"
+    if not isinstance(result, dict):
+        return False, "worker output must be a JSON object"
+    if result.get("packet_sha256") != attempt.packet_identity:
+        return False, "worker result packet_sha256 does not match the delivery attempt"
+    if result.get("reviewed_input_identity_sha256") != attempt.reviewed_input_identity:
+        return False, "worker result reviewed_input_identity_sha256 does not match the delivery attempt"
+    return True, "typed worker receipt and fresh output agree"
+
+
 def _read_json(path_value: str, label: str) -> tuple[Path, dict[str, Any]]:
     path = Path(path_value).expanduser().resolve()
     try:
@@ -60,6 +86,8 @@ def _validate_receipt(
     attempt: Any,
     expected_execution_mode: str,
 ) -> tuple[bool, str]:
+    if expected_execution_mode != "file-backed-worker":
+        return False, "the file-backed consumer cannot approve a typed-subagent execution"
     if receipt.get("schema_version") != WORKER_SCHEMA_VERSION:
         return False, "worker receipt schema_version is not the Charness worker schema"
     if receipt.get("terminal") is not True:
@@ -73,6 +101,7 @@ def _validate_receipt(
         "scope": attempt.scope,
         "packet_identity": attempt.packet_identity,
         "reviewed_input_identity": attempt.reviewed_input_identity,
+        "parent_receipt_identity": attempt.parent_receipt_identity,
         "execution_mode": attempt.execution_mode,
         "backend": attempt.backend,
         "prompt_sha256": attempt.prompt_sha256,
@@ -83,19 +112,7 @@ def _validate_receipt(
             return False, f"delivery attempt has no bound {field}"
         if receipt.get(field) != expected:
             return False, f"worker receipt {field} does not match the delivery attempt"
-    output_value = receipt.get("output_file")
-    if not isinstance(output_value, str) or not output_value:
-        return False, "successful receipt has no output_file"
-    output = Path(output_value).expanduser().resolve()
-    if receipt.get("output_fresh") is not True or not output.is_file():
-        return False, "successful receipt does not prove a fresh output file"
-    expected_hash = receipt.get("output_sha256")
-    if not isinstance(expected_hash, str) or _sha256(output) != expected_hash:
-        return False, "worker output hash does not match the typed receipt"
-    expected_size = receipt.get("output_size")
-    if not isinstance(expected_size, int) or output.stat().st_size != expected_size:
-        return False, "worker output size does not match the typed receipt"
-    return True, "typed worker receipt and fresh output agree"
+    return _validate_result_output(receipt, attempt)
 
 
 def build_report(
@@ -131,6 +148,8 @@ def build_report(
         "attempt_scope": attempt.scope,
         "attempt_packet_identity": attempt.packet_identity,
         "attempt_parent_receipt_identity": attempt.parent_receipt_identity,
+        "result_packet_identity": packet_identity,
+        "result_reviewed_input_identity": reviewed_input_identity,
     }
     provenance_ok = (
         attempt.scope == scope
@@ -158,7 +177,7 @@ def build_report(
         reason = "typed worker receipt and matching delivery ledger permit approval"
     return {
         "schema_version": REPORT_SCHEMA_VERSION,
-        "execution_mode": "file-backed-worker",
+        "execution_mode": attempt.execution_mode,
         "backend": receipt.get("backend"),
         "receipt_schema_version": receipt.get("schema_version"),
         "receipt_status": receipt.get("status"),
@@ -172,6 +191,9 @@ def build_report(
         "receipt_provenance_ok": receipt_provenance_ok,
         "findings_identity": attempt.findings_identity,
         "receipt_output_sha256": receipt.get("output_sha256"),
+        "packet_identity": packet_identity,
+        "reviewed_input_identity": reviewed_input_identity,
+        "parent_receipt_identity": parent_receipt_identity,
         "provenance": provenance,
         "reason": reason,
     }
@@ -206,8 +228,11 @@ def main(argv: list[str] | None = None) -> int:
     except ReportError as exc:
         report = {
             "schema_version": REPORT_SCHEMA_VERSION,
-            "execution_mode": "file-backed-worker",
+            "execution_mode": args.expected_execution_mode,
             "approval_eligible": False,
+            "receipt_ok": False,
+            "ledger_ok": False,
+            "provenance_ok": False,
             "reason": str(exc),
         }
         emit_yaml(report)

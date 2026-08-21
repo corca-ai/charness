@@ -475,6 +475,7 @@ def validate_critique_artifact(
     collect_all: bool = False,
     cross_surface_hit: bool = False,
     check_current_binding: bool = True,
+    repo_root: Path | None = None,
 ) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
@@ -579,7 +580,11 @@ def validate_critique_artifact(
             path, text, status_lowered, section_field_map=_section_field_map
         ),
         lambda: _reviewer_evidence.validate_worker_delivery_evidence(
-            path, text, status_lowered, section_field_map=_section_field_map
+            path,
+            text,
+            status_lowered,
+            section_field_map=_section_field_map,
+            repo_root=repo_root,
         ),
         lambda: validate_reviewed_input_binding(
             path,
@@ -651,6 +656,7 @@ def _validate_factory(run, resolved: dict[str, object] | None = None):
             collect_all=run.collect_all,
             cross_surface_hit=cross_surface.overrides,
             check_current_binding=not run.args.all,
+            repo_root=run.repo_root,
         )
 
     return validate
