@@ -1,0 +1,16 @@
+{
+  "schema_version": "charness.release.claims-review.v2",
+  "prepared_commit": "46169b7ad7491e1d4b1a50b5411ebf5a08f03a68",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "2165a7c84f8012a530aa69165c4d6a2888adf0d7da87e720b5e55e14e02e37a0",
+  "target_version": "6.2.1",
+  "tag_name": "v6.2.1",
+  "verdict": "pass",
+  "preparer_context": "Parent release session prepared and amended the exact 6.2.1 release record, ran the required pre-publication gates, and left publication pending claims review.",
+  "reviewer_context": "Separate file-backed codex exec session 01a0243b-e59d-75b3-a738-6e798c48a41d ran read-only against the prepared HEAD without repository mutation and produced the bound Markdown narrative.",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "A separate read-only codex exec session 01a0243b-e59d-75b3-a738-6e798c48a41d inspected the prepared record and exact HEAD, produced a 3765-byte narrative, and identified residual quality/probe receipt limits without claiming publication or fresh-eye approval.",
+    "review_artifact": "charness-artifacts/release-review/2026-08-21-v6.2.1-prepared-claims-review.md"
+  }
+}
