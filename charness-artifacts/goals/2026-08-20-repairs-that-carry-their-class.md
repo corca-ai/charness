@@ -83,17 +83,18 @@ runs the activation command.
 ## Current Candidate Join
 
 - The authoritative semantic candidate is
-  `7676ec51aeed99e215106dd8490332e57db80d07`, spanning
-  `f98a4e8e2936ab60870018ec1b3722d475a458e7..7676ec51aeed99e215106dd8490332e57db80d07`.
+  `502c8a8adbbe77781f1714cb6c4383a85d6e3683`, spanning
+  `d9995e0079326ae9ad0a35f9ade64a9f951c4fbf..502c8a8adbbe77781f1714cb6c4383a85d6e3683`.
 - Its exact review packet is
-  `charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-exact-packet.json`
+  `charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-current-exact-packet.json`
   (packet SHA256
-  `90d89c6721f86aeaeccfc8ffaacaa90471c03a6b93936cd89ae12b71070220ee`,
+  `5a936834bce7fe68db1f894e5e6764de336d9b8dbd4e69fd26f472ab07632ef7`,
   reviewed-input identity
-  `21b105b641d5f5aabfe7c02469b7daf531676bdb8cc17ab63814c631cec4bc79`).
+  `26f29ca25c71bf4d704854285c787734f9a1e99bc7d770a9df8674ee3778dfc2`).
 - The changed-line proof for that exact candidate is `status: clean`, with
-  `1/1` mapped changed pool files, `blocking_targets: {}`, and standing pytest
-  passing. This is semantic-candidate local proof only.
+  2 mapped changed-pool files, every changed line covered,
+  `blocking_targets: {}`, and standing pytest passing. This is
+  semantic-candidate local proof only.
 - Earlier pointers `1e81fb31bc8017e09f58f905b8c7b41e8545ad00`,
   `abaf886822a851c1081ec889f6733c02b627e525`, and `0784bb041` are historical
   evidence, not current candidate joins.
@@ -1193,11 +1194,12 @@ boundary at once while parent-only truth surfaces remain serialized.
 ## Final Verification
 
 - The current exact semantic candidate is
-  `7676ec51aeed99e215106dd8490332e57db80d07`, bound to
-  `charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-exact-packet.json`.
-  Its changed-line proof is clean (`1/1` mapped pool file,
-  `blocking_targets: {}`, standing pytest passed). This does not claim
-  fresh-eye approval, installed/public proof, version mutation, or release.
+  `502c8a8adbbe77781f1714cb6c4383a85d6e3683`, bound to
+  `charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-current-exact-packet.json`.
+  Its changed-line proof is clean (2 mapped pool files, every changed line
+  covered, `blocking_targets: {}`, standing pytest passed). This does not
+  claim fresh-eye approval, installed/public proof, version mutation, or
+  release.
 
 - Historical integrated candidate `abaf886822a851c1081ec889f6733c02b627e525` had
   a direct changed-line receipt from base `33e556043174ce6e32d25da51e8397e18e941613`

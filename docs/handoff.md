@@ -31,18 +31,18 @@
   init/update`, plus status-surface and candidate-install proof gaps. Its four
   file-backed worker findings were delivered with clean boundary verification;
   all verdicts were `block`, not approval.
-- [Root CLI repair](../charness) is committed in the integrated semantic
-  candidate `7676ec51aeed99e215106dd8490332e57db80d07` (the code repair itself
-  is `b0028acc1`): failed host delivery exits 1; failed/skipped delivery cannot
-  advance provenance; retries cannot be suppressed by old success. Same-version
-  cache claims now require content readback, and failure output carries typed
-  scope/retry state. Its exact packet is
-  `../charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-exact-packet.json`
-  (SHA256 `90d89c6721f86aeaeccfc8ffaacaa90471c03a6b93936cd89ae12b71070220ee`,
+- [Root CLI repair](../charness) is committed in the current semantic candidate
+  `502c8a8adbbe77781f1714cb6c4383a85d6e3683` (delivery/readback repair at
+  `19fb9b5a1`, boundary-coverage repair at `502c8a8ad`): failed host delivery
+  exits 1; failed/skipped delivery cannot advance provenance; retries cannot be
+  suppressed by old success. Same-version cache claims require content
+  readback, and failure output carries typed scope/retry state. Its exact packet
+  is `../charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-current-exact-packet.json`
+  (SHA256 `5a936834bce7fe68db1f894e5e6764de336d9b8dbd4e69fd26f472ab07632ef7`,
   reviewed-input identity
-  `21b105b641d5f5aabfe7c02469b7daf531676bdb8cc17ab63814c631cec4bc79`).
-  Candidate package/install/host proof remains pending; the older `1e81fb31b`
-  pointer is historical.
+  `26f29ca25c71bf4d704854285c787734f9a1e99bc7d770a9df8674ee3778dfc2`).
+  Candidate package/install/host proof remains pending; the older `7676ec…`
+  packet is historical.
 - The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
   the converted classes for media-versus-verdict confusion, process-tree
   timeout leakage, provider-schema closure, and the reviewer-runtime output
@@ -60,9 +60,10 @@
   verify continuation, the file-backed critique/prove contract, and an external
   per-run coverage namespace for concurrent producers. No fresh-eye approval is
   claimed.
-- The current direct changed-line proof is `status: clean` from base `33e556043`
-  with `1/1` mapped pool file; the focused `run-quality` lane passed concurrently
-  with `1 passed, 0 failed` in `230.3s`.
+- The current exact-base changed-line proof is `status: clean` from base
+  `d9995e0079326ae9ad0a35f9ade64a9f951c4fbf`, with 2 mapped changed-pool files,
+  every changed line covered, and `blocking_targets: {}`. This is local
+  semantic-candidate proof only.
 - Broad `./scripts/run-quality.sh --read-only` completed
   with `97 passed, 0 failed` in `300.8s` (pytest `149.9s`, full changed-line
   `275.9s`). Length/ratio/markdown/nose findings remain advisory.
@@ -72,8 +73,8 @@
   carrier binding, identity joins, stale/collision refusal, bounded cleanup,
   and serialized ledger transitions are now implemented in both source and
   installed plugin layouts.
-- The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep the next run
-  sensitive to wrong calls, timeout loss, and repairing inside an open review window.
+- The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep this run
+  sensitive to wrong calls, timeout loss, and repairs inside an open review window.
 - The [current closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
   also records the structural command-boundary rule: resolve owned
   help/inventory before composing a path or flag, and preserve duplicate
@@ -90,11 +91,11 @@
    including `recurrence-class: parallel-coverage-runtime-collision` and
    `recurrence-class: unclaimed-session-disposition`.
 3. Re-read the [goal's final-verification proof plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
-   and the current exact semantic candidate/packet join above; do not reuse the
+   and the semantic candidate/packet join above; do not reuse the
    older dirty-worktree `UNPROVEN` receipt as changed-line proof, and do not
    confuse the direct producer's advisory coverage warning with the runner's
    typed verdict.
-4. Read the [current-open requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md)
+4. Read the [requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md)
    and the [blocked R3 release critique](../charness-artifacts/critique/2026-08-21-r3-release-readiness.md),
    then activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
    its `## Active Operating Frame` names the root-CLI repair, normalized status
@@ -103,9 +104,9 @@
    for P0 #679 reproduction first, then fan out only lanes with a current reproducer, owner,
    acceptance, disjoint path budget, and proof plan; serialize exports, ledger, generated docs,
    version, release, index, and proof truth surfaces.
-6. The exact semantic candidate and packet are bound above. Run the second
-   bounded review against that exact packet, then execute candidate/install
-   proof. Keep
+6. The exact semantic candidate and packet are bound above. The bounded review
+   cap is already consumed; do not run a third review or substitute a same-agent
+   pass. Execute candidate/install proof next. Keep
    version/export/release-record mutation, tag, push, and publication on hold
    until the [goal release boundary](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
    is re-proven.
