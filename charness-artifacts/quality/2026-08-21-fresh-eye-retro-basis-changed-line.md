@@ -39,7 +39,7 @@ packet, installed planner path, and reviewer-boundary snapshot continuation.
   `33e556043174ce6e32d25da51e8397e18e941613`, 3/3 mapped pool files, and
   `blocking_targets: {}`; standing pytest passed.
 - Focused related tests: 175 passed. Commit preflight: 23 commands passed.
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json`
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `render_runtime_summary.py`; focused producer stdout and the
   generated focused-coverage receipt are supplementary.
 - runtime hot spots: exact changed-line producer runtime was 55.5 seconds;

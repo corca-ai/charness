@@ -33,8 +33,7 @@
 - The [changed-line consumer-gap debug record](../charness-artifacts/debug/2026-08-21-changed-line-review-consumer-gaps.md)
   records the post-commit counterexample repair; the exact-base rerun is now
   clean at `362221694` with `blocking_targets: {}`.
-- The fresh-eye/retro basis handoff slice is committed at `33e556043`; its
-  [exact-base quality receipt](../charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md)
+- The fresh-eye/retro basis handoff slice is committed at `33e556043`; its [exact-base quality receipt](../charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md)
   records the proof.
   It covers explicit retro paths/refs, typed boundary verify continuation, and
   the file-backed critique/prove contract. No fresh-eye approval is claimed.

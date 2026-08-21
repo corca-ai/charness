@@ -323,7 +323,7 @@ def build_plan(
     work_paths, work_paths_source = _work_paths(repo_root, changed_paths)
     work_class = _classify_work_class(work_paths)
     lens_brief = _lens_brief(work_class)
-    artifact.update(scaffold_retro_artifact.write_target_facts(repo_root, artifact["path"]))
+    artifact.update(scaffold_retro_artifact._scaffold_lib.write_target_facts(repo_root, artifact["path"]))
     auto_trigger_args, auto_trigger_scope = _trigger.auto_trigger_scope(work_paths, work_paths_source)
     gate_packets = _gate_builder.build_gate_packets(
         repo_root,
