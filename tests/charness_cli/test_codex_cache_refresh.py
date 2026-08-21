@@ -123,6 +123,82 @@ def test_failed_codex_refresh_is_retryable_and_does_not_emit_success_completion(
     assert retried_payload["codex_cache_refresh"]["status"] != "skipped"
     assert "DONE: update complete" in retried.stderr
 
+    # A verified same-version no-op is still a successful host-delivery
+    # observation. It must not be persisted as an unverified skip that forces
+    # every later invocation through the app-server again.
+    fake_codex.with_name(".codex-fail-plugin-install").write_text("1\n", encoding="utf-8")
+    same_version = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
+    assert same_version.returncode == 0, same_version.stderr
+    same_version_payload = yaml.safe_load(same_version.stdout)
+    assert same_version_payload["codex_cache_refresh"]["status"] == "skipped"
+    assert same_version_payload["codex_cache_refresh"]["reason"] == "already-current"
+    assert same_version_payload["codex_cache_refresh"]["delivery_verified"] is True
+    assert same_version_payload["codex_cache_refresh"]["verification"] == "same-version-content-readback"
+    same_version_state = json.loads(
+        (home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8")
+    )
+    assert same_version_state["last_update"]["delivery_status"] == "skipped"
+    assert same_version_state["last_update"]["delivery_verified"] is True
+
+    # A same-version directory with changed payload must not inherit the old
+    # verified provenance; a failed refresh remains retryable.
+    cache_root = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / CURRENT_VERSION
+    cache_file = next(path for path in cache_root.rglob("*") if path.is_file() and path.name != "plugin.json")
+    cache_file.write_bytes(cache_file.read_bytes() + b"\ncontent-drift\n")
+    stale_same_version = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
+    assert stale_same_version.returncode == 1, stale_same_version.stderr
+    stale_payload = yaml.safe_load(stale_same_version.stdout)
+    assert stale_payload["codex_cache_refresh"]["status"] == "failed"
+
+
+@pytest.mark.release_only
+def test_same_version_invalid_cache_manifest_is_not_verified(
+    tmp_path: Path, seeded_managed_home: dict[str, Path]
+) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    fake_codex = make_fake_codex(tmp_path)
+    env["PATH"] = build_test_path(fake_codex.parent)
+    config_path = home_root / ".codex" / "config.toml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
+
+    first = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
+    assert first.returncode == 0, first.stderr
+    manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / CURRENT_VERSION / ".codex-plugin" / "plugin.json"
+    manifest.write_text('{"version":"not-the-source"}\n', encoding="utf-8")
+    fake_codex.with_name(".codex-fail-plugin-install").write_text("1\n", encoding="utf-8")
+
+    result = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
+    assert result.returncode == 1, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["codex_cache_refresh"]["status"] == "failed"
+    assert payload["codex_cache_refresh"].get("reason") != "already-current"
+
+
+@pytest.mark.release_only
+def test_failed_codex_init_emits_failure_progress_and_records_failed_operation(
+    tmp_path: Path, seeded_managed_home: dict[str, Path]
+) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    fake_codex = make_fake_codex(tmp_path, fail_plugin_install=True)
+    env["PATH"] = build_test_path(fake_codex.parent)
+    config_path = home_root / ".codex" / "config.toml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
+    old_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "0.0.0-old" / ".codex-plugin" / "plugin.json"
+    old_manifest.parent.mkdir(parents=True, exist_ok=True)
+    old_manifest.write_text('{"version":"0.0.0-old"}\n', encoding="utf-8")
+
+    result = run_cli("init", "--detail", "--home-root", str(home_root), env=env)
+    assert result.returncode == 1, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["codex_host_install"]["status"] == "failed"
+    assert "FAILED: init incomplete" in result.stderr
+    assert "DONE: init complete" not in result.stderr
+    state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    assert state["last_init"]["operation_status"] == "failed"
+    assert state["last_init"]["delivery_verified"] is False
+
 
 def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
     module = load_charness_module("charness_codex_cache_refresh_diff_under_test")

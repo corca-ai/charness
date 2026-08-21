@@ -142,6 +142,33 @@ def test_init_and_update_fail_on_explicit_host_delivery_failure(tmp_path: Path, 
     assert update_payload["codex_cache_refresh"]["status"] == "failed"
 
 
+def test_update_all_failure_preserves_scope_in_recovery_action(tmp_path: Path, monkeypatch, capsys) -> None:
+    module = load_charness_module("charness_update_all_failure_scope_under_test")
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _patch_runtime_dependencies(module, monkeypatch, repo_root, tmp_path / "home")
+    monkeypatch.setattr(
+        module,
+        "run_tool_update_flow",
+        lambda **_kwargs: (
+            {"results": {"nose": {"update": {"status": "failed"}}}},
+            True,
+        ),
+    )
+    args = _runtime_args(tmp_path / "home", repo_root)
+    args.scope = "all"
+
+    assert module.cmd_update(args) == 1
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["scope"] == "all"
+    assert payload["tool_update"]["status"] == "failed"
+    assert payload["tool_update"]["failure_scope"] == "all"
+    assert payload["tool_update"]["failed_tool_ids"] == ["nose"]
+    assert payload["next_action"]["recovery_command"] == "charness update all --detail"
+    assert "charness update all --detail" in payload["next_action"]["message"]
+    assert "charness update all --detail" in payload["host_next_steps"]["external-tools"]
+
+
 def test_task_and_uninstall_paths_emit_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
     module = load_charness_module("charness_yaml_task_uninstall_under_test")
     repo_root = tmp_path / "repo"
