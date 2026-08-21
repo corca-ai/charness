@@ -1077,13 +1077,15 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 ## Final Verification
 
-- The latest stable-tree broad gate completed with `96 passed, 0 failed, 1
-  UNPROVEN`. Standing pytest and the broad deterministic checks passed; the
-  sole unproven arm was changed-line mutation, which correctly refused to
-  render a verdict because 19 mutation-pool files were uncommitted. This is a
-  proof boundary, not a green result; the exact changed-line command must run
-  again after the current candidate is committed.
-- The current focused reviewer/observer suite is `93 passed`; dup-ratchet is
+- The latest stable-tree broad gate receipt completed with `96 passed, 0
+  failed, 1 UNPROVEN` before the final counterexample commit. Standing pytest
+  and the broad deterministic checks passed; its sole unproven arm was
+  changed-line mutation, which correctly refused to render a verdict while
+  the mutation-pool files were uncommitted. The committed exact-base rerun at
+  head `362221694004c1abbea8ad9ab2e808b0af9229d1` is now `status: clean`:
+  52/52 changed pool files mapped, every changed line covered, and no blocking
+  targets.
+- The current focused reviewer/observer/preflight suite is `92 passed`; dup-ratchet is
   clean (`new_code_families: []`, `hard_block: false`), packaging and markdown
   link validation pass, and source/plugin parity is synchronized. The shared
   blocked-signal floor now has one owner with an injection-preserving adapter,
@@ -1102,7 +1104,7 @@ boundary at once while parent-only truth surfaces remain serialized.
 - The committed-head changed-line command
   `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root .
   --base-sha 38775dfeb8d1e5574663d7ef461d19a63e252841` returned `status: clean`:
-  37 mapped pool files, every changed line covered, and no blocking targets.
+  52 mapped pool files, every changed line covered, and no blocking targets.
 - The frozen broad run at the implementation candidate returned `95 passed,
   1 failed`; the only failure was the preexisting docs-graph link-only ratchet
   (`168` observed against the `167` baseline). It is recorded as a separate

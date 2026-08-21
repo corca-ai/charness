@@ -18,7 +18,7 @@ producer-level proof.
 ## Observed Facts
 
 - Base: `38775dfeb8d1e5574663d7ef461d19a63e252841`.
-- Head: `029de117f425d7c80a4a7df8419887e74f50e280`.
+- Head at reproduction: `029de117f425d7c80a4a7df8419887e74f50e280`.
 - Standing pytest passed, but the consumer returned `blocked` for 8 files.
 - Missing classes include dynamic loader refusal, strict issue payload shape,
   close/readback failures, Markdown indented/fence parsing, typed delegation
@@ -68,8 +68,10 @@ behavioral integration while leaving rare refusal branches unmeasured.
   chain has an executable counterexample in the exact-base changed-line proof.
 - Producer Proof: the changed-line producer emits each missing `path:line`
   target and refuses to render a clean verdict until covered.
-- Final-Consumer Proof: standing pytest currently proves the aggregate consumer,
-  but not the listed rare branches; this RCA remains open until the gate passes.
+- Final-Consumer Proof: standing pytest proved the aggregate consumer, and the
+  committed exact-base rerun at `362221694004c1abbea8ad9ab2e808b0af9229d1`
+  returned `status: clean`, with 52/52 changed pool files mapped and no
+  blocking targets.
 - Interface-Shape Sibling Scan: issue observer, resolution observer, Markdown
   parser, close backend, and worker evidence loader share the same fail-closed
   boundary pattern.
@@ -77,8 +79,9 @@ behavioral integration while leaving rare refusal branches unmeasured.
 
 ## Detection Gap
 
-- Changed-line gate | broad pytest did not fire the missing branches | add one
-  direct counterexample per listed target family, then rerun the exact-base gate.
+- Changed-line gate | broad pytest did not fire the missing branches | repaired
+  with one direct counterexample per listed target family and verified the
+  committed exact-base gate as clean.
 - Source/plugin parity | mirror checks passed but do not measure runtime branches
   | run the same focused tests against source-owned modules and keep parity
   validation in the closeout.
@@ -113,9 +116,9 @@ behavioral integration while leaving rare refusal branches unmeasured.
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
-- Next Step: impl
+- Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md
 
 ## Prevention

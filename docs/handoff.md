@@ -30,19 +30,22 @@
   boundary. The round-2 findings are durably recorded in
   [the critique round record](../charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-provider-schema-round-2b.md);
   all three reviewer verdicts are `block`, so no fresh-eye approval is claimed.
+- The [changed-line consumer-gap debug record](../charness-artifacts/debug/2026-08-21-changed-line-review-consumer-gaps.md)
+  records the post-commit counterexample repair; the exact-base rerun is now
+  clean at `362221694` with `blocking_targets: {}`.
 - The [portable file-backed delivery repair](../charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md)
   is committed at `cce985d6f`, with refusal-branch coverage at `458080160`.
   Adapter authority, typed report
   carrier binding, identity joins, stale/collision refusal, bounded cleanup,
   and serialized ledger transitions are now implemented in both source and
   installed plugin layouts.
-- The latest stable-tree `./scripts/run-quality.sh --read-only` completed with
-  `96 passed, 0 failed, 1 UNPROVEN`: standing pytest passed and the only
-  unproven arm is changed-line mutation, correctly refused because these
-  mutation-pool files are still uncommitted. It must be rerun after the repair
-  commit; the receipt is not a green changed-line claim. Focused reviewer/
-  observer tests are `93 passed`, dup-ratchet is clean, packaging and docs
-  links pass, and the historical docs-graph failure is repaired.
+- The latest stable-tree `./scripts/run-quality.sh --read-only` receipt completed
+  with `96 passed, 0 failed, 1 UNPROVEN` before the final counterexample commit;
+  its sole unproven arm was changed-line mutation. The committed exact-base
+  rerun at `362221694` is now clean across `52/52` mapped pool files with no
+  blocking targets. The focused reviewer/observer/preflight bundle is `92
+  passed`, dup-ratchet is clean, packaging and docs links pass, and the
+  historical docs-graph failure is repaired.
 - The [round-2 boundary debug record](../charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md)
   records that the verifier returned `boundary-drift` because expected
   file-backed outputs were under an unignored `.charness/reviewer-round-2/`
@@ -50,8 +53,8 @@
   review window remains quarantined and must not be relabeled clean.
 - `git status --short` is the current worktree check; the last committed closeout passed
   mirror, standalone-import, contract, lint, and the staged pre-commit checks. The
-  exact-base semantic changed-line result is owned by the [provider-schema proof receipt](../charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md)
-  at candidate `2a8b479cb32a01e1e04289276cbcba3d321bc9f9`.
+  exact-base changed-line result is owned by the committed candidate
+  `362221694`, with `52/52` mapped pool files and no blocking targets.
 - The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep the next run
   sensitive to wrong calls, timeout loss, and repairing inside an open review window.
 - The [current closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
@@ -66,10 +69,9 @@
 2. Re-read the [fresh-eye delivery boundary spec](../charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md)
    and the two implementation commits above; do not repeat the repaired
    semantic slice or claim a third bounded review under the cap.
-3. Commit the current source/plugin and evidence surfaces, then follow the
-   [goal's final-verification proof plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
-   to rerun changed-line proof from the committed candidate; do not reuse the
-   dirty worktree's `UNPROVEN` receipt as proof.
+3. Re-read the [goal's final-verification proof plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
+   and the clean exact-base receipt at `362221694`; do not reuse the older
+   dirty-worktree `UNPROVEN` receipt as changed-line proof.
 4. Activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
    its `## Active Operating Frame` names the remaining R2 rebinding and
    qualified disjoint lanes.
