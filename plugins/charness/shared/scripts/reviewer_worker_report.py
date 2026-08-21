@@ -20,6 +20,11 @@ try:
 except ImportError:
     from skills.shared.scripts.reviewer_delivery import DeliveryError, DeliveryLedger
 
+try:
+    from reviewer_output import emit_yaml
+except ImportError:
+    from skills.shared.scripts.reviewer_output import emit_yaml
+
 REPORT_SCHEMA_VERSION = "charness.reviewer_worker_report.v1"
 WORKER_SCHEMA_VERSION = "charness.reviewer_worker.v1"
 SUCCESS = "succeeded"
@@ -156,9 +161,9 @@ def main(argv: list[str] | None = None) -> int:
             "approval_eligible": False,
             "reason": str(exc),
         }
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        emit_yaml(report)
         return 1
-    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(report)
     return 0 if report["approval_eligible"] else 1
 
 

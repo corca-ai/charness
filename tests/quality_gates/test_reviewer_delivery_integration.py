@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/shared/scripts/reviewer_delivery.py"
@@ -22,7 +23,7 @@ def _run(ledger: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def _payload(result: subprocess.CompletedProcess[str]) -> dict:
-    return json.loads(result.stdout)
+    return yaml.safe_load(result.stdout)
 
 
 def test_cli_keeps_interrupted_attempt_and_retry_as_distinct_records(tmp_path: Path) -> None:

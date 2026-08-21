@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/shared/scripts/reviewer_worker.py"
 
@@ -101,6 +103,7 @@ printf '%s\n' '{"kind":"review","reason":"fresh"}' > "$out"
     finally:
         os.environ["PATH"] = old_path
     assert result.returncode == 0, result.stderr
+    assert yaml.safe_load(result.stdout)["status"] == "succeeded"
     assert json.loads(output.read_text(encoding="utf-8"))["reason"] == "fresh"
     record = json.loads(receipt.read_text(encoding="utf-8"))
     assert record["status"] == "succeeded"
@@ -165,6 +168,32 @@ def test_timeout_is_finite_and_typed_without_timeout_binary_fallback(tmp_path: P
     assert record["status"] == "timed-out"
     assert record["timeout_seconds"] == 0.05
     assert not output.exists()
+
+
+def test_timeout_terminates_backend_process_group(tmp_path: Path) -> None:
+    workspace, prompt, schema, output, receipt = _inputs(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    child_pid = tmp_path / "child.pid"
+    _executable(
+        bin_dir / "codex",
+        "#!/bin/sh\n"
+        "(sleep 30) &\n"
+        f"child=$!\nprintf '%s\\n' \"$child\" > {child_pid}\n"
+        "wait \"$child\"\n",
+    )
+    old_path = os.environ["PATH"]
+    os.environ["PATH"] = f"{bin_dir}:{old_path}"
+    try:
+        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, output, receipt, timeout="0.05")
+    finally:
+        os.environ["PATH"] = old_path
+    assert result.returncode == 1
+    assert json.loads(receipt.read_text(encoding="utf-8"))["status"] == "timed-out"
+    child = int(child_pid.read_text(encoding="utf-8"))
+    proc_stat = Path(f"/proc/{child}/stat")
+    if proc_stat.exists():
+        assert proc_stat.read_text(encoding="utf-8").split()[2] == "Z"
 
 
 def test_claude_structured_output_is_normalized_and_schema_checked(tmp_path: Path) -> None:

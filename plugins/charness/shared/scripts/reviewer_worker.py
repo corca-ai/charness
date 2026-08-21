@@ -27,6 +27,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from reviewer_output import emit_yaml
+except ImportError:
+    from skills.shared.scripts.reviewer_output import emit_yaml
+
+try:
+    from reviewer_process import terminate_process_group
+except ImportError:
+    from skills.shared.scripts.reviewer_process import terminate_process_group
+
 SCHEMA_VERSION = "charness.reviewer_worker.v1"
 DEFAULT_TIMEOUT_SECONDS = 900.0
 SUCCESS = "succeeded"
@@ -234,25 +244,27 @@ def _run(args: argparse.Namespace, paths: dict[str, Path | float | str], run_id:
     try:
         command = _command(args.backend, workspace, prompt, schema, temp_output)
         raw_handle = None
+        process: subprocess.Popen[Any] | None = None
         with prompt.open("rb") as prompt_handle, stdout.open("wb") as stdout_handle, stderr.open("wb") as stderr_handle:
             try:
                 if args.backend == "claude_p":
                     raw_handle = raw_output.open("wb")
-                completed = subprocess.run(
+                process = subprocess.Popen(
                     command,
                     cwd=workspace,
                     stdin=prompt_handle,
                     stdout=stdout_handle if args.backend == "codex_exec" else raw_handle,
                     stderr=stderr_handle,
-                    timeout=float(paths["timeout_seconds"]),
-                    check=False,
+                    start_new_session=(os.name == "posix"),
                 )
-                exit_code = completed.returncode
+                try:
+                    exit_code = process.wait(timeout=float(paths["timeout_seconds"]))
+                except subprocess.TimeoutExpired as exc:
+                    terminate_process_group(process)
+                    exit_code = 124
+                    raise WorkerError("timed-out", f"backend exceeded {paths['timeout_seconds']} seconds") from exc
             except FileNotFoundError as exc:
                 raise WorkerError("backend-unavailable", f"backend executable unavailable: {exc}") from exc
-            except subprocess.TimeoutExpired as exc:
-                exit_code = 124
-                raise WorkerError("timed-out", f"backend exceeded {paths['timeout_seconds']} seconds") from exc
             finally:
                 if raw_handle is not None:
                     raw_handle.close()
@@ -352,7 +364,7 @@ def main(argv: list[str] | None = None) -> int:
         }
     if receipt_path is not None and not receipt_path.exists():
         _atomic_write_json(receipt_path, receipt)
-    print(json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(receipt)
     return 0 if receipt.get("status") == SUCCESS else 1
 
 

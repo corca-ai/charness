@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 from skills.shared.scripts import reviewer_delivery
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -84,7 +86,7 @@ def test_matching_typed_receipt_and_findings_ledger_is_approval_eligible(tmp_pat
     receipt = _receipt(tmp_path)
     ledger, _ = _ledger(tmp_path)
     result = _run(tmp_path, receipt, ledger)
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0
     assert payload["approval_eligible"] is True
     assert payload["execution_mode"] == "file-backed-worker"
@@ -95,7 +97,7 @@ def test_success_receipt_without_findings_is_not_approval(tmp_path: Path) -> Non
     receipt = _receipt(tmp_path)
     ledger, _ = _ledger(tmp_path, findings=False)
     result = _run(tmp_path, receipt, ledger)
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["approval_eligible"] is False
     assert "findings-received" in payload["reason"]
@@ -105,7 +107,7 @@ def test_receipt_failure_cannot_be_laundered_by_findings_ledger(tmp_path: Path) 
     receipt = _receipt(tmp_path, status="timed-out")
     ledger, _ = _ledger(tmp_path)
     result = _run(tmp_path, receipt, ledger)
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["approval_eligible"] is False
     assert payload["receipt_ok"] is False
@@ -115,7 +117,7 @@ def test_provenance_mismatch_is_not_approval(tmp_path: Path) -> None:
     receipt = _receipt(tmp_path)
     ledger, _ = _ledger(tmp_path)
     result = _run(tmp_path, receipt, ledger, scope="wrong-scope")
-    payload = json.loads(result.stdout)
+    payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["provenance_ok"] is False
     assert payload["approval_eligible"] is False

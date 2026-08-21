@@ -16,6 +16,11 @@ try:
 except ImportError:
     from skills.shared.scripts import reviewer_delivery_state as _state
 
+try:
+    from reviewer_output import emit_yaml
+except ImportError:
+    from skills.shared.scripts.reviewer_output import emit_yaml
+
 CANONICAL_STATES = _state.CANONICAL_STATES
 FINDINGS_RECEIVED = _state.FINDINGS_RECEIVED
 DeliveryAttempt = _state.DeliveryAttempt
@@ -154,7 +159,7 @@ def _write(path: Path, ledger: DeliveryLedger) -> None:
 
 
 def _emit(payload: dict[str, Any]) -> None:
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    emit_yaml(payload)
 
 
 def _parser() -> argparse.ArgumentParser:
