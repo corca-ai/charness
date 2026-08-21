@@ -36,11 +36,13 @@
   carrier binding, identity joins, stale/collision refusal, bounded cleanup,
   and serialized ledger transitions are now implemented in both source and
   installed plugin layouts.
-- Committed-head changed-line proof from `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --base-sha 38775dfeb8d1e5574663d7ef461d19a63e252841`
-  is `status: clean` across 37 mapped pool files with no blocking targets, using the base
-  `38775dfeb8d1e5574663d7ef461d19a63e252841`. The latest frozen broad run was
-  `./scripts/run-quality.sh --read-only`, which reported `95 passed, 1 failed`; the sole failure is the preexisting docs-graph
-  link-only ratchet (`168` vs baseline `167`), not this reviewer-chain slice.
+- The latest stable-tree `./scripts/run-quality.sh --read-only` completed with
+  `96 passed, 0 failed, 1 UNPROVEN`: standing pytest passed and the only
+  unproven arm is changed-line mutation, correctly refused because these
+  mutation-pool files are still uncommitted. It must be rerun after the repair
+  commit; the receipt is not a green changed-line claim. Focused reviewer/
+  observer tests are `93 passed`, dup-ratchet is clean, packaging and docs
+  links pass, and the historical docs-graph failure is repaired.
 - The [round-2 boundary debug record](../charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md)
   records that the verifier returned `boundary-drift` because expected
   file-backed outputs were under an unignored `.charness/reviewer-round-2/`
@@ -52,6 +54,10 @@
   at candidate `2a8b479cb32a01e1e04289276cbcba3d321bc9f9`.
 - The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep the next run
   sensitive to wrong calls, timeout loss, and repairing inside an open review window.
+- The [current closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
+  also records the structural command-boundary rule: resolve owned
+  help/inventory before composing a path or flag, and preserve duplicate
+  wrong-call signals as non-approval evidence rather than silently retrying.
 
 ## Next Session
 
@@ -60,8 +66,10 @@
 2. Re-read the [fresh-eye delivery boundary spec](../charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md)
    and the two implementation commits above; do not repeat the repaired
    semantic slice or claim a third bounded review under the cap.
-3. Re-read the [exact-base receipt](../charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md);
-   rerun its recorded command only if the candidate SHA or receipt changes.
+3. Commit the current source/plugin and evidence surfaces, then follow the
+   [goal's final-verification proof plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
+   to rerun changed-line proof from the committed candidate; do not reuse the
+   dirty worktree's `UNPROVEN` receipt as proof.
 4. Activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
    its `## Active Operating Frame` names the remaining R2 rebinding and
    qualified disjoint lanes.

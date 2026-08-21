@@ -27,22 +27,7 @@ def _common(tmp_path: Path) -> dict[str, Path]:
     prompt = tmp_path / "prompt.md"
     prompt.write_text("return the typed result\n", encoding="utf-8")
     schema = tmp_path / "schema.json"
-    schema.write_text(
-        json.dumps(
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["kind", "reason", "packet_sha256", "reviewed_input_identity_sha256"],
-                "properties": {
-                    "kind": {"type": "string", "const": "review"},
-                    "reason": {"type": "string"},
-                    "packet_sha256": {"type": "string"},
-                    "reviewed_input_identity_sha256": {"type": "string"},
-                },
-            }
-        ),
-        encoding="utf-8",
-    )
+    schema.write_text(RESULT_SCHEMA.read_text(encoding="utf-8"), encoding="utf-8")
     return {
         "workspace": workspace,
         "prompt": prompt,
@@ -92,7 +77,7 @@ while [ "$#" -gt 0 ]; do
   if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
   shift
 done
-printf '%s\n' '{"kind":"review","reason":"fresh","packet_sha256":"packet-1","reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' > "$out"
+    printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"],"packet_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' > "$out"
 """,
     )
     env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
@@ -110,7 +95,7 @@ printf '%s\n' '{"kind":"review","reason":"fresh","packet_sha256":"packet-1","rev
         "--scope",
         "scope-1",
         "--packet-identity",
-        "packet-1",
+        "a" * 64,
         "--reviewed-input-identity",
         "a" * 64,
         "--attempt-id",

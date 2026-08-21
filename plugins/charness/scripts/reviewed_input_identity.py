@@ -90,7 +90,11 @@ def _lexical_path(path: str) -> Path:
 def _checked_path(repo_root: Path, path: str) -> Path:
     relative = _lexical_path(path)
     candidate = repo_root.resolve() / relative
-    resolved_for_boundary = candidate.parent.resolve() if candidate.is_symlink() else candidate.resolve()
+    if candidate.is_symlink():
+        raise ValueError(
+            f"reviewed path `{path}` is a symlink; declare the target file explicitly"
+        )
+    resolved_for_boundary = candidate.resolve()
     try:
         resolved_for_boundary.relative_to(repo_root.resolve())
     except ValueError as exc:
@@ -298,17 +302,34 @@ def verify_artifact_binding(
     *,
     expected_kind: str,
     check_current: bool = True,
+    repo_root: Path | None = None,
 ) -> tuple[bool, str]:
-    repo_root = next(
-        (parent for parent in artifact_path.resolve().parents if (parent / ".git").exists()),
-        None,
-    )
-    if repo_root is None and len(artifact_path.parents) >= 3:
-        repo_root = artifact_path.parents[2]
-    if repo_root is None:
+    resolved_root = repo_root.resolve() if repo_root is not None else None
+    if resolved_root is None:
+        # Prefer the known artifact layout before scanning ancestors. A nested
+        # test checkout can live below an unrelated `.git` directory (for
+        # example a shared temp root); selecting that first makes a valid
+        # packet look like a wrong-path/missing-file failure.
+        if len(artifact_path.resolve().parents) >= 3:
+            layout_root = artifact_path.resolve().parents[2]
+            if (layout_root / fields.get("packet path", "")).is_file():
+                resolved_root = layout_root
+        if resolved_root is None:
+            resolved_root = next(
+                (parent for parent in artifact_path.resolve().parents if (parent / ".git").exists()),
+                None,
+            )
+        # Artifacts produced under the canonical `charness-artifacts/<kind>/`
+        # layout still need a deterministic root when a fixture has no `.git`
+        # directory. Keep the layout fallback even when the packet is missing:
+        # the caller should receive the typed missing-packet refusal, not a
+        # misleading repository-root discovery failure.
+        if resolved_root is None and len(artifact_path.resolve().parents) >= 3:
+            resolved_root = artifact_path.resolve().parents[2]
+    if resolved_root is None:
         return False, "cannot resolve repository root for reviewed input binding"
     return verify_packet_binding(
-        repo_root=repo_root,
+        repo_root=resolved_root,
         packet_path=fields["packet path"],
         packet_sha256=fields["packet sha256"],
         identity_sha256=fields["identity sha256"],
@@ -325,6 +346,7 @@ def verify_declared_binding(
     required_fields: tuple[str, ...],
     expected_kind: str,
     check_current: bool = True,
+    repo_root: Path | None = None,
 ) -> tuple[bool, str]:
     if not fields:
         if required:
@@ -338,4 +360,5 @@ def verify_declared_binding(
         fields,
         expected_kind=expected_kind,
         check_current=check_current,
+        repo_root=repo_root,
     )

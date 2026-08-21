@@ -485,6 +485,18 @@ def test_round_findings_are_not_critique_candidates(tmp_path: Path) -> None:
     ) == []
 
 
+def test_changed_path_mode_ignores_non_markdown_worker_evidence(tmp_path: Path) -> None:
+    packet = tmp_path / "charness-artifacts/critique/worker-result.json"
+    packet.parent.mkdir(parents=True, exist_ok=True)
+    packet.write_text("{}\n", encoding="utf-8")
+
+    assert critique_candidate_paths(
+        tmp_path,
+        ["charness-artifacts/critique/worker-result.json"],
+        all_artifacts=False,
+    ) == []
+
+
 def test_renamed_or_mislabeled_packet_name_does_not_bypass_critique_record_floors(tmp_path: Path) -> None:
     artifact = tmp_path / "charness-artifacts/critique/2026-07-10-fake-packet.md"
     artifact.parent.mkdir(parents=True, exist_ok=True)

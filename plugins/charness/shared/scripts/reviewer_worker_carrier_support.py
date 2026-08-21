@@ -1,0 +1,251 @@
+"""Repository I/O and provenance-chain checks for worker report carriers."""
+
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+
+def _load_delivery_fields():
+    candidate = Path(__file__).resolve().with_name("reviewer_delivery_fields.py")
+    if not candidate.is_file():
+        raise ImportError(f"package-local delivery-fields helper not found: {candidate}")
+    spec = importlib.util.spec_from_file_location("charness_reviewer_delivery_fields", candidate)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"unable to load package-local helper: {candidate}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.PARENT_RECEIPT_ID_RE
+
+
+PARENT_RECEIPT_ID_RE = _load_delivery_fields()
+EXPECTED_PACKET_KIND = "charness.critique_prepare_packet"
+
+
+def _load_result_contract():
+    here = Path(__file__).resolve()
+    for ancestor in (here.parent, *here.parents):
+        candidate = ancestor / "reviewer_result_contract.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("charness_reviewer_result_contract", candidate)
+            if spec is not None and spec.loader is not None:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                return module
+    raise ImportError("package reviewer_result_contract.py not found")
+
+
+def _load_delivery_attempt_parser():
+    package_dir = Path(__file__).resolve().parent
+    aliases = {
+        "reviewer_delivery_fields": package_dir / "reviewer_delivery_fields.py",
+        "reviewer_delivery_history": package_dir / "reviewer_delivery_history.py",
+        "reviewer_delivery_schema": package_dir / "reviewer_delivery_schema.py",
+        "reviewer_delivery_attempt": package_dir / "reviewer_delivery_attempt.py",
+    }
+    saved: dict[str, object] = {}
+    loaded: dict[str, object] = {}
+    try:
+        for public_name, path in aliases.items():
+            spec = importlib.util.spec_from_file_location(f"charness_{public_name}", path)
+            if spec is None or spec.loader is None:
+                raise ImportError(f"unable to load package-local helper: {path}")
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[f"charness_{public_name}"] = module
+            saved[public_name] = sys.modules.get(public_name)
+            sys.modules[public_name] = module
+            spec.loader.exec_module(module)
+            loaded[public_name] = module
+        return loaded["reviewer_delivery_attempt"].DeliveryAttempt
+    finally:
+        for public_name, previous in saved.items():
+            if previous is None:
+                sys.modules.pop(public_name, None)
+            else:
+                sys.modules[public_name] = previous
+
+
+def _load_identity_verifier():
+    for ancestor in list(Path(__file__).resolve().parents)[:6]:
+        candidate = ancestor / "scripts" / "reviewed_input_identity.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("charness_reviewed_input_identity", candidate)
+            if spec is not None and spec.loader is not None:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                return module
+    return None
+
+
+class WorkerCarrierError(ValueError):
+    """The supplied artifact cannot prove a delivered worker approval."""
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _report_path(repo_root: Path, value: str) -> Path:
+    report_path = Path(value.strip().strip("`"))
+    if not report_path.is_absolute() and ".." in report_path.parts:
+        raise WorkerCarrierError("worker report path must be a safe repo-relative path without traversal, or an absolute path resolved inside the repository")
+    resolved_root = repo_root.resolve()
+    report_file = (report_path if report_path.is_absolute() else resolved_root / report_path).resolve()
+    try:
+        report_file.relative_to(resolved_root)
+    except ValueError as exc:
+        raise WorkerCarrierError(f"worker report carrier path resolves outside the repository: {value}") from exc
+    if not report_file.is_file():
+        raise WorkerCarrierError(f"worker report carrier does not exist inside the repository: {value}")
+    return report_file
+
+
+def _read_json(path: Path, label: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkerCarrierError(f"{label} is not readable JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise WorkerCarrierError(f"{label} must contain a mapping")
+    return payload
+
+
+def _validate_packet_binding(
+    *,
+    repo_root: Path,
+    artifact_binding_fields: dict[str, str],
+    required_issue_numbers: list[int] | None = None,
+    required_repository: str | None = None,
+) -> None:
+    packet_path = artifact_binding_fields.get("packet path", "").strip().strip("`")
+    if not packet_path:
+        raise WorkerCarrierError("worker-delivered requires the Reviewed Input Identity packet path")
+    verifier = _load_identity_verifier()
+    if verifier is None:
+        raise WorkerCarrierError("package reviewed-input verifier is unavailable")
+    try:
+        packet = _read_json(_report_path(repo_root, packet_path), "reviewed packet")
+        ok, reason = verifier.verify_packet_binding(
+            repo_root=repo_root,
+            packet_path=packet_path,
+            packet_sha256=artifact_binding_fields.get("packet sha256", "").strip().lower(),
+            identity_sha256=artifact_binding_fields.get("identity sha256", "").strip().lower(),
+            expected_kind=EXPECTED_PACKET_KIND,
+            check_current=True,
+        )
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        raise WorkerCarrierError(f"reviewed packet binding could not be verified: {exc}") from exc
+    if not ok:
+        raise WorkerCarrierError(f"reviewed packet binding is not current: {reason}")
+    if required_issue_numbers:
+        repository = (required_repository or "").strip().lower()
+        for number in required_issue_numbers:
+            expected = f"{repository}#{number}" if repository else f"issue#{number}"
+            prepared_for = str(packet.get("prepared_for", "")).lower()
+            if not prepared_for.startswith(expected) or (
+                len(prepared_for) > len(expected) and prepared_for[len(expected)].isalnum()
+            ):
+                raise WorkerCarrierError(f"reviewed packet prepared_for does not bind exactly to {expected}")
+        packet_repository = str(packet.get("repo", "")).strip().lower()
+        accepted = {repository, repository.rsplit("/", 1)[-1]}
+        if not packet_repository or packet_repository not in accepted:
+            raise WorkerCarrierError(f"reviewed packet repo does not bind exactly to {repository}")
+
+
+def _validate_receipt_and_result(
+    *, repo_root: Path, report: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any], str]:
+    receipt_value = report.get("receipt_path")
+    if not isinstance(receipt_value, str):
+        raise WorkerCarrierError("worker report has no repo-readable receipt path")
+    receipt = _read_json(_report_path(repo_root, receipt_value), "worker receipt")
+    if receipt.get("schema_version") != "charness.reviewer_worker.v1":
+        raise WorkerCarrierError("worker receipt has the wrong schema")
+    if receipt.get("status") != "succeeded" or receipt.get("terminal") is not True:
+        raise WorkerCarrierError("worker receipt is not a terminal succeeded receipt")
+    if receipt.get("exit_code") != 0 or receipt.get("output_fresh") is not True:
+        raise WorkerCarrierError("worker receipt does not prove a fresh successful result")
+    output_value = receipt.get("output_file")
+    if not isinstance(output_value, str):
+        raise WorkerCarrierError("worker receipt has no output file")
+    output = _report_path(repo_root, output_value)
+    output_hash = _sha256(output)
+    if output_hash != receipt.get("output_sha256") or output.stat().st_size != receipt.get("output_size"):
+        raise WorkerCarrierError("worker output does not match the typed receipt hash/size")
+    try:
+        result = _load_result_contract().validate_bounded_result(
+            output,
+            packet_identity=str(report.get("packet_identity", "")),
+            reviewed_input_identity=str(report.get("reviewed_input_identity", "")),
+            require_pass=True,
+        )
+    except (ImportError, ValueError) as exc:
+        raise WorkerCarrierError(str(exc)) from exc
+    if report.get("findings_identity") != output_hash or report.get("receipt_output_sha256") != output_hash:
+        raise WorkerCarrierError("worker findings identity does not match the typed result")
+    return receipt, result, output_hash
+
+
+def _validate_ledger(
+    *, repo_root: Path, report: dict[str, Any], receipt: dict[str, Any], output_hash: str
+) -> None:
+    ledger_value = report.get("ledger_path")
+    provenance = report.get("provenance")
+    if not isinstance(ledger_value, str):
+        raise WorkerCarrierError("worker report has no repo-readable ledger path")
+    if not isinstance(provenance, dict) or not provenance.get("attempt_id"):
+        raise WorkerCarrierError("worker report has no typed attempt provenance")
+    ledger = _read_json(_report_path(repo_root, ledger_value), "delivery ledger")
+    if ledger.get("schema_version") != "charness.reviewer_delivery.v1":
+        raise WorkerCarrierError("delivery ledger has the wrong schema")
+    attempts = ledger.get("attempts")
+    if not isinstance(attempts, list):
+        raise WorkerCarrierError("delivery ledger has no attempts list")
+    raw_attempt = next((item for item in attempts if isinstance(item, dict) and item.get("attempt_id") == provenance["attempt_id"]), None)
+    if raw_attempt is None:
+        raise WorkerCarrierError("delivery ledger does not contain the report attempt")
+    try:
+        attempt = _load_delivery_attempt_parser().from_dict(raw_attempt)
+    except (ImportError, ValueError, TypeError, KeyError) as exc:
+        raise WorkerCarrierError(f"delivery ledger canonical history is invalid: {exc}") from exc
+    joined_fields = (
+        "attempt_id", "scope", "packet_identity", "reviewed_input_identity",
+        "parent_receipt_identity", "boundary_fingerprint", "execution_mode",
+        "backend", "prompt_sha256", "schema_sha256",
+    )
+    if report.get("attempt_id") != provenance.get("attempt_id"):
+        raise WorkerCarrierError("delivery chain attempt_id does not match report provenance")
+    for field in joined_fields:
+        expected = provenance.get(field) if field == "attempt_id" else report.get(field)
+        actual = getattr(attempt, field, None)
+        if expected is None or actual != expected or receipt.get(field) != expected:
+            raise WorkerCarrierError(f"delivery chain {field} does not match report, receipt, and ledger attempt")
+        if field != "attempt_id" and provenance.get(field) != expected:
+            raise WorkerCarrierError(f"delivery chain {field} does not match report provenance")
+    aliases = {
+        "attempt_scope": report.get("scope"),
+        "attempt_packet_identity": report.get("packet_identity"),
+        "attempt_parent_receipt_identity": report.get("parent_receipt_identity"),
+        "result_packet_identity": report.get("packet_identity"),
+        "result_reviewed_input_identity": report.get("reviewed_input_identity"),
+    }
+    mismatches = [key for key, expected in aliases.items() if provenance.get(key) != expected]
+    if mismatches:
+        raise WorkerCarrierError(f"delivery chain provenance aliases do not match the report: {mismatches}")
+    if attempt.state != "findings-received" or attempt.terminal is not True or not attempt.findings_identity:
+        raise WorkerCarrierError("delivery ledger does not prove findings-received completion")
+    if attempt.findings_identity != output_hash:
+        raise WorkerCarrierError("delivery ledger findings identity does not match the result")
+
+
+def _validate_delivery_chain(*, repo_root: Path, report: dict[str, Any]) -> None:
+    receipt, _result, output_hash = _validate_receipt_and_result(repo_root=repo_root, report=report)
+    _validate_ledger(repo_root=repo_root, report=report, receipt=receipt, output_hash=output_hash)

@@ -61,6 +61,7 @@ scaffold_retro_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaff
 surfaces_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.surfaces_lib")
 _state = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_artifact_state")
 _artifact_summary = _state._artifact_summary
+_gate_builder = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_plan_gates")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -100,6 +101,24 @@ def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict
         "command": " ".join(["python3", rel_path, *args]),
         "available": (repo_root / rel_path).is_file(),
         "path": rel_path,
+    }
+
+
+def _skill_script_command(rel_path: str, *args: str) -> dict[str, Any]:
+    """Emit a command for a script shipped beside this planner.
+
+    A planner runs both from ``skills/public/<skill>`` in the authoring tree and
+    from ``skills/<skill>`` in the exported plugin.  A repository-relative path
+    is therefore a source-only carrier; ``$SKILL_DIR`` is the portable owner.
+    Availability is checked against the resolved skill package, not the consumer
+    repository, so an installed plan cannot advertise its own probe as missing.
+    """
+    return {
+        "command": " ".join(["python3", f'"$SKILL_DIR/{rel_path}"', *args]),
+        "available": (SKILL_ROOT / rel_path).is_file(),
+        "required": True,
+        "path": rel_path,
+        "path_base": "skill-dir",
     }
 
 
@@ -278,68 +297,16 @@ def _on_demand_reads() -> list[dict[str, str]]:
 
 
 def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, Any]) -> list[dict[str, Any]]:
-    packets = [
-        _packet(
-            "adapter-readiness",
-            "deterministic adapter parser; trust failures and warnings",
-            status="pass" if adapter.get("valid") else "fail",
-            path=adapter.get("path"),
-            warnings=adapter.get("warnings", []),
-            errors=adapter.get("errors", []),
-        ),
-        _packet(
-            "retro-artifact-scaffold",
-            "deterministic scaffold payload; trust write target and validator command",
-            command="python3 $SKILL_DIR/scripts/scaffold_retro_artifact.py --repo-root .",
-            write_artifact_path=scaffold["write_artifact_path"],
-            # Echoed, not recomputed: a planner that names someone else's write target must
-            # carry the fact about it too, or the surface an agent reads first is the one
-            # surface that stays silent about whether writing destroys a finished record.
-            write_artifact_effect=scaffold["write_artifact_effect"],
-            validator_command=scaffold["validator_command"],
-        ),
-        # Scoped, for the reason the sibling scaffold above already scopes its own
-        # command: unscoped, a corpus validator's exit code mixes THIS artifact's verdict
-        # with legacy-schema debt in unrelated older records, and the operator cannot tell
-        # which one made it red. `--all` stays the audit mode, and the broad gate and CI
-        # already run it.
-        #
-        # This scoping was landed once, REVERSED on release eve, and is restored here only
-        # because its precondition now holds. It was reversed because
-        # `validate_retro_artifact` keyed its candidate filter and its owned prefix on the
-        # literal `charness-artifacts/retro/` while the path named below comes from the
-        # adapter's `output_dir`: where a consumer declared a different directory the two
-        # disagreed, and the scoped command printed "Validated 0 retro artifact(s)." and
-        # exited 0 -- a schema gate reporting green having opened nothing. That validator
-        # now resolves its prefix through retro's own adapter, which is what makes the two
-        # halves name one directory. Re-reversing this packet is not the repair if that
-        # ever regresses; the validator's resolver is.
-        _packet(
-            "retro-artifact-shape",
-            "deterministic Sibling Search follow-up grammar gate for the artifact this run writes;"
-            " trust section/format failures",
-            run_when="after the retro artifact is written; this validates that artifact",
-            **_relative_script_command(
-                repo_root, "scripts/validate_retro_artifact.py",
-                "--repo-root", ".", "--paths", scaffold["write_artifact_path"],
-            ),
-        ),
-        _packet(
-            "auto-session-trigger",
-            "deterministic slice-surface trigger probe; agent judges whether to fire a bounded session retro",
-            **_relative_script_command(repo_root, "skills/public/retro/scripts/check_auto_trigger.py", "--repo-root", "."),
-        ),
-    ]
-    for index, command in enumerate(adapter["data"].get("metrics_commands", []), start=1):
-        packets.append(
-            _packet(
-                f"adapter-metric-{index}",
-                "adapter-declared read-only metric; trust its structured counts and failures, not causal interpretation",
-                command=str(command),
-                run_when="after the retro disposition is written and persisted, before closeout",
-            )
-        )
-    return packets
+    # The scaffold-owned "write_artifact_effect" travels through the gate builder;
+    # this planner reports those facts and never reconstructs a write target.
+    return _gate_builder.build_gate_packets(
+        repo_root,
+        adapter,
+        scaffold,
+        packet=_packet,
+        relative_script_command=_relative_script_command,
+        skill_script_command=_skill_script_command,
+    )
 
 
 def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
@@ -368,6 +335,13 @@ def build_plan(
     work_paths, work_paths_source = _work_paths(repo_root, changed_paths)
     work_class = _classify_work_class(work_paths)
     lens_brief = _lens_brief(work_class)
+    gate_packets = _gate_packets(repo_root, adapter, scaffold)
+    unavailable_required_packets = [
+        packet["id"]
+        for packet in gate_packets
+        if packet.get("required") is True and packet.get("available") is False
+    ]
+    ready = bool(adapter.get("valid")) and not unavailable_required_packets
     # Hoisted so a barrier can be conditioned on it. A barrier that names
     # `lesson_session[].solicitation` in a repo with no evaluator points at keys
     # that payload does not carry -- the "names a path nothing creates" defect this
@@ -382,8 +356,13 @@ def build_plan(
             {"repo": repo_root, "skill": SKILL_ROOT},
         ),
         next_action=_next_action(artifact),
-        gate_packets=_gate_packets(repo_root, adapter, scaffold),
-        ok=bool(adapter.get("valid")),
+        gate_packets=gate_packets,
+        ok=ready,
+        readiness={
+            "status": "ready" if ready else "not-ready",
+            "blocking_packets": unavailable_required_packets,
+            "adapter_valid": bool(adapter.get("valid")),
+        },
         repo_root=str(repo_root),
         work_class=work_class,
         work_paths_source=work_paths_source,

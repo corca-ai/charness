@@ -1,0 +1,125 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-21T03:28:16Z",
+  "prepared_for": "retro portability boundary #685 #686",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md\n- charness-artifacts/metrics/rca-ledger.jsonl\n- plugins/charness/scripts/retro_persistence_lib.py\n- plugins/charness/skills/retro/scripts/plan_retro_run.py\n- scripts/retro_persistence_lib.py\n- skills/public/retro/scripts/plan_retro_run.py\n- tests/quality_gates/test_retro_persistence.py\n- charness-artifacts/debug/2026-08-21-retro-portability-boundary-685-686.md\n- tests/quality_gates/test_retro_installed_plan_path.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/retro_persistence_lib.py, skills/public/retro/scripts/plan_retro_run.py\n  derived matches: plugins/charness/scripts/retro_persistence_lib.py, plugins/charness/skills/retro/scripts/plan_retro_run.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md, charness-artifacts/debug/2026-08-21-retro-portability-boundary-685-686.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/retro/scripts/plan_retro_run.py\n  derived matches: plugins/charness/skills/retro/scripts/plan_retro_run.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/retro/scripts/plan_retro_run.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/retro/scripts/plan_retro_run.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-21-retro-portability-boundary-685-686.md\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: scripts/retro_persistence_lib.py\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/retro_persistence_lib.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/retro_persistence_lib.py, tests/quality_gates/test_retro_persistence.py, tests/quality_gates/test_retro_installed_plan_path.py\n  derived matches: plugins/charness/scripts/retro_persistence_lib.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/retro_persistence_lib.py, skills/public/retro/scripts/plan_retro_run.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "409c7eff5099513fa6fe24c1e956ab0060f106af",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/debug/2026-08-21-retro-portability-boundary-685-686.md",
+      "charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md",
+      "plugins/charness/scripts/retro_persistence_lib.py",
+      "plugins/charness/skills/retro/scripts/plan_retro_run.py",
+      "scripts/retro_persistence_lib.py",
+      "skills/public/retro/scripts/plan_retro_run.py",
+      "tests/quality_gates/test_retro_installed_plan_path.py",
+      "tests/quality_gates/test_retro_persistence.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/debug/2026-08-21-retro-portability-boundary-685-686.md",
+        "content_sha256": "197e7c8f551f4413571121d0e0cceb4383ecd15fc1fd5f945f30f5a7558fa203"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md",
+        "content_sha256": "efdd45370776a8c8c1de55786bd6bd19278de2bea5082cdc5ad891a3ab000c1d"
+      },
+      {
+        "path": "plugins/charness/scripts/retro_persistence_lib.py",
+        "content_sha256": "b898acae7a5ad5ed7f4140b83c2bc7b4f6abcc4e179c456f27858f8797199fc9"
+      },
+      {
+        "path": "plugins/charness/skills/retro/scripts/plan_retro_run.py",
+        "content_sha256": "5dc6b386a1138a2c4bcfc74745a93c916327fbfa7c29b4467f76d29a98a602e3"
+      },
+      {
+        "path": "scripts/retro_persistence_lib.py",
+        "content_sha256": "b898acae7a5ad5ed7f4140b83c2bc7b4f6abcc4e179c456f27858f8797199fc9"
+      },
+      {
+        "path": "skills/public/retro/scripts/plan_retro_run.py",
+        "content_sha256": "5dc6b386a1138a2c4bcfc74745a93c916327fbfa7c29b4467f76d29a98a602e3"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_installed_plan_path.py",
+        "content_sha256": "c90b27a6f6a29de40b03425d618f0817de67b8b6d0d9547d9b33027909910d5f"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_persistence.py",
+        "content_sha256": "b54702555360a4e6fbe98a2e0f28914379f6075b9979bf120b50d1e133145ce2"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "32556fb12ed098df37b49af1411a5488425a8fadca37bec8edc89ee59fdb8b3a",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/debug/2026-08-21-retro-portability-boundary-685-686.md",
+        "content_sha256": "197e7c8f551f4413571121d0e0cceb4383ecd15fc1fd5f945f30f5a7558fa203"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_installed_plan_path.py",
+        "content_sha256": "c90b27a6f6a29de40b03425d618f0817de67b8b6d0d9547d9b33027909910d5f"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "177a1ce2650515142fb1e9bf8349805aee8ffe79ca88d3363ce867b86e556709"
+  }
+}

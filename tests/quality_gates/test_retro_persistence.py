@@ -483,7 +483,7 @@ def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(
     assert payload["artifact_name_normalized"] is True
     assert payload["summary_refreshed"] is True
     assert (output_dir / "2026-05-07-session-no-extension.md").is_file()
-    assert "lacks .md" in result.stderr
+    assert result.stderr == ""
 
 
 def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(

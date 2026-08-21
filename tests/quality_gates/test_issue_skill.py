@@ -150,7 +150,7 @@ def test_issue_read_uses_comments_in_default_gh_view(tmp_path: Path) -> None:
         "gh",
         "GH_LOG",
         [
-            "print(json.dumps({'number': 42, 'title': 'Demo', 'body': 'Body', 'comments': [{'body': 'comment'}], 'labels': [], 'state': 'OPEN', 'url': 'https://example.test/42'}))",
+            "print(json.dumps({'number': 42, 'title': 'Demo', 'body': 'Body', 'comments': [{'body': 'comment'}], 'labels': [], 'state': 'OPEN', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
         ],
     )
 
@@ -253,7 +253,7 @@ def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path
         [
             "if 'comment' in sys.argv: print('commented')",
             "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
         ],
     )
     body = tmp_path / "body.md"
@@ -298,7 +298,7 @@ def test_issue_close_with_comment_fails_when_final_state_remains_open(tmp_path: 
                 "import json, sys",
                 "if 'comment' in sys.argv: print('commented')",
                 "if 'close' in sys.argv: print('closed')",
-                "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'OPEN', 'url': 'https://example.test/42'}))",
+                "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'OPEN', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
                 "",
             ]
         ),
@@ -338,6 +338,10 @@ def test_issue_close_with_comment_surfaces_partial_state_when_close_fails(tmp_pa
         "\n".join(
             [
                 "#!/usr/bin/env bash",
+                "if [[ \"$2\" == \"view\" ]]; then",
+                "  echo '{\"number\": 5, \"state\": \"OPEN\", \"url\": \"https://github.com/corca-ai/charness/issues/5\"}'",
+                "  exit 0",
+                "fi",
                 "if [[ \"$2\" == \"close\" ]]; then",
                 "  echo 'forbidden' >&2",
                 "  exit 1",
@@ -384,7 +388,7 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
         "acme",
         "ACME_LOG",
         [
-            "if 'view' in sys.argv: print(json.dumps({'number': 7, 'state': 'CLOSED', 'url': 'https://example.test/7'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 7, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/7'}))",
         ],
     )
     write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
@@ -514,7 +518,7 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
         "acme",
         "ACME_LOG",
         [
-            "if 'view' in sys.argv: print(json.dumps({'number': 11, 'state': 'CLOSED', 'url': 'https://example.test/11'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 11, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/11'}))",
         ],
     )
     write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")

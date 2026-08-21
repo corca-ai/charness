@@ -62,6 +62,11 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _repo_path(repo_root: Path, value: Path) -> Path:
+    """Resolve runner paths against the explicit repo root, never launch cwd."""
+    return (value if value.is_absolute() else repo_root / value).resolve()
+
+
 def _atomic_write_yaml(path: Path, payload: dict[str, Any]) -> None:
     import os
     import tempfile
@@ -129,40 +134,48 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _select_runner(args: argparse.Namespace, repo_root: Path) -> tuple[str, str | None, float]:
+    adapter = _adapter(repo_root)
+    adapter_data = adapter.get("data") or {}
+    runner = adapter_data.get("reviewer_runner") or {}
+    configured_mode = runner.get("mode", "file-backed-worker")
+    if args.execution_mode is not None and args.execution_mode != configured_mode:
+        raise ValueError(
+            f"adapter reviewer_runner.mode={configured_mode!r} is authoritative; "
+            f"caller requested {args.execution_mode!r}"
+        )
+    configured_backend = runner.get("backend")
+    if configured_backend == "host-defaulted":
+        backend = args.backend
+    else:
+        if args.backend is not None and args.backend != configured_backend:
+            raise ValueError(
+                f"adapter reviewer_runner.backend={configured_backend!r} is authoritative; "
+                f"caller requested {args.backend!r}"
+            )
+        backend = configured_backend
+    configured_timeout = runner.get("timeout_seconds")
+    if (
+        configured_timeout is not None
+        and args.timeout_seconds is not None
+        and args.timeout_seconds != configured_timeout
+    ):
+        raise ValueError(
+            f"adapter reviewer_runner.timeout_seconds={configured_timeout!r} is authoritative; "
+            f"caller requested {args.timeout_seconds!r}"
+        )
+    timeout = configured_timeout if configured_timeout is not None else (
+        args.timeout_seconds if args.timeout_seconds is not None else 900
+    )
+    return configured_mode, backend, timeout
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     repo_root = args.repo_root.resolve()
     report_target: Path | None = None
     try:
-        adapter = _adapter(repo_root)
-        adapter_data = adapter.get("data") or {}
-        runner = adapter_data.get("reviewer_runner") or {}
-        configured_mode = runner.get("mode", "file-backed-worker")
-        if args.execution_mode is not None and args.execution_mode != configured_mode:
-            raise ValueError(
-                f"adapter reviewer_runner.mode={configured_mode!r} is authoritative; "
-                f"caller requested {args.execution_mode!r}"
-            )
-        mode = configured_mode
-        configured_backend = runner.get("backend")
-        if configured_backend == "host-defaulted":
-            backend = args.backend
-        else:
-            if args.backend is not None and args.backend != configured_backend:
-                raise ValueError(
-                    f"adapter reviewer_runner.backend={configured_backend!r} is authoritative; "
-                    f"caller requested {args.backend!r}"
-                )
-            backend = configured_backend
-        configured_timeout = runner.get("timeout_seconds")
-        if configured_timeout is not None and args.timeout_seconds is not None and args.timeout_seconds != configured_timeout:
-            raise ValueError(
-                f"adapter reviewer_runner.timeout_seconds={configured_timeout!r} is authoritative; "
-                f"caller requested {args.timeout_seconds!r}"
-            )
-        timeout = configured_timeout if configured_timeout is not None else (
-            args.timeout_seconds if args.timeout_seconds is not None else 900
-        )
+        mode, backend, timeout = _select_runner(args, repo_root)
         if mode == "typed-subagent":
             emit_yaml(
                 {
@@ -180,15 +193,28 @@ def main(argv: list[str] | None = None) -> int:
         if backend not in {"codex_exec", "claude_p"}:
             raise ValueError("file-backed runner requires adapter reviewer_runner.backend")
 
-        prompt = args.prompt_file.resolve()
-        schema = args.schema_file.resolve()
-        ledger_path = args.ledger_file.resolve()
-        output_path = args.output_file.resolve()
-        receipt_path = args.receipt_file.resolve()
-        report_target = args.report_file.resolve()
-        stdout_path = (args.stdout_file or Path(f"{output_path}.stdout")).resolve()
-        stderr_path = (args.stderr_file or Path(f"{output_path}.stderr")).resolve()
+        prompt = _repo_path(repo_root, args.prompt_file)
+        schema = _repo_path(repo_root, args.schema_file)
+        ledger_path = _repo_path(repo_root, args.ledger_file)
+        output_path = _repo_path(repo_root, args.output_file)
+        receipt_path = _repo_path(repo_root, args.receipt_file)
+        report_target = _repo_path(repo_root, args.report_file)
+        stdout_path = _repo_path(
+            repo_root, args.stdout_file or Path(f"{output_path}.stdout")
+        )
+        stderr_path = _repo_path(
+            repo_root, args.stderr_file or Path(f"{output_path}.stderr")
+        )
+        if _sha256(schema) != _sha256(DEFAULT_SCHEMA):
+            raise ValueError(
+                "file-backed reviewer runner requires the canonical bounded-review result schema"
+            )
         all_paths = (prompt, schema, ledger_path, output_path, receipt_path, report_target, stdout_path, stderr_path)
+        for path in all_paths:
+            try:
+                path.relative_to(repo_root)
+            except ValueError as exc:
+                raise ValueError(f"runner path resolves outside --repo-root: {path}") from exc
         if len({str(path) for path in all_paths}) != len(all_paths):
             raise ValueError("runner input and output paths must resolve to distinct files")
         stale_targets = [path for path in (output_path, receipt_path, report_target, stdout_path, stderr_path) if path.exists()]
@@ -239,6 +265,8 @@ def main(argv: list[str] | None = None) -> int:
             args.reviewed_input_identity,
             "--parent-receipt-identity",
             args.parent_receipt_identity,
+            "--boundary-fingerprint",
+            args.boundary_fingerprint,
         ]
         worker_command.extend(["--stdout-file", str(stdout_path), "--stderr-file", str(stderr_path)])
         worker_command.extend(["--timeout-seconds", str(timeout)])

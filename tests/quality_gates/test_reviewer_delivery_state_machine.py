@@ -54,6 +54,38 @@ def test_findings_received_is_the_only_approval_state() -> None:
     assert attempt.delivery_complete is True
 
 
+def test_parent_receipt_identity_is_case_sensitive_and_round_trips() -> None:
+    ledger = delivery.DeliveryLedger.empty()
+    ledger.start(
+        attempt_id="case-a1",
+        scope="scope-sha",
+        packet_identity="packet-sha",
+        parent_receipt_identity="Parent.Receipt:1",
+        boundary_fingerprint="fingerprint-a1",
+        recorded_at="2026-08-21T00:00:00Z",
+    )
+    assert _findings(
+        ledger,
+        attempt_id="case-a1",
+        parent_receipt_identity="Parent.Receipt:1",
+    ) is True
+    restored = delivery.DeliveryLedger.from_dict(ledger.to_dict())
+    assert restored.require("case-a1").parent_receipt_identity == "Parent.Receipt:1"
+
+
+@pytest.mark.parametrize("receipt", ["", "bad receipt", "bad\nreceipt", "@bad"])
+def test_parent_receipt_identity_rejects_malformed_values(receipt: str) -> None:
+    with pytest.raises(delivery.DeliveryError, match="parent_receipt_identity"):
+        delivery.DeliveryLedger.empty().start(
+            attempt_id="bad-a1",
+            scope="scope-sha",
+            packet_identity="packet-sha",
+            parent_receipt_identity=receipt,
+            boundary_fingerprint="fingerprint-a1",
+            recorded_at="2026-08-21T00:00:00Z",
+        )
+
+
 @pytest.mark.parametrize(
     "state",
     [

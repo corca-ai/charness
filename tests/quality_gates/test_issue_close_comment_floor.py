@@ -32,7 +32,7 @@ def test_close_with_comment_refuses_silent_body_before_any_gh_call(tmp_path: Pat
         [
             "if 'comment' in sys.argv: print('commented')",
             "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
         ],
     )
     body = tmp_path / "body.md"
@@ -76,7 +76,7 @@ def test_close_with_comment_proceeds_with_compliant_body(tmp_path: Path) -> None
         [
             "if 'comment' in sys.argv: print('commented')",
             "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
         ],
     )
     body = tmp_path / "body.md"
@@ -128,7 +128,7 @@ def test_close_with_comment_refuses_undispositioned_hotl_entry(tmp_path: Path) -
         [
             "if 'comment' in sys.argv: print('commented')",
             "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
         ],
     )
     body = tmp_path / "body.md"
@@ -215,7 +215,7 @@ def test_close_with_comment_accepts_typed_hotl_entry(tmp_path: Path) -> None:
         [
             "if 'comment' in sys.argv: print('commented')",
             "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
         ],
     )
     body = tmp_path / "body.md"
@@ -266,7 +266,7 @@ def test_close_with_comment_question_classification_emits_review_advisory(tmp_pa
         [
             "if 'comment' in sys.argv: print('commented')",
             "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
         ],
     )
     body = tmp_path / "body.md"
@@ -354,7 +354,7 @@ def test_close_with_comment_refuses_body_without_ai_provenance(tmp_path: Path) -
         [
             "if 'comment' in sys.argv: print('commented')",
             "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
+            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
         ],
     )
     body = tmp_path / "body.md"

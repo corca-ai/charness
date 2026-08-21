@@ -118,6 +118,49 @@ def answer_repo(payload: dict[str, Any]) -> str | None:
     return None
 
 
+def issue_identity_mismatches(
+    payload: object, *, expected_repo: str, expected_number: int
+) -> list[dict[str, Any]]:
+    """Return every mismatch between an issue answer and its requested target.
+
+    A command containing ``--repo`` and ``number`` is only a request. The answer is
+    the evidence, and an omitted repository or a non-integer number is an unknown
+    target, not a successful match. Keeping this rule here prevents close and
+    verify-closeout from maintaining subtly different identity floors.
+    """
+    if not isinstance(payload, dict):
+        return [{"field": "payload", "expected": "issue object", "actual": type(payload).__name__}]
+    mismatches: list[dict[str, Any]] = []
+    reported_number = payload.get("number")
+    if type(reported_number) is not int or reported_number != expected_number:
+        mismatches.append(
+            {"field": "number", "expected": expected_number, "actual": reported_number}
+        )
+    reported_repo = answer_repo(payload)
+    if not isinstance(reported_repo, str) or reported_repo.strip().lower() != expected_repo.strip().lower():
+        mismatches.append(
+            {"field": "repository", "expected": expected_repo, "actual": reported_repo}
+        )
+    return mismatches
+
+
+def require_exact_issue_identity(
+    payload: object, *, expected_repo: str, expected_number: int, context: str
+) -> None:
+    """Raise when a live issue response cannot prove the requested target."""
+    mismatches = issue_identity_mismatches(
+        payload, expected_repo=expected_repo, expected_number=expected_number
+    )
+    if mismatches:
+        labels = {"repository": "different repository", "number": "different issue"}
+        details = ", ".join(
+            f"{labels.get(item['field'], item['field'])}: expected {item['expected']!r}, "
+            f"got {item['actual']!r}"
+            for item in mismatches
+        )
+        raise RuntimeError(f"{context} did not prove the requested issue target: {details}")
+
+
 def _scope_waived(
     backend: dict[str, Any], subs: dict[str, str], *, waivable: frozenset[str]
 ) -> frozenset[str]:

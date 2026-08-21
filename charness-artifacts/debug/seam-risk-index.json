@@ -3,18 +3,18 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 153,
-  "indexed_artifact_count": 139,
+  "source_artifact_count": 154,
+  "indexed_artifact_count": 140,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
-    "external-seam": 16,
+    "external-seam": 17,
     "host-disproves-local": 6,
     "none": 61,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 7
+    "repeated-symptom": 8
   },
   "generalization_pressure_counts": {
-    "factor-now": 12,
+    "factor-now": 13,
     "monitor": 111,
     "none": 16
   },
@@ -1935,6 +1935,21 @@
         "none"
       ],
       "seam": "changed source branch -> focused test population -> mutation/changed-line verdict",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-21-retro-portability-boundary-685-686.md",
+      "is_current_pointer": false,
+      "interrupt_id": "retro-portability-boundary-685-686-2026-08-21",
+      "risk_classes": [
+        "external-seam",
+        "repeated-symptom"
+      ],
+      "seam": "installed skill planner -> emitted command -> consumer execution",
       "generalization_pressure": "factor-now",
       "critique_required": true,
       "next_step": "spec",

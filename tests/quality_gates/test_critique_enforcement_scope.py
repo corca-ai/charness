@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -48,6 +49,28 @@ def _body(*, date: str = "2026-07-28", fresh: str = "parent-delegated", tier: st
         f"{tier}\n"
         "## Boundary Ownership\n\n- Verdict: single-surface\n"
         f"{tail}"
+    )
+
+
+def _packet_binding(repo: Path, *, identity: str = "c" * 64) -> str:
+    packet = repo / "charness-artifacts" / "critique" / "reports" / "packet.json"
+    packet.parent.mkdir(parents=True, exist_ok=True)
+    packet.write_text(
+        json.dumps(
+            {
+                "kind": "charness.critique_prepare_packet",
+                "reviewed_input_identity": {"identity_sha256": identity},
+            },
+            separators=(",", ":"),
+        ),
+        encoding="utf-8",
+    )
+    packet_sha = hashlib.sha256(packet.read_bytes()).hexdigest()
+    return (
+        "\n## Reviewed Input Identity\n\n"
+        "- Packet path: charness-artifacts/critique/reports/packet.json\n"
+        f"- Packet SHA256: {packet_sha}\n"
+        f"- Identity SHA256: {identity}\n"
     )
 
 
@@ -133,6 +156,9 @@ def test_worker_delivered_requires_the_combined_report_carrier(tmp_path: Path) -
 
 def test_worker_delivered_requires_report_approval_and_result_identities(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
+    packet_tail = _packet_binding(repo)
+    packet = repo / "charness-artifacts" / "critique" / "reports" / "packet.json"
+    packet_identity = hashlib.sha256(packet.read_bytes()).hexdigest()
     report = repo / "charness-artifacts" / "critique" / "reports" / "attempt.yaml"
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(
@@ -145,9 +171,9 @@ def test_worker_delivered_requires_report_approval_and_result_identities(tmp_pat
                 "receipt_ok": True,
                 "ledger_ok": True,
                 "provenance_ok": True,
-                "packet_identity": "a" * 64,
+                "packet_identity": packet_identity,
                 "reviewed_input_identity": "c" * 64,
-                "parent_receipt_identity": "d" * 64,
+                "parent_receipt_identity": "parent-receipt-1",
                 "findings_identity": "b" * 64,
             },
             sort_keys=False,
@@ -161,14 +187,41 @@ def test_worker_delivered_requires_report_approval_and_result_identities(tmp_pat
         + f"- Worker report identity: {report_identity}\n"
         + "- Worker report approval: approval_eligible: true\n"
         + "- Worker report delivery: findings-received\n"
-        + f"- Worker report packet identity: {'a' * 64}\n"
+        + f"- Worker report packet identity: {packet_identity}\n"
         + f"- Worker report input identity: {'c' * 64}\n"
-        + f"- Worker report parent receipt identity: {'d' * 64}\n"
+        + "- Worker report parent receipt identity: parent-receipt-1\n"
         + f"- Worker report findings identity: {'b' * 64}\n"
     )
-    relpath = _artifact(repo, "2026-07-28-worker-report.md", _body(fresh="worker-delivered", tier=tier))
+    relpath = _artifact(
+        repo,
+        "2026-07-28-worker-report.md",
+        _body(fresh="worker-delivered", tier=tier, tail=packet_tail),
+    )
 
-    assert _validate(repo, relpath).returncode == 0
+    assert _validate(repo, relpath, "--all").returncode == 0
+
+
+def test_worker_delivered_requires_artifact_reviewed_input_binding(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    report = _write_report(repo, _approval_report(), "charness-artifacts/critique/reports/report.yaml")
+    report_identity = hashlib.sha256(report.read_bytes()).hexdigest()
+    tier = (
+        _TIER_BLOCK.format(host="host-defaulted", delivery="findings-received")
+        + "- Worker report: charness-artifacts/critique/reports/report.yaml\n"
+        + f"- Worker report identity: {report_identity}\n"
+        + "- Worker report approval: approval_eligible: true\n"
+        + "- Worker report delivery: findings-received\n"
+        + f"- Worker report packet identity: {'a' * 64}\n"
+        + f"- Worker report input identity: {'c' * 64}\n"
+        + "- Worker report parent receipt identity: parent-receipt-1\n"
+        + f"- Worker report findings identity: {'b' * 64}\n"
+    )
+    relpath = _artifact(repo, "2026-07-28-worker-no-input-binding.md", _body(fresh="worker-delivered", tier=tier))
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "Reviewed Input Identity binding" in result.stderr
 
 
 def _valid_worker_report_tier(*, approval: str = "approval_eligible: true", delivery: str = "findings-received", packet: str = "a" * 64) -> str:
@@ -180,7 +233,7 @@ def _valid_worker_report_tier(*, approval: str = "approval_eligible: true", deli
         + f"- Worker report delivery: {delivery}\n"
         + f"- Worker report packet identity: {packet}\n"
         + f"- Worker report input identity: {'c' * 64}\n"
-        + f"- Worker report parent receipt identity: {'d' * 64}\n"
+        + "- Worker report parent receipt identity: parent-receipt-1\n"
         + f"- Worker report findings identity: {'b' * 64}\n"
     )
 
@@ -235,7 +288,7 @@ def _carrier_fields(report_path: str, report_identity: str = "e" * 64) -> dict[s
         "worker report delivery": "findings-received",
         "worker report packet identity": "a" * 64,
         "worker report input identity": "c" * 64,
-        "worker report parent receipt identity": "d" * 64,
+        "worker report parent receipt identity": "parent-receipt-1",
         "worker report findings identity": "b" * 64,
     }
 
@@ -244,7 +297,11 @@ _DEFAULT_REPO_ROOT = object()
 
 
 def _validate_carrier(
-    repo: Path, fields: dict[str, str], *, repo_root: Path | None | object = _DEFAULT_REPO_ROOT
+    repo: Path,
+    fields: dict[str, str],
+    *,
+    repo_root: Path | None | object = _DEFAULT_REPO_ROOT,
+    artifact_binding_fields: dict[str, str] | None = None,
 ) -> None:
     _evidence.validate_worker_delivery_evidence(
         Path("artifact.md"),
@@ -252,6 +309,12 @@ def _validate_carrier(
         "worker-delivered",
         section_field_map=lambda *_args: fields,
         repo_root=repo if repo_root is _DEFAULT_REPO_ROOT else repo_root,
+        artifact_binding_fields=artifact_binding_fields
+        if artifact_binding_fields is not None
+        else {
+            "packet sha256": fields["worker report packet identity"],
+            "identity sha256": fields["worker report input identity"],
+        },
     )
 
 
@@ -273,7 +336,7 @@ def _approval_report(**overrides: object) -> bytes:
         "provenance_ok": True,
         "packet_identity": "a" * 64,
         "reviewed_input_identity": "c" * 64,
-        "parent_receipt_identity": "d" * 64,
+        "parent_receipt_identity": "parent-receipt-1",
         "findings_identity": "b" * 64,
     }
     payload.update(overrides)
@@ -331,6 +394,50 @@ def test_worker_delivered_rejects_report_identity_join_mismatch(tmp_path: Path) 
     fields = _carrier_fields(str(report.relative_to(tmp_path)), hashlib.sha256(report.read_bytes()).hexdigest())
     with pytest.raises(_evidence.ValidationError, match="identity joins do not match"):
         _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_preserves_parent_receipt_case_exactly(tmp_path: Path) -> None:
+    report = _write_report(tmp_path, _approval_report(parent_receipt_identity="Parent.Receipt:1"))
+    fields = _carrier_fields(str(report.relative_to(tmp_path)))
+    fields["worker report parent receipt identity"] = "Parent.Receipt:1"
+    fields["worker report identity"] = hashlib.sha256(report.read_bytes()).hexdigest()
+
+    _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_rejects_parent_receipt_case_mismatch(tmp_path: Path) -> None:
+    report = _write_report(tmp_path, _approval_report(parent_receipt_identity="Parent.Receipt:1"))
+    fields = _carrier_fields(str(report.relative_to(tmp_path)))
+    fields["worker report identity"] = hashlib.sha256(report.read_bytes()).hexdigest()
+
+    with pytest.raises(_evidence.ValidationError, match="identity joins do not match"):
+        _validate_carrier(tmp_path, fields)
+
+
+@pytest.mark.parametrize("receipt", ["", "bad receipt", "bad\nreceipt", "@bad"])
+def test_worker_delivered_rejects_empty_or_malformed_parent_receipt_identity(
+    tmp_path: Path, receipt: str
+) -> None:
+    report = _write_report(tmp_path, _approval_report(parent_receipt_identity=receipt or "placeholder"))
+    fields = _carrier_fields(str(report.relative_to(tmp_path)))
+    fields["worker report identity"] = hashlib.sha256(report.read_bytes()).hexdigest()
+    fields["worker report parent receipt identity"] = receipt
+
+    with pytest.raises(_evidence.ValidationError, match="parent receipt identity"):
+        _validate_carrier(tmp_path, fields)
+
+
+def test_worker_delivered_rejects_report_foreign_to_artifact_binding(tmp_path: Path) -> None:
+    report = _write_report(tmp_path, _approval_report())
+    fields = _carrier_fields(str(report.relative_to(tmp_path)))
+    fields["worker report identity"] = hashlib.sha256(report.read_bytes()).hexdigest()
+
+    with pytest.raises(_evidence.ValidationError, match="Reviewed Input Identity"):
+        _validate_carrier(
+            tmp_path,
+            fields,
+            artifact_binding_fields={"packet sha256": "f" * 64, "identity sha256": "c" * 64},
+        )
 
 
 def test_blocked_fresh_eye_line_may_keep_a_pending_spawn_record(tmp_path: Path) -> None:

@@ -76,6 +76,10 @@ Record the fresh-eye satisfaction context in the review result:
   delegation, and that nested delegation ran
 - `blocked <host-signal>`: required delegation could not run; include the
   concrete missing tool, host refusal, policy block, or exhausted budget
+- `accepted-unreviewed-under-round-cap <cap-signal>`: the second bounded round
+  repaired a verdict surface, and the operating cap intentionally accepts the
+  repair without a third fresh-eye run. This is an explicit non-approval state;
+  it must never be rendered or consumed as delegated approval.
 
 Also record reviewer-tier evidence in the parent closeout artifact: requested
 tier, requested spawn fields from the adapter, host exposure state
@@ -347,7 +351,11 @@ choices, not verdict categories. The delivery CLI's `delivery_complete` field
 is only a state-machine observation; it is intentionally not
 `approval_eligible`. Only the combined worker report may emit that approval
 field, after it joins the receipt, attempt, packet/input identities, and result
-hash.
+hash. The result itself must pass the canonical bounded-review result schema
+and carry `verdict: pass`; a syntactically valid JSON file, a non-empty file, or
+`findings-received` alone is not approval. The carrier also parses the canonical
+delivery-attempt history and transition ledger, rather than trusting only the
+final state/hash fields, and binds the packet repository as well as issue number.
 
 For the optional typed-subagent path, **A spawned reviewer is not a received
 review.** The parent holds the review only when the reviewer's findings text is in
@@ -458,7 +466,10 @@ python3 "$SKILL_DIR/../../shared/scripts/reviewer_worker_report.py" \
 ```
 
 The backend runner itself must publish a typed receipt and a schema-validated
-fresh result before the parent calls the `findings` operation. The receipt must
+fresh result before the parent calls the `findings` operation. It resolves every
+relative prompt/schema/output/receipt/ledger/report path against the explicit
+repository root and refuses paths outside that root; launch `cwd` is not an
+identity boundary. The receipt must
 carry the attempt, scope, packet/input, mode/backend, prompt/schema, and result
 identities so a foreign run cannot be paired with the current ledger. A finite timeout,
 absolute paths resolved before `cwd`, unique run artifacts, and a pre-existing

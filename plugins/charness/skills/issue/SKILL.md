@@ -71,11 +71,13 @@ closing anything.
    about the defect; it owes a destination floor instead of a resolution one,
    and must close via `close-with-comment --reason "not planned"`).
 5. Follow the planner's `classification_actions`.
-   - `bug`: run the causal-review fresh-eye subagent before design; if spawning
-     is blocked, stop and report the host signal. Wrap shared-tree reviewers
-     in the rail-1 snapshot/verify from the Enforcement section of
-     `../../shared/references/fresh-eye-subagent-review.md` (snapshot before
-     spawn, verify after return).
+   - `bug`: run the causal-review fresh-eye reviewer before design through the
+     adapter-selected runner. The default is the file-backed worker; the typed
+     host-subagent branch is optional and must deliver typed findings. If the
+     selected branch is blocked, stop and report the concrete host/worker
+     signal. Wrap shared-tree reviewers in the rail-1 snapshot/verify from the
+     Enforcement section of `../../shared/references/fresh-eye-subagent-review.md`
+     (snapshot before launch, verify after return).
    - `feature` / `deferred-work`: emit the pre-mutation resolution brief and
      name the capability or capability failure before proposing implementation;
      pause when open decisions are non-empty.
@@ -87,6 +89,11 @@ closing anything.
 7. Run the resolution critique, publish the closeout carrier with explicit close
    keywords when auto-close is available, then verify with
    `issue_tool.py verify-closeout --expect-state CLOSED`.
+   A `Fresh-eye satisfaction: worker-delivered` line is only a claim until the
+   closeout consumer verifies the shared report/receipt/ledger carrier and its
+   packet/input identity joins. A process exit, non-empty output, or prose-only
+   worker status is not fresh-eye approval. `parent-delegated` and
+   `nested-delegated` remain the explicit optional typed-subagent branch.
 8. Render the per-issue behavior verdict or typed disposition from a channel
    distinct from `CLOSED` state and the carrier body.
 

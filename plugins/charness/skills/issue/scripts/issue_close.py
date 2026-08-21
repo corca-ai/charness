@@ -10,6 +10,7 @@ _BACKEND = _load_local("issue_backend", "issue_close_backend")
 _run_backend = _BACKEND.run_backend
 _resolve_op = _BACKEND.resolve_op
 answer_repo = _BACKEND.answer_repo
+require_exact_issue_identity = _BACKEND.require_exact_issue_identity
 BACKEND_TIMEOUT_SECONDS = _BACKEND.BACKEND_TIMEOUT_SECONDS
 _CLOSE_COMMENT_FLOOR = _load_local("issue_close_comment_floor")
 # Bound directly rather than reached through `_CLOSE_COMMENT_FLOOR._BODY`: a
@@ -200,6 +201,7 @@ def evaluate_close_comment_carrier(
         body=body,
         classification=classification,
         number=number,
+        repo=repo,
         consolidation_readback=readback,
     )
     floor_report["closeout_authorization"] = authorization
@@ -277,6 +279,30 @@ def close_with_comment(
             number=str(number),
             json_fields="number,state,url",
         )
+    # This readback is deliberately before the first mutation. An argv containing
+    # --repo and number is a request, not proof that the backend answered about that
+    # target. The same strict helper is used again after close.
+    preflight_state = None
+    if view_argv is not None:
+        preflight_result = _run_backend(view_argv)
+        if preflight_result.returncode != 0:
+            raise RuntimeError(
+                "pre-mutation issue readback failed; no comment or close was attempted: "
+                f"view_exit={preflight_result.returncode} "
+                f"view_stderr={preflight_result.stderr.strip()!r}"
+            )
+        try:
+            preflight_state = json.loads(preflight_result.stdout)
+        except Exception as exc:
+            raise RuntimeError(
+                f"pre-mutation issue readback returned invalid JSON: {exc}"
+            ) from exc
+        require_exact_issue_identity(
+            preflight_state,
+            expected_repo=repo,
+            expected_number=number,
+            context="pre-mutation issue readback",
+        )
     comment_result = _run_backend(comment_argv)
     if comment_result.returncode != 0:
         raise RuntimeError(
@@ -307,18 +333,12 @@ def close_with_comment(
         # `url` needed to check it was already being fetched and stored, and never read.
         # Silence is not a mismatch: a payload that names no repository yields None here, and
         # refusing those would fail every backend whose payload shape omits one.
-        answered_repo = answer_repo(verified_state)
-        if answered_repo is not None and answered_repo.lower() != repo.strip().lower():
-            raise RuntimeError(
-                "close state verification answered about a different repository: asked "
-                f"{repo}#{number}, backend reported {answered_repo}#{verified_state.get('number')}"
-            )
-        reported_number = verified_state.get("number")
-        if isinstance(reported_number, int) and reported_number != number:
-            raise RuntimeError(
-                "close state verification answered about a different issue: asked "
-                f"{repo}#{number}, backend reported #{reported_number}"
-            )
+        require_exact_issue_identity(
+            verified_state,
+            expected_repo=repo,
+            expected_number=number,
+            context="post-mutation issue readback",
+        )
         if verified_state.get("state") != "CLOSED":
             raise RuntimeError(
                 f"close state verification failed: {repo}#{number} is {verified_state.get('state')!r}"
@@ -343,6 +363,7 @@ def close_with_comment(
         "comment_argv": comment_argv,
         "close_argv": close_argv,
         "view_argv": view_argv,
+        "preflight_state": preflight_state,
         "verified_state": verified_state,
         "reason": reason,
         "closeout_authorization": authorization,

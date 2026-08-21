@@ -1,11 +1,34 @@
 from __future__ import annotations
 
-#: Both CommonMark fence markers. `~~~` was missing, so a quoted example inside a
-#: tilde fence was read as real content by every caller — the closeout body's
-#: `Critique:` scanner and the resolution critique's own `Fresh-eye satisfaction:`
-#: reader alike. The repo's authoring-side readers already handle both, so this
-#: was a parity gap on the side that runs at the irreversible boundary.
-_FENCE_MARKERS = ("```", "~~~")
+#: Both CommonMark fence characters. The opener length is retained because a
+#: four-backtick fence is not closed by a three-backtick example inside it.
+_FENCE_CHARS = ("`", "~")
+
+
+def _closing_fence(line: str, opener: str) -> bool:
+    """A closer must use the same marker, be at least as long, and have no tail."""
+    leading = len(line) - len(line.lstrip(" "))
+    if leading > 3:
+        return False
+    body = line[leading:]
+    if not body or any(char != opener[0] for char in body):
+        return False
+    return len(body) >= len(opener)
+
+
+def _opening_fence(line: str) -> str | None:
+    leading = len(line) - len(line.lstrip(" "))
+    if leading > 3:
+        return None
+    stripped = line[leading:]
+    for char in _FENCE_CHARS:
+        if not stripped.startswith(char * 3):
+            continue
+        length = 0
+        while length < len(stripped) and stripped[length] == char:
+            length += 1
+        return char * length
+    return None
 
 
 def strip_code_fences(text: str) -> list[str]:
@@ -18,13 +41,12 @@ def strip_code_fences(text: str) -> list[str]:
     lines: list[str] = []
     open_marker: str | None = None
     for line in text.splitlines():
-        stripped = line.lstrip()
         if open_marker is None:
-            marker = next((m for m in _FENCE_MARKERS if stripped.startswith(m)), None)
+            marker = _opening_fence(line)
             if marker is not None:
                 open_marker = marker
                 continue
-        elif stripped.startswith(open_marker):
+        elif _closing_fence(line, open_marker):
             open_marker = None
             continue
         if open_marker is None:

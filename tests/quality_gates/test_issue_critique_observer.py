@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import subprocess
 from pathlib import Path
 
 import yaml
@@ -62,6 +63,17 @@ def _seed(repo: Path, *, satisfaction: str | None, contract: bool) -> None:
     body = "Critique of the #42 resolution.\n"
     if satisfaction is not None:
         body += f"\nFresh-eye satisfaction: {satisfaction}\n"
+        if satisfaction in {"parent-delegated", "nested-delegated"}:
+            body += """
+## Reviewer Tier Evidence
+
+- Requested tier: high-leverage
+- Requested spawn fields: typed bounded reviewer
+- Host exposure state: host-defaulted
+- Application state: n/a
+- Delivery state: findings-received
+- Execution mode: typed-subagent
+"""
     critique.write_text(body, encoding="utf-8")
     if contract:
         (repo / "AGENTS.md").write_text(CONTRACT_AGENTS_MD, encoding="utf-8")
@@ -331,7 +343,17 @@ def test_an_unreadable_cited_artifact_is_typed_rather_than_treated_as_absent(tmp
     bad byte binds cleanly and only fails here.
     """
     _seed(tmp_path, satisfaction="parent-delegated", contract=True)
-    (tmp_path / CRITIQUE_REL).write_bytes(b"Critique of the #42 resolution.\n\xff\xfe\nFresh-eye satisfaction: parent-delegated\n")
+    (tmp_path / CRITIQUE_REL).write_bytes(
+        b"Critique of the #42 resolution.\n\xff\xfe\n"
+        b"Fresh-eye satisfaction: parent-delegated\n\n"
+        b"## Reviewer Tier Evidence\n\n"
+        b"- Requested tier: high-leverage\n"
+        b"- Requested spawn fields: typed bounded reviewer\n"
+        b"- Host exposure state: host-defaulted\n"
+        b"- Application state: n/a\n"
+        b"- Delivery state: findings-received\n"
+        b"- Execution mode: typed-subagent\n"
+    )
 
     result = _verify(tmp_path)
 
@@ -397,6 +419,19 @@ def test_a_pre_contract_artifact_is_reported_but_not_refused(tmp_path: Path) -> 
         "# Res\n\nDate: 2026-06-05\n\n## Fresh-Eye Satisfaction\n\n"
         "All three chunk reviewers ran in separate agent contexts for #42.\n",
         encoding="utf-8",
+    )
+    subprocess.run(["git", "-C", str(tmp_path), "add", CRITIQUE_REL], check=True)
+    old_date = {
+        **os.environ,
+        "GIT_AUTHOR_DATE": "2026-06-05T00:00:00Z",
+        "GIT_COMMITTER_DATE": "2026-06-05T00:00:00Z",
+    }
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "commit", "--amend", "--no-edit"],
+        check=True,
+        env=old_date,
+        capture_output=True,
+        text=True,
     )
 
     payload = yaml.safe_load(_verify(tmp_path).stdout)

@@ -2,8 +2,11 @@
 
 `issue resolve` runs two reviewer-driven passes that the smallest-fix design
 loop alone keeps missing: a **causal review** before design (step 4) and a
-**resolution critique** before close (step 9). Both use bounded fresh-eye
-subagents so the analysis is not anchored on the implementer's first hypothesis.
+**resolution critique** before close (step 9). Both use the shared bounded
+fresh-eye contract so the analysis is not anchored on the implementer's first
+hypothesis. The adapter's default is a Charness-owned file-backed worker
+(`codex exec` or `claude -p`); a typed host subagent is an explicit alternate
+branch, not a prerequisite or a silent fallback.
 
 ## Classification gate
 
@@ -23,14 +26,23 @@ lighter pass:
 When unsure between `bug` and `feature`, default to `bug`. Misclassifying a
 real bug as a feature is the failure mode that lets recurrence happen.
 
-## Causal review subagent contract (step 4)
+## Causal review reviewer contract (step 4)
 
-Spawn one `high-leverage` bounded fresh-eye subagent. Apply host-exposed
-`reviewer_tiers.high-leverage` fields from the shared fresh-eye policy. The
-subagent must not spawn nested reviewers. It returns a single triage block the
-caller can act on directly.
+Run one `high-leverage` bounded fresh-eye review through the adapter-selected
+runner. Apply host-exposed `reviewer_tiers.high-leverage` fields from the
+shared fresh-eye policy. In the default file-backed branch, persist the prompt,
+schema, result, receipt, delivery ledger, and combined typed report; consume
+the report only when it is `approval_eligible: true` and its packet/input and
+boundary identities join. In the optional typed-subagent branch, the host
+must deliver the typed findings back to the parent; a spawn or idle notice is
+not delivery. The reviewer must not spawn nested reviewers. It returns a
+single triage block the caller can act on directly.
 
 The subagent's prompt must:
+
+“Subagent” is the contract term for the distinct reviewer context; the default
+carrier is the file-backed worker runner described above, not an interactive
+host spawn.
 
 - restate the issue body and the reporter's JTBD verbatim
 - name the three lenses below and require evidence for each
@@ -45,17 +57,17 @@ The subagent's prompt must:
   "do not re-derive the substrate body" guard verbatim for each lens or overlay
 - bound the time and scope ("under 600 words", "cite file:line")
 - forbid prescribing the fix; the implementer designs the fix in step 7
-- explicitly tell the subagent it is the bounded fresh-eye reviewer and must
+- explicitly tell the reviewer it is the bounded fresh-eye reviewer and must
   not invoke `issue`, `critique`, `debug`, or any other skill that itself
   spawns reviewers; complete the three lenses in-process
 
-The single-subagent multi-lens shape (versus critique's multi-angle shape) is
+The single-reviewer multi-lens shape (versus critique's multi-angle shape) is
 appropriate here because the three lenses share evidence (the same diff, the
 same test surface, the same neighboring files) and one reviewer can hold them
 without triangulation. When evidence does not flow across lenses — for
 example, a multi-component bug where root-cause, detection-gap, and
 sibling-search live in different layers — the caller may upgrade to two
-subagents (root-cause + detection together; sibling search separately) and
+reviewer runs (root-cause + detection together; sibling search separately) and
 add a counterweight. That upgrade is rare; document it in the resolution
 notes when used.
 
@@ -169,10 +181,11 @@ The subagent returns:
 The three `Over-reach check` slots are the lens-internal counterweight; they
 keep the single-subagent shape honest without requiring a second spawn.
 
-If the host blocks subagent spawning, stop and surface the blocked state. Do
-not run a same-agent local causal review. Step 8 is also blocked for this run
-since critique has no prior context to chain into; report both blocked states
-in the close artifact.
+If the selected worker or typed host branch blocks, stop and surface the
+concrete blocked state. Do not run a same-agent local causal review and do not
+convert a process/output success into approval. Step 8 is also blocked for
+this run since critique has no prior context to chain into; report both blocked
+states in the close artifact.
 
 ## Resolution critique (step 8)
 

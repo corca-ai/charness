@@ -163,31 +163,27 @@ def test_auto_sweep_drops_excluded_prefixes_but_never_explicit_paths(tmp_path: P
     assert explicit["auto_excluded_paths"] == []
 
 
-def test_working_tree_identity_ignores_unrelated_commit_but_tracks_symlink_target(tmp_path: Path) -> None:
+def test_working_tree_identity_requires_explicit_symlink_target(tmp_path: Path) -> None:
     _init_identity_repo(tmp_path)
     symlink = tmp_path / "link.txt"
     symlink.symlink_to("reviewed.txt")
-    before = build_reviewed_input_identity(
-        repo_root=tmp_path,
-        reviewed_paths=["reviewed.txt", "link.txt"],
-    )
+    with pytest.raises(ValueError, match="is a symlink; declare the target file explicitly"):
+        build_reviewed_input_identity(
+            repo_root=tmp_path,
+            reviewed_paths=["reviewed.txt", "link.txt"],
+        )
 
+    # The target is a separate, explicit reviewed path; the identity then has
+    # ordinary working-tree semantics and does not hash the symlink spelling.
+    before = build_reviewed_input_identity(repo_root=tmp_path, reviewed_paths=["reviewed.txt"])
     (tmp_path / "unrelated.txt").write_text("unrelated commit\n", encoding="utf-8")
-    _run_git(tmp_path, "commit", "-am", "unrelated")
+    _run_git(tmp_path, "add", "unrelated.txt")
+    _run_git(tmp_path, "commit", "-m", "unrelated")
     after_unrelated_commit = build_reviewed_input_identity(
-        repo_root=tmp_path,
-        reviewed_paths=["reviewed.txt", "link.txt"],
+        repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
     )
     assert after_unrelated_commit["base_head"] != before["base_head"]
     assert after_unrelated_commit["identity_sha256"] == before["identity_sha256"]
-
-    symlink.unlink()
-    symlink.symlink_to("unrelated.txt")
-    after_retarget = build_reviewed_input_identity(
-        repo_root=tmp_path,
-        reviewed_paths=["reviewed.txt", "link.txt"],
-    )
-    assert after_retarget["identity_sha256"] != before["identity_sha256"]
 
 
 def test_reviewed_input_identity_rejects_traversal_and_symlinked_directory(tmp_path: Path) -> None:

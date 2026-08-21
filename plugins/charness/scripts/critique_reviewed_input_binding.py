@@ -28,12 +28,19 @@ def _binding_fields(text: str) -> dict[str, str]:
     return _sections.section_field_map(text, _identity.ARTIFACT_HEADING)
 
 
+def reviewed_input_binding_fields(text: str) -> dict[str, str]:
+    """Return the artifact's declared packet/input join fields for sibling floors."""
+
+    return _binding_fields(text)
+
+
 def validate_reviewed_input_binding(
     path: Path,
     text: str,
     observed_date: date | None,
     *,
     check_current: bool = True,
+    repo_root: Path | None = None,
 ) -> None:
     fields = _binding_fields(text)
     required = _identity.artifact_binding_required(
@@ -46,6 +53,7 @@ def validate_reviewed_input_binding(
         required_fields=_identity.ARTIFACT_REQUIRED_FIELDS,
         expected_kind=EXPECTED_KIND,
         check_current=check_current,
+        repo_root=repo_root,
     )
     if not current:
         raise ValidationError(f"{path}: {reason}")

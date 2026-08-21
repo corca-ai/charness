@@ -79,6 +79,9 @@ verification preferences or `truth_surfaces`.
      the critique adapter selects the file-backed worker or typed-subagent
      branch and its typed carrier is the authority. Caller flags cannot turn a
      failed worker/report into a same-context approval. Consume its proof according to the critique delivery contract. Use
+     `Critique: accepted-unreviewed-under-round-cap <cap-signal>` only when the
+     operating contract's two-round cap explicitly accepts a repair without a
+     third fresh-eye run; this is a residual non-claim, never approval. Use
      `Critique: not-applicable <reason>` only for inspect/status/routing-only
      requests that do not complete repo work.
    - if critique delivery is blocked after the capability check, stop and record

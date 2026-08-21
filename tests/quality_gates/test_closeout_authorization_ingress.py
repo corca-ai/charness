@@ -164,7 +164,11 @@ def test_a_manual_declaration_naming_a_foreign_repo_is_refused(tmp_path: Path) -
 
 
 def test_an_unrelated_direct_close_still_reaches_the_backend_unchanged(tmp_path: Path) -> None:
-    """Preservation: no new mandatory flag for everyone else."""
+    """Preservation: no new mandatory flag for everyone else.
+
+    The exact-identity contract adds a pre-mutation readback, so this remains
+    unrelated to authorization while proving the new readback is in the chain.
+    """
     build_protected_world(tmp_path)
     close = _load(ISSUE_SCRIPTS / "issue_close.py", "authz_issue_close_5")
     spy = BackendSpy()
@@ -175,7 +179,7 @@ def test_an_unrelated_direct_close_still_reaches_the_backend_unchanged(tmp_path:
     )
 
     assert result["ok"] is True
-    assert [call[1] for call in spy.calls] == ["issue", "issue", "issue"]
+    assert [call[1] for call in spy.calls] == ["issue", "issue", "issue", "issue"]
     assert result["closeout_authorization"]["applies"] is False
 
 

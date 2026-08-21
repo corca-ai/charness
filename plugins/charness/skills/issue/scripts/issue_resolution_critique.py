@@ -6,23 +6,6 @@ import runpy
 from pathlib import Path
 from typing import Any
 
-
-def _load_shared_helper():
-    here = Path(__file__).resolve()
-    for ancestor in here.parents:
-        candidate = ancestor / "scripts" / "check_prescribed_skill_executed_lib.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location(
-                "check_prescribed_skill_executed_lib", candidate
-            )
-            if spec is None or spec.loader is None:
-                continue
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-    raise ImportError("scripts/check_prescribed_skill_executed_lib.py not found")
-
-
 _CRITIQUE_LINE = re.compile(
     r"^\s*Critique(?:\s+(?P<target>[^:]+?))?\s*:\s*(?P<value>.+?)\s*$",
     re.MULTILINE,
@@ -34,22 +17,24 @@ _load_local = runpy.run_path(
     str(Path(__file__).resolve().parent / "issue_local_import.py")
 )["sibling_loader"](__file__)
 _strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
-_observer = _load_local("issue_critique_observer")
+_OBSERVER_SUPPORT_SPEC = importlib.util.spec_from_file_location(
+    "charness_issue_resolution_observer",
+    Path(__file__).resolve().with_name("issue_resolution_observer.py"),
+)
+if _OBSERVER_SUPPORT_SPEC is None or _OBSERVER_SUPPORT_SPEC.loader is None:
+    raise ImportError("issue resolution observer support is unavailable")
+_OBSERVER_SUPPORT = importlib.util.module_from_spec(_OBSERVER_SUPPORT_SPEC)
+_OBSERVER_SUPPORT_SPEC.loader.exec_module(_OBSERVER_SUPPORT)
+_observer_disposition = _OBSERVER_SUPPORT._observer_disposition
+_observer_advisories = _OBSERVER_SUPPORT._observer_advisories
+REFUSED_DISPOSITIONS = _OBSERVER_SUPPORT.REFUSED_DISPOSITIONS
+_observer_refusals = _OBSERVER_SUPPORT._observer_refusals
+_resolved_evidence_path = _OBSERVER_SUPPORT._resolved_evidence_path
+_load_shared_helper = _OBSERVER_SUPPORT._load_shared_helper
 
 
 def min_blocked_signal_length() -> int | None:
-    """The floor a `Critique: blocked <signal>` signal must clear, or ``None``
-    when the shared helper is not resolvable.
-
-    Read live from the owning library rather than restated, so the author-facing
-    shape describer cannot drift from the gate the way it did when the floor
-    moved. Returns ``None`` instead of raising: a describer that cannot reach the
-    helper should omit the number, never invent one or crash.
-    """
-    try:
-        return int(_load_shared_helper().MIN_SKIP_DETAIL_LENGTH)
-    except Exception:
-        return None
+    return _OBSERVER_SUPPORT._read_min_blocked_signal_length(_load_shared_helper)
 
 
 def _critique_lines(body: str) -> list[dict[str, Any]]:
@@ -106,13 +91,6 @@ def _check_value(
     )
 
 
-def _resolved_evidence_path(check: dict[str, Any]) -> Path | None:
-    for entry in check.get("satisfied", []):
-        if entry.get("name") == "resolution_critique" and entry.get("via") == "evidence":
-            return Path(str(entry.get("path", "")))
-    return None
-
-
 def _binding_failure(helper: Any, number: int, check: dict[str, Any]) -> dict[str, Any] | None:
     path = _resolved_evidence_path(check)
     if path is None:
@@ -130,183 +108,6 @@ def _binding_failure(helper: Any, number: int, check: dict[str, Any]) -> dict[st
     if binds:
         return None
     return {"number": number, "path": str(path), "reason": reason}
-
-
-def _observer_disposition(repo_root: Path, check: dict[str, Any]) -> dict[str, Any] | None:
-    """Read the CITED artifact's own `Fresh-eye satisfaction:` record.
-
-    The floor's presence check asks whether a critique exists. This asks the
-    question that check is a proxy for: did anyone other than the closing agent
-    read it? The two are not the same, and only the first was ever asked at the
-    close boundary.
-
-    Returns ``None`` when no evidence file resolved (the blocked-skip path and
-    the missing-critique path both land there, and each is already reported by
-    its own arm).
-    """
-    path = _resolved_evidence_path(check)
-    if path is None:
-        return None
-    candidate = path if path.is_absolute() else repo_root / path
-    try:
-        # `errors="replace"`, matching the binding library that already read this
-        # same file: it reads with errors ignored, so a bad byte binds cleanly and
-        # would then have raised UnicodeDecodeError here — a traceback out of the
-        # close command instead of the typed `unreadable` disposition designed
-        # right below.
-        text = candidate.read_text(encoding="utf-8", errors="replace")
-    except OSError as error:
-        # A cited artifact that cannot be READ is not a delegated one. Reported as
-        # its own disposition rather than silently treated as absent, so an
-        # unreadable path never reads like a consumer repo that simply has no
-        # such convention.
-        return {"value": None, "disposition": "unreadable", "path": str(path), "reason": str(error)}
-    # The `blocked` valve is held to the SAME signal floor as its in-body sibling
-    # `Critique: blocked <signal>`, read live from the owning library rather than
-    # restated, so the two escape hatches cannot drift apart in cost.
-    minimum = min_blocked_signal_length()
-    disposition = _observer.observer_disposition(
-        text,
-        strip_code_fences=_strip_code_fences,
-        **({"min_blocked_signal": minimum} if minimum is not None else {}),
-    )
-    return {
-        **disposition,
-        "path": str(path),
-        # Grandfathering rides on the REPORT, not on the classification, so a
-        # grandfathered close is visibly grandfathered instead of silently clean.
-        "predates_typed_contract": _observer.predates_typed_contract(candidate, text),
-    }
-
-
-def _observer_advisories(checks: list[dict[str, Any]]) -> list[str]:
-    """REVIEW-severity advisory for every close whose critique records that no
-    distinct observer read it, on the paths that are NOT refused.
-
-    `blocked` is the degradation valve a subagent-blocked host must keep, so it
-    passes everywhere with an advisory: it is a positive record that no fresh eye
-    ran, in any repo, and it is the one disposition that is neither a refusal nor
-    a clean delegation.
-
-    `absent` gets NO advisory on either arm, and the asymmetry is deliberate.
-    Under the delegation contract it is refused, so the refusal already carries
-    the message. Outside the contract the field is a convention the repo never
-    adopted, so a line here would fire on every close in that repo forever — an
-    advisory that always fires is the token-theater the floor-addition restraint
-    names, and it trains the reader to skip the word REVIEW before the `blocked`
-    case that matters.
-    """
-    lines: list[str] = []
-    for entry in checks:
-        observer = entry.get("fresh_eye_observer") or {}
-        if observer.get("disposition") != "blocked":
-            continue
-        refs = ", ".join(f"#{number}" for number in entry["numbers"])
-        # The valve carries two different facts and they need different advice.
-        # Telling an operator to "confirm the host genuinely could not spawn one"
-        # when the USER declined the standing delegation request asks them to
-        # verify a machine failure that never happened — a deliberate "no"
-        # laundered into an incapacity, at an irreversible public boundary.
-        if observer.get("blocked_kind") == "delegation-declined":
-            tail = (
-                "the user DECLINED the standing bounded-review delegation request, so no fresh eye "
-                "was authorized. This is a recorded user decision, not a host failure: confirm the "
-                "decision still stands before treating this issue as resolved"
-            )
-        else:
-            tail = (
-                "Confirm the host genuinely could not spawn one before treating this issue as resolved"
-            )
-        lines.append(
-            f"REVIEW: the resolution critique cited for {refs} records "
-            f"`Fresh-eye satisfaction: {observer.get('value')}` — the artifact itself says no "
-            f"distinct observer read this resolution. {tail} (advisory only, never blocks)."
-        )
-    return lines
-
-
-#: Every disposition that blocks a close — but ONLY in a repo that adopted the
-#: delegation contract. `absent` is here because nothing orders the artifact
-#: validator before the GitHub mutation: `close-with-comment` performs no commit,
-#: so the authoring-side floor that requires the line cannot be relied on to have
-#: run, and omitting the line would otherwise be the cheapest bypass of all.
-REFUSED_DISPOSITIONS = ("undelegated", "unreadable", "blocked-unsubstantiated", "absent")
-
-
-def _refusal_reason(number: int, observer: dict[str, Any]) -> str:
-    """One operator-facing sentence per refusal disposition.
-
-    Each names the specific defect and the honest way out, because the generic
-    "add `Critique: <path>`" message sends the author to fix the one thing that
-    is not wrong on these paths.
-    """
-    records = f"records `Fresh-eye satisfaction: {observer.get('value')}`"
-    detail = {
-        "unreadable": (
-            f"could not be read at {observer.get('path')}: {observer.get('reason')}"
-        ),
-        "absent": (
-            "carries no `Fresh-eye satisfaction:` line, so who read this resolution is "
-            "unrecorded at an irreversible public boundary. This repo's own critique contract "
-            "requires that line; nothing runs that authoring floor before the close, so omitting "
-            "it cannot be treated as already-caught. Record `parent-delegated` / "
-            "`nested-delegated`, or `blocked <host-signal>`."
-        ),
-        "blocked-unsubstantiated": (
-            f"{records} — it claims the host-blocked valve without naming what blocked it. The "
-            "valve exists so a host that genuinely cannot spawn a reviewer can still close; a "
-            "bare `blocked` is the word without the fact, and it is the cheapest possible way to "
-            "defeat this floor. Name the concrete host signal."
-        ),
-    }.get(
-        observer["disposition"],
-        (
-            f"{records}, which is neither a completed delegation "
-            f"({' / '.join(_observer.DELEGATED_VALUES)}) nor the "
-            f"`{_observer.BLOCKED_VALUE} <host-signal>` valve. Closing an issue is irreversible "
-            "and public; a review the closing agent wrote about its own work is not a distinct "
-            "observer. Either run the bounded review and record it, or record the host signal "
-            "that prevented it."
-        ),
-    )
-    return f"the resolution critique cited for #{number} {detail}"
-
-
-def _observer_refusals(repo_root: Path, checks: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """The close-blocking arm: a critique that POSITIVELY records that no distinct
-    observer read it, in a repo that adopted the delegation contract.
-
-    Deliberately narrow, and the narrowness is the defence. `undelegated` means
-    the artifact carries a real value that is neither a completed delegation nor
-    the `blocked` valve — a self-authored review, in the artifact's own words. A
-    host that cannot spawn is not stranded: it writes `blocked <host-signal>` and
-    closes with an advisory. A repo without the contract is not held to it at all.
-    """
-    if not _observer.repo_requires_delegated_observer(repo_root):
-        return []
-    refusals: list[dict[str, Any]] = []
-    for entry in checks:
-        observer = entry.get("fresh_eye_observer") or {}
-        # `predates_typed_contract` is a grandfather, not a pass: an artifact
-        # written before the typed contract existed records its delegation in
-        # prose — "three reviewers ran in separate agent contexts" — with no typed
-        # token anywhere. Six checked-in artifacts are exactly that, and refusing
-        # them applies a rule that did not exist when they were written: teeth
-        # landing entirely on honest authors, the failure mode this floor was
-        # already repaired once to avoid. The disposition is still REPORTED.
-        if observer.get("disposition") not in REFUSED_DISPOSITIONS or observer.get(
-            "predates_typed_contract"
-        ):
-            continue
-        for number in entry["numbers"]:
-            refusals.append({
-                "number": number,
-                "path": observer.get("path"),
-                "disposition": observer["disposition"],
-                "value": observer.get("value"),
-                "reason": _refusal_reason(number, observer),
-            })
-    return refusals
 
 
 def _missing_check(helper: Any, repo_root: Path) -> dict[str, Any]:
@@ -352,6 +153,7 @@ def check_resolution_critique(
     body: str,
     classification: str,
     numbers: list[int],
+    repository: str | None = None,
 ) -> dict[str, Any]:
     """Validate issue-resolution critique evidence for each selected issue.
 
@@ -381,7 +183,12 @@ def check_resolution_critique(
                 "numbers": target_numbers,
                 "value": line["value"],
                 "check": check,
-                "fresh_eye_observer": _observer_disposition(repo_root, check),
+                "fresh_eye_observer": _observer_disposition(
+                    repo_root,
+                    check,
+                    expected_issue_numbers=target_numbers,
+                    expected_repository=repository,
+                ),
             }
         )
         if not check.get("ok", False):

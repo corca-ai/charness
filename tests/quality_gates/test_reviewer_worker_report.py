@@ -19,7 +19,10 @@ SCRIPT = ROOT / "skills/shared/scripts/reviewer_worker_report.py"
 def _receipt(tmp_path: Path, *, status: str = "succeeded") -> Path:
     output = tmp_path / "result.json"
     output.write_text(
-        '{"verdict":"PASS","packet_sha256":"packet-1",'
+        '{"kind":"charness.bounded_review.v1","lens":"report test",'
+        '"verdict":"pass","findings":[],"counterweight_triage":[],'
+        '"next_move":"test","non_claims":["test"],'
+        '"packet_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",'
         '"reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}\n',
         encoding="utf-8",
     )
@@ -36,9 +39,10 @@ def _receipt(tmp_path: Path, *, status: str = "succeeded") -> Path:
         "output_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "attempt_id": "attempt-1",
         "scope": "scope-1",
-        "packet_identity": "packet-1",
+        "packet_identity": "a" * 64,
         "reviewed_input_identity": "a" * 64,
         "parent_receipt_identity": "parent-1",
+        "boundary_fingerprint": "boundary-1",
         "execution_mode": "file-backed-worker",
         "prompt_sha256": "b" * 64,
         "schema_sha256": "c" * 64,
@@ -54,7 +58,7 @@ def _ledger(tmp_path: Path, *, findings: bool = True) -> tuple[Path, str]:
     attempt = ledger.start(
         attempt_id="attempt-1",
         scope="scope-1",
-        packet_identity="packet-1",
+        packet_identity="a" * 64,
         parent_receipt_identity="parent-1",
         boundary_fingerprint="boundary-1",
         reviewed_input_identity="a" * 64,
@@ -66,7 +70,7 @@ def _ledger(tmp_path: Path, *, findings: bool = True) -> tuple[Path, str]:
     if findings:
         attempt.record_findings(
             scope="scope-1",
-            packet_identity="packet-1",
+            packet_identity="a" * 64,
             parent_receipt_identity="parent-1",
             findings_identity=hashlib.sha256((tmp_path / "result.json").read_bytes()).hexdigest(),
             recorded_at="2026-08-21T00:00:00Z",
@@ -89,7 +93,7 @@ def _run(tmp_path: Path, receipt: Path, ledger: Path, *, scope: str = "scope-1")
             "--scope",
             scope,
             "--packet-identity",
-            "packet-1",
+            "a" * 64,
             "--reviewed-input-identity",
             "a" * 64,
             "--parent-receipt-identity",

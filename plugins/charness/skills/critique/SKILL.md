@@ -37,7 +37,9 @@ Caller contract:
 - consume the returned four-bin triage directly: `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`
 - write any change-affecting result back into the caller's durable contract
 - record `Fresh-Eye Satisfaction` as
-  `worker-delivered`, `parent-delegated`, `nested-delegated`, or `blocked <host-signal>`
+  `worker-delivered`, `parent-delegated`, `nested-delegated`, `blocked <host-signal>`, or
+  `accepted-unreviewed-under-round-cap <cap-signal>`; the last explicitly means
+  no fresh-eye approval exists for round-2 repairs.
 
 Autonomous trigger: if no pending artifact or source summary is supplied, do
 not ask first by default; follow `references/autonomous-trigger.md`, infer a
@@ -162,6 +164,9 @@ is approval-eligible and the artifact records its report carrier, packet
 identity, and result identity. Use `parent-delegated` or `nested-delegated` only
 when the adapter explicitly selected a typed-subagent path and the findings text
 reached the parent context. A same-agent short critique is never either claim.
+Use `accepted-unreviewed-under-round-cap <cap-signal>` only for repairs made
+after the second bounded verdict-surface round; it is an honest non-approval
+state, not a substitute for fresh-eye review.
 
 ## Guardrails
 

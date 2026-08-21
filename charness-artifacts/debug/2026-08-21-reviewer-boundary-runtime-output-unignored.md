@@ -124,7 +124,7 @@ classified as a user-visible worktree mutation.
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md

@@ -301,7 +301,7 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
         "ACME_LOG",
         [
             "if 'view' in sys.argv:",
-            "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
+            "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
         ],
     )
     write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
@@ -432,7 +432,7 @@ def test_issue_verify_closeout_uses_default_gh_comments_for_manual_fallback(tmp_
         "GH_LOG",
         [
             "if 'view' in sys.argv:",
-            "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
+            "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
         ],
     )
     body = tmp_path / "closeout.md"
@@ -484,7 +484,7 @@ def test_issue_verify_closeout_rejects_wrong_issue_number_from_backend(tmp_path:
                 "#!/usr/bin/env python3",
                 "import json, sys",
                 "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 99, 'state': 'CLOSED', 'url': 'https://example.test/99'}))",
+                "    print(json.dumps({'number': 99, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/99'}))",
                 "",
             ]
         ),
@@ -528,7 +528,7 @@ def test_issue_verify_closeout_rejects_open_final_state(tmp_path: Path) -> None:
                 "#!/usr/bin/env python3",
                 "import json, sys",
                 "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 42, 'state': 'OPEN', 'url': 'https://example.test/42'}))",
+                "    print(json.dumps({'number': 42, 'state': 'OPEN', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
                 "",
             ]
         ),
@@ -572,7 +572,7 @@ def test_issue_verify_closeout_rejects_unposted_manual_fallback_comment(tmp_path
                 "#!/usr/bin/env python3",
                 "import json, sys",
                 "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42', 'comments': [{'body': 'different comment'}]}))",
+                "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42', 'comments': [{'body': 'different comment'}]}))",
                 "",
             ]
         ),
@@ -741,13 +741,8 @@ def test_issue_verify_closeout_rejects_a_right_number_from_the_wrong_repository(
     assert payload["confirmation"]["line"] is None
 
 
-def test_issue_verify_closeout_accepts_a_payload_that_names_no_repository(tmp_path: Path) -> None:
-    """Silence is not a mismatch, or every backend whose payload omits a URL fails closeout.
-
-    The boundary the repository check depends on, asserted rather than assumed. Note the
-    contrast with the test above: same number, same state, and the ONLY difference is whether
-    the payload names a repository at all.
-    """
+def test_issue_verify_closeout_rejects_a_payload_that_names_no_repository(tmp_path: Path) -> None:
+    """A missing repository is an unknown target, never a successful readback."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     fake = bin_dir / "gh"
@@ -786,7 +781,7 @@ def test_issue_verify_closeout_accepts_a_payload_that_names_no_repository(tmp_pa
         env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
     )
 
-    assert result.returncode == 0, result.stdout
+    assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
-    assert payload["state_mismatches"] == []
-    assert payload["status"] == "verified"
+    assert any(item.get("field") == "repository" for item in payload["state_mismatches"])
+    assert payload["status"] == "failed"

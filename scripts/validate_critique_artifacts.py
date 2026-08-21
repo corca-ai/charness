@@ -34,7 +34,7 @@ _scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
 _sections = import_repo_module(__file__, "scripts.markdown_sections")
 # The required-fields / unique-id / typed-enum loop over a structured-entry
 # section, shared with the ideation `## Structured Questions` floor.
-_structured_entry_floor = import_repo_module(__file__, "scripts.structured_entry_floor")
+_structured_findings = import_repo_module(__file__, "scripts.critique_structured_findings")
 _critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
 critique_observed_date = _scope.critique_observed_date
@@ -53,18 +53,15 @@ WORKER_REPORT_FIELDS = _reviewer_evidence.WORKER_REPORT_FIELDS
 
 CRITIQUE_ARTIFACT_PREFIX = _critique_paths.CRITIQUE_ARTIFACT_PREFIX
 CRITIQUE_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Critique Prepare Packet(?:\s+—\s+\S.*)?$")
-STRUCTURED_FINDINGS_HEADING = "## Structured Findings"
-STRUCTURED_BINS = frozenset({"act-before-ship", "bundle-anyway", "over-worry", "valid-but-defer"})
-STRUCTURED_EVIDENCE = frozenset({"strong", "moderate", "weak", "contested"})
-STRUCTURED_ACTIONS = frozenset({"fix", "file-issue", "document", "defer"})
-STRUCTURED_REQUIRED_FIELDS = ("bin", "evidence", "ref", "action", "note")
-# Describe-first: rejections render this canonical entry form so an author fixes
-# the whole entry once instead of discovering each required field by serial
-# re-runs (the closeout-authoring-churn class).
-STRUCTURED_FINDING_FORM = (
-    "- <id> | bin: <bin> | evidence: <evidence> | ref: <path-or-line> | "
-    "action: <action> | note: <one-line rationale>"
-)
+STRUCTURED_FINDINGS_HEADING = _structured_findings.STRUCTURED_FINDINGS_HEADING
+# Public compatibility surface: the scaffold tests and installed consumers have
+# historically imported these validator enums directly. Extracting the parser
+# must not turn a structural refactor into an API disappearance.
+STRUCTURED_BINS = _structured_findings.STRUCTURED_BINS
+STRUCTURED_EVIDENCE = _structured_findings.STRUCTURED_EVIDENCE
+STRUCTURED_ACTIONS = _structured_findings.STRUCTURED_ACTIONS
+STRUCTURED_REQUIRED_FIELDS = _structured_findings.STRUCTURED_REQUIRED_FIELDS
+STRUCTURED_FINDING_FORM = _structured_findings.STRUCTURED_FINDING_FORM
 CRITIQUE_PREPARE_PACKET_KIND = "charness.critique_prepare_packet"
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
@@ -97,8 +94,17 @@ FRESH_EYE_PRESENCE_RULE_DATE = date(2026, 7, 5)
 # detail) — presence/form-only per this floor's own boundary, so this is a
 # known, accepted gap rather than a missed one; adding a required nested-run
 # citation is a separate floor-addition call, not folded in here.
-FRESH_EYE_TYPED_VALUES = ("worker-delivered", "parent-delegated", "nested-delegated", "blocked")
-FRESH_EYE_TYPED_VALUES_SUMMARY = "`worker-delivered` / `parent-delegated` / `nested-delegated` / `blocked <host-signal>`"
+FRESH_EYE_TYPED_VALUES = (
+    "worker-delivered",
+    "parent-delegated",
+    "nested-delegated",
+    "blocked",
+    "accepted-unreviewed-under-round-cap",
+)
+FRESH_EYE_TYPED_VALUES_SUMMARY = (
+    "`worker-delivered` / `parent-delegated` / `nested-delegated` / `blocked <host-signal>` / "
+    "`accepted-unreviewed-under-round-cap <cap-signal>`"
+)
 # Adversarial-review finding: a typed value whose remainder still carries an
 # unedited `todo` (e.g. a scaffolded `parent-delegated (TODO confirm ...)`)
 # must not satisfy the floor — that is an unedited stub silently claiming
@@ -362,40 +368,8 @@ def _is_valid_followup_value(value: str) -> bool:
     return is_valid_followup_tail(value.strip().lower())
 
 
-def _check_finding_followup(finding: dict[str, str], finding_id: str, path: Path) -> None:
-    """The one rule this family adds beyond the shared floor: `action: file-issue`
-    must carry a parseable `follow-up:`, and a present-but-malformed value is
-    refused whatever the action."""
-    followup_value = finding.get("follow-up", "")
-    if finding["action"] == "file-issue":
-        if not _is_valid_followup_value(followup_value):
-            raise ValidationError(
-                f"{path}: `{STRUCTURED_FINDINGS_HEADING}` entry {finding_id} has `action: file-issue` "
-                "but no parseable `follow-up:` field; record the issue URL or "
-                "`follow-up: deferred <handoff-anchor>` per "
-                "skills/public/critique/references/counterweight-triage.md."
-            )
-    elif followup_value and not _is_valid_followup_value(followup_value):
-        raise ValidationError(
-            f"{path}: `{STRUCTURED_FINDINGS_HEADING}` entry {finding_id} has malformed `follow-up:` value "
-            "(bare `deferred` without an anchor)."
-        )
-
-
-def validate_structured_findings(path: Path, text: str) -> None:
-    _structured_entry_floor.validate_structured_entries(
-        path,
-        text,
-        heading=STRUCTURED_FINDINGS_HEADING,
-        required_fields=STRUCTURED_REQUIRED_FIELDS,
-        enum_fields={
-            "bin": STRUCTURED_BINS,
-            "evidence": STRUCTURED_EVIDENCE,
-            "action": STRUCTURED_ACTIONS,
-        },
-        form_hint=STRUCTURED_FINDING_FORM,
-        per_entry=lambda finding, finding_id: _check_finding_followup(finding, finding_id, path),
-    )
+_check_finding_followup = _structured_findings._check_finding_followup
+validate_structured_findings = _structured_findings.validate_structured_findings
 
 
 def _section_field_map(text: str, heading: str) -> dict[str, str]:
@@ -585,12 +559,14 @@ def validate_critique_artifact(
             status_lowered,
             section_field_map=_section_field_map,
             repo_root=repo_root,
+            artifact_binding_fields=_reviewed_input_binding.reviewed_input_binding_fields(text),
         ),
         lambda: validate_reviewed_input_binding(
             path,
             text,
             observed_date,
             check_current=check_current_binding,
+            repo_root=repo_root,
         ),
     )
     run_validation_checks(

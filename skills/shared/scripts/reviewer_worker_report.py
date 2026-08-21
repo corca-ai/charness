@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 from typing import Any
@@ -33,6 +34,16 @@ FINDINGS_RECEIVED = "findings-received"
 
 class ReportError(ValueError):
     """Input cannot support a trustworthy consumer report."""
+
+
+def _load_result_contract():
+    candidate = Path(__file__).resolve().with_name("reviewer_result_contract.py")
+    spec = importlib.util.spec_from_file_location("charness_reviewer_result_contract", candidate)
+    if spec is None or spec.loader is None:
+        raise ReportError(f"canonical result contract is unavailable: {candidate}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _validate_result_output(receipt: dict[str, Any], attempt: Any) -> tuple[bool, str]:
@@ -102,6 +113,7 @@ def _validate_receipt(
         "packet_identity": attempt.packet_identity,
         "reviewed_input_identity": attempt.reviewed_input_identity,
         "parent_receipt_identity": attempt.parent_receipt_identity,
+        "boundary_fingerprint": attempt.boundary_fingerprint,
         "execution_mode": attempt.execution_mode,
         "backend": attempt.backend,
         "prompt_sha256": attempt.prompt_sha256,
@@ -139,6 +151,23 @@ def build_report(
         attempt=attempt,
         expected_execution_mode=expected_execution_mode,
     )
+    semantic_result: dict[str, Any] | None = None
+    semantic_reason = "canonical bounded-review result is not approval-eligible"
+    if receipt_ok:
+        try:
+            semantic_result = _load_result_contract().validate_bounded_result(
+                Path(str(receipt["output_file"])).expanduser().resolve(),
+                packet_identity=packet_identity,
+                reviewed_input_identity=reviewed_input_identity,
+                require_pass=False,
+            )
+            semantic_reason = (
+                "typed reviewer verdict is not pass: "
+                f"{semantic_result.get('verdict')!r}"
+            )
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            semantic_result = None
+            semantic_reason = str(exc)
     provenance = {
         "scope": scope,
         "packet_identity": packet_identity,
@@ -150,6 +179,11 @@ def build_report(
         "attempt_parent_receipt_identity": attempt.parent_receipt_identity,
         "result_packet_identity": packet_identity,
         "result_reviewed_input_identity": reviewed_input_identity,
+        "boundary_fingerprint": attempt.boundary_fingerprint,
+        "execution_mode": attempt.execution_mode,
+        "backend": attempt.backend,
+        "prompt_sha256": attempt.prompt_sha256,
+        "schema_sha256": attempt.schema_sha256,
     }
     provenance_ok = (
         attempt.scope == scope
@@ -163,11 +197,14 @@ def build_report(
         and attempt.findings_identity == receipt.get("output_sha256")
     )
     receipt_provenance_ok = receipt_ok
-    eligible = receipt_ok and provenance_ok and ledger_ok
+    semantic_ok = semantic_result is not None and semantic_result.get("verdict") == "pass"
+    eligible = receipt_ok and semantic_ok and provenance_ok and ledger_ok
     if not receipt_ok:
         reason = receipt_reason
     elif not provenance_ok:
         reason = "delivery ledger provenance does not match the consumer request"
+    elif not semantic_ok:
+        reason = semantic_reason
     elif not ledger_ok:
         reason = (
             f"delivery ledger state/hash is not a matching findings-received record: "
@@ -179,6 +216,11 @@ def build_report(
         "schema_version": REPORT_SCHEMA_VERSION,
         "execution_mode": attempt.execution_mode,
         "backend": receipt.get("backend"),
+        "scope": attempt.scope,
+        "attempt_id": attempt.attempt_id,
+        "boundary_fingerprint": attempt.boundary_fingerprint,
+        "prompt_sha256": attempt.prompt_sha256,
+        "schema_sha256": attempt.schema_sha256,
         "receipt_schema_version": receipt.get("schema_version"),
         "receipt_status": receipt.get("status"),
         "receipt_path": str(receipt_file),
@@ -188,6 +230,8 @@ def build_report(
         "provenance_ok": provenance_ok,
         "receipt_ok": receipt_ok,
         "ledger_ok": ledger_ok,
+        "result_schema_ok": semantic_result is not None,
+        "review_verdict": semantic_result.get("verdict") if semantic_result else None,
         "receipt_provenance_ok": receipt_provenance_ok,
         "findings_identity": attempt.findings_identity,
         "receipt_output_sha256": receipt.get("output_sha256"),

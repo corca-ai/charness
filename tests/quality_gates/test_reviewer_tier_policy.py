@@ -58,6 +58,21 @@ def test_direct_fresh_eye_reviewers_apply_high_leverage_tier() -> None:
         )
 
 
+def test_causal_review_uses_the_shared_file_backed_delivery_contract() -> None:
+    text = (ROOT / "skills" / "public" / "issue" / "references" / "causal-review.md").read_text(
+        encoding="utf-8"
+    )
+    for marker in (
+        "file-backed worker",
+        "typed host subagent",
+        "approval_eligible: true",
+        "receipt",
+        "delivery ledger",
+        "same-agent local causal review",
+    ):
+        assert marker in text, f"causal review contract must pin `{marker}`"
+
+
 def test_reviewer_tier_policy_is_host_plural() -> None:
     text = SHARED_REVIEW.read_text(encoding="utf-8")
     assert "host-plural" in text

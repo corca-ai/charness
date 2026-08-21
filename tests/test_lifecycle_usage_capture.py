@@ -129,7 +129,12 @@ def test_issue_close_capture_runs_after_state_readback(tmp_path: Path) -> None:
     def fake_backend(argv):
         operation = "view" if "view" in argv else "close" if "close" in argv else "comment"
         events.append(operation)
-        return SimpleNamespace(returncode=0, stdout=json.dumps({"state": "CLOSED"}) if operation == "view" else "", stderr="")
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({"repository": "acme/demo", "number": 42, "state": "CLOSED"})
+            if operation == "view" else "",
+            stderr="",
+        )
 
     module["close_with_comment"].__globals__["_run_backend"] = fake_backend
     module["close_with_comment"].__globals__["_capture_lifecycle"] = lambda *_a, **_k: events.append("capture") or {"status": "appended"}
@@ -145,7 +150,7 @@ def test_issue_close_capture_runs_after_state_readback(tmp_path: Path) -> None:
         backend={"id": "gh", "binary": "gh", "commands": None},
     )
     assert result["lifecycle_capture"]["status"] == "appended"
-    assert events == ["comment", "close", "view", "capture"]
+    assert events == ["view", "comment", "close", "view", "capture"]
 
 
 def test_release_capture_runs_after_distinct_channel_floor() -> None:

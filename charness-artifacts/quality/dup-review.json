@@ -5284,6 +5284,90 @@
       "note": "critique and retro artifact scaffolders intentionally carry parallel standalone templates for their different artifact contracts. The overlap is portability/scaffold shape, while their required sections, validators, and evidence semantics remain skill-owned; extraction would hide those public skill boundaries.",
       "reviewed_at": "2026-08-21",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0e633baac8fb7356",
+      "note": "The critique and retro scaffolders are independently portable public skills with different required artifact sections, validators, and adapter payloads. Their parallel template scaffolding is a public-skill boundary, not a shared verdict rule; extracting it would hide each skill's contract and add an authoring-layout dependency.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3ea1c60a0d4b1ac0",
+      "note": "The issue resolution observer's ancestor-walk loader is direct-execution bootstrap code. It must locate the repo-owned helper from both source and collapsed plugin layouts before any domain import exists; sharing it with an unrelated goal loader would make the locator depend on the loader it is supposed to find.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3f74b679d3609d04",
+      "note": "The public issue observer and web-fetch support entrypoints independently locate their sibling/runtime modules so each remains executable from an installed package. The span is portability bootstrap, not duplicated policy, and a shared loader would reintroduce a host-layout dependency.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7d4b93e297d8e59d",
+      "note": "The authoring validator and portable issue observer both normalize section fields, but they serve different installation boundaries: the validator owns the repo-wide artifact schema while the public observer must work without importing the authoring repo. One cannot replace the other without making one boundary unavailable or coupling verdict ownership.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "84bd533d8bad1d4e",
+      "note": "The repo-side reviewer-evidence validator and installed issue observer independently carry small field/contract readers. The former owns authoring schema enforcement; the latter is a public portable consumer. A shared import would make the portable skill silently depend on repo internals, so the parity test is the control rather than extraction.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9286ff95b8625d4c",
+      "note": "The same normalization shape appears at the authoring validator and public observer boundary because both must read the same human-facing field form. Their error/report contracts and import surfaces differ; coupling them would trade visible parity for an unavailable installed path.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "aa2c1b062a3f656e",
+      "note": "Debug and retro planners both emit deterministic gate packets, but each packet set is skill-owned and their commands/read semantics differ. The small packet-construction idiom is the planner contract; a generic builder would hide which skill owns each gate and weaken installed-plan portability.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "aec1776387378cb3",
+      "note": "The issue observer's evidence fence reader and its portable support module's delegation-contract normalizer intentionally repeat a narrow Markdown safety primitive at separate policy boundaries. One parses artifact evidence, the other authorizes the repository contract; sharing them would couple evidence parsing to authorization policy.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "bf73d7d43cbaeb57",
+      "note": "The short field/guard idiom is shared across unrelated artifact, handoff, authorization, and quality modules. It is boundary-local plumbing with distinct schemas and failure meanings; extracting it would couple independent proof surfaces without removing a policy owner.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e52bbc2735a543f4",
+      "note": "The issue observer support and authoring validator independently validate the same typed-contract shape because one must remain installed-package portable and the other is the canonical repo-wide gate. The duplicate is controlled by source/plugin parity and cross-reader agreement tests, not a shared import that would break portability.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f26f14b75e598a48",
+      "note": "The two adjacent observer helpers are intentionally separate stages: one masks fenced evidence and the other parses section fields from the masked stream. Combining them would make the safety boundary implicit and would reintroduce the fence/parser coupling this slice is testing.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f71db98d677cb14a",
+      "note": "The validator and portable observer each keep their own typed-contract refusal surface so a consuming repo can run the observer without the authoring validator. Their matching branch is deliberate schema parity; the durable control is exact source/plugin sync plus agreement tests.",
+      "reviewed_at": "2026-08-21",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -6,7 +6,7 @@ This document addresses the autonomously researchable investigation portion of
 engineering checklist for Charness's current workflow-product boundary; it does
 not close product-success issue #184.
 The closeout-ready necessary-condition summary is recorded in
-[issue-185-ai-ml-engineering-success.md](../charness-artifacts/spec/issue-185-ai-ml-engineering-success.md).
+See the [issue-185 AI/ML engineering success record](../charness-artifacts/spec/issue-185-ai-ml-engineering-success.md).
 
 Source note: the originating Slack thread was not re-fetched in this session;
 see the source note in [product-success-metrics.md](./product-success-metrics.md).

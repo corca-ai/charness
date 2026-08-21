@@ -24,6 +24,9 @@ plugins/*/.charness/
 .charness/hitl/runtime/
 .charness/reviewer-boundary/
 .charness/reviewer-round-2/
+# File-backed bounded-review runtime is evidence input, not a tracked source surface.
+# Keep every round-specific runtime ignored before boundary snapshots are taken.
+.charness/reviewer-round-*/
 .charness/dup-ratchet*
 .charness/t-events/
 .charness/usage-episodes/

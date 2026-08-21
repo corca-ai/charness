@@ -194,6 +194,35 @@ def test_critique_artifact_validator_accepts_blocked_with_signal_post_cutoff(
     assert result.returncode == 0, result.stderr
 
 
+def test_critique_artifact_validator_accepts_round_cap_as_explicit_non_approval(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "2026-07-05-demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "Fresh-Eye Satisfaction: accepted-unreviewed-under-round-cap round-2 repair cap; no third review run.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/critique/2026-07-05-demo.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_critique_artifact_validator_grandfathers_missing_line_on_landing_day(
     tmp_path: Path,
 ) -> None:

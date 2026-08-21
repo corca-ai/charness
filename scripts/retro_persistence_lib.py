@@ -184,12 +184,6 @@ def persist_retro_artifact(
     if goal_identity is not None:
         markdown_text = _canonicalize_goal_metadata(markdown_text, goal_identity["goal_path"])
     normalized_name, was_normalized = normalize_artifact_name(artifact_name)
-    if was_normalized:
-        print(
-            f"persist_retro_artifact: --artifact-name '{artifact_name}' lacks .md; "
-            f"writing '{normalized_name}' so the lesson-selection-index can read it.",
-            file=sys.stderr,
-        )
 
     artifact_path = output_dir / normalized_name
     relpath = str(artifact_path.relative_to(repo_root))

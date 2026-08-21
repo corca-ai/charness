@@ -75,6 +75,15 @@ A second call without `target` is "reuse intent", not "rediscover from cwd".
 
 ## Resolve Auto-Close Linkage
 
+Resolution critique evidence is consumed at the close boundary, not only at
+commit time. For the default file-backed reviewer path, the consumer must read
+the durable worker report and require `approval_eligible: true`,
+`findings-received`, matching packet/input/result/parent identities, and the
+artifact's own Reviewed Input Identity. A `worker-delivered` line without that
+carrier is a refusal; process success or a non-empty output is not approval.
+The optional typed-subagent values remain a distinct execution branch and must
+not be silently reinterpreted as file-backed delivery.
+
 `issue resolve` should prefer GitHub's built-in auto-close path over a manual
 close command whenever the backend can carry close keywords into default-branch
 history.

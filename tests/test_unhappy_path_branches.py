@@ -143,7 +143,8 @@ def _close_with(
     """
     import json as _json
 
-    monkeypatch.setattr(_issue_close, "answer_repo", lambda _payload: answered_repo)
+    payload = dict(payload)
+    payload["repository"] = {"nameWithOwner": answered_repo}
     monkeypatch.setattr(
         _issue_close, "_run_backend", lambda argv: _Result(stdout=_json.dumps(payload))
     )

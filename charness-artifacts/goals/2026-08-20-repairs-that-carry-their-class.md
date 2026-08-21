@@ -15,25 +15,26 @@ runs the activation command.
   fresh-eye delivery edges. Issue #687 remains a release-cut exception with a
   Charness-owned prevention child and an explicitly unproven host-side
   dependency.
-- Current slice: R2 — portable review-worker and delivery-state reliability;
-  the file-backed default, consumer approval boundary, YAML CLI channel, and
-  process-group timeout repair are committed. The installed/fresh-eye/release
-  boundary remains open.
+- Current slice: R2 — evidence and delivery reliability remains in progress;
+  the portable file-backed reviewer default, consumer approval boundary,
+  YAML CLI channel, and process-group timeout repair are committed, but the
+  current-open post-lock exceptions (#682, #683, #685, #686, and #687) still
+  require current requalification and/or repair before R3 candidate freeze.
+  The installed/fresh-eye/release boundary remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: repair the blockers returned by the required round-2 semantic
-  fresh-eye read, then regenerate the packet and exact-base proof against one
-  current candidate. The round delivered through typed worker/report rails but
-  all three reviewer verdicts were `block`; its boundary rail was also
-  quarantined because `.charness/reviewer-round-2/` was not ignored. The
-  runtime-output ownership gap is recorded in
-  `charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md`
-  and the findings in
-  `charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-provider-schema-round-2b.md`.
-  Under the two-round cap, repairs from this round are accepted-unreviewed; no
-  third fresh-eye round, approval, or version mutation is claimed.
+- Next action: requalify the five post-lock exception rows against the current
+  clean tree in parallel, then repair the live #682/#683/#685/#686 seams (and
+  bind #687's Charness child) behind disjoint path budgets. Reconcile each
+  amendment, run focused and changed-line proof, and only then regenerate the
+  semantic packet for the R3 planner. The required round-2 semantic read
+  delivered through typed worker/report rails but all three reviewer verdicts
+  were `block`; its boundary rail was quarantined because
+  `.charness/reviewer-round-2/` was not ignored. Under the two-round cap,
+  repairs from that round are accepted-unreviewed; no third fresh-eye round,
+  approval, or version mutation is claimed.
 - Large-slice rule: completed issue-level history remains auditable, but future
   work is scheduled by capability boundary rather than ticket count. Each macro
   slice owns one user-visible outcome and its shared contract; independent
@@ -1076,6 +1077,21 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 ## Final Verification
 
+- The latest stable-tree broad gate completed with `96 passed, 0 failed, 1
+  UNPROVEN`. Standing pytest and the broad deterministic checks passed; the
+  sole unproven arm was changed-line mutation, which correctly refused to
+  render a verdict because 19 mutation-pool files were uncommitted. This is a
+  proof boundary, not a green result; the exact changed-line command must run
+  again after the current candidate is committed.
+- The current focused reviewer/observer suite is `93 passed`; dup-ratchet is
+  clean (`new_code_families: []`, `hard_block: false`), packaging and markdown
+  link validation pass, and source/plugin parity is synchronized. The shared
+  blocked-signal floor now has one owner with an injection-preserving adapter,
+  removing the newly detected duplicate family instead of adding an overlay.
+- The resolved debug record for the reviewer runtime-output boundary is
+  [here](../charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md).
+  Its old review window remains quarantined; the three round-2 semantic
+  reports remain `block` repair input under the two-round cap.
 - The 2026-08-21 portable fresh-eye delivery slice is committed at
   `cce985d6f`, with refusal-branch coverage at `458080160`. Adapter-selected
   mode/backend/timeout authority, typed combined-report delivery, result/

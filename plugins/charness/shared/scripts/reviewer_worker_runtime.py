@@ -306,6 +306,7 @@ def run(args: Any, paths: dict[str, Path | float | str], run_id: str, started_at
         "packet_identity": args.packet_identity,
         "reviewed_input_identity": args.reviewed_input_identity,
         "parent_receipt_identity": args.parent_receipt_identity,
+        "boundary_fingerprint": args.boundary_fingerprint,
         "execution_mode": args.execution_mode,
         "prompt_sha256": sha256(prompt),
         "schema_sha256": sha256(schema),

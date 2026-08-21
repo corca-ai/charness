@@ -1,7 +1,7 @@
 """Who actually read the resolution critique a close is about to cite.
 
 The resolution-critique floor checks that a `Critique #N: <path>` line exists and
-that the cited artifact binds to the issue. It never opens the question that line
+that the cited artifact binds to the issue. It also opens the question that line
 is a proxy for: did anyone OTHER than the closing agent read this resolution?
 
 A critique artifact records that answer itself, in its own
@@ -11,9 +11,10 @@ The floor never opened the file. So an artifact recording that NO fresh eye ran
 satisfied the floor exactly as well as one recording that a reviewer found four
 blockers, at an irreversible public boundary.
 
-This module reads that field and nothing else. It adds no gate: it is an existing
-floor consuming a field that already exists, already has a typed contract, and is
-already required by `validate_critique_artifacts.py` on the authoring side.
+For the default file-backed path, the field is only a claim: this module also
+reads the shared worker report carrier and joins its packet/input identities to
+the artifact's Reviewed Input Identity. Typed-subagent claims remain a separate
+optional branch; they are never silently treated as file-backed approval.
 
 **Portability.** This is a public skill, so it must work in a repo that does not
 use this repo's critique conventions. Two rules follow, and the split is the
@@ -48,19 +49,61 @@ adopted the contract is not held to it.
 
 from __future__ import annotations
 
-import json
+import importlib.util
 import re
-from datetime import date
 from pathlib import Path
 
-#: Both values assert a delegation that COMPLETED — a distinct observer read the
-#: resolution. Kept in the same order and spelling as the authoring-side typed
-#: contract so the two surfaces cannot disagree about what "delegated" means.
-DELEGATED_VALUES = ("parent-delegated", "nested-delegated")
+#: These values assert a delegation that COMPLETED — a distinct observer read the
+#: resolution. `worker-delivered` additionally requires the durable report
+#: carrier; the two typed-subagent values describe the optional host branch.
+DELEGATED_VALUES = ("worker-delivered", "parent-delegated", "nested-delegated")
+WORKER_DELIVERED_VALUE = "worker-delivered"
+ROUND_CAP_VALUE = "accepted-unreviewed-under-round-cap"
 #: The degradation valve. A host that genuinely cannot spawn a reviewer records
 #: this instead, and the close proceeds with an advisory.
 BLOCKED_VALUE = "blocked"
 FRESH_EYE_HEADING = "## fresh-eye satisfaction"
+
+
+def _load_worker_carrier():
+    """Load the package-owned worker carrier without importing a consumer repo.
+
+    The issue skill is public and may run from either the development tree or a
+    collapsed plugin export.  Walking only the package's bounded ancestors keeps
+    a consuming repository's arbitrary ``skills/shared`` or ``scripts`` from
+    becoming an accidental implementation dependency.
+    """
+    here = Path(__file__).resolve()
+    candidates: list[Path] = []
+    for ancestor in list(here.parents)[:6]:
+        candidates.extend(
+            (
+                ancestor / "shared" / "scripts" / "reviewer_worker_carrier.py",
+                ancestor / "skills" / "shared" / "scripts" / "reviewer_worker_carrier.py",
+            )
+        )
+    for candidate in candidates:
+        if not candidate.is_file():
+            continue
+        spec = importlib.util.spec_from_file_location("charness_reviewer_worker_carrier", candidate)
+        if spec is None or spec.loader is None:
+            continue
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    return None
+
+
+_worker_carrier = _load_worker_carrier()
+_SUPPORT_SPEC = importlib.util.spec_from_file_location(
+    "charness_issue_critique_observer_support",
+    Path(__file__).resolve().with_name("issue_critique_observer_support.py"),
+)
+if _SUPPORT_SPEC is None or _SUPPORT_SPEC.loader is None:
+    raise ImportError("issue critique observer support is unavailable")
+_SUPPORT = importlib.util.module_from_spec(_SUPPORT_SPEC)
+_SUPPORT_SPEC.loader.exec_module(_SUPPORT)
+
 #: The same marker TEXT as `validate_critique_artifacts.DELEGATION_CONTRACT_MARKERS`,
 #: restated rather than imported: this is a portable public skill, and reaching
 #: into the harness repo's `scripts/` would make the guard absent — not merely
@@ -71,10 +114,11 @@ FRESH_EYE_HEADING = "## fresh-eye satisfaction"
 #: and so does the drift risk it carries — which is why the authoring repo now
 #: pins the parity with a test over its own real `AGENTS.md` rather than leaving
 #: it to this comment.
-DELEGATION_CONTRACT_MARKERS = (
-    "subagent delegation",
-    "repo-mandated bounded fresh-eye subagent reviews are already delegated",
-)
+DELEGATION_CONTRACT_MARKERS = _SUPPORT.DELEGATION_CONTRACT_MARKERS
+OBSERVER_RULE_DATE = _SUPPORT.OBSERVER_RULE_DATE
+artifact_observed_date = _SUPPORT.artifact_observed_date
+predates_typed_contract = _SUPPORT.predates_typed_contract
+repo_requires_delegated_observer = _SUPPORT.repo_requires_delegated_observer
 
 # Markup is stripped everywhere before matching, never matched around. The
 # corpus writes this field five ways — `Fresh-eye satisfaction:`,
@@ -201,6 +245,105 @@ def _split_field(line: str) -> str | None:
     return tail.strip()
 
 
+def _strip_fenced_lines(text: str) -> list[str]:
+    """Keep only artifact content outside Markdown fences."""
+    kept: list[str] = []
+    opener: str | None = None
+    indented_code = False
+    for line in text.splitlines():
+        leading = len(line) - len(line.lstrip(" "))
+        if opener is None:
+            if leading >= 4:
+                indented_code = True
+                continue
+            if indented_code and not line.strip():
+                continue
+            indented_code = False
+        marker = re.match(r"^ {0,3}(`{3,}|~{3,})", line)
+        if opener is None and marker is not None:
+            opener = marker.group(1)
+            continue
+        if opener is not None and marker is not None:
+            candidate = marker.group(1)
+            leading = len(line) - len(line.lstrip(" "))
+            trailing = line[leading + len(candidate) :].strip()
+            if (
+                candidate[0] == opener[0]
+                and len(candidate) >= len(opener)
+                and not trailing
+            ):
+                opener = None
+                continue
+        if opener is None:
+            kept.append(line)
+    # An unclosed fence does not turn its body into artifact metadata. Returning
+    # only the already-kept prefix makes a malformed fenced carrier fail closed
+    # instead of letting a quoted example satisfy the approval fields.
+    return kept
+
+
+def _section_fields(text: str, heading: str) -> dict[str, str]:
+    """Read simple ``Field: value`` bullets from one named artifact section."""
+    lines = _strip_fenced_lines(text)
+    wanted = re.sub(r"[^a-z0-9]+", " ", heading.lower()).strip()
+    fields: dict[str, str] = {}
+    inside = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            current = re.sub(r"[^a-z0-9]+", " ", stripped.lstrip("#").lower()).strip()
+            if current == wanted:
+                inside = True
+                continue
+            if inside:
+                break
+        if not inside:
+            continue
+        head, separator, tail = stripped.partition(":")
+        if not separator:
+            continue
+        key = re.sub(r"[^a-z0-9]+", " ", head.strip(" -*_`>\"").lower()).strip()
+        if key:
+            fields[key] = tail.strip().strip("`")
+    return fields
+
+
+def _worker_carrier_disposition(
+    repo_root: Path,
+    text: str,
+    *,
+    required_issue_numbers: list[int] | None = None,
+    required_repository: str | None = None,
+) -> dict[str, object]:
+    """Verify a ``worker-delivered`` claim through its durable report carrier."""
+    if _worker_carrier is None:
+        return {
+            "disposition": "carrier-unverified",
+            "carrier_verified": False,
+            "carrier_reason": "the package's shared worker carrier validator is unavailable",
+        }
+    fields = _section_fields(text, "Reviewer Tier Evidence")
+    binding = _section_fields(text, "Reviewed Input Identity")
+    try:
+        _worker_carrier.validate_worker_report_carrier(
+            artifact_label="issue-resolution-critique",
+            fields=fields,
+            repo_root=repo_root,
+            artifact_binding_fields=binding,
+            require_delivery_chain=True,
+            required_issue_numbers=required_issue_numbers,
+            required_repository=required_repository,
+            required_scope_prefix="issue-resolution",
+        )
+    except _worker_carrier.WorkerCarrierError as exc:
+        return {
+            "disposition": "carrier-unverified",
+            "carrier_verified": False,
+            "carrier_reason": str(exc),
+        }
+    return {"disposition": "delegated", "carrier_verified": True, "carrier": "worker-report"}
+
+
 def _declared_value(lines: list[str]) -> str | None:
     """The artifact's own claim, canonical section first.
 
@@ -300,6 +443,12 @@ def observer_disposition(
         # consumers while naming which of the two this actually is.
         kind = "delegation-declined" if _DECLINED_SIGNAL_RE.search(signal) else "host"
         return {"value": value, "disposition": "blocked", "blocked_kind": kind}
+    if ROUND_CAP_VALUE in normalized:
+        return {
+            "value": value,
+            "disposition": "round-cap-unreviewed",
+            "round_cap": True,
+        }
     if any(claim in normalized for claim in DELEGATED_VALUES):
         # A value that DENIES or defers the delegation it names is not a record of
         # one. Containment cannot tell "parent-delegated review returned findings"
@@ -309,163 +458,3 @@ def observer_disposition(
             return {"value": value, "disposition": "undelegated"}
         return {"value": value, "disposition": "delegated"}
     return {"value": value, "disposition": "undelegated"}
-
-
-#: Artifacts written before the typed `Fresh-eye satisfaction:` contract existed
-#: record delegation in prose — "All three chunk reviewers ran in separate agent
-#: contexts and returned ship" — with no typed token anywhere. They are honest
-#: records of a real delegation, and refusing them applies a rule that did not
-#: exist when they were written. Mirrors the authoring-side presence floor's own
-#: enforce-from date rather than inventing a second cutoff.
-OBSERVER_RULE_DATE = date(2026, 7, 5)
-_DATE_RE = re.compile(r"(?P<date>\d{4}-\d{2}-\d{2})")
-_DATE_LINE_RE = re.compile(r"^\s*[-*]?\s*date\s*:\s*(?P<date>\d{4}-\d{2}-\d{2})", re.IGNORECASE | re.MULTILINE)
-
-
-def artifact_observed_date(path: Path, text: str) -> date | None:
-    """The artifact's own date, from a `Date:` line or a dated filename.
-
-    Body first: a filename can be copied, and the `Date:` line is what the author
-    wrote. Returns ``None`` when neither channel offers one — and an UNDATABLE
-    artifact is treated as current, never as grandfathered, because a new
-    artifact that carries no date is itself the anomaly.
-    """
-    match = _DATE_LINE_RE.search(text)
-    if match is None:
-        match = _DATE_RE.match(Path(path).name)
-    if match is None:
-        return None
-    try:
-        return date.fromisoformat(match.group("date"))
-    except ValueError:
-        return None
-
-
-def predates_typed_contract(path: Path, text: str) -> bool:
-    """Whether this artifact is grandfathered out of the REFUSAL.
-
-    Grandfathering is applied to the refusal only, never to the reported
-    disposition: the payload keeps saying what the artifact actually records, so
-    a grandfathered close is visibly grandfathered rather than silently clean.
-    """
-    observed = artifact_observed_date(path, text)
-    return observed is not None and observed < OBSERVER_RULE_DATE
-
-
-def _normalize_contract_text(text: str) -> str:
-    """Drop fenced blocks, flatten inline markup, collapse whitespace.
-
-    Three normalizations, each closing a way the SAME sentence stopped matching:
-    markup is REMOVED not tolerated (this repo writes `**already delegated**`,
-    and the plain substring test returned False in the repo that authored the
-    contract); whitespace is collapsed because the 58-character marker only fits
-    on one line at the template's current wrap width, so a reflow would drop an
-    adopting repo out of the contract; and fenced blocks are dropped because a
-    fence is documentation, not the repo's own assertion — `setup` ships the
-    delegation template inside one for operators to copy.
-    """
-
-    kept: list[str] = []
-    pending: list[str] = []
-    opener: str | None = None
-    for line in text.splitlines():
-        match = re.match(r"^\s*(`{3,}|~{3,})", line)
-        if match:
-            marker = match.group(1)
-            if opener is None:
-                opener = marker
-                pending = []
-                continue
-            if marker[0] == opener[0] and len(marker) >= len(opener):
-                opener = None
-                pending = []
-                continue
-        if opener is None:
-            kept.append(line)
-        else:
-            pending.append(line)
-    # An UNCLOSED fence must not swallow the rest of the file. Dropping everything
-    # after a stray ``` would silently un-adopt a repo whose contract sits below
-    # it -- no failure, no log line, no ticket, which is the class this ladder was
-    # built to close. Markdown renderers auto-close at EOF, so the file looks fine
-    # to every human. Treat the unterminated tail as content: the error direction
-    # is toward matching, which refuses strictly less.
-    kept.extend(pending)
-    flattened = re.sub(r"[`*_]+", "", "\n".join(kept).lower())
-    return re.sub(r"\s+", " ", flattened)
-
-
-def _delegation_record_state(repo_root: Path) -> tuple[str | None, list[str] | None]:
-    """Rung 2 of the authorization ladder: the recorded decision and its scopes.
-
-    A repo may grant the standing delegation request in
-    `.agents/subagent-delegation.json` instead of `AGENTS.md` — and that is the
-    exact repo class the ladder exists to serve, the one that never ran `setup`.
-    Mirrors the record module shipped beside the ladder resolver: a `scopes` key
-    that is present but not a non-empty list of strings makes the record
-    unreadable rather than widening the grant to every scope.
-    """
-
-    path = Path(repo_root) / ".agents/subagent-delegation.json"
-    if not path.is_file():
-        return None, None
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        return None, None
-    if not isinstance(data, dict):
-        return None, None
-    value = data.get("bounded_review_delegation")
-    if not isinstance(value, str):
-        return None, None
-    decision = value.strip().lower()
-    if decision not in ("granted", "declined"):
-        return None, None
-    scopes: list[str] | None = None
-    if "scopes" in data:
-        raw_scopes = data.get("scopes")
-        if not isinstance(raw_scopes, list) or not raw_scopes or not all(isinstance(s, str) for s in raw_scopes):
-            return None, None
-        scopes = [s.strip().lower() for s in raw_scopes]
-    return decision, scopes
-
-
-def _record_grants_scope(decision: str | None, scopes: list[str] | None, scope: str) -> bool:
-    """A rung-2 grant authorizes `scope` only when it names it (or names none)."""
-
-    if decision != "granted":
-        return False
-    return scopes is None or scope.strip().lower() in scopes
-
-
-def repo_requires_delegated_observer(repo_root: Path, *, scope: str = "issue") -> bool:
-    """Whether bounded review is AUTHORIZED in this repo for `scope`.
-
-    Walks the same ladder as the shipped `resolve_subagent_delegation.py`,
-    because a reader that knows only `AGENTS.md` goes inert in exactly the repo
-    class the ladder exists to serve. Three states are modelled rather than
-    collapsed into "adopted": a recorded `declined` is NOT authorization even
-    under an `AGENTS.md` block (`setup` writes that block, so rung-1-is-final
-    would let it override the user's only recorded "no", and then refuse closes
-    in a repo whose user said no); a grant narrowed to a scope set excluding
-    `scope` is not authorization for `scope`, or the repo is wedged — refused
-    for not spawning a reviewer it has just been told it may not spawn; and an
-    unreadable record is not a grant.
-
-    A repo that never adopted it still gets the recorded disposition in the
-    payload; it just is not refused for a field its conventions never defined.
-    """
-    record_decision, record_scopes = _delegation_record_state(repo_root)
-    if record_decision == "declined":
-        return False
-    agents_path = Path(repo_root) / "AGENTS.md"
-    if not agents_path.is_file():
-        return _record_grants_scope(record_decision, record_scopes, scope)
-    try:
-        text = agents_path.read_text(encoding="utf-8").lower()
-    except (OSError, UnicodeDecodeError):
-        return _record_grants_scope(record_decision, record_scopes, scope)
-    if all(marker in _normalize_contract_text(text) for marker in DELEGATION_CONTRACT_MARKERS):
-        return True
-    # An `AGENTS.md` without the block does not end the ladder — rung 2 still can.
-    return _record_grants_scope(record_decision, record_scopes, scope)

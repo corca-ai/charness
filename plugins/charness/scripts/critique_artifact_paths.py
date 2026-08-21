@@ -40,6 +40,12 @@ def candidate_paths(
         if is_critique_round_record(normalized):
             continue
         path = repo_root / normalized
+        # Changed-path mode receives every changed artifact, including JSON/YAML
+        # packets and worker receipts. Those are evidence inputs, not Markdown
+        # critique records; sending them through the prose validator creates a
+        # false failure and teaches callers to delete valid evidence.
+        if path.suffix.lower() != ".md":
+            continue
         if path.is_file() and not packet_checker(path):
             candidates.append(path)
     return sorted(candidates)

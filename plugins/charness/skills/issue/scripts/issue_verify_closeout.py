@@ -81,7 +81,9 @@ _CRITIQUE = _load_local("issue_resolution_critique", "issue_resolution_critique"
 # The identity parse lives in the backend owner, not here: which repository a payload says it
 # describes is the same question the handoff staleness reader asks, and a second copy of it is
 # the defect the backend consolidation removed.
-_ANSWER_REPO = _load_local("issue_backend", "issue_verify_issue_backend").answer_repo
+_ISSUE_BACKEND = _load_local("issue_backend", "issue_verify_issue_backend")
+_ANSWER_REPO = _ISSUE_BACKEND.answer_repo
+_ISSUE_IDENTITY_MISMATCHES = _ISSUE_BACKEND.issue_identity_mismatches
 GIT_TIMEOUT_SECONDS = 10
 
 CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
@@ -250,7 +252,11 @@ def verify_closeout(
     )
     body = _read_carrier_body(repo_root, carrier=carrier, commit_ref=commit_ref, body_file=body_file)
     resolution_critique_check = _CRITIQUE.check_resolution_critique(
-        repo_root=repo_root, body=body, classification=classification, numbers=numbers
+        repo_root=repo_root,
+        body=body,
+        classification=classification,
+        numbers=numbers,
+        repository=repo,
     )
     missing_close_keywords = [] if carrier == "manual-fallback" else _missing_close_keywords(body, numbers, repo)
     # The carrier is threaded because `consolidated` must refuse the AUTO-CLOSE
@@ -318,19 +324,14 @@ def verify_closeout(
                     record["field"] = field
                 state_mismatches.append(record)
 
-            returned_number = state_payload.get("number")
-            if returned_number != number:
-                mismatch(expected_value=number, actual_value=returned_number, field="number")
-            # The OTHER half of the identity. This surface already required `{repo}` in the
-            # template, so the backend is always TOLD which repository to answer about -- but
-            # being told is not obeying, and a wrong-repo answer carries the RIGHT number, so
-            # the check above passes it. The repository was already in hand: `url` is fetched
-            # and reported in every mismatch record here, and was never read. Silence is not a
-            # mismatch -- a payload naming no repository yields None and is accepted, because
-            # refusing every backend whose payload omits one would fail correct closeouts.
-            answered_repo = _ANSWER_REPO(state_payload)
-            if answered_repo is not None and answered_repo.lower() != repo.strip().lower():
-                mismatch(expected_value=repo, actual_value=answered_repo, field="repository")
+            for identity_mismatch in _ISSUE_IDENTITY_MISMATCHES(
+                state_payload, expected_repo=repo, expected_number=number
+            ):
+                mismatch(
+                    expected_value=identity_mismatch["expected"],
+                    actual_value=identity_mismatch["actual"],
+                    field=identity_mismatch["field"],
+                )
             actual = str(state_payload.get("state", "")).upper()
             if actual != expected:
                 mismatch(expected_value=expected, actual_value=state_payload.get("state"))

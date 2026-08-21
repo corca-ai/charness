@@ -57,6 +57,7 @@ def evaluate_close_comment_floor(
     body: str,
     classification: str,
     number: int,
+    repo: str | None = None,
     consolidation_readback: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Presence/form-only floor: refuse a manual close-with-comment whose body is
@@ -106,7 +107,11 @@ def evaluate_close_comment_floor(
             f"consolidation:{problem}" for problem in entry.get("problems_to_surface", [])
         )
     resolution_critique = _CRITIQUE.check_resolution_critique(
-        repo_root=repo_root, body=body, classification=classification, numbers=numbers
+        repo_root=repo_root,
+        body=body,
+        classification=classification,
+        numbers=numbers,
+        repository=repo,
     )
     # THE FOURTH INSTANCE OF THE ASYMMETRY THIS FILE ALREADY NAMES THREE TIMES, and it
     # was found the same way the others should have been -- by the closeout floor matrix

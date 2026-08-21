@@ -216,11 +216,11 @@ def test_one_identity_rule_has_one_owner() -> None:
     ).read_text(encoding="utf-8")
     # NOT `'"repository"' in source`: that literal already existed in an unrelated
     # authorization record, so the assertion could not fail for the reason its message gave.
-    assert "_ANSWER_REPO(state_payload)" in verifier_source, (
-        "the closeout verifier stopped reading the repository its payload reports"
+    assert "_ISSUE_IDENTITY_MISMATCHES(" in verifier_source, (
+        "the closeout verifier stopped using the shared issue identity validator"
     )
-    assert 'field="repository"' in verifier_source, (
-        "the closeout verifier stopped RECORDING a repository mismatch"
+    assert 'field=identity_mismatch["field"]' in verifier_source, (
+        "the closeout verifier stopped recording shared identity mismatches"
     )
 
 
@@ -367,7 +367,7 @@ def test_the_post_close_readback_owes_the_same_identity_floor_as_the_verifier() 
     assert 'required=frozenset({"repo", "number"})' in source, (
         "the post-close readback stopped requiring both halves of the issue's identity"
     )
-    assert "answer_repo(verified_state)" in source, (
+    assert "require_exact_issue_identity(" in source, (
         "the post-close readback stopped checking the repository it read back"
     )
     # No waiver is offered on this path: `waivable` must not be threaded into the close-side

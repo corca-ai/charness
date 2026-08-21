@@ -166,7 +166,7 @@ def render_template(*, title: str, date_text: str) -> str:
             "- Worker report delivery: TODO findings-received after parent delivery",
             "- Worker report packet identity: TODO lowercase SHA-256 from the report",
             "- Worker report input identity: TODO lowercase SHA-256 from the report",
-            "- Worker report parent receipt identity: TODO lowercase SHA-256 from the report",
+            "- Worker report parent receipt identity: TODO non-empty receipt identity from the report",
             "- Worker report findings identity: TODO lowercase SHA-256 of the result",
             "",
         ]
@@ -177,7 +177,8 @@ def render_template(*, title: str, date_text: str) -> str:
             "",
             # Deliberately NOT a typed value (see the module comment above): the
             # validator requires this line to OPEN with `worker-delivered` /
-            # `parent-delegated` / `nested-delegated` / a signal-bearing typed value once dated
+            # `parent-delegated` / `nested-delegated` / a signal-bearing value / or the explicit
+            # `accepted-unreviewed-under-round-cap` cap disposition once dated
             # on/after its enforce-from date, and it also rejects a typed value
             # whose remainder still carries an unedited `todo`. Pre-filling a
             # real typed token here (even with a trailing TODO) would let every
@@ -186,7 +187,9 @@ def render_template(*, title: str, date_text: str) -> str:
             # typed value after the reviewer actually runs. Stays free of the
             # literal "blocked" token for the same reason as the module comment.
             "TODO: replace with `worker-delivered`, `parent-delegated`, `nested-delegated`, "
-            "or a citation of the concrete signal that stopped review — after the reviewer actually runs.",
+            "a citation of the concrete host/tool signal, or "
+            "`accepted-unreviewed-under-round-cap <cap-signal>` after the review or explicit "
+            "two-round cap is recorded.",
             "",
         ]
     )

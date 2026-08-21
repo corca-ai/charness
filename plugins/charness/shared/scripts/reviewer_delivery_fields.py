@@ -6,6 +6,7 @@ import re
 from typing import Any, Callable
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+PARENT_RECEIPT_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 
 
 def _text(value: object, label: str) -> str:
@@ -18,6 +19,23 @@ def _sha256(value: object, label: str) -> str:
     text = _text(value, label).lower()
     if not _SHA256_RE.fullmatch(text):
         raise ValueError(f"{label} must be a lowercase SHA-256 identity")
+    return text
+
+
+def parent_receipt_identity(value: object, label: str = "parent_receipt_identity") -> str:
+    """Preserve the caller's receipt identity while enforcing one safe grammar.
+
+    Receipt IDs are correlation keys, not hashes.  They therefore remain
+    case-sensitive, but must be single-line path/transport-safe identifiers so
+    the producer and every consumer can join the same value exactly.
+    """
+
+    text = _text(value, label)
+    if not PARENT_RECEIPT_ID_RE.fullmatch(text):
+        raise ValueError(
+            f"{label} must be a non-empty single-line identifier containing only "
+            "letters, digits, `.`, `_`, `:`, or `-`"
+        )
     return text
 
 

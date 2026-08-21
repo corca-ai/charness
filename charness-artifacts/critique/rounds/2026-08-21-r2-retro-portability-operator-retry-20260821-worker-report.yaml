@@ -1,0 +1,30 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: .charness/reviewer-round-2/retro-portability-685-686-readiness/angle-operator-retry/receipt.json
+ledger_path: .charness/reviewer-round-2/retro-portability-685-686-readiness/angle-operator-retry/ledger.json
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+receipt_provenance_ok: true
+findings_identity: c4ef82cdb1b834ef87495fdf4d40c427bb2633c088cf79c36589bc915598f801
+receipt_output_sha256: c4ef82cdb1b834ef87495fdf4d40c427bb2633c088cf79c36589bc915598f801
+packet_identity: ee12c62e7159cc321acbb8bccc9776a73721bff53c4505770c3c640e201a986a
+reviewed_input_identity: a6c163ec10e188d5c9102a8e03749c54cfc4bad83cd85ee5de3c2ed91d66e797
+parent_receipt_identity: r2-retro-portability-parent-operator-retry-20260821
+provenance:
+  scope: retro-portability-685-686:operator-and-installed-consumer:readiness-repair
+  packet_identity: ee12c62e7159cc321acbb8bccc9776a73721bff53c4505770c3c640e201a986a
+  reviewed_input_identity: a6c163ec10e188d5c9102a8e03749c54cfc4bad83cd85ee5de3c2ed91d66e797
+  parent_receipt_identity: r2-retro-portability-parent-operator-retry-20260821
+  attempt_id: r2-retro-portability-operator-retry-20260821
+  attempt_scope: retro-portability-685-686:operator-and-installed-consumer:readiness-repair
+  attempt_packet_identity: ee12c62e7159cc321acbb8bccc9776a73721bff53c4505770c3c640e201a986a
+  attempt_parent_receipt_identity: r2-retro-portability-parent-operator-retry-20260821
+  result_packet_identity: ee12c62e7159cc321acbb8bccc9776a73721bff53c4505770c3c640e201a986a
+  result_reviewed_input_identity: a6c163ec10e188d5c9102a8e03749c54cfc4bad83cd85ee5de3c2ed91d66e797
+reason: typed worker receipt and matching delivery ledger permit approval

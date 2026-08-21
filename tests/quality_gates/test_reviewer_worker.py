@@ -82,6 +82,8 @@ def _run(
             "i" * 64,
             "--parent-receipt-identity",
             "parent-1",
+            "--boundary-fingerprint",
+            "boundary-1",
             "--timeout-seconds",
             timeout,
             "--run-id",
