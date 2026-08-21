@@ -14,6 +14,8 @@ or host-runtime claim.
 ## Current Evidence Join
 
 - Exact candidate range: `d9995e0079326ae9ad0a35f9ade64a9f951c4fbf..502c8a8adbbe77781f1714cb6c4383a85d6e3683`.
+- Planner-selected target: `6.2.1` (`v6.2.1`); this is planning evidence only,
+  and no version surface has been mutated.
 - Exact prepare packet: `charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-current-exact-packet.json`.
 - Packet SHA256: `5a936834bce7fe68db1f894e5e6764de336d9b8dbd4e69fd26f472ab07632ef7`.
 - Reviewed-input identity: `26f29ca25c71bf4d704854285c787734f9a1e99bc7d770a9df8674ee3778dfc2`.
