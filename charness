@@ -833,14 +833,26 @@ def read_host_state(home_root: Path) -> dict[str, object]:
     return payload
 
 
-def write_host_state(home_root: Path, *, key: str, payload: dict[str, object]) -> None:
+def write_host_state(
+    home_root: Path,
+    *,
+    key: str,
+    payload: dict[str, object],
+    delivery: dict[str, object] | None = None,
+) -> None:
     path = default_host_state_path(home_root)
     path.parent.mkdir(parents=True, exist_ok=True)
     state = read_host_state(home_root)
-    state[key] = {
+    entry: dict[str, object] = {
         "recorded_at": now_iso(),
         "doctor": payload,
     }
+    if delivery is not None:
+        status = delivery.get("status")
+        entry["delivery"] = delivery
+        entry["delivery_status"] = status if isinstance(status, str) else "unknown"
+        entry["delivery_verified"] = status in {"installed", "refreshed"}
+    state[key] = entry
     path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
@@ -1859,15 +1871,55 @@ def refresh_codex_cache_via_app_server(
 
 def _last_installed_commit(home_root: Path) -> str | None:
     state = read_host_state(home_root)
-    for key in ("last_update", "last_init"):
-        entry = state.get(key)
-        if isinstance(entry, dict):
-            doctor = entry.get("doctor")
-            if isinstance(doctor, dict):
-                commit = doctor.get("checkout_git_head")
-                if isinstance(commit, str):
-                    return commit
+    entries = [
+        (key, state.get(key))
+        for key in ("last_update", "last_init")
+        if isinstance(state.get(key), dict)
+    ]
+    if not entries:
+        return None
+    key_order = {"last_init": 0, "last_update": 1}
+    _, entry = max(
+        entries,
+        key=lambda item: (
+            item[1].get("recorded_at", "") if isinstance(item[1], dict) else "",
+            key_order.get(item[0], -1),
+        ),
+    )
+    if not isinstance(entry, dict) or entry.get("delivery_verified") is not True:
+        return None
+    doctor = entry.get("doctor")
+    if isinstance(doctor, dict):
+        commit = doctor.get("checkout_git_head")
+        if isinstance(commit, str):
+            return commit
     return None
+
+
+def _mark_host_delivery_failure(
+    doctor_payload: dict[str, object],
+    delivery: dict[str, object],
+    *,
+    command: str,
+) -> None:
+    reason = delivery.get("reason")
+    reason_text = reason if isinstance(reason, str) and reason else "unknown"
+    guidance = doctor_payload.get("codex_host_guidance")
+    if not isinstance(guidance, dict):
+        guidance = {}
+    guidance.update(
+        {
+            "status": "failed",
+            "manual_action_required": True,
+            "message": (
+                f"Codex host delivery failed during `charness {command}` ({reason_text}). "
+                f"Inspect the typed YAML result and retry with `charness {command} --detail`."
+            ),
+        }
+    )
+    doctor_payload["codex_host_guidance"] = guidance
+    doctor_payload["host_next_steps"] = build_host_next_steps(doctor_payload)
+    doctor_payload["next_action"] = build_doctor_next_action(doctor_payload)
 
 
 def maybe_install_codex_host(
@@ -4005,6 +4057,11 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     payload["target_repo_root"] = str(target_repo_root)
+    if _host_delivery_failed(codex_host_install):
+        _mark_host_delivery_failure(doctor_payload, codex_host_install, command="init")
+        payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
+        payload["host_next_steps"] = doctor_payload["host_next_steps"]
+        payload["next_action"] = doctor_payload["next_action"]
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
     write_version_state(
@@ -4016,7 +4073,7 @@ def cmd_init(args: argparse.Namespace) -> int:
             cli_path=cli_path,
         ),
     )
-    write_host_state(home_root, key="last_init", payload=doctor_payload)
+    write_host_state(home_root, key="last_init", payload=doctor_payload, delivery=codex_host_install)
     payload["checkout"] = checkout
     emit_operational_response(
         args,
@@ -4145,6 +4202,11 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     payload["target_repo_root"] = str(target_repo_root)
+    if _host_delivery_failed(codex_cache_refresh):
+        _mark_host_delivery_failure(doctor_payload, codex_cache_refresh, command="update")
+        payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
+        payload["host_next_steps"] = doctor_payload["host_next_steps"]
+        payload["next_action"] = doctor_payload["next_action"]
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
     version_state = write_version_state(
@@ -4163,7 +4225,6 @@ def cmd_update(args: argparse.Namespace) -> int:
     if latest_release is not None:
         payload["latest_release_check"] = latest_release
         write_version_state(home_root, latest_release=latest_release)
-    write_host_state(home_root, key="last_update", payload=doctor_payload)
     payload["checkout"] = checkout
     payload["scope"] = args.scope or "self"
     tool_update_failed = False
@@ -4181,14 +4242,20 @@ def cmd_update(args: argparse.Namespace) -> int:
         payload["tool_update"] = tool_update_payload
         if tool_update_payload["results"]:
             payload.setdefault("completed_actions", []).append("external_tools_updated")
-    emit_progress("DONE: update complete")
+    write_host_state(home_root, key="last_update", payload=doctor_payload, delivery=codex_cache_refresh)
+    update_failed = tool_update_failed or _host_delivery_failed(codex_cache_refresh)
+    emit_progress(
+        "FAILED: update incomplete; inspect the typed YAML result and retry with `charness update --detail`"
+        if update_failed
+        else "DONE: update complete"
+    )
     emit_operational_response(
         args,
         payload,
         event="update",
         projector=lambda data: project_runtime_response(data, event="update"),
     )
-    return 1 if tool_update_failed or _host_delivery_failed(codex_cache_refresh) else 0
+    return 1 if update_failed else 0
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:

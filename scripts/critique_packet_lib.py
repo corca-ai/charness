@@ -221,7 +221,13 @@ def render_markdown(packet: dict[str, Any]) -> str:
         lines.append(f"- **Reviewed input identity**: `{identity.get('identity_sha256', '')}`")
         lines.append(f"- **Reviewed paths**: {len(identity.get('reviewed_paths', []))}")
     lines.append(f"- **Sections**: {packet['section_count']}")
-    lines.append(f"- **Overall ok**: {packet['ok']}")
+    lines.append(f"- **Shape validation ok**: {packet['ok']}")
+    lines.append("- **Release approval**: not claimed")
+    lines.append("")
+    lines.append(
+        "_This packet reports deterministic prepare-packet shape validation only; "
+        "it is not a release-readiness or reviewer-verdict approval._"
+    )
     lines.append("")
     if "reviewer_tier_evidence" in packet:
         lines.extend(render_reviewer_tier_evidence(packet.get("reviewer_tier_evidence")))
@@ -246,7 +252,7 @@ def render_markdown(packet: dict[str, Any]) -> str:
         lines.append(f"- **Section id**: `{section['id']}`")
         lines.append(f"- **Content kind**: `{section['content_kind']}`")
         lines.append(f"- **Producer**: `{section['producer']}`")
-        lines.append(f"- **Section ok**: {section['ok']}")
+        lines.append(f"- **Section shape validation ok**: {section['ok']}")
         if section["errors"]:
             lines.append("- **Errors**:")
             for err in section["errors"]:

@@ -326,6 +326,9 @@ packet_sections:
     assert "Critique Prepare Packet" in md
     assert "Reviewer Tier Evidence" in md
     assert "**Changed ref**: `HEAD`" in md
+    assert "Shape validation ok" in md
+    assert "Release approval**: not claimed" in md
+    assert "not a release-readiness or reviewer-verdict approval" in md
 
 
 def test_charness_packet_carries_the_semantic_reviewer_question() -> None:

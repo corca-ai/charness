@@ -86,6 +86,44 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     assert "Restart" in (staleness.get("message") or "")
 
 
+@pytest.mark.release_only
+def test_failed_codex_refresh_is_retryable_and_does_not_emit_success_completion(
+    tmp_path: Path, seeded_managed_home: dict[str, Path]
+) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    fake_codex = make_fake_codex(tmp_path, fail_plugin_install=True)
+    env["PATH"] = build_test_path(fake_codex.parent)
+
+    config_path = home_root / ".codex" / "config.toml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
+    cache_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "0.0.0-old" / ".codex-plugin" / "plugin.json"
+    cache_manifest.parent.mkdir(parents=True, exist_ok=True)
+    cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
+
+    failed = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
+    assert failed.returncode == 1, failed.stderr
+    failed_payload = yaml.safe_load(failed.stdout)
+    assert failed_payload["codex_cache_refresh"]["status"] == "failed"
+    assert failed_payload["codex_host_guidance"]["status"] == "failed"
+    assert failed_payload["next_action"]["kind"] == "manual"
+    assert "retry with `charness update --detail`" in failed_payload["next_action"]["message"]
+    assert "FAILED: update incomplete" in failed.stderr
+    assert "DONE: update complete" not in failed.stderr
+
+    host_state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    assert host_state["last_update"]["delivery_status"] == "failed"
+    assert host_state["last_update"]["delivery_verified"] is False
+
+    fake_codex.with_name(".codex-fail-plugin-install").unlink()
+    retried = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
+    assert retried.returncode == 0, retried.stderr
+    retried_payload = yaml.safe_load(retried.stdout)
+    assert retried_payload["codex_cache_refresh"]["status"] == "refreshed"
+    assert retried_payload["codex_cache_refresh"]["status"] != "skipped"
+    assert "DONE: update complete" in retried.stderr
+
+
 def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
     module = load_charness_module("charness_codex_cache_refresh_diff_under_test")
     old_root = tmp_path / "cache" / "local" / "charness" / "0.0.0-old"
