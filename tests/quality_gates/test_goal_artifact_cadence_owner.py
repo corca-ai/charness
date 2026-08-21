@@ -231,6 +231,99 @@ def test_no_deferring_cadence_line_means_one_owner_not_a_contradiction() -> None
     assert report["ok"] is True
 
 
+# --- the two ways to decline are two different facts -------------------------
+#
+# #681: the payload claimed `## Active Operating Frame` "states no `Gate cadence:`
+# line" while `cadence` beside it carried the line number and text the floor had
+# just parsed. `applies` and the human reason now come off the same parsed value.
+
+
+def test_unrecognised_cadence_vocabulary_names_the_line_it_found() -> None:
+    """Found-but-not-deferring must not be reported as not-found."""
+    report = _check(
+        _artifact(
+            cadence="- Gate cadence: broad proof at every boundary.",
+            acceptance="- `pytest tests/ -q` reports zero failures at each slice boundary.",
+        )
+    )
+    assert report["applies"] is False
+    assert report["cadence"] is not None
+    assert report["cadence"]["text"] == "broad proof at every boundary."
+    # Three behavioral facts, not three spellings: the reason cites the line it
+    # parsed, does not deny that line, and names the literal spellings it looked
+    # for. A reword that keeps all three keeps this test green on purpose.
+    assert f"line {report['cadence']['line']}" in report["reason"]
+    assert "states no `Gate cadence:` line" not in report["reason"]
+    assert "--skip-broad-pytest" in report["reason"]
+    assert "--verification-lock" in report["reason"]
+
+
+def test_soft_wrapped_cadence_outside_the_vocabulary_is_still_named() -> None:
+    """The reported shape: a wrapped prose cadence bullet, found across the wrap."""
+    report = _check(
+        _artifact(
+            cadence=(
+                "- Gate cadence: final broad gates once after the reviewed family queue reaches\n"
+                "  zero; pre-push only at the final bundle."
+            ),
+            acceptance="- The exemption list shrinks and each removal has a measured reason.",
+        )
+    )
+    assert report["applies"] is False
+    assert report["cadence"] is not None
+    # Reflow is load-bearing: the wrapped tail must be part of the parsed text, or
+    # the floor is judging half a sentence.
+    assert report["cadence"]["text"].endswith("pre-push only at the final bundle.")
+    # POSITIVE pin, not only the negative one: a regression that reworded the
+    # reason back into "no line stating deferral was recognised" would satisfy a
+    # bare `not in` check while reintroducing exactly the misread that was filed.
+    # This case is the reproduction, so it carries its own teeth.
+    assert f"line {report['cadence']['line']}" in report["reason"]
+    assert "states no `Gate cadence:` line" not in report["reason"]
+
+
+def test_the_two_declines_are_distinguishable_from_the_payload() -> None:
+    """Absent and found-but-unrecognised must be distinguishable from the payload.
+
+    This is the repair. Both cases returned `applies: False, ok: True` before it
+    too, so a per-case assertion cannot see the defect -- only the pair can: the
+    old code served ONE sentence for both, and a reader could not tell which
+    fact it was being told.
+
+    Named for what it asserts. The two reasons DO still share a closing sentence
+    (`## User Acceptance` is not evaluated as a second owner), which is true on
+    both branches; what must differ is which fact each one reports.
+
+    Round 2 caught this test passing a mutant that gave the ABSENT branch the
+    FOUND branch's prose -- #681's mirror image, shipped by the test named for
+    the repair. Confirmed by running it: 3/3 new tests survived that mutant. The
+    positive pin below is what closes it.
+    """
+    absent = _check(
+        _artifact(
+            cadence="",
+            acceptance="- `pytest tests/ -q` reports zero failures at each slice boundary.",
+        )
+    )
+    found = _check(
+        _artifact(
+            cadence="- Gate cadence: broad proof at every boundary.",
+            acceptance="- `pytest tests/ -q` reports zero failures at each slice boundary.",
+        )
+    )
+    assert absent["cadence"] is None
+    assert found["cadence"] is not None
+    assert absent["reason"] != found["reason"]
+    # The absent branch must not cite a line NUMBER it never parsed.
+    assert re.search(r"line \d+", absent["reason"]) is None
+    assert re.search(r"line \d+", found["reason"]) is not None
+    # POSITIVE pin on the absent branch. Inequality plus "no digits" is not
+    # enough: a digit-free copy of the found branch's prose satisfies both while
+    # telling the reader a cadence line was parsed for an artifact that has none.
+    assert "states no `Gate cadence:` line" in absent["reason"]
+    assert "DOES state a" not in absent["reason"]
+
+
 def test_complete_artifacts_are_skipped() -> None:
     """A terminal record is one nobody may repair; reddening on it cries wolf."""
     text = _artifact(

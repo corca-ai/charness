@@ -1394,6 +1394,36 @@
         ]
       },
       "snapshot_sha256": "dba183dd74727392bd09208db0cf4d99916b742431624194b856434d5c5c2cd1"
+    },
+    {
+      "session_id": "2026-08-22-a-tracker-closeout",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-22-a-tracker-closeout",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "release-candidate-preflight-order",
+          "changed-line-proof-before-broad-quality",
+          "proof-surface-message-drift",
+          "global-probe-for-local-fact",
+          "goal-closeout-evidence-binding",
+          "agent-authored-score-role",
+          "detector-blind-class-unstated",
+          "green-test-is-not-covered-line",
+          "release-proof-identity-churn",
+          "positive-effect-cannot-be-cited"
+        ]
+      },
+      "snapshot_sha256": "af0df983afa6494718d0d4835bdad308c91a612b18491fabe35b39886a158c91"
     }
   ],
   "score_events": [

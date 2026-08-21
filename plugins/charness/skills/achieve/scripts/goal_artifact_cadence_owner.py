@@ -20,7 +20,14 @@ would learn to ignore:
   line is one owner stating a rule, not a contradiction, so it passes.
 - it recognises deferral by the owner's own vocabulary
   (``--skip-broad-pytest`` / ``--verification-lock``). A cadence that defers in
-  words nobody has written yet under-fires rather than guessing.
+  words nobody has written yet under-fires rather than guessing. The matcher
+  reads OCCURRENCE, not meaning, so it also over-fires on a line that names a
+  flag without deferring -- see the blind class beside the constant.
+- it reads ONE cadence line: the FIRST ``Gate cadence:`` match in the frame.
+  A second one is silently discarded, and a flag on a sub-bullet under the
+  cadence line is not part of that line's text, because ``logical_lines`` stops
+  reflowing at a block starter. Both payloads therefore scope their claim to the
+  text this floor read on that line, never to the section.
 - it skips ``complete`` artifacts. A terminal record is one nobody is permitted
   to repair, and a validator that reddens on those is the wolf-crier by
   construction.
@@ -55,6 +62,20 @@ _CADENCE_LABEL = re.compile(r"^[ \t>*\-]*\**[ \t]*Gate cadence[ \t]*:[ \t]*\**(.
 
 #: Deferral stated in the owner's own vocabulary. See the module docstring on
 #: why this is a closed list rather than a paraphrase matcher.
+#:
+#: BLIND CLASS, stated because the payload now claims this is what it read: this
+#: matches an OCCURRENCE of either flag, not a deferral, so an artifact whose
+#: frame and acceptance AGREE can be refused as contradictory. Two live shapes,
+#: the second more idiomatic in this repo than the first:
+#:
+#: - negation -- "broad pytest every slice; do NOT pass ``--skip-broad-pytest``"
+#: - two clauses -- "broad pytest at every slice boundary; the final bundle
+#:   records ``--verification-lock``", which is the shape of this repo's own
+#:   seeded frame and agrees with a per-slice acceptance demand
+#:
+#: Reading either correctly is paraphrase matching, which this module refuses by
+#: design, so the over-fire is tracked upstream rather than patched with a second
+#: guess here. The refusal payload discloses it instead of hiding it.
 _DEFERS_BROAD_PROOF = re.compile(r"--skip-broad-pytest|--verification-lock")
 
 #: A BROAD-pytest command an acceptance line can demand: a pytest run over the
@@ -160,13 +181,34 @@ def check(
             "line; close the fence and this floor can render a verdict"
         )
     cadence = _cadence_owner(masked, markdown)
-    if cadence is None or not _DEFERS_BROAD_PROOF.search(cadence["text"]):
+    if cadence is None:
         return {
             "applies": False,
             "ok": True,
             "reason": (
-                "not applicable: `## Active Operating Frame` states no `Gate cadence:` line "
-                "that defers broad proof, so `## User Acceptance` is not a second owner"
+                "not applicable: `## Active Operating Frame` states no `Gate cadence:` line at "
+                "all, so `## User Acceptance` is not evaluated as a second owner"
+            ),
+            "cadence": None,
+            "findings": [],
+        }
+    if not _DEFERS_BROAD_PROOF.search(cadence["text"]):
+        # The two ways this floor can decline are NOT the same fact, and one reason
+        # sentence for both was read as the other: a consumer repo filed the payload
+        # that says "states no `Gate cadence:` line" while `cadence` beside it carried
+        # the line number and text the floor had just parsed. A reader cannot tell a
+        # deliberate under-fire from a parser that skipped, so the under-fire the
+        # module docstring declares must be legible HERE, in the payload, not only in
+        # the docstring nobody reads at 3am.
+        return {
+            "applies": False,
+            "ok": True,
+            "reason": (
+                f"not applicable: `## Active Operating Frame` line {cadence['line']} DOES state a "
+                "`Gate cadence:`, but this floor recognises deferral only by the literal presence "
+                "of `--skip-broad-pytest` or `--verification-lock`, and neither appears in the "
+                "text this floor read on that line, so it declined. `## User Acceptance` is not "
+                "evaluated as a second owner"
             ),
             "cadence": cadence,
             "findings": [],
@@ -191,7 +233,12 @@ def check(
             + " DEMANDS it per slice. An agent reading its own acceptance criteria "
             "obeys the acceptance criteria, so this pair buys re-proof of what is "
             "already green. State the outcome in `## User Acceptance` and leave WHEN "
-            "broad proof runs to the `Gate cadence:` line."
+            "broad proof runs to the `Gate cadence:` line. If that cadence line does "
+            "NOT actually defer — it names `--skip-broad-pytest` or "
+            "`--verification-lock` only to negate it, or only for a final bundle "
+            "alongside a per-slice demand — this refusal is a known over-fire: "
+            "recognition is by literal flag presence, not by reading what the line "
+            "means, so do not delete a correct acceptance line to satisfy it."
         ),
         "cadence": cadence,
         "findings": findings,
