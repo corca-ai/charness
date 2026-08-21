@@ -66,10 +66,11 @@
   5/5; real-host proof is required and its checklist is recorded; and the
   requested-review gate is clear. This is not publication or host readback.
 - Two unsupported release-check invocations were attempted during this run:
-  `./charness current-release --detail` (wrong command surface), followed by
-  `current_release.py --detail` (unsupported flag). Both are non-pass
-  command-boundary smells; the supported script invocation was then run
-  successfully. Neither rejected call is evidence of a release check.
+  the retired current-release subcommand was invoked with the detail flag,
+  followed by the current-release script with that unsupported flag. Both are
+  non-pass command-boundary smells; the supported script invocation was then
+  run successfully. The [goal closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
+  owns the detail; neither rejected call is evidence of a release check.
 - Broad `./scripts/run-quality.sh --release` completed with `98 passed, 0
   failed` in `323.9s` (pytest-release `196.2s`, changed-line mutation
   `300.1s`). Length/ratio/markdown/nose findings remain advisory.
