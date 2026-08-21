@@ -1,31 +1,36 @@
 # Current Requalification Packet: Issues #681–#687
 
-Captured: 2026-08-21T08:40:35Z
-Tree: `331c4a23032821436b47b3104fb2b80452c12266`
+Captured: 2026-08-21T18:45:00+09:00
+Source candidate: `1e81fb31bc8017e09f58f905b8c7b41e8545ad00`
 Source of issue truth: the durable current GitHub reads in
 `charness-artifacts/issues/reads/{681,682,683,685,686,687}.raw.yaml`; all six
 reads returned `comments_read: true` (the closed #684 read is retained
 separately). This packet records current behavior only. It does not
 close a GitHub issue, replace the activation ledger, or claim publication.
 
-Candidate join: the semantic documentation candidate is
-`22ea27d7847d7f44d8258cae19fea7bf0ee5c4d5`. The exact range
-`331c4a23032821436b47b3104fb2b80452c12266..22ea27d7847d7f44d8258cae19fea7bf0ee5c4d5`
-contains only goal, current-open, current-requalification, and handoff
-documentation/evidence paths; no `charness`, `skills/`, `plugins/`,
-`packaging/`, or other source/export path changed. Therefore the source
-observations below join to that candidate only as an explicit no-source-diff
-provenance fact. They are not fresh installed or host proof for the candidate.
+Historical documentation join: the older `331c4a23032821436b47b3104fb2b80452c12266`
+to `22ea27d7847d7f44d8258cae19fea7bf0ee5c4d5` range is retained only as
+historical no-source-diff evidence. It is not the current candidate and must
+not be used as installed or host proof.
+
+Candidate-bound status join: the current source candidate is
+`1e81fb31bc8017e09f58f905b8c7b41e8545ad00`, which includes the root
+host-delivery exit/provenance repair, failure-aware retry guidance, packet
+shape-only labeling, and their focused regression coverage. The matrix below
+still records candidate package/install/host proof as pending; this source join
+does not claim those boundaries.
 
 ## First Reader Outcome
 
 The release train repairs one operator-facing failure class: a successful
 process, source mirror, clean fingerprint, or old installed cache must never be
 read as proof that behavior was delivered. Current status is pre-version and
-not release-ready. There is no actionable upgrade or rollback until a version
-is selected and published; the next irreversible proof is a managed candidate
-install/update followed by `charness version`, `charness doctor --detail`, and
-semantic `#685/#686` readback.
+not release-ready. Before publication, the maintainer can install/update the
+exact candidate in a clean home and read back `charness version`,
+`charness doctor --detail`, and semantic `#685/#686` behavior. After
+publication, the operator path is `charness update` followed by the same
+readback; rollback means reinstalling the previous published version and
+repeating that readback.
 
 ## Disposition Matrix
 
@@ -151,11 +156,19 @@ the candidate's source/export proof and the distinct installed readback are
 bound. Version mutation, publication, issue closeout, and host-side #687
 resolution remain unclaimed.
 
+## Maintainer Candidate Proof Boundary
+
+Before publication, install or update the exact candidate in a clean managed
+home, then read back `charness version`, `charness doctor --detail`, and the
+installed `#682/#683/#685/#686` semantic probes. Bind the typed outputs to the
+candidate SHA. A successful process without those readbacks is not candidate
+proof.
+
 ## Operator Upgrade Boundary
 
-Before publication, no update or rollback command is actionable. After a
-candidate is published, the first-reader path is `charness update`, then
+After publication, the first-reader path is `charness update`, then
 `charness version` and `charness doctor --detail`; the release record must bind
-the installed `#685/#686` semantic probes. Rollback means reinstalling the
-previous published version and repeating version/doctor readback. A successful
-process without those readbacks is not a completed upgrade.
+the installed semantic probes. Rollback means reinstalling the previous
+published version and repeating version/doctor readback. Public rollback is
+not available before publication, and a successful process without those
+readbacks is not a completed upgrade.

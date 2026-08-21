@@ -28,16 +28,17 @@ runs the activation command.
   `abaf88682`; the installed/fresh-eye/release boundary remains open.
   The R3 release-readiness critique then found a second instance of the same
   process-success-versus-delivery class at the root `charness init/update`
-  exit boundary; its repair is committed at `6dd053dc9` with focused regression
-  coverage and a clean changed-line verdict. Candidate re-proof remains open.
+  exit boundary; its repair plus retry provenance and failure-aware operator
+  output is committed at `1e81fb31b` with focused regression coverage and a
+  clean staged commit floor. Candidate re-proof remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, including per-run output namespaces for parallel producers, while
   preserving source/export parity and refusing public-release claims from local
   proof.
-- Next action: regenerate the packet at exact head `6dd053dc9` and rerun the
-  bounded release critique against the committed repair, then proceed to the
-  candidate/install proof boundary. Keep the historical exception rows until
+- Next action: regenerate the packet at the exact integrated candidate head and
+  rerun the bounded release critique against the committed repair, then proceed
+  to the candidate/install proof boundary. Keep the historical exception rows until
   candidate/install evidence discharges them. The pre-version R3 critique is
   durably recorded at
   `charness-artifacts/critique/2026-08-21-r3-release-readiness.md`; all four
@@ -595,9 +596,9 @@ boundary at once while parent-only truth surfaces remain serialized.
   exports, version state, index, integration commits, and release state.
 - Gather: n/a for tracker reads handled by the issue backend. Any new public URL
   used as durable design evidence routes through `charness:gather` first.
-- Release: target undecided; `6.3.0` is a forecast only. The final planner and
-  version policy decide at Slice 6 from the actual shipped surface. Publication
-  grant is scoped in `## Boundaries`.
+- Release: target undecided; the old `6.3.0` text is historical shaping only.
+  The final planner and version policy decide from the actual shipped surface.
+  Publication grant is scoped in `## Boundaries`.
 - Issue closeout: close only rows proven in the final release commit and read
   each state back. Leave premise-refuted, umbrella, and decision-owned rows open
   unless their own closeout contract is independently satisfied.
@@ -612,7 +613,7 @@ boundary at once while parent-only truth surfaces remain serialized.
 - Consequential defaults fixed here: activation-time full backlog with a Slice
   0 intake lock; release blockers first; all acceptance-ready rows mandatory;
   isolated parallel writers and serialized integration; planner-selected honest
-  bump (`6.3.0` only a forecast); final
+  bump (no fixed version chosen in shaping); final
   version/tag/push/publication grant limited to the unchanged proven candidate;
   no Cautilus.
 - Proof non-claim: the shaping triage is not the Slice 0 ledger, the issue
@@ -1056,7 +1057,7 @@ boundary at once while parent-only truth surfaces remain serialized.
 - Objective: distinguish historical post-lock reproductions from current source,
   installed, and host behavior before the release candidate is frozen.
 - Evidence: `charness-artifacts/issues/2026-08-21-current-requalification.md`
-  records the current tree `331c4a23032821436b47b3104fb2b80452c12266`, fresh
+  records source candidate `1e81fb31bc8017e09f58f905b8c7b41e8545ad00`, fresh
   GitHub reads for #681–#687, exact current commands, and the source-versus-
   installed split for #685/#686.
 - Result: #681 remains `already-satisfied`; #682's explicit committed range,
@@ -1091,9 +1092,10 @@ boundary at once while parent-only truth surfaces remain serialized.
 - Evidence-surface repair: current-open historical admission notes are now
   labeled as historical, the current requalification separates source,
   checked-in export, installed/public, host, and release status, and the
-  `331c4a230..22ea` docs-only join is explicit. First-reader upgrade/rollback
+  `331c4a230..22ea` docs-only join is explicitly historical. First-reader
+  maintainer-candidate and post-publication operator upgrade/rollback
   non-claims are recorded.
-- Still blocked: commit and prove the source repair; prepare a new exact-head
+- Still blocked: prepare a new exact-head
   packet and release critique; run target-bound packaging, candidate
   install/update/version/doctor, `#685/#686` semantic readback, and any planner-
   required real-host checklist. No version, tag, push, publication, issue
@@ -1350,9 +1352,9 @@ boundary at once while parent-only truth surfaces remain serialized.
    checkout; isolated lane authoring with serial integration. Chosen: isolated
    lanes and parent integration. `axis: ownership/integration risk`.
 4. **Release family.** Options: local fixes only; fixed patch/minor now;
-   planner-selected honest bump. Chosen: planner-selected. `6.3.0` is a shaping
-   forecast because candidate lanes include additive public discovery/evidence
-   capability; a fix-only integrated surface selects patch instead.
+   planner-selected honest bump. Chosen: planner-selected. The old `6.3.0`
+   text is shaping history only; the final planner chooses from the integrated
+   shipped surface.
 5. **Closure family.** Options: mass-close at publish; close by issue evidence;
    never close. Chosen: per-issue closeout and readback. `axis: tracker truth`.
 6. **Intake family.** Options: chase every new report indefinitely; freeze at

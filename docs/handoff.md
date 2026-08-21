@@ -33,11 +33,11 @@
   init/update`, plus status-surface and candidate-install proof gaps. Its four
   file-backed worker findings were delivered with clean boundary verification;
   all verdicts were `block`, not approval.
-- The [root CLI repair](../charness) is committed at `6dd053dc9`: explicit
-  host-delivery `failed` now returns exit 1 from `init/update`, while `skipped`
-  and `unavailable` remain typed optional states. Focused tests and changed-line
-  proof passed; regenerate the semantic packet at this exact head before the
-  next release-bound critique.
+- [Root CLI repair](../charness) is committed at `1e81fb31b`: failed host
+  delivery exits 1; failed/skipped delivery cannot advance provenance; retries
+  cannot be suppressed by old success. Failure output carries a typed retry
+  action. Focused tests and the staged commit floor passed; regenerate the
+  packet at the exact integrated candidate head before release critique.
 - The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
   the converted classes for media-versus-verdict confusion, process-tree
   timeout leakage, provider-schema closure, and the reviewer-runtime output
@@ -97,8 +97,8 @@
    for P0 #679 reproduction first, then fan out only lanes with a current reproducer, owner,
    acceptance, disjoint path budget, and proof plan; serialize exports, ledger, generated docs,
    version, release, index, and proof truth surfaces.
-6. Regenerate the exact-head packet for `6dd053dc9`, rerun the release-bound
-   critique, and then execute the candidate/install proof boundary. Keep
+6. Refresh the requalification join; regenerate the exact-head packet, rerun
+   release critique, then execute candidate/install proof. Keep
    version/export/release-record mutation, tag, push, and publication on hold
    until the [goal release boundary](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
    is re-proven.
