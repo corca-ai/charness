@@ -2265,6 +2265,46 @@
       "lesson_id": "proof-surface-message-drift",
       "outcome": "changed-an-action",
       "anchor": "Kept unsupported path/ref/flag calls as explicit non-pass smell evidence and used only help/inventory-derived commands for proof; otherwise a corrected retry could have erased the original boundary defect."
+    },
+    {
+      "event_id": "2026-08-22-a-tracker-closeout-changed-line-order",
+      "session_id": "2026-08-22-a-tracker-closeout",
+      "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran the changed-line producer against 990f6e3d1..b9cea1829 immediately after the closeout commit and before run-quality.sh --full; had the broad gate run first, its 2 failures would have been read as the slice verdict while changed-line ownership stayed unproven."
+    },
+    {
+      "event_id": "2026-08-22-a-tracker-closeout-green-not-covered",
+      "session_id": "2026-08-22-a-tracker-closeout",
+      "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "Did not cite 25, 217 or 240 focused passes, nor the 10944-test standing run, as changed-line proof; without it the green suite would have been quoted in the carrier instead of the producer's blocking_targets:{} on the exact base..head."
+    },
+    {
+      "event_id": "2026-08-22-a-tracker-closeout-help-before-flags",
+      "session_id": "2026-08-22-a-tracker-closeout",
+      "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "lesson_id": "proof-surface-message-drift",
+      "outcome": "changed-an-action",
+      "anchor": "Resolved each script's own --help before composing flags for persist_retro_artifact, plan_retro_run, reviewer_boundary_fingerprint, issue_tool and the changed-line producer, and kept both wrong calls (an unexpanded SKILL_DIR and the timeout wrappers) as recorded evidence; otherwise only the successful retry would have been shown and the command-boundary smell would have vanished from the record."
+    },
+    {
+      "event_id": "2026-08-22-a-tracker-closeout-blind-class",
+      "session_id": "2026-08-22-a-tracker-closeout",
+      "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "read-but-not-applied",
+      "anchor": "A blind-class paragraph was written beside the constant at the time of the repair, but round 2 found it named only the rarer negation instance and not the idiomatic two-clause one, and that first-match-only cadence selection was undisclosed entirely; the lesson was in view AT the decision and still landed only partially."
+    },
+    {
+      "event_id": "2026-08-22-a-tracker-closeout-authored-scores",
+      "session_id": "2026-08-22-a-tracker-closeout",
+      "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "lesson_id": "agent-authored-score-role",
+      "outcome": "changed-an-action",
+      "anchor": "Authored these scores directly from cited observed actions in this session rather than asking the operator whether any score should be recorded; without it the retro would have shipped with an empty Lesson Evaluation and the continuity gate would have stayed red."
     }
   ],
   "lessons": {
@@ -2511,10 +2551,10 @@
     "agent-authored-score-role": {
       "source_retro": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
       "transition_id": "seed-agent-authored-score-role",
-      "score_total": 2,
-      "score_count": 2,
+      "score_total": 3,
+      "score_count": 3,
       "outcome_counts": {
-        "changed-an-action": 2,
+        "changed-an-action": 3,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2556,10 +2596,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": 5,
-      "score_count": 17,
+      "score_total": 6,
+      "score_count": 18,
       "outcome_counts": {
-        "changed-an-action": 11,
+        "changed-an-action": 12,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -2601,10 +2641,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 9,
-      "score_count": 9,
+      "score_total": 10,
+      "score_count": 10,
       "outcome_counts": {
-        "changed-an-action": 9,
+        "changed-an-action": 10,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2661,10 +2701,10 @@
     "proof-surface-message-drift": {
       "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
       "transition_id": "seed-proof-surface-message-drift",
-      "score_total": 2,
-      "score_count": 2,
+      "score_total": 3,
+      "score_count": 3,
       "outcome_counts": {
-        "changed-an-action": 2,
+        "changed-an-action": 3,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2766,13 +2806,13 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 7,
-      "score_count": 13,
+      "score_total": 6,
+      "score_count": 14,
       "outcome_counts": {
         "changed-an-action": 10,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 2,
+        "read-but-not-applied": 3,
         "legacy-scalar": 0
       },
       "state": "active",

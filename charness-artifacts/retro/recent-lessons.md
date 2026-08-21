@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The session began as "design the next work from the handoff and open issues" and became one work unit: probe sixteen open issues whose repairs were believed to have landed, close the fourteen that a probe could confirm, repair the one that was still live, and file what the probing surfaced. (source: `charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md`)
 - The semantic-candidate review identified a procedural fan-out seam: operators were told to resolve paths, refs, and owner flags before parallel work, but no executable command checked those premises. (source: `charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md`)
-- This is the separate disposition for the goal-continuation lesson receipt. (source: `charness-artifacts/retro/2026-08-21-goal-continuation-retro.md`)
 
 ## Repeat Traps
 
@@ -49,5 +49,5 @@
 - `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md`
-- `charness-artifacts/retro/2026-08-21-goal-continuation-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
+- `charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md`

@@ -10,113 +10,74 @@
 
 ## Continuation Capability
 
-- The [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md) holds
-  the macro-slice control panel, issue boundaries, proof plan, and current R2 slice log.
-- The [reviewer consumer contract](../skills/shared/scripts/reviewer_worker_report.py) holds
-  the fail-closed rule requiring a typed fresh output, matching provenance, the
-  terminal `findings-received` state, and the combined report's `delivery_complete`.
+- The [tracker requalification packet](../charness-artifacts/issues/2026-08-22-tracker-requalification.md)
+  holds the per-issue probe commands, the controls that prove each defect path was
+  entered, and the stated evidence gap per issue.
+- The [closeout critique](../charness-artifacts/critique/2026-08-22-issue-closeout-critique.md)
+  holds both review rounds, the mutant that survived three tests, and the rung-2
+  judgment on the typed probe-record dispositions.
 - The [recent-lessons digest](../charness-artifacts/retro/recent-lessons.md) holds
   the session-start recurrence traps and parallel/timeout discipline.
 
 ## Current State
 
-- The [#687 debug/spec pair](../charness-artifacts/debug/2026-08-21-fresh-eye-interrupted-delivery.md) holds
-  the causal delivery boundary and the Charness/host ownership split.
-- The [current-open requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md)
-  separates historical post-lock reproductions from current source,
-  installed, and host evidence for #681–#687. It is not an issue-close or
-  publication receipt.
-- The blocked [R3 release-readiness critique](../charness-artifacts/critique/2026-08-21-r3-release-readiness.md)
-  found a real process-success-versus-host-delivery exit gap in root `charness
-  init/update`, plus status-surface and candidate-install proof gaps. Its four
-  file-backed worker findings were delivered with clean boundary verification;
-  all verdicts were `block`, not approval.
-- [Root CLI repair](../charness) is committed in the current semantic candidate
-  `502c8a8adbbe77781f1714cb6c4383a85d6e3683` (delivery/readback repair at
-  `19fb9b5a1`, boundary-coverage repair at `502c8a8ad`): failed host delivery
-  exits 1; failed/skipped delivery cannot advance provenance; retries cannot be
-  suppressed by old success. Same-version cache claims require content
-  readback, and failure output carries typed scope/retry state. Its exact packet
-  is `../charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-current-exact-packet.json`
-  (SHA256 `5a936834bce7fe68db1f894e5e6764de336d9b8dbd4e69fd26f472ab07632ef7`,
-  reviewed-input identity
-  `26f29ca25c71bf4d704854285c787734f9a1e99bc7d770a9df8674ee3778dfc2`).
-  The older `7676ec…` packet is historical. The semantic candidate was carried
-  into published `6.2.1`; issue-specific host behavior remains bounded by the
-  requalification packet below.
-- The release-quality repair is integrated at `e6eb040cb`; current HEAD is
-  `26f31a872` after the gate-owned SLOC inventory refresh. The exact pre-publish release
-  gate passed `98 passed, 0 failed`; the generated-only follow-up does not
-  change the semantic candidate or packet. The published release record and
-  post-publish artifact verification are now at `d0df6dc7a`.
-- The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
-  the converted classes for media-versus-verdict confusion, process-tree
-  timeout leakage, provider-schema closure, and the reviewer-runtime output
-  boundary. The round-2 findings are durably recorded in
-  [the critique round record](../charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-provider-schema-round-2b.md);
-  all three reviewer verdicts are `block`, so no fresh-eye approval is claimed.
-- The [changed-line consumer-gap debug record](../charness-artifacts/debug/2026-08-21-changed-line-review-consumer-gaps.md)
-  records the post-commit counterexample repair; the exact-base rerun is now
-  clean at `362221694` with `blocking_targets: {}`.
-- The current exact-base changed-line proof is `status: clean` from base
-  `d9995e0079326ae9ad0a35f9ade64a9f951c4fbf`, with 2 mapped changed-pool files,
-  every changed line covered, and `blocking_targets: {}`. This is local
-  semantic-candidate proof only.
-- Pre-publish release-boundary verification at integrated HEAD `26f31a872` was
-  current for the release cut:
-  the release gate returned `98 passed, 0 failed`; the broad changed-line proof
-  from `38775dfeb` is clean across 53 mapped files; fresh-checkout probes are
-  5/5; real-host proof is required and its checklist is recorded; and the
-  requested-review gate is clear. Publication and post-publish readback are
-  recorded below.
-- Published release truth is current: tag `v6.2.1` points to
-  `46169b7ad7491e1d4b1a50b5411ebf5a08f03a68`, `origin/main` and the managed
-  install are at `d0df6dc7ac9c761b14bd1d5c5ef8b95bd1f2ec9d`, and
-  `gh release view v6.2.1` confirmed a non-draft, non-prerelease GitHub
-  Release. `charness version` reports `6.2.1`; `charness doctor --detail`
-  reports a valid Codex cache manifest and `source_cache_drift: false`.
-- The goal-bound release retros
-  [`2026-08-21-goal-r2-resume-final.md`](../charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md),
-  [`2026-08-21-r2-semantic-packet-final.md`](../charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md),
-  and [`2026-08-21-r3-delivery-review-final.md`](../charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md)
-  close the receipted lesson sessions; continuity is clean. Fresh-eye approval
-  remains unclaimed, Cautilus was not run, and issue tracker closeout was not
-  requested. #687's host-side terminal event remains explicitly unproven.
-- Two unsupported release-check invocations were attempted during this run:
-  the retired current-release subcommand was invoked with the detail flag,
-  followed by the current-release script with that unsupported flag. Both are
-  non-pass command-boundary smells; the supported script invocation was then
-  run successfully. The [goal closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
-  owns the detail; neither rejected call is evidence of a release check.
-- Broad `./scripts/run-quality.sh --release` completed with `98 passed, 0
-  failed` in `323.9s` (pytest-release `196.2s`, changed-line mutation
-  `300.1s`). Length/ratio/markdown/nose findings remain advisory.
-- The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep this run
-  sensitive to wrong calls, timeout loss, and repairs inside an open review window.
-- The [current closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
-  also records the structural command-boundary rule: resolve owned
-  help/inventory before composing a path or flag, and preserve duplicate
-  wrong-call signals as non-approval evidence rather than silently retrying.
+- Fourteen issues were closed at `b9cea1829` after a behavioral sweep requalified
+  sixteen against the installed plugin (`charness version`) and source: #635, #638, #639, #670, #672, #676,
+  #677, #678, #679, #681, #682, #683, #685, #686. Counted, not estimated —
+  population: 16 probed; removed: 14 closed.
+- **A probe that does not enter the defect branch proves nothing about it.** The
+  predecessor packet cleared #681 from a checker run against a goal artifact with no
+  `Gate cadence:` bullet, on a goal since gone `complete` where the floor skips
+  outright. #681 was still live on the installed plugin and on source, and is repaired at
+  `b9cea1829`.
+- The ten `repair/issue-*` branches in `git worktree list` are **stale predecessors,
+  not pending work**. Every target file and test already exists on `main` in an
+  evolved form, and `repair/issue-635` cherry-picks as an empty diff. Do not re-land
+  them; the worktrees can be pruned.
+- Held open deliberately: **#671** (the issue named two invariants; no critique angle
+  file mentions path portability and `Path portability disposition:` appears in no
+  shipped markdown) and **#688** (reproduced from none of six constructed bullet
+  shapes; a comment asking for the verbatim source bullet is posted).
+- Three residuals were filed rather than folded in: **#692** (`init_adapter.py` idempotence is wired into only one of the skills
+  that ship the script; recount with
+  `find skills -name init_adapter.py | xargs grep -l existing_adapter_is_valid | wc -l`
+  against `find skills -name init_adapter.py | wc -l`), **#693**
+  (`critique/SKILL.md:114` claims a refusal no code implements), **#694** (the
+  gate-cadence floor reads a negated or two-clause flag mention as a deferral and
+  refuses a truthful artifact).
+- Two bounded review rounds ran on the #681 repair and the cap is consumed. Round 2
+  predicted a mutant that survives all three new tests; it was executed, survived,
+  and now fails after a positive pin. Round-2 repairs are otherwise recorded as
+  accepted-unreviewed under the cap.
+- **A subagent violated its read-only instruction** (detail and restore evidence in
+  the [closeout retro](../charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md))
+  and reverted
+  the [session-start lesson context](../scripts/session_start_lesson_context.py)
+  module in the shared tree, dropping its unclaimed-session routing emitter. Restored from `HEAD`,
+  byte-verified, re-covered by tests; the issue whose surface it touched was
+  re-probed by the parent. Attribution is inferred from content match with
+  `73cf9ce6a^`, not proven. **Verify the staged set before every commit in a
+  concurrent-subagent session** — that is what caught it.
+- The `#681` repair is source-only and is in no published version. Its evidence is a
+  local fixture replay, not an installed readback.
+- #687's host-side terminal event remains explicitly unproven. Cautilus was not run.
 
 ## Next Session
 
-1. Start from the published truth at `d0df6dc7a` and the
-   [goal final verification](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification);
-   do not regress routing to the pre-version `26f31a872` state.
-2. Keep the bounded fresh-eye cap consumed: do not run a third review or
-   substitute a same-agent pass. The [R3 critique packet](../charness-artifacts/critique/2026-08-21-r3-current-candidate-release-critique.md)
-   records that the claims review is not fresh-eye approval.
-3. Read the [requalification packet](../charness-artifacts/issues/2026-08-21-current-requalification.md)
-   before changing issue status. Issue-specific semantic probes and tracker
-   closeout remain separate decisions; #687 host resolution is not claimed.
-4. For a new work unit, run the repo-owned lesson session opener before any
-   review or brief and preserve the commit -> changed-line -> broad-quality
-   ordering; the [recent-lessons digest](../charness-artifacts/retro/recent-lessons.md)
-   owns the lesson-session requirement.
-5. Do not claim a verdict from timeout, exit code, transcript, screen output,
-   HTTP reachability, tag presence, or any other media alone. The
-   [consumer report](../skills/shared/scripts/reviewer_worker_report.py) must
-   accept a typed receipt with matching provenance and terminal state.
+1. Decide whether the fourteen closes warrant a release, since the `#681` repair
+   ships to consumers only through one.
+2. #694 is the design question worth taking next: whether the gate-cadence floor
+   should read a cadence line's polarity at all, or whether the cadence contract
+   should be a structured field rather than prose the floor must interpret.
+3. Do not run a third review round on the `#681` repair; the two-round cap is
+   consumed and the round-2 repairs are recorded as accepted-unreviewed.
+4. For a new work unit, run the repo-owned opener before any review or brief —
+   `python3 scripts/open_lesson_session.py --repo-root . --session-id <slug> --seed <slug>`
+   — and preserve the commit -> changed-line -> broad-quality ordering.
+5. Do not claim a verdict from timeout, exit code, transcript, screen output, HTTP
+   reachability, tag presence, or any other media alone; the
+   [consumer report](../skills/shared/scripts/reviewer_worker_report.py) must accept a
+   typed receipt with matching provenance and terminal state.
 
 ## Discuss
 
