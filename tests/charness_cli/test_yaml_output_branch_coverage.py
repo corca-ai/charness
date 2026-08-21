@@ -175,6 +175,10 @@ def test_delivery_provenance_helpers_cover_fail_closed_boundaries(tmp_path: Path
     home_root = tmp_path / "home"
     doctor = {"checkout_git_head": "commit-1"}
 
+    # An empty host-state file is a real first-run boundary, not an impossible
+    # defensive branch: no prior delivery can be treated as installed.
+    assert module._last_installed_commit(tmp_path / "empty-home") is None
+
     module.write_host_state(
         home_root,
         key="last_update",
@@ -311,6 +315,14 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
         "--detail",
     ]
     assert doctor_payload["next_action"]["recovery_context"]["codex_cache_root"] == "/tmp/home/.codex/plugins/cache"
+
+    malformed_guidance_payload = dict(doctor_payload, codex_host_guidance="malformed")
+    module._mark_host_delivery_failure(
+        malformed_guidance_payload,
+        {"status": "failed", "reason": "malformed-guidance"},
+        command="update",
+    )
+    assert malformed_guidance_payload["codex_host_guidance"]["status"] == "failed"
 
 
 def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path: Path) -> None:

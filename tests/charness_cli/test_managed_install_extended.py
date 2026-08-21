@@ -78,14 +78,28 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
         text=True,
         env=env,
     )
-    assert update_result.returncode == 0, update_result.stderr
+    # `update all` is fail-closed when a post-update doctor reports blocking
+    # tool state; the typed result still proves which tools and phases ran.
+    assert update_result.returncode == 1, update_result.stderr
     payload = yaml.safe_load(update_result.stdout)
     managed_repo = home_root / ".agents" / "src" / "charness"
     plugin_root = home_root / ".codex" / "plugins" / "charness"
 
     assert payload["scope"] == "all"
     assert payload["previous_checkout_version"] == payload["checkout_version"]
-    assert "external_tools_updated" in payload["completed_actions"]
+    assert "external_tools_updated" not in payload["completed_actions"]
+    assert set(payload["tool_update"]["failed_tool_ids"]) == {
+        "gitleaks",
+        "glow",
+        "markdown-preview",
+        "ruff",
+        "tokei",
+        "vulture",
+    }
+    assert all(
+        payload["tool_update"]["failure_phases"][tool_id] == ["doctor"]
+        for tool_id in payload["tool_update"]["failed_tool_ids"]
+    )
     assert sentinel in installed_cli.read_text(encoding="utf-8")
     assert sentinel in (managed_repo / "charness").read_text(encoding="utf-8")
 
