@@ -978,11 +978,12 @@ boundary at once while parent-only truth surfaces remain serialized.
   after restoring it, the next attempt passed standing pytest but exposed three
   uncovered worker-delivery evidence branches. Counterexamples are now added;
   the same exact-base producer now returns `status: clean` for 7/7 changed pool
-  files with `blocking: []`, resolved HEAD `7d15f1aef1dabd948ed1f71806294050348219e9`,
-  and standing pytest passed in 52.4s. Receipt:
-  `charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md`.
-  The exact changed-line proof is now candidate-bindable; a new packet and
-  round-2 fresh-eye review remain required before approval or release claims.
+  files with `blocking: []`, resolved HEAD `2a8b479cb32a01e1e04289276cbcba3d321bc9f9`,
+  and standing pytest passed in 62.7s. Receipt:
+  `charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md`.
+  The prior packet was invalidated by the provider-schema repair; this receipt
+  is the new candidate-binding proof, and a new packet plus round-2 fresh-eye
+  review remain required before approval or release claims.
 - Failure-smell memory: provider-invalid response schema, guessed delivery
   subcommands/flags, wrong ledger filenames, and mismatched round snapshot ids
   were all recorded as command-boundary failures and corrected through help,
