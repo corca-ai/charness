@@ -103,9 +103,9 @@ history.
 3. Run the angle pass.
    - Resolve `reviewer_runner.mode` and stay on that branch; see
      `references/adapter-contract.md` for schema/report versus host-spawn delivery.
-   - Bind prepared-packet identity and snapshot/verify each spawn; parent-head
-     movement is drift. Keep counterweight separate and follow the full delivery
-     path in `../../shared/references/fresh-eye-subagent-review.md`.
+   - Bind prepared-packet identity; use rail-1 snapshot/verify around each reviewer spawn.
+     Parent-head movement is drift. Keep counterweight separate
+     and follow the full delivery path in `../../shared/references/fresh-eye-subagent-review.md`.
    - Record each round with `record_round_findings.py`; mismatched snapshots and
      same-context substitutes refuse.
 4. Collapse the findings into one candidate concern list.

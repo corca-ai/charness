@@ -1,0 +1,80 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [  7%]
+........................................................................ [ 15%]
+........................................................................ [ 23%]
+........................................................................ [ 31%]
+...............................................................F........ [ 39%]
+........................................................................ [ 47%]
+........................................................................ [ 55%]
+........................................................................ [ 63%]
+........................................................................ [ 71%]
+........................................................................ [ 78%]
+........................................................................ [ 86%]
+........................................................................ [ 94%]
+................................................                         [100%]
+=================================== FAILURES ===================================
+____ test_critique_skill_surfaces_counterweight_and_deliberately_not_doing _____
+[gw1] linux -- Python 3.10.12 /usr/bin/python3
+
+    def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> None:
+        skill_text = (ROOT / "skills" / "public" / "critique" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        angle_text = (
+            ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md"
+        ).read_text(encoding="utf-8")
+        capability_text = (
+            ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
+        ).read_text(encoding="utf-8")
+        counterweight_text = (
+            ROOT / "skills" / "public" / "critique" / "references" / "counterweight-triage.md"
+        ).read_text(encoding="utf-8")
+        packet_text = (
+            ROOT / "skills" / "public" / "critique" / "references" / "prepare-packet.md"
+        ).read_text(encoding="utf-8")
+        semantic_question_text = (
+            ROOT / "skills" / "shared" / "references" / "reviewer-packet-semantic-question.md"
+        ).read_text(encoding="utf-8")
+        critique_adapter_text = (ROOT / ".agents" / "critique-adapter.yaml").read_text(
+            encoding="utf-8"
+        )
+        autonomous_text = (
+            ROOT / "skills" / "public" / "critique" / "references" / "autonomous-trigger.md"
+        ).read_text(encoding="utf-8")
+        cadence_text = (
+            ROOT / "skills" / "public" / "critique" / "references" / "cadence.md"
+        ).read_text(encoding="utf-8")
+        handoff_text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        reviewer_brief_text = (
+            ROOT / "skills" / "shared" / "references" / "disposition-reviewer-brief.md"
+        ).read_text(encoding="utf-8")
+    
+        assert "counterweight" in skill_text
+        assert "Deliberately Not Doing" in skill_text
+        assert "Task-completing repo work always records critique before closeout." in skill_text
+        assert "Scale the\npass, not the obligation" in skill_text
+        # The default execution mode is now the Charness-owned file-backed worker;
+        # typed subagents remain an optional adapter path.
+        assert "file-backed worker" in skill_text
+        assert "at least two independent angle worker runs plus one separate counterweight" in skill_text
+        assert "default to three angles" in skill_text
+>       assert "rail-1 snapshot/verify around each reviewer spawn" in skill_text
+E       assert 'rail-1 snapshot/verify around each reviewer spawn' in '---\nname: critique\ndescription: "Use when a non-trivial design decision, code change, release, rename, deletion, sp...n- `../../shared/references/agent-assessment-invariant.md`\n- `../../shared/references/fresh-eye-subagent-review.md`\n'
+
+tests/quality_gates/test_critique_skill.py:56: AssertionError
+=========================== short test summary info ============================
+FAILED tests/quality_gates/test_critique_skill.py::test_critique_skill_surfaces_counterweight_and_deliberately_not_doing
+1 failed, 911 passed in 49.07s
+/home/hwidong/.local/lib/python3.10/site-packages/coverage/inorout.py:538: CoverageWarning: Already imported a file that will be measured: /home/hwidong/codes/charness/reports/mutation/.prepush-focused-coverage.mutation-sitecustomize/sitecustomize.py (already-imported); see https://coverage.readthedocs.io/en/7.14.0/messages.html#warning-already-imported
+  self.warn(msg, slug="already-imported")
+RUN [standing-pytest] /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/charness/pyte...
+HEARTBEAT [standing-pytest] elapsed=30.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/charness/pyte...
+FAIL [standing-pytest] 49.7s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/charness/pyte...
+WARNING (incremental changed-line coverage): the focused coverage producer failed (exit 1); no changed-line verdict was rendered. This is NOT a pass.
+status: no-verdict
+reason: focused producer failed
+base_sha: 825b2a4198ae1342a843ccd20f57be7f4e1e0213
