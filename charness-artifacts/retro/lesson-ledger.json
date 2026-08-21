@@ -1364,6 +1364,36 @@
         ]
       },
       "snapshot_sha256": "2218c90f87819bd858e52a6ba9eb7b3fcf0baca1ef910fd9e131c333fffb624f"
+    },
+    {
+      "session_id": "2026-08-21-r3-delivery-provenance-repair-review",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-21-r3-delivery-provenance-repair-review",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "prose-claim-without-a-reader",
+          "goal-closeout-evidence-binding",
+          "agent-authored-score-role",
+          "positive-effect-cannot-be-cited",
+          "bar-recorded-as-prose",
+          "detector-blind-class-unstated",
+          "proof-surface-message-drift",
+          "green-test-is-not-covered-line",
+          "changed-line-proof-before-broad-quality",
+          "global-probe-for-local-fact"
+        ]
+      },
+      "snapshot_sha256": "dba183dd74727392bd09208db0cf4d99916b742431624194b856434d5c5c2cd1"
     }
   ],
   "score_events": [
