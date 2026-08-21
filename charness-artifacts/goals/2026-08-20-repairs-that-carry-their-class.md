@@ -95,6 +95,12 @@ runs the activation command.
   2 mapped changed-pool files, every changed line covered,
   `blocking_targets: {}`, and standing pytest passing. This is
   semantic-candidate local proof only.
+- The release-quality repair is integrated at `e6eb040cb`; current HEAD is
+  `26f31a872` after the gate-owned SLOC inventory refresh. The exact
+  `./scripts/run-quality.sh --release` gate returned `98 passed, 0 failed`,
+  and the broad changed-line proof is clean across 53 mapped files. These are
+  current integrated proof facts; the semantic packet and fresh-eye status
+  above remain unchanged.
 - The current pre-version boundary critique is
   `charness-artifacts/critique/2026-08-21-r3-current-candidate-release-critique.md`;
   it records `accepted-unreviewed-under-round-cap`, not fresh-eye approval.
@@ -549,7 +555,7 @@ invent a common engine.
 | 3 | Execute every other qualified P2/P3/P4 package concurrently where path budgets are disjoint; integrate serially and run required proof-surface review rounds | This maximizes shipped repairs without pretending unlike issues share a design | Per-package regression/mutation/counterexample; lane closeout; generated impact; round records; parent integration proof | completed |
 | 4 | Amend any disproved/cannot-ship rows; reconcile umbrellas/refutations; sync exports/generated docs; freeze and commit the integrated semantic candidate | Global proof needs a fixed semantic tree and truthful non-claims | Final ledger containing every frozen row exactly once plus separately identified blocker exceptions/amendments; source/export review; semantic candidate SHA | completed |
 | 5 | Prove and critique the semantic candidate: changed-line first, then exact planner-required standing/release/broad gates; run the mandatory critique roster and conditional round 2 | Independent green packages do not prove composition; critique must read semantics before the bump obscures the diff | Gate logs/receipts; packet/fingerprints/round records; mutation proof; semantic verification lock. Any semantic repair returns to Slice 4 | completed with fresh-eye round 2 unproven |
-| 6 | Re-run planner on the locked semantic candidate; select the bump; mutate version/export/release-record/note surfaces; commit the release candidate; run all planner-required post-bump checks, fresh-checkout/real-host probes, and publication dry-run on that exact commit | The release candidate is different from the pre-bump semantic candidate and owes its own proof | Version rationale/consistency; generated diff; release record; exact release-candidate SHA; post-bump lock; claims review; dry-run; tag target. Any semantic change returns to Slice 4 | not started |
+| 6 | Re-run planner on the locked semantic candidate; select the bump; mutate version/export/release-record/note surfaces; commit the release candidate; run all planner-required post-bump checks, fresh-checkout/real-host probes, and publication dry-run on that exact commit | The release candidate is different from the pre-bump semantic candidate and owes its own proof | Version rationale/consistency; generated diff; release record; exact release-candidate SHA; post-bump lock; claims review; dry-run; tag target. Any semantic change returns to Slice 4 | ready to execute |
 | 7 | Publish only the locked release candidate; handle ambiguity through resume; perform hosted/public and separate install/update/doctor readback; then close only proven issues with post-release carriers; reconcile handoff and retro | The goal ends at externally verified release truth, not local green or tag creation | Remote/tag/release/install identifiers; same-proxy flags; issue comments/state readbacks; final ledger; handoff; Auto-Retro; complete closeout | not started |
 
 ## Replanned Release-Cut Macro Slices
@@ -562,8 +568,8 @@ boundary at once while parent-only truth surfaces remain serialized.
 | Macro slice | Outcome | Parallel lanes | Parent-owned closeout | Status |
 | --- | --- | --- | --- | --- |
 | R1 — current-open qualification and contract freeze | Every live issue is freshly read and assigned an evidence-backed route; #687 has a durable Charness/host ownership split and a critique-ready implementation contract | #681 current requalification; #682 evidence-continuity; #683 reviewer-handoff; #685 persistence contract; #686 installed-path; #687 delivery boundary | Current-open manifest, ledger amendment(s), debug/spec artifacts, issue readback, path table, critique packet, and honest critique-delivery disposition | completed |
-| R2 — evidence and delivery reliability | The release candidate carries the shared prevention pattern for wrong paths, lost delivery, commit-boundary evidence, and contradictory operator signals | Track A: delivery/evidence continuity (#682/#683/#687); Track B: CLI/installed-path contracts (#685/#686); #681 only after current requalification. Fake-host and installed-layout fixtures run concurrently after admission. | Parent integrates source/plugin exports, ledger carriers, generated docs, changed-line proof, and bounded fresh-eye rounds; any proof-surface repair triggers round 2 | in progress |
-| R3 — candidate freeze, external truth, and issue closeout | One unchanged release candidate is selected, versioned, proven locally, installed/read back, published, and reconciled issue-by-issue | Planner/quality/release read-only probes and final issue reads fan out only after the candidate SHA is locked; publication, version surfaces, install/update, hosted readback, and closeout remain serialized | Candidate lock/post-bump proof; distinct install and hosted readback; per-issue behavioral carriers; post-close reads; handoff, retro, and final goal audit | pending |
+| R2 — evidence and delivery reliability | The release candidate carries the shared prevention pattern for wrong paths, lost delivery, commit-boundary evidence, and contradictory operator signals | Track A: delivery/evidence continuity (#682/#683/#687); Track B: CLI/installed-path contracts (#685/#686); #681 only after current requalification. Fake-host and installed-layout fixtures run concurrently after admission. | Parent integrates source/plugin exports, ledger carriers, generated docs, changed-line proof, and bounded fresh-eye rounds; any proof-surface repair triggers round 2 | completed; release gate integrated |
+| R3 — candidate freeze, external truth, and issue closeout | One unchanged release candidate is selected, versioned, proven locally, installed/read back, published, and reconciled issue-by-issue | Planner/quality/release read-only probes and final issue reads fan out only after the candidate SHA is locked; publication, version surfaces, install/update, hosted readback, and closeout remain serialized | Candidate lock/post-bump proof; distinct install and hosted readback; per-issue behavioral carriers; post-close reads; handoff, retro, and final goal audit | in progress |
 
 ## Backlog Recount
 
@@ -1203,6 +1209,20 @@ boundary at once while parent-only truth surfaces remain serialized.
   covered, `blocking_targets: {}`, standing pytest passed). This does not
   claim fresh-eye approval, installed/public proof, version mutation, or
   release.
+
+- Current integrated release proof is bound at HEAD `26f31a872`: the exact
+  `./scripts/run-quality.sh --release` gate returned `98 passed, 0 failed` in
+  `323.9s`; pytest-release passed in `196.2s`, changed-line mutation passed in
+  `300.1s`, and the generated SLOC inventory was committed separately after
+  the gate. The broad changed-line proof from `38775dfeb` is clean across 53
+  mapped files. This closes local release-gate work, not version mutation,
+  publication, host readback, or issue closure.
+- Report-first release checks are current: fresh-checkout probes `5/5`,
+  real-host trigger evaluation is `required: true` with its declared checklist,
+  requested-review gate is `ok` with no configured blockers, and the supported
+  `current_release.py` invocation reports all four release surfaces at
+  `6.2.0` with no drift. Rejected command/flag forms are retained as
+  command-boundary smells and are not counted as checks.
 
 - Historical integrated candidate `abaf886822a851c1081ec889f6733c02b627e525` had
   a direct changed-line receipt from base `33e556043174ce6e32d25da51e8397e18e941613`

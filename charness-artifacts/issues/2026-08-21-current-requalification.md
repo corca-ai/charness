@@ -1,7 +1,8 @@
 # Current Requalification Packet: Issues #681–#687
 
-Captured: 2026-08-21T19:22:28+09:00
-Source candidate: `502c8a8adbbe77781f1714cb6c4383a85d6e3683`
+Captured: 2026-08-21T19:22:28+09:00; release-boundary refresh: 2026-08-21
+Source candidate: semantic `502c8a8adbbe77781f1714cb6c4383a85d6e3683`,
+integrated proof HEAD `26f31a8729ca5b804931b62d1edaef8b1311b1d0`
 Source of issue truth: the durable current GitHub reads in
 `charness-artifacts/issues/reads/{681,682,683,685,686,687}.raw.yaml`; all six
 reads returned `comments_read: true` (the closed #684 read is retained
@@ -27,6 +28,12 @@ The matrix below still records candidate package/install/host proof as
 pending; this source join does not claim those boundaries. The earlier
 `7676ec51aeed99e215106dd8490332e57db80d07` and
 `1e81fb31bc8017e09f58f905b8c7b41e8545ad00` pointers are historical.
+
+Integrated release-boundary evidence now includes `98 passed, 0 failed` from
+`./scripts/run-quality.sh --release`, a clean broad changed-line proof across
+53 mapped files, and 5/5 fresh-checkout probes. The generated SLOC refresh is
+the only change after the semantic candidate; package/install/host readback,
+publication, and tracker closure remain pending.
 
 ## First Reader Outcome
 

@@ -43,6 +43,10 @@
   `26f29ca25c71bf4d704854285c787734f9a1e99bc7d770a9df8674ee3778dfc2`).
   Candidate package/install/host proof remains pending; the older `7676ec…`
   packet is historical.
+- The release-quality repair is integrated at `e6eb040cb`; current HEAD is
+  `26f31a872` after the gate-owned SLOC inventory refresh. The exact release
+  gate passed `98 passed, 0 failed`; the generated-only follow-up does not
+  change the semantic candidate or packet.
 - The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
   the converted classes for media-versus-verdict confusion, process-tree
   timeout leakage, provider-schema closure, and the reviewer-runtime output
@@ -52,27 +56,23 @@
 - The [changed-line consumer-gap debug record](../charness-artifacts/debug/2026-08-21-changed-line-review-consumer-gaps.md)
   records the post-commit counterexample repair; the exact-base rerun is now
   clean at `362221694` with `blocking_targets: {}`.
-- The fresh-eye/retro basis handoff slice is committed at historical `33e556043`,
-  and the parallel focused-coverage writer isolation repair is committed at
-  historical `abaf88682`;
-  the [current quality receipt](../charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md)
-  records both proofs. It covers explicit retro paths/refs, typed boundary
-  verify continuation, the file-backed critique/prove contract, and an external
-  per-run coverage namespace for concurrent producers. No fresh-eye approval is
-  claimed.
 - The current exact-base changed-line proof is `status: clean` from base
   `d9995e0079326ae9ad0a35f9ade64a9f951c4fbf`, with 2 mapped changed-pool files,
   every changed line covered, and `blocking_targets: {}`. This is local
   semantic-candidate proof only.
-- Broad `./scripts/run-quality.sh --read-only` completed
-  with `97 passed, 0 failed` in `300.8s` (pytest `149.9s`, full changed-line
-  `275.9s`). Length/ratio/markdown/nose findings remain advisory.
-- The [portable file-backed delivery repair](../charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md)
-  is committed at `cce985d6f`, with refusal-branch coverage at `458080160`.
-  Adapter authority, typed report
-  carrier binding, identity joins, stale/collision refusal, bounded cleanup,
-  and serialized ledger transitions are now implemented in both source and
-  installed plugin layouts.
+- Release-boundary verification at integrated HEAD `26f31a872` is current:
+  the release gate returned `98 passed, 0 failed`; the broad changed-line proof
+  from `38775dfeb` is clean across 53 mapped files; fresh-checkout probes are
+  5/5; real-host proof is required and its checklist is recorded; and the
+  requested-review gate is clear. This is not publication or host readback.
+- Two unsupported release-check invocations were attempted during this run:
+  `./charness current-release --detail` (wrong command surface), followed by
+  `current_release.py --detail` (unsupported flag). Both are non-pass
+  command-boundary smells; the supported script invocation was then run
+  successfully. Neither rejected call is evidence of a release check.
+- Broad `./scripts/run-quality.sh --release` completed with `98 passed, 0
+  failed` in `323.9s` (pytest-release `196.2s`, changed-line mutation
+  `300.1s`). Length/ratio/markdown/nose findings remain advisory.
 - The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep this run
   sensitive to wrong calls, timeout loss, and repairs inside an open review window.
 - The [current closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
@@ -109,19 +109,14 @@
    pass. Execute candidate/install proof next. Keep
    version/export/release-record mutation, tag, push, and publication on hold
    until the [goal release boundary](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
-   is re-proven.
+   is re-proven. Current HEAD is `26f31a872`; remaining work is the versioned
+   candidate, publication, post-publish readback, and issue closeout.
 7. Do not claim fresh-eye approval unless the [consumer report](../skills/shared/scripts/reviewer_worker_report.py)
    accepts a typed successful receipt and matching current-packet delivery ledger; timeout,
    exit code, transcript, screen output, or any other media alone is non-delivery.
 
 ## Discuss
 
-- **The boundary-bypass gate still has no scoped rotation accept.** This session rewrote
-  its whole baseline for ONE rotated key with every count unchanged — a second data point
-  for adopting the dup ratchet's `--accept-rotation` shape.
-- **Fourteen per-skill `adapter-contract.md` files say nothing about version containment.**
-  The runtime refusal now names the file and the line to fix, which may be the better
-  channel than fanning prose across fourteen docs. Owner's call.
 - **This bullet IS an SC14 anchor — do not tidy it away.** The
   [dominance test](../tests/quality_gates/test_command_dominance.py) substitutes into the
   real handoff and needs the bare backticked `python3 scripts/run_standing_pytest.py`, with no flags inside
