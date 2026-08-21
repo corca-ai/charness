@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from argparse import Namespace
 from pathlib import Path
@@ -167,6 +168,108 @@ def test_update_all_failure_preserves_scope_in_recovery_action(tmp_path: Path, m
     assert payload["next_action"]["recovery_command"] == "charness update all --detail"
     assert "charness update all --detail" in payload["next_action"]["message"]
     assert "charness update all --detail" in payload["host_next_steps"]["external-tools"]
+
+
+def test_delivery_provenance_helpers_cover_fail_closed_boundaries(tmp_path: Path, monkeypatch) -> None:
+    module = load_charness_module("charness_delivery_provenance_helpers_under_test")
+    home_root = tmp_path / "home"
+    doctor = {"checkout_git_head": "commit-1"}
+
+    module.write_host_state(
+        home_root,
+        key="last_update",
+        payload=doctor,
+        delivery={"status": "skipped", "delivery_verified": False},
+        operation_status="failed",
+        operation_scope="all",
+    )
+    state = module.read_host_state(home_root)
+    assert state["last_update"]["delivery_verified"] is False
+    assert state["last_update"]["operation_status"] == "failed"
+    assert state["last_update"]["operation_scope"] == "all"
+    assert module._last_installed_commit(home_root) is None
+
+    module.write_host_state(
+        home_root,
+        key="last_update",
+        payload=doctor,
+        delivery={"status": "skipped", "delivery_verified": True},
+        operation_status="success",
+        operation_scope="self",
+    )
+    assert module._last_installed_commit(home_root) == "commit-1"
+
+    tree = tmp_path / "tree"
+    tree.mkdir()
+    (tree / "payload.txt").write_text("payload\n", encoding="utf-8")
+    (tree / "payload-link").symlink_to(tree / "payload.txt")
+    os.mkfifo(tree / "payload-fifo")
+    assert module._tree_content_digest(tree)
+    assert module._tree_content_digest(tmp_path / "missing") is None
+
+    def broken_rglob(_self, _pattern):
+        raise OSError("synthetic digest read failure")
+
+    monkeypatch.setattr(Path, "rglob", broken_rglob)
+    assert module._tree_content_digest(tree) is None
+
+
+def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path) -> None:
+    module = load_charness_module("charness_delivery_provenance_readback_under_test")
+    source_root = tmp_path / "source"
+    cache_root = tmp_path / "cache"
+    source_root.mkdir()
+    cache_root.mkdir()
+    (source_root / "payload.txt").write_text("same payload\n", encoding="utf-8")
+    (cache_root / "payload.txt").write_text("same payload\n", encoding="utf-8")
+
+    assert module._same_version_cache_readback({}) is None
+    assert module._same_version_cache_readback({"plugin_root": str(source_root), "codex_cache_entries": []}) is None
+    assert module._same_version_cache_readback(
+        {
+            "plugin_root": str(source_root),
+            "codex_cache_entries": [],
+            "codex_enabled_plugin_ids": [],
+            "codex_source_version": 1,
+        }
+    ) is None
+
+    entry = {
+        "marketplace": "local",
+        "plugin": "charness",
+        "version": "1.0.0",
+        "version_dir": str(cache_root),
+        "manifest_version": "1.0.0",
+    }
+    base = {
+        "plugin_root": str(source_root),
+        "codex_cache_entries": [entry],
+        "codex_enabled_plugin_ids": ["charness@local"],
+        "codex_source_version": "1.0.0",
+    }
+    wrong_manifest = dict(entry, manifest_version="0.9.0")
+    assert module._same_version_cache_readback(dict(base, codex_cache_entries=[wrong_manifest])) is None
+    missing_cache_dir = dict(entry, version_dir=None)
+    assert module._same_version_cache_readback(dict(base, codex_cache_entries=[missing_cache_dir])) is None
+    readback = module._same_version_cache_readback(base)
+    assert readback is not None
+    assert readback["delivery_verified"] is True
+    assert readback["source_content_sha256"] == readback["cache_content_sha256"]
+
+    module._mark_external_tool_update_failure({}, scope="self")
+    payload: dict[str, object] = {
+        "tool_update": {
+            "results": {
+                "zeta": {"update": {"status": "updated-not-ready"}},
+                "alpha": {"update": {"status": "failed"}},
+                "ignored": "not-a-result",
+            }
+        }
+    }
+    module._mark_external_tool_update_failure(payload, scope="all")
+    assert payload["tool_update"]["failed_tool_ids"] == ["alpha", "zeta"]
+    assert payload["next_action"]["recovery_command"] == "charness update all --detail"
+    assert payload["next_action"]["scope"] == "all"
 
 
 def test_task_and_uninstall_paths_emit_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
