@@ -125,6 +125,11 @@ STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-ro
 mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
 
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
+# The focused changed-line producer is one of the gates queued below, and its
+# coverage runtime is namespaced from the report path. Give each runner process
+# its own report path so a concurrent direct producer or quality run cannot share
+# the public default and overwrite the other's fresh output.
+RUN_QUALITY_CHANGED_LINE_COVERAGE_JSON="$RUN_QUALITY_TMPDIR/prepush-focused-coverage.json"
 # The VERDICT is authoritative; cleanup is best-effort.
 #
 # Measured, because a first version of this comment stated the mechanism WRONG and a
@@ -1124,9 +1129,10 @@ fi
 # suggest_mutation_coverage_command which standing tests reach the CHANGED pool files
 # and instruments only those. Measured with the gate's own coverage mechanism: ~24s for
 # a realistic single-commit slice, ~5min for a whole nine-commit session, against
-# 11-15min broad. It writes reports/mutation/prepush-focused-coverage.json, NOT the
-# canonical test-coverage.json, so subset coverage never sits at the broad producer's
-# path carrying a valid freshness marker.
+# 11-15min broad. Direct invocations default to
+# reports/mutation/prepush-focused-coverage.json; this runner passes an isolated path
+# under its external temp dir, NOT the canonical test-coverage.json, so subset coverage
+# never sits at the broad producer's path carrying a valid freshness marker.
 #
 # Two deliberate non-blocking holes, both named loudly rather than silent:
 #   - policy (a): a changed pool file the mapper resolves to NO standing test is not
@@ -1148,7 +1154,7 @@ CHANGED_LINE_REFUSE_ARGS=()
 if [[ "${CHARNESS_PRE_PUSH:-0}" == "1" ]]; then
   CHANGED_LINE_REFUSE_ARGS+=(--refuse-unestablished)
 fi
-queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" "${CHANGED_LINE_REFUSE_ARGS[@]}"
+queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --coverage-json "$RUN_QUALITY_CHANGED_LINE_COVERAGE_JSON" "${CHANGED_LINE_REFUSE_ARGS[@]}"
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
