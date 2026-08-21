@@ -204,8 +204,9 @@ unproven and is not discharged by this new slice.
 - Impl Status: allowed
 - Repair State: the runtime-output ownership gap is repaired in `.gitignore`
   and its boundary regression test; the semantic mode/identity/ledger/runtime
-  blockers remain the active implementation slice. No release approval or
-  fresh-eye PASS is claimed.
+  blockers are repaired in the portable worker/report/ledger chain. The
+  round-2 verdicts remain BLOCK repair input under the two-round cap; no
+  release approval or fresh-eye PASS for the repaired surface is claimed.
 - Impl Status Reason: the risk interrupt required the spec to carry forward the
   new boundary class before ordinary implementation could continue; the old
   round remains quarantined and its three reviewer verdicts are `block`.
@@ -213,6 +214,27 @@ unproven and is not discharged by this new slice.
   boundary suite prove the canonical runtime output directory is ignored while
   source-like untracked files remain visible as drift. This does not prove the
   semantic approval-chain blockers are fixed.
+
+## Slice Closeout (2026-08-21)
+
+- Implementation commit: `cce985d6f`; refusal-branch coverage commit:
+  `458080160`.
+- The adapter now owns mode/backend/timeout authority; result, receipt, parent,
+  packet, input, findings, and report identities are joined before approval.
+  The combined typed report is the only `worker-delivered` carrier; stale,
+  colliding, foreign, malformed, or replayable evidence refuses.
+- Focused reviewer-chain tests, critique contract tests, packet binding, and
+  closeout bundle tests pass. The committed-head changed-line proof is clean
+  for 37 mapped pool files with no blocking targets:
+  `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root .
+  --base-sha 38775dfeb8d1e5574663d7ef461d19a63e252841`.
+- The frozen broad run at the implementation candidate reported `95 passed,
+  1 failed`; the only failure was the preexisting docs-graph link-only ratchet
+  (`168` observed versus `167` baseline), recorded separately in the RCA
+  ledger. This is not a green broad-gate claim.
+- A historical critique packet was regenerated after its deterministic renderer
+  changed, and its durable Markdown digest was restamped. No external release,
+  issue close, host application, or fresh-eye approval is claimed.
 
 ## Canonical Artifact
 

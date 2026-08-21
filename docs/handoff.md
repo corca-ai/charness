@@ -30,6 +30,17 @@
   boundary. The round-2 findings are durably recorded in
   [the critique round record](../charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-provider-schema-round-2b.md);
   all three reviewer verdicts are `block`, so no fresh-eye approval is claimed.
+- The [portable file-backed delivery repair](../charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md)
+  is committed at `cce985d6f`, with refusal-branch coverage at `458080160`.
+  Adapter authority, typed report
+  carrier binding, identity joins, stale/collision refusal, bounded cleanup,
+  and serialized ledger transitions are now implemented in both source and
+  installed plugin layouts.
+- Committed-head changed-line proof from `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --base-sha 38775dfeb8d1e5574663d7ef461d19a63e252841`
+  is `status: clean` across 37 mapped pool files with no blocking targets, using the base
+  `38775dfeb8d1e5574663d7ef461d19a63e252841`. The latest frozen broad run was
+  `./scripts/run-quality.sh --read-only`, which reported `95 passed, 1 failed`; the sole failure is the preexisting docs-graph
+  link-only ratchet (`168` vs baseline `167`), not this reviewer-chain slice.
 - The [round-2 boundary debug record](../charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md)
   records that the verifier returned `boundary-drift` because expected
   file-backed outputs were under an unignored `.charness/reviewer-round-2/`
@@ -46,15 +57,14 @@
 
 1. Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <date-slug>`;
    this repo-owned session receipt is the prerequisite for the next review or brief.
-2. Re-read the [exact-base receipt](../charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md);
+2. Re-read the [fresh-eye delivery boundary spec](../charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md)
+   and the two implementation commits above; do not repeat the repaired
+   semantic slice or claim a third bounded review under the cap.
+3. Re-read the [exact-base receipt](../charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md);
    rerun its recorded command only if the candidate SHA or receipt changes.
-3. Activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
-   its `## Active Operating Frame` names R2 rebinding and the qualified disjoint lanes.
-4. Repair the round-2 mode/identity/portability/ledger blockers in one bounded
-   semantic slice, then rebind the current R2 packet, source/plugin mirror,
-   changed-line receipt, and verification lock using the [goal closeout binding plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md).
-   Round-2 repairs are accepted-unreviewed under the two-round cap; do not
-   claim a third review.
+4. Activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
+   its `## Active Operating Frame` names the remaining R2 rebinding and
+   qualified disjoint lanes.
 5. Read the [goal runbook](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
    for P0 #679 reproduction first, then fan out only lanes with a current reproducer, owner,
    acceptance, disjoint path budget, and proof plan; serialize exports, ledger, generated docs,

@@ -1076,6 +1076,27 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 ## Final Verification
 
+- The 2026-08-21 portable fresh-eye delivery slice is committed at
+  `cce985d6f`, with refusal-branch coverage at `458080160`. Adapter-selected
+  mode/backend/timeout authority, typed combined-report delivery, result/
+  receipt/parent/packet/input/findings/report identity joins, stale and
+  collision refusal, bounded cleanup, serialized ledger transitions, explicit
+  zero-timeout preservation, and installed-layout resolution are implemented
+  in source and plugin mirrors.
+- The committed-head changed-line command
+  `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root .
+  --base-sha 38775dfeb8d1e5574663d7ef461d19a63e252841` returned `status: clean`:
+  37 mapped pool files, every changed line covered, and no blocking targets.
+- The frozen broad run at the implementation candidate returned `95 passed,
+  1 failed`; the only failure was the preexisting docs-graph link-only ratchet
+  (`168` observed against the `167` baseline). It is recorded as a separate
+  RCA residual; broad quality is not described as fully green.
+- The historical closeout packet whose Markdown had drifted from the current
+  deterministic renderer was regenerated and its durable digest restamped;
+  closeout bundle tests then passed. The round-2 reviewer verdicts remain
+  `block` repair input under the two-round cap, so no fresh-eye approval is
+  claimed for the repaired surface.
+
 - Slice 3 local proof is complete at code truth `1ee53a795`: semantic repair
   commit `b2f9a6407`, fallback import coverage `ff192f63a`, direct fallback
   mapping `63c3996c9`, and malformed-branch coverage `9dbda5097`. The final
