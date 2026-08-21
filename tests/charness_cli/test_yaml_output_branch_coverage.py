@@ -194,6 +194,16 @@ def test_delivery_provenance_helpers_cover_fail_closed_boundaries(tmp_path: Path
         key="last_update",
         payload=doctor,
         delivery={"status": "skipped", "delivery_verified": True},
+        operation_status="failed",
+        operation_scope="self",
+    )
+    assert module._last_installed_commit(home_root) is None
+
+    module.write_host_state(
+        home_root,
+        key="last_update",
+        payload=doctor,
+        delivery={"status": "skipped", "delivery_verified": True},
         operation_status="success",
         operation_scope="self",
     )
@@ -270,6 +280,40 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
     assert payload["tool_update"]["failed_tool_ids"] == ["alpha", "zeta"]
     assert payload["next_action"]["recovery_command"] == "charness update all --detail"
     assert payload["next_action"]["scope"] == "all"
+
+
+def test_same_version_verified_readback_skips_refresh_call(tmp_path: Path, monkeypatch) -> None:
+    module = load_charness_module("charness_verified_same_version_skip_under_test")
+    monkeypatch.setattr(module, "_last_installed_commit", lambda _home_root: "commit-1")
+    monkeypatch.setattr(
+        module,
+        "_same_version_cache_readback",
+        lambda _doctor_payload: {
+            "delivery_verified": True,
+            "verification": "same-version-content-readback",
+        },
+    )
+
+    def unexpected_refresh(**_kwargs):
+        raise AssertionError("verified same-version content must not refresh")
+
+    monkeypatch.setattr(module, "refresh_codex_cache_via_app_server", unexpected_refresh)
+    result = module.maybe_install_codex_host(
+        home_root=tmp_path / "home",
+        codex_marketplace_path=tmp_path / "marketplace.json",
+        doctor_payload={
+            "hosts": {"codex": True},
+            "codex_enabled_plugin_ids": ["charness@local"],
+            "codex_source_version": "1.0.0",
+            "codex_cache_manifest_version": "1.0.0",
+            "codex_host_guidance": {"status": "installed"},
+            "checkout_git_head": "commit-1",
+        },
+        skip=False,
+    )
+    assert result["status"] == "skipped"
+    assert result["reason"] == "already-current"
+    assert result["delivery_verified"] is True
 
 
 def test_task_and_uninstall_paths_emit_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
