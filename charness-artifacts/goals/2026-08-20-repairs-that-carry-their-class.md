@@ -28,18 +28,18 @@ runs the activation command.
   `abaf88682`; the installed/fresh-eye/release boundary remains open.
   The R3 release-readiness critique then found a second instance of the same
   process-success-versus-delivery class at the root `charness init/update`
-  exit boundary; its repair is now in the working tree with focused regression
-  coverage and must be committed before candidate re-proof.
+  exit boundary; its repair is committed at `6dd053dc9` with focused regression
+  coverage and a clean changed-line verdict. Candidate re-proof remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, including per-run output namespaces for parallel producers, while
   preserving source/export parity and refusing public-release claims from local
   proof.
-- Next action: commit the root CLI host-delivery exit repair and normalized
-  source/export/install status surfaces, then run focused and changed-line
-  proof, regenerate the packet at the new exact head, and rerun the bounded
-  release critique. Keep the historical exception rows until candidate/install
-  evidence discharges them. The pre-version R3 critique is durably recorded at
+- Next action: regenerate the packet at exact head `6dd053dc9` and rerun the
+  bounded release critique against the committed repair, then proceed to the
+  candidate/install proof boundary. Keep the historical exception rows until
+  candidate/install evidence discharges them. The pre-version R3 critique is
+  durably recorded at
   `charness-artifacts/critique/2026-08-21-r3-release-readiness.md`; all four
   typed worker verdicts were `block`, so no approval or version mutation is
   claimed. Its boundary window verified clean. The prior verdict-surface
