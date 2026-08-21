@@ -141,6 +141,59 @@ def test_worker_delivered_requires_report_approval_and_result_identities(tmp_pat
     assert _validate(repo, relpath).returncode == 0
 
 
+def _valid_worker_report_tier(*, approval: str = "approval_eligible: true", delivery: str = "findings-received", packet: str = "a" * 64) -> str:
+    return (
+        _TIER_BLOCK.format(host="host-defaulted", delivery="findings-received")
+        + "- Worker report: charness-artifacts/critique/reports/attempt.yaml\n"
+        + f"- Worker report approval: {approval}\n"
+        + f"- Worker report delivery: {delivery}\n"
+        + f"- Worker report packet identity: {packet}\n"
+        + f"- Worker report findings identity: {'b' * 64}\n"
+    )
+
+
+def test_worker_delivered_rejects_report_that_is_not_approval(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    relpath = _artifact(
+        repo,
+        "2026-07-28-worker-report-not-approved.md",
+        _body(fresh="worker-delivered", tier=_valid_worker_report_tier(approval="approval_eligible: false")),
+    )
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "approval_eligible: true" in result.stderr
+
+
+def test_worker_delivered_rejects_report_without_findings_delivery(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    relpath = _artifact(
+        repo,
+        "2026-07-28-worker-report-not-delivered.md",
+        _body(fresh="worker-delivered", tier=_valid_worker_report_tier(delivery="running")),
+    )
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "findings-received" in result.stderr
+
+
+def test_worker_delivered_rejects_non_sha256_report_identity(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    relpath = _artifact(
+        repo,
+        "2026-07-28-worker-report-bad-identity.md",
+        _body(fresh="worker-delivered", tier=_valid_worker_report_tier(packet="not-a-sha")),
+    )
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "lowercase SHA-256 identity" in result.stderr
+
+
 def test_blocked_fresh_eye_line_may_keep_a_pending_spawn_record(tmp_path: Path) -> None:
     """The escape hatch must stay open, or the rule above buys a false claim: an
     author whose spawn was genuinely blocked records `blocked <signal>` and the

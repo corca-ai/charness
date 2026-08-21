@@ -1,0 +1,42 @@
+/home/hwidong/.local/lib/python3.10/site-packages/coverage/inorout.py:538: CoverageWarning: Already imported a file that will be measured: /home/hwidong/codes/charness/reports/mutation/.prepush-focused-coverage.mutation-sitecustomize/sitecustomize.py (already-imported); see https://coverage.readthedocs.io/en/7.14.0/messages.html#warning-already-imported
+  self.warn(msg, slug="already-imported")
+RUN [standing-pytest] /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/charness/pyte...
+HEARTBEAT [standing-pytest] elapsed=30.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/charness/pyte...
+PASS [standing-pytest] 52.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/charness/pyte...
+
+1 changed file(s) have uncovered changed lines; the mutation gate drops them before mutation (the #260 blocking signal). Use blocking_targets to bind manual mutant proof to the exact path:line before editing, then cover the listed lines before merge.
+ADVISORY SCOPE (not a blocker): subprocess-coverage advisory examined 6 candidate test file(s) across 1 blocked file(s) (baseline: read) and named none. That is NOT proof these blocks are honest -- see subprocess_coverage_advisory_scope.silence_means for what it cannot see.
+status: blocked
+reason: a mapped changed pool file has uncovered changed lines
+base_sha: 825b2a4198ae1342a843ccd20f57be7f4e1e0213
+analyzed_changed_pool_files:
+- scripts/check_skill_contracts.py
+- scripts/critique_adapter_lib.py
+- scripts/critique_packet_lib.py
+- scripts/critique_reviewer_evidence.py
+- scripts/release_issue_ledger_evidence.py
+- scripts/validate_critique_artifacts.py
+- skills/public/critique/scripts/scaffold_critique_artifact.py
+unmapped_changed_pool_files: []
+consumer_returncode: 1
+consumer_stdout: "ok: false\nchanged_pool_files:\n- scripts/check_skill_contracts.py\n\
+  - scripts/critique_adapter_lib.py\n- scripts/critique_packet_lib.py\n- scripts/critique_reviewer_evidence.py\n\
+  - scripts/release_issue_ledger_evidence.py\n- scripts/validate_critique_artifacts.py\n\
+  - skills/public/critique/scripts/scaffold_critique_artifact.py\nblocking:\n- scripts/critique_reviewer_evidence.py\n\
+  blocking_detail:\n  scripts/critique_reviewer_evidence.py:\n    changed_and_missing:\n\
+  \    - 286\n    - 291\n    - 298\nblocking_targets:\n  scripts/critique_reviewer_evidence.py:\n\
+  \  - line: 286\n    source: raise ValidationError(\n  - line: 291\n    source: raise\
+  \ ValidationError(\n  - line: 298\n    source: raise ValidationError(\nsubprocess_coverage_advisory:\
+  \ {}\nsubprocess_coverage_advisory_scope:\n  blocked_files_examined: 1\n  candidate_tests_examined:\
+  \ 6\n  candidate_sources:\n  - boundary-bypass-baseline\n  - test-reference-map\n\
+  \  baseline: read\n  baseline_recorded_scripts: 69\n  reference_map: read\n  files_named:\
+  \ []\n  silence_means: 'no candidate test of that file was found to spawn it with\
+  \ a replacing\n    environment or to copy it by name. That is NOT proof the file''s\
+  \ coverage is honest:\n    a candidate list is not exhaustive, a spawn whose command\
+  \ is built from a variable\n    does not bind, an `env=` passed as a bare name cannot\
+  \ be followed, and a helper\n    in another module that copies a whole seeded repo\
+  \ is deliberately not resolved.'\ntargeted_mutant_proof:\n  required: true\n  contract:\
+  \ Before hand-mutating, cite/display one blocking_targets path:line entry,\n   \
+  \ mutate that exact line, record the failing test, then revert.\nbase_sha: 825b2a4198ae1342a843ccd20f57be7f4e1e0213\n\
+  head_sha: HEAD\nresolved_head_sha: 7b5607fba637fb6137c0007ef0f0e3854e2b8867\nchanged_pool_file_counts:\n\
+  \  analyzed: 7\n  changed: 7\n"

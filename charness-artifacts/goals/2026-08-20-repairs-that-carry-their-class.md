@@ -963,7 +963,8 @@ boundary at once while parent-only truth surfaces remain serialized.
   path. All three independently returned `verdict: block`; the reports are
   delivered evidence, not candidate approval. Durable round record:
   `charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-round-1.md`.
-- Structural repairs in progress: receipt-to-attempt joins now carry packet,
+- Structural repairs committed in `0c76ff41c` (with the load-bearing critique
+  contract wording retained in `7b5607fba`): receipt-to-attempt joins now carry packet,
   reviewed-input, mode/backend, prompt/schema, exit, and result identities;
   delivery CLI output is `delivery_complete` rather than approval; delivery
   history is replay-validated; result/receipt path aliases refuse; interruption
@@ -971,9 +972,13 @@ boundary at once while parent-only truth surfaces remain serialized.
   refuses the typed-subagent cross-over; and `worker-delivered` artifacts need
   a combined report carrier with packet/result identities.
 - Targeted verification: 67 focused worker/delivery/validator tests pass;
-  ruff and the repo-owned result schema check pass. The repair is not yet
-  candidate-locked: plugin sync, exact-target changed-line proof, a new packet,
-  and round-2 fresh-eye review remain required.
+  ruff, the repo-owned result schema check, and the full pre-commit closeout
+  pass. The first post-repair exact-base attempt had no verdict because a
+  load-bearing `rail-1 snapshot/verify` contract pin had been compressed away;
+  after restoring it, the next attempt passed standing pytest but exposed three
+  uncovered worker-delivery evidence branches. Counterexamples are now added;
+  the repair is not candidate-locked until the same exact-base producer returns
+  clean, then a new packet and round-2 fresh-eye review remain required.
 - Failure-smell memory: provider-invalid response schema, guessed delivery
   subcommands/flags, wrong ledger filenames, and mismatched round snapshot ids
   were all recorded as command-boundary failures and corrected through help,

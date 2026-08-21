@@ -174,3 +174,8 @@ These were not harmless operator typos. Each guessed path, flag, or schema
 shape could have produced a false “nothing returned” or a falsely unbound
 review. The prevention is one inventory/help/schema smoke step before fan-out,
 then typed receipts and actual CLI state transitions after delivery.
+
+Follow-up proof found three uncovered worker-delivery refusals in
+`scripts/critique_reviewer_evidence.py`. Standing pytest passed, but the
+changed-line gate correctly blocked. Direct artifact-boundary counterexamples
+were added; rerun the exact-base proof to verify them.
