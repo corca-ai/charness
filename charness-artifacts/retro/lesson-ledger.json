@@ -2179,6 +2179,62 @@
       "lesson_id": "goal-closeout-evidence-binding",
       "outcome": "changed-an-action",
       "anchor": "I bound the goal to the current verification-lock artifact and reran its validator; otherwise a merely existing artifact could have been accepted instead of goal-owned evidence."
+    },
+    {
+      "event_id": "2026-08-21-goal-r2-resume-proof-order",
+      "session_id": "2026-08-21-goal-r2-resume",
+      "source_retro": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran the exact changed-line proof immediately after the repair commit and before the broad release gate; otherwise the broad gate would have run first and a later coverage red would have forced another expensive rerun."
+    },
+    {
+      "event_id": "2026-08-21-goal-r2-resume-command-boundary",
+      "session_id": "2026-08-21-goal-r2-resume",
+      "source_retro": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "lesson_id": "proof-surface-message-drift",
+      "outcome": "changed-an-action",
+      "anchor": "When the quality gate treated rejected release examples as executable commands, checked the owned command surface and rewrote them as non-executable smell evidence before rerunning the gate; otherwise I would have added more flags or duplicated a retired command."
+    },
+    {
+      "event_id": "2026-08-21-goal-r2-resume-structural-rationale",
+      "session_id": "2026-08-21-goal-r2-resume",
+      "source_retro": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "changed-an-action",
+      "anchor": "Added a machine-visible bump-rationale field after the claims review found it absent; otherwise the release record would have carried a prose-only explanation and the omission would have remained invisible to a structural reader."
+    },
+    {
+      "event_id": "2026-08-21-r2-semantic-packet-claims-reader",
+      "session_id": "2026-08-21-r2-semantic-packet",
+      "source_retro": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "lesson_id": "prose-claim-without-a-reader",
+      "outcome": "changed-an-action",
+      "anchor": "Created the bound claims-review JSON plus narrative and used the structured identity fields to review the release record; otherwise I would have relied on the narrative and missed the distinction between claims review and fresh-eye approval."
+    },
+    {
+      "event_id": "2026-08-21-r2-semantic-packet-line-verdict",
+      "session_id": "2026-08-21-r2-semantic-packet",
+      "source_retro": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "Checked changed-line mapped files and blocking targets after focused tests passed; otherwise green tests alone could have been mistaken for proof of every changed line."
+    },
+    {
+      "event_id": "2026-08-21-r3-delivery-review-closeout",
+      "session_id": "2026-08-21-r3-delivery-provenance-repair-review",
+      "source_retro": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "lesson_id": "goal-closeout-evidence-binding",
+      "outcome": "changed-an-action",
+      "anchor": "Reconciled goal, handoff, and issue packet to the published/read-back identities before terminal goal status; otherwise stale pre-version pointers would have survived as an apparently complete closeout."
+    },
+    {
+      "event_id": "2026-08-21-r3-delivery-review-command",
+      "session_id": "2026-08-21-r3-delivery-provenance-repair-review",
+      "source_retro": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "lesson_id": "proof-surface-message-drift",
+      "outcome": "changed-an-action",
+      "anchor": "Kept unsupported path/ref/flag calls as explicit non-pass smell evidence and used only help/inventory-derived commands for proof; otherwise a corrected retry could have erased the original boundary defect."
     }
   ],
   "lessons": {
@@ -2305,10 +2361,10 @@
     "goal-closeout-evidence-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
       "transition_id": "seed-goal-closeout-evidence-binding",
-      "score_total": 6,
-      "score_count": 6,
+      "score_total": 7,
+      "score_count": 7,
       "outcome_counts": {
-        "changed-an-action": 5,
+        "changed-an-action": 6,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2470,10 +2526,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": 4,
-      "score_count": 16,
+      "score_total": 5,
+      "score_count": 17,
       "outcome_counts": {
-        "changed-an-action": 10,
+        "changed-an-action": 11,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -2515,10 +2571,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 8,
-      "score_count": 8,
+      "score_total": 9,
+      "score_count": 9,
       "outcome_counts": {
-        "changed-an-action": 8,
+        "changed-an-action": 9,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2575,10 +2631,10 @@
     "proof-surface-message-drift": {
       "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
       "transition_id": "seed-proof-surface-message-drift",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 2,
+      "score_count": 2,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 2,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2650,10 +2706,10 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 3,
-      "score_count": 9,
+      "score_total": 4,
+      "score_count": 10,
       "outcome_counts": {
-        "changed-an-action": 6,
+        "changed-an-action": 7,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 3,
@@ -2815,10 +2871,10 @@
     "prose-claim-without-a-reader": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "transition_id": "seed-prose-claim-without-a-reader",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,

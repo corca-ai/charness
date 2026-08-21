@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-21",
-  "source_artifact_count": 546,
-  "candidate_count": 2209,
+  "source_artifact_count": 550,
+  "candidate_count": 2222,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -134,6 +134,72 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The premise check ran first and the class still got through one surface over.** Checking #630 and #599 against source before implementing is exactly what the lesson asks, and it worked — it refuted a live assumption about #599. Then I wrote into a `dup-review.json` review note that the slice \"added six release scripts\" when it added four and modified two, asserting a quantity I had not counted, inside the artifact that records WHY duplicate families are accepted. A bounded reviewer caught it. The lesson transferred to the code path it was written about and not to artifact prose, which is the same shape as writing a false quantity into release notes — the defect this whole slice exists to prevent."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:c62a2a11117a",
+      "kind": "repeat_trap",
+      "lesson": "the final repair sequence used changed-line proof before the broad release gate; this remains a required ordering invariant because a passing broad suite cannot prove changed-line ownership.",
+      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
+      "recurrence_class": "changed-line-proof-before-broad-quality",
+      "source_count": 6,
+      "independent_source_count": 6,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.6,
+      "selection_weight": 4.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A changed-line proof that proved nothing**. Ran the focused coverage gate on an uncommitted tree, following the lesson's \"before the broad lane\" ordering. It returned `status: unestablished — mutation-pool files have uncommitted changes that base..HEAD cannot see`. ~90s spent, nothing established, re-run after the commit. The lesson names the ordering and not the precondition that the tool reads `base..HEAD`, so following it as written produces an unusable run. `strong` — the output is recorded."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: — commit the slice FIRST, then run the changed-line proof, then repair inside the same slice. The gate reads `base..HEAD` and returns `unestablished` on a dirty pool, so \"before the commit\" is unrunnable. Amends the ordering the lesson currently states."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the changed-line coverage proof immediately after the slice commit and BEFORE the broad lane, as the handoff already says. Four broad reruns this session paid for the reverse order."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "the final repair sequence used changed-line proof before the broad release gate; this remains a required ordering invariant because a passing broad suite cannot prove changed-line ownership."
         }
       ]
     },
@@ -266,64 +332,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "The lesson `guard-adjacent-to-action` was presented at session open and the handoff I then wrote carried two `## Current State` entries with no owning link, command, or issue id. The handoff validator refused the commit. The lesson names exactly that shape."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:c62a2a11117a",
-      "kind": "next_improvement",
-      "lesson": "run the changed-line coverage proof immediately after the slice commit and BEFORE the broad lane, as the handoff already says. Four broad reruns this session paid for the reverse order.",
-      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
-      "recurrence_class": "changed-line-proof-before-broad-quality",
-      "source_count": 5,
-      "independent_source_count": 5,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-      "latest_source_date": "2026-08-18",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.6,
-      "selection_weight": 3.2465,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A changed-line proof that proved nothing**. Ran the focused coverage gate on an uncommitted tree, following the lesson's \"before the broad lane\" ordering. It returned `status: unestablished — mutation-pool files have uncommitted changes that base..HEAD cannot see`. ~90s spent, nothing established, re-run after the commit. The lesson names the ordering and not the precondition that the tool reads `base..HEAD`, so following it as written produces an unusable run. `strong` — the output is recorded."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: — commit the slice FIRST, then run the changed-line proof, then repair inside the same slice. The gate reads `base..HEAD` and returns `unestablished` on a dirty pool, so \"before the commit\" is unrunnable. Amends the ordering the lesson currently states."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-          "date": "2026-08-18",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "run the changed-line coverage proof immediately after the slice commit and BEFORE the broad lane, as the handoff already says. Four broad reruns this session paid for the reverse order."
         }
       ]
     },
@@ -482,6 +490,48 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "before a quality batch is formed, inventory hidden files created by every concurrent check and require disjoint paths or an explicit serialization edge. is now carried by the namespace regression and the closeout record."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:c853031906b3",
+      "kind": "repeat_trap",
+      "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks.",
+      "normalized_key": "workflow when a gate s failure message instructs edits verify each named surface still",
+      "recurrence_class": "proof-surface-message-drift",
+      "source_count": 3,
+      "independent_source_count": 3,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.36,
+      "selection_weight": 1.72,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when a gate's failure message instructs edits, verify each named surface still owns what the message claims before editing — two of the four named here were superseded by #596."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "intentionally wrong release command examples were initially rendered as runnable command evidence, so the quality gate treated the documentation as executable. The structural repair is to keep rejected calls non-executable and validate the owning command surface before recording them."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks."
         }
       ]
     },
@@ -650,40 +700,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:cfe3dd7af53f",
-      "kind": "next_improvement",
-      "lesson": "this is the SECOND inherited unclaimed session in three days, and the first artifact already filed this improvement, so the class recurred with the follow-up open. An opened lesson session with no disposition blocks the pre-push gate for a later author who cannot honestly clear it with anything but `presentation-unproven`. Surface outstanding sessions at session START, where the opener can still close them, instead of at push time where only a stranger can. Structural pattern: state opened by one actor and only enforceable against another. Triggering instance(s): `2026-08-16-s9`, `2026-08-17-3bbe7879`. Destination: issue.",
-      "normalized_key": "an opened lesson session with no disposition blocks the pre push gate for every",
-      "recurrence_class": "session-opened-never-closed",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md",
-      "latest_source_date": "2026-08-18",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.24,
-      "selection_weight": 1.184,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-17-s9-unclaimed-session-disposition.md",
-          "date": "2026-08-17",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "an opened lesson session with no disposition blocks the pre-push gate for every LATER author, not the one who opened it. Consider surfacing outstanding sessions at session start, where the opener can still close them, instead of at push time where only a stranger can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md",
-          "date": "2026-08-18",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "this is the SECOND inherited unclaimed session in three days, and the first artifact already filed this improvement, so the class recurred with the follow-up open. An opened lesson session with no disposition blocks the pre-push gate for a later author who cannot honestly clear it with anything but `presentation-unproven`. Surface outstanding sessions at session START, where the opener can still close them, instead of at push time where only a stranger can. Structural pattern: state opened by one actor and only enforceable against another. Triggering instance(s): `2026-08-16-s9`, `2026-08-17-3bbe7879`. Destination: issue."
         }
       ]
     }
@@ -812,6 +828,72 @@
       ]
     },
     {
+      "candidate_id": "class:c62a2a11117a",
+      "kind": "repeat_trap",
+      "lesson": "the final repair sequence used changed-line proof before the broad release gate; this remains a required ordering invariant because a passing broad suite cannot prove changed-line ownership.",
+      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
+      "recurrence_class": "changed-line-proof-before-broad-quality",
+      "source_count": 6,
+      "independent_source_count": 6,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.6,
+      "selection_weight": 4.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A changed-line proof that proved nothing**. Ran the focused coverage gate on an uncommitted tree, following the lesson's \"before the broad lane\" ordering. It returned `status: unestablished — mutation-pool files have uncommitted changes that base..HEAD cannot see`. ~90s spent, nothing established, re-run after the commit. The lesson names the ordering and not the precondition that the tool reads `base..HEAD`, so following it as written produces an unusable run. `strong` — the output is recorded."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: — commit the slice FIRST, then run the changed-line proof, then repair inside the same slice. The gate reads `base..HEAD` and returns `unestablished` on a dirty pool, so \"before the commit\" is unrunnable. Amends the ordering the lesson currently states."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
+          "date": "2026-08-16",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the changed-line coverage proof immediately after the slice commit and BEFORE the broad lane, as the handoff already says. Four broad reruns this session paid for the reverse order."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "the final repair sequence used changed-line proof before the broad release gate; this remains a required ordering invariant because a passing broad suite cannot prove changed-line ownership."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:31f4eef90f1c",
       "kind": "repeat_trap",
       "lesson": "**Losing long runs to the timeout.** Two full-suite runs were cut off (one truncated at 71%) because the wrapper timed out and the child was not tracked. ~20 minutes each, twice. There is still no reusable monitored-phase path for a long-running child, which is the standing lesson this recurrence re-proves.",
@@ -940,64 +1022,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "The lesson `guard-adjacent-to-action` was presented at session open and the handoff I then wrote carried two `## Current State` entries with no owning link, command, or issue id. The handoff validator refused the commit. The lesson names exactly that shape."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:c62a2a11117a",
-      "kind": "next_improvement",
-      "lesson": "run the changed-line coverage proof immediately after the slice commit and BEFORE the broad lane, as the handoff already says. Four broad reruns this session paid for the reverse order.",
-      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
-      "recurrence_class": "changed-line-proof-before-broad-quality",
-      "source_count": 5,
-      "independent_source_count": 5,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-      "latest_source_date": "2026-08-18",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.6,
-      "selection_weight": 3.2465,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A changed-line proof that proved nothing**. Ran the focused coverage gate on an uncommitted tree, following the lesson's \"before the broad lane\" ordering. It returned `status: unestablished — mutation-pool files have uncommitted changes that base..HEAD cannot see`. ~90s spent, nothing established, re-run after the commit. The lesson names the ordering and not the precondition that the tool reads `base..HEAD`, so following it as written produces an unusable run. `strong` — the output is recorded."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: — commit the slice FIRST, then run the changed-line proof, then repair inside the same slice. The gate reads `base..HEAD` and returns `unestablished` on a dirty pool, so \"before the commit\" is unrunnable. Amends the ordering the lesson currently states."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "the lesson presented at session open says to run changed-line coverage before the final broad lane so a missing proof is found while the context is still local. I ran the full suite, committed S6b-1, and then ran the changed-line proof, which returned twelve uncovered lines and cost two additional commits to close. Had I run it in the order the lesson names, those lines would have been closed inside the slice commit. **Fourth, cheap and repeated: the handoff validator refused my edit twice** — once for a `## Current State` entry with no owning link or command, once (twice, in fact) for the content-line budget. Both are lessons that were in view at session open. Each refusal cost a read-edit-revalidate cycle. Not waste, recorded because it looks like it: eleven reviewers and five rounds cost substantial wall clock and produced every blocker that mattered. The two scope reductions they forced — the path arm demoted to advisory, SC20 rewritten — are the session's most valuable output, and neither was reachable by more of my own reading."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-          "date": "2026-08-18",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "run the changed-line coverage proof immediately after the slice commit and BEFORE the broad lane, as the handoff already says. Four broad reruns this session paid for the reverse order."
         }
       ]
     },
@@ -1156,6 +1180,48 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "before a quality batch is formed, inventory hidden files created by every concurrent check and require disjoint paths or an explicit serialization edge. is now carried by the namespace regression and the closeout record."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:c853031906b3",
+      "kind": "repeat_trap",
+      "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks.",
+      "normalized_key": "workflow when a gate s failure message instructs edits verify each named surface still",
+      "recurrence_class": "proof-surface-message-drift",
+      "source_count": 3,
+      "independent_source_count": 3,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.36,
+      "selection_weight": 1.72,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when a gate's failure message instructs edits, verify each named surface still owns what the message claims before editing — two of the four named here were superseded by #596."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "intentionally wrong release command examples were initially rendered as runnable command evidence, so the quality gate treated the documentation as executable. The structural repair is to keep rejected calls non-executable and validate the owning command surface before recording them."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks."
         }
       ]
     },
@@ -1324,6 +1390,108 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:7a4296fb47a3",
+      "kind": "repeat_trap",
+      "lesson": "the release record and handoff carried verification-grade assertions that were not all machine-read by one consumer. The structural response was to add a typed claims-review record, exact commit/hash bindings, and a separate observer narrative.",
+      "normalized_key": "an artifact whose prose carries verification grade claims counts per issue residual ownership which",
+      "recurrence_class": "prose-claim-without-a-reader",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
+          "date": "2026-08-16",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "the release record and handoff carried verification-grade assertions that were not all machine-read by one consumer. The structural response was to add a typed claims-review record, exact commit/hash bindings, and a separate observer narrative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:f018693d78d2",
+      "kind": "repeat_trap",
+      "lesson": "passing focused tests were not treated as changed-line proof; the changed-line producer's blocking target output remained the authoritative coverage verdict.",
+      "normalized_key": "workflow when adding tests to satisfy a coverage gate verify by measuring the named",
+      "recurrence_class": "green-test-is-not-covered-line",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the named lines, not by the test passing. Both attempts here passed; only the coverage read distinguished the one that exercised the intended branch from the one that silently matched a different arm with an identical result."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "passing focused tests were not treated as changed-line proof; the changed-line producer's blocking target output remained the authoritative coverage verdict."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:db57823c8786",
+      "kind": "repeat_trap",
+      "lesson": "release publication and post-publish readback completed before the goal/handoff documents were reconciled to the new truth. The structural repair is to bind closeout artifacts after external readback and before changing terminal status.",
+      "normalized_key": "wrong retro binding at the completion boundary the goal cited 2026 08 04 session",
+      "recurrence_class": "goal-closeout-evidence-binding",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Wrong retro binding at the completion boundary** — the goal cited `2026-08-04-session-retro.md`, whose `Goal:` names a different objective. The goal status was already `complete`, but the authoritative closeout validator rejected the evidence binding. The avoidable waste was not the validator run; it was allowing a claimed completion to carry a merely existing artifact instead of a goal-bound one. Decision: fix now by creating this bound retro, updating the goal's citation, and rerunning the evidence gate."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "release publication and post-publish readback completed before the goal/handoff documents were reconciled to the new truth. The structural repair is to bind closeout artifacts after external readback and before changing terminal status."
         }
       ]
     },
@@ -1686,6 +1854,84 @@
       ]
     },
     {
+      "candidate_id": "current_focus:f5ebc07cc103",
+      "kind": "current_focus",
+      "lesson": "This retro closes the first receipted R2 resume session against the published 6.2.1 boundary.",
+      "normalized_key": "this retro closes the first receipted r2 resume session against the published 6 2",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro closes the first receipted R2 resume session against the published 6.2.1 boundary."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a424fc76bd40",
+      "kind": "current_focus",
+      "lesson": "This retro closes the receipted R3 delivery/provenance review session.",
+      "normalized_key": "this retro closes the receipted r3 delivery provenance review session",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro closes the receipted R3 delivery/provenance review session."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:c06717a84fd1",
+      "kind": "current_focus",
+      "lesson": "This retro closes the receipted semantic-packet session that established the release candidate's evidence joins.",
+      "normalized_key": "this retro closes the receipted semantic packet session that established the release candidate s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro closes the receipted semantic-packet session that established the release candidate's evidence joins."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:984ace8a89cd",
       "kind": "current_focus",
       "lesson": "This retro closes the work unit that repaired the release fresh-checkout timeout, changed-line consumer coverage, duplicated child-process setup, and the parallel coverage-runtime collision exposed by the broad quality gate.",
@@ -1738,6 +1984,110 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:65fc38e149e8",
+      "kind": "next_improvement",
+      "lesson": "add a typed closeout join that rejects stale candidate pointers before a goal can become terminal.",
+      "normalized_key": "add a typed closeout join that rejects stale candidate pointers before a goal can",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "add a typed closeout join that rejects stale candidate pointers before a goal can become terminal."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:465871c00933",
+      "kind": "next_improvement",
+      "lesson": "classify wrong path/ref/flag/key calls as structural contract smells in every proof and delivery review.",
+      "normalized_key": "classify wrong path ref flag key calls as structural contract smells in every proof",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "classify wrong path/ref/flag/key calls as structural contract smells in every proof and delivery review."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4a94608a9396",
+      "kind": "next_improvement",
+      "lesson": "expose a single typed “observer scope / does-not-establish” field for public, installed, host, and semantic verdict consumers.",
+      "normalized_key": "expose a single typed observer scope does not establish field for public installed host",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "expose a single typed “observer scope / does-not-establish” field for public, installed, host, and semantic verdict consumers."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e80d339ad054",
+      "kind": "next_improvement",
+      "lesson": "generate claim summaries from structured release fields and require every narrative assertion to identify its reader or remain tagged as judgment.",
+      "normalized_key": "generate claim summaries from structured release fields and require every narrative assertion to identify",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "generate claim summaries from structured release fields and require every narrative assertion to identify its reader or remain tagged as judgment."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:28b6a3e70e1d",
       "kind": "next_improvement",
       "lesson": "keep the release planner, critique packet, and publish gate on one structured target-identity contract; do not infer release scope from a semantic-candidate filename.",
@@ -1764,6 +2114,84 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7c9f4826a8f2",
+      "kind": "next_improvement",
+      "lesson": "keep “wrong call is a smell, never a pass” next to the release boundary and retain the current #681–#687 disposition packet as the tracker source of truth.",
+      "normalized_key": "keep wrong call is a smell never a pass next to the release boundary",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "keep “wrong call is a smell, never a pass” next to the release boundary and retain the current #681–#687 disposition packet as the tracker source of truth."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1b59aacb935f",
+      "kind": "next_improvement",
+      "lesson": "make post-publish reconciliation a required parent-only slice with goal, handoff, issue packet, and release record updated in one verified batch.",
+      "normalized_key": "make post publish reconciliation a required parent only slice with goal handoff issue packet",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make post-publish reconciliation a required parent-only slice with goal, handoff, issue packet, and release record updated in one verified batch."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9e98c175fddc",
+      "kind": "next_improvement",
+      "lesson": "make the changed-line producer expose a compact typed receipt that release planning can bind without scraping prose.",
+      "normalized_key": "make the changed line producer expose a compact typed receipt that release planning can",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make the changed-line producer expose a compact typed receipt that release planning can bind without scraping prose."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:128b608f8790",
       "kind": "next_improvement",
       "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path.",
@@ -1786,6 +2214,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f12c02acea26",
+      "kind": "next_improvement",
+      "lesson": "make the release closeout planner require the post-publish artifact commit identity before its install-refresh step can be described as current.",
+      "normalized_key": "make the release closeout planner require the post publish artifact commit identity before its",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make the release closeout planner require the post-publish artifact commit identity before its install-refresh step can be described as current."
         }
       ]
     },
@@ -1838,6 +2292,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "preserve #639 as the owner of the recurring session lifecycle gap; this retro demonstrates the gate/router contract and is not an issue-close claim. recurs: unclaimed-session-disposition."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ba03c94e7a4e",
+      "kind": "next_improvement",
+      "lesson": "preserve the distinction between “reviewed release record” and “fresh-eye semantic approval” in every future closeout.",
+      "normalized_key": "preserve the distinction between reviewed release record and fresh eye semantic approval in every",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "preserve the distinction between “reviewed release record” and “fresh-eye semantic approval” in every future closeout."
         }
       ]
     },
@@ -1994,6 +2474,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Read-only audits ran in parallel; append-only lesson ledger writes ran serially. This kept useful fan-out while preserving the shared-writer rule."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d99ab03403f8",
+      "kind": "repeat_trap",
+      "lesson": "The first post-publish install observation was at an older artifact commit; the supported default `charness update --detail` was then run to reconcile the managed checkout. The first observation remains a drift smell, not a release pass.",
+      "normalized_key": "the first post publish install observation was at an older artifact commit the supported",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The first post-publish install observation was at an older artifact commit; the supported default `charness update --detail` was then run to reconcile the managed checkout. The first observation remains a drift smell, not a release pass."
         }
       ]
     },
@@ -5414,32 +5920,6 @@
       ]
     },
     {
-      "candidate_id": "class:7a4296fb47a3",
-      "kind": "next_improvement",
-      "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer.",
-      "normalized_key": "an artifact whose prose carries verification grade claims counts per issue residual ownership which",
-      "recurrence_class": "prose-claim-without-a-reader",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 5,
-      "recency_weight": 0.9259,
-      "alpha": 0.12,
-      "selection_weight": 0.9259,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "an artifact whose PROSE carries verification-grade claims (counts, per-issue residual ownership, which prior finding recorded what) has no executable reader, so its errors are found only by whoever reads it next. Three independent claims-review rounds each found a NEW real defect in one such body; the fix is to shrink the claim surface or derive it from the structured findings it cites, never to add a fourth reviewer."
-        }
-      ]
-    },
-    {
       "candidate_id": "class:9b0cfdf68d38",
       "kind": "next_improvement",
       "lesson": "before editing any config value, establish whether it is READ by a reader or RUN by an executor. A documentation placeholder in a read field is correct and in an executed field is a shell redirection, and the two are indistinguishable by looking at the value.",
@@ -7814,32 +8294,6 @@
       ]
     },
     {
-      "candidate_id": "class:c853031906b3",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: when a gate's failure message instructs edits, verify each named surface still owns what the message claims before editing — two of the four named here were superseded by #596.",
-      "normalized_key": "workflow when a gate s failure message instructs edits verify each named surface still",
-      "recurrence_class": "proof-surface-message-drift",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
-      "latest_source_date": "2026-08-14",
-      "age_days": 7,
-      "recency_weight": 0.8978,
-      "alpha": 0.12,
-      "selection_weight": 0.8978,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: when a gate's failure message instructs edits, verify each named surface still owns what the message claims before editing — two of the four named here were superseded by #596."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:99e3c6f22fae",
       "kind": "repeat_trap",
       "lesson": "A gate was piped through `head`, discarding its exit code, in a repo whose operating contract forbids exactly that.",
@@ -8512,32 +8966,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: when a failure passes in isolation but fails under the full gate, diff the ENVIRONMENT first — inherited git config (`GIT_CONFIG_PARAMETERS` from any `git -c`), HOME, cwd, disk — before reading the test. Both of this session's push blockers were environment, and both read as flaky tests."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:f018693d78d2",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the named lines, not by the test passing. Both attempts here passed; only the coverage read distinguished the one that exercised the intended branch from the one that silently matched a different arm with an identical result.",
-      "normalized_key": "workflow when adding tests to satisfy a coverage gate verify by measuring the named",
-      "recurrence_class": "green-test-is-not-covered-line",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 8,
-      "recency_weight": 0.8841,
-      "alpha": 0.12,
-      "selection_weight": 0.8841,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the named lines, not by the test passing. Both attempts here passed; only the coverage read distinguished the one that exercised the intended branch from the one that silently matched a different arm with an identical result."
         }
       ]
     },
@@ -12056,32 +12484,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Two numbers written without measuring.** \"nineteen\" was carried in from the preceding slice's unrelated count of shipped example adapters; its replacement \"173\" was `176 − 3` computed without checking that 20 of the 176 were not goal artifacts. Both looked authoritative in a verdict surface's own rationale."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:db57823c8786",
-      "kind": "repeat_trap",
-      "lesson": "**Wrong retro binding at the completion boundary** — the goal cited `2026-08-04-session-retro.md`, whose `Goal:` names a different objective. The goal status was already `complete`, but the authoritative closeout validator rejected the evidence binding. The avoidable waste was not the validator run; it was allowing a claimed completion to carry a merely existing artifact instead of a goal-bound one. Decision: fix now by creating this bound retro, updating the goal's citation, and rerunning the evidence gate.",
-      "normalized_key": "wrong retro binding at the completion boundary the goal cited 2026 08 04 session",
-      "recurrence_class": "goal-closeout-evidence-binding",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 13,
-      "recency_weight": 0.8185,
-      "alpha": 0.12,
-      "selection_weight": 0.8185,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-          "date": "2026-08-08",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Wrong retro binding at the completion boundary** — the goal cited `2026-08-04-session-retro.md`, whose `Goal:` names a different objective. The goal status was already `complete`, but the authoritative closeout validator rejected the evidence binding. The avoidable waste was not the validator run; it was allowing a claimed completion to carry a merely existing artifact instead of a goal-bound one. Decision: fix now by creating this bound retro, updating the goal's citation, and rerunning the evidence gate."
         }
       ]
     },

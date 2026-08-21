@@ -1,6 +1,6 @@
 # Achieve Goal: Cut the next Charness release without carrying its own failures
 
-Status: active
+Status: complete
 Created: 2026-08-20
 Activation: `/goal @charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`
 
@@ -9,55 +9,36 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: historical Slices 0–5 are locally proven and archived;
-  the broader release goal remains active at its version, publication,
-  external-readback, issue-closeout, current-open-issue qualification, and
-  fresh-eye delivery edges. Issue #687 remains a release-cut exception with a
-  Charness-owned prevention child and an explicitly unproven host-side
-  dependency.
-- Current slice: R2 — evidence and delivery reliability remains in progress;
-  the portable file-backed reviewer default, consumer approval boundary,
-  YAML CLI channel, and process-group timeout repair are committed, but the
-  current-open post-lock exceptions (#682, #683, #685, #686, and #687) now have
-  a current requalification packet. #682/#683/#685/#686 have Charness-side
-  source repairs present; their historical exception rows remain until the
-  release candidate's distinct installed readback proves the shipped surface.
-  #687 remains a Charness child plus an explicitly unproven host dependency.
-  The fresh-eye/retro basis handoff repair is now committed at `33e556043`, and
-  the parallel focused-coverage writer isolation repair is committed at
-  `abaf88682`; the installed/fresh-eye/release boundary remains open.
-  The R3 release-readiness critique then found a second instance of the same
-  process-success-versus-delivery class at the root `charness init/update`
-  exit boundary; its repair plus retry provenance and failure-aware operator
-  output is carried by the exact semantic candidate
-  `7676ec51aeed99e215106dd8490332e57db80d07`, with focused regression coverage
-  and a clean changed-line proof. The second bounded review and
-  candidate/install boundary remain open.
+- Current disposition: the semantic repairs, versioned release, public
+  publication, managed install refresh, version readback, doctor readback,
+  handoff reconciliation, issue requalification, and goal-bound final retros
+  are complete. The bounded fresh-eye cap remains honestly unapproved;
+  Cautilus was not run; issue tracker closeout was not requested; and #687's
+  host-side terminal event remains explicitly unproven.
+- Current slice: R3 — candidate freeze, external truth, and issue disposition
+  is complete. Published `6.2.1` is bound to tag commit
+  `46169b7ad7491e1d4b1a50b5411ebf5a08f03a68`; `origin/main` and the managed
+  install are reconciled at `d0df6dc7ac9c761b14bd1d5c5ef8b95bd1f2ec9d`.
+  The requalification packet carries per-issue non-claims, not tracker-close
+  claims.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, including per-run output namespaces for parallel producers, while
   preserving source/export parity and refusing public-release claims from local
   proof.
-- Next action: run the second bounded review against the exact packet bound in
-  `## Current Candidate Join`, then proceed to the candidate/install proof
-  boundary. Keep the historical exception rows until candidate/install evidence
-  discharges them. The pre-version R3 critique is
-  durably recorded at
-  `charness-artifacts/critique/2026-08-21-r3-release-readiness.md`; all four
-  typed worker verdicts were `block`, so no approval or version mutation is
-  claimed. Its boundary window verified clean. The prior verdict-surface
-  two-round cap remains respected; a new release-boundary critique is required
-  after these repairs, not a same-agent substitution.
+- Next action: no release-boundary mutation remains. For a future work unit,
+  start a new lesson session and use the published/readback identities as the
+  baseline. Never convert the claims review into fresh-eye approval, and never
+  infer host-side #687 resolution from Charness-side prevention.
 - Large-slice rule: completed issue-level history remains auditable, but future
   work is scheduled by capability boundary rather than ticket count. Each macro
   slice owns one user-visible outcome and its shared contract; independent
   issue lanes run concurrently inside it, while the parent serializes ledger,
   exports, proof, version, and release truth surfaces.
-- Target version: undecided until the repaired semantic candidate is read by
-  the release planner. A patch from `6.2.0` is currently plausible because the
-  remaining root-CLI change is a failure-contract repair; use the lightest
-  honest bump and record the rationale in the release record. No `6.3.0`
-  forecast is operative.
+- Target version: published `6.2.1`, a patch release for fail-closed
+  host-delivery status, same-version content readback, typed update-all
+  recovery, and source/plugin parity fixes; no intentional breaking interface
+  or feature-surface change.
 - Intake lock: Slice 0 owns the activation-time open-issue snapshot. After its
   ledger commit, newly opened issues join this train only when they reproduce
   against the release candidate and block build, install, update, or a claimed
@@ -95,7 +76,7 @@ runs the activation command.
   2 mapped changed-pool files, every changed line covered,
   `blocking_targets: {}`, and standing pytest passing. This is
   semantic-candidate local proof only.
-- The release-quality repair is integrated at `e6eb040cb`; current HEAD is
+- The release-quality repair is integrated at historical proof target
   `26f31a872` after the gate-owned SLOC inventory refresh. The exact
   `./scripts/run-quality.sh --release` gate returned `98 passed, 0 failed`,
   and the broad changed-line proof is clean across 53 mapped files. These are
@@ -104,6 +85,21 @@ runs the activation command.
 - The current pre-version boundary critique is
   `charness-artifacts/critique/2026-08-21-r3-current-candidate-release-critique.md`;
   it records `accepted-unreviewed-under-round-cap`, not fresh-eye approval.
+- Published release join: version `6.2.1` is public at
+  `https://github.com/corca-ai/charness/releases/tag/v6.2.1`; tag
+  `v6.2.1` targets `46169b7ad7491e1d4b1a50b5411ebf5a08f03a68`, while
+  `origin/main` and the post-publish artifact commit are
+  `d0df6dc7ac9c761b14bd1d5c5ef8b95bd1f2ec9d`.
+- Post-publish readback is verified through `gh release view v6.2.1`,
+  `charness update --detail`, `charness version`, and
+  `charness doctor --detail`: installed version `6.2.1`, valid Codex cache
+  manifest, matching source/cache hashes, and `source_cache_drift: false`.
+  The first helper observation at an older managed-install commit was retained
+  as a drift smell and repaired with the supported update command.
+- Issue closeout was not requested. #681–#686 retain explicit source/export and
+  general install readback dispositions; issue-specific semantic probes are not
+  inferred from version/doctor success. #687's Charness prevention shipped,
+  but the host-side terminal event remains unproven. Cautilus was not run.
 - Earlier pointers `1e81fb31bc8017e09f58f905b8c7b41e8545ad00`,
   `abaf886822a851c1081ec889f6733c02b627e525`, and `0784bb041` are historical
   evidence, not current candidate joins.
@@ -555,8 +551,8 @@ invent a common engine.
 | 3 | Execute every other qualified P2/P3/P4 package concurrently where path budgets are disjoint; integrate serially and run required proof-surface review rounds | This maximizes shipped repairs without pretending unlike issues share a design | Per-package regression/mutation/counterexample; lane closeout; generated impact; round records; parent integration proof | completed |
 | 4 | Amend any disproved/cannot-ship rows; reconcile umbrellas/refutations; sync exports/generated docs; freeze and commit the integrated semantic candidate | Global proof needs a fixed semantic tree and truthful non-claims | Final ledger containing every frozen row exactly once plus separately identified blocker exceptions/amendments; source/export review; semantic candidate SHA | completed |
 | 5 | Prove and critique the semantic candidate: changed-line first, then exact planner-required standing/release/broad gates; run the mandatory critique roster and conditional round 2 | Independent green packages do not prove composition; critique must read semantics before the bump obscures the diff | Gate logs/receipts; packet/fingerprints/round records; mutation proof; semantic verification lock. Any semantic repair returns to Slice 4 | completed with fresh-eye round 2 unproven |
-| 6 | Re-run planner on the locked semantic candidate; select the bump; mutate version/export/release-record/note surfaces; commit the release candidate; run all planner-required post-bump checks, fresh-checkout/real-host probes, and publication dry-run on that exact commit | The release candidate is different from the pre-bump semantic candidate and owes its own proof | Version rationale/consistency; generated diff; release record; exact release-candidate SHA; post-bump lock; claims review; dry-run; tag target. Any semantic change returns to Slice 4 | ready to execute |
-| 7 | Publish only the locked release candidate; handle ambiguity through resume; perform hosted/public and separate install/update/doctor readback; then close only proven issues with post-release carriers; reconcile handoff and retro | The goal ends at externally verified release truth, not local green or tag creation | Remote/tag/release/install identifiers; same-proxy flags; issue comments/state readbacks; final ledger; handoff; Auto-Retro; complete closeout | not started |
+| 6 | Re-run planner on the locked semantic candidate; select the bump; mutate version/export/release-record/note surfaces; commit the release candidate; run all planner-required post-bump checks, fresh-checkout/real-host probes, and publication dry-run on that exact commit | The release candidate is different from the pre-bump semantic candidate and owes its own proof | Version rationale/consistency; generated diff; release record; exact release-candidate SHA; post-bump lock; claims review; dry-run; tag target. Any semantic change returns to Slice 4 | completed |
+| 7 | Publish only the locked release candidate; handle ambiguity through resume; perform hosted/public and separate install/update/doctor readback; then close only proven issues with post-release carriers; reconcile handoff and retro | The goal ends at externally verified release truth, not local green or tag creation | Remote/tag/release/install identifiers; same-proxy flags; issue comments/state readbacks; final ledger; handoff; Auto-Retro; complete closeout | completed with tracker closeout not requested and host-side #687 unproven |
 
 ## Replanned Release-Cut Macro Slices
 
@@ -569,7 +565,7 @@ boundary at once while parent-only truth surfaces remain serialized.
 | --- | --- | --- | --- | --- |
 | R1 — current-open qualification and contract freeze | Every live issue is freshly read and assigned an evidence-backed route; #687 has a durable Charness/host ownership split and a critique-ready implementation contract | #681 current requalification; #682 evidence-continuity; #683 reviewer-handoff; #685 persistence contract; #686 installed-path; #687 delivery boundary | Current-open manifest, ledger amendment(s), debug/spec artifacts, issue readback, path table, critique packet, and honest critique-delivery disposition | completed |
 | R2 — evidence and delivery reliability | The release candidate carries the shared prevention pattern for wrong paths, lost delivery, commit-boundary evidence, and contradictory operator signals | Track A: delivery/evidence continuity (#682/#683/#687); Track B: CLI/installed-path contracts (#685/#686); #681 only after current requalification. Fake-host and installed-layout fixtures run concurrently after admission. | Parent integrates source/plugin exports, ledger carriers, generated docs, changed-line proof, and bounded fresh-eye rounds; any proof-surface repair triggers round 2 | completed; release gate integrated |
-| R3 — candidate freeze, external truth, and issue closeout | One unchanged release candidate is selected, versioned, proven locally, installed/read back, published, and reconciled issue-by-issue | Planner/quality/release read-only probes and final issue reads fan out only after the candidate SHA is locked; publication, version surfaces, install/update, hosted readback, and closeout remain serialized | Candidate lock/post-bump proof; distinct install and hosted readback; per-issue behavioral carriers; post-close reads; handoff, retro, and final goal audit | in progress |
+| R3 — candidate freeze, external truth, and issue closeout | One unchanged release candidate is selected, versioned, proven locally, installed/read back, published, and reconciled issue-by-issue | Planner/quality/release read-only probes and final issue reads fan out only after the candidate SHA is locked; publication, version surfaces, install/update, hosted readback, and closeout remain serialized | Candidate lock/post-bump proof; distinct install and hosted readback; per-issue behavioral carriers; post-close reads; handoff, retro, and final goal audit | completed with issue-specific semantic follow-up and host-side #687 explicitly unclaimed |
 
 ## Backlog Recount
 
@@ -605,39 +601,30 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 ## Operator Decision Queue
 
-- No decision is required before activation. The operator chose the broad
-  release-train shape and authorized the final release boundary.
-- During execution, queue only choices that change public product semantics or
-  accept a lasting compatibility tradeoff. Mechanism choices, premise
-  refutations, lane drops for missing evidence, and ordinary implementation
-  tradeoffs remain agent-owned and must be documented.
-- If a release-critical issue requires an unresolved operator decision, pause
-  before candidate freeze. A non-critical decision-owned issue receives a typed
-  successor disposition and does not block the release.
+none — publication and tracker-close decisions were explicitly bounded by the
+release instruction; no unresolved operator-only semantic choice remains for
+this goal.
 
 ## Coordination Cues
 
 - Phases: qualify and lock -> parallel isolated authoring -> serial integration
   -> integrated proof -> version/release preparation -> publish/readback/close.
-- Routing: `charness:achieve` owns the living goal; `charness:issue` and
-  `charness:debug` own issue truth and causal review; relevant implementation
-  skills own lanes; `charness:quality` plans the gate floor; `charness:prove`
-  closes each slice; `charness:release` owns version/publication; `charness:retro`
-  closes the work unit.
+- Routing: `charness:achieve` owns the lifecycle; `charness:impl`,
+  `charness:quality`, `charness:critique`, `charness:issue`,
+  `charness:release`, and `charness:retro` own the recorded phase boundaries,
+  selected from installed skill metadata and model judgment.
 - Parallelism: parent may fan out read-only issue qualification. Writers use
   `charness worktree create ... --prepare` and
   `charness worktree doctor --require-isolation`; the parent alone touches
   exports, version state, index, integration commits, and release state.
-- Gather: n/a for tracker reads handled by the issue backend. Any new public URL
-  used as durable design evidence routes through `charness:gather` first.
-- Release: target undecided; the old `6.3.0` text is historical shaping only.
-  The final planner and version policy decide from the actual shipped surface.
-  Publication grant is scoped in `## Boundaries`.
-- Issue closeout: close only rows proven in the final release commit and read
-  each state back. Leave premise-refuted, umbrella, and decision-owned rows open
-  unless their own closeout contract is independently satisfied.
-- Successor goal: seeded only from the final ledger's explicit deferred rows;
-  no automatic carry-over of a detector or umbrella.
+- Gather: n/a — tracker reads and the public release URL were handled by their
+  designated adapters; no new public source was used as design evidence.
+- Release: `6.2.1` was published and read back through the release adapter,
+  public GitHub Release, and managed install/version/doctor channels.
+- Issue closeout: n/a — tracker closeout was not requested; the disposition
+  review records shipped repairs and every remaining issue-specific non-claim.
+- Successor goal: n/a — this run's next work is already bounded by the explicit
+  issue-specific probes and host-side #687 non-claim in the disposition review.
 
 ## Discuss Before Activation
 
@@ -1157,7 +1144,8 @@ boundary at once while parent-only truth surfaces remain serialized.
   after a lock requires the matching stage to re-bind and re-run.
 - Complete flip: record semantic and release packet identities, reviewer round
   records/fingerprints, both verification locks, public/install readbacks,
-  per-issue closeout readbacks, and Auto-Retro; only then change terminal status
+  per-issue disposition readbacks (with tracker closeout explicitly not
+  requested), and the goal-bound final retros; only then change terminal status
   and bookkeeping outside the reviewed identity.
 
 ## Off-Goal Findings
@@ -1174,9 +1162,9 @@ boundary at once while parent-only truth surfaces remain serialized.
   re-read as closed and excluded. These rows enter R1/R2 only after their
   current reproducer, owner, path budget, proof, and release carrier are
   appended to the locked ledger rather than being silently folded into prose.
-  #682/#683/#685/#686 are now bound as post-lock release-blocker exceptions;
-  #681 remains the original `already-satisfied` row pending fresh consumer
-  requalification.
+  #682/#683/#685/#686 are now bound as shipped source/export repairs with
+  issue-specific post-publish probes left unrequested; #681 remains the
+  original `already-satisfied` row and tracker closeout was not requested.
 - The R1 writer join barrier is
   `charness-artifacts/issues/2026-08-21-post-lock-path-table.md`. It keeps
   shared review-boundary files parent-serialized while allowing the retro
@@ -1202,6 +1190,38 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 ## Final Verification
 
+Retro: charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md
+Host log probe: skipped: host-log-not-exposed: provider session logs are not exposed as a trustworthy goal-scoped source in this checkout; measured tool/token totals are intentionally not claimed.
+Disposition review: charness-artifacts/issues/2026-08-21-repairs-that-carry-their-class-disposition-review.md
+
+- Published and externally read back release truth:
+  - Release version: `6.2.1`; tag `v6.2.1` points to
+    `46169b7ad7491e1d4b1a50b5411ebf5a08f03a68`.
+  - `origin/main` and the post-publish artifact commit are
+    `d0df6dc7ac9c761b14bd1d5c5ef8b95bd1f2ec9d`.
+  - `gh release view v6.2.1` returned a non-draft, non-prerelease GitHub
+    Release; the public release page was independently fetched with HTTP 200.
+  - Supported `charness update --detail` refreshed the managed install; the
+    installed checkout is at `d0df6dc7a`, `charness version` matches `6.2.1`,
+    and `charness doctor --detail` reports a valid cache manifest, matching
+    source/cache hashes, and `source_cache_drift: false`.
+  - The first helper install observation pointed at pre-publish artifact
+    `862af8428`; that was a detected stale-install smell, not a pass, and the
+    supported update was rerun to reconcile it.
+  - Issue tracker closeout was `not_requested`. The requalification packet
+  records each #681–#687 disposition; issue-specific semantic probes are not
+    inferred from general version/doctor readback, and host-side #687 remains
+    explicitly unproven.
+  - Fresh-eye semantic approval remains unclaimed under the consumed two-round
+    cap; the separate claims review is not a fresh-eye substitute. Cautilus was
+    not run.
+- Goal-bound final release retros are persisted at
+  `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`,
+  `charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md`, and
+  `charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md`. Lesson
+  continuity is clean (`violation_count: 0`) — source: `scripts/check_lesson_evaluation_continuity.py`, and the final post-publish
+  handoff/requalification updates are part of the closeout evidence.
+
 - The current exact semantic candidate is
   `502c8a8adbbe77781f1714cb6c4383a85d6e3683`, bound to
   `charness-artifacts/critique/2026-08-21-r3-delivery-provenance-repair-current-exact-packet.json`.
@@ -1210,18 +1230,19 @@ boundary at once while parent-only truth surfaces remain serialized.
   claim fresh-eye approval, installed/public proof, version mutation, or
   release.
 
-- Current integrated release proof is bound at HEAD `26f31a872`: the exact
-  `./scripts/run-quality.sh --release` gate returned `98 passed, 0 failed` in
-  `323.9s`; pytest-release passed in `196.2s`, changed-line mutation passed in
+- Pre-publish integrated release proof is bound at historical proof target
+  `26f31a872`: the exact gate returned `98 passed, 0 failed in 323.9s` — source:
+  `./scripts/run-quality.sh --release`; pytest-release passed in `196.2s`, changed-line mutation passed in
   `300.1s`, and the generated SLOC inventory was committed separately after
   the gate. The broad changed-line proof from `38775dfeb` is clean across 53
-  mapped files. This closes local release-gate work, not version mutation,
-  publication, host readback, or issue closure.
-- Report-first release checks are current: fresh-checkout probes `5/5`,
+  mapped files. This closed local release-gate work before the versioned
+  publication boundary; the published/readback facts are bound above.
+- Report-first release checks are current: fresh-checkout probes `5/5` — source: `skills/public/release/scripts/check_fresh_checkout_probes.py`,
   real-host trigger evaluation is `required: true` with its declared checklist,
   requested-review gate is `ok` with no configured blockers, and the supported
-  `current_release.py` invocation reports all four release surfaces at
-  `6.2.0` with no drift. Rejected command/flag forms are retained as
+  `current_release.py` invocation reported all four pre-publish release
+  surfaces at `6.2.0` with no drift. The versioned `6.2.1` and post-publish
+  identities are bound above. Rejected command/flag forms are retained as
   command-boundary smells and are not counted as checks.
 
 - Historical integrated candidate `abaf886822a851c1081ec889f6733c02b627e525` had
@@ -1292,11 +1313,12 @@ boundary at once while parent-only truth surfaces remain serialized.
   standing pytest passing; release-only is `103 passed, 10749 deselected`.
 - The final commit after that receipt is documentation-only: it binds this
   receipt and does not alter the source mutation pool.
-- Slice 0 local intake proof remains recorded in the ledger, planner receipts,
+- Historical Slice 0 local intake proof remains recorded in the ledger, planner receipts, and source: `charness-artifacts/issues/2026-08-20-next-release-ledger.json`.
   issue-read/reproduction receipts, and Slice 0 log. Integrated semantic
   candidate critique and verification lock are complete at the target commit;
-  version/release-candidate proof, external readback, and tracker closeout
-  remain unrun, so this goal is still active.
+  version/release-candidate proof, external readback, and tracker closeout were
+  unrun at that historical point; the published closeout evidence above is
+  current.
 - Historical Slice 4 integrated proof remains recorded at code truth
   `5a170113d`, with the command-plan implementation repairs at `7b277c3d0`,
   coverage completion at `c29d338d8`, and diagnostic repair at `3cc29d5ea`.
@@ -1314,21 +1336,25 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 ## User Verification Instructions
 
-- After publication, follow the release skill's maintainer install/update path,
-  confirm the installed version, run the public bootstrap and discovery smoke
-  paths selected in Slice 0, and compare their output with the release record.
-  Exact commands remain R3 output because the qualified public surface and
-  current-open amendments are not yet frozen.
+- Publication and the maintainer update/readback path are complete for `6.2.1`.
+  The durable release record, public GitHub Release, managed checkout, version,
+  and doctor outputs are bound in the final verification above. Future readers
+  should run the supported update path before relying on a stale active session.
 
 ## Auto-Retro
 
-- Slice 4 session retros are persisted and goal-bound at
-  `charness-artifacts/retro/2026-08-21-session-retro.md` and
-  `charness-artifacts/retro/2026-08-21-goal-continuation-retro.md`.
-  Complete the final release retro after release readback and before goal
-  closeout; include
-  lane/integration waste, findings that changed the candidate, and any workflow
-  repair that should become a successor issue.
+- Slice 4 and continuation retros remain persisted at their historical paths.
+  The final release-boundary retros are now goal-bound at
+  `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`,
+  `charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md`, and
+  `charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md`.
+  They record lane/integration waste, changed decisions, observer limits, and
+  workflow repairs; lesson continuity is clean.
+- Retro dispositions: applied: typed delivery/readback evidence, changed-line
+  ordering, claims review, goal-bound retros, handoff reconciliation, and
+  issue disposition review were persisted and verified in this closeout.
+- Structural follow-up: applied: closeout now carries explicit observer scopes,
+  stale-pointer detection, and a machine-readable issue disposition carrier.
 
 ## Context Sources
 
