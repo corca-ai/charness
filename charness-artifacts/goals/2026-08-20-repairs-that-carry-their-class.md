@@ -20,12 +20,14 @@ runs the activation command.
   YAML CLI channel, and process-group timeout repair are committed, but the
   current-open post-lock exceptions (#682, #683, #685, #686, and #687) still
   require current requalification and/or repair before R3 candidate freeze.
-  The fresh-eye/retro basis handoff repair is now committed at `33e556043`;
-  the installed/fresh-eye/release boundary remains open.
+  The fresh-eye/retro basis handoff repair is now committed at `33e556043`, and
+  the parallel focused-coverage writer isolation repair is committed at
+  `abaf88682`; the installed/fresh-eye/release boundary remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
-  detection, while preserving source/export parity and refusing public-release
-  claims from local proof.
+  detection, including per-run output namespaces for parallel producers, while
+  preserving source/export parity and refusing public-release claims from local
+  proof.
 - Next action: requalify the five post-lock exception rows against the current
   clean tree in parallel, then repair the live #682/#683/#685/#686 seams (and
   bind #687's Charness child) behind disjoint path budgets. Reconcile each
@@ -1027,6 +1029,20 @@ boundary at once while parent-only truth surfaces remain serialized.
 - Lessons carried forward: A mandatory fresh-eye contract should name the independent context and typed consumer proof, not imply a host spawn. A post-commit planner must carry a committed basis because an empty working tree is not an empty slice. Wrong path and wrong flag failures belong in the same command-boundary recurrence class as stale output and non-empty checks.
 - Metrics: Focused related tests: 175 passed. Exact changed-line: 3/3 mapped files clean. Commit: 33e556043. Broad quality rerun is in progress and will be recorded separately.
 
+### Slice 8: retro-planner-and-parallel-coverage-ownership
+
+- Objective: Make the retro planner carry the final artifact path's write-target facts through the shared owner, and make parallel focused coverage producers carry isolated report/runtime ownership through the quality runner.
+- Why this approach: Broad quality exposed two producer-boundary gaps: plan_retro_run named write_artifact_path without routing the consumer to the owner's destruction-effect facts, and concurrent focused producers shared a report stem and derived runtime files. Both repairs belong at their shared producer boundaries and must stay mirrored in the installed layout.
+- Commits: Committed as 383a295df (Repair retro planner write-target ownership), b6567606e (Keep retro planner on shared owner path), and abaf88682 (Isolate parallel focused coverage writers).
+- What changed: The source and plugin retro planner now attach shared write_target_facts to the final artifact summary; the retro scaffold uses the existing shared owner; and run-quality now gives each focused changed-line producer an external per-run coverage report namespace so concurrent producers cannot overwrite JSON, coverage databases, rcfiles, or sitecustomize paths.
+- Alternatives rejected: Rejected adding a literal key or duplicating path-existence logic in the planner. Rejected treating the stale seam index as harmless, lowering markdown/docs gates, or using --no-verify. Wrong validator paths and flags remained command-boundary smell evidence rather than being silently discarded.
+- Targeted verification: Focused write-owner tests: 8 passed; retro planner/installed-plan/skill tests: 30 passed; current runner/mutation/prepush/staged-plan bundle: 107 passed; the final post-split focused bundle: 38 passed. Standalone/parity, seam-index, docs-graph, spec-evidence, shell syntax, and staged mirror checks passed. Exact direct producer proof from base 33e556043 returned status: clean (1/1 mapped pool file, blocking_targets: {}, standing pytest passed) while run-quality's isolated focused lane ran concurrently and returned 1 passed, 0 failed in 230.3s. The earlier dirty-worktree exact proof correctly refused a false green; the current-head noop proof from base b6567606e is recorded as noop because no eligible mutation-pool file changed.
+- Test duplication pressure: Broad quality exposed the parallel writer collision: direct and run-quality focused producers shared the default report stem and derived runtime paths, producing a no-verdict warning. The runner-level repair moved ownership to the external per-run temp namespace and a behavioral test pins the actual argv. A first commit attempt also exposed test-file length pressure; the new test was split into a cohesive module. The retro planner remains in the advisory length band and is a split candidate on the next substantive change.
+- Critique: No new fresh-eye approval is claimed. The active verdict-surface two-round cap was already consumed; this repair remains accepted-unreviewed-under-round-cap and the typed worker/report join is still required for approval.
+- Off-goal findings: No version bump, release candidate, tag, push, publication, managed install/update readback, hosted readback, issue closure, or Cautilus evaluation is claimed.
+- Lessons carried forward: A producer that names a path owes the consequence of writing there through the single owner, not just the path string. Generated indexes are truth surfaces and stale artifacts must be regenerated. Link-only and gitignored-evidence failures are structural boundary signals, not cosmetic noise.
+- Metrics: The prior full semantic-range broad run had 93 passed and 4 failures: two stale-snapshot truth-surface failures now repaired, four full-range mutation blockers, and one duplication signal removed by deleting the unnecessary alias. The post-repair focused run-quality lane passed concurrently with the direct producer; no collision/no-verdict occurred. No release or fresh-eye approval claim is made.
+
 ## Closeout Binding Plan
 
 - Reviewed inputs: this goal, the frozen issue ledger and amendments, current
@@ -1092,7 +1108,17 @@ boundary at once while parent-only truth surfaces remain serialized.
 
 ## Final Verification
 
-- Current integrated candidate `33e556043174ce6e32d25da51e8397e18e941613` has
+- Current integrated candidate `abaf886822a851c1081ec889f6733c02b627e525` has
+  a direct changed-line receipt from base `33e556043174ce6e32d25da51e8397e18e941613`
+  with `status: clean`, `1/1` mapped pool file, `blocking_targets: {}`, and
+  standing pytest passed. At the same time, the runner-owned focused lane
+  returned `1 passed, 0 failed` in `230.3s`; its report was under the external
+  per-run temp namespace, so the direct default report/runtime and runner
+  report/runtime had disjoint write surfaces. This proves the repaired
+  parallel producer boundary, not broad release, fresh-eye approval, or
+  external proof.
+
+- Prior Slice 7 candidate `33e556043174ce6e32d25da51e8397e18e941613` had
   a clean exact-base changed-line receipt at
   `charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md`:
   base `a1e69e8125b9fac962fdf1f4d0b32aa0cc4f9647`, 3/3 mapped pool files,

@@ -33,10 +33,17 @@
 - The [changed-line consumer-gap debug record](../charness-artifacts/debug/2026-08-21-changed-line-review-consumer-gaps.md)
   records the post-commit counterexample repair; the exact-base rerun is now
   clean at `362221694` with `blocking_targets: {}`.
-- The fresh-eye/retro basis handoff slice is committed at `33e556043`; its [exact-base quality receipt](../charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md)
-  records the proof.
-  It covers explicit retro paths/refs, typed boundary verify continuation, and
-  the file-backed critique/prove contract. No fresh-eye approval is claimed.
+- The fresh-eye/retro basis handoff slice is committed at `33e556043`, and the
+  parallel focused-coverage writer isolation repair is committed at `abaf88682`;
+  the [current quality receipt](../charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md)
+  records both proofs. It covers explicit retro paths/refs, typed boundary
+  verify continuation, the file-backed critique/prove contract, and an external
+  per-run coverage namespace for concurrent producers. No fresh-eye approval is
+  claimed.
+- The current direct changed-line proof is `status: clean` from base `33e556043`
+  with `1/1` mapped pool file; the focused `run-quality` lane passed concurrently
+  with `1 passed, 0 failed` in `230.3s`. This is producer-boundary proof, not a
+  broad release or fresh-eye verdict.
 - The [portable file-backed delivery repair](../charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md)
   is committed at `cce985d6f`, with refusal-branch coverage at `458080160`.
   Adapter authority, typed report
@@ -56,10 +63,10 @@
   directory. The ignore rule and regression test are now present, but that
   review window remains quarantined and must not be relabeled clean.
 - `git status --short` is the current worktree check; the last committed closeout at
-  `33e556043` passed
+  `abaf88682` passed
   mirror, standalone-import, contract, lint, and the staged pre-commit checks. The
-  exact-base changed-line result is owned by this candidate, with `3/3` mapped
-  pool files and no blocking targets.
+  exact-base changed-line result is owned by this candidate, with `1/1` mapped
+  pool file and no blocking targets.
 - The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep the next run
   sensitive to wrong calls, timeout loss, and repairing inside an open review window.
 - The [current closeout evidence](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
@@ -78,8 +85,10 @@
    including `recurrence-class: parallel-coverage-runtime-collision` and
    `recurrence-class: unclaimed-session-disposition`.
 3. Re-read the [goal's final-verification proof plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md#final-verification)
-   and the clean exact-base receipt at `33e556043`; do not reuse the older
-   dirty-worktree `UNPROVEN` receipt as changed-line proof.
+   and the current parallel-output receipt at `abaf88682`; do not reuse the
+   older dirty-worktree `UNPROVEN` receipt as changed-line proof, and do not
+   confuse the direct producer's advisory coverage warning with the runner's
+   typed verdict.
 4. Activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
    its `## Active Operating Frame` names the remaining R2 rebinding and
    qualified disjoint lanes.

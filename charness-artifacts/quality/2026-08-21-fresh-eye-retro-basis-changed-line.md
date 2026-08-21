@@ -1,11 +1,12 @@
 # Quality Review
 Date: 2026-08-21
-Title: Fresh-eye and retro basis handoff
+Title: Fresh-eye, retro basis, and parallel coverage handoff
 
 ## Scope
 
 The `critique`/`prove` fresh-eye consumer contract, retro planner change-basis
-packet, installed planner path, and reviewer-boundary snapshot continuation.
+packet, installed planner path, reviewer-boundary snapshot continuation, and
+parallel focused-coverage producer output ownership.
 
 ## Surface Contract Review
 
@@ -29,29 +30,42 @@ packet, installed planner path, and reviewer-boundary snapshot continuation.
 
 - A process exit, non-empty output, `delivery_complete`, or bare post-commit
   trigger invocation cannot render fresh-eye approval or trigger evaluation.
+- A focused producer report is not allowed to use a shared public path when the
+  quality runner can execute beside another producer; the runner owns an
+  external per-run report namespace and the producer derives its runtime files
+  from that report path.
 - The mapped changed-line pool must be clean before the release candidate is
   rebound.
 
 ## Runtime Signals
 
-- Exact-base changed-line command returned `status: clean`, base
-  `a1e69e8125b9fac962fdf1f4d0b32aa0cc4f9647`, resolved HEAD
-  `33e556043174ce6e32d25da51e8397e18e941613`, 3/3 mapped pool files, and
+- Current direct changed-line command returned `status: clean`, base
+  `33e556043174ce6e32d25da51e8397e18e941613`, resolved HEAD
+  `abaf886822a851c1081ec889f6733c02b627e525`, 1/1 mapped pool files, and
   `blocking_targets: {}`; standing pytest passed.
-- Focused related tests: 175 passed. Commit preflight: 23 commands passed.
+- While that direct producer ran, `CHARNESS_QUALITY_LABELS=check-changed-line-mutation-coverage
+  ./scripts/run-quality.sh --read-only` returned `1 passed, 0 failed` in
+  `230.3s`; its report was under an external per-run temp namespace and did not
+  collide with the direct producer's default report/runtime paths.
+- Focused current runner/mutation/prepush/staged-plan bundle: 107 passed before
+  the test-module split; final post-split focused bundle: 38 passed. Commit
+  preflight for `abaf88682`: passed.
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `render_runtime_summary.py`; focused producer stdout and the
   generated focused-coverage receipt are supplementary.
-- runtime hot spots: exact changed-line producer runtime was 55.5 seconds;
-  broad quality was run separately and its receipt is still being inspected.
-- coverage gate: exact-base changed-line coverage is clean for 3/3
-  mapped files with no blocking targets.
+- runtime hot spots: direct changed-line producer runtime was 71.8 seconds;
+  the concurrent runner-owned focused lane was 230.3 seconds.
+- coverage gate: exact-base changed-line coverage is clean for 1/1 mapped file
+  with no blocking targets; the current-head proof from base `b6567606e` was
+  `status: noop` because no eligible mutation-pool file changed.
 - evaluator depth: deterministic focused gates only; Cautilus was not run.
 
 ## Healthy
 
 - Source/plugin mirrors are byte-identical for the changed skill and shared
   surfaces.
+- Each runner process owns a distinct focused coverage report stem under the
+  external temp root; direct invocation retains the documented public default.
 - Planner packets carry explicit paths or `HEAD^..HEAD` basis and basis-less
   plans remain `not-established`.
 - Snapshot receipts expose `verify_before` and exact `verify_args`.
@@ -74,8 +88,14 @@ packet, installed planner path, and reviewer-boundary snapshot continuation.
 ## Advisory
 
 - command-boundary smell: guessed ledger path, missing required `--ledger` flag,
-  wrong quality-validator flag, and guessed handoff checker path were corrected
-  by file inventory/help before treating any result as evidence.
+  wrong quality-validator flag, guessed handoff checker path, and an attempted
+  `validate_handoff_artifact.py --path` flag were corrected by file inventory/help
+  before treating any result as evidence.
+- The direct producer emitted coverage's `already-imported` warning for its
+  default sitecustomize path. Its typed gate payload was still `status: clean`,
+  and the concurrently run quality lane used a distinct external namespace with
+  no shared-path warning; retain the direct warning as an advisory runtime smell,
+  not as approval or as a silent failure.
 
 ## Delegated Review
 
@@ -87,12 +107,16 @@ packet, installed planner path, and reviewer-boundary snapshot continuation.
 
 ## Commands Run
 
-- `python3 -m pytest -q` focused critique/prove/worker/report/fingerprint/retro
-  suites: 175 passed.
+- `python3 -m pytest -q` focused runner/mutation/prepush/staged-plan bundle:
+  107 passed before the test-module split; final post-split focused bundle:
+  38 passed.
 - `python3 scripts/run_slice_closeout.py --repo-root . --predict-commit
   --paths ... --skip-broad-pytest`: 23 pre-commit commands passed.
 - `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root .
-  --base-sha a1e69e8125b9fac962fdf1f4d0b32aa0cc4f9647`: clean.
+  --base-sha 33e556043174ce6e32d25da51e8397e18e941613`: clean.
+- `CHARNESS_QUALITY_LABELS=check-changed-line-mutation-coverage
+  ./scripts/run-quality.sh --read-only`: `1 passed, 0 failed` while the direct
+  producer ran concurrently; no shared-path collision/no-verdict occurred.
 
 ## Recommended Next Quality Moves
 
