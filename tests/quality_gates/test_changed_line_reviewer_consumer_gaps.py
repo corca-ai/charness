@@ -100,6 +100,16 @@ def test_observer_support_skips_indented_and_fenced_examples() -> None:
     assert "example" not in normalized
 
 
+def test_current_tracked_date_is_not_grandfathered(monkeypatch, tmp_path: Path) -> None:
+    def fake_run(argv, **kwargs):
+        if argv[1] == "ls-files":
+            return SimpleNamespace(stdout="tracked.md")
+        return SimpleNamespace(stdout="2026-08-21T00:00:00+00:00")
+
+    monkeypatch.setattr(OBSERVER_SUPPORT.subprocess, "run", fake_run)
+    assert OBSERVER_SUPPORT._tracked_before_rule(tmp_path / "tracked.md", tmp_path) is False
+
+
 def test_over_indented_markdown_closer_is_not_a_closer() -> None:
     assert MARKDOWN._closing_fence("    ```", "```") is False
 
