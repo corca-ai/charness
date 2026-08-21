@@ -329,6 +329,11 @@ def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path:
         config_entries=[{"plugin_id": "charness@local", "enabled": True}],
     )["reason"] == "invalid-cache-manifest"
 
+    manifest_path.write_text('{"version":"1.0.0"}\n', encoding="utf-8")
+    valid_entries = module.codex_cache_entries(cache_root)
+    assert valid_entries[0]["manifest_version"] == "1.0.0"
+    assert valid_entries[0]["manifest_status"] == "valid"
+
     source_root = tmp_path / "source"
     copied_root = tmp_path / "copied"
     source_root.mkdir()
@@ -359,6 +364,35 @@ def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path:
     assert delivery["delivery_verified"] is False
     assert delivery["post_delivery_readback"] == {"status": "failed", "phase": "update"}
 
+    (copied_root / "payload.txt").write_text("source\n", encoding="utf-8")
+    verified_delivery: dict[str, object] = {"status": "attempted"}
+    verified_readback = module._record_post_delivery_readback(
+        verified_delivery,
+        {
+            "plugin_root": str(source_root),
+            "codex_cache_entries": [
+                {
+                    "marketplace": "local",
+                    "plugin": "charness",
+                    "version": "1.0.0",
+                    "version_dir": str(copied_root),
+                    "manifest_version": "1.0.0",
+                    "manifest_status": "valid",
+                }
+            ],
+            "codex_enabled_plugin_ids": ["charness@local"],
+            "codex_source_version": "1.0.0",
+        },
+        phase="update",
+    )
+    assert verified_readback is not None
+    assert verified_delivery["delivery_verified"] is True
+    assert verified_delivery["post_delivery_readback"] == {
+        "status": "verified",
+        "phase": "update",
+        "verification": "same-version-content-readback",
+    }
+
 
 def test_doctor_surfaces_latest_failed_delivery_and_compact_projection_keeps_proof(tmp_path: Path) -> None:
     module = load_charness_module("charness_doctor_latest_failure_projection_under_test")
@@ -383,6 +417,27 @@ def test_doctor_surfaces_latest_failed_delivery_and_compact_projection_keeps_pro
     assert payload["codex_host_guidance"]["status"] == "failed"
     assert payload["latest_host_operation"]["operation_scope"] == "all"
     assert payload["next_action"]["status"] == "failed"
+
+    skipped_home = tmp_path / "skipped-home"
+    module.write_host_state(
+        skipped_home,
+        key="last_update",
+        payload={"checkout_git_head": "commit-2"},
+        delivery={"status": "skipped", "delivery_verified": True},
+        operation_status="success",
+        operation_scope="self",
+    )
+    skipped_payload = {
+        "hosts": {"codex": True},
+        "codex_host_guidance": {"status": "installed"},
+        "host_next_steps": {},
+    }
+    module._apply_latest_host_operation(skipped_payload, home_root=skipped_home)
+    assert skipped_payload["codex_host_guidance"]["status"] == "installed"
+
+    non_codex_payload = {"hosts": {"codex": False}, "codex_host_guidance": {}}
+    module._apply_latest_host_operation(non_codex_payload, home_root=home_root)
+    assert non_codex_payload["latest_host_operation"]["delivery_status"] == "failed"
 
     projected = module.project_runtime_response(
         {
@@ -440,6 +495,42 @@ def test_same_version_verified_readback_skips_refresh_call(tmp_path: Path, monke
     assert result["status"] == "skipped"
     assert result["reason"] == "already-current"
     assert result["delivery_verified"] is True
+
+
+def test_init_and_update_record_attempted_delivery_readback(tmp_path: Path, monkeypatch, capsys) -> None:
+    module = load_charness_module("charness_attempted_delivery_wiring_under_test")
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    home_root = tmp_path / "home"
+    _patch_runtime_dependencies(module, monkeypatch, repo_root, home_root)
+    doctor = _doctor_payload()
+    doctor.update(
+        {
+            "codex_cache_manifest_status": "valid",
+            "codex_host_guidance": {"status": "installed"},
+            "codex_source_cache_drift": False,
+        }
+    )
+    monkeypatch.setattr(module, "build_doctor_payload", lambda **_kwargs: dict(doctor))
+    monkeypatch.setattr(
+        module,
+        "maybe_install_codex_host",
+        lambda **_kwargs: {"status": "attempted", "action": "install"},
+    )
+    phases: list[str] = []
+
+    def record_readback(delivery, _doctor_payload, *, phase):
+        phases.append(phase)
+        delivery.update({"delivery_verified": True, "verification": "test-readback"})
+        return {"delivery_verified": True, "verification": "test-readback"}
+
+    monkeypatch.setattr(module, "_record_post_delivery_readback", record_readback)
+    args = _runtime_args(home_root, repo_root)
+    assert module.cmd_init(args) == 0
+    capsys.readouterr()
+    assert module.cmd_update(args) == 0
+    capsys.readouterr()
+    assert phases == ["init", "update"]
 
 
 def test_task_and_uninstall_paths_emit_yaml(tmp_path: Path, monkeypatch, capsys) -> None:

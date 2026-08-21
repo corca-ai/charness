@@ -3538,25 +3538,24 @@ def run_tool_update_flow(
     update_map = tool_result_map(update_results)
     support_map = tool_result_map(support_results)
     doctor_map = tool_result_map(doctor_results)
+    result_payloads: dict[str, dict[str, object]] = {
+        tool_id: {
+            "update": update_map.get(tool_id),
+            "support": support_map.get(tool_id),
+            "doctor": doctor_map.get(tool_id),
+            "next_step": tool_next_step(tool_id, update_map.get(tool_id), doctor_map.get(tool_id), support_map.get(tool_id)),
+        }
+        for tool_id in sorted(set([*update_map.keys(), *support_map.keys(), *doctor_map.keys()]))
+    }
     payload = {
         "repo_root": str(repo_root),
         "managed_checkout": managed_checkout,
         "tool_ids": tool_ids,
-        "results": {
-            tool_id: {
-                "update": update_map.get(tool_id),
-                "support": support_map.get(tool_id),
-                "doctor": doctor_map.get(tool_id),
-                "next_step": tool_next_step(tool_id, update_map.get(tool_id), doctor_map.get(tool_id), support_map.get(tool_id)),
-            }
-            for tool_id in sorted(set([*update_map.keys(), *support_map.keys(), *doctor_map.keys()]))
-        },
+        "results": result_payloads,
     }
     failed_tool_ids: list[str] = []
     failure_phases: dict[str, list[str]] = {}
-    for tool_id, result in payload["results"].items():
-        if not isinstance(tool_id, str) or not isinstance(result, dict):
-            continue
+    for tool_id, result in result_payloads.items():
         phases = _tool_result_failure_phases(result)
         if phases:
             failed_tool_ids.append(tool_id)
