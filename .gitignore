@@ -23,6 +23,7 @@ plugins/*/.charness/
 .charness/tasks/
 .charness/hitl/runtime/
 .charness/reviewer-boundary/
+.charness/reviewer-round-2/
 .charness/dup-ratchet*
 .charness/t-events/
 .charness/usage-episodes/

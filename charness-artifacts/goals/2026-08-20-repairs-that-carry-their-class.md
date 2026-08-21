@@ -23,13 +23,17 @@ runs the activation command.
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: commit the semantic worker/delivery repair, regenerate the packet
-  over the complete verdict-owning surface, rerun exact-target changed-line
-  proof, then obtain the required round-2 fresh-eye read of the repaired
-  verdict surfaces. Reproduce P0 #679 and run disjoint #682/#683/#685/#686
-  lanes only after that repair boundary is clean; no version mutation yet.
-  Round-1 worker delivery is proven, but its three verdicts are `block` and
-  approval remains withheld.
+- Next action: repair the blockers returned by the required round-2 semantic
+  fresh-eye read, then regenerate the packet and exact-base proof against one
+  current candidate. The round delivered through typed worker/report rails but
+  all three reviewer verdicts were `block`; its boundary rail was also
+  quarantined because `.charness/reviewer-round-2/` was not ignored. The
+  runtime-output ownership gap is recorded in
+  `charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md`
+  and the findings in
+  `charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-provider-schema-round-2b.md`.
+  Under the two-round cap, repairs from this round are accepted-unreviewed; no
+  third fresh-eye round, approval, or version mutation is claimed.
 - Large-slice rule: completed issue-level history remains auditable, but future
   work is scheduled by capability boundary rather than ticket count. Each macro
   slice owns one user-visible outcome and its shared contract; independent
@@ -993,6 +997,16 @@ boundary at once while parent-only truth surfaces remain serialized.
   reviewer response. The schema is now closed recursively in source and plugin
   mirrors, with a focused provider-strictness regression; this invalidates the
   prior packet binding and requires a new exact candidate proof and packet.
+- Round-2 semantic delivery then returned three typed `block` verdicts. The
+  mode/authorization lens found report-mode hardcoding, adapter override
+  bypass, and a prose-only `worker-delivered` claim. The consumer lens found
+  missing report/result/parent joins, replayable findings, and an unlocked
+  ledger race. The portability lens found stale packet binding, plugin-root
+  resolution, input collisions, stale receipts, incomplete timeout bounds,
+  an unusable operator sequence, and explicit-zero timeout loss. Boundary
+  verification separately returned `boundary-drift` because expected runtime
+  outputs were not ignored; that rail is now repaired with a root ignore rule
+  and regression test, but the old window remains quarantined.
 - Non-claims: no release/publication, install or hosted readback, typed host
   application, issue closure, version mutation, or fresh-eye approval of the
   repaired surface is claimed.

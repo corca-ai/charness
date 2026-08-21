@@ -18,6 +18,7 @@ import yaml
 from .support import run_script
 
 SCRIPT = "skills/shared/scripts/reviewer_boundary_fingerprint.py"
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -66,6 +67,26 @@ def _verify_default(repo: Path, *args: str) -> tuple[int, dict]:
 
 def _drift_paths(payload: dict) -> set[tuple[str, str | None]]:
     return {(d["kind"], d["path"]) for d in payload["drift"]}
+
+
+def test_file_backed_round_runtime_outputs_are_gitignored() -> None:
+    """Worker receipts/results are evidence inputs, not parent worktree edits."""
+    result = subprocess.run(
+        [
+            "git",
+            "check-ignore",
+            "--no-index",
+            "--verbose",
+            "--",
+            ".charness/reviewer-round-2/example/result.json",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert ".charness/reviewer-round-2/" in result.stdout
 
 
 def test_clean_verify_is_ok(tmp_path: Path) -> None:

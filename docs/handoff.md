@@ -25,7 +25,16 @@
 - The [#687 debug/spec pair](../charness-artifacts/debug/2026-08-21-fresh-eye-interrupted-delivery.md) holds
   the causal delivery boundary and the Charness/host ownership split.
 - The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
-  the converted classes for media-versus-verdict confusion and process-tree timeout leakage.
+  the converted classes for media-versus-verdict confusion, process-tree
+  timeout leakage, provider-schema closure, and the reviewer-runtime output
+  boundary. The round-2 findings are durably recorded in
+  [the critique round record](../charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-provider-schema-round-2b.md);
+  all three reviewer verdicts are `block`, so no fresh-eye approval is claimed.
+- The [round-2 boundary debug record](../charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md)
+  records that the verifier returned `boundary-drift` because expected
+  file-backed outputs were under an unignored `.charness/reviewer-round-2/`
+  directory. The ignore rule and regression test are now present, but that
+  review window remains quarantined and must not be relabeled clean.
 - `git status --short` is the current worktree check; the last committed closeout passed
   mirror, standalone-import, contract, lint, and the staged pre-commit checks. The
   exact-base semantic changed-line result is owned by the [provider-schema proof receipt](../charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md)
@@ -39,10 +48,13 @@
    this repo-owned session receipt is the prerequisite for the next review or brief.
 2. Re-read the [exact-base receipt](../charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md);
    rerun its recorded command only if the candidate SHA or receipt changes.
-3. Activate `/goal @charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`;
+3. Activate `/goal` for the [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md);
    its `## Active Operating Frame` names R2 rebinding and the qualified disjoint lanes.
-4. Rebind the semantic candidate using the [goal closeout binding plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md):
-   bind the current R2 packet, source/plugin mirror, changed-line receipt, and verification lock before fan-out.
+4. Repair the round-2 mode/identity/portability/ledger blockers in one bounded
+   semantic slice, then rebind the current R2 packet, source/plugin mirror,
+   changed-line receipt, and verification lock using the [goal closeout binding plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md).
+   Round-2 repairs are accepted-unreviewed under the two-round cap; do not
+   claim a third review.
 5. Read the [goal runbook](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
    for P0 #679 reproduction first, then fan out only lanes with a current reproducer, owner,
    acceptance, disjoint path budget, and proof plan; serialize exports, ledger, generated docs,
