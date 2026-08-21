@@ -10,25 +10,25 @@ runs the activation command.
 ## Active Operating Frame
 
 - Current disposition: historical Slices 0–5 are locally proven and archived;
-  the prior Slice
-  4 semantic-candidate lock was repaired and committed as `dbdebcfe7`, then its
-  focused proof repair was committed as `5b0828beb`. Slice 5 local proof and the
-  planner-required fresh-checkout probes are now green. The broader release goal
-  remains active at its version, publication, external-readback, issue-closeout,
-  current-open-issue qualification, and fresh-eye delivery edges. Issue #687 is
-  now a release-cut exception with a Charness-owned prevention child and an
-  explicitly unproven host-side dependency.
+  the broader release goal remains active at its version, publication,
+  external-readback, issue-closeout, current-open-issue qualification, and
+  fresh-eye delivery edges. Issue #687 remains a release-cut exception with a
+  Charness-owned prevention child and an explicitly unproven host-side
+  dependency.
 - Current slice: R2 — portable review-worker and delivery-state reliability;
-  the installed/fresh-eye/release boundary remains open.
+  the file-backed default, consumer approval boundary, YAML CLI channel, and
+  process-group timeout repair are committed. The installed/fresh-eye/release
+  boundary remains open.
 - Current slice intent: turn every observed wrong path, fail-open inventory,
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: commit the R2 worker/state repair, run its changed-line and
-  second fresh-eye proof with no parent writes during the review window, then
-  run the disjoint #682/#683/#685/#686 lanes before any version mutation. Any
-  new failure returns to its owning seam and carries its recurrence class into
-  a gate, test, or spec.
+- Next action: open the lesson session, run changed-line proof for the current
+  committed R2 slice, rebind the semantic candidate, reproduce the P0 release
+  blocker #679 first, then run the disjoint #682/#683/#685/#686 lanes before
+  any version mutation. Fresh-eye approval is still unproven after the bounded
+  worker timeout; retry only through the typed worker/report contract and never
+  infer approval from media or process success.
 - Large-slice rule: completed issue-level history remains auditable, but future
   work is scheduled by capability boundary rather than ticket count. Each macro
   slice owns one user-visible outcome and its shared contract; independent
@@ -916,6 +916,20 @@ boundary at once while parent-only truth surfaces remain serialized.
   out; catalog focused `161 passed`; repair focused `101 passed`; integrated
   quality `97/97`; mutation `32/32` clean; dup-ratchet clean; source/export
   checker readback pass; fresh-eye round 2 delivery unproven.
+
+### Slice 6: R2 continuation — portable reviewer worker consumer boundary
+
+- Objective: Make the consumer unable to confuse a result medium, process success, or recovered transcript with delivered reviewer approval, while keeping the default review path file-backed and bounded.
+- Why this approach: The first file-backed worker experiment reproduced two structural smells: the consumer had to reject a timed-out typed receipt without laundering it through a findings ledger, and a backend timeout needed to settle its descendant process tree rather than only the wrapper. The repair belongs at the worker, adapter, skill, and consumer boundaries together.
+- Commits: The file-backed default and adapter/skill consumer contract are committed in `9b4ee5d40`; the follow-up worker output, process-group timeout, consumer tests, mirror, and RCA ledger repair are committed in `8a1bb8d89`. The slice proof base is the parent of `495af8a20`.
+- What changed: The reviewer worker and delivery/report CLIs emit YAML on stdout while durable receipts, results, and ledgers remain JSON. A shared reviewer process module hard-kills and reaps the backend process group on timeout. The consumer report requires the typed worker schema, terminal succeeded status, fresh output hash/size, matching provenance, and findings-received approval state. Source and plugin mirrors stay synchronized.
+- Alternatives rejected: Rejected typed-subagent waiting as the default consumer path and rejected treating a successful process, non-empty file, transcript recovery, or same-context critique as fresh-eye approval.
+- Targeted verification: Thirteen focused worker/consumer tests passed; the public YAML stdout contract passed; ruff, py_compile, standalone-import, adapter/skill contracts, mirror drift, and the 18-command staged closeout all passed. A child-process regression proves timeout settles the backend process group. The broad pytest run was interrupted after 5,971 passes and had three failures, two stale closeout-packet failures and one worker JSON-stdout contract failure that this slice repaired; a complete broad rerun remains pending.
+- Test duplication pressure: Direct counterexamples cover stale output, schema failure, finite timeout, child-process survival, success receipt without findings, timed-out receipt with findings, provenance mismatch, and matching typed approval. The worker/reporter integration remains separate from the consumer verdict logic.
+- Critique: Round 1 fresh-eye findings were repaired. The round-2 file-backed worker attempt timed out before producing a bounded typed review; boundary verification was clean and the consumer report correctly returned approval_eligible=false. A separate bounded `claude -p` handoff review found ambiguous #679 ordering, unscoped changed-line proof, and missing semantic-rebind/version-hold steps; those baton defects were repaired. No fresh-eye code approval or same-agent substitute is claimed.
+- Off-goal findings: No version bump, release candidate, tag, push, publication, hosted/install readback, issue closure, Cautilus evaluation, or external host runtime attribution is claimed. Changed-line proof for this post-commit slice is still required before semantic-candidate rebinding.
+- Lessons carried forward: A consumer needs an explicit semantic approval gate, not merely a durable artifact carrier. A timeout contract must own the whole backend process group. Wrong default execution paths and wrong output channels are recurrence classes and belong in adapter/skill contracts plus executable tests.
+- Metrics: Focused worker/consumer tests: 13 passed. Staged closeout: 18 commands passed. Handoff review: typed PASS with the three baton defects repaired. Fresh-eye code delivery: unproven due typed worker timeout; approval correctly withheld. Handoff and goal refresh are pending commit.
 
 ## Closeout Binding Plan
 

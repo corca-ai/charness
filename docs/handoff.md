@@ -10,73 +10,45 @@
 
 ## Continuation Capability
 
-- The [adapter consumer census](../scripts/adapter-consumer-classification.json) holds the
-  live answer to "what does this file do when an adapter's version was refused", one row
-  per consumer. `python3 scripts/check_adapter_consumer_classification.py --repo-root .`
-  prints the per-verdict counts and the remaining accepted risk.
-- The [quality record](../charness-artifacts/quality/2026-08-18-quality-review.md) holds
-  gates, runtime signals, and the recommended next quality moves.
-- The [digest](../charness-artifacts/retro/recent-lessons.md) holds what a session reads
-  before work. Version: `git describe --tags --abbrev=0`.
+- The [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md) holds
+  the macro-slice control panel, issue boundaries, proof plan, and current R2 slice log.
+- The [reviewer consumer contract](../skills/shared/scripts/reviewer_worker_report.py) holds
+  the fail-closed rule requiring typed fresh output, matching provenance, and `findings-received`.
+- The [recent-lessons digest](../charness-artifacts/retro/recent-lessons.md) holds
+  the session-start recurrence traps and parallel/timeout discipline.
 
 ## Current State
 
-- **The adapter-consumer debt is paid down row by row, each by a MEASURED behavioral
-  flip.** The census records the COVERAGE LEVEL, and the guard refuses on the CONDITION
-  through all three channels a resolver REPORTS — refused `version`, refused parse,
-  silently dropped line. Keying on the first alone was a measured escape:
-  `version: !!int 9` walked past every guard. Recount with
-  `python3 scripts/check_adapter_consumer_classification.py --repo-root .`; never read a
-  count off this file — **nor off that gate's own comments, one of which undercounts its
-  blind consumers by one.**
-- **Every batch owes two bounded review rounds and NOT ONE has been clean.** Round 2 keeps
-  finding that round 1's REPAIRS carry the class they repaired — most recently a
-  fail-open grandfather whose own branch no test took, so mutating it green-lit the whole
-  repo. The cheap detector is always: what is the cheapest input that still gets past
-  this. Per-round ledgers live in each goal's `## Slice Log` / `## Plan Critique Findings`.
-- **Every prose artifact budget charges WORDS, not lines** (handoff 900, debug 1200,
-  quality 1100, cautilus 800/1200); [artifact_size_budget](../scripts/artifact_size_budget.py)
-  owns why. A line count charged for wrap width — one bar admitted
-  a 5.4-7.5x spread of words — and `MD013` is off, so rewrapping was the cheapest way to
-  comply. `max_content_lines` / `max_artifact_lines` are REFUSED adapter keys, not ignored
-  ones. Dated records before 2026-08-19 are grandfathered; the rolling handoff is not.
-- **`check_probe_record.py --replay-stimulus` is the form that refuses**;
-  `--require-evaluated` alone does NOT replay, by operator ruling 2026-08-19.
-- **A red on [test_web_fetch_cleanup.py](../tests/test_web_fetch_cleanup.py) means
-  investigate a HANG** — the 120s wall clock is only a backstop, not an expected red.
-- **Release-goal shaping read 29 open issues through `#680` at `38775dfeb`.** Activation
-  must recount; the goal separates claims, refutations, decisions, and conditional work.
-- **Nothing reads a `path:line` an artifact asserts**
-  ([#677](https://github.com/corca-ai/charness/issues/677)). Verify citations BEFORE
-  spawning a reviewer; a round is a costly grep.
-- **The standing and release lanes are NOT the broad lane.** `bash scripts/run-quality.sh`
-  runs corpus sweeps neither touches; a budget change went green on both while that lane
-  was red on seven artifacts. Re-prove with `python3 scripts/run_standing_pytest.py` after
-  `python3 scripts/sync_root_plugin_manifests.py`, then
-  `python3 -m ruff check --no-cache scripts skills tests`, then
-  `python3 -m pytest -q -m release_only`, then the broad lane.
-- **COMMIT the slice, THEN run the changed-line proof** —
-  `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --refuse-unestablished`
-  reads `base..HEAD`, so a dirty pool proves nothing. Run it BEFORE the broad lane.
+- The [R2 slice record](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md) holds
+  the worker/consumer changes, focused evidence, timeout non-claim, and fresh-eye delivery state.
+- The [#687 debug/spec pair](../charness-artifacts/debug/2026-08-21-fresh-eye-interrupted-delivery.md) holds
+  the causal delivery boundary and the Charness/host ownership split.
+- The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
+  the converted classes for media-versus-verdict confusion and process-tree timeout leakage.
+- `git status --short` is the current worktree check; the last committed closeout passed
+  mirror, standalone-import, contract, lint, and 18 staged pre-commit checks.
+- The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep the next run
+  sensitive to wrong calls, timeout loss, and repairing inside an open review window.
 
 ## Next Session
 
-1. **Activate the broad, inert, `pursue_ready` release goal:**
-   `/goal @charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`.
-   A lower-capacity executor should follow `## Execution Runbook` literally.
-2. The [release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
-   holds Slice 0's recount, raw planner receipts, exactly-once ledger, reviewed validator,
-   intake-lock commit, and no-writer-before-lock boundary.
-3. **Release-path work goes first:** `#679` is reproduced at shaping HEAD;
-   `#612/#668/#669/#667` become blockers only after live reproduction. `#669a` orphan
-   reaping and conditional `#669b` timeout attribution are separate packages.
-4. **Then execute every qualified disjoint package.** The goal fixes entry files, tests,
-   branches, path ownership, amendment rules, and non-work candidates for evidence,
-   semantic inspection, packaging/discovery, and conditional `#634/#676/#677` work.
-5. The [release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
-   holds the planner-selected bump, separate semantic/release candidates, scoped final
-   release grant, ambiguous-push resume, distinct hosted/install proof, post-release issue
-   closure, and the ungranted Cautilus boundary.
+1. Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <date-slug>`;
+   this repo-owned session receipt is the prerequisite for the next review or brief.
+2. Run `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --base-sha "$(git rev-parse 495af8a20^)" --refuse-unestablished`;
+   this binds the whole R2 code slice, not an empty post-commit diff, before the broad lane.
+3. Activate `/goal @charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`;
+   its `## Active Operating Frame` now names R2 rebinding and the qualified disjoint lanes.
+4. Rebind the semantic candidate using the [goal closeout binding plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md):
+   bind the current R2 packet, source/plugin mirror, changed-line receipt, and verification lock before fan-out.
+5. Read the [goal runbook](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
+   for P0 #679 reproduction first, then fan out only lanes with a current reproducer, owner,
+   acceptance, disjoint path budget, and proof plan; serialize exports, ledger, generated docs,
+   version, release, index, and proof truth surfaces.
+6. Keep version/export/release-record mutation, tag, push, and publication on hold until all
+   claimed lanes are integrated and the [goal release boundary](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md) is re-proven.
+7. Do not claim fresh-eye approval unless the [consumer report](../skills/shared/scripts/reviewer_worker_report.py)
+   accepts a typed successful receipt and matching current-packet delivery ledger; timeout,
+   exit code, transcript, screen output, or any other media alone is non-delivery.
 
 ## Discuss
 
