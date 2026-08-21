@@ -1,0 +1,209 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-21T01:32:03Z",
+  "prepared_for": "R2 semantic approval-chain repair candidate",
+  "changed_ref": "825b2a4198ae1342a843ccd20f57be7f4e1e0213..HEAD",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `825b2a4198ae1342a843ccd20f57be7f4e1e0213..HEAD`:\n- .agents/critique-adapter.yaml\n- charness-artifacts/critique/2026-08-21-r2-delivery-spec-current-packet.json\n- charness-artifacts/critique/2026-08-21-r2-delivery-spec-current-packet.md\n- charness-artifacts/critique/2026-08-21-r2-semantic-boundary.json\n- charness-artifacts/critique/2026-08-21-r2-semantic-candidate-v2-packet.json\n- charness-artifacts/critique/2026-08-21-r2-semantic-candidate-v2-packet.md\n- charness-artifacts/critique/rounds/2026-08-21-fresh-eye-delivery-spec-current-r2.md\n- charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-round-1.md\n- charness-artifacts/debug/2026-08-21-fresh-eye-contract-test-drift.md\n- charness-artifacts/debug/2026-08-21-r2-changed-line-coverage-gaps.md\n- charness-artifacts/debug/2026-08-21-r2-semantic-worker-delivery-blockers.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md\n- charness-artifacts/issues/2026-08-20-next-release-ledger.json\n- charness-artifacts/issues/2026-08-21-current-open-surface.md\n- charness-artifacts/issues/2026-08-21-post-lock-path-table.md\n- charness-artifacts/issues/reads/681.raw.yaml\n- charness-artifacts/metrics/rca-ledger.jsonl\n- charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n- charness-artifacts/quality/2026-08-21-r2-changed-line-proof.md\n- charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-attempt2.raw.log\n- charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md\n- charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.raw.log\n- charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof.raw.log\n- charness-artifacts/retro/lesson-ledger.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-r2-resume.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-r2-resume.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-21-r2-semantic-packet.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-21-r2-semantic-packet.md\n- charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md\n- docs/handoff.md\n- plugins/charness/scripts/check_skill_contracts.py\n- plugins/charness/scripts/critique_adapter_lib.py\n- plugins/charness/scripts/critique_packet_lib.py\n- plugins/charness/scripts/critique_reviewer_evidence.py\n- plugins/charness/scripts/release_issue_ledger_evidence.py\n- plugins/charness/scripts/validate_critique_artifacts.py\n- plugins/charness/shared/references/bounded-review-result.schema.json\n- plugins/charness/shared/references/fresh-eye-subagent-review.md\n- plugins/charness/shared/scripts/reviewer_delivery.py\n- plugins/charness/shared/scripts/reviewer_delivery_state.py\n- plugins/charness/shared/scripts/reviewer_output.py\n- plugins/charness/shared/scripts/reviewer_process.py\n- plugins/charness/shared/scripts/reviewer_result.py\n- plugins/charness/shared/scripts/reviewer_worker.py\n- plugins/charness/shared/scripts/reviewer_worker_report.py\n- plugins/charness/shared/scripts/reviewer_worker_runtime.py\n- plugins/charness/shared/scripts/run_reviewer_worker.py\n- plugins/charness/skills/critique/SKILL.md\n- plugins/charness/skills/critique/adapter.example.yaml\n- plugins/charness/skills/critique/references/adapter-contract.md\n- plugins/charness/skills/critique/references/angle-selection.md\n- plugins/charness/skills/critique/references/cadence.md\n- plugins/charness/skills/critique/references/prepare-packet.md\n- plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py\n- plugins/charness/skills/critique/scripts/templates/critique_adapter.yaml\n- plugins/charness/skills/prove/SKILL.md\n- scripts/check_skill_contracts.py\n- scripts/critique_adapter_lib.py\n- scripts/critique_packet_lib.py\n- scripts/critique_reviewer_evidence.py\n- scripts/release_issue_ledger_evidence.py\n- scripts/validate_critique_artifacts.py\n- skills/public/critique/SKILL.md\n- skills/public/critique/adapter.example.yaml\n- skills/public/critique/references/adapter-contract.md\n- skills/public/critique/references/angle-selection.md\n- skills/public/critique/references/cadence.md\n- skills/public/critique/references/prepare-packet.md\n- skills/public/critique/scripts/scaffold_critique_artifact.py\n- skills/public/critique/scripts/templates/critique_adapter.yaml\n- skills/public/prove/SKILL.md\n- skills/shared/references/bounded-review-result.schema.json\n- skills/shared/references/fresh-eye-subagent-review.md\n- skills/shared/scripts/reviewer_delivery.py\n- skills/shared/scripts/reviewer_delivery_state.py\n- skills/shared/scripts/reviewer_output.py\n- skills/shared/scripts/reviewer_process.py\n- skills/shared/scripts/reviewer_result.py\n- skills/shared/scripts/reviewer_worker.py\n- skills/shared/scripts/reviewer_worker_report.py\n- skills/shared/scripts/reviewer_worker_runtime.py\n- skills/shared/scripts/run_reviewer_worker.py\n- tests/quality_gates/test_critique_enforcement_scope.py\n- tests/quality_gates/test_critique_skill.py\n- tests/quality_gates/test_release_issue_ledger.py\n- tests/quality_gates/test_reviewer_delivery_integration.py\n- tests/quality_gates/test_reviewer_delivery_state_machine.py\n- tests/quality_gates/test_reviewer_runner.py\n- tests/quality_gates/test_reviewer_tier_policy.py\n- tests/quality_gates/test_reviewer_worker.py\n- tests/quality_gates/test_reviewer_worker_report.py\n- tests/test_critique_prepare_packet.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/check_skill_contracts.py, scripts/critique_adapter_lib.py, scripts/critique_packet_lib.py, scripts/critique_reviewer_evidence.py, scripts/release_issue_ledger_evidence.py, scripts/validate_critique_artifacts.py, skills/public/critique/SKILL.md, skills/public/critique/adapter.example.yaml, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/angle-selection.md, skills/public/critique/references/cadence.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/critique/scripts/templates/critique_adapter.yaml, skills/public/prove/SKILL.md, skills/shared/references/bounded-review-result.schema.json, skills/shared/references/fresh-eye-subagent-review.md, skills/shared/scripts/reviewer_delivery.py, skills/shared/scripts/reviewer_delivery_state.py, skills/shared/scripts/reviewer_output.py, skills/shared/scripts/reviewer_process.py, skills/shared/scripts/reviewer_result.py, skills/shared/scripts/reviewer_worker.py, skills/shared/scripts/reviewer_worker_report.py, skills/shared/scripts/reviewer_worker_runtime.py, skills/shared/scripts/run_reviewer_worker.py\n  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/critique_adapter_lib.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/critique_reviewer_evidence.py, plugins/charness/scripts/release_issue_ledger_evidence.py, plugins/charness/scripts/validate_critique_artifacts.py, plugins/charness/shared/references/bounded-review-result.schema.json, plugins/charness/shared/references/fresh-eye-subagent-review.md, plugins/charness/shared/scripts/reviewer_delivery.py, plugins/charness/shared/scripts/reviewer_delivery_state.py, plugins/charness/shared/scripts/reviewer_output.py, plugins/charness/shared/scripts/reviewer_process.py, plugins/charness/shared/scripts/reviewer_result.py, plugins/charness/shared/scripts/reviewer_worker.py, plugins/charness/shared/scripts/reviewer_worker_report.py, plugins/charness/shared/scripts/reviewer_worker_runtime.py, plugins/charness/shared/scripts/run_reviewer_worker.py, plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/adapter.example.yaml, plugins/charness/skills/critique/references/adapter-contract.md, plugins/charness/skills/critique/references/angle-selection.md, plugins/charness/skills/critique/references/cadence.md, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py, plugins/charness/skills/critique/scripts/templates/critique_adapter.yaml, plugins/charness/skills/prove/SKILL.md\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-21-r2-delivery-spec-current-packet.md, charness-artifacts/critique/2026-08-21-r2-semantic-candidate-v2-packet.md, charness-artifacts/critique/rounds/2026-08-21-fresh-eye-delivery-spec-current-r2.md, charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-round-1.md, charness-artifacts/debug/2026-08-21-fresh-eye-contract-test-drift.md, charness-artifacts/debug/2026-08-21-r2-changed-line-coverage-gaps.md, charness-artifacts/debug/2026-08-21-r2-semantic-worker-delivery-blockers.md, charness-artifacts/debug/latest.md, charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md, charness-artifacts/issues/2026-08-21-current-open-surface.md, charness-artifacts/issues/2026-08-21-post-lock-path-table.md, charness-artifacts/quality/2026-08-21-r2-changed-line-proof.md, charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md, charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-r2-resume.md, charness-artifacts/retro/lesson-session-receipts/2026-08-21-r2-semantic-packet.md, charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md, docs/handoff.md, skills/public/critique/SKILL.md, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/angle-selection.md, skills/public/critique/references/cadence.md, skills/public/critique/references/prepare-packet.md, skills/public/prove/SKILL.md, skills/shared/references/fresh-eye-subagent-review.md\n  derived matches: plugins/charness/shared/references/fresh-eye-subagent-review.md, plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/references/adapter-contract.md, plugins/charness/skills/critique/references/angle-selection.md, plugins/charness/skills/critique/references/cadence.md, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/prove/SKILL.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- handoff-machine-readers: docs/handoff.md is a rotating human document that is ALSO a machine-read source: the retro-memory gate requires its recent-lessons reference, and the artifact-surface preflight requires its H2 sections and a References link.\n  source matches: docs/handoff.md\n  verify: python3 scripts/validate_handoff_artifact.py --repo-root ., python3 -m pytest -q tests/quality_gates/test_retro_memory.py\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/issues/2026-08-20-next-release-ledger.json, charness-artifacts/issues/2026-08-21-current-open-surface.md, charness-artifacts/issues/2026-08-21-post-lock-path-table.md, charness-artifacts/issues/reads/681.raw.yaml, charness-artifacts/quality/2026-08-21-r2-changed-line-proof.md, charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-attempt2.raw.log, charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md, charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.raw.log, charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof.raw.log\n  verify: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/validate_quality_artifact.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: .agents/critique-adapter.yaml, skills/public/critique/SKILL.md, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/angle-selection.md, skills/public/critique/references/cadence.md, skills/public/critique/references/prepare-packet.md, skills/public/prove/SKILL.md, skills/shared/references/bounded-review-result.schema.json, skills/shared/references/fresh-eye-subagent-review.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/adapter.example.yaml, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/angle-selection.md, skills/public/critique/references/cadence.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/critique/scripts/templates/critique_adapter.yaml, skills/public/prove/SKILL.md, skills/shared/references/bounded-review-result.schema.json, skills/shared/references/fresh-eye-subagent-review.md, skills/shared/scripts/reviewer_delivery.py, skills/shared/scripts/reviewer_delivery_state.py, skills/shared/scripts/reviewer_output.py, skills/shared/scripts/reviewer_process.py, skills/shared/scripts/reviewer_result.py, skills/shared/scripts/reviewer_worker.py, skills/shared/scripts/reviewer_worker_report.py, skills/shared/scripts/reviewer_worker_runtime.py, skills/shared/scripts/run_reviewer_worker.py\n  derived matches: plugins/charness/shared/references/bounded-review-result.schema.json, plugins/charness/shared/references/fresh-eye-subagent-review.md, plugins/charness/shared/scripts/reviewer_delivery.py, plugins/charness/shared/scripts/reviewer_delivery_state.py, plugins/charness/shared/scripts/reviewer_output.py, plugins/charness/shared/scripts/reviewer_process.py, plugins/charness/shared/scripts/reviewer_result.py, plugins/charness/shared/scripts/reviewer_worker.py, plugins/charness/shared/scripts/reviewer_worker_report.py, plugins/charness/shared/scripts/reviewer_worker_runtime.py, plugins/charness/shared/scripts/run_reviewer_worker.py, plugins/charness/skills/critique/SKILL.md, plugins/charness/skills/critique/adapter.example.yaml, plugins/charness/skills/critique/references/adapter-contract.md, plugins/charness/skills/critique/references/angle-selection.md, plugins/charness/skills/critique/references/cadence.md, plugins/charness/skills/critique/references/prepare-packet.md, plugins/charness/skills/critique/scripts/scaffold_critique_artifact.py, plugins/charness/skills/critique/scripts/templates/critique_adapter.yaml, plugins/charness/skills/prove/SKILL.md\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/adapter.example.yaml, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/angle-selection.md, skills/public/critique/references/cadence.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/critique/scripts/templates/critique_adapter.yaml, skills/public/prove/SKILL.md, skills/shared/references/bounded-review-result.schema.json, skills/shared/references/fresh-eye-subagent-review.md, skills/shared/scripts/reviewer_delivery.py, skills/shared/scripts/reviewer_delivery_state.py, skills/shared/scripts/reviewer_output.py, skills/shared/scripts/reviewer_process.py, skills/shared/scripts/reviewer_result.py, skills/shared/scripts/reviewer_worker.py, skills/shared/scripts/reviewer_worker_report.py, skills/shared/scripts/reviewer_worker_runtime.py, skills/shared/scripts/run_reviewer_worker.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/adapter.example.yaml, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/angle-selection.md, skills/public/critique/references/cadence.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/scaffold_critique_artifact.py, skills/public/critique/scripts/templates/critique_adapter.yaml, skills/public/prove/SKILL.md, skills/shared/references/bounded-review-result.schema.json, skills/shared/references/fresh-eye-subagent-review.md, skills/shared/scripts/reviewer_delivery.py, skills/shared/scripts/reviewer_delivery_state.py, skills/shared/scripts/reviewer_output.py, skills/shared/scripts/reviewer_process.py, skills/shared/scripts/reviewer_result.py, skills/shared/scripts/reviewer_worker.py, skills/shared/scripts/reviewer_worker_report.py, skills/shared/scripts/reviewer_worker_runtime.py, skills/shared/scripts/run_reviewer_worker.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/critique-adapter.yaml\n  verify: python3 scripts/validate_adapters.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-21-r2-delivery-spec-current-packet.json, charness-artifacts/critique/2026-08-21-r2-delivery-spec-current-packet.md, charness-artifacts/critique/2026-08-21-r2-semantic-boundary.json, charness-artifacts/critique/2026-08-21-r2-semantic-candidate-v2-packet.json, charness-artifacts/critique/2026-08-21-r2-semantic-candidate-v2-packet.md, charness-artifacts/critique/rounds/2026-08-21-fresh-eye-delivery-spec-current-r2.md, charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-round-1.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-21-fresh-eye-contract-test-drift.md, charness-artifacts/debug/2026-08-21-r2-changed-line-coverage-gaps.md, charness-artifacts/debug/2026-08-21-r2-semantic-worker-delivery-blockers.md, charness-artifacts/debug/latest.md\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-r2-resume.md, charness-artifacts/retro/lesson-session-receipts/2026-08-21-r2-semantic-packet.json, charness-artifacts/retro/lesson-session-receipts/2026-08-21-r2-semantic-packet.md\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- lesson-ledger-and-contract-register: Local cited lesson state and the explicit pre-contract-mutation register probe.\n  source matches: charness-artifacts/retro/lesson-ledger.json, charness-artifacts/retro/lesson-session-receipts/2026-08-21-goal-r2-resume.json, charness-artifacts/retro/lesson-session-receipts/2026-08-21-r2-semantic-packet.json\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/check_lesson_ledger.py --repo-root ., python3 scripts/check_contract_register.py --repo-root ., python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_contract_register.py\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/critique_adapter_lib.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/critique_reviewer_evidence.py, plugins/charness/scripts/release_issue_ledger_evidence.py, plugins/charness/scripts/validate_critique_artifacts.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/check_skill_contracts.py, scripts/critique_adapter_lib.py, scripts/critique_packet_lib.py, scripts/critique_reviewer_evidence.py, scripts/release_issue_ledger_evidence.py, scripts/validate_critique_artifacts.py, tests/quality_gates/test_critique_enforcement_scope.py, tests/quality_gates/test_critique_skill.py, tests/quality_gates/test_release_issue_ledger.py, tests/quality_gates/test_reviewer_delivery_integration.py, tests/quality_gates/test_reviewer_delivery_state_machine.py, tests/quality_gates/test_reviewer_runner.py, tests/quality_gates/test_reviewer_tier_policy.py, tests/quality_gates/test_reviewer_worker.py, tests/quality_gates/test_reviewer_worker_report.py, tests/test_critique_prepare_packet.py\n  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/critique_adapter_lib.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/critique_reviewer_evidence.py, plugins/charness/scripts/release_issue_ledger_evidence.py, plugins/charness/scripts/validate_critique_artifacts.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/check_skill_contracts.py, scripts/critique_adapter_lib.py, scripts/critique_packet_lib.py, scripts/critique_reviewer_evidence.py, scripts/release_issue_ledger_evidence.py, scripts/validate_critique_artifacts.py, skills/public/critique/scripts/scaffold_critique_artifact.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "825b2a4198ae1342a843ccd20f57be7f4e1e0213..HEAD",
+    "resolved_changed_ref": [
+      "fe61cc5fe5fbcbba84d81573c5425c8831e5503b",
+      "^825b2a4198ae1342a843ccd20f57be7f4e1e0213"
+    ],
+    "base_head": "fe61cc5fe5fbcbba84d81573c5425c8831e5503b",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/critique-adapter.yaml",
+      "charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-round-1.md",
+      "charness-artifacts/debug/2026-08-21-r2-semantic-worker-delivery-blockers.md",
+      "charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
+      "charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md",
+      "charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.raw.log",
+      "docs/handoff.md",
+      "scripts/critique_reviewer_evidence.py",
+      "scripts/validate_critique_artifacts.py",
+      "skills/public/critique/SKILL.md",
+      "skills/public/critique/references/adapter-contract.md",
+      "skills/public/prove/SKILL.md",
+      "skills/shared/references/bounded-review-result.schema.json",
+      "skills/shared/references/fresh-eye-subagent-review.md",
+      "skills/shared/scripts/reviewer_delivery.py",
+      "skills/shared/scripts/reviewer_delivery_state.py",
+      "skills/shared/scripts/reviewer_process.py",
+      "skills/shared/scripts/reviewer_worker.py",
+      "skills/shared/scripts/reviewer_worker_report.py",
+      "skills/shared/scripts/reviewer_worker_runtime.py",
+      "skills/shared/scripts/run_reviewer_worker.py",
+      "tests/quality_gates/test_critique_enforcement_scope.py",
+      "tests/quality_gates/test_reviewer_delivery_integration.py",
+      "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+      "tests/quality_gates/test_reviewer_runner.py",
+      "tests/quality_gates/test_reviewer_worker_report.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/critique-adapter.yaml",
+        "content_sha256": "ef37df7582d57fa7a34d9aeab5b6ea00fa8d07adf62000ea36514e8f5b9820dc"
+      },
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-round-1.md",
+        "content_sha256": "b3dffef497ef2af8b3937fe3560ceeb996df2bd01a6f8d69f1d69b5971a142d6"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-21-r2-semantic-worker-delivery-blockers.md",
+        "content_sha256": "ea06ac5271fa3b208f9758c058d89cb85e2a502bf4c48aa1b155ece2b9166c45"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md",
+        "content_sha256": "4af4b986910f7f80e42bfa0447a9dee74faa3e7383219e20f688664a76615584"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md",
+        "content_sha256": "64a96199f28f0d3d56b879e2f441a6f08e18e55224745bb5856b1993b7c4af9f"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.raw.log",
+        "content_sha256": "4948fb901ae6d4fc56182f9be9b4722937a923ff00728006f239124e1dc7930f"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "b527e083cb4e99f7786f4e8101a2aa542ddaeed0d0f21e41ace2737f3915c7bc"
+      },
+      {
+        "path": "scripts/critique_reviewer_evidence.py",
+        "content_sha256": "51e378a48a6ffc81e593d43261eff1c9d7ce8c6fde1b2437d478a7ff708d8329"
+      },
+      {
+        "path": "scripts/validate_critique_artifacts.py",
+        "content_sha256": "f5551752d79fb202b1802342b5da617427cafa4f4c23449950d24dd32a999e1b"
+      },
+      {
+        "path": "skills/public/critique/SKILL.md",
+        "content_sha256": "0c50bccba7424021905c19c7ff4bbba44f4fb48ff1456ccb51fcade5aa5387fa"
+      },
+      {
+        "path": "skills/public/critique/references/adapter-contract.md",
+        "content_sha256": "15c66b1e4be7b5903993a1bd7be153cb2bfd729af54ed9692480be0e4c851906"
+      },
+      {
+        "path": "skills/public/prove/SKILL.md",
+        "content_sha256": "5b9c3a95a0b4a9280cf5004c4787a0dc0a61304fbdae5d3136f031048b82e9ca"
+      },
+      {
+        "path": "skills/shared/references/bounded-review-result.schema.json",
+        "content_sha256": "6cd0b855cc7f2fa7e6b22973801bb1160c9cd7371e534f52d9df171b9f032b07"
+      },
+      {
+        "path": "skills/shared/references/fresh-eye-subagent-review.md",
+        "content_sha256": "d95a20e5a3129757b67de54faed983e50bf80eb0a8090f2248303242e4d4aa21"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery.py",
+        "content_sha256": "110f26452f7208b5b4b6828a99c9d3869ecfd547ff91030f16b59169ec372cbe"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery_state.py",
+        "content_sha256": "6460aa44116feec7349677369c00b9241a9e6351ca1c4d86b7a36067a940f969"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_process.py",
+        "content_sha256": "f2664ce3c680bd4391207c13266e06709fdccb0edba4c880ffcdcb5ad6a44517"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker.py",
+        "content_sha256": "8602628f9f5934b4834dc5f80383837e9cfe9c44973a3cec915082ca15c5260d"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_report.py",
+        "content_sha256": "cb54a89dcc30d40f7256ab770cd5bfd3612aae17ccbecdb5e3c9699c553b4bdb"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_runtime.py",
+        "content_sha256": "ddc836b700c4c069ee39a1356898b510d4268e58bbe37c84edfcc00f1e0c4ab4"
+      },
+      {
+        "path": "skills/shared/scripts/run_reviewer_worker.py",
+        "content_sha256": "ff7c9fa1b6156d32b2d6cbd30fb884ece50b9b273685e34fc84fbf2cf4ad5105"
+      },
+      {
+        "path": "tests/quality_gates/test_critique_enforcement_scope.py",
+        "content_sha256": "2b1bdaba429ba3905f34502527da988384359228b2633be41d374d73f9b1ab76"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_delivery_integration.py",
+        "content_sha256": "9a7ed2f79e979b993ef1aa8fc2297fb568716cf7956e4bd6a7ba798a7e2632dd"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+        "content_sha256": "0d2ea62c9600ee0fbe8a2a96a10dbe8bef8e2516edc960ac782bcce18f44cf23"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_runner.py",
+        "content_sha256": "214d9b21e283ef46e807e57578cc8574b37b9e3ba9db5f916b244224b01af9de"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_worker_report.py",
+        "content_sha256": "5cd267240de45c120dda96f277d2cfcfe26f79da4280e6acd50a653cf9583f02"
+      }
+    ],
+    "reviewed_patch_sha256": "05d6bedcb2d9ee1be97845bf3bedc3514610651203f52628b9e69048f95523dd",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "c1cf56321bf682af2f8a961b9e2364f38ab11fbdae15274cd349e38ebb3e6c2d"
+  }
+}
