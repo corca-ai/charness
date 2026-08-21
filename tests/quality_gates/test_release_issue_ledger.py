@@ -265,6 +265,9 @@ def test_post_lock_exception_carries_its_own_repair_contract(tmp_path: Path) -> 
     }
     payload["post_lock_exceptions"] = [row]
     assert gate.validate_ledger(payload, tmp_path) == []
+    row["release_content_evidence_path"] = "missing-release-evidence.txt"
+    errors = gate.validate_ledger(payload, tmp_path)
+    assert any("release_content_evidence_path: file does not exist" in error for error in errors)
     row.pop("acceptance_owner")
     errors = gate.validate_ledger(payload, tmp_path)
     assert any("acceptance_owner" in error for error in errors)

@@ -511,8 +511,9 @@ the probe failed.
 - Do not claim a typed subagent ran unless the runtime actually exposed and
   used a subagent/spawn tool. If the adapter selects the worker path, do not
   reinterpret its receipt as a subagent claim.
-- Do not silently collapse into a same-context review and call it the canonical
-  path; use the worker report or record the concrete worker block.
+- Do not silently collapse into a same-agent review (a same-context local pass)
+  and call it the canonical path; use the worker report or record the concrete
+  worker block.
 - Do not name the blocker as "canonical path unavailable" without the concrete
   signal that made it unavailable.
 - Do not treat a spawn the host accepted, a clean boundary fingerprint, or an

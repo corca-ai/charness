@@ -380,6 +380,8 @@ packet_sections:
     md = render_markdown(packet)
     assert "model=gpt-5.6-terra" in md
     assert "pending-parent-spawn" in md
+    evidence["reviewer_runner"] = "not a mapping"
+    assert "**Reviewer runner**: `missing`" in render_markdown(packet)
 
 
 def test_write_packet_emits_both_artifacts(tmp_path: Path) -> None:

@@ -181,13 +181,20 @@ def test_critique_adapter_rejects_unknown_runner_mode_and_backend() -> None:
                 "mode": "mailbox",
                 "backend": "ceal",
                 "timeout_seconds": 0,
+                "unexpected": "field",
             }
         },
         ROOT,
     )
+    assert any("unexpected is not a valid runner field" in error for error in errors)
     assert any("reviewer_runner.mode must be one of" in error for error in errors)
     assert any("reviewer_runner.backend must be one of" in error for error in errors)
     assert any("reviewer_runner.timeout_seconds must be" in error for error in errors)
+
+
+def test_critique_adapter_rejects_non_mapping_reviewer_runner() -> None:
+    _, errors, _ = validate_adapter_data({"reviewer_runner": ["worker"]}, ROOT)
+    assert errors == ["reviewer_runner must be a mapping"]
 
 
 def test_adapter_contract_delegates_concrete_host_defaults_to_owned_assets() -> None:
