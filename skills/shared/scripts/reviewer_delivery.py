@@ -80,6 +80,11 @@ class DeliveryLedger:
         packet_identity: str,
         parent_receipt_identity: str,
         boundary_fingerprint: str,
+        reviewed_input_identity: str | None = None,
+        execution_mode: str | None = None,
+        backend: str | None = None,
+        prompt_sha256: str | None = None,
+        schema_sha256: str | None = None,
         attempt_id: str | None = None,
         recorded_at: str | None = None,
     ) -> DeliveryAttempt:
@@ -89,6 +94,11 @@ class DeliveryLedger:
             packet_identity=packet_identity,
             parent_receipt_identity=parent_receipt_identity,
             boundary_fingerprint=boundary_fingerprint,
+            reviewed_input_identity=reviewed_input_identity,
+            execution_mode=execution_mode,
+            backend=backend,
+            prompt_sha256=prompt_sha256,
+            schema_sha256=schema_sha256,
             recorded_at=recorded_at or utc_now(),
         )
         if attempt.attempt_id in self.attempts:
@@ -110,7 +120,7 @@ class DeliveryLedger:
         recorded_at: str | None = None,
     ) -> DeliveryAttempt:
         old = self.require(attempt_id)
-        if old.approval_eligible:
+        if old.delivery_complete:
             raise DeliveryError("cannot retry an approval-eligible attempt")
         if old.retry_count >= 1:
             raise DeliveryError("recovery is bounded to one retry per delivery attempt")
@@ -120,6 +130,11 @@ class DeliveryLedger:
             packet_identity=old.packet_identity,
             parent_receipt_identity=old.parent_receipt_identity,
             boundary_fingerprint=old.boundary_fingerprint,
+            reviewed_input_identity=old.reviewed_input_identity,
+            execution_mode=old.execution_mode,
+            backend=old.backend,
+            prompt_sha256=old.prompt_sha256,
+            schema_sha256=old.schema_sha256,
             recorded_at=recorded_at or utc_now(),
             retry_of=old.attempt_id,
             retry_count=old.retry_count + 1,
@@ -172,6 +187,11 @@ def _parser() -> argparse.ArgumentParser:
     start.add_argument("--packet-identity", required=True)
     start.add_argument("--parent-receipt-identity", required=True)
     start.add_argument("--boundary-fingerprint", required=True)
+    start.add_argument("--reviewed-input-identity")
+    start.add_argument("--execution-mode", choices=("file-backed-worker", "typed-subagent"))
+    start.add_argument("--backend")
+    start.add_argument("--prompt-sha256")
+    start.add_argument("--schema-sha256")
     start.add_argument("--attempt-id")
     start.add_argument("--recorded-at")
 
@@ -219,17 +239,22 @@ def main(argv: list[str] | None = None) -> int:
                 packet_identity=args.packet_identity,
                 parent_receipt_identity=args.parent_receipt_identity,
                 boundary_fingerprint=args.boundary_fingerprint,
+                reviewed_input_identity=args.reviewed_input_identity,
+                execution_mode=args.execution_mode,
+                backend=args.backend,
+                prompt_sha256=args.prompt_sha256,
+                schema_sha256=args.schema_sha256,
                 attempt_id=args.attempt_id,
                 recorded_at=args.recorded_at,
             )
             _write(path, ledger)
-            _emit({"ok": True, "attempt": attempt.to_dict(), "approval_eligible": False})
+            _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False})
             return 0
         if args.command == "transition":
             attempt = ledger.require(args.attempt_id)
             attempt.transition(args.state, args.signal, args.recorded_at or utc_now())
             _write(path, ledger)
-            _emit({"ok": True, "attempt": attempt.to_dict(), "approval_eligible": attempt.approval_eligible})
+            _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete})
             return 0
         if args.command == "findings":
             attempt = ledger.require(args.attempt_id)
@@ -241,23 +266,23 @@ def main(argv: list[str] | None = None) -> int:
                 recorded_at=args.recorded_at or utc_now(),
             )
             _write(path, ledger)
-            _emit({"ok": accepted, "attempt": attempt.to_dict(), "approval_eligible": attempt.approval_eligible})
+            _emit({"ok": accepted, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete})
             return 0 if accepted else 1
         if args.command == "recover":
             attempt = ledger.require(args.attempt_id)
             attempt.record_recovery(args.signal, args.recorded_at or utc_now())
             _write(path, ledger)
-            _emit({"ok": True, "attempt": attempt.to_dict(), "approval_eligible": False})
+            _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False})
             return 0
         if args.command == "retry":
             attempt = ledger.retry(args.from_attempt, new_attempt_id=args.attempt_id, recorded_at=args.recorded_at)
             _write(path, ledger)
-            _emit({"ok": True, "attempt": attempt.to_dict(), "approval_eligible": False})
+            _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": False})
             return 0
         if args.command == "show":
             if args.attempt_id:
                 attempt = ledger.require(args.attempt_id)
-                _emit({"ok": True, "attempt": attempt.to_dict(), "approval_eligible": attempt.approval_eligible})
+                _emit({"ok": True, "attempt": attempt.to_dict(), "delivery_complete": attempt.delivery_complete})
             else:
                 _emit({"ok": True, "ledger": ledger.to_dict()})
             return 0

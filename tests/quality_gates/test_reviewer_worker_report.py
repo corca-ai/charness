@@ -25,10 +25,18 @@ def _receipt(tmp_path: Path, *, status: str = "succeeded") -> Path:
         "backend": "codex_exec",
         "terminal": True,
         "status": status,
+        "exit_code": 0 if status == "succeeded" else 124,
         "output_fresh": status == "succeeded",
         "output_file": str(output),
         "output_size": output.stat().st_size,
         "output_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "attempt_id": "attempt-1",
+        "scope": "scope-1",
+        "packet_identity": "packet-1",
+        "reviewed_input_identity": "a" * 64,
+        "execution_mode": "file-backed-worker",
+        "prompt_sha256": "b" * 64,
+        "schema_sha256": "c" * 64,
     }
     path = tmp_path / "receipt.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -44,13 +52,18 @@ def _ledger(tmp_path: Path, *, findings: bool = True) -> tuple[Path, str]:
         packet_identity="packet-1",
         parent_receipt_identity="parent-1",
         boundary_fingerprint="boundary-1",
+        reviewed_input_identity="a" * 64,
+        execution_mode="file-backed-worker",
+        backend="codex_exec",
+        prompt_sha256="b" * 64,
+        schema_sha256="c" * 64,
     )
     if findings:
         attempt.record_findings(
             scope="scope-1",
             packet_identity="packet-1",
             parent_receipt_identity="parent-1",
-            findings_identity="findings-1",
+            findings_identity=hashlib.sha256((tmp_path / "result.json").read_bytes()).hexdigest(),
             recorded_at="2026-08-21T00:00:00Z",
         )
     path.write_text(json.dumps(ledger.to_dict()), encoding="utf-8")
@@ -72,6 +85,8 @@ def _run(tmp_path: Path, receipt: Path, ledger: Path, *, scope: str = "scope-1")
             scope,
             "--packet-identity",
             "packet-1",
+            "--reviewed-input-identity",
+            "a" * 64,
             "--parent-receipt-identity",
             "parent-1",
         ],
@@ -121,3 +136,29 @@ def test_provenance_mismatch_is_not_approval(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert payload["provenance_ok"] is False
     assert payload["approval_eligible"] is False
+
+
+def test_foreign_receipt_cannot_pair_with_current_attempt(tmp_path: Path) -> None:
+    receipt = _receipt(tmp_path)
+    payload = json.loads(receipt.read_text(encoding="utf-8"))
+    payload["attempt_id"] = "foreign-attempt"
+    receipt.write_text(json.dumps(payload), encoding="utf-8")
+    ledger, _ = _ledger(tmp_path)
+    result = _run(tmp_path, receipt, ledger)
+    report = yaml.safe_load(result.stdout)
+    assert result.returncode == 1
+    assert report["receipt_ok"] is False
+    assert report["approval_eligible"] is False
+
+
+def test_findings_identity_must_match_worker_result_hash(tmp_path: Path) -> None:
+    receipt = _receipt(tmp_path)
+    ledger, _ = _ledger(tmp_path)
+    payload = json.loads(ledger.read_text(encoding="utf-8"))
+    payload["attempts"][0]["findings_identity"] = "d" * 64
+    ledger.write_text(json.dumps(payload), encoding="utf-8")
+    result = _run(tmp_path, receipt, ledger)
+    report = yaml.safe_load(result.stdout)
+    assert result.returncode == 1
+    assert report["ledger_ok"] is False
+    assert report["approval_eligible"] is False

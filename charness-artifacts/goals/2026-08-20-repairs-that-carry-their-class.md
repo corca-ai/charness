@@ -23,12 +23,13 @@ runs the activation command.
   race, and dirty-proof result into an owning boundary with executable
   detection, while preserving source/export parity and refusing public-release
   claims from local proof.
-- Next action: commit the changed-line/contract-repair truth surfaces, rebind
-  the semantic candidate, reproduce the P0 release blocker #679 first, then
-  run the disjoint #682/#683/#685/#686 lanes before any version mutation.
-  Fresh-eye approval is still unproven after the bounded worker timeout; retry
-  only through the typed worker/report contract and never infer approval from
-  media or process success.
+- Next action: commit the semantic worker/delivery repair, regenerate the packet
+  over the complete verdict-owning surface, rerun exact-target changed-line
+  proof, then obtain the required round-2 fresh-eye read of the repaired
+  verdict surfaces. Reproduce P0 #679 and run disjoint #682/#683/#685/#686
+  lanes only after that repair boundary is clean; no version mutation yet.
+  Round-1 worker delivery is proven, but its three verdicts are `block` and
+  approval remains withheld.
 - Large-slice rule: completed issue-level history remains auditable, but future
   work is scheduled by capability boundary rather than ticket count. Each macro
   slice owns one user-visible outcome and its shared contract; independent
@@ -950,6 +951,36 @@ boundary at once while parent-only truth surfaces remain serialized.
   three baton defects repaired. Fresh-eye code delivery: unproven due typed
   worker timeout; approval correctly withheld. Handoff and goal refresh are
   pending commit.
+
+### Slice 6 continuation: semantic approval-chain repair
+
+- Objective: close the identity and mode seams found by the first delivered
+  semantic fresh-eye round, so explicit subagent/worker contracts cannot be
+  satisfied by a stale packet, foreign receipt, unbound result hash, or
+  same-context substitution.
+- Fresh-eye result: contract, delivery, and counterweight workers each returned
+  schema-valid `codex_exec` reports through the typed receipt/ledger/report
+  path. All three independently returned `verdict: block`; the reports are
+  delivered evidence, not candidate approval. Durable round record:
+  `charness-artifacts/critique/rounds/2026-08-21-r2-semantic-candidate-round-1.md`.
+- Structural repairs in progress: receipt-to-attempt joins now carry packet,
+  reviewed-input, mode/backend, prompt/schema, exit, and result identities;
+  delivery CLI output is `delivery_complete` rather than approval; delivery
+  history is replay-validated; result/receipt path aliases refuse; interruption
+  cleanup covers the whole backend; the repo-owned runner/schema explicitly
+  refuses the typed-subagent cross-over; and `worker-delivered` artifacts need
+  a combined report carrier with packet/result identities.
+- Targeted verification: 67 focused worker/delivery/validator tests pass;
+  ruff and the repo-owned result schema check pass. The repair is not yet
+  candidate-locked: plugin sync, exact-target changed-line proof, a new packet,
+  and round-2 fresh-eye review remain required.
+- Failure-smell memory: provider-invalid response schema, guessed delivery
+  subcommands/flags, wrong ledger filenames, and mismatched round snapshot ids
+  were all recorded as command-boundary failures and corrected through help,
+  inventory, or schema validation. They are not omitted as operator typos.
+- Non-claims: no release/publication, install or hosted readback, typed host
+  application, issue closure, version mutation, or fresh-eye approval of the
+  repaired surface is claimed.
 
 ## Closeout Binding Plan
 

@@ -25,7 +25,7 @@ def _findings(ledger: delivery.DeliveryLedger, attempt_id: str = "a1", **overrid
         "scope": "scope-sha",
         "packet_identity": "packet-sha",
         "parent_receipt_identity": "receipt-a1",
-        "findings_identity": "findings-sha",
+        "findings_identity": "f" * 64,
         "recorded_at": "2026-08-21T00:01:00Z",
     }
     values.update(overrides)
@@ -36,7 +36,7 @@ def test_spawn_acceptance_is_not_approval() -> None:
     attempt = _ledger().require("a1")
     assert attempt.state == delivery.SPAWN_ACCEPTED
     assert attempt.terminal is False
-    assert attempt.approval_eligible is False
+    assert attempt.delivery_complete is False
     assert attempt.history[0]["event_id"]
 
 
@@ -47,7 +47,7 @@ def test_findings_received_is_the_only_approval_state() -> None:
     attempt = ledger.require("a1")
     assert attempt.state == delivery.FINDINGS_RECEIVED
     assert attempt.terminal is True
-    assert attempt.approval_eligible is True
+    assert attempt.delivery_complete is True
 
 
 @pytest.mark.parametrize(
@@ -66,7 +66,7 @@ def test_non_delivery_states_are_terminal_refusals(state: str) -> None:
     ledger.require("a1").transition(state, f"host signal: {state}", "2026-08-21T00:00:10Z")
     attempt = ledger.require("a1")
     assert attempt.terminal is True
-    assert attempt.approval_eligible is False
+    assert attempt.delivery_complete is False
 
 
 def test_findings_provenance_mismatch_becomes_unknown_not_approval() -> None:
@@ -74,7 +74,7 @@ def test_findings_provenance_mismatch_becomes_unknown_not_approval() -> None:
     assert _findings(ledger, scope="foreign-scope") is False
     attempt = ledger.require("a1")
     assert attempt.state == delivery.NON_DELIVERY_UNKNOWN
-    assert attempt.approval_eligible is False
+    assert attempt.delivery_complete is False
     assert attempt.observations[-1]["state"] == "foreign-findings"
 
 
@@ -84,7 +84,7 @@ def test_late_findings_cannot_resurrect_interrupted_attempt() -> None:
     assert _findings(ledger) is False
     attempt = ledger.require("a1")
     assert attempt.state == delivery.INTERRUPTED
-    assert attempt.approval_eligible is False
+    assert attempt.delivery_complete is False
     assert attempt.observations[-1]["state"] == "late-or-duplicate-findings"
     assert attempt.observations[-1]["event_id"]
 
@@ -94,9 +94,9 @@ def test_transcript_recovery_is_an_observation_not_delivery() -> None:
     ledger.require("a1").record_recovery("host transcript only; parent did not receive it", "2026-08-21T00:00:10Z")
     attempt = ledger.require("a1")
     assert attempt.state == delivery.SPAWN_ACCEPTED
-    assert attempt.approval_eligible is False
+    assert attempt.delivery_complete is False
     assert attempt.observations[-1]["state"] == delivery.RECOVERED_FROM_TRANSCRIPT
-    assert attempt.observations[-1]["approval_eligible"] is False
+    assert attempt.observations[-1]["delivery_complete"] is False
 
 
 def test_retry_preserves_original_and_is_bounded_to_one() -> None:
@@ -126,4 +126,19 @@ def test_malformed_terminal_flag_is_rejected_on_readback() -> None:
     payload = _ledger().to_dict()
     payload["attempts"][0]["terminal"] = True
     with pytest.raises(delivery.DeliveryError, match="terminal flag"):
+        delivery.DeliveryLedger.from_dict(payload)
+
+
+def test_forged_history_is_rejected_on_readback() -> None:
+    payload = _ledger().to_dict()
+    payload["attempts"][0]["history"].append(
+        {
+            "event_id": "forged",
+            "state": delivery.FINDINGS_RECEIVED,
+            "signal": "forged",
+            "terminal": True,
+            "recorded_at": "2026-08-21T00:00:02Z",
+        }
+    )
+    with pytest.raises(delivery.DeliveryError, match="history final state"):
         delivery.DeliveryLedger.from_dict(payload)

@@ -19,13 +19,13 @@ Task-completing repo work always records critique before closeout. Scale the
 pass, not the obligation: use the risk boundary or meaningful slice as the
 review unit, not every commit. See `references/cadence.md`.
 
-When this standalone `critique` skill runs, its default fresh-eye execution is a
-Charness-owned file-backed worker (`codex_exec` or `claude_p`, selected by the
-adapter). `bounded` limits scope and time box, not execution mode. A typed
-subagent is an optional host adapter, not the default path. A separate
-file-backed process is a fresh context; the consumer records
-`worker-delivered` only after the typed worker receipt and delivery ledger agree.
+When this standalone `critique` skill runs, its default fresh-eye execution is a Charness-owned file-backed worker; typed-subagent remains optional.
 There is no same-context local standalone `critique` variant.
+The rule is: apply the stop-instead-of-local-substitute rule when neither the configured worker nor the optional typed-subagent path can provide a separate fresh-eye context.
+
+Fresh-eye execution branches, reports, ledgers, and no-same-context rules live in
+`references/adapter-contract.md` and `../../shared/references/fresh-eye-subagent-review.md`;
+missing delivery is a typed block, never a local substitute.
 
 Delegated reviewer fast path: read
 `../../shared/references/disposition-reviewer-brief.md` before treating the
@@ -101,24 +101,13 @@ history.
    - choose angles that can disagree meaningfully, not five near-duplicates
    - use the target reference's `Anchor Angle Distribution`; see also `references/angle-selection.md`
 3. Run the angle pass.
-   - use the adapter's `reviewer_runner` and run each bounded fresh-eye lens in
-     its own file-backed worker; apply `reviewer_tiers.high-leverage` only when
-     the selected host adapter actually uses a typed subagent
-   - when the repo's adapter declares ≥1 `packet_sections`, pass the
-     prepare-packet markdown render to each worker and record the
-     consumed packet path plus the runner's exact reviewed-input binding in the
-     closeout (`references/prepare-packet.md`)
-   - this is the rail-1 snapshot/verify around each reviewer spawn; a parent-head
-     move is parent-attributed drift, not a clean boundary
-   - apply the stop-instead-of-local-substitute rule when neither the configured
-     worker nor the optional typed-subagent adapter can provide a separate
-     fresh-eye context
-   - do not collapse the counterweight into one of the angle subagents; keep
-     it as a separate skeptical pass
-   - before the first run, resolve the adapter and follow the full
-     `../../shared/references/fresh-eye-subagent-review.md` delivery path;
-     worker receipt and ledger state are the consumer's authority
-   - record each returned round immediately with `python3 "$SKILL_DIR/scripts/record_round_findings.py" --repo-root . --round <n> --window-id <id> --boundary-snapshot <path> --findings-file <path>`; it writes a non-overwritable `charness-artifacts/critique/rounds/<date>-<window-id>.md` that round `n+1` reads as prior evidence. A missing or mismatched snapshot refuses.
+   - Resolve `reviewer_runner.mode` and stay on that branch; see
+     `references/adapter-contract.md` for schema/report versus host-spawn delivery.
+   - Bind prepared-packet identity and snapshot/verify each spawn; parent-head
+     movement is drift. Keep counterweight separate and follow the full delivery
+     path in `../../shared/references/fresh-eye-subagent-review.md`.
+   - Record each round with `record_round_findings.py`; mismatched snapshots and
+     same-context substitutes refuse.
 4. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available
@@ -167,8 +156,10 @@ rename title/slug coherence review evidence).
 If the configured worker path blocks before execution, report
 `Execution: blocked <host-signal>` and the next move; record
 `Fresh-Eye Satisfaction: worker-delivered` only after the typed worker report
-is approval-eligible. Use `parent-delegated` or `nested-delegated` only when
-the adapter explicitly selected a typed-subagent path.
+is approval-eligible and the artifact records its report carrier, packet
+identity, and result identity. Use `parent-delegated` or `nested-delegated` only
+when the adapter explicitly selected a typed-subagent path and the findings text
+reached the parent context. A same-agent short critique is never either claim.
 
 ## Guardrails
 
@@ -178,9 +169,7 @@ the adapter explicitly selected a typed-subagent path.
   into the four bins, never skip it or treat all concerns as equal, and don't open
   more angles than you can triage honestly. Persist rejected-but-recurring concerns
   to `Deliberately Not Doing` (Workflow step 6), not chat. See
-  `references/counterweight-triage.md`. (Target-distribution, no-same-agent, and
-  no-nested-spawn rules are stated once above — Target Selection, the concept block,
-  and the delegated-reviewer fast path.)
+  `references/counterweight-triage.md`.
 
 ## References
 

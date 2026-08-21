@@ -75,9 +75,12 @@ verification preferences or `truth_surfaces`.
 3. Run the stop gate.
    - every task-completing repo slice records critique before closeout; scale the pass instead of asking whether it is needed
    - record `Critique: short <scope>` for small local-risk slices, or `Critique: full <artifact-or-worker-status>` after using standalone `critique` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
-   - `critique` always means a fresh bounded worker review (or an adapter-selected typed-subagent review), never a same-context pass; use `Critique: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
-   - if the configured worker and optional typed-subagent path are both blocked
-     after the capability check, stop and record `Critique: blocked <host-signal>`
+   - `critique` always means a fresh bounded review, never a same-context pass;
+     consume its proof according to the critique delivery contract. Use
+     `Critique: not-applicable <reason>` only for inspect/status/routing-only
+     requests that do not complete repo work.
+   - if critique delivery is blocked after the capability check, stop and record
+     `Critique: blocked <host-signal>`
    - run a fresh-eye review for runtime behavior, boundary honesty, and
      docs/spec synchronization; the
      [boundary ownership brief](../../shared/references/boundary-ownership-brief.md)

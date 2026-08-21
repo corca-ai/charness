@@ -1,0 +1,13 @@
+{
+  "window": {
+    "id": "r2-semantic-candidate-round-1",
+    "opened_at": "2026-08-21T00:47:49Z"
+  },
+  "head": "3cb576571ae8f988a6f375b4a0d4acc1138b3cdd",
+  "status": [],
+  "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "worktree_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changed_content": {},
+  "untracked": {},
+  "source_blobs": {}
+}

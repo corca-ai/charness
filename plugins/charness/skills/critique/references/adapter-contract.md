@@ -69,8 +69,13 @@ Field semantics:
 - `reviewer_runner` — execution boundary for the default fresh-eye run. `mode`
   is `file-backed-worker` (default) or the legacy `typed-subagent`; `backend`
   is `codex_exec`, `claude_p`, or `host-defaulted`; `timeout_seconds` is a
-  positive integer. The consumer must read the worker receipt and delivery
-  ledger, never infer approval from an output file or process exit code.
+  positive integer. File-backed mode is invoked through
+  `../../../shared/scripts/run_reviewer_worker.py`, which uses the repo-owned
+  `../../../shared/references/bounded-review-result.schema.json` and emits the
+  combined worker report. Typed-subagent mode is a separate host branch; the
+  file-backed runner refuses it rather than silently changing proof mode. The
+  consumer must read the combined worker report and delivery ledger, never
+  infer approval from an output file, delivery CLI field, or process exit code.
 - `packet_sections` — list of declared sections; empty list is valid
   (signals "no opt-in" same as omitting the field)
 - `reviewer_tiers` — optional mapping from a portable reviewer tier

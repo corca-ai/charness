@@ -59,7 +59,7 @@ def test_cli_keeps_interrupted_attempt_and_retry_as_distinct_records(tmp_path: P
         "2026-08-21T00:00:10Z",
     )
     assert interrupted.returncode == 0, interrupted.stderr
-    assert _payload(interrupted)["approval_eligible"] is False
+    assert _payload(interrupted)["delivery_complete"] is False
 
     retried = _run(
         ledger,
@@ -108,13 +108,13 @@ def test_cli_requires_matching_provenance_before_findings_received(tmp_path: Pat
         "--parent-receipt-identity",
         "receipt-a1",
         "--findings-identity",
-        "findings-sha",
+        "f" * 64,
     )
     assert foreign.returncode == 1
     result = _payload(foreign)
     assert result["ok"] is False
     assert result["attempt"]["state"] == "non-delivery-unknown"
-    assert result["approval_eligible"] is False
+    assert result["delivery_complete"] is False
 
 def test_cli_does_not_allow_recovery_to_become_approval(tmp_path: Path) -> None:
     ledger = tmp_path / "delivery.json"
@@ -143,4 +143,4 @@ def test_cli_does_not_allow_recovery_to_become_approval(tmp_path: Path) -> None:
     assert recovered.returncode == 0
     result = _payload(recovered)
     assert result["attempt"]["observations"][-1]["state"] == "findings-recovered-from-transcript"
-    assert result["approval_eligible"] is False
+    assert result["delivery_complete"] is False

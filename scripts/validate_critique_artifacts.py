@@ -49,6 +49,7 @@ DELIVERY_STATE_RULE_DATE = _reviewer_evidence.DELIVERY_STATE_RULE_DATE
 DELIVERY_STATE_FIELD = _reviewer_evidence.DELIVERY_STATE_FIELD
 DELIVERY_STATE_VALUES = _reviewer_evidence.DELIVERY_STATE_VALUES
 DELIVERY_STATE_VALUES_SUMMARY = _reviewer_evidence.DELIVERY_STATE_VALUES_SUMMARY
+WORKER_REPORT_FIELDS = _reviewer_evidence.WORKER_REPORT_FIELDS
 
 CRITIQUE_ARTIFACT_PREFIX = _critique_paths.CRITIQUE_ARTIFACT_PREFIX
 CRITIQUE_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Critique Prepare Packet(?:\s+—\s+\S.*)?$")
@@ -575,6 +576,9 @@ def validate_critique_artifact(
         lambda: validate_structured_findings(path, text),
         _check_reviewer_tier_evidence,
         lambda: _reviewer_evidence.validate_delegation_consistency(
+            path, text, status_lowered, section_field_map=_section_field_map
+        ),
+        lambda: _reviewer_evidence.validate_worker_delivery_evidence(
             path, text, status_lowered, section_field_map=_section_field_map
         ),
         lambda: validate_reviewed_input_binding(

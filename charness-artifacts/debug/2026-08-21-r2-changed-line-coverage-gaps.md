@@ -151,3 +151,26 @@ consumer shapes. Run the explicit-base changed-line producer before standing
 or release lanes. For command paths, resolve with `rg --files` or the owning
 planner instead of guessing; a wrong path is a failed boundary that must be
 recorded and corrected.
+
+Additional command-boundary smells: the semantic review fan-out exposed the
+same class above the test selector:
+
+- The first worker fan-out used a provider-invalid JSON Schema (`const` without
+  a declared string type). All three attempts were recorded as non-delivery;
+  adding the type and validating the schema before retry fixed the provider
+  boundary.
+- Delivery inspection first guessed `begin` and `findings-received` CLI
+  subcommands; `reviewer_delivery.py --help` showed the owning names are
+  `start`, `transition`, and `findings`.
+- A ledger readback first guessed three `/tmp/*delivery.json` names instead of
+  inventorying the actual `*-ledger.json` paths.
+- `findings` was first called with unsupported `--signal`; the CLI help showed
+  that findings has no signal field.
+- Round persistence first supplied a new window id against an old snapshot;
+  the snapshot-id mismatch was correctly refused, then a repo-root snapshot
+  was created for the actual round record.
+
+These were not harmless operator typos. Each guessed path, flag, or schema
+shape could have produced a false “nothing returned” or a falsely unbound
+review. The prevention is one inventory/help/schema smoke step before fan-out,
+then typed receipts and actual CLI state transitions after delivery.

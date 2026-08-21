@@ -343,7 +343,11 @@ complete only when `reviewer_worker_report.py` returns a typed report with
 `approval_eligible: true`; the report requires a succeeded worker receipt, a
 fresh output hash, and a matching `findings-received` delivery-ledger attempt.
 This keeps the report media-neutral: `codex_exec` and `claude_p` are adapter
-choices, not verdict categories.
+choices, not verdict categories. The delivery CLI's `delivery_complete` field
+is only a state-machine observation; it is intentionally not
+`approval_eligible`. Only the combined worker report may emit that approval
+field, after it joins the receipt, attempt, packet/input identities, and result
+hash.
 
 For the optional typed-subagent path, **A spawned reviewer is not a received
 review.** The parent holds the review only when the reviewer's findings text is in
@@ -433,8 +437,13 @@ python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
   --attempt-id "$ATTEMPT_ID" \
   --scope "$SCOPE_ID" \
   --packet-identity "$PACKET_SHA256" \
+  --reviewed-input-identity "$INPUT_IDENTITY_SHA256" \
   --parent-receipt-identity "$RECEIPT_ID" \
-  --boundary-fingerprint "$BOUNDARY_SHA256"
+  --boundary-fingerprint "$BOUNDARY_SHA256" \
+  --execution-mode file-backed-worker \
+  --backend "$BACKEND" \
+  --prompt-sha256 "$PROMPT_SHA256" \
+  --schema-sha256 "$SCHEMA_SHA256"
 
 python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
   --ledger "$RUN_DIR/delivery.json" show --attempt-id "$ATTEMPT_ID"
@@ -444,11 +453,14 @@ python3 "$SKILL_DIR/../../shared/scripts/reviewer_worker_report.py" \
   --ledger-file "$RUN_DIR/delivery.json" \
   --attempt-id "$ATTEMPT_ID" --scope "$SCOPE_ID" \
   --packet-identity "$PACKET_SHA256" \
+  --reviewed-input-identity "$INPUT_IDENTITY_SHA256" \
   --parent-receipt-identity "$RECEIPT_ID"
 ```
 
 The backend runner itself must publish a typed receipt and a schema-validated
-fresh result before the parent calls the `findings` operation. A finite timeout,
+fresh result before the parent calls the `findings` operation. The receipt must
+carry the attempt, scope, packet/input, mode/backend, prompt/schema, and result
+identities so a foreign run cannot be paired with the current ledger. A finite timeout,
 absolute paths resolved before `cwd`, unique run artifacts, and a pre-existing
 output refusal are part of that runner boundary; a result file's presence is
 not a terminal success signal.

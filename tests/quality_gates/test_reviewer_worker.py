@@ -67,6 +67,14 @@ def _run(
             str(output.relative_to(tmp_path)),
             "--receipt-file",
             str(receipt.relative_to(tmp_path)),
+            "--attempt-id",
+            "attempt-1",
+            "--scope",
+            "scope-1",
+            "--packet-identity",
+            "p" * 64,
+            "--reviewed-input-identity",
+            "i" * 64,
             "--timeout-seconds",
             timeout,
             "--run-id",
@@ -109,6 +117,17 @@ printf '%s\n' '{"kind":"review","reason":"fresh"}' > "$out"
     assert record["status"] == "succeeded"
     assert record["output_fresh"] is True
     assert Path(record["output_file"]).is_absolute()
+    assert record["attempt_id"] == "attempt-1"
+    assert record["packet_identity"] == "p" * 64
+
+
+def test_colliding_artifact_paths_are_refused_before_backend_start(tmp_path: Path) -> None:
+    workspace, prompt, schema, output, _receipt_path = _inputs(tmp_path)
+    result = _run(tmp_path, "codex_exec", workspace, prompt, schema, output, output)
+    assert result.returncode == 1
+    record = json.loads(output.read_text(encoding="utf-8"))
+    assert record["status"] == "input-invalid"
+    assert "distinct files" in record["error"]
 
 
 def test_preexisting_output_is_refused_and_gets_a_typed_receipt(tmp_path: Path) -> None:

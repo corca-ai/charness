@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -46,6 +47,8 @@ _ALLOWED_TRANSITIONS = {
     SPAWN_ACCEPTED: frozenset(CANONICAL_STATES[1:]),
     RUNNING: frozenset(CANONICAL_STATES[2:]),
 }
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_EXECUTION_MODES = frozenset({"file-backed-worker", "typed-subagent"})
 
 
 class DeliveryError(ValueError):
@@ -62,6 +65,13 @@ def _text(value: object, label: str) -> str:
     return value.strip()
 
 
+def _sha256(value: object, label: str) -> str:
+    text = _text(value, label).lower()
+    if not _SHA256_RE.fullmatch(text):
+        raise DeliveryError(f"{label} must be a lowercase SHA-256 identity")
+    return text
+
+
 def _attempt_id(value: object | None = None) -> str:
     candidate = uuid.uuid4().hex if value is None else _text(value, "attempt_id")
     if len(candidate) > 128 or any(char.isspace() for char in candidate):
@@ -73,14 +83,69 @@ def _event_id() -> str:
     return uuid.uuid4().hex
 
 
-def _is_terminal(state: str) -> bool:
-    return state in TERMINAL_STATES
-
-
 def _event(event: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(event, dict) or not _text(event.get("event_id"), "event_id"):
         raise DeliveryError("history and observations require event_id")
     return event
+
+
+def _validate_history(
+    history: list[dict[str, Any]], observations: list[dict[str, Any]], state: str
+) -> None:
+    if not history:
+        raise DeliveryError("history must contain the initial spawn-accepted event")
+    if history[0].get("state") != SPAWN_ACCEPTED:
+        raise DeliveryError("history must begin with spawn-accepted")
+    event_ids: set[str] = set()
+    for item in [*history, *observations]:
+        _event(item)
+        if item["event_id"] in event_ids:
+            raise DeliveryError(f"duplicate event_id: {item['event_id']}")
+        event_ids.add(item["event_id"])
+    prior_state = history[0]["state"]
+    for item in history[1:]:
+        event_state = item.get("state")
+        if event_state not in CANONICAL_STATES:
+            raise DeliveryError(f"history contains unknown canonical state: {event_state}")
+        if event_state not in _ALLOWED_TRANSITIONS.get(prior_state, frozenset()):
+            raise DeliveryError(f"history contains invalid transition `{prior_state}` -> `{event_state}`")
+        prior_state = event_state
+    if prior_state != state:
+        raise DeliveryError("history final state does not match attempt state")
+
+
+def _bound_fields(payload: dict[str, Any], state: str) -> dict[str, Any]:
+    findings = (_sha256(payload["findings_identity"], "findings_identity")
+                if payload.get("findings_identity") is not None else None)
+    if state == FINDINGS_RECEIVED and findings is None:
+        raise DeliveryError("findings-received history requires findings_identity")
+    if state != FINDINGS_RECEIVED and findings is not None:
+        raise DeliveryError("findings_identity is only valid for findings-received")
+    reviewed_input_identity = (_sha256(payload["reviewed_input_identity"], "reviewed_input_identity")
+                               if payload.get("reviewed_input_identity") is not None else None)
+    execution_mode = payload.get("execution_mode")
+    if execution_mode is not None:
+        execution_mode = _text(execution_mode, "execution_mode")
+        if execution_mode not in _EXECUTION_MODES:
+            raise DeliveryError(f"unknown execution_mode: {execution_mode}")
+    prompt_sha256 = (_sha256(payload["prompt_sha256"], "prompt_sha256")
+                     if payload.get("prompt_sha256") is not None else None)
+    schema_sha256 = (_sha256(payload["schema_sha256"], "schema_sha256")
+                     if payload.get("schema_sha256") is not None else None)
+    retry_of = _attempt_id(payload["retry_of"]) if payload.get("retry_of") is not None else None
+    retry_count = payload.get("retry_count", 0)
+    if not isinstance(retry_count, int) or retry_count < 0:
+        raise DeliveryError("retry_count must be a non-negative integer")
+    return {
+        "findings_identity": findings,
+        "reviewed_input_identity": reviewed_input_identity,
+        "execution_mode": execution_mode,
+        "backend": _text(payload["backend"], "backend") if payload.get("backend") is not None else None,
+        "prompt_sha256": prompt_sha256,
+        "schema_sha256": schema_sha256,
+        "retry_of": retry_of,
+        "retry_count": retry_count,
+    }
 
 
 @dataclass
@@ -94,6 +159,11 @@ class DeliveryAttempt:
     observed_signal: str
     terminal: bool
     recorded_at: str
+    reviewed_input_identity: str | None = None
+    execution_mode: str | None = None
+    backend: str | None = None
+    prompt_sha256: str | None = None
+    schema_sha256: str | None = None
     findings_identity: str | None = None
     retry_of: str | None = None
     retry_count: int = 0
@@ -110,6 +180,11 @@ class DeliveryAttempt:
         parent_receipt_identity: str,
         boundary_fingerprint: str,
         recorded_at: str,
+        reviewed_input_identity: str | None = None,
+        execution_mode: str | None = None,
+        backend: str | None = None,
+        prompt_sha256: str | None = None,
+        schema_sha256: str | None = None,
         retry_of: str | None = None,
         retry_count: int = 0,
     ) -> "DeliveryAttempt":
@@ -124,6 +199,11 @@ class DeliveryAttempt:
             observed_signal="spawn accepted; parent delivery not yet proven",
             terminal=False,
             recorded_at=when,
+            reviewed_input_identity=_sha256(reviewed_input_identity, "reviewed_input_identity") if reviewed_input_identity is not None else None,
+            execution_mode=_text(execution_mode, "execution_mode") if execution_mode is not None else None,
+            backend=_text(backend, "backend") if backend is not None else None,
+            prompt_sha256=_sha256(prompt_sha256, "prompt_sha256") if prompt_sha256 is not None else None,
+            schema_sha256=_sha256(schema_sha256, "schema_sha256") if schema_sha256 is not None else None,
             retry_of=retry_of,
             retry_count=retry_count,
         )
@@ -160,23 +240,14 @@ class DeliveryAttempt:
         if state not in CANONICAL_STATES:
             raise DeliveryError(f"unknown delivery state: {state}")
         terminal = payload["terminal"]
-        if not isinstance(terminal, bool) or terminal != _is_terminal(state):
+        if not isinstance(terminal, bool) or terminal != (state in TERMINAL_STATES):
             raise DeliveryError(f"terminal flag does not match state `{state}`")
         history = payload.get("history", [])
         observations = payload.get("observations", [])
         if not isinstance(history, list) or not isinstance(observations, list):
             raise DeliveryError("history and observations must be lists")
-        for item in [*history, *observations]:
-            _event(item)
-        findings = payload.get("findings_identity")
-        retry_of = payload.get("retry_of")
-        retry_count = payload.get("retry_count", 0)
-        if findings is not None:
-            findings = _text(findings, "findings_identity")
-        if retry_of is not None:
-            retry_of = _attempt_id(retry_of)
-        if not isinstance(retry_count, int) or retry_count < 0:
-            raise DeliveryError("retry_count must be a non-negative integer")
+        _validate_history(history, observations, state)
+        fields = _bound_fields(payload, state)
         return cls(
             attempt_id=_attempt_id(payload["attempt_id"]),
             scope=_text(payload["scope"], "scope"),
@@ -187,9 +258,14 @@ class DeliveryAttempt:
             observed_signal=_text(payload["observed_signal"], "observed_signal"),
             terminal=terminal,
             recorded_at=_text(payload["recorded_at"], "recorded_at"),
-            findings_identity=findings,
-            retry_of=retry_of,
-            retry_count=retry_count,
+            reviewed_input_identity=fields["reviewed_input_identity"],
+            execution_mode=fields["execution_mode"],
+            backend=fields["backend"],
+            prompt_sha256=fields["prompt_sha256"],
+            schema_sha256=fields["schema_sha256"],
+            findings_identity=fields["findings_identity"],
+            retry_of=fields["retry_of"],
+            retry_count=fields["retry_count"],
             history=history,
             observations=observations,
         )
@@ -208,6 +284,13 @@ class DeliveryAttempt:
             "observations": self.observations,
             "retry_count": self.retry_count,
         }
+        payload.update(
+            {
+                key: value
+                for key in ("reviewed_input_identity", "execution_mode", "backend", "prompt_sha256", "schema_sha256")
+                if (value := getattr(self, key)) is not None
+            }
+        )
         if self.findings_identity is not None:
             payload["findings_identity"] = self.findings_identity
         if self.retry_of is not None:
@@ -215,7 +298,7 @@ class DeliveryAttempt:
         return payload
 
     @property
-    def approval_eligible(self) -> bool:
+    def delivery_complete(self) -> bool:
         return self.state == APPROVAL_STATE and self.terminal and self.findings_identity is not None
 
     def _apply_transition(self, state: str, signal: str, recorded_at: str) -> None:
@@ -232,7 +315,7 @@ class DeliveryAttempt:
             raise DeliveryError(f"invalid transition `{self.state}` -> `{state}`")
         self.state = state
         self.observed_signal = signal
-        self.terminal = _is_terminal(state)
+        self.terminal = state in TERMINAL_STATES
         self.recorded_at = recorded_at
         self.history.append(
             {
@@ -263,7 +346,7 @@ class DeliveryAttempt:
             "scope": _text(scope, "scope"),
             "packet_identity": _text(packet_identity, "packet_identity"),
             "parent_receipt_identity": _text(parent_receipt_identity, "parent_receipt_identity"),
-            "findings_identity": _text(findings_identity, "findings_identity"),
+            "findings_identity": _sha256(findings_identity, "findings_identity"),
         }
         if self.state in TERMINAL_STATES:
             self.observations.append(
@@ -303,6 +386,6 @@ class DeliveryAttempt:
                 "state": RECOVERED_FROM_TRANSCRIPT,
                 "signal": _text(signal, "signal"),
                 "recorded_at": _text(recorded_at, "recorded_at"),
-                "approval_eligible": False,
+                "delivery_complete": False,
             }
         )

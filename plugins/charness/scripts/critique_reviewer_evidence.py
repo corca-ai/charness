@@ -55,6 +55,13 @@ REVIEWER_TIER_HOST_STATES = frozenset(
 # an in-file constant, not mtime.
 DELIVERY_STATE_RULE_DATE = date(2026, 7, 26)
 DELIVERY_STATE_FIELD = "delivery state"
+WORKER_REPORT_FIELDS = (
+    "worker report",
+    "worker report approval",
+    "worker report delivery",
+    "worker report packet identity",
+    "worker report findings identity",
+)
 DELIVERY_STATE_VALUES = (
     "findings-received",
     "findings-recovered-from-transcript",
@@ -247,4 +254,47 @@ def validate_delivery_state(
                 f"{path}: `{typed}` must name the concrete channel or host signal that "
                 "dropped the findings, so the next session inherits the cause instead of "
                 "re-deriving it."
+            )
+
+
+def validate_worker_delivery_evidence(
+    path: Path,
+    text: str,
+    fresh_eye_status: str,
+    *,
+    section_field_map,
+) -> None:
+    """Bind ``worker-delivered`` to the combined worker report carrier.
+
+    The ordinary delivery-state floor proves only that a parent recorded a
+    findings event. ``worker-delivered`` is a stronger public claim: it may be
+    written only when the durable report says the receipt, ledger, and result
+    hash joined successfully. The fields stay intentionally small and typed so
+    artifact validation cannot mistake media/process success for approval.
+    """
+    if not (fresh_eye_status or "").lower().startswith("worker-delivered"):
+        return
+    fields = section_field_map(text, REVIEWER_TIER_HEADING)
+    missing = [field for field in WORKER_REPORT_FIELDS if not fields.get(field)]
+    if missing:
+        raise ValidationError(
+            f"{path}: `worker-delivered` requires the durable worker report carrier fields: {missing}. "
+            "Record the report path, approval_eligible: true, findings-received, packet identity, "
+            "and findings/result identity."
+        )
+    if fields["worker report approval"].strip().lower() != "approval_eligible: true":
+        raise ValidationError(
+            f"{path}: worker-delivered requires `Worker report approval: approval_eligible: true`; "
+            "a receipt or output file alone is not approval."
+        )
+    if fields["worker report delivery"].strip().lower() != "findings-received":
+        raise ValidationError(
+            f"{path}: worker-delivered requires `Worker report delivery: findings-received`; "
+            "a spawned or recovered worker is not a delivered report."
+        )
+    for field in ("worker report packet identity", "worker report findings identity"):
+        value = fields[field].strip().lower()
+        if not re.fullmatch(r"[0-9a-f]{64}", value):
+            raise ValidationError(
+                f"{path}: `{field}` must carry a lowercase SHA-256 identity from the combined worker report."
             )

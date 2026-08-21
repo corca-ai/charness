@@ -115,6 +115,32 @@ def test_consistent_spawn_record_under_the_same_claim_passes(tmp_path: Path) -> 
     assert _validate(repo, relpath).returncode == 0
 
 
+def test_worker_delivered_requires_the_combined_report_carrier(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tier = _TIER_BLOCK.format(host="host-defaulted", delivery="findings-received")
+    relpath = _artifact(repo, "2026-07-28-worker-missing-report.md", _body(fresh="worker-delivered", tier=tier))
+
+    result = _validate(repo, relpath)
+
+    assert result.returncode == 1
+    assert "durable worker report carrier fields" in result.stderr
+
+
+def test_worker_delivered_requires_report_approval_and_result_identities(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tier = (
+        _TIER_BLOCK.format(host="host-defaulted", delivery="findings-received")
+        + "- Worker report: charness-artifacts/critique/reports/attempt.yaml\n"
+        + "- Worker report approval: approval_eligible: true\n"
+        + "- Worker report delivery: findings-received\n"
+        + f"- Worker report packet identity: {'a' * 64}\n"
+        + f"- Worker report findings identity: {'b' * 64}\n"
+    )
+    relpath = _artifact(repo, "2026-07-28-worker-report.md", _body(fresh="worker-delivered", tier=tier))
+
+    assert _validate(repo, relpath).returncode == 0
+
+
 def test_blocked_fresh_eye_line_may_keep_a_pending_spawn_record(tmp_path: Path) -> None:
     """The escape hatch must stay open, or the rule above buys a false claim: an
     author whose spawn was genuinely blocked records `blocked <signal>` and the

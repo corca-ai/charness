@@ -157,6 +157,14 @@ def render_template(*, title: str, date_text: str) -> str:
             f"<!-- allowed Delivery state: {delivery_states_legend}. Boundary "
             "cleanliness is a separate claim and does not imply delivery. -->",
             "- Delivery state: pending-parent-spawn",
+            "<!-- If Fresh-Eye Satisfaction is `worker-delivered`, also record the "
+            "durable combined report carrier below. Approval is owned by that report, "
+            "not by this artifact's prose. -->",
+            "- Worker report: TODO repo-relative path to reviewer_worker_report output",
+            "- Worker report approval: TODO approval_eligible: true after report validation",
+            "- Worker report delivery: TODO findings-received after parent delivery",
+            "- Worker report packet identity: TODO lowercase SHA-256 from the report",
+            "- Worker report findings identity: TODO lowercase SHA-256 of the result",
             "",
         ]
     )
