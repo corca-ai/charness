@@ -175,6 +175,12 @@ def test_a_payload_that_names_no_repository_is_unknown_silence_not_a_mismatch() 
     assert OWNER.answer_repo({"number": 558, "state": "CLOSED"}) is None
 
 
+def test_a_non_object_issue_payload_is_an_explicit_identity_mismatch() -> None:
+    assert OWNER.issue_identity_mismatches(
+        "not-an-issue", expected_repo=REPO, expected_number=558
+    ) == [{"field": "payload", "expected": "issue object", "actual": "str"}]
+
+
 def test_the_gh_default_requests_a_field_that_names_the_answers_repository() -> None:
     """Without this the answer-layer guard is inert on the default path.
 
