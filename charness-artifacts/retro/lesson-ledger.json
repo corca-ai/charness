@@ -1334,6 +1334,36 @@
         ]
       },
       "snapshot_sha256": "2697c9d095d27cd5f7add7e9170aa0392a7676f72e2cc8ae9f4046903e21708b"
+    },
+    {
+      "session_id": "2026-08-21-r2-semantic-packet",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-21-r2-semantic-packet",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "prose-claim-without-a-reader",
+          "proof-surface-message-drift",
+          "green-test-is-not-covered-line",
+          "bar-recorded-as-prose",
+          "global-probe-for-local-fact",
+          "changed-line-proof-before-broad-quality",
+          "positive-effect-cannot-be-cited",
+          "goal-closeout-evidence-binding",
+          "agent-authored-score-role",
+          "detector-blind-class-unstated"
+        ]
+      },
+      "snapshot_sha256": "2218c90f87819bd858e52a6ba9eb7b3fcf0baca1ef910fd9e131c333fffb624f"
     }
   ],
   "score_events": [

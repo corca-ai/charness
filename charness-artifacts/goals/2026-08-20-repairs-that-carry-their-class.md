@@ -977,8 +977,12 @@ boundary at once while parent-only truth surfaces remain serialized.
   load-bearing `rail-1 snapshot/verify` contract pin had been compressed away;
   after restoring it, the next attempt passed standing pytest but exposed three
   uncovered worker-delivery evidence branches. Counterexamples are now added;
-  the repair is not candidate-locked until the same exact-base producer returns
-  clean, then a new packet and round-2 fresh-eye review remain required.
+  the same exact-base producer now returns `status: clean` for 7/7 changed pool
+  files with `blocking: []`, resolved HEAD `7d15f1aef1dabd948ed1f71806294050348219e9`,
+  and standing pytest passed in 52.4s. Receipt:
+  `charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md`.
+  The exact changed-line proof is now candidate-bindable; a new packet and
+  round-2 fresh-eye review remain required before approval or release claims.
 - Failure-smell memory: provider-invalid response schema, guessed delivery
   subcommands/flags, wrong ledger filenames, and mismatched round snapshot ids
   were all recorded as command-boundary failures and corrected through help,

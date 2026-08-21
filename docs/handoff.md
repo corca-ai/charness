@@ -13,7 +13,8 @@
 - The [active release goal](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md) holds
   the macro-slice control panel, issue boundaries, proof plan, and current R2 slice log.
 - The [reviewer consumer contract](../skills/shared/scripts/reviewer_worker_report.py) holds
-  the fail-closed rule requiring typed fresh output, matching provenance, and `findings-received`.
+  the fail-closed rule requiring a typed fresh output, matching provenance, the
+  terminal `findings-received` state, and the combined report's `delivery_complete`.
 - The [recent-lessons digest](../charness-artifacts/retro/recent-lessons.md) holds
   the session-start recurrence traps and parallel/timeout discipline.
 
@@ -26,7 +27,9 @@
 - The [R2 RCA ledger](../charness-artifacts/metrics/rca-ledger.jsonl) holds
   the converted classes for media-versus-verdict confusion and process-tree timeout leakage.
 - `git status --short` is the current worktree check; the last committed closeout passed
-  mirror, standalone-import, contract, lint, and 18 staged pre-commit checks.
+  mirror, standalone-import, contract, lint, and the staged pre-commit checks. The
+  exact-base semantic changed-line result is owned by the [changed-line receipt](../charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md)
+  at candidate `7d15f1aef1dabd948ed1f71806294050348219e9`.
 - The [recent lessons](../charness-artifacts/retro/recent-lessons.md) keep the next run
   sensitive to wrong calls, timeout loss, and repairing inside an open review window.
 
@@ -34,10 +37,10 @@
 
 1. Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <date-slug>`;
    this repo-owned session receipt is the prerequisite for the next review or brief.
-2. Run `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --base-sha "$(git rev-parse 495af8a20^)" --refuse-unestablished`;
-   this binds the whole R2 code slice, not an empty post-commit diff, before the broad lane.
+2. Re-read the [exact-base receipt](../charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md);
+   rerun its recorded command only if the candidate SHA or receipt changes.
 3. Activate `/goal @charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`;
-   its `## Active Operating Frame` now names R2 rebinding and the qualified disjoint lanes.
+   its `## Active Operating Frame` names R2 rebinding and the qualified disjoint lanes.
 4. Rebind the semantic candidate using the [goal closeout binding plan](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md):
    bind the current R2 packet, source/plugin mirror, changed-line receipt, and verification lock before fan-out.
 5. Read the [goal runbook](../charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md)
