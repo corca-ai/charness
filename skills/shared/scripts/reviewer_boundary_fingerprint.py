@@ -19,10 +19,11 @@ Two subcommands:
 ``snapshot --repo-root <dir> [--out <file>]``
     Capture ``HEAD``, the full ``git status --porcelain=v2`` entry set, sha256
     of the staged and unstaged patch bytes, and a content hash per untracked
-    file. Default output: ``<repo-root>/.charness/reviewer-boundary/
-    snapshot.json`` -- runtime state, not committed (``.charness/`` is a
-    generated/scratch surface, unlike the tracked snapshot the reviewer is
-    being checked against).
+    file. The YAML receipt returns both ``out`` and the machine-readable
+    ``verify_before``/``verify_args`` continuation. Default output:
+    ``<repo-root>/.charness/reviewer-boundary/snapshot.json`` -- runtime state,
+    not committed (``.charness/`` is a generated/scratch surface, unlike the
+    tracked snapshot the reviewer is being checked against).
 
 ``verify --repo-root <dir> [--before <file>] [--window-id <id>]
        [--parent-path <path>]... [--parent-head-moved]``
@@ -89,14 +90,14 @@ _ATTRIBUTION_NOTE = (
 )
 
 
-def _load_state_module():
-    """Load the sibling capture module by path, not by package import: this file
+def _load_sibling_module(name: str):
+    """Load a sibling module by path, not by package import: this file
     runs from the repo AND from an installed plugin's `shared/scripts/`, where no
     package context exists and the cwd is the consuming repository."""
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reviewer_boundary_state.py")
-    spec = importlib.util.spec_from_file_location("reviewer_boundary_state", path)
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{name}.py")
+    spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
-        raise ImportError(f"reviewer boundary state module not found beside this script: {path}")
+        raise ImportError(f"reviewer boundary module not found beside this script: {path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -126,7 +127,8 @@ def _load_yaml_output():
     raise ImportError("scripts/yaml_output.py not found within 5 ancestors of this script")
 
 
-_STATE = _load_state_module()
+_STATE = _load_sibling_module("reviewer_boundary_state")
+_RECEIPT = _load_sibling_module("reviewer_boundary_receipt")
 emit_yaml = _load_yaml_output().emit_yaml
 FingerprintError = _STATE.FingerprintError
 build_snapshot = _STATE.build_snapshot
@@ -279,7 +281,7 @@ def _cmd_snapshot(args: argparse.Namespace) -> int:
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump(snapshot, handle, indent=2)
         handle.write("\n")
-    emit_yaml({"ok": True, "out": out_path, "head": snapshot["head"], "window": snapshot["window"]})
+    emit_yaml(_RECEIPT.snapshot_receipt(snapshot, repo_root, out_path))
     return 0
 
 

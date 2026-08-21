@@ -14,8 +14,17 @@ def build_gate_packets(
     packet: Callable[..., dict[str, Any]],
     relative_script_command: Callable[..., dict[str, Any]],
     skill_script_command: Callable[..., dict[str, Any]],
+    auto_trigger_args: list[str] | None = None,
+    auto_trigger_scope: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Build deterministic packets without interpreting their results."""
+    trigger_packet = skill_script_command(
+        "scripts/check_auto_trigger.py",
+        "--repo-root",
+        ".",
+        *(auto_trigger_args or []),
+    )
+    trigger_packet.update(auto_trigger_scope or {})
     packets = [
         packet(
             "adapter-readiness",
@@ -49,8 +58,8 @@ def build_gate_packets(
         ),
         packet(
             "auto-session-trigger",
-            "deterministic slice-surface trigger probe; agent judges whether to fire a bounded session retro",
-            **skill_script_command("scripts/check_auto_trigger.py", "--repo-root", "."),
+            "deterministic slice-surface trigger probe bound to this plan's explicit paths or latest committed range; agent judges whether to fire a bounded session retro",
+            **trigger_packet,
         ),
     ]
     for index, command in enumerate(adapter["data"].get("metrics_commands", []), start=1):

@@ -277,6 +277,10 @@ instruction-following alone.
 
 1. Parent-side integrity proof. Before spawning shared-tree reviewers, run
    `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" snapshot --repo-root <repo-root> --window-id <id>`.
+   The snapshot receipt returns `verify_before` and `verify_args`; use that
+   exact path with `verify --before <verify_before> --window-id <id>`. The
+   `out:` path is the same file, but `verify_before` is the machine-readable
+   handoff field so a custom output path never requires a guessed verify flag.
    After EACH reviewer returns, run
    `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" verify --repo-root <repo-root> --window-id <id>`.
    Verify at the moment the reviewer returns, BEFORE applying anything the

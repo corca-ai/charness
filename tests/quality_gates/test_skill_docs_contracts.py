@@ -340,6 +340,9 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     assert "irreversible" in skill_text and "external side effect" in skill_text
     assert "next locally decidable slice" in skill_text
     assert "check_auto_trigger.py" in PROVE_SKILL
+    assert "--paths <changed-path>..." in PROVE_SKILL
+    assert "--base-ref <slice-base> --head-ref <slice-head>" in PROVE_SKILL
+    assert "bare post-commit invocation" in PROVE_SKILL
 
 
 def test_current_cautilus_guidance_uses_eval_surface() -> None:

@@ -93,7 +93,18 @@ def test_clean_verify_is_ok(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     snap = _snapshot(repo)
     assert snap.returncode == 0, snap.stdout + snap.stderr
-    assert yaml.safe_load(snap.stdout)["ok"] is True
+    snapshot_payload = yaml.safe_load(snap.stdout)
+    assert snapshot_payload["ok"] is True
+    assert snapshot_payload["verify_before"] == snapshot_payload["out"]
+    assert snapshot_payload["verify_args"] == [
+        "verify",
+        "--repo-root",
+        str(repo),
+        "--before",
+        snapshot_payload["out"],
+        "--window-id",
+        snapshot_payload["window"]["id"],
+    ]
 
     code, payload = _verify(repo)
     assert code == 0, payload
@@ -102,6 +113,18 @@ def test_clean_verify_is_ok(tmp_path: Path) -> None:
     assert payload["drift"] == []
     assert payload["parent_attributed_drift"] == []
     assert payload["window"]["id"] == yaml.safe_load(snap.stdout)["window"]["id"]
+
+
+def test_custom_snapshot_receipt_exposes_the_verify_before_handoff(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    custom = repo / "review-window.json"
+    result = _snapshot(repo, "--window-id", "custom-window", "--out", str(custom))
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["out"] == str(custom)
+    assert payload["verify_before"] == str(custom)
+    assert payload["verify_args"][-4:] == ["--before", str(custom), "--window-id", "custom-window"]
 
 
 def test_tracked_file_modified_is_flagged(tmp_path: Path) -> None:

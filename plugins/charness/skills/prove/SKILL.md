@@ -108,12 +108,17 @@ verification preferences or `truth_surfaces`.
    - what changed, what was verified, what truth surfaces moved, what the
      critique found, what contract updates were made, and what remains for the
      next slice
-   - run `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` for the current repo and
-     read `state` first: on `evaluated` + `triggered: true`, run a short `session` retro
-     before the final stop; on any nonzero exit (`not-established` — no adapter, unset
-     trigger keys, an adapter the loader could not fully read, an empty changed set, or a
-     typo'd surface id) the probe gave no answer, so decide the retro yourself and say
-     which you chose instead of treating the missing `triggered` key as a skip
+   - run the retro planner's `auto-session-trigger` packet for the current slice, or
+     invoke `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` with the same explicit
+     change basis: `--paths <changed-path>...` while the paths are available, or
+     `--base-ref <slice-base> --head-ref <slice-head>` after the slice is committed.
+     A bare post-commit invocation is not a slice answer: it sees an empty working-tree
+     diff and must remain `state: not-established`. Read `state` first: on `evaluated` +
+     `triggered: true`, run a short `session` retro before the final stop; on any
+     nonzero exit (`not-established` — no adapter, unset trigger keys, an adapter the
+     loader could not fully read, an empty changed set, or a typo'd surface id) the probe
+     gave no answer, so decide the retro yourself and say which you chose instead of
+     treating the missing `triggered` key as a skip
    - if the user explicitly asked to keep going, treat this as a terse progress
      checkpoint and continue into the next locally decidable slice
    - keep evidence compact: exact command or input identity → outcome → measured

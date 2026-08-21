@@ -139,16 +139,10 @@ The result should usually include:
 ## Auto-Retro Trigger
 
 Trigger a short `session` retro automatically when a user correction exposes a
-real miss — for example a fresh-eye reader misread an invariant that is present
-in the code, revealing it still relies on convention rather than declaration —
-or after slice closeout when
-`python3 "$SKILL_DIR/scripts/check_auto_trigger.py" --repo-root .` reports
-`triggered: true` (or the slice matches `auto_session_trigger_surfaces` /
-`auto_session_trigger_path_globs`). **Read `state` first, never `triggered`
-alone**: only `state: evaluated` makes `triggered` an answer. Keep it bounded to
-the revealed miss; it may stay inline but must still include `Persisted`. The
-state vocabulary and the full trigger/skip taxonomy live in
-`references/trigger-and-persistence.md`.
+real miss; a triggered slice-closeout probe also starts one. Consume the planner packet and read `state` before
+`triggered`; its basis and the full trigger/skip taxonomy live in
+`references/trigger-and-persistence.md`. Keep the retro bounded and include
+`Persisted`.
 
 ## Expert Counterfactual Rule
 

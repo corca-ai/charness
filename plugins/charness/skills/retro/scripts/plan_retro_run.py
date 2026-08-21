@@ -62,6 +62,7 @@ surfaces_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scrip
 _state = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_artifact_state")
 _artifact_summary = _state._artifact_summary
 _gate_builder = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_plan_gates")
+_trigger = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_plan_trigger")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -296,19 +297,6 @@ def _on_demand_reads() -> list[dict[str, str]]:
     return [_read(path, "reference", why, base="skill") for path, why in ON_DEMAND_REFERENCE_READS]
 
 
-def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, Any]) -> list[dict[str, Any]]:
-    # The scaffold-owned "write_artifact_effect" travels through the gate builder;
-    # this planner reports those facts and never reconstructs a write target.
-    return _gate_builder.build_gate_packets(
-        repo_root,
-        adapter,
-        scaffold,
-        packet=_packet,
-        relative_script_command=_relative_script_command,
-        skill_script_command=_skill_script_command,
-    )
-
-
 def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
     if artifact["exists"]:
         return {
@@ -335,7 +323,17 @@ def build_plan(
     work_paths, work_paths_source = _work_paths(repo_root, changed_paths)
     work_class = _classify_work_class(work_paths)
     lens_brief = _lens_brief(work_class)
-    gate_packets = _gate_packets(repo_root, adapter, scaffold)
+    auto_trigger_args, auto_trigger_scope = _trigger.auto_trigger_scope(work_paths, work_paths_source)
+    gate_packets = _gate_builder.build_gate_packets(
+        repo_root,
+        adapter,
+        scaffold,
+        packet=_packet,
+        relative_script_command=_relative_script_command,
+        skill_script_command=_skill_script_command,
+        auto_trigger_args=auto_trigger_args,
+        auto_trigger_scope=auto_trigger_scope,
+    )
     unavailable_required_packets = [
         packet["id"]
         for packet in gate_packets
@@ -365,7 +363,11 @@ def build_plan(
         },
         repo_root=str(repo_root),
         work_class=work_class,
+        changed_paths=work_paths,
         work_paths_source=work_paths_source,
+        trigger_scope=auto_trigger_scope["trigger_scope"],
+        trigger_scope_source=auto_trigger_scope["trigger_scope_source"],
+        trigger_scope_status=auto_trigger_scope.get("trigger_scope_status", "established"),
         lens_brief=lens_brief,
         adapter=ENVELOPE.adapter_echo(adapter),
         artifact=artifact,

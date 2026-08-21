@@ -131,6 +131,12 @@ def test_ordinary_and_docs_work_classes(tmp_path: Path) -> None:
 
     unknown = run_plan(repo, changed_paths=[])
     assert unknown["work_class"] == "unknown"
+    trigger = next(item for item in unknown["gate_packets"] if item["id"] == "auto-session-trigger")
+    assert trigger["trigger_scope"] == []
+    assert trigger["trigger_scope_source"] == "explicit_paths"
+    assert trigger["trigger_scope_status"] == "not-established"
+    assert unknown["trigger_scope"] == []
+    assert unknown["trigger_scope_status"] == "not-established"
 
 
 def test_every_retro_routes_closeout_telemetry(tmp_path: Path) -> None:
@@ -306,6 +312,13 @@ def test_retro_plan_infers_work_paths_from_recent_commits(tmp_path: Path) -> Non
 
     assert payload["work_paths_source"] == "recent_commits"
     assert payload["work_class"] in {"ordinary", "system-improving", "docs", "unknown"}
+    packet = next(item for item in payload["gate_packets"] if item["id"] == "auto-session-trigger")  # type: ignore[index]
+    assert packet["command"].endswith("--base-ref HEAD^ --head-ref HEAD")
+    assert packet["trigger_scope"] == "HEAD^..HEAD"
+    assert packet["trigger_scope_source"] == "recent_commits"
+    assert payload["trigger_scope"] == "HEAD^..HEAD"
+    assert payload["trigger_scope_source"] == "recent_commits"
+    assert payload["trigger_scope_status"] == "established"
 
 
 def test_retro_plan_infers_work_paths_from_working_tree(tmp_path: Path) -> None:

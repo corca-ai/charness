@@ -12,9 +12,12 @@ def test_retro_skill_triggers_on_present_but_undeclared_invariants() -> None:
         ROOT / "skills" / "public" / "retro" / "references" / "trigger-and-persistence.md"
     ).read_text(encoding="utf-8")
 
-    assert "fresh-eye reader misread an invariant" in RETRO_SKILL
-    assert "check_auto_trigger.py" in RETRO_SKILL
-    assert "auto_session_trigger_surfaces" in RETRO_SKILL
+    assert "planner packet" in RETRO_SKILL
+    assert "check_auto_trigger.py" in reference_text
+    assert "auto_session_trigger_surfaces" in reference_text
+    assert "--paths <changed-path>..." in reference_text
+    assert "--base-ref <slice-base> --head-ref <slice-head>" in reference_text
+    assert "bare post-commit invocation" in reference_text
     assert "present invariant as absent" in reference_text
 
 

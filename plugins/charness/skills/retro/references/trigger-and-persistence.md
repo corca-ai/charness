@@ -41,6 +41,12 @@ never configured; see the state table below for how that differs from `[]`.
 A caller that polls `triggered` alone reads "could not tell" as "no", which is
 the skipped-retro path this section exists to close.
 
+At slice closeout, consume the planner's `auto-session-trigger` packet. The
+packet must bind the probe to explicit `--paths <changed-path>...` while paths
+are available, or to `--base-ref <slice-base> --head-ref <slice-head>` after
+the slice is committed. A bare post-commit invocation has no change basis and
+is `state: not-established`, not a retro skip.
+
 Do not trigger on:
 
 - preference changes

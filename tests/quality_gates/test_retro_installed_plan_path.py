@@ -39,12 +39,20 @@ def test_auto_trigger_packet_uses_installed_skill_root(planner: Path, tmp_path: 
     payload = yaml.safe_load(result.stdout)
     packet = next(item for item in payload["gate_packets"] if item["id"] == "auto-session-trigger")
 
-    assert packet["command"] == 'python3 "$SKILL_DIR/scripts/check_auto_trigger.py" --repo-root .'
+    assert packet["command"] == (
+        'python3 "$SKILL_DIR/scripts/check_auto_trigger.py" --repo-root . '
+        '--paths scripts/example.ts'
+    )
     assert packet["path"] == "scripts/check_auto_trigger.py"
     assert packet["path_base"] == "skill-dir"
     assert packet["required"] is True
     assert packet["available"] is True
     assert "skills/public/retro" not in packet["command"]
+    assert packet["trigger_scope"] == ["scripts/example.ts"]
+    assert packet["trigger_scope_source"] == "explicit_paths"
+    assert payload["trigger_scope"] == ["scripts/example.ts"]
+    assert payload["trigger_scope_source"] == "explicit_paths"
+    assert payload["trigger_scope_status"] == "established"
 
 
 def test_missing_required_skill_packet_is_not_ready(monkeypatch: pytest.MonkeyPatch) -> None:
