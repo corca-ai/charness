@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-22",
-  "source_artifact_count": 552,
-  "candidate_count": 2236,
+  "source_artifact_count": 553,
+  "candidate_count": 2237,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -2132,808 +2132,20 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:ada99897e55a",
-      "kind": "next_improvement",
-      "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances).",
-      "normalized_key": "issue 562 structural pattern an owner inspection locator pin cannot distinguish the file i",
-      "recurrence_class": null,
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 14,
-      "recency_weight": 0.806,
-      "alpha": 0.24,
-      "selection_weight": 0.9995,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances)."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command recording no basis. Triggering instance(s): 6 of 20 locators changed in a day, five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances)."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:b357f490fda7",
-      "kind": "current_focus",
-      "lesson": "The semantic-candidate review identified a procedural fan-out seam: operators were told to resolve paths, refs, and owner flags before parallel work, but no executable command checked those premises.",
-      "normalized_key": "the semantic candidate review identified a procedural fan out seam operators were told to",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
-          "date": "2026-08-21",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The semantic-candidate review identified a procedural fan-out seam: operators were told to resolve paths, refs, and owner flags before parallel work, but no executable command checked those premises."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:2d13c289b126",
-      "kind": "current_focus",
-      "lesson": "This is the separate disposition for the goal-continuation lesson receipt.",
-      "normalized_key": "this is the separate disposition for the goal continuation lesson receipt",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
-          "date": "2026-08-21",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This is the separate disposition for the goal-continuation lesson receipt."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f5ebc07cc103",
-      "kind": "current_focus",
-      "lesson": "This retro closes the first receipted R2 resume session against the published 6.2.1 boundary.",
-      "normalized_key": "this retro closes the first receipted r2 resume session against the published 6 2",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-          "date": "2026-08-21",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This retro closes the first receipted R2 resume session against the published 6.2.1 boundary."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a424fc76bd40",
-      "kind": "current_focus",
-      "lesson": "This retro closes the receipted R3 delivery/provenance review session.",
-      "normalized_key": "this retro closes the receipted r3 delivery provenance review session",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-          "date": "2026-08-21",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This retro closes the receipted R3 delivery/provenance review session."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:c06717a84fd1",
-      "kind": "current_focus",
-      "lesson": "This retro closes the receipted semantic-packet session that established the release candidate's evidence joins.",
-      "normalized_key": "this retro closes the receipted semantic packet session that established the release candidate s",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-          "date": "2026-08-21",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This retro closes the receipted semantic-packet session that established the release candidate's evidence joins."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:984ace8a89cd",
-      "kind": "current_focus",
-      "lesson": "This retro closes the work unit that repaired the release fresh-checkout timeout, changed-line consumer coverage, duplicated child-process setup, and the parallel coverage-runtime collision exposed by the broad quality gate.",
-      "normalized_key": "this retro closes the work unit that repaired the release fresh checkout timeout changed",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
-          "date": "2026-08-21",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This retro closes the work unit that repaired the release fresh-checkout timeout, changed-line consumer coverage, duplicated child-process setup, and the parallel coverage-runtime collision exposed by the broad quality gate."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:301c2a3fa8a5",
-      "kind": "current_focus",
-      "lesson": "This work unit prepared the semantic candidate for the planned 6.3.0 release and began the distinct release-candidate boundary.",
-      "normalized_key": "this work unit prepared the semantic candidate for the planned 6 3 0 release",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-          "date": "2026-08-21",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This work unit prepared the semantic candidate for the planned 6.3.0 release and began the distinct release-candidate boundary."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:65fc38e149e8",
-      "kind": "next_improvement",
-      "lesson": "add a typed closeout join that rejects stale candidate pointers before a goal can become terminal.",
-      "normalized_key": "add a typed closeout join that rejects stale candidate pointers before a goal can",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "add a typed closeout join that rejects stale candidate pointers before a goal can become terminal."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:465871c00933",
-      "kind": "next_improvement",
-      "lesson": "classify wrong path/ref/flag/key calls as structural contract smells in every proof and delivery review.",
-      "normalized_key": "classify wrong path ref flag key calls as structural contract smells in every proof",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "classify wrong path/ref/flag/key calls as structural contract smells in every proof and delivery review."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:4a94608a9396",
-      "kind": "next_improvement",
-      "lesson": "expose a single typed “observer scope / does-not-establish” field for public, installed, host, and semantic verdict consumers.",
-      "normalized_key": "expose a single typed observer scope does not establish field for public installed host",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "expose a single typed “observer scope / does-not-establish” field for public, installed, host, and semantic verdict consumers."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e80d339ad054",
-      "kind": "next_improvement",
-      "lesson": "generate claim summaries from structured release fields and require every narrative assertion to identify its reader or remain tagged as judgment.",
-      "normalized_key": "generate claim summaries from structured release fields and require every narrative assertion to identify",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "generate claim summaries from structured release fields and require every narrative assertion to identify its reader or remain tagged as judgment."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:28b6a3e70e1d",
-      "kind": "next_improvement",
-      "lesson": "keep the release planner, critique packet, and publish gate on one structured target-identity contract; do not infer release scope from a semantic-candidate filename.",
-      "normalized_key": "keep the release planner critique packet and publish gate on one structured target identity",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "keep the release planner, critique packet, and publish gate on one structured target-identity contract; do not infer release scope from a semantic-candidate filename."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:7c9f4826a8f2",
-      "kind": "next_improvement",
-      "lesson": "keep “wrong call is a smell, never a pass” next to the release boundary and retain the current #681–#687 disposition packet as the tracker source of truth.",
-      "normalized_key": "keep wrong call is a smell never a pass next to the release boundary",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "keep “wrong call is a smell, never a pass” next to the release boundary and retain the current #681–#687 disposition packet as the tracker source of truth."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1b59aacb935f",
-      "kind": "next_improvement",
-      "lesson": "make post-publish reconciliation a required parent-only slice with goal, handoff, issue packet, and release record updated in one verified batch.",
-      "normalized_key": "make post publish reconciliation a required parent only slice with goal handoff issue packet",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make post-publish reconciliation a required parent-only slice with goal, handoff, issue packet, and release record updated in one verified batch."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9e98c175fddc",
-      "kind": "next_improvement",
-      "lesson": "make the changed-line producer expose a compact typed receipt that release planning can bind without scraping prose.",
-      "normalized_key": "make the changed line producer expose a compact typed receipt that release planning can",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make the changed-line producer expose a compact typed receipt that release planning can bind without scraping prose."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:128b608f8790",
-      "kind": "next_improvement",
-      "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path.",
-      "normalized_key": "make the parallel execution workflow consume the preflight report as its input contract so",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:f12c02acea26",
-      "kind": "next_improvement",
-      "lesson": "make the release closeout planner require the post-publish artifact commit identity before its install-refresh step can be described as current.",
-      "normalized_key": "make the release closeout planner require the post publish artifact commit identity before its",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make the release closeout planner require the post-publish artifact commit identity before its install-refresh step can be described as current."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:bc7f62a90289",
-      "kind": "next_improvement",
-      "lesson": "make the session-start workflow surface any outstanding declared session before opening another one, while preserving the no-auto-write rule; `Structural pattern: state opened by one actor and enforceable only against a later stranger. Triggering instance(s): 2026-08-20 session receipt and prior 2026-08-18 recurrence. Destination: issue #639.`",
-      "normalized_key": "make the session start workflow surface any outstanding declared session before opening another one",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make the session-start workflow surface any outstanding declared session before opening another one, while preserving the no-auto-write rule; `Structural pattern: state opened by one actor and enforceable only against a later stranger. Triggering instance(s): 2026-08-20 session receipt and prior 2026-08-18 recurrence. Destination: issue #639.`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b2c7b0ecf232",
-      "kind": "next_improvement",
-      "lesson": "preserve #639 as the owner of the recurring session lifecycle gap; this retro demonstrates the gate/router contract and is not an issue-close claim. recurs: unclaimed-session-disposition.",
-      "normalized_key": "preserve 639 as the owner of the recurring session lifecycle gap this retro demonstrates",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "preserve #639 as the owner of the recurring session lifecycle gap; this retro demonstrates the gate/router contract and is not an issue-close claim. recurs: unclaimed-session-disposition."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ba03c94e7a4e",
-      "kind": "next_improvement",
-      "lesson": "preserve the distinction between “reviewed release record” and “fresh-eye semantic approval” in every future closeout.",
-      "normalized_key": "preserve the distinction between reviewed release record and fresh eye semantic approval in every",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "preserve the distinction between “reviewed release record” and “fresh-eye semantic approval” in every future closeout."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:8fb764193cf7",
-      "kind": "next_improvement",
-      "lesson": "preserve the order commit → changed-line proof → broad quality.",
-      "normalized_key": "preserve the order commit changed line proof broad quality",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "preserve the order commit → changed-line proof → broad quality."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:bbdd7562c908",
-      "kind": "next_improvement",
-      "lesson": "resolve repo-owned command paths with `rg --files` before invoking a gate",
-      "normalized_key": "resolve repo owned command paths with rg files before invoking a gate",
-      "recurrence_class": "wrong-path-is-premise-failure",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "resolve repo-owned command paths with `rg --files` before invoking a gate"
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:4c54df075d9e",
-      "kind": "next_improvement",
-      "lesson": "resolve the skill root and verify every helper path exists before running a copyable command; bind every release artifact to the release target before dry-run. remains a diagnostic class for this workflow.",
-      "normalized_key": "resolve the skill root and verify every helper path exists before running a copyable",
-      "recurrence_class": "wrong-path-and-target-binding",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "resolve the skill root and verify every helper path exists before running a copyable command; bind every release artifact to the release target before dry-run. remains a diagnostic class for this workflow."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:dbcfd39cc949",
-      "kind": "next_improvement",
-      "lesson": "run command-plan preflight before every independent fan-out, including validator and artifact paths",
-      "normalized_key": "run command plan preflight before every independent fan out including validator and artifact paths",
-      "recurrence_class": "command-plan-premise-before-fanout",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
-          "date": "2026-08-21",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "run command-plan preflight before every independent fan-out, including validator and artifact paths"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:499d4aaba572",
-      "kind": "repeat_trap",
-      "lesson": "A short SHA was supplied once to the real-host checker and an obsolete option once to spec-evidence validation. Both were corrected by reading the command surface, but they show that copyable proof commands should bind their input grammar near the caller.",
-      "normalized_key": "a short sha was supplied once to the real host checker and an obsolete",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
-          "date": "2026-08-21",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "A short SHA was supplied once to the real-host checker and an obsolete option once to spec-evidence validation. Both were corrected by reading the command surface, but they show that copyable proof commands should bind their input grammar near the caller."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:bd155aca9abf",
-      "kind": "repeat_trap",
-      "lesson": "Read-only audits ran in parallel; append-only lesson ledger writes ran serially. This kept useful fan-out while preserving the shared-writer rule.",
-      "normalized_key": "read only audits ran in parallel append only lesson ledger writes ran serially this",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-          "date": "2026-08-21",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Read-only audits ran in parallel; append-only lesson ledger writes ran serially. This kept useful fan-out while preserving the shared-writer rule."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:d99ab03403f8",
-      "kind": "repeat_trap",
-      "lesson": "The first post-publish install observation was at an older artifact commit; the supported default `charness update --detail` was then run to reconcile the managed checkout. The first observation remains a drift smell, not a release pass.",
-      "normalized_key": "the first post publish install observation was at an older artifact commit the supported",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-          "date": "2026-08-21",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "The first post-publish install observation was at an older artifact commit; the supported default `charness update --detail` was then run to reconcile the managed checkout. The first observation remains a drift smell, not a release pass."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:9a457a8f7d88",
-      "kind": "repeat_trap",
-      "lesson": "The first release dry-run supplied a semantic candidate critique to a release gate. Its refusal correctly exposed that a valid artifact for one boundary is not a valid artifact for another. The pattern is target identity being left to filename/context rather than bound by the caller.",
-      "normalized_key": "the first release dry run supplied a semantic candidate critique to a release gate",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-          "date": "2026-08-21",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "The first release dry-run supplied a semantic candidate critique to a release gate. Its refusal correctly exposed that a valid artifact for one boundary is not a valid artifact for another. The pattern is target identity being left to filename/context rather than bound by the caller."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:2bd7a5b71464",
-      "kind": "repeat_trap",
-      "lesson": "Two helper calls used flattened root paths instead of the skill-resolved `$SKILL_DIR/scripts/...` path: `prepare_critique_packet.py` and `scripts/scaffold_debug_artifact.py`. Both failed immediately. The structural smell is a missing path-existence preflight before copyable skill commands.",
-      "normalized_key": "two helper calls used flattened root paths instead of the skill resolved skill dir",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
-          "date": "2026-08-21",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Two helper calls used flattened root paths instead of the skill-resolved `$SKILL_DIR/scripts/...` path: `prepare_critique_packet.py` and `scripts/scaffold_debug_artifact.py`. Both failed immediately. The structural smell is a missing path-existence preflight before copyable skill commands."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 145,
+      "source_count": 146,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-v6-2-1-release-auto-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -4094,6 +3306,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -4103,15 +3323,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 25,
+      "source_count": 26,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-v6-2-1-release-auto-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -4308,6 +3528,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-21-v6-2-1-release-auto-retro.md",
           "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md",
+          "date": "2026-08-22",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -4321,15 +3549,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 25,
+      "source_count": 26,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-v6-2-1-release-auto-retro.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -4530,6 +3758,828 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:b2f1823d130a",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v6.2.2`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v6 2 2",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v6.2.2`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ada99897e55a",
+      "kind": "next_improvement",
+      "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances).",
+      "normalized_key": "issue 562 structural pattern an owner inspection locator pin cannot distinguish the file i",
+      "recurrence_class": null,
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 14,
+      "recency_weight": 0.806,
+      "alpha": 0.24,
+      "selection_weight": 0.9995,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances)."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command recording no basis. Triggering instance(s): 6 of 20 locators changed in a day, five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:b357f490fda7",
+      "kind": "current_focus",
+      "lesson": "The semantic-candidate review identified a procedural fan-out seam: operators were told to resolve paths, refs, and owner flags before parallel work, but no executable command checked those premises.",
+      "normalized_key": "the semantic candidate review identified a procedural fan out seam operators were told to",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The semantic-candidate review identified a procedural fan-out seam: operators were told to resolve paths, refs, and owner flags before parallel work, but no executable command checked those premises."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:2d13c289b126",
+      "kind": "current_focus",
+      "lesson": "This is the separate disposition for the goal-continuation lesson receipt.",
+      "normalized_key": "this is the separate disposition for the goal continuation lesson receipt",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This is the separate disposition for the goal-continuation lesson receipt."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:f5ebc07cc103",
+      "kind": "current_focus",
+      "lesson": "This retro closes the first receipted R2 resume session against the published 6.2.1 boundary.",
+      "normalized_key": "this retro closes the first receipted r2 resume session against the published 6 2",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro closes the first receipted R2 resume session against the published 6.2.1 boundary."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a424fc76bd40",
+      "kind": "current_focus",
+      "lesson": "This retro closes the receipted R3 delivery/provenance review session.",
+      "normalized_key": "this retro closes the receipted r3 delivery provenance review session",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro closes the receipted R3 delivery/provenance review session."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:c06717a84fd1",
+      "kind": "current_focus",
+      "lesson": "This retro closes the receipted semantic-packet session that established the release candidate's evidence joins.",
+      "normalized_key": "this retro closes the receipted semantic packet session that established the release candidate s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro closes the receipted semantic-packet session that established the release candidate's evidence joins."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:984ace8a89cd",
+      "kind": "current_focus",
+      "lesson": "This retro closes the work unit that repaired the release fresh-checkout timeout, changed-line consumer coverage, duplicated child-process setup, and the parallel coverage-runtime collision exposed by the broad quality gate.",
+      "normalized_key": "this retro closes the work unit that repaired the release fresh checkout timeout changed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro closes the work unit that repaired the release fresh-checkout timeout, changed-line consumer coverage, duplicated child-process setup, and the parallel coverage-runtime collision exposed by the broad quality gate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:301c2a3fa8a5",
+      "kind": "current_focus",
+      "lesson": "This work unit prepared the semantic candidate for the planned 6.3.0 release and began the distinct release-candidate boundary.",
+      "normalized_key": "this work unit prepared the semantic candidate for the planned 6 3 0 release",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This work unit prepared the semantic candidate for the planned 6.3.0 release and began the distinct release-candidate boundary."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:65fc38e149e8",
+      "kind": "next_improvement",
+      "lesson": "add a typed closeout join that rejects stale candidate pointers before a goal can become terminal.",
+      "normalized_key": "add a typed closeout join that rejects stale candidate pointers before a goal can",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "add a typed closeout join that rejects stale candidate pointers before a goal can become terminal."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:465871c00933",
+      "kind": "next_improvement",
+      "lesson": "classify wrong path/ref/flag/key calls as structural contract smells in every proof and delivery review.",
+      "normalized_key": "classify wrong path ref flag key calls as structural contract smells in every proof",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "classify wrong path/ref/flag/key calls as structural contract smells in every proof and delivery review."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4a94608a9396",
+      "kind": "next_improvement",
+      "lesson": "expose a single typed “observer scope / does-not-establish” field for public, installed, host, and semantic verdict consumers.",
+      "normalized_key": "expose a single typed observer scope does not establish field for public installed host",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "expose a single typed “observer scope / does-not-establish” field for public, installed, host, and semantic verdict consumers."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e80d339ad054",
+      "kind": "next_improvement",
+      "lesson": "generate claim summaries from structured release fields and require every narrative assertion to identify its reader or remain tagged as judgment.",
+      "normalized_key": "generate claim summaries from structured release fields and require every narrative assertion to identify",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "generate claim summaries from structured release fields and require every narrative assertion to identify its reader or remain tagged as judgment."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:28b6a3e70e1d",
+      "kind": "next_improvement",
+      "lesson": "keep the release planner, critique packet, and publish gate on one structured target-identity contract; do not infer release scope from a semantic-candidate filename.",
+      "normalized_key": "keep the release planner critique packet and publish gate on one structured target identity",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "keep the release planner, critique packet, and publish gate on one structured target-identity contract; do not infer release scope from a semantic-candidate filename."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7c9f4826a8f2",
+      "kind": "next_improvement",
+      "lesson": "keep “wrong call is a smell, never a pass” next to the release boundary and retain the current #681–#687 disposition packet as the tracker source of truth.",
+      "normalized_key": "keep wrong call is a smell never a pass next to the release boundary",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "keep “wrong call is a smell, never a pass” next to the release boundary and retain the current #681–#687 disposition packet as the tracker source of truth."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1b59aacb935f",
+      "kind": "next_improvement",
+      "lesson": "make post-publish reconciliation a required parent-only slice with goal, handoff, issue packet, and release record updated in one verified batch.",
+      "normalized_key": "make post publish reconciliation a required parent only slice with goal handoff issue packet",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make post-publish reconciliation a required parent-only slice with goal, handoff, issue packet, and release record updated in one verified batch."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9e98c175fddc",
+      "kind": "next_improvement",
+      "lesson": "make the changed-line producer expose a compact typed receipt that release planning can bind without scraping prose.",
+      "normalized_key": "make the changed line producer expose a compact typed receipt that release planning can",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make the changed-line producer expose a compact typed receipt that release planning can bind without scraping prose."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:128b608f8790",
+      "kind": "next_improvement",
+      "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path.",
+      "normalized_key": "make the parallel execution workflow consume the preflight report as its input contract so",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make the parallel-execution workflow consume the preflight report as its input contract, so an unresolved target cannot be silently replaced by a sibling path."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f12c02acea26",
+      "kind": "next_improvement",
+      "lesson": "make the release closeout planner require the post-publish artifact commit identity before its install-refresh step can be described as current.",
+      "normalized_key": "make the release closeout planner require the post publish artifact commit identity before its",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make the release closeout planner require the post-publish artifact commit identity before its install-refresh step can be described as current."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bc7f62a90289",
+      "kind": "next_improvement",
+      "lesson": "make the session-start workflow surface any outstanding declared session before opening another one, while preserving the no-auto-write rule; `Structural pattern: state opened by one actor and enforceable only against a later stranger. Triggering instance(s): 2026-08-20 session receipt and prior 2026-08-18 recurrence. Destination: issue #639.`",
+      "normalized_key": "make the session start workflow surface any outstanding declared session before opening another one",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make the session-start workflow surface any outstanding declared session before opening another one, while preserving the no-auto-write rule; `Structural pattern: state opened by one actor and enforceable only against a later stranger. Triggering instance(s): 2026-08-20 session receipt and prior 2026-08-18 recurrence. Destination: issue #639.`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b2c7b0ecf232",
+      "kind": "next_improvement",
+      "lesson": "preserve #639 as the owner of the recurring session lifecycle gap; this retro demonstrates the gate/router contract and is not an issue-close claim. recurs: unclaimed-session-disposition.",
+      "normalized_key": "preserve 639 as the owner of the recurring session lifecycle gap this retro demonstrates",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "preserve #639 as the owner of the recurring session lifecycle gap; this retro demonstrates the gate/router contract and is not an issue-close claim. recurs: unclaimed-session-disposition."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ba03c94e7a4e",
+      "kind": "next_improvement",
+      "lesson": "preserve the distinction between “reviewed release record” and “fresh-eye semantic approval” in every future closeout.",
+      "normalized_key": "preserve the distinction between reviewed release record and fresh eye semantic approval in every",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "preserve the distinction between “reviewed release record” and “fresh-eye semantic approval” in every future closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8fb764193cf7",
+      "kind": "next_improvement",
+      "lesson": "preserve the order commit → changed-line proof → broad quality.",
+      "normalized_key": "preserve the order commit changed line proof broad quality",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "preserve the order commit → changed-line proof → broad quality."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:bbdd7562c908",
+      "kind": "next_improvement",
+      "lesson": "resolve repo-owned command paths with `rg --files` before invoking a gate",
+      "normalized_key": "resolve repo owned command paths with rg files before invoking a gate",
+      "recurrence_class": "wrong-path-is-premise-failure",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "resolve repo-owned command paths with `rg --files` before invoking a gate"
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:4c54df075d9e",
+      "kind": "next_improvement",
+      "lesson": "resolve the skill root and verify every helper path exists before running a copyable command; bind every release artifact to the release target before dry-run. remains a diagnostic class for this workflow.",
+      "normalized_key": "resolve the skill root and verify every helper path exists before running a copyable",
+      "recurrence_class": "wrong-path-and-target-binding",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "resolve the skill root and verify every helper path exists before running a copyable command; bind every release artifact to the release target before dry-run. remains a diagnostic class for this workflow."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:dbcfd39cc949",
+      "kind": "next_improvement",
+      "lesson": "run command-plan preflight before every independent fan-out, including validator and artifact paths",
+      "normalized_key": "run command plan preflight before every independent fan out including validator and artifact paths",
+      "recurrence_class": "command-plan-premise-before-fanout",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+          "date": "2026-08-21",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run command-plan preflight before every independent fan-out, including validator and artifact paths"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:499d4aaba572",
+      "kind": "repeat_trap",
+      "lesson": "A short SHA was supplied once to the real-host checker and an obsolete option once to spec-evidence validation. Both were corrected by reading the command surface, but they show that copyable proof commands should bind their input grammar near the caller.",
+      "normalized_key": "a short sha was supplied once to the real host checker and an obsolete",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-session-retro.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "A short SHA was supplied once to the real-host checker and an obsolete option once to spec-evidence validation. Both were corrected by reading the command surface, but they show that copyable proof commands should bind their input grammar near the caller."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bd155aca9abf",
+      "kind": "repeat_trap",
+      "lesson": "Read-only audits ran in parallel; append-only lesson ledger writes ran serially. This kept useful fan-out while preserving the shared-writer rule.",
+      "normalized_key": "read only audits ran in parallel append only lesson ledger writes ran serially this",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Read-only audits ran in parallel; append-only lesson ledger writes ran serially. This kept useful fan-out while preserving the shared-writer rule."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d99ab03403f8",
+      "kind": "repeat_trap",
+      "lesson": "The first post-publish install observation was at an older artifact commit; the supported default `charness update --detail` was then run to reconcile the managed checkout. The first observation remains a drift smell, not a release pass.",
+      "normalized_key": "the first post publish install observation was at an older artifact commit the supported",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The first post-publish install observation was at an older artifact commit; the supported default `charness update --detail` was then run to reconcile the managed checkout. The first observation remains a drift smell, not a release pass."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9a457a8f7d88",
+      "kind": "repeat_trap",
+      "lesson": "The first release dry-run supplied a semantic candidate critique to a release gate. Its refusal correctly exposed that a valid artifact for one boundary is not a valid artifact for another. The pattern is target identity being left to filename/context rather than bound by the caller.",
+      "normalized_key": "the first release dry run supplied a semantic candidate critique to a release gate",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The first release dry-run supplied a semantic candidate critique to a release gate. Its refusal correctly exposed that a valid artifact for one boundary is not a valid artifact for another. The pattern is target identity being left to filename/context rather than bound by the caller."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2bd7a5b71464",
+      "kind": "repeat_trap",
+      "lesson": "Two helper calls used flattened root paths instead of the skill-resolved `$SKILL_DIR/scripts/...` path: `prepare_critique_packet.py` and `scripts/scaffold_debug_artifact.py`. Both failed immediately. The structural smell is a missing path-existence preflight before copyable skill commands.",
+      "normalized_key": "two helper calls used flattened root paths instead of the skill resolved skill dir",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "latest_source_date": "2026-08-21",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Two helper calls used flattened root paths instead of the skill-resolved `$SKILL_DIR/scripts/...` path: `prepare_critique_packet.py` and `scripts/scaffold_debug_artifact.py`. Both failed immediately. The structural smell is a missing path-existence preflight before copyable skill commands."
         }
       ]
     },

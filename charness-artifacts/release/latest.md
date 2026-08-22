@@ -1,68 +1,47 @@
 # Release Surface Check
-Date: 2026-08-21
+<!-- charness-release-state:prepared-awaiting-claims-review -->
+Date: 2026-08-22
 
 ## Scope
 
-Advanced `charness` toward release `6.2.1` (tag `v6.2.1`) through the repo-owned release helper.
+Advanced `charness` toward release `6.2.2` (tag `v6.2.2`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `6.2.0`
-- target version: `6.2.1`
+- previous version: `6.2.1`
+- target version: `6.2.2`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
 - `./scripts/run-quality.sh --release` passed before publish.
-- Version drift check: NOT recorded by this helper invocation, so this record makes no no-drift claim about packaging and generated install surfaces.
-- initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
+- `current_release.py` reported no version drift across 5 read surface(s) against target `6.2.2`, checked at `post-bump, pre-commit`.
 
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v6.2.1`
-- public release surface verification: verified
+- branch/tag push: pending independent claims review.
+- GitHub release record: pending independent claims review before creation
+- public release surface verification: pending independent claims review
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
-
-## Distinct-Channel Verification
-
-- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
-- Response content checked for: `v6.2.1`
-- What this confirms: public-page-reachable-and-names-the-tag
-- What it does NOT confirm: that a GitHub RELEASE exists for this tag — the same page returns 200 for a pushed tag with no release, and the tag is pushed before the release is created
-- Observer identity: unauthenticated-http (credential-free; same host/process as publisher)
-- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v6.2.1`
-- HTTP status: `200`
-- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
-
-## Published Notes Audit
-
-- Published release body audit: `unauthored` (advisory; never blocks a publish).
-- The published body carries no authored notes (81 body bytes) — this release shipped with a generated changelog line and nothing else. `gh release edit` is the remedy; the release itself is unaffected.
-- Disposition reason: published body carries no authored notes (generated changelog line only); `gh release edit` is the remedy
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Lifecycle Usage Capture
 
-- Lifecycle capture status: `appended`.
-- Local telemetry pair appended: `True`.
-- Delivery episode ID: `episode-a20bebadd895b5dea89392fa4ce7669928a8943157ca71dc764db89dc8354ee8`.
-- Linked feedback ID: `feedback-c76f7b8d6d7bb4e8fab979ee7c96e54cb28938d41bdf301a4061ffcad3f752a0`.
-- Capture error count: `0`.
-- Non-claim: objective lifecycle capture is not human approval or general satisfaction evidence.
+- Lifecycle capture status: not recorded by this helper invocation.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `not_required`.
 - Reason: release adapter did not change in the release delta
 - Focused preflight commands: none planned.
-- Focused preflight execution: NOT recorded by this helper invocation; this record does not establish that the commands above ran.
+- Focused preflight execution: `not_run`.
+- This is a recorded absence, not a passing preflight: no focused adapter check is claimed to have completed successfully for this release.
+  - Reason: focused preflight status is `not_required`; no commands were required
 
 ## Retro Trigger Evaluation
 
@@ -71,79 +50,50 @@ Advanced `charness` toward release `6.2.1` (tag `v6.2.1`) through the repo-owned
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-08-21-v6-2-1-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-08-22-v6-2-2-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
-- Surface hits: 2.
+- Surface hits: 1.
   - `checked-in-plugin-export`
-  - `integrations-and-control-plane`
-- Path hits: 15.
-  - `README.md`
-  - `scripts/capability_catalog.py`
-  - `skills/public/release/scripts/check_fresh_checkout_probes.py`
-  - `skills/public/release/scripts/check_real_host_proof.py`
-  - `skills/public/release/scripts/check_requested_review_gate.py`
-  - `skills/public/release/scripts/current_release.py`
-  - `skills/public/release/scripts/plan_release_run.py`
-  - `skills/public/release/scripts/publish_release_args.py`
-  - `skills/public/release/scripts/publish_release_common.py`
-  - `skills/public/release/scripts/publish_release_resume_closeout.py`
-  - `skills/public/release/scripts/release_closeout_authorization.py`
-  - `skills/public/release/scripts/release_closeout_floors.py`
-  - `skills/public/release/scripts/release_issue_closeout.py`
-  - `skills/public/release/scripts/resolve_adapter.py`
-  - `skills/support/web-fetch/scripts/route_public_fetch_routes.py`
-- Evaluated changed paths: 861.
-  - `.agents/closeout-floor-matrix.json`
-  - `.agents/consumer-validator-adoption.yaml`
-  - `.agents/critique-adapter.yaml`
-  - `.agents/surfaces.json`
+- Path hits: 0.
+- Evaluated changed paths: 36.
   - `.claude-plugin/marketplace.json`
-  - `.gitignore`
-  - `README.md`
-  - `charness`
-  - `charness-artifacts/critique/2026-08-06-041231-packet.md`
-  - `charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md`
-  - `charness-artifacts/critique/2026-08-18-111738-packet.json`
-  - `charness-artifacts/critique/2026-08-18-111738-packet.md`
-  - `charness-artifacts/critique/2026-08-18-closing-four-verified-resolved-issues.md`
-  - `charness-artifacts/critique/2026-08-18-probe-provenance-goal-before-activation.md`
-  - `charness-artifacts/critique/2026-08-19-issue-673-resolution-critique.md`
-  - `charness-artifacts/critique/2026-08-19-issue-674-resolution-critique.md`
-  - `charness-artifacts/critique/2026-08-19-issue-675-resolution-critique.md`
-  - `charness-artifacts/critique/2026-08-20-142117-packet.json`
-  - `charness-artifacts/critique/2026-08-20-142117-packet.md`
-  - `charness-artifacts/critique/2026-08-20-221521-packet.json`
-  - ... 841 more
+  - `charness-artifacts/critique/2026-08-22-issue-closeout-critique.md`
+  - `charness-artifacts/critique/2026-08-22-release-6-2-2-critique.md`
+  - `charness-artifacts/goals/2026-08-20-repairs-that-carry-their-class.md`
+  - `charness-artifacts/issues/2026-08-21-current-requalification.md`
+  - `charness-artifacts/issues/2026-08-21-repairs-that-carry-their-class-disposition-review.md`
+  - `charness-artifacts/issues/2026-08-22-tracker-requalification.md`
+  - `charness-artifacts/probe/2026-08-21-v6.2.1-release-observer.json`
+  - `charness-artifacts/quality/sloc-inventory/latest.json`
+  - `charness-artifacts/release-review/2026-08-21-v6.2.1-prepared-claims-review.json`
+  - `charness-artifacts/release-review/2026-08-21-v6.2.1-prepared-claims-review.md`
+  - `charness-artifacts/release/latest.md`
+  - `charness-artifacts/retro/2026-08-21-123706-packet.json`
+  - `charness-artifacts/retro/2026-08-21-123706-packet.md`
+  - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
+  - `charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md`
+  - `charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md`
+  - `charness-artifacts/retro/2026-08-21-v6-2-1-release-auto-retro.md`
+  - `charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md`
+  - `charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md`
+  - ... 16 more
 
 ## Real-Host Verification
 
-- Release-time real-host verification was triggered for this slice.
-- Adapter-declared maintainer install-refresh proof was executed by the release helper for installed-vs-repo skew.
+- No configured release-time real-host proof trigger matched this slice.
+- Evaluation scope: `evaluated`
 
 ## Real-Host Proof
 
-- Release-time real-host proof is required for this slice.
-- Executed maintainer install refresh: `charness update` (status `refreshed`, return code `0`).
-- Remaining real-host checklist items, if any, still require explicit proof before full closeout.
-- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class. Use `charness doctor` here and NOT `python3 scripts/doctor.py --repo-root .`, which is the external-tool doctor and reports nothing about managed-checkout or plugin-root skew; discharging this item with it would record a verification that measured none of what the item is about.
-- Run `charness tool doctor nose --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: blocking-install-needed` with an actionable install `next_step`, and that the command itself exits 1. Blocking is CORRECT here: nose.json `degradation.when_missing` records that a missing nose makes the quality `doc-duplicates` phase fail closed with no fallback, and `integrations/tools/README.md` permits `doctor_policy: advisory` only where the consuming workflow has a degraded path. Do NOT read this verdict from `charness doctor`, which is the managed-install doctor and returns 0 regardless of external-tool state; the external-tool verdict comes from `charness tool doctor` or `python3 scripts/doctor.py --repo-root .`. Quoted because the unquoted form parses as a mapping under standard YAML.
-- Run `charness tool install nose --dry-run --detail` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata. `--detail` is REQUIRED, not optional polish; the summary response level prints neither the installer command nor the release metadata this item asks you to confirm, so the plain `--dry-run` form cannot discharge it.
-- Install `nose` through the manifest-supported path (`charness tool install nose`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
-- Re-run `charness tool doctor nose --no-write-locks` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support nose` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
-- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --detail` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
+- No configured release-time real-host proof trigger matched this slice.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-08-21-r3-current-candidate-release-critique.md`.
+- Review proof: `charness-artifacts/critique/2026-08-22-release-6-2-2-critique.md`.
 
 ## Claims Review
 
-- Claims review record: `charness-artifacts/release-review/2026-08-21-v6.2.1-prepared-claims-review.json`.
-- Claims review verdict: `pass`.
-- Observer distinctness: `separate-agent-context`.
-- Recorded signal: A separate read-only codex exec session 01a0243b-e59d-75b3-a738-6e798c48a41d inspected the prepared record and exact HEAD, produced a 3765-byte narrative, and identified residual quality/probe receipt limits without claiming publication or fresh-eye approval.
-- Review narrative: `charness-artifacts/release-review/2026-08-21-v6.2.1-prepared-claims-review.md`.
+- Claims review: not yet performed -- THIS record is the subject of the pending independent review, and publication is stopped until that review is committed.
 
 ## Requested Review Gate
 
@@ -152,87 +102,20 @@ Advanced `charness` toward release `6.2.1` (tag `v6.2.1`) through the repo-owned
 - Policy: `advisory-only`.
 - Configured command count: `0`.
 
-## Post-Publish Proof
-
-- Public release check: `gh release view v6.2.1`.
-
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Elapsed seconds: `12.026`
-- Stdout tail: `essage: Codex host install markers are present. Start a new Codex session to load
-    charness.
-claude_host_guidance:
-  status: installed
-  manual_action_required: false
-  message: Claude host install markers are present. Restart Claude Code to load or
-    refresh charness.
-grok_host_guidance:
-  status: unavailable
-  manual_action_required: false
-  message: Grok CLI not detected on this machine.
-host_next_steps:
-  codex: Codex host install markers are present. Start a new Codex session to load
-    charness.
-  claude: Claude host install markers are present. Restart Claude Code to load or
-    refresh charness.
-  grok: Grok CLI not detected on this machine.
-repo_onboarding:
-  status: skipped
-  manual_action_required: false
-  message: null
-  reason: skipped during update unless --target-repo-root is provided
-next_action:
-  kind: restart
-  host: codex
-  status: installed
-  manual_action_required: false
-  message: Codex host install markers are present. Start a new Codex session to load
-    charness.
-  source: codex_host_guidance
-session_staleness:
-  message: Updated plugin caches were rotated. Active Codex/Claude sessions may have
-    stale absolute skill paths injected into their system prompt. Restart those sessions,
-    or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/capability_catalog.py
-    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale>
-    [--marketplace <m> --plugin <p>]`.
-  affected_count: 1`
-- Stderr tail: `STEP: refreshing source checkout
-STEP: source checkout code differs from the running CLI; re-executing the checkout's CLI so the run matches its scripts
-STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete`
+- Post-publish install refresh: pending final publish verification.
 
 ## Release Runtime
 
-- `requested_review_gate`: 0.012s
-- `cli_skill_surface_gate`: 2.005s
-- `quality_command`: 317.359s
-- `fresh_checkout_probes_resume`: 4.565s
-- `push_create_verify_release`: 301.816s
-- `distinct_channel_verification`: 0.595s
-- `published_notes_audit`: 0.415s
-- `post_publish_install_refresh`: 12.026s
-- `post_publish_installed_readback`: 1.448s
-- `release_observer`: 0.001s
-- `issue_closeout`: 0.000s
+- `requested_review_gate`: 0.003s
+- `cli_skill_surface_gate`: 1.912s
+- `quality_command`: 176.795s
+- `fresh_checkout_probes_initial`: 4.411s
 
 ## Baton Reconcile
 
-- Baton reconcile observation: `no_version_claim` for `docs/handoff.md`.
-- Just-published version: `6.2.1`.
-- The baton's routing sections claim no release version.
-- RECONCILE REQUIRED: Reconcile `docs/handoff.md` (its `## Current State` / `## Next Session` routing sections) to the just-published `6.2.1`, or record an explicit n/a disposition in the release record, before ending the session.
-- This is an observation, not completion: the populated record forces the reconcile question; the release critique/retro reviewers judge the disposition.
-
-## Release Observer Record
-
-- Durable observer record: `charness-artifacts/probe/2026-08-21-v6.2.1-release-observer.json`.
-- Installed readback disposition: `observed`.
-- Verdict ownership: this record embeds `distinct_channel_verification`; it does not declare a second release-success verdict.
+- Baton reconcile observation: not recorded by this helper invocation.
 
 ## Fresh Checkout Probes
 
@@ -245,7 +128,7 @@ DONE: update complete`
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
@@ -253,6 +136,91 @@ DONE: update complete`
 - Read the GitHub release notes for release-specific behavior changes, migrations, or rollback notes.
 
 
+## Record Qualifications
+
+Added after three independent claims rounds returned `fail` on this record.
+Findings are folded in here or repaired in the artifact each names, so this is
+not a complete index of the rounds — the claims-review narrative under
+`charness-artifacts/release-review/` is, and it is the DURABLE copy: the
+post-publish step rewrites this file wholesale from its generated payload and
+pushes it, so everything below survives publication only in the tagged blob and
+in that narrative. `## Claims Review` above reads as pending until the binding
+record is committed. Most items below are record-level; one discloses a shipped
+code limitation and says so.
+
+- **"no verdict change" is measured, not asserted.** The release critique
+  recorded that the read establishing it had not been performed, and the Bump
+  Rationale stated the conclusion anyway. The differential has since been run:
+  the shipped module and `git show v6.2.1:` of the same path, called with
+  identical injected dependencies over 400 constructed inputs (5 statuses x 8
+  cadence shapes x 5 acceptance shapes x frame present/absent), comparing the
+  `(applies, ok)` pair only — **0 divergences**. Evidence:
+  `charness-artifacts/probe/2026-08-22-v6.2.2-cadence-verdict-differential.json`.
+  **This is parent-authored evidence, not an independent observer's**, and the
+  `reason` text changed deliberately and is outside the comparison.
+- **"no version drift across 5 read surface(s)" counts surfaces read, not
+  version values compared.** `current_release.py` compares three version-bearing
+  surfaces against the packaging manifest; the fifth,
+  `codex_marketplace_source_path`, carries a path and never a version.
+  `.claude-plugin/marketplace.json` holds two version fields and the check reads
+  one. All read `6.2.2` — no live drift — but the stated coverage is wider than
+  the comparison.
+- **The `--release` quality pass is bound to no commit, and every artifact
+  written after it ships unvalidated by it.** The lane passed; `## Release Runtime`
+  above records `quality_command: 176.795s`, and that line is the durable
+  evidence. A claims round independently corroborated the same run, and the
+  earlier failure the preparation retro describes, from the repo's rolling
+  runtime-signals file — but that file is gitignored and its command table has
+  since been overwritten, so the corroboration is recorded here as having
+  happened and is no longer reproducible from it. That is the argument against
+  citing it, made by the citation itself. The release record, the
+  auto-retro, the differential probe, the amended critique, the amended
+  `docs/handoff.md` and this section were all written after that lane ran. No
+  count is given here because the set kept growing while it was being written —
+  which is itself the reason a count would have been wrong.
+- **This release ships a known over-fire that HARD-BLOCKS activation, and the
+  refusal needs BOTH owners.** An earlier draft of this bullet said a cadence
+  line naming a flag "without deferring is refused as contradictory". That is
+  false and overshoots in the opposite direction from the defect the critique
+  caught: `check` requires a flag-naming cadence line AND a `## User Acceptance`
+  line demanding broad proof per slice. With no such acceptance line the result
+  is `applies: true, ok: true`. When both are present AND the cadence line never
+  defers for an earlier step — naming a flag solely to negate it, or solely for a
+  terminal step — the refusal is the over-fire and the artifact is truthful. When
+  the cadence line DOES defer earlier, the shape the achieve scaffold seeds, the
+  same refusal is CORRECT and the acceptance line is what should change. The
+  shipped payload leads with that distinction. 6.2.2 makes that
+  refusal explain itself; it does not remove it.
+- **The `#681` repair has never been verified on any installed copy.** The
+  installed-6.2.1 evidence for `#681` specifically is reproduction of the DEFECT;
+  other artifacts in this delta use installed-6.2.1 readbacks for other issues
+  and other purposes, so this is a claim about `#681`, not about every installed
+  reference in the set. Closing the loop requires replaying the reproduction against the
+  installed `6.2.2` plugin on an `active` artifact carrying a soft-wrapped
+  non-deferring cadence bullet. A `charness version` or `charness doctor`
+  readback is not that branch.
+- **`Evaluated changed paths: 36` is stale.** The differential probe JSON was
+  added after that census was taken, so the delta is larger than the number the
+  record states and the enumeration omits that path.
+- **The release auto-retro asserts a publish that has not happened**, and
+  records `session_id: "none"` while the preparation retro beside it records
+  session `2026-08-22-b-release` with five score events. Both ship in this
+  commit. The auto-retro is helper-generated and says in its own body that it
+  does not cover the session; the preparation retro is the one that does.
+- **`cli_skill_surface_gate` reports a runtime and no verdict.** Its 1.9s in
+  `## Release Runtime` is not a pass — that value is recorded in a `finally`, so
+  it is written whether the gate passed or raised. Nor is the quality runner's
+  similarly-named `check-cli-skill-surface` row its verdict: that is a different
+  label with its own elapsed value, produced by a different step. What
+  establishes the verdict is structural — the gate shells out with `check=True`,
+  so a non-zero exit aborts the prepare and no record is committed. This record
+  existing is the evidence.
+- **`docs/handoff.md` ships inside this release commit** and is the
+  adapter-declared post-publish baton path, reconciled after publication. It
+  deliberately names no commit id for this release: a document committed in a
+  commit cannot name that commit, and an earlier repair here shipped an id that
+  the subsequent amend orphaned.
+
 ## Bump Rationale
 
-> Patch release for fail-closed host-delivery status, same-version content readback, typed update-all recovery, and source/plugin parity fixes; no intentional breaking interface or feature-surface change.
+> Patch: repairs the cadence-owner payload's false denial of a line it parsed and discloses a known literal-match over-fire; no new capability, no verdict change, no flag or schema change.

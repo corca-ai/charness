@@ -58,14 +58,20 @@
   re-probed by the parent. Attribution is inferred from content match with
   `73cf9ce6a^`, not proven. **Verify the staged set before every commit in a
   concurrent-subagent session** — that is what caught it.
-- The `#681` repair is source-only and is in no published version. Its evidence is a
-  local fixture replay, not an installed readback.
+- The `#681` repair was source-only through `5bd80a7b6` and ships in the `6.2.2`
+  release. No commit id is given: this file is committed INSIDE that release
+  commit, so it cannot name it, and an earlier draft named one the amend
+  orphaned. Until the post-publish replay named in the
+  [release record](../charness-artifacts/release/latest.md) is run against the
+  installed copy, its only evidence is a local fixture replay.
 - #687's host-side terminal event remains explicitly unproven. Cautilus was not run.
 
 ## Next Session
 
-1. Decide whether the fourteen closes warrant a release, since the `#681` repair
-   ships to consumers only through one.
+1. Finish the `6.2.2` publication from its prepared stop, then replay the `#681`
+   reproduction against the INSTALLED copy; the
+   [release record](../charness-artifacts/release/latest.md) owns that obligation
+   and a `charness version` readback does not discharge it.
 2. #694 is the design question worth taking next: whether the gate-cadence floor
    should read a cadence line's polarity at all, or whether the cadence contract
    should be a structured field rather than prose the floor must interpret.

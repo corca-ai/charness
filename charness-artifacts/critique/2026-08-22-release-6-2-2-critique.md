@@ -78,8 +78,8 @@ attention-state registry entry. The consumer-facing diff over the frozen range
 
 - Requested tier: bounded-reviewer (host typed subagent, Read/Grep/Glob only).
 - Requested spawn fields: subagent_type, prompt, description.
-- Host exposure state: applied
-- Application state: host-confirmed: the release reviewer returned typed findings inline and reported its envelope bound by construction — Bash, Edit, Write and Agent were absent from the spawn, so no command ran and the shared worktree was untouched.
+- Host exposure state: metadata-hidden
+- Application state: reviewer-reported: the release reviewer returned typed findings inline and reported its envelope bound by construction — Bash, Edit, Write and Agent absent from the spawn. That is the reviewer's own testimony, not a host confirmation: nothing in this session reads back which tools a spawn was given. The boundary fingerprint below proves the tree did not drift, which is a different fact. The claims review flagged an earlier `host-confirmed:` wording here as an overclaim, in a session that also recorded a subagent violating its read-only instruction, and it was right to.
 - Delivery state: findings-received
 - Execution mode: typed-subagent
 - Worker report: n/a — typed host-subagent branch, not the file-backed worker path.
@@ -98,8 +98,15 @@ changed, never who changed it.
 
 The reviewer named one read it could not perform — diffing against
 `v6.2.1:skills/public/achieve/scripts/goal_artifact_cadence_owner.py` to prove no
-`ok` value changed for any input — and declined to assert past it. That read is
-recorded as not performed rather than inferred.
+`ok` value changed for any input — and declined to assert past it. The claims
+review then found the release record asserting that conclusion anyway and called
+it a blocker. The read was then performed BY THE PARENT, not by any reviewer: 400
+constructed inputs across 5 statuses, 8 cadence shapes, 5 acceptance shapes and
+frame present/absent, with **0 divergences** in the `(applies, ok)` pair.
+Evidence: `charness-artifacts/probe/2026-08-22-v6.2.2-cadence-verdict-differential.json`,
+which records in its own non-claims that it is parent-authored and not an
+independent observer's. It sits in this section because it closes a gap this
+section opened, not because a reviewer produced it.
 
 ## Fresh-Eye Satisfaction
 

@@ -1,0 +1,56 @@
+{
+  "schema_version": "charness.probe.verdict-differential.v1",
+  "date": "2026-08-22",
+  "question": "Does the 6.2.2 cadence-owner repair change any (applies, ok) verdict relative to v6.2.1?",
+  "why": "The 6.2.2 release critique recorded this read as NOT PERFORMED because its bounded reviewer had no Bash. The claims review then found the release record asserting 'no verdict change' as flat fact on top of that gap, and called it a blocker. This probe performs the read.",
+  "method": "Loaded skills/public/achieve/scripts/goal_artifact_cadence_owner.py from the working tree and the same path from `git show v6.2.1:` into separate module objects, then called check() on both with identical injected dependencies (masked text, markdown module, is_terminal predicate, fence balance) taken from goal_artifact_lib, comparing only the (applies, ok) pair.",
+  "matrix": {
+    "statuses": [
+      "active",
+      "draft",
+      "blocked",
+      "complete",
+      "COMPLETE (2026-08-01) \u2014 done"
+    ],
+    "cadence_shapes": [
+      "defer",
+      "prose",
+      "neg",
+      "lockonly",
+      "none",
+      "fence",
+      "bold",
+      "subbullet"
+    ],
+    "acceptance_shapes": [
+      "demand",
+      "perslice",
+      "closeout",
+      "quiet",
+      "scoped"
+    ],
+    "frame_section": [
+      true,
+      false
+    ],
+    "inputs_compared": 400
+  },
+  "result": {
+    "applies_ok_divergences": 0,
+    "verdict": "no-verdict-change-confirmed"
+  },
+  "non_claims": [
+    "This compares the (applies, ok) pair only. The `reason` text changed deliberately and is not compared.",
+    "400 inputs is a constructed matrix, not exhaustive over all artifact text.",
+    "This is parent-authored evidence, not an independent observer's.",
+    "A later reader cannot re-derive the 0 from this file alone: no per-input record is kept, only the matrix shape and the result."
+  ],
+  "binding": {
+    "before_ref": "v6.2.1",
+    "before_path": "skills/public/achieve/scripts/goal_artifact_cadence_owner.py",
+    "after_ref": "the prepared release commit that contains this file",
+    "after_path": "skills/public/achieve/scripts/goal_artifact_cadence_owner.py",
+    "note": "The after side was read from the working tree at run time. The tree was clean and its content is the blob committed in the prepared release commit that ships this artifact; no commit id is recorded here because the prepared commit was amended after this probe ran and any id written here would name an orphan."
+  },
+  "author": "parent release session (not an independent observer)"
+}
