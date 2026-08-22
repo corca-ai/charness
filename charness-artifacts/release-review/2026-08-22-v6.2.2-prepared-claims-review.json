@@ -1,0 +1,16 @@
+{
+  "schema_version": "charness.release.claims-review.v2",
+  "prepared_commit": "c3fb53e1fdc9c9e8725921ef21e420108fd9cb0f",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "804dd82b598e280dba182f02a7f42531301fdbb69ea473c91c47cd4f96d044d8",
+  "target_version": "6.2.2",
+  "tag_name": "v6.2.2",
+  "verdict": "pass",
+  "preparer_context": "Parent release session prepared the 6.2.2 record, ran the pre-publication gates, performed the v6.2.1 verdict differential that round 1 found missing, and amended the prepared commit three times to carry each round's corrections.",
+  "reviewer_context": "Three separate bounded read-only subagent contexts, spawned one per round against the then-current prepared record, each reporting its envelope bound by construction with no Bash, Edit, Write or Agent tool exposed.",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "Three bounded read-only subagent rounds reviewed successive prepared records; all returned fail. Round 2 found three of round 1's repairs carrying the class they fixed. Round 3 found the post-publish step overwrites the release record wholesale, which is why this narrative exists. A durability gate then refused a citation to a gitignored rolling file whose data had already been overwritten.",
+    "review_artifact": "charness-artifacts/release-review/2026-08-22-v6.2.2-prepared-claims-review.md"
+  }
+}
