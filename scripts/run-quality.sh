@@ -1077,6 +1077,7 @@ queue_selected "check-documented-command-flags" python3 scripts/check_documented
 # list, which could only catch a rename someone remembered to declare.
 queue_selected "check-documented-subcommands" python3 scripts/check_documented_subcommands.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-artifact-referents" python3 scripts/check_artifact_referents.py --repo-root "$REPO_ROOT"
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-markdown" ./scripts/check-markdown.sh
 

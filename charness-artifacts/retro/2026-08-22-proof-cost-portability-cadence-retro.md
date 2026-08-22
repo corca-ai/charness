@@ -51,8 +51,9 @@ fixed (#697, #698, #699). One finding recorded in the goal without filing: the
 Seven bounded rounds (slice C x2, slice B x2, slice A x2, one release critique)
 plus FOUR claims rounds found blockers on every surface they read. Counted from
 the Slice Log as it now reads — slice C 2+1, slice B 2+3, slice A 2+2 — that is
-TWELVE across the slices, and the release critique (1) plus claims rounds 1-4
-(3 + 3 + 4 + 4) add fifteen more, for TWENTY-SEVEN. TWELVE of the twenty-seven
+{{q:slice-blockers=12}} across the slices, and the release critique (1) plus
+claims rounds 1-4 (3 + 3 + 4 + 4) add fifteen more, for
+{{q:total-blockers=27}}. {{q:class-carrying=12}} of the {{q:total-blockers=27}}
 were *repairs carrying the class they repaired*: not "found a bug, fixed it" but
 "found a bug, fixed it wrongly, had it found again".
 
@@ -177,8 +178,9 @@ release flow prompts you to go back and find it.
 
 ## Next Improvements
 
-- **workflow — reproduce before repairing a review finding.** Twelve of
-  twenty-seven blockers got a wrong first repair; in two further cases
+- **workflow — reproduce before repairing a review finding.**
+  {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first
+  repair; in two further cases
   reproduction showed the reviewer's own proposed fix was wrong. Applied this
   session in the second half; it should be the default, not the recovery.
   `applied: recorded in this retro AND carried into docs/handoff.md as
