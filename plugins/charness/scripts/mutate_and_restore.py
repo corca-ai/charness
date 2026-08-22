@@ -59,12 +59,12 @@ from __future__ import annotations
 import argparse
 import glob as globlib
 import json
-import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import mutation_test_reporters as _reporters
 from mutation_plan_semantics import MutationPlanError, removed_calls
 from mutation_plan_semantics import mutation_bytes as plan_mutation_bytes
 from mutation_recovery import (
@@ -78,14 +78,17 @@ from mutation_recovery import (
 
 from yaml_output import emit_yaml
 
-PASSED_RE = re.compile(r"(\d+) passed")
-FAILED_RE = re.compile(r"(\d+) failed")
-ERROR_RE = re.compile(r"(\d+) error")
-NO_TESTS_RE = re.compile(r"no tests ran", re.IGNORECASE)
-# A summary line carries counts AND a duration. Scanning the whole transcript
-# instead matched these words inside a failing test's echoed source -- and this
-# runner's own test file contains the literals, so a real kill read as REFUSED.
-SUMMARY_RE = re.compile(r"in \d+(?:\.\d+)?s", re.IGNORECASE)
+# How to READ a runner's count report now lives in `mutation_test_reporters`
+# (#689): the three properties above are runner-independent, but the pytest
+# summary shape was hardcoded, so no Node repository could use this harness.
+# Re-exported at THIS address because call sites in this module's own test file
+# bind them here, exactly like the constants they replace.
+PASSED_RE = _reporters.PASSED_RE
+FAILED_RE = _reporters.FAILED_RE
+ERROR_RE = _reporters.ERROR_RE
+NO_TESTS_RE = _reporters.NO_TESTS_RE
+SUMMARY_RE = _reporters.SUMMARY_RE
+DEFAULT_REPORTER = _reporters.DEFAULT_REPORTER
 
 KILLED = "killed"
 SURVIVED = "survived"
@@ -165,59 +168,55 @@ class Sweep:
         ]
 
 
-def summary_line(output: str) -> str | None:
-    """Return the runner's last summary line, or None if it printed none.
+def summary_line(output: str, reporter=_reporters.PytestReporter) -> str | None:
+    """Return the runner's summary text, or None if it printed none.
 
     Counts must be read from the summary ALONE. Scanning the whole transcript
     let a failing test's echoed source supply the evidence -- in both directions:
     a stray `no tests ran` turned a real kill into a refusal, and a stray
-    `N failed` could manufacture a kill from a run where nothing failed.
+    `N failed` could manufacture a kill from a run where nothing failed. Each
+    reporter carries its own scoping; see `mutation_test_reporters`.
     """
-    for line in reversed(output.splitlines()):
-        stripped = line.strip()
-        if not SUMMARY_RE.search(stripped):
-            continue
-        if NO_TESTS_RE.search(stripped) or PASSED_RE.search(stripped) or FAILED_RE.search(stripped) or ERROR_RE.search(stripped):
-            return stripped
-    return None
+    return reporter.summary(output)
 
 
-def parse_passed(output: str) -> int | None:
+def parse_passed(output: str, reporter=_reporters.PytestReporter) -> int | None:
     """Return the passing test count the runner's SUMMARY reported, else None.
 
     None is not zero. A runner whose summary we cannot read has not told us its
     baseline held, and the sweep refuses on it -- which is the whole point.
     """
-    line = summary_line(output)
-    if line is None:
-        return None
-    if NO_TESTS_RE.search(line):
-        return 0
-    match = PASSED_RE.search(line)
-    return int(match.group(1)) if match else 0
+    counts = reporter.read(output)
+    return None if counts is None else counts.passed
 
 
 def run_command(command: list[str], cwd: Path) -> subprocess.CompletedProcess:
     return subprocess.run(command, cwd=cwd, capture_output=True, text=True)
 
 
-def measure_baseline(command: list[str], cwd: Path) -> Baseline:
+def measure_baseline(command: list[str], cwd: Path, reporter=_reporters.PytestReporter) -> Baseline:
     """Establish that the unmutated tree passes, and by how many tests."""
     completed = run_command(command, cwd)
     output = completed.stdout + completed.stderr
-    passed = parse_passed(output)
+    counts = reporter.read(output)
+    passed = None if counts is None else counts.passed
     refusal: str | None = None
     if completed.returncode != 0:
-        failed = FAILED_RE.search(output)
+        failed = counts.failed if counts else 0
         refusal = (
             f"baseline test command exited {completed.returncode}"
-            + (f" with {failed.group(1)} failing" if failed else "")
+            + (f" with {failed} failing" if failed else "")
             + "; every mutant would read as killed against it"
         )
     elif passed is None:
+        # The measured #689 refusal stopped at this first clause, on a Node tree
+        # whose baseline was GREEN (`returncode: 0`). Naming which reporter looked,
+        # what it looked for, and which registered reporter CAN read these bytes is
+        # the difference between a refusal and a dead end.
         refusal = (
             "baseline produced no readable passing count; an unreadable summary "
-            "is indistinguishable from a sweep that killed everything"
+            "is indistinguishable from a sweep that killed everything -- "
+            + _reporters.unreadable_refusal(reporter.name, output)
         )
     elif passed == 0:
         refusal = "baseline collected 0 tests; there is nothing for a mutant to kill"
@@ -268,7 +267,7 @@ def restore(path: Path, original: bytes) -> None:
     invalidate_bytecode(path)
 
 
-def classify_mutant_run(completed: subprocess.CompletedProcess, baseline: Baseline) -> tuple[str, str]:
+def classify_mutant_run(completed: subprocess.CompletedProcess, baseline: Baseline, reporter=_reporters.PytestReporter) -> tuple[str, str]:
     """Decide killed / survived / refused from EVIDENCE, not from the exit byte.
 
     `#565` was a broken run read as a clean sweep. Reading a mutant's bare
@@ -276,15 +275,16 @@ def classify_mutant_run(completed: subprocess.CompletedProcess, baseline: Baseli
     does not parse, a collection error, or a crashed runner all exit non-zero
     with no test having caught anything.
     """
-    line = summary_line(completed.stdout + completed.stderr)
-    if line is None:
+    output = completed.stdout + completed.stderr
+    counts = reporter.read(output)
+    if counts is None:
         return REFUSED, (
             f"the mutated run exited {completed.returncode} and printed no readable summary; "
-            "there is no evidence to call this either way"
+            "there is no evidence to call this either way -- "
+            + _reporters.unreadable_refusal(reporter.name, output)
         )
-    passed = parse_passed(line) or 0
-    failed_match = FAILED_RE.search(line)
-    failed = int(failed_match.group(1)) if failed_match else 0
+    passed = counts.passed
+    failed = counts.failed
     accounted = passed + failed
     # SURVIVED is a verdict about other code exactly as much as KILLED is, so it
     # gets the same scope accounting. A mutant that shrinks collection while
@@ -301,10 +301,9 @@ def classify_mutant_run(completed: subprocess.CompletedProcess, baseline: Baseli
         # error alongside a genuine `failed`, and refusing that would throw away
         # a real kill.
         return KILLED, ""
-    errors = ERROR_RE.search(line)
-    if errors:
+    if counts.errors:
         return REFUSED, (
-            f"the mutated run reported {errors.group(1)} error(s) and no failure, so tests did "
+            f"the mutated run reported {counts.errors} error(s) and no failure, so tests did "
             "not run to a verdict; a broken run is not a kill"
         )
     return REFUSED, (
@@ -314,7 +313,8 @@ def classify_mutant_run(completed: subprocess.CompletedProcess, baseline: Baseli
 
 
 def run_mutant(
-    spec: dict, command: list[str], repo_root: Path, baseline: Baseline
+    spec: dict, command: list[str], repo_root: Path, baseline: Baseline,
+    reporter=_reporters.PytestReporter,
 ) -> MutantResult:
     # Key guard FIRST: a mis-keyed plan (`replacement`, `to`) would otherwise
     # become a silent DELETION mutant, and a missing `path`/`find` would raise a
@@ -386,7 +386,7 @@ def run_mutant(
                 None, removed, declared,
             )
         completed = run_mutation_command(command, repo_root, recovery, journal_id)
-        verdict, detail = classify_mutant_run(completed, baseline)
+        verdict, detail = classify_mutant_run(completed, baseline, reporter)
         return MutantResult(mutant_id, spec["path"], verdict, detail, completed.returncode, removed, declared)
     finally:
         restore(path, original)
@@ -398,7 +398,20 @@ def run_mutant(
 def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
     MutationRecovery(repo_root).assert_clear()
     command = plan["test_command"]
-    baseline = measure_baseline(command, repo_root)
+    # An unknown reporter name is REFUSED, never silently defaulted. A plan asking
+    # for a reader this harness does not have, answered with pytest's, reports
+    # `baseline REFUSED` on a healthy tree and blames the tree -- a proof surface
+    # rendering a verdict about the code when the fault is its own configuration.
+    requested = plan.get("reporter")
+    reporter = _reporters.resolve(requested)
+    if reporter is None:
+        refusal = (
+            f"plan requested reporter {requested!r}, which is not registered; "
+            "available: " + ", ".join(f"`{name}`" for name in sorted(_reporters.REPORTERS))
+        )
+        emit(f"baseline REFUSED: {refusal}")
+        return Sweep(baseline=Baseline(returncode=0, passed=None, output="", refusal=refusal))
+    baseline = measure_baseline(command, repo_root, reporter)
     # The count goes out BEFORE the first mutant, so a reader of a truncated log
     # still sees what the sweep was measured against.
     if baseline.earned:
@@ -408,7 +421,7 @@ def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
         return Sweep(baseline=baseline)
     sweep = Sweep(baseline=baseline)
     for spec in plan["mutants"]:
-        result = run_mutant(spec, command, repo_root, baseline)
+        result = run_mutant(spec, command, repo_root, baseline, reporter)
         sweep.mutants.append(result)
         # The removed callees go in the streamed progress line, not only in the final
         # payload. Without them an operator reads `1 call-site` and cannot tell an
