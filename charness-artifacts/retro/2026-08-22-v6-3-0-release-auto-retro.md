@@ -17,7 +17,7 @@ session retro is still owed and this record is not a substitute for it.
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: `skills/public/release/references/critique-boundary.md`, `skills/public/release/scripts/claims_review_scope.py`, `skills/public/release/scripts/publish_release_args.py`, `skills/public/release/scripts/publish_release_artifact.py`, `skills/public/release/scripts/publish_release_artifact_sections.py`, `skills/public/release/scripts/publish_release_claims_review.py`, `skills/public/release/scripts/publish_release_common.py`, `skills/public/release/scripts/publish_release_execute.py`, `skills/public/release/scripts/publish_release_resume.py`, `skills/public/release/scripts/publish_release_resume_publish.py`.
-- Evaluated changed paths: 117.
+- Evaluated changed paths: 120.
 
 ## Waste
 
