@@ -83,8 +83,17 @@ _CADENCE_LABEL = re.compile(r"^[ \t>*\-]*\**[ \t]*Gate cadence[ \t]*:[ \t]*\**(.
 #: on its own scaffold.
 #:
 #: Reading either correctly is paraphrase matching, which this module refuses by
-#: design. The FIRST shape -- negation -- is now handled by DECLINING rather than
-#: by guessing; see `_negated_near_flag`. The second is not, and stays disclosed.
+#: design. The FIRST shape -- negation -- is handled by DECLINING rather than by
+#: guessing, but only when the negation and the flag share a CLAUSE; see
+#: `_negated_near_flag`. An ANAPHORIC negation a clause away still over-fires:
+#: "broad pytest runs at EVERY slice boundary. `--skip-broad-pytest` is the
+#: pre-lock shape from an earlier goal. It is not used here." -- one flag mention,
+#: unnegated in its own clause, so the line reads as deferring and a per-slice
+#: acceptance line is refused beside it. Measured against the corpus: of every
+#: checked-in cadence line, three carry a negation token and none of the three
+#: names a flag, so no live artifact hits it. NOT widened: line-scoping is exactly
+#: what the round-1 blocker proved wrong, and a wider window disarmed the floor on
+#: genuinely deferring lines. The second is not, and stays disclosed.
 _DEFERS_BROAD_PROOF = re.compile(r"--skip-broad-pytest|--verification-lock")
 
 #: A negation sitting in the same clause as a matched flag.
@@ -182,6 +191,25 @@ _BROAD_PROOF_COMMAND = re.compile(
 _PER_SLICE_FREQUENCY = re.compile(r"\b(?:every|each)\s+slice\b|\bper[- ]slice\b", re.IGNORECASE)
 
 
+def decline_advisory(cadence: dict[str, Any]) -> str | None:
+    """The one-line disclosure a caller owes when this floor renders no verdict.
+
+    Owned HERE because the decision -- which declines are worth surfacing and in
+    what words -- is this module's, and both callers needed it. `pursue_readiness`
+    got it first and `check_goal` did not, which left the GATE-WIRED caller
+    returning `ok: True, issues: []` on a decline while the advisory caller
+    disclosed it. Two callers, one rule; the rule lives with the floor.
+
+    Only the negated-flag decline: the other four are either terminal records or
+    states where no cadence line was parsed at all, and a caller that surfaced
+    those would be reporting the absence of an input rather than a floor that
+    could not read a present one.
+    """
+    if cadence.get("decline") != "negated-flag-unreadable":
+        return None
+    return "gate-cadence owner floor rendered NO VERDICT — " + cadence["reason"]
+
+
 def _cadence_decline(cadence: dict[str, Any], decline: str, reason: str) -> dict[str, Any]:
     """A non-applicable verdict that HAS parsed a cadence line.
 
@@ -273,23 +301,23 @@ def check(
         # which would point inside a code fence. Say that instead. Round-2 review
         # found this floor was the one new reader consuming a possibly-fail-open
         # mask while claiming fenced examples could not act as an owner.
-        return _inert(  # unbalanced fences
+        return _inert(
             "unestablished: an unclosed code fence makes fence masking fail open, so a "
             "fenced example is indistinguishable from a real `Gate cadence:` or acceptance "
-            "line; close the fence and this floor can render a verdict"
+            "line; close the fence and this floor can render a verdict",
+            "unbalanced-fences",
         )
     cadence = _cadence_owner(masked, markdown)
     if cadence is None:
-        return {
-            "applies": False,
-            "ok": True,
-            "reason": (
-                "not applicable: `## Active Operating Frame` states no `Gate cadence:` line at "
-                "all, so `## User Acceptance` is not evaluated as a second owner"
-            ),
-            "cadence": None,
-            "findings": [],
-        }
+        # `_inert`, not a hand-built dict: this branch's shape IS the inert shape
+        # (`cadence: None`), and spelling it out again created a duplicate family
+        # the ratchet refused on sight -- the second self-duplication this slice
+        # produced while adding the `decline` key.
+        return _inert(
+            "not applicable: `## Active Operating Frame` states no `Gate cadence:` line at "
+            "all, so `## User Acceptance` is not evaluated as a second owner",
+            "no-cadence-line",
+        )
     if not _DEFERS_BROAD_PROOF.search(cadence["text"]):
         # The two ways this floor can decline are NOT the same fact, and one reason
         # sentence for both was read as the other: a consumer repo filed the payload
@@ -337,6 +365,7 @@ def check(
     return {
         "applies": True,
         "ok": False,
+        "decline": "",
         "reason": (
             "two owners for one rule: `## Active Operating Frame` line "
             f"{cadence['line']} (`Gate cadence:`) DEFERS broad proof, while "

@@ -364,8 +364,7 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
         report["cadence_unestablished"] = True
         report["reason"] += (
             " | cadence floor rendered NO VERDICT on this artifact (see "
-            "`cadence_owner.reason`); activation is not blocked on it, and the "
-            "one-owner question is unanswered rather than answered clean"
+            "`cadence_owner.reason`); activation is not blocked on it"
         )
     if not cadence["ok"]:
         # JOIN, never replace. `_reason` is deliberately every-reason-not-the-first
@@ -458,8 +457,13 @@ def check_goal(text: str) -> dict[str, Any]:
     cadence = check_cadence_owner(text, status=status)
     if not cadence["ok"]:
         issues.append("gate-cadence owner floor — " + cadence["reason"])
+    # `advisories` below: a decline is non-blocking, so it is disclosed rather than
+    # raised. The wording is the cadence module's, so both callers say the same
+    # thing -- the first repair gave it only to `pursue_readiness` and left THIS,
+    # the gate-wired caller, silent on a floor that had rendered no verdict.
     return {
         "ok": not issues,
+        "advisories": [a for a in [_cadence_owner.decline_advisory(cadence)] if a],
         "cadence_owner": cadence,
         "status": status,
         "missing_sections": missing,

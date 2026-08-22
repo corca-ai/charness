@@ -641,19 +641,35 @@ def test_a_deferral_stated_NEGATIVELY_still_refuses() -> None:
 
 
 def test_no_checked_in_cadence_line_declines() -> None:
-    """A CENSUS, not a boolean. The corpus test that asserts only `ok` cannot see
-    blanket disarmament, because a decline also reports `ok: True` -- widening the
-    negation vocabulary until all 84 lines decline would keep it green. Measured
-    at the time of the decision: zero of 84."""
-    import re as _re
+    """A CENSUS with a DENOMINATOR, read through the floor's own parser.
 
-    label = _re.compile(r"^[ \t>*\-]*\**[ \t]*Gate cadence[ \t]*:[ \t]*\**(.*)$", _re.MULTILINE)
-    declined = []
+    A boolean corpus test cannot see blanket disarmament, because a decline also
+    reports `ok: True` -- widening the negation vocabulary until all 84 lines
+    declined would keep it green. But a census is only as good as the set it
+    counts, and the first version of this test had two holes a round-2 review
+    named: it re-declared a PRIVATE copy of `_CADENCE_LABEL` (one rule, two
+    owners, in the slice about one rule having one owner), and it asserted no
+    minimum, so a drifted regex measuring zero lines would still pass.
+
+    It now calls the module's own `_cadence_owner` on the module's own masked
+    logical section -- the exact path the floor takes, including soft-wrap reflow,
+    which the private-regex version missed on at least one checked-in goal that
+    wraps before its flag.
+    """
+    examined, declined = [], []
     for goal in sorted((_ROOT / "charness-artifacts" / "goals").glob("*.md")):
-        match = label.search(goal.read_text(encoding="utf-8"))
-        if match and _CADENCE._negated_near_flag(match.group(1).strip()):
+        text = goal.read_text(encoding="utf-8")
+        cadence = _CADENCE._cadence_owner(gal._mask_fences(text), gal._markdown)
+        if cadence is None:
+            continue
+        examined.append(goal.name)
+        if _CADENCE._negated_near_flag(cadence["text"]):
             declined.append(goal.name)
 
+    assert len(examined) >= 80, (
+        f"the census measured only {len(examined)} cadence lines; a drifted parser "
+        "that finds none would otherwise pass this test silently"
+    )
     assert declined == [], declined
 
 
@@ -730,3 +746,79 @@ def test_an_unambiguous_deferral_with_no_acceptance_conflict_still_passes() -> N
 
     assert report["applies"] is True
     assert report["ok"] is True
+
+
+# --------------------------------------------------------------------------- #
+# Round-2 repairs on slice A.
+#
+# The round almost did not happen: the goal's Slice Plan claimed "two rounds
+# consumed" while its own Slice Log said one, and a claims round caught the
+# contradiction. Everything below is what the owed round found.
+# --------------------------------------------------------------------------- #
+
+
+def test_every_non_applicable_branch_carries_a_distinct_decline() -> None:
+    """TABLE-DRIVEN, because a per-case assertion cannot see this defect.
+
+    The `decline` key was added so five branches emitting `applies: False,
+    ok: True` could be told apart by a FACT rather than by prose -- and the first
+    cut left two of them without one. The absent-cadence branch had no key at all,
+    so `report["decline"]` raised `KeyError` and `report.get("decline")` read
+    falsy on a real decline; the unbalanced-fence branch carried `""`, which is
+    indistinguishable from the PASS branch. Both are the exact indistinguishability
+    the key exists to close, and the single-branch test that shipped with it could
+    not see either.
+    """
+    complete_frame = _artifact(acceptance=_PER_SLICE_ACCEPTANCE).replace(
+        "Status: active", "Status: complete", 1
+    )
+    cases = {
+        "terminal-status": (complete_frame, "complete"),
+        "unbalanced-fences": (
+            _artifact(acceptance=_PER_SLICE_ACCEPTANCE) + "\n```\nunclosed\n", "active"),
+        "no-cadence-line": (
+            _artifact(cadence="- Next action: go.", acceptance=_PER_SLICE_ACCEPTANCE), "active"),
+        "vocabulary-not-recognised": (
+            _artifact(cadence="- Gate cadence: broad pytest every slice.",
+                      acceptance=_PER_SLICE_ACCEPTANCE), "active"),
+        "negated-flag-unreadable": (
+            _artifact(cadence=_NEGATED_CADENCE, acceptance=_PER_SLICE_ACCEPTANCE), "active"),
+    }
+    observed = {}
+    for expected, (text, status) in cases.items():
+        report = _check(text, status)
+        assert report["applies"] is False, (expected, report["reason"])
+        observed[expected] = report.get("decline", "<ABSENT>")
+
+    assert observed == {name: name for name in cases}, observed
+
+
+def test_the_applies_branches_carry_an_empty_decline_not_a_missing_key() -> None:
+    """A consumer reading `report["decline"]` must not have to know which branch
+    it is holding. Absent-vs-empty is the same schema defect one level down."""
+    for text in (_artifact(acceptance="- The operator can resume."),
+                 _artifact(acceptance=_PER_SLICE_ACCEPTANCE)):
+        report = _check(text)
+        assert report["applies"] is True
+        assert report["decline"] == ""
+
+
+def test_the_gate_wired_caller_also_discloses_the_decline() -> None:
+    """`check_goal` decides the validator's EXIT CODE; `--pursue-ready` is the
+    advisory lane. The first repair gave the disclosure only to the advisory one,
+    so a decline left the blocking caller returning `ok: True, issues: []` with
+    nothing anywhere saying a floor had rendered no verdict -- this repo's own
+    'migrating the diagnosis without the fix' class, in the same file."""
+    text = _artifact(cadence=_NEGATED_CADENCE,
+                     acceptance="- The operator can resume without rebuilding.")
+
+    report = gal.check_goal(text)
+
+    assert any("rendered NO VERDICT" in entry for entry in report["advisories"]), report
+
+
+def test_a_clean_artifact_carries_no_cadence_advisory() -> None:
+    """The disclosure must not fire on every run, or it stops being a signal."""
+    report = gal.check_goal(_artifact(acceptance="- The operator can resume."))
+
+    assert [a for a in report["advisories"] if "cadence" in a] == []

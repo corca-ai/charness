@@ -4006,6 +4006,13 @@
     },
     {
       "class": "intentional",
+      "id": "bc301aa4d861b048",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "Two-line early-return guard `if <mapping>.get(<key>) != <literal>: return None`, shared by `goal_artifact_cadence_owner.decline_advisory` (which surfaces only the negated-flag decline) and `validate_integrations` (which handles only one manifest kind). Idiom-sized: a dict lookup, a literal comparison and a `return None`, sharing no key, no literal, no type and no concept. Same class already accepted as 003780cc89f2ccfd, 349f5d577fe2588b and f0dff7b4f7e1fd89. Surfaced as new because slice A's round-2 repair moved the decline-disclosure decision into the cadence module, where it belongs -- both callers needed the same wording and only one had it, so the rule now lives with the floor that owns it. NOTE: this slice's OTHER two new families were NOT classified; both were self-duplications the ratchet correctly refused (two decline branches differing in two fields, then a hand-built verdict dict duplicating `_inert`'s own shape) and both were repaired by collapsing onto the existing builder."
+    },
+    {
+      "class": "intentional",
       "id": "bcb6e825b9d8fba5",
       "note": "the four-line `main()` head across parity_harness, removed_name_consumers, check_plugin_doc_links, and check_plugin_asset_command_carriers. The last two are untouched by this migration and still deliver findings by `ValidationError`/`print`; the first two now emit YAML repair reports. Four owners with four unrelated bodies sharing an argparse idiom is not a seam.",
       "reviewed_at": "2026-08-14",

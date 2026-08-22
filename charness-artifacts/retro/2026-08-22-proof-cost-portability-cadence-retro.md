@@ -16,22 +16,28 @@ what this session measured about the repo's real shape.
 
 ## Window
 
-`f5211700a..83ac8ff86` — 12 commits on `main`, nothing pushed, no tag. Two
-issues fixed (#696 filed-then-fixed, plus #689/#690/#691 implemented but
-deliberately left open), four issues filed and not fixed (#697, #698, #699, plus
-the unfiled ~4min/~5min figure disagreement recorded in the goal).
+`f5211700a..HEAD` — nothing pushed, no tag. Four issues implemented
+(#696 filed-then-fixed; #689, #690, #691 implemented and deliberately left OPEN
+because the per-issue closeout floor did not run). Three issues filed and not
+fixed (#697, #698, #699). One finding recorded in the goal without filing: the
+~4min/~5min figure disagreement across five surfaces.
 
 ## Evidence Summary
 
-- Host log probe (`probe_host_logs.py`, claude session scope): 554 function
-  calls, 69 patch applications, 8 subagent spawns, **0 context compactions**,
-  1051 token snapshots. Duration derivable. Proxy flags: `git checkout` x3.
+- Host log probe (`probe_host_logs.py`, claude session scope), read mid-session
+  and therefore a snapshot rather than a session total: 554 function calls, 69
+  patch applications, **0 context compactions**. Proxy flag: `git checkout` x3.
+  This is a host-log channel, not an agent-exposed counter — the Slice Log
+  `Metrics:` lines correctly say no such counter is exposed to the agent, and
+  these numbers come from the host's own JSONL.
 - `mine_closeout_telemetry.py` over 1851 records: the broad quality lane recurs
   at 16 occurrences with a 475s peak; `run_standing_pytest --mode read-only` at
   14 occurrences, 208s peak. Both marked `recurs:` / `file-issue`.
 - Checked-in probe: `charness-artifacts/probe/2026-08-22-changed-line-coverage-context-blowup.json`
   (the 671x / 276x / 339x measurement, with SHA-256s).
-- Six bounded review rounds, all read-only, all returning findings to this
+- Bounded review spawns: slice C rounds 1 (two reviewers) and 2, slice B rounds
+  1 and 2, slice A rounds 1 and 2, one release critique, and two claims rounds —
+  ten reviewer spawns in total, all read-only, all returning findings to this
   context; boundary fingerprints verified `parent-attributed` at each.
 - `run-quality.sh --release`: 98 passed / 0 failed. Changed-line proof over the
   full range: clean, 15/15 files, zero blocking.
@@ -41,7 +47,10 @@ the unfiled ~4min/~5min figure disagreement recorded in the goal).
 ## Waste
 
 **The dominant waste was self-inflicted rework caught by review, not by me.**
-Six rounds found nine blockers across four surfaces. That is the system working,
+Seven bounded rounds (slice C x2, slice B x2, slice A x2, one release critique)
+plus two claims rounds found blockers on every surface they read; the Slice Log
+totals ten across the slices, and the release critique and claims rounds added
+four more. That is the system working,
 but the cost is real: three of the nine were *repairs carrying the class they
 repaired*, which means the rework was not "found a bug, fixed it" but "found a
 bug, fixed it wrongly, had it found again".
@@ -125,8 +134,8 @@ Prior durable retro: `charness-artifacts/retro/2026-08-22-tracker-closeout-retro
 
 - **Subagent delivery improved.** The predecessor recorded a named spawn that
   stranded ~8 minutes and a full review packet (`rule-exists-but-does-not-bind`).
-  This session spawned 8 subagents, all unnamed per the contract, and **all 8
-  returned findings to this context**. The spawn-shape rule bound.
+  Every reviewer this session was spawned unnamed per the contract, and **every
+  one returned findings to this context**. The spawn-shape rule bound.
 - **The reviewer-mutation risk recurred in a new form.** The predecessor recorded
   a subagent violating read-only and reverting a module. This session had no
   reviewer mutation — every boundary verified `parent-attributed` — but the
@@ -164,7 +173,10 @@ release flow prompts you to go back and find it.
   blockers got a wrong first repair; in two further cases reproduction showed the
   reviewer's proposed fix was itself wrong. Applied this session in the second
   half; it should be the default, not the recovery.
-  `applied: recorded in this retro and carried to handoff as the first bullet.`
+  `applied: recorded in this retro; the handoff carry is NOT yet written and is
+  the first closeout step.` A claims round caught this line asserting the handoff
+  bullet already existed when it did not — an `applied:` that names a destination
+  it has not reached is the strongest disposition shape making the weakest claim.
 - **capability — the release record's quality sentence was a hardcoded literal.**
   `applied: skills/public/release/scripts/publish_release_common.py now stamps the
   measured result and publish_release_execute.py renders it, so the record reads

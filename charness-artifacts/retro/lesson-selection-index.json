@@ -2090,7 +2090,7 @@
     {
       "candidate_id": "next_improvement:cbcc563a17a6",
       "kind": "next_improvement",
-      "lesson": "**workflow — reproduce before repairing a review finding.** Three of nine blockers got a wrong first repair; in two further cases reproduction showed the reviewer's proposed fix was itself wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro and carried to handoff as the first bullet.`",
+      "lesson": "**workflow — reproduce before repairing a review finding.** Three of nine blockers got a wrong first repair; in two further cases reproduction showed the reviewer's proposed fix was itself wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro; the handoff carry is NOT yet written and is the first closeout step.` A claims round caught this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim.",
       "normalized_key": "workflow reproduce before repairing a review finding three of nine blockers got a wrong",
       "recurrence_class": null,
       "source_count": 1,
@@ -2109,7 +2109,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**workflow — reproduce before repairing a review finding.** Three of nine blockers got a wrong first repair; in two further cases reproduction showed the reviewer's proposed fix was itself wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro and carried to handoff as the first bullet.`"
+          "lesson": "**workflow — reproduce before repairing a review finding.** Three of nine blockers got a wrong first repair; in two further cases reproduction showed the reviewer's proposed fix was itself wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro; the handoff carry is NOT yet written and is the first closeout step.` A claims round caught this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim."
         }
       ]
     },

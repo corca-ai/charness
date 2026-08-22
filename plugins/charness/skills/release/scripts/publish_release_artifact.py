@@ -159,13 +159,28 @@ def write_current_artifact(
     payload: dict[str, Any],
     host_payload: dict[str, Any],
     *,
-    quality_status: str = "passed before publish",
+    quality_status: str | None = None,
     fresh_checkout_payload: dict[str, Any] | None = None,
     release_url: str | None = None,
     issue_closeout: dict[str, Any] | None = None,
     install_refresh: dict[str, Any] | None = None,
     release_stage: str | None = None,
 ) -> str:
+    # READ IT FROM THE PAYLOAD, like every other field on this call.
+    #
+    # This function reads `version_drift_check`, `bump_rationale`, `claims_review`
+    # and a dozen more from `payload`; `quality_status` alone was a passthrough
+    # with a hardcoded default, so a writer that did not name it rendered
+    # "passed before publish" whether the gate ran, failed, or never started.
+    #
+    # Repaired at the OWNER after two call-site repairs each missed a writer: the
+    # first reached only the commit-time write, the second added the amend, and a
+    # claims round then found `commit_post_publish_artifact` -- the write that
+    # produces the record actually pushed to `main` -- still rendering the
+    # literal. There are five writers across four modules; patching call sites was
+    # always going to lose that race. An explicit argument still wins, for the one
+    # caller that legitimately says "queued".
+    quality_status = quality_status or payload.get("quality_status") or "passed before publish"
     return write_release_artifact(
         repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
         previous_version=payload["previous_version"], target_version=payload["target_version"], remote=payload["remote"],
