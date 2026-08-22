@@ -1934,7 +1934,7 @@
     {
       "candidate_id": "next_improvement:671d1ea2a5d4",
       "kind": "next_improvement",
-      "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py now stamps the measured result and publish_release_execute.py renders it, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\".`",
+      "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py stamps the measured result into the payload, and publish_release_artifact.write_current_artifact — the single OWNER every one of the five writers routes through — reads it from there, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\". Pinned by tests/quality_gates/test_release_quality_status_binding.py, including a structural scan that fails if any call site re-hardcodes the literal.` Three attempts: the first two patched CALL SITES and each lost the race to a writer they did not know about — the second specifically to `commit_post_publish_artifact`, the write that produces the record pushed to `main`. An earlier draft of this very bullet still credited that rejected call-site repair; a claims round caught it. The disposition for the hardcoded-literal finding was itself a hardcoded claim that had stopped being true.",
       "normalized_key": "capability the release record s quality sentence was a hardcoded literal applied skills public",
       "recurrence_class": null,
       "source_count": 1,
@@ -1953,7 +1953,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py now stamps the measured result and publish_release_execute.py renders it, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\".`"
+          "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py stamps the measured result into the payload, and publish_release_artifact.write_current_artifact — the single OWNER every one of the five writers routes through — reads it from there, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\". Pinned by tests/quality_gates/test_release_quality_status_binding.py, including a structural scan that fails if any call site re-hardcodes the literal.` Three attempts: the first two patched CALL SITES and each lost the race to a writer they did not know about — the second specifically to `commit_post_publish_artifact`, the write that produces the record pushed to `main`. An earlier draft of this very bullet still credited that rejected call-site repair; a claims round caught it. The disposition for the hardcoded-literal finding was itself a hardcoded claim that had stopped being true."
         }
       ]
     },
@@ -1986,7 +1986,7 @@
     {
       "candidate_id": "next_improvement:95387810d5de",
       "kind": "next_improvement",
-      "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue` — see `## Sibling Search`.",
+      "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue: #700.` (This bullet previously said `tracked issue` and pointed at `## Sibling Search`, which carried a literal `#N` placeholder and no filed issue. Claims round 4 found it: the disposition about destinations that are never reached had not reached its own destination. #700 is that destination.)",
       "normalized_key": "memory a grant invalidates prose written before it no mechanism exists the claims round",
       "recurrence_class": null,
       "source_count": 1,
@@ -2005,7 +2005,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue` — see `## Sibling Search`."
+          "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue: #700.` (This bullet previously said `tracked issue` and pointed at `## Sibling Search`, which carried a literal `#N` placeholder and no filed issue. Claims round 4 found it: the disposition about destinations that are never reached had not reached its own destination. #700 is that destination.)"
         }
       ]
     },
@@ -2088,10 +2088,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:cbcc563a17a6",
+      "candidate_id": "next_improvement:abb8e4191ed7",
       "kind": "next_improvement",
-      "lesson": "**workflow — reproduce before repairing a review finding.** Three of nine blockers got a wrong first repair; in two further cases reproduction showed the reviewer's proposed fix was itself wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro; the handoff carry is NOT yet written and is the first closeout step.` A claims round caught this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim.",
-      "normalized_key": "workflow reproduce before repairing a review finding three of nine blockers got a wrong",
+      "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout.",
+      "normalized_key": "workflow reproduce before repairing a review finding q class carrying 12 of q total",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -2109,7 +2109,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**workflow — reproduce before repairing a review finding.** Three of nine blockers got a wrong first repair; in two further cases reproduction showed the reviewer's proposed fix was itself wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro; the handoff carry is NOT yet written and is the first closeout step.` A claims round caught this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim."
+          "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout."
         }
       ]
     },
