@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- One activated goal, three source slices (C: proof cost, B: unfork the Node consumers, A: settle the cadence contract) plus slice R, the single release carrying all three. (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`)
 - The session began as "design the next work from the handoff and open issues" and became one work unit: probe sixteen open issues whose repairs were believed to have landed, close the fourteen that a probe could confirm, repair the one that was still live, and file what the probing surfaced. (source: `charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md`)
-- This session prepared patch release `6.2.2` to carry the `#681` cadence-owner repair to consumers. (source: `charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md`)
 
 ## Repeat Traps
 
@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
+- **workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: skills/public/achieve/scripts/goal_artifact_cadence_owner.py now decides by the structural property; the token list survives only as the ambiguity detector, not as the rule.` (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`; sources: 3)
 - state a detector's blind class — "what can this mechanism NOT see?" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was "it cannot see any renderer", which was the whole finding, and it took three review rounds to surface. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 3)
 - **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
 - this is the SECOND inherited unclaimed session in three days, and the first artifact already filed this improvement, so the class recurred with the follow-up open. An opened lesson session with no disposition blocks the pre-push gate for a later author who cannot honestly clear it with anything but `presentation-unproven`. Surface outstanding sessions at session START, where the opener can still close them, instead of at push time where only a stranger can. Structural pattern: state opened by one actor and only enforceable against another. Triggering instance(s): `2026-08-16-s9`, `2026-08-17-3bbe7879`. Destination: issue. (source: `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`; sources: 2)
-- prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 2)
 
 ## Selection Policy
 
@@ -49,5 +49,5 @@
 - `charness-artifacts/retro/2026-08-18-3bbe7879-unclaimed-session-disposition.md`
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
-- `charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md`
+- `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`
 - `charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md`

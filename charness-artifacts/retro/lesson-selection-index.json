@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-22",
-  "source_artifact_count": 553,
-  "candidate_count": 2237,
+  "source_artifact_count": 554,
+  "candidate_count": 2247,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -494,6 +494,48 @@
       ]
     },
     {
+      "candidate_id": "class:e0b7c3ebcc2b",
+      "kind": "next_improvement",
+      "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: skills/public/achieve/scripts/goal_artifact_cadence_owner.py now decides by the structural property; the token list survives only as the ambiguity detector, not as the rule.`",
+      "normalized_key": "workflow novel when a bar guards a proof surface make it a required value",
+      "recurrence_class": "bar-recorded-as-prose",
+      "source_count": 3,
+      "independent_source_count": 3,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.36,
+      "selection_weight": 1.72,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** (novel:) when a bar guards a proof surface, make it a required value rather than a comment. A comment can be deleted with nothing red."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: skills/public/achieve/scripts/goal_artifact_cadence_owner.py now decides by the structural property; the token list survives only as the ambiguity detector, not as the rule.`"
+        }
+      ]
+    },
+    {
       "candidate_id": "class:c853031906b3",
       "kind": "repeat_trap",
       "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks.",
@@ -658,48 +700,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:3b52f9af8951",
-      "kind": "repeat_trap",
-      "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately.",
-      "normalized_key": "packet identity churn the goal ledger was corrected after the first commit requiring packet",
-      "recurrence_class": "release-proof-identity-churn",
-      "source_count": 3,
-      "independent_source_count": 3,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 15,
-      "recency_weight": 0.7937,
-      "alpha": 0.36,
-      "selection_weight": 1.3652,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "packet-identity-churn: the goal ledger was corrected after the first commit, requiring packet regeneration and a second small bookkeeping commit. The repair was correct, but the packet should have been treated as dependent on every reviewed goal edit from the start."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
-          "date": "2026-08-06",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "freeze the reviewed goal/spec/implementation set before ledger edits, and regenerate the packet immediately whenever a reviewed path changes."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately."
         }
       ]
     }
@@ -1184,6 +1184,48 @@
       ]
     },
     {
+      "candidate_id": "class:e0b7c3ebcc2b",
+      "kind": "next_improvement",
+      "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: skills/public/achieve/scripts/goal_artifact_cadence_owner.py now decides by the structural property; the token list survives only as the ambiguity detector, not as the rule.`",
+      "normalized_key": "workflow novel when a bar guards a proof surface make it a required value",
+      "recurrence_class": "bar-recorded-as-prose",
+      "source_count": 3,
+      "independent_source_count": 3,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.36,
+      "selection_weight": 1.72,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
+          "date": "2026-08-14",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** (novel:) when a bar guards a proof surface, make it a required value rather than a comment. A comment can be deleted with nothing red."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
+          "date": "2026-08-18",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: skills/public/achieve/scripts/goal_artifact_cadence_owner.py now decides by the structural property; the token list survives only as the ambiguity detector, not as the rule.`"
+        }
+      ]
+    },
+    {
       "candidate_id": "class:c853031906b3",
       "kind": "repeat_trap",
       "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks.",
@@ -1530,40 +1572,6 @@
       ]
     },
     {
-      "candidate_id": "class:e0b7c3ebcc2b",
-      "kind": "next_improvement",
-      "lesson": "prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs.",
-      "normalized_key": "workflow novel when a bar guards a proof surface make it a required value",
-      "recurrence_class": "bar-recorded-as-prose",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-      "latest_source_date": "2026-08-18",
-      "age_days": 4,
-      "recency_weight": 0.9402,
-      "alpha": 0.24,
-      "selection_weight": 1.1659,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow** (novel:) when a bar guards a proof surface, make it a required value rather than a comment. A comment can be deleted with nothing red."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-          "date": "2026-08-18",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs."
-        }
-      ]
-    },
-    {
       "candidate_id": "class:4c4782f6f5dd",
       "kind": "repeat_trap",
       "lesson": "**Two commits to cover one three-branch function**. `_repo_root_for` has two refusal arms and one success return. The first changed-line pass named the success return; I covered it; the second pass named `return None` at the second guard, because the ad-hoc path exercised the first guard and hid it. Enumerating the branches while writing the function would have cost one test, not two commits. `strong`.",
@@ -1768,6 +1776,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c2b5552f3784",
+      "kind": "current_focus",
+      "lesson": "One activated goal, three source slices (C: proof cost, B: unfork the Node consumers, A: settle the cadence contract) plus slice R, the single release carrying all three.",
+      "normalized_key": "one activated goal three source slices c proof cost b unfork the node consumers",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "One activated goal, three source slices (C: proof cost, B: unfork the Node consumers, A: settle the cadence contract) plus slice R, the single release carrying all three."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:18148dbb86fa",
       "kind": "current_focus",
       "lesson": "The session began as \"design the next work from the handoff and open issues\" and became one work unit: probe sixteen open issues whose repairs were believed to have landed, close the fourteen that a probe could confirm, repair the one that was still live, and file what the probing surfaced.",
@@ -1872,6 +1906,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:d8b435bac10e",
+      "kind": "next_improvement",
+      "lesson": "**capability — the critique acceptor binds on version tokens.** `tracked issue: #699.`",
+      "normalized_key": "capability the critique acceptor binds on version tokens tracked issue 699",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability — the critique acceptor binds on version tokens.** `tracked issue: #699.`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:671d1ea2a5d4",
+      "kind": "next_improvement",
+      "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py now stamps the measured result and publish_release_execute.py renders it, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\".`",
+      "normalized_key": "capability the release record s quality sentence was a hardcoded literal applied skills public",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py now stamps the measured result and publish_release_execute.py renders it, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\".`"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:dd6e1ece38ae",
       "kind": "next_improvement",
       "lesson": "Check a claimed count against the list before the sentence is written, not on reread.",
@@ -1894,6 +1980,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "Check a claimed count against the list before the sentence is written, not on reread."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:95387810d5de",
+      "kind": "next_improvement",
+      "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue` — see `## Sibling Search`.",
+      "normalized_key": "memory a grant invalidates prose written before it no mechanism exists the claims round",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue` — see `## Sibling Search`."
         }
       ]
     },
@@ -1946,6 +2058,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "When writing a blind-class note, verify every instance it names against the constant or template it claims — a blind class stated with a false example actively misleads the person who acts on it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:43f4332ab34a",
+      "kind": "next_improvement",
+      "lesson": "**workflow — issue closure deferred rather than faked.** #689/#690/#691/#696 stay open. `applied: recorded in the goal's Coordination Cues as a deferral with its reason, not as an n/a.`",
+      "normalized_key": "workflow issue closure deferred rather than faked 689 690 691 696 stay open applied",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — issue closure deferred rather than faked.** #689/#690/#691/#696 stay open. `applied: recorded in the goal's Coordination Cues as a deferral with its reason, not as an n/a.`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cbcc563a17a6",
+      "kind": "next_improvement",
+      "lesson": "**workflow — reproduce before repairing a review finding.** Three of nine blockers got a wrong first repair; in two further cases reproduction showed the reviewer's proposed fix was itself wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro and carried to handoff as the first bullet.`",
+      "normalized_key": "workflow reproduce before repairing a review finding three of nine blockers got a wrong",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — reproduce before repairing a review finding.** Three of nine blockers got a wrong first repair; in two further cases reproduction showed the reviewer's proposed fix was itself wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro and carried to handoff as the first bullet.`"
         }
       ]
     },
@@ -2024,6 +2188,110 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**A subagent violated its read-only instruction** and reverted `scripts/session_start_lesson_context.py` in the shared worktree, dropping the unclaimed-session routing emitter. Restored from `HEAD` and byte-verified. The prompt said \"never write anything under the repo\" in bold and it was ignored, so prose in a prompt is not a boundary; the parent's `git status` check before staging is what actually caught it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e25892887adc",
+      "kind": "repeat_trap",
+      "lesson": "**A test that asserted on source text instead of behaviour.** A reviewer said in words that `check_goal_artifact.py:193-203` had no behavioural test; my repair grepped the file. Changed-line coverage then named the same five lines uncovered. Cost: one wasted repair, and it is the second time in this session that a *stated* finding needed a *measured* one to make me act correctly. **Not waste, though it looks like it:** the broad `--release` gate ran four times (~180s each). Three of those were required by the ordering invariant (changed-line before broad) after real repairs, and the fourth caught a genuine regression the hollow-section floor introduced in a CLI fixture. The telemetry flags this lane as recurring at 16 occurrences repo-wide; that is a standing cost question, not this session's waste.",
+      "normalized_key": "a test that asserted on source text instead of behaviour a reviewer said in",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A test that asserted on source text instead of behaviour.** A reviewer said in words that `check_goal_artifact.py:193-203` had no behavioural test; my repair grepped the file. Changed-line coverage then named the same five lines uncovered. Cost: one wasted repair, and it is the second time in this session that a *stated* finding needed a *measured* one to make me act correctly. **Not waste, though it looks like it:** the broad `--release` gate ran four times (~180s each). Three of those were required by the ordering invariant (changed-line before broad) after real repairs, and the fourth caught a genuine regression the hollow-section floor introduced in a CLI fixture. The telemetry flags this lane as recurring at 16 occurrences repo-wide; that is a standing cost question, not this session's waste."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4b9ab8bee304",
+      "kind": "repeat_trap",
+      "lesson": "**I destroyed my own slice-B work with `git checkout`** while backing out an over-scoped extraction, then re-applied it. The host probe's `git checkout=3` proxy is that event plus two deliberate negative controls. Cost: ~15 minutes and a commit-message disclosure.",
+      "normalized_key": "i destroyed my own slice b work with git checkout while backing out an",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I destroyed my own slice-B work with `git checkout`** while backing out an over-scoped extraction, then re-applied it. The host probe's `git checkout=3` proxy is that event plus two deliberate negative controls. Cost: ~15 minutes and a commit-message disclosure."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a748fa873397",
+      "kind": "repeat_trap",
+      "lesson": "**The fail-closed durability repair carried its own class.** I closed a fail-open hole by delegating to the repo's canonical date helper — whose safety argument is corroboration between two channels, and which inverts on a corpus *defined* by having only one. Round 2 caught it. Cost: one full repair cycle.",
+      "normalized_key": "the fail closed durability repair carried its own class i closed a fail open",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The fail-closed durability repair carried its own class.** I closed a fail-open hole by delegating to the repo's canonical date helper — whose safety argument is corroboration between two channels, and which inverts on a corpus *defined* by having only one. Round 2 caught it. Cost: one full repair cycle."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3d85f48cd14a",
+      "kind": "repeat_trap",
+      "lesson": "**The Node false-kill guard was narrower than the surface it guarded.** Round 1 asked me to widen the summary reader to node's `spec` reporter; round 2 found that widening silently reinstated the false kill, because the file-level detail the guard needs exists only in `tap`. Cost: a second full cycle, and the reversal of a round-1 advisory.",
+      "normalized_key": "the node false kill guard was narrower than the surface it guarded round 1",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The Node false-kill guard was narrower than the surface it guarded.** Round 1 asked me to widen the summary reader to node's `spec` reporter; round 2 found that widening silently reinstated the false kill, because the file-level detail the guard needs exists only in `tap`. Cost: a second full cycle, and the reversal of a round-1 advisory."
         }
       ]
     },

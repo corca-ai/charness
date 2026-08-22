@@ -2405,6 +2405,38 @@
       "lesson_id": "agent-authored-score-role",
       "outcome": "changed-an-action",
       "anchor": "Authored these five scores from cited actions in this session before asking whether to record any; otherwise the release lane would have stayed red on an unclaimed session and the publish attempt would have been retried against the same refusal."
+    },
+    {
+      "event_id": "2026-08-22-proof-cost-portability-cadence-changed-line-proof-before-broad-quality",
+      "session_id": "2026-08-22-proof-cost-portability-cadence",
+      "source_retro": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran changed-line proof before the broad release gate at every repair boundary, three times; the third run BLOCKED on five uncovered lines in check_goal_artifact.py that the broad gate had passed over. Otherwise I would have run the 180s broad gate first and read its green as coverage proof, which is exactly what it cannot establish."
+    },
+    {
+      "event_id": "2026-08-22-proof-cost-portability-cadence-green-test-is-not-covered-line",
+      "session_id": "2026-08-22-proof-cost-portability-cadence",
+      "source_retro": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "lesson_id": "green-test-is-not-covered-line",
+      "outcome": "changed-an-action",
+      "anchor": "Twice a green suite disagreed with changed-line proof and I took the coverage verdict: 300 focused tests green while the proof blocked on four lines, then 1416 green while it blocked on five more. Otherwise I would have committed both slices on the passing suite; the second case was the validator branch a reviewer had already flagged in words."
+    },
+    {
+      "event_id": "2026-08-22-proof-cost-portability-cadence-rule-exists-but-does-not-bind",
+      "session_id": "2026-08-22-proof-cost-portability-cadence",
+      "source_retro": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "lesson_id": "rule-exists-but-does-not-bind",
+      "outcome": "changed-an-action",
+      "anchor": "Spawned all eight bounded reviewers UNNAMED per the contract's spawn-shape rule; all eight returned findings to this context and every boundary fingerprint verified parent-attributed. Otherwise I would have named them for addressability, which is what stranded a full review packet in the predecessor session."
+    },
+    {
+      "event_id": "2026-08-22-proof-cost-portability-cadence-bar-recorded-as-prose",
+      "session_id": "2026-08-22-proof-cost-portability-cadence",
+      "source_retro": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "not-consulted",
+      "anchor": "Never revisited it at the decision that chose how the cadence floor recognises an ambiguous line; committed an enumerated four-word negation list, and a round-2 review found it disarmed the floor on true positives. The repair that held is the structural rule the lesson names."
     }
   ],
   "lessons": {
@@ -2606,10 +2638,10 @@
     "rule-exists-but-does-not-bind": {
       "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
       "transition_id": "seed-rule-exists-but-does-not-bind",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2696,10 +2728,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": 6,
-      "score_count": 18,
+      "score_total": 7,
+      "score_count": 19,
       "outcome_counts": {
-        "changed-an-action": 12,
+        "changed-an-action": 13,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -2741,10 +2773,10 @@
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "transition_id": "seed-green-test-is-not-covered-line",
-      "score_total": 10,
-      "score_count": 10,
+      "score_total": 11,
+      "score_count": 11,
       "outcome_counts": {
-        "changed-an-action": 10,
+        "changed-an-action": 11,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2876,11 +2908,11 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 4,
-      "score_count": 10,
+      "score_total": 3,
+      "score_count": 11,
       "outcome_counts": {
         "changed-an-action": 7,
-        "not-consulted": 0,
+        "not-consulted": 1,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 3,
         "legacy-scalar": 0

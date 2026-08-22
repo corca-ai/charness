@@ -143,6 +143,19 @@ def _prepare_release_attempt(
     }
 
 
+def _quality_status_kwarg(payload: dict[str, Any]) -> dict[str, str]:
+    """The measured quality result, for every writer that renders the record.
+
+    A function rather than an inline expression because the record is written
+    more than once per publish and the LAST write wins. The first repair reached
+    only the commit-time writer, so the fresh-checkout amend re-rendered the
+    sentence from its default and the record carried the literal anyway. One
+    helper, every call site.
+    """
+    status = payload.get("quality_status")
+    return {"quality_status": status} if status else {}
+
+
 def _commit_release_artifact(
     args: argparse.Namespace,
     repo_root: Path,
@@ -168,11 +181,7 @@ def _commit_release_artifact(
         release_stage="charness-release-state:prepared-awaiting-claims-review",
         # The stamped result, not the default. Absent only if the gate never ran,
         # in which case the default's own wording is the honest one.
-        **(
-            {"quality_status": payload["quality_status"]}
-            if payload.get("quality_status")
-            else {}
-        ),
+        **_quality_status_kwarg(payload),
     )
     cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     cli.run(["git", "add", "-A"], cwd=repo_root)
@@ -193,6 +202,12 @@ def _commit_release_artifact(
                 payload,
                 host_payload,
                 release_stage="charness-release-state:prepared-awaiting-claims-review",
+                # The LAST writer wins, so the stamped result has to reach this one
+                # too. It did not: the commit-time write carried it and this amend
+                # re-rendered the record from the default, so the published
+                # sentence was the literal anyway. A claims round found the first
+                # copy of this defect; the second copy was one call site away.
+                **_quality_status_kwarg(payload),
                 **kwargs,
             ),
                 fresh_checkout_payload=fresh_checkout_payload,
