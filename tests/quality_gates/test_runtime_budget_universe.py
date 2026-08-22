@@ -595,3 +595,34 @@ def test_unreachable_by_selected_profile_names_a_block_this_run_cannot_select(tm
     labels = {entry["label"] for entry in payload["unreachable_by_selected_profile"]}
     assert labels == {"beta-gate"}
     assert payload["unreachable_by_selected_profile_reason"] is None
+
+
+def test_malformed_block_classifier_covers_every_shape_it_discriminates() -> None:
+    """The three branches the changed-line gate named as uncovered.
+
+    `malformed_budget_profile_blocks` exists to discriminate shapes that one silent
+    `continue` used to collapse. Two of its arms -- a `None` stub and a block that is
+    not a mapping at all -- had no test, so the discrimination the field was added for
+    was itself unproven on those inputs.
+    """
+    lib = import_repo_module(
+        REPO_ROOT / "skills/public/quality/scripts/runtime_profile_lib.py",
+        "skills.public.quality.scripts.runtime_profile_lib",
+    )
+    adapter = {
+        "runtime_budget_profiles": {
+            "empty-stub": None,                      # tolerated: an empty block
+            "not-a-mapping": ["budgets"],            # malformed: block is not a dict
+            "no-budgets-key": {"note": "docs only"},  # tolerated: no budgets key
+            "budgets-not-a-mapping": {"budgets": ["x"]},  # malformed: budgets not a dict
+            "healthy": {"budgets": {"label": 1.0}},  # fine
+        }
+    }
+
+    assert lib.malformed_budget_profile_blocks(adapter) == [
+        "not-a-mapping",
+        "budgets-not-a-mapping",
+    ]
+    # A non-dict `runtime_budget_profiles` is not a malformed BLOCK; it is no blocks.
+    assert lib.malformed_budget_profile_blocks({"runtime_budget_profiles": []}) == []
+    assert lib.malformed_budget_profile_blocks({}) == []

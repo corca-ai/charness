@@ -192,3 +192,37 @@ def test_cli_scope_coverage_unknown_without_git_stays_honest(tmp_path: Path) -> 
     assert verdict["scope_paths"] == ["src"]
     assert verdict["scope_coverage"] is None
     assert any("git could not be asked" in entry for entry in verdict["did_not_judge"])
+
+
+def test_empty_scope_paths_does_not_claim_the_whole_tree_was_never_judged() -> None:
+    """The branch that repaired a FALSE claim, and had no test until the gate said so.
+
+    With `scope_paths` empty, `scope_coverage` marks every tracked file uncovered --
+    but the code scan falls back to the scanner's own DEFAULT_PATHS and really does
+    scan and really does form families. Rendering that as "N files this scan never
+    formed a family from" is a gate added to report its gap honestly overstating it.
+
+    The changed-line coverage gate named these exact lines as unproven, which is how
+    the omission surfaced rather than by anyone noticing.
+    """
+    module = _load("check_dup_ratchet")
+    coverage = {
+        "tracked_file_count": 7785,
+        "uncovered_file_count": 7785,
+        "uncovered_top_level": ["scripts", "docs"],
+    }
+
+    entries, messages = module._scope_did_not_judge([], coverage)
+
+    joined = " ".join(entries) + " " + " ".join(messages)
+    assert "scanner defaults" in joined
+    # It must NOT report the whole tree as never-judged, which is the false claim.
+    assert "7785 tracked file(s)" not in joined
+    assert "never forms a CODE family" not in joined
+
+    # Control: with a real scope, the count IS reported and is scoped to CODE families.
+    entries, messages = module._scope_did_not_judge(["scripts"], coverage)
+    joined = " ".join(entries) + " " + " ".join(messages)
+    assert "7785 tracked file(s)" in joined
+    assert "never forms a CODE family" in joined
+    assert "the doc arm scans the repo root" in joined
