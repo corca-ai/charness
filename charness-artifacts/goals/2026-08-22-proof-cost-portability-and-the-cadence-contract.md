@@ -9,19 +9,18 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: A — settle the cadence contract (decided; implementation landed).
-- Current slice intent: implement the recorded `#694` decision — the cadence
-  floor declines to render a verdict on a line it cannot read, rather than
-  guessing its polarity or refusing a truthful artifact. This names
-  the reviewable-intent unit in progress and the commits it spans; critique and
-  broad proof do not re-fire within one unchanged intent — update it when the
-  intent changes, not per commit (meaningful-slice-cadence).
-- Next action: all three source slices have landed (`77c4300ae`, `1cb2e67c2`,
-  `ff0f52925`, `10f1a092c`, `142b39102`, `99c440aa7`, `89f32da4e`). Slice C and
-  slice B have both consumed their two-round cap. Awaiting slice A's round-1
-  bounded review and the re-run changed-line proof; then the broad release gate
-  over the bundle, then slice R — which needs an explicit operator grant that
-  this run has NOT yet obtained.
+- Current slice: R — one release over the bundle.
+- Current slice intent: publish ONE release carrying slices C, B and A, and
+  prove it through a channel distinct from tag state. This names the
+  reviewable-intent unit in progress and the commits it spans; critique and broad
+  proof do not re-fire within one unchanged intent — update it when the intent
+  changes, not per commit (meaningful-slice-cadence).
+- Next action: **the operator GRANTED the release for this bundle**, phase-scoped
+  to slice R and not carrying forward. Slices C, B and A have landed; C and B
+  have consumed their two-round caps and A has consumed both rounds. The publish
+  helper reached `prepared-awaiting-claims-review`, the first claims round
+  returned `unproven` on three record defects, and this artifact's own staleness
+  was the sharpest of them. Repairs land before the prepared commit is remade.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -160,10 +159,10 @@ Outcomes, not cadence. `## Active Operating Frame` owns when proof runs.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| C | Cut proof cost and close ephemeral-evidence citations | Every later slice pays this cost; it was measured at four full rebuilds in one session | Export/load wall time as a probe artifact (substituted for full-run wall time — see Verification Plan); a cheap re-establish route reachable from structured tool output; durability gate clean over a scope widened from 499 to 2838 docs | landed at `77c4300ae` + round-1 repairs; round-2 review owed |
-| B | Unfork the Node consumers | Three downstream repos maintain a substitute for a harness this repo owns; all three findings are third-or-later sightings | Harness verdict against a `node --test` fixture; hollow-section reporting; a non-complete terminal status accepted by the contract | pending |
-| A | Settle the cadence contract | The only hard blocker published 6.2.2 ships with; deferring it stacks more artifacts on an unread decision | A recorded decision among the three options, its implementation, and the frame migration if it restructures | pending |
-| R | One release over the bundle | B and A reach consumers only through a release; bundling makes the claims rounds run once | Published readback, installed replay, claims round without a blocker | pending |
+| C | Cut proof cost and close ephemeral-evidence citations | Every later slice pays this cost; it was measured at four full rebuilds in one session | Export/load wall time as a probe artifact (substituted for full-run wall time — see Verification Plan); a cheap re-establish route reachable from structured tool output; durability gate clean over a scope widened from 499 to 2838 docs | landed at `77c4300ae` + `1cb2e67c2` + `10f1a092c`; two rounds consumed, round-2 repairs accepted-unreviewed |
+| B | Unfork the Node consumers | Three downstream repos maintain a substitute for a harness this repo owns; all three findings are third-or-later sightings | Harness verdict against a `node --test` fixture; hollow-section reporting; a non-complete terminal status accepted by the contract | landed at `ff0f52925` + `10f1a092c` + `142b39102` + `99c440aa7`; two rounds consumed |
+| A | Settle the cadence contract | The only hard blocker published 6.2.2 ships with; deferring it stacks more artifacts on an unread decision | A recorded decision among the three options, its implementation, and the frame migration if it restructures | landed at `99c440aa7` + `23642a769`; decision recorded on #694; two rounds consumed |
+| R | One release over the bundle | B and A reach consumers only through a release; bundling makes the claims rounds run once | Published readback, installed replay, claims round without a blocker | in progress: operator grant given, prepared commit awaiting a passing claims round |
 
 ## Backlog Recount
 

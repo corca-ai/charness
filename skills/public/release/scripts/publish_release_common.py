@@ -94,6 +94,33 @@ def run_pre_push_quality_gates(repo_root: Path, adapter_data: dict[str, Any], pa
         "quality_command",
         lambda: cli.run_phase(str(adapter_data["quality_command"]), cwd=repo_root, phase="quality_command"),
     )
+    # STAMP THE RESULT, do not let the record render a default literal.
+    #
+    # `run_phase` raises on a non-zero exit, so reaching this line means the gate
+    # exited 0 -- but the RECORD said so from a hardcoded default
+    # (`publish_release_artifact.write_current_artifact`'s
+    # `quality_status="passed before publish"`), which renders identically whether
+    # the gate ran, did not run, or was skipped. That is the exact defect
+    # `version_drift_lines` was already repaired for, on the line directly beneath
+    # it: "the record read `current_release.py reported no version drift`
+    # identically whether the check ran, did not run, or found drift."
+    #
+    # A claims round caught the survivor. Now the sentence carries the command, the
+    # stage it ran at, and the measured elapsed time, so a reader can tell a real
+    # pass from a template.
+    elapsed = next(
+        (
+            entry.get("elapsed_seconds")
+            for entry in payload.get("release_runtime", [])
+            if entry.get("label") == "quality_command"
+        ),
+        None,
+    )
+    measured = f" in {elapsed:.1f}s" if isinstance(elapsed, (int, float)) else ""
+    payload["quality_status"] = (
+        f"exited 0{measured} at `post-bump, pre-commit`, measured by this helper "
+        f"(`{adapter_data['quality_command']}`)"
+    )
 
 
 def run_distinct_channel_floor(

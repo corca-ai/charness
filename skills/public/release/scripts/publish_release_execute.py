@@ -166,6 +166,13 @@ def _commit_release_artifact(
         fresh_checkout_payload=fresh_checkout_plan,
         release_url=expected_release_url,
         release_stage="charness-release-state:prepared-awaiting-claims-review",
+        # The stamped result, not the default. Absent only if the gate never ran,
+        # in which case the default's own wording is the honest one.
+        **(
+            {"quality_status": payload["quality_status"]}
+            if payload.get("quality_status")
+            else {}
+        ),
     )
     cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     cli.run(["git", "add", "-A"], cwd=repo_root)
