@@ -479,6 +479,55 @@ def test_checked_in_mutation_workflow_installs_length_gate_binary_before_samplin
     assert body.index("tokei --version") < body.index("Select mutation sample")
 
 
+def test_checked_in_workflows_install_ripgrep_before_running_the_standing_suite() -> None:
+    """The same pin tokei got after #274, for the binary behind the 2026-08-22 outage.
+
+    `scripts/command_plan_preflight.py` resolves its inventory through `rg --files`
+    and ubuntu-latest does not ship ripgrep. Absent rg the module refuses every plan
+    with `rg-unavailable`, eight `test_command_plan_preflight.py` tests fail asserting
+    codes they never reach, the sampler's coverage baseline goes red, and the mutation
+    lane produces no verdict.
+
+    Scope, because the first draft of this docstring over-claimed it: this explains
+    the runs that REACHED the standing suite -- mutation `32573073322` (2026-08-22)
+    and quality-core `32536921987` (2026-08-21, same eight failures). It does NOT
+    explain the 08-19/08-20 runs, which were cancelled at the sampler before
+    `command_plan_preflight.py` existed (it landed 2026-08-21 in `365aa4b21`).
+
+    Without this pin the install is invisible to the suite: rg is present on every
+    dev box, so a later edit trimming the `Install validation binaries` step stays
+    green locally and takes the scheduled lane dark again. Both workflows are pinned
+    because both drive the standing suite -- mutation-tests.yml through the sampler,
+    quality-core.yml through the changed-line gate's --test-command.
+
+    Anchored on the STEP DECLARATION (`- name: <step>`), not the bare step phrase.
+    The first cut of this test compared against `body.index("Select mutation sample")`
+    and broke immediately, because the comment justifying the install mentions that
+    step by name -- so `index` returned the comment's offset and the ordering claim
+    became a claim about prose. The sibling tokei pin above still uses the bare
+    phrase and would silently start comparing against the same comment, so it is
+    hardened here too rather than left as a pin that passes for the wrong reason.
+    """
+    mutation_body = MUTATION_WORKFLOW
+    sample_step = "- name: Select mutation sample"
+    assert sample_step in mutation_body
+    assert "apt-get install -y ripgrep" in mutation_body
+    assert "rg --version" in mutation_body
+    assert mutation_body.index("apt-get install -y ripgrep") < mutation_body.index(sample_step)
+    assert mutation_body.index("rg --version") < mutation_body.index(sample_step)
+    # The tokei pin's anchor, re-asserted structurally so both binaries are ordered
+    # against the step itself.
+    assert mutation_body.index("cargo install tokei") < mutation_body.index(sample_step)
+
+    core_body = (ROOT / ".github" / "workflows" / "quality-core.yml").read_text(encoding="utf-8")
+    core_step = "- name: Changed-line mutation coverage gate"
+    assert core_step in core_body
+    assert "apt-get install -y ripgrep" in core_body
+    assert "rg --version" in core_body
+    assert core_body.index("apt-get install -y ripgrep") < core_body.index(core_step)
+    assert core_body.index("rg --version") < core_body.index(core_step)
+
+
 def test_mutation_workflows_pass_workload_budget_envs() -> None:
     # `_mutation_workflow_copies()`, not a restated list: a fourth copy added there would
     # get the body, marker, and state-change invariants and silently miss this one --

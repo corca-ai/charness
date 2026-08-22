@@ -17,6 +17,7 @@ from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     baseline_abort_cause,
     read_baseline_abort_marker,
     resolve_baseline_abort_marker,
+    verdict_token,
 )
 from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 
@@ -90,7 +91,11 @@ def append_summary(summary_path: Path, metrics: dict[str, object], score_break: 
         "",
         "## StrykerJS Mutation Slice",
         "",
-        f"- Status: **{'PASS' if passed else 'FAIL'}** "
+        # Same rule as the cosmic-ray slice, from the same owner: with no reachable
+        # mutant there is no score, so neither PASS nor FAIL is earned. Reached when
+        # every JS mutant is Ignored -- a `Stryker disable all` in the mutated files,
+        # or an `excludedMutations` config covering the operator set.
+        f"- Status: **{verdict_token(int(metrics['reachable']), passed)}** "
         f"({float(metrics['score']):.1f}% reachable score vs {score_break:.0f}% threshold)",
         f"- Reachable mutants: {metrics['reachable']}",
         f"- Killed: {counts.get('Killed', 0)}",
@@ -105,6 +110,18 @@ def append_summary(summary_path: Path, metrics: dict[str, object], score_break: 
         lines.append("- Blocking signal: JS mutation execution timed out for at least one mutant.")
     if locations:
         lines.extend(["", "Survived JS mutants:", *[f"- `{item}`" for item in locations]])
+    _append_summary_section(summary_path, lines)
+
+
+def _append_summary_section(summary_path: Path, lines: list[str]) -> None:
+    """Append one rendered section to the shared mutation summary file.
+
+    Extracted from the two `append_*_summary` writers, which held byte-identical
+    copies of this block. The duplicate ratchet surfaced the pair when an unrelated
+    comment shifted them into one detector window, and its offered remedies were to
+    remove the duplication or to add a family entry to `dup-review.json`. The list
+    entry would have recorded the copies rather than removing them.
+    """
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     existing = summary_path.read_text(encoding="utf-8") if summary_path.is_file() else ""
     summary_path.write_text(existing.rstrip() + "\n" + "\n".join(lines) + "\n", encoding="utf-8")
@@ -117,7 +134,11 @@ def append_missing_report_summary(
         "",
         "## StrykerJS Mutation Slice",
         "",
-        "- Status: **FAIL** (StrykerJS JSON report missing)",
+        # `UNMEASURED`, not `FAIL`, for the same reason as the cosmic-ray slice in
+        # check_mutation_score.py: a missing report means no JS mutant was scored,
+        # which is a different claim from a JS slice that ran and scored badly.
+        # The measured JS verdicts above still render PASS/FAIL.
+        "- Status: **UNMEASURED** (StrykerJS JSON report missing)",
         f"- Missing report: `{report_path}`",
     ]
     if baseline_abort_marker is not None:
@@ -130,9 +151,7 @@ def append_missing_report_summary(
         )
     else:
         lines.append("- Blocking signal: JS mutation full mode did not produce a fresh JSON report.")
-    summary_path.parent.mkdir(parents=True, exist_ok=True)
-    existing = summary_path.read_text(encoding="utf-8") if summary_path.is_file() else ""
-    summary_path.write_text(existing.rstrip() + "\n" + "\n".join(lines) + "\n", encoding="utf-8")
+    _append_summary_section(summary_path, lines)
 
 
 def _marker_is_stale(marker_path: Path, repo_root: Path) -> bool:

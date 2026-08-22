@@ -185,7 +185,7 @@ def test_js_mutation_summary_fails_when_report_missing(tmp_path) -> None:
     assert result.returncode == 1
     assert "StrykerJS report not found" in result.stderr
     summary = (repo / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
-    assert "- Status: **FAIL** (StrykerJS JSON report missing)" in summary
+    assert "- Status: **UNMEASURED** (StrykerJS JSON report missing)" in summary
     assert "did not produce a fresh JSON report" in summary
 
 

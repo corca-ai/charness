@@ -32,6 +32,29 @@ _STAGE_CAUSES = {
     STAGE_SAMPLER_COVERAGE: "the sampler's coverage-baseline pytest failed",
     STAGE_COSMIC_RAY_BASELINE: "`cosmic-ray baseline` failed",
 }
+# The status word a slice has EARNED. This lib already owns the vocabulary for "the
+# run never measured anything"; the abort marker is one route into that state and a
+# zero denominator is the other, so both spellings belong to one owner.
+UNMEASURED_STATUS = "UNMEASURED"
+
+
+def verdict_token(reachable: int, passed: bool) -> str:
+    """`PASS`/`FAIL` only when a denominator exists; otherwise `UNMEASURED`.
+
+    `reachable` is killed + survived -- the mutants that actually returned a verdict.
+    At zero there is no score, so neither PASS nor FAIL is earned, and reporting
+    either asserts a measurement that never happened.
+
+    Both engines call this instead of spelling the rule twice. The first cut DID
+    spell it twice -- once per slice -- and the duplicate ratchet flagged the pair on
+    the same commit that introduced it. A rule with two implementations is the defect
+    this repo keeps paying for, so it gets one owner here.
+    """
+    if not int(reachable):
+        return UNMEASURED_STATUS
+    return "PASS" if passed else "FAIL"
+
+
 _FAILED_SHORT_SUMMARY_RE = re.compile(r"^FAILED (\S+)(?: - .*)?$", re.MULTILINE)
 _FAILED_VERBOSE_RE = re.compile(r"^(\S+::\S+) FAILED\b", re.MULTILINE)
 _ERROR_COLLECTION_RE = re.compile(r"^ERROR (\S+)(?: - .*)?$", re.MULTILINE)

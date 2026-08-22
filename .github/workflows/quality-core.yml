@@ -170,6 +170,23 @@ jobs:
             cargo install tokei
           fi
           tokei --version
+          # Same reason as mutation-tests.yml (see there for why rg is non-baseline and
+          # why the image supplies it anyway): this job drives the standing suite
+          # through the changed-line gate's --test-command, so it reaches
+          # scripts/command_plan_preflight.py and its `rg --files` inventory.
+          #
+          # This job is NOT a bystander -- it refused correctly. Run 32536921987
+          # (2026-08-21) went red here with the same eight preflight failures. It stays
+          # green on most pushes because the gate is scoped to the push RANGE and exits
+          # early when no pool file changed (run 32544789186 returned clean in 0.5s on
+          # a release-artifact-only range). So this lane catches the class only when a
+          # `scripts/*.py` pool file is in the range -- which is worth knowing before
+          # treating its green as suite-wide coverage.
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ripgrep
+          fi
+          rg --version
 
       - name: Changed-line mutation coverage gate
         # --write-fresh-marker stamps the freshness marker, and nothing else; the

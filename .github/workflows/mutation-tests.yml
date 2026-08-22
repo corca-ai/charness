@@ -78,6 +78,33 @@ jobs:
             cargo install tokei
           fi
           tokei --version
+          # ripgrep is explicitly NON-BASELINE per skills/shared/references/binary-preflight.md
+          # ("Anything outside this list is non-baseline. Today that notably includes
+          # `rg`"), so nothing may assume it. That reference governs SKILL bootstrap
+          # fences; scripts/command_plan_preflight.py is Python that shells out to rg
+          # with no declaration and no fallback, which is a separate defect tracked as
+          # a follow-up. This step makes THIS repo's CI image supply the binary that
+          # script currently hard-requires -- binary-preflight.md itself supplies the
+          # apt line for exactly this purpose.
+          #
+          # Without it, `rg --files` raises OSError, the module refuses every plan with
+          # `rg-unavailable`, and eight test_command_plan_preflight.py tests fail
+          # asserting codes they never reach -- 20 minutes into the sampler's baseline
+          # run, which is why it read as a mutation regression rather than a missing
+          # binary. Reproduced locally by removing rg from PATH: the same eight, 1.7s.
+          #
+          # SCOPE, deliberately narrow: this explains the runs that REACHED and
+          # completed the standing suite -- mutation `32573073322` (2026-08-22) and
+          # quality-core `32536921987` (2026-08-21, same 8 failures, different
+          # workflow). The 08-19/08-20 runs were CANCELLED at `Select mutation sample`
+          # before command_plan_preflight.py existed (it landed 2026-08-21 in
+          # 365aa4b21), so this fix does not explain or repair those. Necessary, not
+          # proven sufficient.
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ripgrep
+          fi
+          rg --version
 
       - name: Resolve mutation_testing adapter slots
         id: adapter

@@ -84,11 +84,23 @@ Three anchors, in order of what they buy:
   Confirmed on the latest scheduled run (2026-08-22, `f5211700a`, run
   `32573073322`): `Select mutation sample` **failure**, `Run mutation`
   **skipped**, `Summarize mutation report` **failure**. So the honest reading of
-  every green since then is "unmeasured", not "passed". Measured locally
-  earlier: the sampler finishes the standing suite in about three and a quarter
-  minutes and is still working past seven. Candidate cause is the shared
-  coverage-report path already filed. Coverage of the mutation surface is the
-  floor other proofs stand on.
+  every green since then is "unmeasured", not "passed". Coverage of the mutation
+  surface is the floor other proofs stand on.
+
+  **Corrected at activation, twice, and the second correction matters more than
+  the first.** This draft said the sampler "times out"; the 08-22 run shows it
+  completing the standing suite in 1184.59s and refusing on `8 failed`. But
+  narrowing the cause to that was ALSO wrong: a fresh-eye round pointed out that
+  `scripts/command_plan_preflight.py` — whose eight failures those are — did not
+  exist before 2026-08-21 (`365aa4b21`), so it cannot explain the 08-19 or 08-20
+  runs. Checked: those were **cancelled** at `Select mutation sample` (the 08-19
+  run after 28 minutes, under a 180-minute job timeout and with
+  `cancel-in-progress: false`, so neither the job timeout nor concurrency
+  explains it). There are therefore at least TWO failure modes in the window, and
+  the one this goal repairs is the later one. The earlier cancellations are
+  uncharacterized and still live. Necessary, not proven sufficient — recorded so
+  a later session does not read a green mutation run as proof that both were
+  fixed.
 - A check that passes its own direct-call test while never firing on the wired
   path (issue #586). Hit three times in one session, twice in the same file.
   This one is not only an anchor, it is a constraint on every conversion below:
@@ -480,6 +492,80 @@ attack each:
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.
+
+- **A missing required binary is reported as N opaque assertion diffs.** The
+  standing suite's answer to "ripgrep is not installed" was eight failures
+  asserting error codes they never reached, twenty minutes into the sampler's
+  baseline run. The property is one legible refusal — "declared required binary
+  `rg` absent; N tests depend on it" — checked once, instead of discovered
+  through the enumeration of downstream failures. This is this goal's own pattern
+  and belongs to a later slice or a tracked issue; it is deliberately NOT folded
+  into slice 1, because a suite-wide precondition has a far wider blast radius
+  than the slice under review and owes its own review round. It must FAIL, never
+  skip: a skip would make the suite green while the surface is inert (#586's
+  class).
+- **The auto-filed mutation issue's title misnames a baseline abort.** The title
+  is adapter-owned (`.mutation_testing.auto_issue.title` =
+  "Mutation test regression on main") and is applied to every filed instance,
+  including runs where no mutant executed. The summary body now says
+  `UNMEASURED`, so the title and the body disagree. Left unchanged deliberately:
+  the title is shared with genuine regressions and changing it is a separate
+  decision about the adapter's vocabulary.
+- **#612's body describes a failure that is not the current one.** It records
+  `Select mutation sample: success` / `Run mutation: success` with only the
+  summary failing; run `32573073322` shows the sampler failing and the run
+  skipped. The auto-filer updates an existing issue by marker token, so the body
+  reflects whichever run first opened it. An open issue is not a description of
+  today's defect.
+- **The duplicate ratchet asked to be extended during slice 1**, which is a live
+  instance of this goal's thesis rather than an aside. It reported one new code
+  family and offered three remedies, one of which was to classify the family in
+  `dup-review.json` — one of the seven enumerations under study. The family was
+  a pre-existing byte-identical pair in `check_js_mutation_score.py` that an
+  unrelated comment had shifted into one detector window. Removing the
+  duplication was correct and the list entry would have recorded the copies
+  instead. Carried into slice 2 as evidence for that enumeration's disposition.
+- **The shipped `command_plan_preflight.py` hard-requires a non-baseline binary,
+  and CI provisioning does not fix that for consumers.**
+  `skills/shared/references/binary-preflight.md` names `rg` as explicitly
+  non-baseline, with a declaration-and-consent protocol for skills that call it.
+  That script is not a skill bootstrap fence — it is Python that shells out to rg
+  with no declaration, no sentinel, and no fallback, and it is the only non-skill
+  code path in the repo that does. It ships to consumer repos, where charness
+  cannot add an apt step. Installing rg in this repo's CI fixes this repo's
+  signal and leaves the exported defect untouched. The measured swap target is
+  `git ls-files -c -o --exclude-standard` (a strict superset here, and git is
+  already a hard dependency of the same script for `git rev-parse --verify`), but
+  a naive swap is NOT safe: seven of the eight affected tests build their repo
+  with a bare `mkdir` and never `git init`, and `git ls-files` exits 128 in a
+  non-git directory where `rg --files` succeeds. So the swap owes either an
+  explicit git-repo contract with its own distinct error code or a walk fallback.
+  Deferred to its own slice with its own two rounds rather than folded here: it
+  is a dependency change on a shipped proof surface, and slice 1 is already
+  carrying more than it planned.
+- **Slice 2 inventory anchors located** (recorded here so slice 2 does not
+  re-derive them): the ownership allowlist is a literal file,
+  `scripts/check_skill_ownership_overlap.allowlist.txt` (41 lines, and its own
+  header already describes a stale-entry advisory); the validator-count pin is
+  `tests/test_consumer_validator_catalog.py:94-96`, where line 94 asserts the
+  real property (`packaged_validator_count == decision_count`) and line 95 pins
+  the population at a literal whose comment records the last chore. Note for
+  slice 2's classification: line 95 is not purely redundant — line 94 alone stays
+  green if validators are deleted in step with their decisions — so its
+  disposition is a real judgement between `derive` and `fail-closed`, not the
+  obvious `derive` the predecessor retro implied.
+- **At least two of the seven are already nearer the target shape than the
+  predecessor retro's one-line descriptions suggested**, which is the first
+  evidence that slice 2 (classify before converting) was the right sequence
+  rather than overhead. The `link_only_lines` bar in
+  `scripts/check_docs_graph.py` is not a flat list but a RATCHET that may only
+  decrease (line 56), which is already a fail-closed shape. The runtime budget
+  has `scripts/check_runtime_budget_universe.py` (#546) sitting over it, whose
+  own docstring states the property — "is this budgeted label still a name the
+  runner knows?" — so the enumeration there is already partly derived. Slice 2
+  must classify what these surfaces DO today, not what the retro's summary said
+  they do; converting either on the retro's description alone would have been
+  the `contract`-list mistake in its other direction.
 
 ## Final Verification
 

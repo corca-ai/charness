@@ -20,7 +20,7 @@ from textwrap import dedent
 import pytest
 
 import scripts.sample_mutation_files as sample_mutation_files
-from scripts import check_js_mutation_score, check_mutation_score
+from scripts import check_js_mutation_score, check_mutation_score, check_mutation_score_summary_lib
 from scripts.mutation_baseline_abort_lib import (
     STAGE_COSMIC_RAY_BASELINE,
     STAGE_SAMPLER_COVERAGE,
@@ -452,6 +452,145 @@ def test_check_mutation_score_marker_used_when_marker_is_newer_than_stats(tmp_pa
     assert "tests/x.py::test_y" in summary
 
 
+def test_an_unmeasured_run_is_not_reported_with_the_verdict_of_a_measured_one(
+    tmp_path: Path,
+) -> None:
+    """The abort summary must not spend the token that means "we scored it and it lost".
+
+    A reader (and the auto-filed issue that republishes this summary) has to be able
+    to tell "no mutant ran" from "mutants ran and the score broke". Between
+    2026-08-19 and 2026-08-22 both rendered `Status: **FAIL**`, so four days of
+    scheduled aborts published as mutation-score regressions, and #612's body still
+    describes a run whose steps succeeded.
+
+    Scope, stated exactly, because a comment that overstates a control's reach is
+    what a later reader trusts: the assertions below compare the two renderers'
+    STATUS TOKENS. They do not prove that no other line could reintroduce a measured
+    verdict, and `**FAIL-incomplete**` or an unbolded `FAIL` would not be caught.
+
+    The negative control renders the MEASURED summary through the same function the
+    production path uses (`build_summary_lines`), not through `mutation_metrics`
+    alone. An earlier version asserted only that `mutation_metrics` still returned
+    `"FAIL"`, which a fresh-eye round showed would stay green if
+    `check_mutation_score_summary_lib.py` stopped emitting the token altogether --
+    the exact regression this control claims to guard.
+    """
+    _write_adapter(tmp_path)
+    marker_path = tmp_path / "reports" / "mutation" / "baseline-abort.json"
+    marker_path.parent.mkdir(parents=True)
+    write_baseline_abort_marker(
+        marker_path,
+        exit_code=1,
+        test_command="python3 -m pytest -q tests",
+        failing_nodeids=["tests/x.py::test_y"],
+        log_tail=[],
+        stage=STAGE_SAMPLER_COVERAGE,
+    )
+
+    result = run_loaded_script_main(
+        "check_mutation_score.py", check_mutation_score, "--repo-root", str(tmp_path)
+    )
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+
+    assert "- Status: **UNMEASURED**" in summary
+    assert "**FAIL**" not in summary, "an unmeasured run must not carry a measured run's verdict"
+    # Unmeasured is not forgiven: the workflow still goes red. Distinguishing the
+    # verdict from the score break must not quietly turn one of them green.
+    assert result.returncode == 2
+
+    # Negative control, through the SAME rendering channel the measured path uses.
+    # A run that did measure and scored below the break must still render FAIL --
+    # otherwise the assertion above would also pass against a build that had merely
+    # stopped emitting the token, which is the failure mode this whole goal is about.
+    measured = check_mutation_score.mutation_metrics(
+        {
+            "killed": 1,
+            "survived": 9,
+            "total": 10,
+            "skipped": 0,
+            "pending": 0,
+            "no_tests": 0,
+            "incompetent": 0,
+            "abnormal": 0,
+            "scope_gap": 0,
+        },
+        score_break=80.0,
+    )
+    assert measured["status"] == "FAIL"
+    measured_summary = "\n".join(
+        check_mutation_score_summary_lib.build_summary_lines([], tmp_path, measured)
+    )
+    assert "- Status: **FAIL**" in measured_summary
+    # And the two renderers disagree, which is the whole point of the slice.
+    assert "- Status: **UNMEASURED**" not in measured_summary
+
+
+def test_a_zero_denominator_is_unmeasured_on_both_mutation_slices(tmp_path: Path) -> None:
+    """`reachable == 0` means no mutant produced a verdict, so no score exists.
+
+    The baseline-abort path is not the only way to reach "nothing was measured". A
+    run can complete and still score nothing: every cosmic-ray work item filtered by
+    the uncovered-mutation skip, an empty dump, or a StrykerJS config that ignores
+    the whole operator set. Those rendered `Status: **FAIL**` -- a verdict about a
+    measurement that never happened, which is this slice's defect reached by a
+    different route. A fresh-eye round found them while reviewing the abort fix.
+
+    Stated over the DENOMINATOR rather than as two more special cases, because
+    `killed + survived == 0` is the one condition that covers every route into it.
+
+    Both slices are asserted here: they are two renderers of one property, and the
+    JS one was found only because the cosmic-ray one was.
+    """
+    zero_denominator = {
+        "killed": 0,
+        "survived": 0,
+        "total": 4,
+        "skipped": 4,
+        "pending": 0,
+        "no_tests": 0,
+        "incompetent": 0,
+        "abnormal": 0,
+        "scope_gap": 4,
+    }
+    metrics = check_mutation_score.mutation_metrics(zero_denominator, score_break=80.0)
+    assert metrics["reachable"] == 0
+    assert metrics["status"] == "UNMEASURED"
+    assert metrics["passed"] is False, "unmeasured must not be forgiven into a pass"
+
+    rendered = "\n".join(check_mutation_score_summary_lib.build_summary_lines([], tmp_path, metrics))
+    assert "- Status: **UNMEASURED**" in rendered
+    assert "- Status: **FAIL**" not in rendered
+
+    # The JS slice, same property, its own renderer.
+    js_summary = tmp_path / "js-summary.md"
+    check_js_mutation_score.append_summary(
+        js_summary,
+        {"counts": {"Ignored": 3}, "reachable": 0, "score": 0.0, "survived_locations": []},
+        80.0,
+    )
+    js_text = js_summary.read_text(encoding="utf-8")
+    assert "- Status: **UNMEASURED**" in js_text
+    assert "**FAIL**" not in js_text
+
+    # Negative control for BOTH: a real denominator still renders a real verdict, so
+    # the assertions above are about the zero case and not about the tokens vanishing.
+    measured = check_mutation_score.mutation_metrics(
+        {**zero_denominator, "killed": 1, "survived": 9, "skipped": 0, "scope_gap": 0},
+        score_break=80.0,
+    )
+    assert measured["status"] == "FAIL"
+    assert "- Status: **FAIL**" in "\n".join(
+        check_mutation_score_summary_lib.build_summary_lines([], tmp_path, measured)
+    )
+    js_measured = tmp_path / "js-measured.md"
+    check_js_mutation_score.append_summary(
+        js_measured,
+        {"counts": {"Killed": 1, "Survived": 9}, "reachable": 10, "score": 10.0, "survived_locations": []},
+        80.0,
+    )
+    assert "- Status: **FAIL**" in js_measured.read_text(encoding="utf-8")
+
+
 def test_check_mutation_score_marker_present_falls_back_to_log_tail_when_no_nodeids(
     tmp_path: Path,
 ) -> None:
@@ -474,6 +613,12 @@ def test_check_mutation_score_marker_present_falls_back_to_log_tail_when_no_node
     assert result.returncode == 2
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
     assert "ModuleNotFoundError" in summary
+    # The log-tail branch renders a DIFFERENT body from the failing-nodeids branch,
+    # so the unmeasured-vs-measured property has to be pinned here too. A fresh-eye
+    # round noted that the property test above only ever exercises the other branch,
+    # which would leave a measured verdict reintroducible on this path alone.
+    assert "- Status: **UNMEASURED**" in summary
+    assert "**FAIL**" not in summary
 
 
 def test_check_mutation_score_malformed_marker_falls_back_to_missing_stats(tmp_path: Path) -> None:
@@ -514,7 +659,11 @@ def test_check_js_mutation_score_missing_report_with_marker_shows_collateral_sig
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
-    assert "Status: **FAIL** (StrykerJS JSON report missing)" in summary
+    assert "- Status: **UNMEASURED** (StrykerJS JSON report missing)" in summary
+    # The cosmic-ray unmeasured path got this exclusion and the JS one did not, which
+    # a fresh-eye round flagged: without it a second `Status:`-shaped line carrying a
+    # measured verdict could be added to this section and nothing would catch it.
+    assert "**FAIL**" not in summary
     assert "collateral" in summary
     assert "the sampler's coverage-baseline pytest failed" in summary
     assert "so the JS slice was never invoked" in summary

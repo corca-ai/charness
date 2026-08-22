@@ -9,13 +9,6 @@
     },
     {
       "class": "intentional",
-      "id": "004895e66d5b4132",
-      "note": "same-file near-duplicate inside skills/public/setup/references/agent-docs-policy.md (120-121 vs 143-144): two deliberately parallel host-mapping example blocks that document the same Codex subagent mapping in the live-AGENTS.md and generated-template sections; surfaced as 'new' by scan rotation, both members untouched this session (#441 rotation class)",
-      "reviewed_at": "2026-07-17",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "0077076d77f6ae1b",
       "note": "a single `print(message, file=sys.stderr)` line shared by report_validation_failure (which then appends the scaffold hint) and debug's _exit_not_a_violation (which deliberately does NOT). The whole point of the second function is that it stops where the first continues, so collapsing them re-introduces the misleading hint on a non-violation exit; there is nothing left to centralize in one stderr write.",
       "reviewed_at": "2026-07-27",
@@ -408,13 +401,6 @@
     },
     {
       "class": "intentional",
-      "id": "13741926e48b3ac1",
-      "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "13d608e6f6664a09",
       "note": "one-line json.loads(path.read_text(...)) readers across nine unrelated repo and portable skill modules; extracting this stdlib idiom would couple independent command surfaces without centralizing a domain invariant",
       "reviewed_at": "2026-07-10",
@@ -597,13 +583,6 @@
     },
     {
       "class": "intentional",
-      "id": "1e790839dc306944",
-      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape \u2014 de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
-      "reviewed_at": "2026-08-08",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "1ed587c63a0eebb0",
       "note": "The final-bundle evidence module keeps its two-line file hash helper local to the evidence-input boundary, while the unchanged manifest and sync helpers own their own byte hashes. This is a tiny standard-library idiom across independent producers; extracting it would widen the planner's helper ownership without unifying a verdict contract.",
       "reviewed_at": "2026-08-06",
@@ -633,7 +612,7 @@
     {
       "class": "intentional",
       "id": "222aaec8531c8f44",
-      "note": "claim_fidelity_lib _validate_string_list vs _validate_optional_string_list: deliberately-distinct required-vs-optional channel validators sharing only the duplicate-entry check and return tail; keeping them separate documents the RCF-or-RSF floor contract (one channel required non-empty, the other optional/None) \u2014 extraction would obscure the distinction \u2014 intentional",
+      "note": "claim_fidelity_lib _validate_string_list vs _validate_optional_string_list: deliberately-distinct required-vs-optional channel validators sharing only the duplicate-entry check and return tail; keeping them separate documents the RCF-or-RSF floor contract (one channel required non-empty, the other optional/None) — extraction would obscure the distinction — intentional",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -766,7 +745,7 @@
     {
       "class": "intentional",
       "id": "28a430c3ed94f75c",
-      "note": "the per-skill DERIVED artifact keys \u2014 `artifact_filename` / `artifact_class` / `artifact_path` / `record_artifact_pattern` \u2014 in `narrative_adapter_lib._narrative_derived` and `announcement_adapter_lib`. Four lines each, computed from two DIFFERENT module-level functions and one constant per skill (`_artifact_path`, `_record_artifact_pattern`, `ARTIFACT_FILENAME`), so a shared helper would take three callables as parameters to save four lines. narrative already computes them in ONE place instead of once per branch, which is the drift this family's shape used to hide. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "note": "the per-skill DERIVED artifact keys — `artifact_filename` / `artifact_class` / `artifact_path` / `record_artifact_pattern` — in `narrative_adapter_lib._narrative_derived` and `announcement_adapter_lib`. Four lines each, computed from two DIFFERENT module-level functions and one constant per skill (`_artifact_path`, `_record_artifact_pattern`, `ARTIFACT_FILENAME`), so a shared helper would take three callables as parameters to save four lines. narrative already computes them in ONE place instead of once per branch, which is the drift this family's shape used to hide. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     },
@@ -790,6 +769,13 @@
       "note": "Within issue_source_normalize_lib: the clause-splitting loop and the whitespace-normalizing key share short text-walking shape. They answer different questions (where a clause BOUNDARY falls versus what its DIGEST is over) and deliberately diverge on fenced content; merging them would fuse the boundary policy with the equivalence policy. Rotated from 58b291a6b5fa9084 when the fence/list rules moved.",
       "reviewed_at": "2026-08-07",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2b4ad775572eef22",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "A ONE-LINE ternary return, matched across unrelated domains: `return \"PASS\" if passed else \"FAIL\"` in mutation_baseline_abort_lib.verdict_token against host_log_probe_lib's `return \"ToolCall lines exist in runtime logs\" if has_tool_call else ...`. The shared content is the ternary-return syntax, not a rule. There is nothing to extract: a helper over two unrelated string choices would couple a mutation verdict token to a log-probe sentence."
     },
     {
       "class": "intentional",
@@ -843,7 +829,7 @@
     {
       "class": "intentional",
       "id": "2dd39753778c7cb1",
-      "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable \u2014 intentional",
+      "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable — intentional",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -975,13 +961,6 @@
     },
     {
       "class": "intentional",
-      "id": "322d067a80402fbc",
-      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
-      "reviewed_at": "2026-06-30",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "3271ee812f709043",
       "note": "SUPERSEDES 737db65b8360343d, which held the same idiom across two members; `check_real_host_proof.build_payload` is the third. The read-site version-refusal guard slice 5 installs in each adapter consumer. The shared text is the five-line call-and-raise plus the `load_adapter` unpack; the extractable half is ALREADY extracted (`_adapter_version_verdict.unspeakable_version_message`). After those lines the three bodies share nothing -- surface-version drift across five publish surfaces, real-host trigger evaluation, and requested-review command execution. Folding the residue behind a decorator or wrapper would move the refusal off the read site, which is the one property the census verdict is about: each of these functions has three ENTRYPOINTS (own CLI plus two or three importers; a round-1 bounded review corrected 'three importers', which is true of `current_release` and `check_real_host_proof` but not of the review gate, which has two),. A round-2 bounded review struck the harm clause this note used to end with (\"a refusal anywhere else leaves those importers on charness defaults\"): under an unhonored declaration the importers stop earlier, so the measured count is zero. What read-site placement buys is positional independence.",
       "reviewed_at": "2026-08-19",
@@ -1095,7 +1074,7 @@
     {
       "class": "intentional",
       "id": "36b2225b307ee288",
-      "note": "an IMPORT block (`re`/`runpy`/`sys`, `pathlib.Path`, `types.SimpleNamespace`, `typing.Any`) shared by two quality inventories that both bootstrap a sibling module via runpy. Not extractable by construction \u2014 imports cannot be factored out \u2014 and it surfaced as new only because this session's S26/S30/S32 edits shifted the spans around it.",
+      "note": "an IMPORT block (`re`/`runpy`/`sys`, `pathlib.Path`, `types.SimpleNamespace`, `typing.Any`) shared by two quality inventories that both bootstrap a sibling module via runpy. Not extractable by construction — imports cannot be factored out — and it surfaced as new only because this session's S26/S30/S32 edits shifted the spans around it.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -1158,7 +1137,7 @@
     {
       "class": "intentional",
       "id": "39f3067dafaf11d2",
-      "note": "two adjacent list-building functions in issue_verify_closeout_body: `_classification_requirements` (a per-classification table of required field ids and their aliases) and `_missing_ledger_fields` (the walk that evaluates that table). Same SHAPE \u2014 short function, builds a list, returns it \u2014 and entirely different content: one is data, the other is the verdict loop over it. Collapsing them would fuse the table with its interpreter, which is the opposite of the separation that makes the classification set readable. Surfaced as NEW by rotation: this slice ADDED the separate-counts rule to the sibling ledger, which changed `_missing_ledger_fields`'s length enough to hash against its neighbour. The slice already took the genuine consolidation available \u2014 both sibling-field shape rules (decision/proof, and population-vs-removals) now live in one owner, `issue_closeout_ledger_counts.missing_sibling_ledger_fields`, rather than inline at the call site \u2014 and the family persisted after it. Classified rather than chased: this run has already MEASURED that letting a rotated duplicate hash drive the design of a proof surface produces a worse verdict surface (see 2f95a48e67c2f1b5, where that chase routed two complete-state floors onto the wrong section walk and shipped a latent false green). ROTATED to 39f3067dafaf11d2 the same day, same two members, same reasoning: the round-2 repair threaded a `substantive=` predicate through the sibling call, changing the function's length again. The hash moves whenever either neighbour's line count does, which is itself the argument for classifying rather than chasing.",
+      "note": "two adjacent list-building functions in issue_verify_closeout_body: `_classification_requirements` (a per-classification table of required field ids and their aliases) and `_missing_ledger_fields` (the walk that evaluates that table). Same SHAPE — short function, builds a list, returns it — and entirely different content: one is data, the other is the verdict loop over it. Collapsing them would fuse the table with its interpreter, which is the opposite of the separation that makes the classification set readable. Surfaced as NEW by rotation: this slice ADDED the separate-counts rule to the sibling ledger, which changed `_missing_ledger_fields`'s length enough to hash against its neighbour. The slice already took the genuine consolidation available — both sibling-field shape rules (decision/proof, and population-vs-removals) now live in one owner, `issue_closeout_ledger_counts.missing_sibling_ledger_fields`, rather than inline at the call site — and the family persisted after it. Classified rather than chased: this run has already MEASURED that letting a rotated duplicate hash drive the design of a proof surface produces a worse verdict surface (see 2f95a48e67c2f1b5, where that chase routed two complete-state floors onto the wrong section walk and shipped a latent false green). ROTATED to 39f3067dafaf11d2 the same day, same two members, same reasoning: the round-2 repair threaded a `substantive=` predicate through the sibling call, changing the function's length again. The hash moves whenever either neighbour's line count does, which is itself the argument for classifying rather than chasing.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -1200,7 +1179,7 @@
     {
       "class": "intentional",
       "id": "3b537fee705455a7",
-      "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom \u2014 intentional",
+      "note": "common stdlib idiom (git show subprocess+try/except, json.dump, 1-line argparse boilerplate) repeated across unrelated modules; a shared helper would couple independent modules for a stdlib-call idiom — intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -1353,13 +1332,6 @@
     },
     {
       "class": "intentional",
-      "id": "40a4e156b1efd17f",
-      "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "41324c32e734fea6",
       "note": "the SHAPE two independent bootstrappers share, not logic either could borrow: scripts/quality_bootstrap_lib.py's `bootstrap_quality_adapter` (in this diff) and scripts/markdown_preview_bootstrap_lib.py's `scaffold_markdown_preview` (untouched) both build state, decide what a real run WOULD do, branch on `dry_run`, and assemble a report dict. Every field, status vocabulary, and warning in the two is different -- what matches lexically is the sequence, and a shared scaffolder helper would need more parameters than the shared span has lines while coupling two independently-owned bootstrap surfaces through one control-flow helper. Same reasoning as the accepted guard-clause families in this overlay. Surfaced as NEW because slice C added three lines to the report-assembly region (the sub-key refill evidence for issue #489), shifting the span into a match; no duplication was written.",
       "reviewed_at": "2026-08-06",
@@ -1431,14 +1403,14 @@
     {
       "class": "intentional",
       "id": "447ce891d33e3595",
-      "note": "the `main()` of the two measurement scripts written on 2026-08-01 \u2014 measure_adapter_yaml_uninterpreted and measure_inventory_consumption_floor: parse --repo-root/--json, call scan(), print JSON or a human summary, map the findings to an exit code. The SHAPE is deliberately the same because this repo's rule is that a threshold is defended by a re-runnable number, and an operator should be able to run either script the same way. What differs is every line of the body: different corpora, different report keys, different exit conditions (one refuses uninterpreted lines and unreadable files, the other refuses lowered citations, refused exemptions, and below-floor label values). Extracting a shared CLI would mean a framework that takes a scan function and a printer, which is more machinery than two ~40-line mains.",
+      "note": "the `main()` of the two measurement scripts written on 2026-08-01 — measure_adapter_yaml_uninterpreted and measure_inventory_consumption_floor: parse --repo-root/--json, call scan(), print JSON or a human summary, map the findings to an exit code. The SHAPE is deliberately the same because this repo's rule is that a threshold is defended by a re-runnable number, and an operator should be able to run either script the same way. What differs is every line of the body: different corpora, different report keys, different exit conditions (one refuses uninterpreted lines and unreadable files, the other refuses lowered citations, refused exemptions, and below-floor label values). Extracting a shared CLI would mean a framework that takes a scan function and a printer, which is more machinery than two ~40-line mains.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
     {
       "class": "intentional",
       "id": "449b33b02d20b1fc",
-      "note": "the loop skeletons of adapter_lib's two parsers, _parse_list_items and _parse_block: read a line's shape, skip the ignorable ones, break on a dedent, dispatch on what is left. Everything genuinely shared was extracted while closing sweep row S24 \u2014 _line_shape, _is_ignorable, and _mapping_value (the three-way `key:` value dispatch) \u2014 and this is what did not shrink. What remains differs in the only way that matters: one accumulates a list and BREAKS on a non-item at its own indent, the other accumulates a mapping and RECORDS that same line as uninterpreted. Collapsing them would mean one loop branching on which node type it is parsing, which is the shape this file already avoids. Verified behavior-identical to HEAD's parser across the 74 files `git ls-files '*.yaml' '*.yml'` lists, by loading both module versions side by side from a detached HEAD worktree and diffing `load_yaml` output \u2014 a wider scope than the 44-file probe, and a different check from the in-module identity assertion, which only proves the sink is observation-only. Fingerprint rotated 9c85183d79665013 -> 449b33b02d20b1fc when the round-2 repairs edited both loops; same two members, same reasoning.",
+      "note": "the loop skeletons of adapter_lib's two parsers, _parse_list_items and _parse_block: read a line's shape, skip the ignorable ones, break on a dedent, dispatch on what is left. Everything genuinely shared was extracted while closing sweep row S24 — _line_shape, _is_ignorable, and _mapping_value (the three-way `key:` value dispatch) — and this is what did not shrink. What remains differs in the only way that matters: one accumulates a list and BREAKS on a non-item at its own indent, the other accumulates a mapping and RECORDS that same line as uninterpreted. Collapsing them would mean one loop branching on which node type it is parsing, which is the shape this file already avoids. Verified behavior-identical to HEAD's parser across the 74 files `git ls-files '*.yaml' '*.yml'` lists, by loading both module versions side by side from a detached HEAD worktree and diffing `load_yaml` output — a wider scope than the 44-file probe, and a different check from the in-module identity assertion, which only proves the sink is observation-only. Fingerprint rotated 9c85183d79665013 -> 449b33b02d20b1fc when the round-2 repairs edited both loops; same two members, same reasoning.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -1508,7 +1480,7 @@
     {
       "class": "intentional",
       "id": "479ac3885e3e2227",
-      "note": "stdlib import header (argparse/json/re/runpy/pathlib/SimpleNamespace/typing) shared by plan_handoff_run and audit_public_release_narrative; a shared import shim would couple independent portable scripts for a stdlib boilerplate \u2014 intentional",
+      "note": "stdlib import header (argparse/json/re/runpy/pathlib/SimpleNamespace/typing) shared by plan_handoff_run and audit_public_release_narrative; a shared import shim would couple independent portable scripts for a stdlib boilerplate — intentional",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -1605,6 +1577,13 @@
     },
     {
       "class": "intentional",
+      "id": "4cb9a6c5f8877ec1",
+      "note": "Repo-boilerplate argparse/main scaffold shared by EIGHT existing validators (check_adapter_consumer_classification, check_plugin_dir_references, parity_harness, check_probe_record, check_plugin_doc_links, check_export_self_sufficiency, removed_name_consumers, check_plugin_asset_command_carriers). Stated out loud: NO member of this family is in the current diff -- all eight are reported `untouched`. The family surfaced while adding check_artifact_referents.py, so the membership rotation is INFERRED from the timing, not proven; the ratchet reports rotation and novelty through the same channel. Collapsing eight independent validators' entrypoints onto a shared harness is a refactor of eight untouched proof surfaces, which is strictly larger and riskier than the gate that surfaced it, and would be made under a slice that reviewed none of them.",
+      "reviewed_at": "2026-08-22",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "4cd27fd6b0b3dfac",
       "note": "a same-file pair inside install_machine_local.py: `detect_hosts()`'s three-host `shutil.which` map and the identically keyed `host_next_steps` dict in main()'s payload. Same three host ids, unrelated values -- a which-binary probe versus operator instruction prose. The migration only dedented the payload out of `print(json.dumps(...))` into `emit_yaml(...)`, which rotated the fingerprint; neither dict's content changed.",
       "reviewed_at": "2026-08-14",
@@ -1668,6 +1647,13 @@
     },
     {
       "class": "intentional",
+      "id": "4f6c07d3c8e76002",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "Two-line guard-clause idiom `if <name> != <literal>: return`, shared by the claims-review scope floor (a `pass` must declare what it covered; an `unproven` is exempt because it is already blocking) and validate_cautilus_proof's improve-goal guard. Unrelated subjects, unrelated literals; the shape is Python's ordinary early return. Collapsing them would invent a shared abstraction over two floors that have nothing in common but arity."
+    },
+    {
+      "class": "intentional",
       "id": "4fb906d492e93c84",
       "note": "the `print(summary); return 0` / `if __name__ == \"__main__\": raise SystemExit(main())` CLI tail, shared by scripts/check_skill_bootstrap_vars.py and scripts/check_markdown_inline_code.py. Every other member is untouched by this slice; the empty-scope refusal shifted the line numbers into an existing shape. The tail is the repo's uniform gate-CLI contract, not extractable debt.",
       "reviewed_at": "2026-07-30",
@@ -1690,7 +1676,7 @@
     {
       "class": "intentional",
       "id": "50f11ad09152927c",
-      "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape \u2014 a shared echo helper would couple unrelated skill adapter libs for negligible value",
+      "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape — a shared echo helper would couple unrelated skill adapter libs for negligible value",
       "reviewed_at": "2026-06-28",
       "surface": "code"
     },
@@ -1711,7 +1697,7 @@
     {
       "class": "intentional",
       "id": "5159d62f261a8894",
-      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -1878,13 +1864,6 @@
     },
     {
       "class": "intentional",
-      "id": "57a52ad013e764b8",
-      "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained \u2014 intentional",
-      "reviewed_at": "2026-07-02",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "57e10b6bfb42a94d",
       "note": "an IMPORT block (`os`/`re`/`shutil`/`subprocess`, `pathlib.Path`, `typing.Any`, under `from __future__ import annotations`) shared by scripts/markdownlint_probe.py and skills/public/quality/scripts/nose_tool_lib.py (untouched, unrelated subsystem). Same class already accepted as 36b2225b307ee288: not extractable by construction -- imports cannot be factored out. Every import in the new file is used, so the family cannot be dissolved by editing either member. Two modules that both resolve and shell out to an external binary converge on this set. Surfaced as new only because the markdownlint engine adapter was split out of check_doc_authoring_preflight.py at its 480-line cap, creating a second file carrying the block the original already had.",
       "reviewed_at": "2026-08-17",
@@ -1921,7 +1900,7 @@
     {
       "class": "intentional",
       "id": "58d074440dbf9aa2",
-      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -1966,6 +1945,13 @@
       "note": "`if __name__ == \"__main__\"` entrypoint arms of validate_ideation_artifact.py and validate_retro_artifact.py, now identical except the `artifact_type=` argument because both delegate to the shared report_validation_failure helper; Python cannot extract a module's own __main__ block, so this is the irreducible floor of sharing that helper",
       "reviewed_at": "2026-07-25",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5aac6f98962c5eb9",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "A four-line `sys.stderr.write(f\"WARNING (<gate>): ...\")` stand-down notice, shared with three untouched changed-line/worktree gates. The shape is the repo's house style for 'this rung could not run, and that is not a pass' -- the WARNING token is load-bearing because run-quality.sh prints a passing gate's log only on it. Collapsing four gates' distinct stand-down REASONS behind one helper would make the message generic at the exact moment a reader needs the specific cause, which is the failure each of these notices exists to prevent."
     },
     {
       "class": "intentional",
@@ -2047,7 +2033,7 @@
     {
       "class": "intentional",
       "id": "5e83d247011389f1",
-      "note": "idiom-sized two-line early-return guard (`if <mapping>.get(<key>) != <literal>: return`) shared by scripts/validate_integrations.py's cautilus-trigger applicability check and the release resume's unproven-claims warning. Different mappings, different keys, different subsystems, and no shared behaviour to extract \u2014 only a Python spelling. Same class already accepted as 003780cc89f2ccfd and 349f5d577fe2588b. Surfaced as new because the release helper gained the second member when a CI-blocked guard was extracted into its own testable function; the validate_integrations member is untouched.",
+      "note": "idiom-sized two-line early-return guard (`if <mapping>.get(<key>) != <literal>: return`) shared by scripts/validate_integrations.py's cautilus-trigger applicability check and the release resume's unproven-claims warning. Different mappings, different keys, different subsystems, and no shared behaviour to extract — only a Python spelling. Same class already accepted as 003780cc89f2ccfd and 349f5d577fe2588b. Surfaced as new because the release helper gained the second member when a CI-blocked guard was extracted into its own testable function; the validate_integrations member is untouched.",
       "reviewed_at": "2026-08-13",
       "surface": "code"
     },
@@ -2103,7 +2089,7 @@
     {
       "class": "intentional",
       "id": "604e4e6088db9c52",
-      "note": "session-start hook `_debug` env-gated stderr helper shared by two STANDALONE user-level SessionStart entrypoints (scripts/session_start_find_skills.py, scripts/usage_episode_session_start.py), differing only by the module prefix string; family rotated when the 0.61.0 routing front-load shifted surrounding lines (the helper itself pre-existed in v0.60.0). session_start_find_skills.py is deliberately stdlib-only so the every-session hook cannot break on a sibling import; extracting the 3-line helper would add import/bootstrap coupling to the most safety-critical hook for no real value \u2014 intentional",
+      "note": "session-start hook `_debug` env-gated stderr helper shared by two STANDALONE user-level SessionStart entrypoints (scripts/session_start_find_skills.py, scripts/usage_episode_session_start.py), differing only by the module prefix string; family rotated when the 0.61.0 routing front-load shifted surrounding lines (the helper itself pre-existed in v0.60.0). session_start_find_skills.py is deliberately stdlib-only so the every-session hook cannot break on a sibling import; extracting the 3-line helper would add import/bootstrap coupling to the most safety-critical hook for no real value — intentional",
       "reviewed_at": "2026-07-04",
       "surface": "code"
     },
@@ -2187,7 +2173,7 @@
     {
       "class": "intentional",
       "id": "62e19bb7ee0fbe0a",
-      "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) \u2014 intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
+      "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
       "reviewed_at": "2026-07-05",
       "surface": "code"
     },
@@ -2208,7 +2194,7 @@
     {
       "class": "intentional",
       "id": "637bb6af7e7552e5",
-      "note": "The `spec_from_file_location` sibling-loader preamble, shared by thirteen members across `achieve` and `handoff`. Twelve are untouched and pre-date this slice: the family is REVEALED by adding a fourteenth, not introduced by it. Same rationale this file already records for e2be6ebfbea2ac95 and 1190bcd05d674cea: these modules are executed directly as often as they are imported, and the export flattens `skills/public/<id>/` to `skills/<id>/`, so a dotted import resolves in one layout and not the other. `goal_artifact_closeout_loaders.py` already collected the loaders it could, and its own docstring records that each stays VERBATIM so behavior is preserved exactly \u2014 a generic loader would have to re-register module names and would break the one-directional leaf dependency these floors rely on to avoid circular imports.",
+      "note": "The `spec_from_file_location` sibling-loader preamble, shared by thirteen members across `achieve` and `handoff`. Twelve are untouched and pre-date this slice: the family is REVEALED by adding a fourteenth, not introduced by it. Same rationale this file already records for e2be6ebfbea2ac95 and 1190bcd05d674cea: these modules are executed directly as often as they are imported, and the export flattens `skills/public/<id>/` to `skills/<id>/`, so a dotted import resolves in one layout and not the other. `goal_artifact_closeout_loaders.py` already collected the loaders it could, and its own docstring records that each stays VERBATIM so behavior is preserved exactly — a generic loader would have to re-register module names and would break the one-directional leaf dependency these floors rely on to avoid circular imports.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -2225,6 +2211,13 @@
       "note": "both members untouched this session (publish_release_resume.py, markdown_preview_render.py); pure scan rotation, not new duplication introduced here",
       "reviewed_at": "2026-07-27",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "64a4f810660ed425",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The sibling-import bootstrap idiom -- resolve __file__'s directory, add it to sys.path if absent, then import the sibling -- shared with goal_artifact_floor_grammar and goal_artifact_evidence_distinctness, both untouched by this diff. It exists because these modules are loaded BY SPEC from several entrypoints, so a bare sibling import resolves only when the caller happens to have the directory on the path. Collapsing it would need a shared bootstrap module that each of these must import -- by the same idiom, in the same three files. The duplication IS the bootstrap."
     },
     {
       "class": "intentional",
@@ -2425,7 +2418,7 @@
     {
       "class": "intentional",
       "id": "6ff3e380d6a8fcaf",
-      "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract \u2014 every stage must present it identically so the stages compose \u2014 and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
+      "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract — every stage must present it identically so the stages compose — and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
       "reviewed_at": "2026-07-27",
       "surface": "code"
     },
@@ -2865,13 +2858,6 @@
     },
     {
       "class": "intentional",
-      "id": "80c5b9827dc39f57",
-      "note": "the root AGENTS.md owns the live Subagent Delegation contract, while setup's copy-ready Markdown template must retain the same section heading so a generated host document is self-contained; a shared heading label is required interface shape, not an extractable prose block",
-      "reviewed_at": "2026-07-14",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "80e081c349d539cd",
       "note": "The final-bundle planner's repository-relative path guard is local boundary plumbing with its own BundleError contract. Similar two-line guards in premise and reviewed-input identity code deliberately map unsafe paths to different owners and refusal semantics; extracting them would couple independent proof surfaces.",
       "reviewed_at": "2026-08-06",
@@ -2988,13 +2974,6 @@
       "note": "The glob-to-regex translator in skills/public/quality/references/coverage_floor_inventory.py and scripts/what_reads_this.py. Same algorithm and the same recorded reason for rejecting fnmatch (its `*` crosses `/`), independently arrived at -- which is the ratchet doing its job. Not extractable: the first is a REFERENCE SAMPLE a consuming repo copies wholesale, and a sample that only runs when a charness-internal helper is importable is not a sample. The reference's docstring now names what_reads_this.py as the sibling so a reader finds the other copy. (Id rotated when the docstring cross-reference was added.)",
       "reviewed_at": "2026-08-16",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "87176166d16a600c",
-      "note": "the `Optional size budget:` block repeated across the three per-skill references/adapter-contract.md files (debug, quality, handoff). Per-skill adapter contracts are SELF-CONTAINED by construction -- a consuming repo reads exactly one of them and must find the field's semantics, minimum, unbounded-above rule and refusal behaviour there, not behind a cross-skill link. The genuinely divergent half is already written per file: handoff's block documents CONTENT-line counting and states explicitly that its `max_content_lines` is not interchangeable with debug/quality's `max_artifact_lines`, and only the debug/quality pair share the raw-file-line wording. Same class as the sequence-discipline.md per-skill reference copies already accepted in this file.",
-      "reviewed_at": "2026-08-18",
-      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -3139,7 +3118,7 @@
     {
       "class": "intentional",
       "id": "8dc7bd9985a9904b",
-      "note": "Each conditional goal-artifact floor binds its OWN `RULE_DATE` to the shared `goal_artifact_floor_grammar.is_floor_in_scope` helper through a two-line `applies()`. The extraction this family suggests has already been done: the date comparison and the fail-closed-on-missing-`Created:` semantics live in the grammar, and what repeats is only the per-floor binding of a distinct landing date. Collapsing those bindings would mean one shared rule date across floors that landed on different days, which would retroactively apply a new floor to goals shaped before it existed \u2014 the exact corpus-reddening the grandfather exists to prevent. blocked-matrix, operator-queue, and backlog-recount are three independent floors, not three copies of one.",
+      "note": "Each conditional goal-artifact floor binds its OWN `RULE_DATE` to the shared `goal_artifact_floor_grammar.is_floor_in_scope` helper through a two-line `applies()`. The extraction this family suggests has already been done: the date comparison and the fail-closed-on-missing-`Created:` semantics live in the grammar, and what repeats is only the per-floor binding of a distinct landing date. Collapsing those bindings would mean one shared rule date across floors that landed on different days, which would retroactively apply a new floor to goals shaped before it existed — the exact corpus-reddening the grandfather exists to prevent. blocked-matrix, operator-queue, and backlog-recount are three independent floors, not three copies of one.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -3191,6 +3170,13 @@
       "note": "render tail + emit_payload boilerplate across worktree_cleanup_lib.py and worktree_create_lib.py: deliberately parallel per-command renderer tails (NEXT affordance line + emit); rotation-surfaced, members untouched (#441 rotation class)",
       "reviewed_at": "2026-07-17",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "905eed31ef53f0e7",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The two mutation engines' metrics functions -- check_mutation_score.mutation_metrics over cosmic-ray dump records, check_js_mutation_score.summarize_report over the StrykerJS JSON. They are parallel because the DOMAIN is parallel (count outcomes, derive killed/survived/reachable, score), while the inputs share no schema: one walks [work_item, result] pairs with worker_outcome/test_outcome, the other walks files[].mutants[] with a status string. The one rule they genuinely share -- zero denominator means UNMEASURED -- was extracted to mutation_baseline_abort_lib.verdict_token and is now called by both. What remains is shape, and collapsing it would force one engine's outcome vocabulary onto the other."
     },
     {
       "class": "intentional",
@@ -3425,6 +3411,13 @@
     },
     {
       "class": "intentional",
+      "id": "9f37cf830cba85e1",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The two import lists from scripts.mutation_baseline_abort_lib, which became identical BECAUSE the shared verdict rule was given one owner and both engines now import it. De-duplicating this family would mean un-sharing the rule -- the detector is reporting the fix as the defect. Import statements are the declaration of a dependency, not a copy of logic."
+    },
+    {
+      "class": "intentional",
       "id": "9fba34eb678c4ff9",
       "note": "critique and retro expose parallel packet-scope CLI arguments but remain independently executable portable skill commands with different reviewed-input, timeout, and output contracts; a partial shared parser experiment increased live clone families from 12 to 14 and was reverted",
       "reviewed_at": "2026-07-19",
@@ -3482,7 +3475,7 @@
     {
       "class": "intentional",
       "id": "a2e32c068aac058a",
-      "note": "MEMBERS: `scaffold_quality_artifact.py`, `resolve_quality_artifact.py`, `render_runtime_summary.py`, `inventory_ci_recoverable_gates.py`, `measure_startup_probes.py`, `check_runtime_budget.py` -- six, listed so the count is checkable without re-running the gate. The read-site version-refusal guard across those six quality-skill readers, including `scaffold_quality_artifact` (UNTOUCHED by this slice \u2014 it gained its copy in rows 6-10, which is the evidence this is the idiom's own shape rather than duplication these rows introduced). Same accepted class as 3271ee812f709043, d9fa0dc749dbb5ca and 4f4051badcdc7e4c: the extractable half is already extracted into `scripts.adapter_version_verdict`, and the five-line call-and-raise has to sit at the read site because that is the property the census verdict is about. Two placements in this family are deliberately DIFFERENT despite the identical lines: `check_runtime_budget` wraps its copy in `_refuse_unhonored_adapter` because it has TWO points where the loader is handed to a lib, and `render_runtime_summary` / `inventory_ci_recoverable_gates` guard where the loader is HANDED OVER rather than at a payload read of their own, since `runtime_budget_lib` takes it injected and cannot refuse for an adapter it cannot name.",
+      "note": "MEMBERS: `scaffold_quality_artifact.py`, `resolve_quality_artifact.py`, `render_runtime_summary.py`, `inventory_ci_recoverable_gates.py`, `measure_startup_probes.py`, `check_runtime_budget.py` -- six, listed so the count is checkable without re-running the gate. The read-site version-refusal guard across those six quality-skill readers, including `scaffold_quality_artifact` (UNTOUCHED by this slice — it gained its copy in rows 6-10, which is the evidence this is the idiom's own shape rather than duplication these rows introduced). Same accepted class as 3271ee812f709043, d9fa0dc749dbb5ca and 4f4051badcdc7e4c: the extractable half is already extracted into `scripts.adapter_version_verdict`, and the five-line call-and-raise has to sit at the read site because that is the property the census verdict is about. Two placements in this family are deliberately DIFFERENT despite the identical lines: `check_runtime_budget` wraps its copy in `_refuse_unhonored_adapter` because it has TWO points where the loader is handed to a lib, and `render_runtime_summary` / `inventory_ci_recoverable_gates` guard where the loader is HANDED OVER rather than at a payload read of their own, since `runtime_budget_lib` takes it injected and cannot refuse for an adapter it cannot name.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     },
@@ -3642,13 +3635,6 @@
     },
     {
       "class": "intentional",
-      "id": "aca9e00fc6c5c3ae",
-      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
-      "reviewed_at": "2026-06-30",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "ad0959267a0f68fc",
       "note": "receipt metadata validation and inventory budget-label loading are unrelated readers that happen to normalize mappings and report errors. They have different input sources and verdict semantics; a shared loader would hide the boundary rather than improve it.",
       "reviewed_at": "2026-08-20",
@@ -3741,7 +3727,7 @@
     {
       "class": "intentional",
       "id": "b01eea3857c9c9a6",
-      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -3769,7 +3755,7 @@
     {
       "class": "intentional",
       "id": "b14e0893bd81e805",
-      "note": "`announcement_adapter_lib.load_announcement_adapter`'s found=False arm against the new `adapter_lib.resolve_adapter_payload`. Announcement is the fifth member of that family and is deliberately NOT routed through the builder: its payload needs `field_state` keyed on `declarations_unhonored(errors)` and on the RAW mapping, so it would require widening `derive` from a function of `data` alone to one taking `raw_data` and `errors` \u2014 which is precisely the parameter growth that docstring refuses, and which would re-admit the found/absent drift the hook exists to prevent. Announcement was repaired ahead of `#673` for a publish-gate bypass and carries its own round-2 review; folding it in now would re-open a reviewed surface for a four-line saving. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "note": "`announcement_adapter_lib.load_announcement_adapter`'s found=False arm against the new `adapter_lib.resolve_adapter_payload`. Announcement is the fifth member of that family and is deliberately NOT routed through the builder: its payload needs `field_state` keyed on `declarations_unhonored(errors)` and on the RAW mapping, so it would require widening `derive` from a function of `data` alone to one taking `raw_data` and `errors` — which is precisely the parameter growth that docstring refuses, and which would re-admit the found/absent drift the hook exists to prevent. Announcement was repaired ahead of `#673` for a publish-gate bypass and carries its own round-2 review; folding it in now would re-open a reviewed surface for a four-line saving. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     },
@@ -3874,7 +3860,7 @@
     {
       "class": "intentional",
       "id": "b4c5b67aa226c2fc",
-      "note": "scripts/host_hook_install_lib.py: the two halves of the repo's standard try/except ImportError sibling-module bootstrap \u2014 the fallback arm must repeat the same import list after inserting the script directory on sys.path, so the repetition IS the idiom. It crossed the scan threshold only because this slice's matcher/entry-identity split added a second imported module to both halves; collapsing it would mean abandoning the bootstrap pattern in one file while every sibling keeps it. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
+      "note": "scripts/host_hook_install_lib.py: the two halves of the repo's standard try/except ImportError sibling-module bootstrap — the fallback arm must repeat the same import list after inserting the script directory on sys.path, so the repetition IS the idiom. It crossed the scan threshold only because this slice's matcher/entry-identity split added a second imported module to both halves; collapsing it would mean abandoning the bootstrap pattern in one file while every sibling keeps it. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
       "reviewed_at": "2026-07-30",
       "surface": "code"
     },
@@ -3901,13 +3887,6 @@
     },
     {
       "class": "intentional",
-      "id": "b56c1479ef7c3d0e",
-      "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
-    },
-    {
-      "class": "intentional",
       "id": "b5926d67f5d48e30",
       "note": "a two-line `if not <optional>: return None` / early-return idiom shared across six unrelated owners (filter_cosmic_ray_mutants, dup_ratchet_git, nose_baseline_lib, plan_quality_run, publish_release_adapter_preflight, and the new plan_release_prepared_stop). Five of the six members are untouched by this slice. Idiom-sized guard-clause plumbing across independent verdict contracts, the same class already accepted as 349f5d577fe2588b and 003780cc89f2ccfd; extraction would couple six owners through a helper that removes no behavior.",
       "reviewed_at": "2026-08-13",
@@ -3916,14 +3895,14 @@
     {
       "class": "intentional",
       "id": "b5a9e7d2038bd0c3",
-      "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract \u2014 every stage must present it identically so the stages compose \u2014 and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
+      "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract — every stage must present it identically so the stages compose — and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
       "reviewed_at": "2026-07-27",
       "surface": "code"
     },
     {
       "class": "intentional",
       "id": "b6162ea7c2be7c0c",
-      "note": "The `issue` skill's sibling-import preamble \u2014 `runpy.run_path(.../issue_local_import.py)[\"sibling_loader\"](__file__)` plus the module bindings it produces. It is irreducible by construction: the preamble EXISTS to bootstrap loading a sibling module, so it cannot itself be loaded from a sibling without the chicken-and-egg it solves. `issue_close.py`, `issue_tool.py`, and `issue_read.py` already carried it; this slice added it to `issue_runtime.py` so that module could stop re-deriving the backend binary/template rule and call `issue_backend.resolve_op` instead \u2014 trading a three-line bootstrap idiom for the removal of a duplicated verdict rule that had no placeholder validation. Same rationale as the already-accepted `e2be6ebfbea2ac95` entry for per-entrypoint runtime bootstraps. Not claimed as measured against a prior scan of the tree.",
+      "note": "The `issue` skill's sibling-import preamble — `runpy.run_path(.../issue_local_import.py)[\"sibling_loader\"](__file__)` plus the module bindings it produces. It is irreducible by construction: the preamble EXISTS to bootstrap loading a sibling module, so it cannot itself be loaded from a sibling without the chicken-and-egg it solves. `issue_close.py`, `issue_tool.py`, and `issue_read.py` already carried it; this slice added it to `issue_runtime.py` so that module could stop re-deriving the backend binary/template rule and call `issue_backend.resolve_op` instead — trading a three-line bootstrap idiom for the removal of a duplicated verdict rule that had no placeholder validation. Same rationale as the already-accepted `e2be6ebfbea2ac95` entry for per-entrypoint runtime bootstraps. Not claimed as measured against a prior scan of the tree.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -3951,7 +3930,7 @@
     {
       "class": "intentional",
       "id": "b84a05853c8b2d2a",
-      "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants \u2014 a util module would couple them for little value; intentional",
+      "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants — a util module would couple them for little value; intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -4112,7 +4091,7 @@
     {
       "class": "intentional",
       "id": "c30381f2b0da17b7",
-      "note": "scripts/host_hook_entry_identity.py: the two thin public wrappers entries_match_command / entry_carries_foreign_command over the single _entry_holds predicate. Collapsing them into one call site would push the ours=True/ours=False polarity into every caller, which is exactly the confusion the named pair exists to prevent \u2014 the whole point of splitting them is that 'our hook is in this entry' and 'someone else's command is in this entry' are different questions with different consequences for whether the matcher may be rewritten.",
+      "note": "scripts/host_hook_entry_identity.py: the two thin public wrappers entries_match_command / entry_carries_foreign_command over the single _entry_holds predicate. Collapsing them into one call site would push the ours=True/ours=False polarity into every caller, which is exactly the confusion the named pair exists to prevent — the whole point of splitting them is that 'our hook is in this entry' and 'someone else's command is in this entry' are different questions with different consequences for whether the matcher may be rewritten.",
       "reviewed_at": "2026-07-30",
       "surface": "code"
     },
@@ -4136,13 +4115,6 @@
       "note": "release and retro commands retain the canonical local runtime-bootstrap seam so each public skill stays directly executable and portable; cross-skill extraction would introduce the dependency this bootstrap exists to resolve",
       "reviewed_at": "2026-07-19",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c4b45fc90f69c007",
-      "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
-      "reviewed_at": "2026-06-27",
-      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -4252,7 +4224,7 @@
     {
       "class": "intentional",
       "id": "c9a1067198c8bb00",
-      "note": "the repo's standard sibling-module import bootstrap \u2014 `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports \u2014 shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
+      "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -4339,6 +4311,13 @@
       "note": "The lesson ledger and contract register each own committed-state loading plus exact current-schema refusal. The decoder shape is boundary plumbing; sharing it would couple independent evidence owners and blur their domain-specific errors without removing a reusable domain rule.",
       "reviewed_at": "2026-08-14",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cdca32c9be78baa3",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The repo-standard standalone-script bootstrap preamble (`REPO_ROOT = Path(__file__).resolve().parent.parent`, sys.path insert, then a `# noqa: E402` import), shared here between check_js_mutation_score.py and the untouched changed_line_gate_cli.py. This preamble is what makes these commands directly executable in both the source and collapsed-plugin layouts; extracting it is impossible by construction, since its whole job is to run BEFORE the repo package is importable."
     },
     {
       "class": "intentional",
@@ -4448,7 +4427,7 @@
     {
       "class": "intentional",
       "id": "d2a9d918b9d972a1",
-      "note": "optional-string-list validation shape shared by claim_fidelity_lib._validate_optional_string_list (raises ValidationError) and check_command_docs.optional_string_list (accumulates to an errors list); different error models across unrelated modules make a shared helper a coupling cost for no gain \u2014 intentional",
+      "note": "optional-string-list validation shape shared by claim_fidelity_lib._validate_optional_string_list (raises ValidationError) and check_command_docs.optional_string_list (accumulates to an errors list); different error models across unrelated modules make a shared helper a coupling cost for no gain — intentional",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -4549,13 +4528,6 @@
       "note": "seven-line hook reconciliation branch is mirrored across installer and standalone runtime to preserve idempotent lifecycle behavior in both execution boundaries",
       "reviewed_at": "2026-07-13",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d7d30b23074c4bc9",
-      "note": "shared 2-line phase-file header across the lifecycle-before/during/after.md split (2026-07-04 north-star P2 split of achieve lifecycle.md); each phase file states its own scope+owner line by design so a phase-scoped read is self-describing",
-      "reviewed_at": "2026-07-04",
-      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -4728,7 +4700,7 @@
     {
       "class": "intentional",
       "id": "de4ecc062765a5eb",
-      "note": "ROTATED from 5f672b193b2f3c05 (itself rotated from 5505a8794c55f12d) \u2014 same two members, same reasoning, third re-fingerprint. Members: scripts/inventory_skill_script_references.py and skills/public/handoff/scripts/prepare_chunk_packet.py, sharing `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option. Re-fingerprinted this time by adding `--strict` when the operator promoted the check from advisory to gate. Not extractable: a portable skill package must not import repo-level scripts/, and check_documented_command_flags/argparse_surface_lib read the option surface back off each script's own parser, so a shared builder would blind the documented-flag gate. The repeated rotation is itself evidence the family is boilerplate rather than debt \u2014 its membership never grows, only its hash.",
+      "note": "ROTATED from 5f672b193b2f3c05 (itself rotated from 5505a8794c55f12d) — same two members, same reasoning, third re-fingerprint. Members: scripts/inventory_skill_script_references.py and skills/public/handoff/scripts/prepare_chunk_packet.py, sharing `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option. Re-fingerprinted this time by adding `--strict` when the operator promoted the check from advisory to gate. Not extractable: a portable skill package must not import repo-level scripts/, and check_documented_command_flags/argparse_surface_lib read the option surface back off each script's own parser, so a shared builder would blind the documented-flag gate. The repeated rotation is itself evidence the family is boilerplate rather than debt — its membership never grows, only its hash.",
       "reviewed_at": "2026-08-02",
       "surface": "code"
     },
@@ -4896,7 +4868,7 @@
     {
       "class": "intentional",
       "id": "e7cd6cac93eb10b9",
-      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability \u2014 folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
+      "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
       "surface": "code"
     },
@@ -4924,7 +4896,7 @@
     {
       "class": "intentional",
       "id": "e884cd57e7dba39d",
-      "note": "`announcement_adapter_lib`'s own two payload arms, BOTH UNTOUCHED by this slice. That module already answers this internally: a round-2 review found its parse-failure arm hand-built with nine keys where the others had fifteen, and the repair was the `_payload` builder its docstring describes. The residual match is the absent arm against that builder \u2014 two arms of one function that cannot be merged, because one runs before any file was read. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
+      "note": "`announcement_adapter_lib`'s own two payload arms, BOTH UNTOUCHED by this slice. That module already answers this internally: a round-2 review found its parse-failure arm hand-built with nine keys where the others had fifteen, and the repair was the `_payload` builder its docstring describes. The residual match is the absent arm against that builder — two arms of one function that cannot be merged, because one runs before any file was read. Surfaced by `#673`'s repair, which routed five bare-loader adapter libraries through `adapter_lib.read_declared_adapter` and converged their bodies. The response was to EXTRACT rather than to classify: `resolve_declared_adapter` and `resolve_adapter_payload` now own the read-validate-report step and the seven-key payload for quality, narrative, critique and achieve, which removed the four largest families this change produced. What is listed here is the residue, and each entry says why extracting it further would cost more than it saves. `#550` (\"adapter resolver bodies are near-identical\") remains the place that owns the rest; this slice narrowed it and did not close it.",
       "reviewed_at": "2026-08-19",
       "surface": "code"
     },
@@ -4934,13 +4906,6 @@
       "note": "the eval fixture prologue shared by two unrelated scenarios: eval_setup's delegated-review-scope inspect and run_evals' handoff relative-link check. Prefix, fixture contents, invoked script, and every assertion differ; only the tmp-repo scaffold rhymes.",
       "reviewed_at": "2026-08-14",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e89e772efc0ba634",
-      "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
-      "reviewed_at": "2026-06-24",
-      "surface": "doc"
     },
     {
       "class": "intentional",
@@ -5043,7 +5008,7 @@
     {
       "class": "intentional",
       "id": "ee2f2b3e036c78a7",
-      "note": "runtime_bootstrap import/bootstrap header shared by top-level scripts (build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics); portable modules keep local import bootstrap for direct execution \u2014 intentional, not extractable",
+      "note": "runtime_bootstrap import/bootstrap header shared by top-level scripts (build_debug_seam_risk_index, check_skill_cut_safety, post_edit_skill_anchor_guard, validate_cautilus_diagnostics); portable modules keep local import bootstrap for direct execution — intentional, not extractable",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -5106,7 +5071,7 @@
     {
       "class": "intentional",
       "id": "f1b3765205bd97ef",
-      "note": "the tail of a validator `main()` \u2014 print a count to stderr and return 1, else print a 'Validated N \u2026' line and return 0, then `if __name__ == '__main__': raise SystemExit(main())`. Shared by check_skill_bootstrap_vars (untouched) and check_markdown_inline_code, whose summary sentence changed on 2026-08-01 (it said 'wrapped inline code span(s)' for a finding class that is no longer only wraps) and rotated the fingerprint. This is the repo's standard CLI exit convention; the only thing that differs between the two is the sentence, and extracting it would mean a helper taking two format strings and a count.",
+      "note": "the tail of a validator `main()` — print a count to stderr and return 1, else print a 'Validated N …' line and return 0, then `if __name__ == '__main__': raise SystemExit(main())`. Shared by check_skill_bootstrap_vars (untouched) and check_markdown_inline_code, whose summary sentence changed on 2026-08-01 (it said 'wrapped inline code span(s)' for a finding class that is no longer only wraps) and rotated the fingerprint. This is the repo's standard CLI exit convention; the only thing that differs between the two is the sentence, and extracting it would mean a helper taking two format strings and a count.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -5309,7 +5274,7 @@
     {
       "class": "intentional",
       "id": "fba5b0dd854c84ab",
-      "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them \u2014 intentional; revisit if a 3rd consumer appears",
+      "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them — intentional; revisit if a 3rd consumer appears",
       "reviewed_at": "2026-07-02",
       "surface": "code"
     },
@@ -5413,31 +5378,94 @@
     },
     {
       "class": "intentional",
-      "id": "4cb9a6c5f8877ec1",
-      "note": "Repo-boilerplate argparse/main scaffold shared by EIGHT existing validators (check_adapter_consumer_classification, check_plugin_dir_references, parity_harness, check_probe_record, check_plugin_doc_links, check_export_self_sufficiency, removed_name_consumers, check_plugin_asset_command_carriers). Stated out loud: NO member of this family is in the current diff -- all eight are reported `untouched`. The family surfaced while adding check_artifact_referents.py, so the membership rotation is INFERRED from the timing, not proven; the ratchet reports rotation and novelty through the same channel. Collapsing eight independent validators' entrypoints onto a shared harness is a refactor of eight untouched proof surfaces, which is strictly larger and riskier than the gate that surfaced it, and would be made under a slice that reviewed none of them.",
-      "reviewed_at": "2026-08-22",
-      "surface": "code"
+      "id": "004895e66d5b4132",
+      "note": "same-file near-duplicate inside skills/public/setup/references/agent-docs-policy.md (120-121 vs 143-144): two deliberately parallel host-mapping example blocks that document the same Codex subagent mapping in the live-AGENTS.md and generated-template sections; surfaced as 'new' by scan rotation, both members untouched this session (#441 rotation class)",
+      "reviewed_at": "2026-07-17",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "4f6c07d3c8e76002",
-      "reviewed_at": "2026-08-22",
-      "surface": "code",
-      "note": "Two-line guard-clause idiom `if <name> != <literal>: return`, shared by the claims-review scope floor (a `pass` must declare what it covered; an `unproven` is exempt because it is already blocking) and validate_cautilus_proof's improve-goal guard. Unrelated subjects, unrelated literals; the shape is Python's ordinary early return. Collapsing them would invent a shared abstraction over two floors that have nothing in common but arity."
+      "id": "13741926e48b3ac1",
+      "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "64a4f810660ed425",
-      "reviewed_at": "2026-08-22",
-      "surface": "code",
-      "note": "The sibling-import bootstrap idiom -- resolve __file__'s directory, add it to sys.path if absent, then import the sibling -- shared with goal_artifact_floor_grammar and goal_artifact_evidence_distinctness, both untouched by this diff. It exists because these modules are loaded BY SPEC from several entrypoints, so a bare sibling import resolves only when the caller happens to have the directory on the path. Collapsing it would need a shared bootstrap module that each of these must import -- by the same idiom, in the same three files. The duplication IS the bootstrap."
+      "id": "1e790839dc306944",
+      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape — de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
+      "reviewed_at": "2026-08-08",
+      "surface": "doc"
     },
     {
       "class": "intentional",
-      "id": "5aac6f98962c5eb9",
-      "reviewed_at": "2026-08-22",
-      "surface": "code",
-      "note": "A four-line `sys.stderr.write(f\"WARNING (<gate>): ...\")` stand-down notice, shared with three untouched changed-line/worktree gates. The shape is the repo's house style for 'this rung could not run, and that is not a pass' -- the WARNING token is load-bearing because run-quality.sh prints a passing gate's log only on it. Collapsing four gates' distinct stand-down REASONS behind one helper would make the message generic at the exact moment a reader needs the specific cause, which is the failure each of these notices exists to prevent."
+      "id": "322d067a80402fbc",
+      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
+      "reviewed_at": "2026-06-30",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "40a4e156b1efd17f",
+      "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "57a52ad013e764b8",
+      "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
+      "reviewed_at": "2026-07-02",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "80c5b9827dc39f57",
+      "note": "the root AGENTS.md owns the live Subagent Delegation contract, while setup's copy-ready Markdown template must retain the same section heading so a generated host document is self-contained; a shared heading label is required interface shape, not an extractable prose block",
+      "reviewed_at": "2026-07-14",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "87176166d16a600c",
+      "note": "the `Optional size budget:` block repeated across the three per-skill references/adapter-contract.md files (debug, quality, handoff). Per-skill adapter contracts are SELF-CONTAINED by construction -- a consuming repo reads exactly one of them and must find the field's semantics, minimum, unbounded-above rule and refusal behaviour there, not behind a cross-skill link. The genuinely divergent half is already written per file: handoff's block documents CONTENT-line counting and states explicitly that its `max_content_lines` is not interchangeable with debug/quality's `max_artifact_lines`, and only the debug/quality pair share the raw-file-line wording. Same class as the sequence-discipline.md per-skill reference copies already accepted in this file.",
+      "reviewed_at": "2026-08-18",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "aca9e00fc6c5c3ae",
+      "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
+      "reviewed_at": "2026-06-30",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "b56c1479ef7c3d0e",
+      "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "c4b45fc90f69c007",
+      "note": "handoff auto-draft goal template intentionally shares achieve goal activation/header language so dormant drafts match the canonical activation contract",
+      "reviewed_at": "2026-06-27",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "d7d30b23074c4bc9",
+      "note": "shared 2-line phase-file header across the lifecycle-before/during/after.md split (2026-07-04 north-star P2 split of achieve lifecycle.md); each phase file states its own scope+owner line by design so a phase-scoped read is self-describing",
+      "reviewed_at": "2026-07-04",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "e89e772efc0ba634",
+      "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
+      "reviewed_at": "2026-06-24",
+      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

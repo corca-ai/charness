@@ -28,6 +28,7 @@ from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     baseline_abort_cause,
     read_baseline_abort_marker,
     resolve_baseline_abort_marker,
+    verdict_token,
 )
 from scripts.mutation_sample_manifest_score_lib import (  # noqa: E402
     changed_scope_gap_section_lines,
@@ -175,7 +176,25 @@ def mutation_metrics(
         and score >= score_break
     )
     incomplete_exec = stats["pending"] > 0
-    if exec_timed_out:
+    if reachable == 0:
+        # THE PROPERTY, not a third special case. `reachable` is killed + survived --
+        # the mutants that actually produced a verdict. At zero, no score exists, so
+        # every status below would assert a measurement that never happened: the same
+        # defect as the baseline-abort path, reached by a different route (all mutants
+        # skipped or ignored, an empty dump, a Stryker config that excludes the whole
+        # operator set). A fresh-eye round found these while the baseline-abort fix
+        # was being reviewed, which is why this is stated as one condition over the
+        # denominator rather than as two more patched call sites.
+        #
+        # `passed` stays False, so the exit code and CI redness are unchanged. This
+        # renames an unearned verdict; it does not forgive one.
+        #
+        # The RULE lives in `verdict_token`, which the JS slice calls too -- one owner,
+        # because the first cut wrote it once per engine and the duplicate ratchet
+        # flagged the pair immediately.
+        passed = False
+        status = verdict_token(reachable, passed)
+    elif exec_timed_out:
         completion_ok = executed_ratio >= PARTIAL_RUN_COMPLETION_FLOOR and per_file_completion_ok
         passed = False
         if not completion_ok:
@@ -242,7 +261,15 @@ def _baseline_abort_summary_lines(marker: dict) -> list[str]:
     lines = [
         "# Mutation Testing Summary",
         "",
-        "- Status: **FAIL**",
+        # NOT `FAIL`. `FAIL` is the verdict of a mutation run that RAN and scored
+        # below the threshold; this path ran no mutants at all, so `FAIL` here
+        # asserts a measurement that never happened. The two were one token from
+        # 2026-08-19 to 2026-08-22: every scheduled run aborted on a red baseline
+        # and published a "Mutation test regression" whose summary said FAIL, so
+        # four days of "the mutation score broke" were really "nothing was
+        # measured". The exit code is unchanged -- an unmeasured surface is still
+        # a red workflow -- but the word no longer claims a score it never read.
+        "- Status: **UNMEASURED**",
         # Same stage vocabulary as the JS slice, from the same owner. The old wording
         # said "before mutation sampling", which is only true of the sampler stage.
         f"- Blocking signal: {baseline_abort_cause(marker)} before mutation ran; no mutants ran.",
