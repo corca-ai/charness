@@ -9,7 +9,8 @@ Goal: charness-artifacts/goals/2026-08-22-proof-cost-portability-and-the-cadence
 One activated goal, three source slices (C: proof cost, B: unfork the Node
 consumers, A: settle the cadence contract) plus slice R, the single release
 carrying all three. Reviewed at the point where the release sits at its prepared
-stop, awaiting a re-run claims round after the first returned `unproven`.
+stop. THREE claims rounds have run and all three returned `unproven`; each
+reset the prepared commit, took repairs as ordinary commits, and remade it.
 
 What matters next is the release finishing honestly, and the handoff carrying
 what this session measured about the repo's real shape.
@@ -36,8 +37,8 @@ fixed (#697, #698, #699). One finding recorded in the goal without filing: the
 - Checked-in probe: `charness-artifacts/probe/2026-08-22-changed-line-coverage-context-blowup.json`
   (the 671x / 276x / 339x measurement, with SHA-256s).
 - Bounded review spawns: slice C rounds 1 (two reviewers) and 2, slice B rounds
-  1 and 2, slice A rounds 1 and 2, one release critique, and two claims rounds —
-  ten reviewer spawns in total, all read-only, all returning findings to this
+  1 and 2, slice A rounds 1 and 2, one release critique, and three claims
+  rounds — eleven spawns in total, all read-only, all returning findings to this
   context; boundary fingerprints verified `parent-attributed` at each.
 - `run-quality.sh --release`: 98 passed / 0 failed. Changed-line proof over the
   full range: clean, 15/15 files, zero blocking.
@@ -48,10 +49,11 @@ fixed (#697, #698, #699). One finding recorded in the goal without filing: the
 
 **The dominant waste was self-inflicted rework caught by review, not by me.**
 Seven bounded rounds (slice C x2, slice B x2, slice A x2, one release critique)
-plus two claims rounds found blockers on every surface they read; the Slice Log
-totals ten across the slices, and the release critique and claims rounds added
-four more. That is the system working,
-but the cost is real: three of the nine were *repairs carrying the class they
+plus three claims rounds found blockers on every surface they read; the Slice
+Log totals ten across the slices, and the release critique (1) plus claims
+rounds 1, 2 and 3 (3 + 3 + 4) added eleven more, for twenty-one. That is the
+system working, but the cost is real: EIGHT of the twenty-one were *repairs
+carrying the class they
 repaired*, which means the rework was not "found a bug, fixed it" but "found a
 bug, fixed it wrongly, had it found again".
 
@@ -169,18 +171,28 @@ release flow prompts you to go back and find it.
 
 ## Next Improvements
 
-- **workflow — reproduce before repairing a review finding.** Three of nine
-  blockers got a wrong first repair; in two further cases reproduction showed the
-  reviewer's proposed fix was itself wrong. Applied this session in the second
-  half; it should be the default, not the recovery.
+- **workflow — reproduce before repairing a review finding.** Eight of
+  twenty-one blockers got a wrong first repair; in two further cases
+  reproduction showed the reviewer's own proposed fix was wrong. Applied this
+  session in the second half; it should be the default, not the recovery.
   `applied: recorded in this retro; the handoff carry is NOT yet written and is
   the first closeout step.` A claims round caught this line asserting the handoff
   bullet already existed when it did not — an `applied:` that names a destination
   it has not reached is the strongest disposition shape making the weakest claim.
 - **capability — the release record's quality sentence was a hardcoded literal.**
-  `applied: skills/public/release/scripts/publish_release_common.py now stamps the
-  measured result and publish_release_execute.py renders it, so the record reads
-  "exited 0 in <N>s at post-bump, pre-commit, measured by this helper".`
+  `applied: skills/public/release/scripts/publish_release_common.py stamps the
+  measured result into the payload, and publish_release_artifact.write_current_artifact
+  — the single OWNER every one of the five writers routes through — reads it from
+  there, so the record reads "exited 0 in <N>s at post-bump, pre-commit, measured
+  by this helper". Pinned by tests/quality_gates/test_release_quality_status_binding.py,
+  including a structural scan that fails if any call site re-hardcodes the literal.`
+  Three attempts: the first two patched CALL SITES and each lost the race to a
+  writer they did not know about — the second specifically to
+  `commit_post_publish_artifact`, the write that produces the record pushed to
+  `main`. An earlier draft of this very bullet still credited that rejected
+  call-site repair; a claims round caught it. The disposition for the
+  hardcoded-literal finding was itself a hardcoded claim that had stopped being
+  true.
 - **memory — a grant invalidates prose written before it.** No mechanism exists;
   the claims round is what caught it, one layer too late to be cheap.
   `tracked issue` — see `## Sibling Search`.
