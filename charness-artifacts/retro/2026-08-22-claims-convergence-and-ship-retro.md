@@ -76,3 +76,15 @@ the link-only bar, the runtime budget, and my own scope prefixes. All seven are
 in this repo; none is portable-skill-shaped yet.
 
 ## Persisted
+
+Persisted: yes: charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md
+
+## Lesson Evaluation
+
+Added 2026-08-23, after the pre-push continuity gate refused on this artifact for
+having no such section. The disposition is derived, not guessed: both lesson-session
+receipts dated 2026-08-22 (`b-release`, `proof-cost-portability-cadence`) are already
+claimed by their own retros, so this retro's session has no receipt to claim and the
+`missing-start` form is the accurate one.
+
+Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}
