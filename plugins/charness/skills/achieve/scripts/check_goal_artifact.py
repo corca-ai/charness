@@ -190,6 +190,17 @@ def main() -> int:
         if matrix_report.get("applies") and not matrix_report["ok"]:
             result["ok"] = False
             result["issues"].append("remaining-boundary-matrix floor — " + matrix_report["reason"])
+    if result.get("status") == "superseded":
+        # NOT the complete-evidence floor: this goal did not complete, and grading
+        # it against closeout evidence would be asking a record to prove something
+        # it says it did not do. One thing is required instead -- where the
+        # remainder went -- because a terminal status that asks for nothing is a
+        # quieter way to lose the work than the lie it replaces.
+        superseded_report = goal_lib.check_superseded_record(text)
+        result["superseded_record"] = superseded_report
+        if not superseded_report["ok"]:
+            result["ok"] = False
+            result["issues"].append("superseded-record floor — " + superseded_report["reason"])
     if result.get("status") == "complete":
         repo_root = args.repo_root.expanduser().resolve()
         evidence_report = goal_lib.check_complete_evidence(repo_root, text)

@@ -171,7 +171,10 @@ def test_the_floor_actually_gates_activation_not_just_reports() -> None:
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
         "## User Acceptance\n\nUser runs X and sees Y.\n"
         + "".join(
-            f"\n## {section}\n"
+            # A fixture LINE per section: the hollow-section floor refuses a
+            # required shaping section that is present but says nothing, so bare
+            # headings would fail this test on a dimension it is not about.
+            f"\n## {section}\n{section} fixture value.\n"
             for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS
         )
         + "\n## Closeout Binding Plan\n"
@@ -311,7 +314,7 @@ def test_the_pass_sentence_does_not_call_a_pre_rule_draft_a_non_draft() -> None:
     shaped = (
         "# Achieve Goal: T\n\nStatus: draft\nCreated: 2026-08-07\nActivation: `/goal @x.md`\n\n"
         "## User Acceptance\n\nUser runs X and sees Y.\n"
-        + "".join(f"\n## {s}\n" for s in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS)
+        + "".join(f"\n## {s}\n{s} fixture value.\n" for s in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS)
         + "\n## Closeout Binding Plan\n"
         + "".join(f"- {f} fixture value\n" for f in gal.CLOSEOUT_PLAN_FIELDS)
     )

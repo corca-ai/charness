@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +36,9 @@ _metric_window = _load_sibling("goal_metric_window_lib")
 _policy = _load_sibling("achieve_adapter_policy")
 _portability_gate = _load_sibling("goal_artifact_portability_gate")
 _pursue = _load_sibling("goal_artifact_pursue")
+_hollow = _load_sibling("goal_artifact_hollow_sections")
+_naming = _load_sibling("goal_artifact_naming")
+_superseded = _load_sibling("goal_artifact_superseded")
 _scaffold = _load_sibling("goal_artifact_scaffold")
 _timebox = _load_sibling("goal_artifact_timebox")
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
@@ -69,8 +73,21 @@ def check_cadence_owner(text: str, *, status: str | None) -> dict[str, Any]:
     )
 
 
-GOAL_DIR = "charness-artifacts/goals"
-VALID_STATUSES = ("draft", "active", "blocked", "complete")
+#: Naming and location moved to `goal_artifact_naming` under the length cap;
+#: re-exported because callers and tests bind them at THIS address.
+GOAL_DIR = _naming.GOAL_DIR
+SLUG_FALLBACK = _naming.SLUG_FALLBACK
+slugify = _naming.slugify
+normalize_goal_text = _naming.normalize_goal_text
+resolve_supplied_slug = _naming.resolve_supplied_slug
+goal_path = _naming.goal_path
+goal_rel = _naming.goal_rel
+validate_goal_values = partial(
+    _naming.validate_goal_values, fences_balanced=_fences_balanced, mask_fences=_mask_fences)
+#: Bound at THIS address because the validator reaches them here.
+SUPERSEDED_RECORD_FIELD = _superseded.SUPERSEDED_RECORD_FIELD
+check_superseded_record = partial(_superseded.check_superseded_record, mask_fences=_mask_fences)
+VALID_STATUSES = ("draft", "active", "blocked", "complete", "superseded")
 
 # H2 sections every goal artifact must keep so a compacted run can be audited
 # from one file.
@@ -130,69 +147,6 @@ _ACTIVATION_LINE = re.compile(r"^[ \t>*\-]*\**[ \t]*Activation[ \t]*:[ \t]*\**[ 
 _TEMPLATE = (Path(__file__).resolve().parent / "goal_artifact_template.md").read_text(encoding="utf-8")
 
 
-#: What `slugify` returns when the input contained nothing usable. Named because it is
-#: the TOTAL-LOSS signature callers refuse on -- not merely "was coerced", which is
-#: normal and global.
-SLUG_FALLBACK = "goal"
-
-
-def slugify(value: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
-    return slug or SLUG_FALLBACK
-
-
-def normalize_goal_text(value: str) -> str:
-    """Normalize line endings before a value is checked or rendered."""
-    return value.replace("\r\n", "\n").replace("\r", "\n")
-
-
-def validate_goal_values(title: str, goal_body: str) -> tuple[str, str]:
-    """Return canonical goal values or reject shapes that change on readback."""
-    title = normalize_goal_text(title)
-    goal_body = normalize_goal_text(goal_body)
-    if "\n" in title:
-        raise ValueError(
-            "goal `title` must be single-line; it is rendered as one `# Achieve Goal:` heading"
-        )
-    if not _fences_balanced(goal_body):
-        raise ValueError(
-            "goal `goal-body` leaves a code fence unclosed (odd number of ``` / ~~~ markers). "
-            "Every heading check reads the body with fences masked, and an unbalanced body has "
-            "two irreconcilable readings, so this refuses rather than guessing. Close the fence."
-        )
-    if re.search(r"^#{1,6} ", _mask_fences(goal_body), re.MULTILINE):
-        raise ValueError(
-            "goal `goal-body` contains an unfenced markdown heading line (`# `..`###### `). "
-            "The body is written under `## Goal`; a heading there would silently end that "
-            "section and be read back as a real one. Use bold or list text, or put the line "
-            "inside a fenced code block."
-        )
-    return title, goal_body
-
-
-def resolve_supplied_slug(slug: str) -> str:
-    """Resolve a caller-supplied slug while refusing total loss to the fallback."""
-    resolved = slugify(slug)
-    if resolved == SLUG_FALLBACK and slug.strip().lower() != SLUG_FALLBACK:
-        raise ValueError(
-            f"--slug {slug!r} contains nothing usable and would be written as "
-            f"{resolved!r} -- a filename you did not ask for. An argument that survives "
-            f"as nothing is what a failed shell substitution looks like, so this refuses "
-            f"rather than creating <date>-{resolved}.md."
-        )
-    return resolved
-
-
-def goal_path(repo_root: Path, date: str, slug: str) -> Path:
-    if not _DATE.match(date):
-        raise ValueError(f"invalid date {date!r}; expected YYYY-MM-DD")
-    return repo_root / GOAL_DIR / f"{date}-{slugify(slug)}.md"
-
-
-def goal_rel(repo_root: Path, path: Path) -> str:
-    return path.resolve().relative_to(repo_root.resolve()).as_posix()
-
-
 def set_status(text: str, status: str) -> str:
     if status not in VALID_STATUSES:
         raise ValueError(f"invalid status {status!r}; expected one of {VALID_STATUSES}")
@@ -240,6 +194,10 @@ def upsert_goal(
     optout_census: dict | None = None
     if path.exists():
         original = path.read_text(encoding="utf-8")
+        refusal = _superseded.refuse_flip_reason(
+            status, original, mask_fences=_mask_fences, read_status=read_status)
+        if refusal:
+            raise ValueError(refusal)
         if status == "complete" and read_status(original) != "complete":
             evidence_report = check_complete_evidence(repo_root, original)
             timebox_report = check_timebox_closeout(original)
@@ -362,6 +320,15 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
         fences_balanced=_fences_balanced,
         discussion_readiness=discussion_readiness,
         draft_frame_disposition=_draft_frame.draft_frame_disposition,
+        # Injected: the readiness module is deliberately dependency-free of this
+        # one, and reaching back would rebuild the cycle it says it avoids. The
+        # template comes from `_TEMPLATE`, the module's EXISTING reader -- a
+        # second lazy reader was written here and deleted, because "one owner"
+        # is the rule the duplicate ratchet had just enforced on this same slice.
+        hollow_sections=lambda masked, sections: _hollow.classify(
+            masked, _TEMPLATE, sections,
+            section_bounds=_markdown.section_bounds,
+        ),
     )
     # Activation is where this floor is worth the most: the contradiction's whole
     # cost is paid AFTER the goal goes active, one broad suite per slice.

@@ -261,6 +261,36 @@ new artifact, not only the primary `achieve` template. The current producer
 contract is pinned by the authoring-repo-internal
 `<authoring-repo>/tests/quality_gates/test_goal_artifact_producers.py`.
 
+## Superseded Record (conditional, before superseded)
+
+`superseded` is the terminal status for a goal that ENDED WITHOUT COMPLETING —
+folded into a successor, overtaken, or abandoned with its remainder handed on.
+It exists because the contract previously offered only `complete` and `blocked`,
+so such a goal had to choose between staying `active` forever and claiming a
+completion it never earned. Both lie to the next session; the second lies in the
+direction that loses work.
+
+A terminal status that skips the closeout floor and asks for nothing in return
+would lose the same work more quietly — a finished-looking artifact with no
+successor and no reason. So `superseded` costs exactly one line, and that line is
+the thing a reader actually needs:
+
+```markdown
+Superseded by: charness-artifacts/goals/<yyyy-mm-dd-slug>.md — <what carried on>
+```
+
+`Superseded by: none — <reason>` is accepted, and accepting it is the point: a
+goal genuinely abandoned with nothing downstream should be able to say so out
+loud rather than be unable to close. A punctuation-only value (`—`) is refused —
+a filled-looking empty field is the class this contract's other floors already
+learned.
+
+The record is checked by `check_goal_artifact.py` when the status is
+`superseded`, and `upsert_goal.py` refuses the flip without it. The
+complete-evidence floor is deliberately NOT applied: this goal says it did not
+complete, and grading it against closeout evidence would ask the record to prove
+something it states it did not do.
+
 ## Remaining Boundary Matrix (conditional, before blocked)
 
 A goal adds a `## Remaining Boundary Matrix` section only when it flips to

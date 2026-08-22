@@ -58,7 +58,13 @@ _BACKLOG = _load_backlog_floor()
 
 # Statuses whose scope was already set, so a SHAPING floor no longer applies. Listed
 # positively (rather than testing `== "draft"`) so an unreadable status fails closed.
-NON_SHAPING_STATUSES = frozenset({"active", "blocked", "complete"})
+NON_SHAPING_STATUSES = frozenset({"active", "blocked", "complete", "superseded"})
+#: Statuses that mean "this artifact is finished, however it finished".
+#: `superseded` is terminal but NOT complete: the goal ended without completing,
+#: and the contract had no way to say that, so such a goal had to choose between
+#: staying `active` forever and claiming a completion it never earned. The second
+#: lies in the direction that loses work.
+TERMINAL_STATUSES = frozenset({"complete", "superseded"})
 
 
 def is_shaping_status(status: str | None) -> bool:
@@ -109,8 +115,13 @@ def is_terminal_status(status: str | None) -> bool:
 
     Fail-closed in the other direction from its sibling: only a recognised
     terminal status skips, so a missing `Status:` line still evaluates.
+
+    `superseded` counts. It is terminal in exactly the sense this predicate
+    means -- nobody is expected to repair the record -- even though it is not
+    complete. Leaving it out would have graded an ended goal against floors whose
+    whole purpose is to fire on a goal still in flight.
     """
-    return status_token(status) == "complete"
+    return status_token(status) in TERMINAL_STATUSES
 
 
 SCOPE_NOT_CHECKED = (
@@ -134,6 +145,7 @@ def _reason(
     backlog_recount_missing_fields: list[str],
     backlog_state: str,
     activation_ready: bool,
+    hollow_reason: str = "",
 ) -> str:
     """Every reason this verdict refuses, not only the first one found.
 
@@ -195,6 +207,8 @@ def _reason(
             "written carries no placeholder marker either, so run the achieve Before-phase "
             "(`/achieve @<file>`) before `/goal`"
         )
+    if hollow_reason:
+        clauses.append("hollow: " + hollow_reason)
     if closeout_plan_missing_fields:
         clauses.append(
             "incomplete: Closeout Binding Plan field(s) absent or empty ("
@@ -235,6 +249,7 @@ def pursue_readiness(
     fences_balanced: Callable[[str], bool],
     discussion_readiness: Callable[..., dict[str, Any]],
     draft_frame_disposition: Callable[..., dict[str, Any]],
+    hollow_sections: Callable[..., dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Whether a goal is shaped enough to *pursue* via ``/goal``.
 
@@ -273,6 +288,27 @@ def pursue_readiness(
     disposition = draft_frame_disposition(text, status=status, masked=masked)
     present = {match.group(1).strip() for match in _H2.finditer(masked)}
     missing_sections = [section for section in required_sections if section not in present]
+    # PRESENT is not WRITTEN. A bare heading -- or a section still carrying the
+    # scaffold's own guidance prose -- passed every heading check while saying
+    # nothing about this goal, so `pursue-ready` came to mean "has the right
+    # headings". Reported for every required section; refused only for the
+    # shaping-time ones, because run-filled sections are template-identical at
+    # draft time BY DESIGN and refusing those would trade one false verdict for
+    # another. Skipped entirely for a non-shaping status, exactly like the backlog
+    # floor: an artifact whose scope was set before this rule existed is not
+    # re-graded against it.
+    hollow_report = (
+        hollow_sections(masked, tuple(required_sections))
+        if hollow_sections is not None and is_shaping_status(status)
+        else {"hollow": [], "empty": [], "still_template_text": [], "blocking": [],
+              "run_filled_hollow": [], "evaluated": False,
+              "reason": (
+                  "not evaluated: no hollow-section classifier was supplied"
+                  if hollow_sections is None
+                  else f"not evaluated: hollow-section reporting is a shaping floor and status is {status!r}"
+              )}
+    )
+    hollow_blocking = list(hollow_report.get("blocking") or [])
     closeout_plan_missing_fields: list[str] = []
     closeout_plan_duplicate = False
     if "Closeout Binding Plan" in required_sections:
@@ -336,6 +372,7 @@ def pursue_readiness(
         shape_ready
         and balanced
         and not missing_sections
+        and not hollow_blocking
         and not closeout_plan_missing_fields
         and not closeout_plan_duplicate
         and not backlog_recount_missing_fields
@@ -357,6 +394,12 @@ def pursue_readiness(
         "closeout_plan_duplicate": closeout_plan_duplicate,
         "backlog_recount": backlog_report,
         "backlog_recount_missing_fields": backlog_recount_missing_fields,
+        # PRESENT vs WRITTEN. Published as a structured report, not folded into
+        # the boolean, because the whole complaint was that a single
+        # ready/not-ready verdict made the caller re-read the artifact to find
+        # out WHICH sections were hollow.
+        "hollow_sections": hollow_report,
+        "hollow_blocking_sections": hollow_blocking,
         # False means the heading facts above were read from a FAIL-OPEN mask (the
         # raw text, fenced examples included), so they are not established.
         "sections_reading_established": balanced,
@@ -373,6 +416,7 @@ def pursue_readiness(
             closeout_plan_missing_fields=closeout_plan_missing_fields,
             closeout_plan_duplicate=closeout_plan_duplicate,
             backlog_recount_missing_fields=backlog_recount_missing_fields,
+            hollow_reason=hollow_report.get("reason", "") if hollow_blocking else "",
             backlog_state=(
                 "recorded"
                 if backlog_report.get("applies")

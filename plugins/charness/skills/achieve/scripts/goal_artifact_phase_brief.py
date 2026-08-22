@@ -34,6 +34,14 @@ PHASE_BRIEFS: dict[str, dict[str, object]] = {
             "## Remaining Boundary Matrix (conditional, before blocked)"
         ],
     },
+    "superseded": {
+        "phase": "after",
+        "lifecycle_file": "references/lifecycle-after.md",
+        "lifecycle_section": "## After",
+        "goal_artifact_sections": [
+            "## Superseded Record (conditional, before superseded)",
+        ],
+    },
     "complete": {
         "phase": "after",
         "lifecycle_file": "references/lifecycle-after.md",

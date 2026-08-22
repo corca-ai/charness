@@ -29,10 +29,11 @@ def _with_required_sections(body: str) -> str:
 
     Section presence is part of the pursue-readiness verdict, but these fixtures
     each isolate a DIFFERENT dimension (placeholder marker, discussion gate,
-    draft frame, fence masking) and were written when it was not. Empty headings
+    draft frame, fence masking) and were written when it was not. Filled headings
     keep each one testing its own dimension rather than incidentally failing the
-    completeness check -- the alternative, asserting `pursue_ready is False` in
-    all of them, would stop proving anything about the dimension named in the test.
+    completeness or hollow-section checks -- the alternative, asserting
+    `pursue_ready is False` in all of them, would stop proving anything about the
+    dimension named in the test.
     """
     present = {match.group(1).strip() for match in gal._H2.finditer(gal._mask_fences(body))}
     missing = [
@@ -45,6 +46,14 @@ def _with_required_sections(body: str) -> str:
         chunks.append(f"\n## {section}\n")
         if section in gal.CLOSEOUT_PLAN_SECTIONS:
             chunks.append("".join(f"- {field} fixture value\n" for field in gal.CLOSEOUT_PLAN_FIELDS))
+        else:
+            # A fixture LINE, not a bare heading. The hollow-section floor now
+            # refuses a required shaping section that is present but says nothing,
+            # which is the whole point of it -- and a bare heading is exactly that.
+            # Filling it serves this helper's stated intent better than emptiness
+            # did: each test keeps isolating its own dimension instead of
+            # incidentally failing a floor it was never about.
+            chunks.append(f"{section} fixture value.\n")
     # The backlog-recount floor, for the same reason as the closeout-plan fields above.
     # It is NOT in the section tuples: it is a conditional floor gated on the goal's own
     # `Created:` date, and these fixtures carry no date at all -- which makes it apply,

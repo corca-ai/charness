@@ -9,19 +9,20 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: C — cut proof cost and close ephemeral-evidence citations.
-- Current slice intent: make an interrupted changed-line proof resumable without
-  rebuilding the coverage corpus, surface the resume path from the tool's own
-  output, and stop citing gitignored rolling files as evidence. This names the
-  reviewable-intent unit in progress and the commits it spans; critique and broad
-  proof do not re-fire within one unchanged intent — update it when the intent
-  changes, not per commit (meaningful-slice-cadence).
-- Next action: slice C landed (`77c4300ae` + round-1 repairs `1cb2e67c2`) and
-  slice B's reporter seam landed (`ff0f52925`). Changed-line proof over the full
-  range BLOCKS on four uncovered changed lines in three files; repairs are
-  batched behind the two in-flight review rounds (slice C round 2, slice B
-  round 1) rather than applied to files those reviewers are reading. Then #690 /
-  #691 to finish slice B, then slice A.
+- Current slice: B — unfork the Node consumers.
+- Current slice intent: make the mutation harness usable by a Node repository
+  (a reporter seam for the coupled accounting), make `--pursue-ready` distinguish
+  a section that is PRESENT from one that was WRITTEN, and give the achieve
+  contract a terminal status for a goal that ended without completing. This names
+  the reviewable-intent unit in progress and the commits it spans; critique and
+  broad proof do not re-fire within one unchanged intent — update it when the
+  intent changes, not per commit (meaningful-slice-cadence).
+- Next action: slice C is closed (`77c4300ae`, `1cb2e67c2`, `10f1a092c`); its
+  two-round cap is CONSUMED and the round-2 repairs are accepted-unreviewed.
+  Slice B's three claims are implemented (`ff0f52925` + `10f1a092c` + the
+  pursue-readiness and terminal-status work). Slice B still owes its round-2
+  bounded review as a verdict-logic change on a proof surface. Then slice A
+  (`#694`), then the single release.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -363,11 +364,72 @@ For each Before-phase question: family of options considered, chosen value, and
 rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
 itself so a fresh session sees the design space, not only the closed point.
 
+Written DURING the run rather than before it, and the delay is itself a finding:
+this section was still the scaffold's own words when slice C shipped, and the
+`--pursue-ready` hollow-section check that slice B added is what named it. The
+decisions below are reconstructed from what the slices actually did, so they are
+a faithful record of choices made, not of choices made in advance.
+
+- **Slice order (C -> B -> A).** Options: A first (the only hard blocker), B
+  first (the largest external payoff), C first. Chose C because every later
+  slice's evidence is produced by the lane C repairs, and the predecessor session
+  measured four full rebuilds. Rejected A-first because the cadence decision
+  wants slice C and B evidence to inform it; rejected B-first because it would
+  have paid the uncut proof cost twice.
+- **What "cut proof cost" means.** Options: relevel the pytest budget, parallelize
+  the gate, or find work the gate does that nobody reads. Chose the third and it
+  paid 671x. The first was already fenced off in `## Non-Goals` by an explicit
+  REVISIT TRIGGER; the second buys wall-clock without removing waste.
+- **Node portability shape.** Options: a `stryker-js` bridge, a caller-supplied
+  regex, or a reporter-shaped adapter. Chose the adapter because the accounting
+  is the only coupled part and a regex knob would push the scoping discipline
+  (counts from the summary alone) onto every caller, where it would be re-learned
+  wrongly. Rejected the bridge as a second harness, which is the fork this slice
+  exists to end.
+- **Where the Node fixture lives.** Options: edit a ceal repository, check in a
+  fake package, or construct one in `tmp_path` per test. Chose constructed, with
+  a real `node --test` run and a skip when node is absent: a mocked verdict would
+  have proved nothing, and editing a consumer repo is refused in `## Boundaries`.
+- **How much to fix at once.** Repeatedly chose to file rather than fold: #697's
+  shared coverage path, the fenced-`Date:` hole in the shared date reader, the
+  ~4min/~5min disagreement. Each was in reach and each would have widened the
+  slice past what could be verified locally.
+
 ## Plan Critique Findings
 
 Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance. Preserves reasoning so a fresh session
 re-verifies the folded revisions without re-running critique.
+
+No Before-phase plan critique was run: this goal was shaped by the predecessor
+session and activated directly. What stands in its place is four bounded
+fresh-eye rounds during the run, whose findings are recorded here because they
+changed the plan, not only the code.
+
+- **BLOCKER, round 1 (claims lens), folded into `## User Acceptance`.** The first
+  acceptance criterion was being satisfied in its second half and quietly
+  reinterpreted in its first. Folded as an in-place amendment with the original
+  quoted, plus an `## Operator Decision Queue` entry. Provenance: bounded
+  reviewer over `77c4300ae`.
+- **BLOCKER, round 1 (correctness lens), folded into slice C.** The evidence
+  durability widening was fail-open on undated filenames — 68 live artifacts,
+  one already violating. Folded as fail-closed enforcement.
+- **BLOCKER, round 2, folded into slice C.** The fail-closed repair carried a
+  narrowed form of the same class: it delegated to a shared date reader whose
+  safety argument inverts on this corpus. Folded by narrowing to the filename
+  channel. This is the round the two-round rule exists for, and it earned it.
+- **BLOCKER, slice B round 1, folded into slice B.** On the Node path a mutant
+  that broke the module was classified KILLED. The reviewer's proposed fix did
+  not work — measuring showed broken and real-kill runs emit byte-identical
+  counts — so the folded repair uses the file-level `exitCode:` marker instead.
+- **OVER-WORRY, raised and NOT folded.** A reviewer proposed carrying `# tests`
+  into the scope check; reproduction showed it would not have caught the case,
+  and adding it would have implied a guard that does not guard. Recorded rather
+  than adopted.
+- **RAISED, NOT FOLDED, filed instead.** #697 (shared coverage path), the
+  fenced-`Date:` hole in `date_from_body`, and the ~4min/~5min figure
+  disagreement. Each is real; each would have widened a slice past local
+  verification.
 
 ## Closeout Binding Plan
 

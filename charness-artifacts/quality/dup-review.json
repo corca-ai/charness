@@ -1101,6 +1101,13 @@
     },
     {
       "class": "intentional",
+      "id": "36fd1c5c877c7b5b",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The two-line whitespace-normalizer idiom `return \" \".join(<text>.split())` (plus its one-line docstring), shared by the goal hollow-section classifier, check_command_docs and inventory_brittle_source_guards. Idiom-sized: it is the standard Python spelling for collapsing runs of whitespace, shares no identifier and no concept with the other members, and there is nothing to extract that would not be longer than the thing extracted. Same class already accepted for the sibling guard-clause families (003780cc89f2ccfd, 349f5d577fe2588b, f0dff7b4f7e1fd89). Surfaced as new because the hollow-section classifier added the third member. NOTE: the same slice's OTHER new family in this module was NOT accepted -- it was a hand-rolled H2 section walk duplicating `goal_artifact_markdown.section_bounds`, whose own docstring records six prior copies, and the ratchet refusing it was the gate working; that one was repaired by routing through the single owner rather than classified."
+    },
+    {
+      "class": "intentional",
       "id": "37a2b32958a4424e",
       "note": "the `main(argv)` shells of check_doc_authoring_preflight.py and check_docs_graph.py: parse_args, `--repo-root`, resolve, then `emit_yaml(<own payload builder>(result))` and a status-derived exit. Their flags are disjoint and their exit vocabularies differ (docs-graph returns UNESTABLISHED_EXIT for not-run). Same two gates already accepted for their shared stdlib header as da5d49ebac3c852d.",
       "reviewed_at": "2026-08-14",
