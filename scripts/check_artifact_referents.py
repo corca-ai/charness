@@ -54,9 +54,12 @@ from scripts.critique_enforcement_scope import date_from_filename  # noqa: E402
 from scripts.repo_path_display import display_path as _display_path  # noqa: E402
 
 from scripts.artifact_referents import (  # noqa: E402
+    DISPOSITION_LINE_RE,
+    INLINE_DISPOSITION_RE,
     ResolverUnavailable,
     check_disposition_referents,
     git_commit_exists,
+    sha_candidates,
     unresolvable_shas,
 )
 
@@ -82,23 +85,11 @@ SCANNED_GLOBS = (
     "charness-artifacts/retro/*.md",
 )
 
-#: A line that DISPOSITIONS something -- claims an improvement was routed
-#: somewhere. Only these lines are checked; ordinary narrative prose that
-#: happens to mention a path is not a disposition and is not this gate's
-#: business.
-DISPOSITION_LINE_RE = re.compile(
-    r"^[\s>*+-]*\**(?:Retro dispositions|Structural follow-up|Disposition|Decision|applied"
-    r"|tracked issue)\**\s*:",
-    re.IGNORECASE,
-)
-
-#: `applied:` / `tracked issue:` also appear mid-line inside a bullet, e.g.
-#: "``applied: skills/... now stamps ...``". Catch those too.
-#: `Disposition: **applied** — ...` is this repo's second-most-common spelling
-#: (75 occurrences across 28 checked-in goals) and the bold markers sit between
-#: the word and the colon, so a plain `\bapplied\s*:` cannot see it. Both the
-#: anchored and inline forms tolerate surrounding `*`.
-INLINE_DISPOSITION_RE = re.compile(r"\b\**(?:applied|tracked issue)\**\s*:", re.IGNORECASE)
+# The disposition vocabulary is IMPORTED, not redefined. Two near-identical
+# copies existed after round 1; the failure mode is not "they drift" but "one
+# grows and the other silently degrades" -- adding a keyword here would have
+# quietly reverted the library's value-scoping to whole-line behaviour,
+# reintroducing the M2 and M3 evasions at once.
 
 def is_enforced(path: Path) -> bool:
     """Enforced unless the filename carries a readable date BEFORE the cutoff.
@@ -196,7 +187,11 @@ def audit_file(path: Path, repo_root: Path, scope: dict[str, int]) -> list[dict[
             scope["sha_resolver_unavailable"] += 1
             scope.setdefault("sha_resolver_reason", str(exc))  # type: ignore[arg-type]
             break
-        scope["shas_resolved"] += 1
+        # Count TOKENS actually put to the resolver, not lines walked. The
+        # previous per-line increment could not fall even if `SHA_RE` stopped
+        # matching entirely, which is the exact blindness the counter exists to
+        # remove.
+        scope["shas_resolved"] += len(sha_candidates(line))
         for sha in bad_shas:
             if (number, sha) in seen:
                 continue
@@ -248,6 +243,10 @@ def main() -> int:
             continue
         findings.extend(audit_file(target, repo_root, scope))
 
+    #: "ran, established nothing" -- the runner's own byte for a lane that could
+    #: not judge part of its scope. Opted into per label in run-quality.sh.
+    UNESTABLISHED_EXIT = 3
+
     blocking = [f for f in findings if f["enforced"]]
     grandfathered = [f for f in findings if not f["enforced"]]
     empty_corpus = not args.path and not targets
@@ -279,9 +278,13 @@ def main() -> int:
         print(f"dispositions_examined: {report['dispositions_examined']}")
         print(f"shas_resolved: {report['shas_resolved']}")
         if report["sha_resolver_unavailable_files"]:
+            # `WARNING:` is load-bearing, not decoration: run-quality.sh prints a
+            # PASSING gate's log only when it matches (WARNING|WARN|WEAK|ADVISORY),
+            # and a passing phase's log is deleted at EXIT. Without the token the
+            # stand-down was invisible AND its explanation was destroyed.
             print(
-                f"sha_rung: STOOD DOWN on {report['sha_resolver_unavailable_files']} file(s) — "
-                f"{report['sha_resolver_reason']}"
+                f"WARNING: sha_rung STOOD DOWN on {report['sha_resolver_unavailable_files']} "
+                f"file(s) — {report['sha_resolver_reason']}"
             )
         print(f"enforced_from: {report['enforced_from']}")
         print(f"grandfathered (reported, not rewritten): {report['grandfathered']}")
@@ -301,7 +304,14 @@ def main() -> int:
     # inputs and an empty corpus -- so the gate printed `status: blocked` and
     # exited 0. A message that disagrees with the exit code is worse than either
     # alone: the runner believes the code, the human believes the message.
-    return 1 if status != "clean" else 0
+    if status != "clean":
+        return 1
+    # A rung that could not run did not pass. Exit 3 keeps this off the runner's
+    # PASS line without laundering it into a failure -- the distinction the
+    # runner's own comment says cost this repo a cycle and two dead guards.
+    if report["sha_resolver_unavailable_files"]:
+        return UNESTABLISHED_EXIT
+    return 0
 
 
 if __name__ == "__main__":

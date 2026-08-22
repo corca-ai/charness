@@ -19,9 +19,15 @@ what this session measured about the repo's real shape.
 
 `f5211700a..HEAD` — nothing pushed, no tag. Four issues implemented
 (#696 filed-then-fixed; #689, #690, #691 implemented and deliberately left OPEN
-because the per-issue closeout floor did not run). Three issues filed and not
-fixed (#697, #698, #699). One finding recorded in the goal without filing: the
-~4min/~5min figure disagreement across five surfaces.
+because the per-issue closeout floor did not run). {{q:issues-filed=6}} issues
+filed in total (#696, #697, #698, #699, and — after claims rounds 3 and 4 —
+#700 for grant-invalidated prose and #701 for the claims-review convergence
+failure); of those, {{q:issues-filed-unfixed=5}} are filed and not fixed. One
+finding recorded in the goal without filing: the ~4min/~5min figure disagreement
+across five surfaces. (An earlier version said "three issues filed" and was
+contradicted by this same file's own later prose naming #700 and #701 — round 2
+of the referent-gate review caught it, in the artifact that ships the marker
+mechanism.)
 
 ## Evidence Summary
 

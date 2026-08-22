@@ -334,8 +334,9 @@ per the bullets above when that boundary is crossed):
 - Routing: `critique` — every slice's bounded fresh-eye rounds and the
   standalone release critique ran through its discipline; seven rounds plus
   four claims rounds.
-- Routing: `issue` — four issues filed from run findings (#696, #697, #698,
-  #699); none resolved through its closeout floor this run, see below.
+- Routing: `issue` — {{q:issues-filed=6}} issues filed from run findings (#696,
+  #697, #698, #699, #700, #701); none resolved through its closeout floor this
+  run, see below. #700 and #701 were filed after claims rounds 3 and 4.
 - Routing: `release` — slice R's bump, derived notes, prepared stop and claims
   gate all ran through the repo-owned publish helper.
 - Routing: `retro` — the closing review, persisted, with the lesson-session

@@ -48,12 +48,6 @@ ISSUE_REF_RE = re.compile(
     r"\bissue[:\s]+(?:#([A-Za-z0-9_<>-]+)|(\d+)\b)", re.IGNORECASE
 )
 
-#: A disposition VALUE that is still a placeholder belongs to the form floor,
-#: which already rejects `TODO`/`TBD`/`<...>`/`FIXME`. This gate stays quiet on
-#: them: double-reporting one defect from two gates makes both noisier, and the
-#: scaffold seeds `issue #N (recurs:|novel: <reason>)` as literal TEMPLATE text
-#: on a `TODO` line, so firing there would flag every freshly scaffolded goal.
-PLACEHOLDER_VALUE_RE = re.compile(r":\s*(?:TODO|TBD|FIXME)\b", re.IGNORECASE)
 
 #: A repo-relative path mentioned in a disposition. Requires a directory
 #: separator and a file extension so ordinary prose ("the goal's Coordination
@@ -69,6 +63,28 @@ def issue_refs(text: str) -> list[str]:
 
 #: The disposition keyword whose VALUE the placeholder test applies to. Anchored
 #: at the start so a trailing `Owner: TODO` on the same line cannot reach it.
+#: THE disposition vocabulary, owned here and imported by the gate. Two
+#: near-identical copies existed; the failure mode was not "they drift" but
+#: "one grows and the other silently degrades" -- adding a keyword to the gate's
+#: copy would have quietly reverted this module's value-scoping to whole-line
+#: behaviour, reintroducing the M2 and M3 evasions at once.
+DISPOSITION_KEYWORDS = (
+    r"Retro dispositions|Structural follow-up|Disposition|Decision|applied|tracked issue"
+)
+
+#: `applied:` / `tracked issue:` mid-line, tolerating bold markers.
+#: `Disposition: **applied** — ...` is this repo's second-most-common spelling
+#: (75 occurrences across 28 goals) and the bold markers sit between the word
+#: and the colon, so a plain `\bapplied\s*:` cannot see it.
+INLINE_DISPOSITION_RE = re.compile(r"\b\**(?:applied|tracked issue)\**\s*:", re.IGNORECASE)
+
+#: Anchored at line start: matches the keyword that OPENS a disposition.
+DISPOSITION_LINE_RE = re.compile(
+    rf"^[\s>*+-]*\**(?:{DISPOSITION_KEYWORDS})\**\s*:",
+    re.IGNORECASE,
+)
+
+#: Same, but consuming trailing space so the caller gets the VALUE.
 _LEADING_DISPOSITION_RE = re.compile(
     r"^[\s>*+-]*\**(?:Retro dispositions|Structural follow-up|Disposition|Decision|applied"
     r"|tracked issue)\**\s*:\s*",
@@ -93,9 +109,13 @@ def is_placeholder_line(text: str) -> bool:
     """
     match = _LEADING_DISPOSITION_RE.match(text)
     if match is None:
-        # No leading disposition keyword: fall back to the value-ish tail so an
-        # inline `applied: TODO` mid-sentence still defers.
-        head = text
+        # No leading keyword. Take the tail after the LAST inline disposition
+        # colon, so `- The retro entry is applied: TODO` still defers. An earlier
+        # version set `head = text` and then clipped the first clause of the
+        # LINE, which never began with the placeholder -- a comment describing
+        # behaviour the code did not have, on a proof surface.
+        inline = list(INLINE_DISPOSITION_RE.finditer(text))
+        head = text[inline[-1].end():] if inline else text
     else:
         head = text[match.end():]
     # Only the FIRST clause of the value can be a placeholder; a later sentence
@@ -159,7 +179,7 @@ SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b")
 #: Only >= 7 chars can reach here at all -- `SHA_RE` is `{7,40}` -- so shorter
 #: hex words (`facade`, `decade`, `decaf`) are excluded by the length bound and
 #: listing them here was dead weight that made the filter look broader than it is.
-_HEX_WORDS = {"acceded", "defaced", "effaced", "deedeed"}
+_HEX_WORDS = {"acceded", "defaced", "effaced"}
 
 
 def unresolvable_shas(text: str, repo_root: Path, *, run) -> list[str]:
@@ -174,6 +194,22 @@ def unresolvable_shas(text: str, repo_root: Path, *, run) -> list[str]:
     caller in a non-git context can pass a stub rather than have the gate crash.
     """
     bad = []
+    for token in sha_candidates(text):
+        if not run(token, repo_root):
+            bad.append(token)
+    return bad
+
+
+def sha_candidates(text: str) -> list[str]:
+    """SHA-shaped tokens in `text` that are worth asking git about.
+
+    Split out so a caller can COUNT what the rung actually examined. The gate
+    previously incremented its `shas_resolved` counter once per LINE, which made
+    it a line counter wearing a SHA counter's name -- it stayed at the corpus
+    line count whether or not a single token was ever resolved, and so was
+    structurally incapable of showing the collapse it was added to detect.
+    """
+    out = []
     for match in SHA_RE.finditer(text):
         token = match.group(1)
         if token.lower() in _HEX_WORDS:
@@ -181,9 +217,8 @@ def unresolvable_shas(text: str, repo_root: Path, *, run) -> list[str]:
         if token.isdigit():
             # A run of 7+ digits is a number in prose, not a SHA.
             continue
-        if not run(token, repo_root):
-            bad.append(token)
-    return bad
+        out.append(token)
+    return out
 
 
 class ResolverUnavailable(Exception):
@@ -255,15 +290,26 @@ def documents_the_vocabulary(text: str) -> bool:
     or more distinct forms, or an explicit `<slot>`); a real disposition commits
     to one.
     """
-    if _SLOT_RE.search(text):
-        return True
-    # Count forms in the VALUE only. The leading keyword is the disposition being
-    # MADE, not one of the alternatives being listed -- counting it made
-    # `Structural follow-up: issue #N (novel: ...)` look like a two-form
-    # enumeration and silently exempted the defect this module is named for.
+    # Everything is measured on the VALUE, never the line. Round 1 scoped the
+    # form count and left `_SLOT_RE` searching the whole line, which reproduced
+    # the very evasion (M2) that scoping was meant to close: any lowercase
+    # angle-bracket token anywhere -- `<ref>`, `<repo-root>`, `<path>`, all
+    # ordinary repo idiom -- exempted the line.
     match = _LEADING_DISPOSITION_RE.match(text)
     value = text[match.end():] if match else text
-    return len({m.group(0).strip("`").lower() for m in _VOCAB_RE.finditer(value)}) >= 2
+    forms = len({m.group(0).strip("`").lower() for m in _VOCAB_RE.finditer(value)})
+    has_slot = _SLOT_RE.search(value) is not None
+
+    # THREE or more forms is documentation on its own: nobody commits a single
+    # improvement to three destinations at once.
+    if forms >= 3:
+        return True
+    # Two forms is ambiguous, and getting it wrong in the permissive direction is
+    # how round 1 shipped an evasion. `Retro dispositions: applied: filed as
+    # issue #N` is the corpus's DOMINANT spelling and names two forms while
+    # committing to one -- a bare count exempted it. A slot is what separates
+    # showing from doing, so two forms only count as documentation alongside one.
+    return forms >= 2 and has_slot
 
 
 def check_disposition_referents(text: str, repo_root: Path) -> list[dict[str, str]]:
@@ -274,9 +320,14 @@ def check_disposition_referents(text: str, repo_root: Path) -> list[dict[str, st
     names is real -- NOT that the destinations are correct.
     """
     findings: list[dict[str, str]] = []
-    if is_placeholder_line(text) or documents_the_vocabulary(text):
+    if is_placeholder_line(text):
         return findings
-    for ref in bad_issue_refs(text):
+    # Scoped to the ISSUE rung. The self-documentation problem is specific to
+    # `issue #N` appearing as an example; a path has no such problem, and round
+    # 1's blanket early-return also exempted a documentation line naming a
+    # DELETED file -- a wider exemption than its own justification.
+    documenting = documents_the_vocabulary(text)
+    for ref in ([] if documenting else bad_issue_refs(text)):
         findings.append({
             "kind": "unresolvable-issue-ref",
             "token": ref,

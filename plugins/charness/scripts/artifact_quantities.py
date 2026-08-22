@@ -34,6 +34,13 @@ disagreement, not a lone wrong number.
 
 A mismatch is reported with every site and value, so the author sees the drift
 rather than being told a number is "wrong" with no second reading to compare.
+
+SCOPE LIMIT, stated because the corpus's normal shape crosses it. Consistency is
+checked PER FILE. A goal and its retro routinely restate each other's counts, and
+this catches none of that -- the v6.3.0 issue count was wrong in both artifacts
+simultaneously and agreed with itself inside each. Cross-artifact reconciliation
+would need a declared owner per quantity; that is not built, and pretending
+otherwise here would be the same defect one layer up.
 """
 from __future__ import annotations
 

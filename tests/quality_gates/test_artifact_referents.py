@@ -268,8 +268,14 @@ def test_an_undatable_artifact_is_NOT_fail_closed_for_shas(tmp_path: Path) -> No
 
     result = _run("--path", str(artifact))
 
+    # Assert the COUNT, not the label. `grandfathered (reported, not rewritten):`
+    # prints unconditionally, so `"grandfathered" in stdout` passed with zero
+    # findings, with a broken SHA_RE, and with the fixture never opened -- the
+    # render-identically-either-way shape this gate refuses, reintroduced by the
+    # repair that added these very tests.
     assert result.returncode == 0
-    assert "grandfathered" in result.stdout
+    assert "grandfathered (reported, not rewritten): 1" in result.stdout
+    assert "unresolvable-commit-ref" in result.stdout
 
 
 def test_a_pre_cutoff_artifact_reports_without_blocking(tmp_path: Path) -> None:
@@ -408,3 +414,97 @@ def test_this_repos_other_disposition_spellings_are_seen(spelling: str) -> None:
     spec.loader.exec_module(gate)
 
     assert gate.disposition_lines(spelling) != []
+
+
+# --------------------------------------------------------------------------
+# Round 2: the repairs' own failure modes
+# --------------------------------------------------------------------------
+
+
+def test_a_real_disposition_naming_two_forms_is_still_checked() -> None:
+    """`Retro dispositions: applied: ...` is the corpus's DOMINANT spelling and
+    names two vocabulary forms while committing to one. Round 1's bare
+    two-form count exempted it, which was an evasion on the commonest shape."""
+    evasion = "Retro dispositions: applied: filed the follow-up as issue #N"
+
+    assert len(check_disposition_referents(evasion, ROOT)) == 1
+
+
+def test_an_angle_bracket_anywhere_on_the_line_does_not_exempt_it() -> None:
+    """`<ref>`, `<repo-root>`, `<path>` are ordinary repo idiom. Round 1 scoped
+    the FORM count to the value and left the SLOT test scanning the whole line,
+    reproducing the exact evasion the scoping closed."""
+    evasion = "Structural follow-up: issue #N (recurs: reviewers use git show <ref>:<path>)"
+
+    assert len(check_disposition_referents(evasion, ROOT)) == 1
+
+
+def test_documentation_is_exempt_by_enumeration_without_any_slot() -> None:
+    """Pins the ENUMERATION branch specifically. Both earlier documentation
+    cases carried a `<slot>`, so only the slot branch was exercised while the
+    docstring claimed enumeration was the discriminator."""
+    documentation = "(`issue #N`/`applied:`/`accepted-risk:`/`out-of-scope:`) accepts it."
+
+    assert check_disposition_referents(documentation, ROOT) == []
+
+
+def test_the_documentation_exemption_does_not_cover_paths() -> None:
+    """The self-documentation problem is specific to `issue #N` as an example.
+    Round 1's blanket early-return also exempted a documentation line naming a
+    DELETED file -- wider than its own justification."""
+    line = "the floor accepts `applied: <what>` / `issue #N`, see docs/definitely-gone.md"
+    findings = check_disposition_referents(line, ROOT)
+
+    assert [f["kind"] for f in findings] == ["missing-path-referent"]
+
+
+def test_an_inline_disposition_placeholder_defers() -> None:
+    """L-b: the fallback's comment described behaviour the code did not have."""
+    assert is_placeholder_line("- The retro entry is applied: TODO") is True
+
+
+def test_a_refusing_resolver_exits_unestablished_not_pass(tmp_path: Path) -> None:
+    """The B3 repair turned a false-positive storm into a SILENT false negative:
+    the gate exited 0, run-quality printed PASS, and the passing phase's log --
+    carrying the only explanation -- is deleted at EXIT. Exit 3 is the runner's
+    own byte for "ran, established nothing"."""
+    artifact = tmp_path / "2026-08-25-nogit.md"
+    artifact.write_text("landed at `deadbee1234`\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(GATE), "--repo-root", str(tmp_path), "--path", str(artifact)],
+        capture_output=True, text=True, timeout=60,
+    )
+
+    assert result.returncode == 3, result.stdout
+    assert "WARNING" in result.stdout, "run-quality only prints a passing gate's log on this token"
+    assert "STOOD DOWN" in result.stdout
+
+
+def test_shas_resolved_counts_tokens_not_lines() -> None:
+    """M1: the counter incremented once per LINE, so it stayed at the corpus
+    line count even if SHA_RE stopped matching entirely -- structurally unable
+    to show the collapse it was added to detect."""
+    from scripts.artifact_referents import sha_candidates
+
+    assert sha_candidates("no shas here at all") == []
+    assert sha_candidates("`96ba78f7f` and `deadbee1234`") == ["96ba78f7f", "deadbee1234"]
+
+
+def test_the_corpus_run_reports_a_nonzero_sha_count() -> None:
+    """A floor, because `shas_resolved: 0` satisfied every earlier assertion."""
+    result = _run()
+
+    resolved = int(re.search(r"shas_resolved: (\d+)", result.stdout).group(1))
+    assert resolved > 100, "the SHA rung examined almost nothing; a clean verdict proves little"
+
+
+def test_the_disposition_vocabulary_has_one_owner() -> None:
+    """L-c: two near-identical regexes existed. The failure mode is not drift but
+    'one grows and the other silently degrades' -- adding a keyword to the gate's
+    copy would revert the library to whole-line scoping, reintroducing the M2 and
+    M3 evasions at once."""
+    gate_source = (ROOT / "scripts" / "check_artifact_referents.py").read_text(encoding="utf-8")
+
+    assert "DISPOSITION_LINE_RE = re.compile" not in gate_source
+    assert "INLINE_DISPOSITION_RE = re.compile" not in gate_source

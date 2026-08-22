@@ -384,7 +384,7 @@ PARTIAL_EXIT=4
 # summary line, a scan that read zero documents, or an awiki exit code outside
 # its clean/findings pair -- and never when it observed a bad graph. An
 # unobserved orphan count is not zero, and this is the byte that says so.
-UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph check-closeout-classification-parity check-export-self-sufficiency"
+UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph check-closeout-classification-parity check-export-self-sufficiency check-artifact-referents"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
