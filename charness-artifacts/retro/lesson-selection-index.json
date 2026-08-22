@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-22",
-  "source_artifact_count": 555,
-  "candidate_count": 2248,
+  "source_artifact_count": 556,
+  "candidate_count": 2251,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1854,6 +1854,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:9f740fa239ab",
+      "kind": "current_focus",
+      "lesson": "Two slices: declare what a claims verdict is about, then publish the bundle three earlier slices had produced and could not ship.",
+      "normalized_key": "two slices declare what a claims verdict is about then publish the bundle three",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Two slices: declare what a claims verdict is about, then publish the bundle three earlier slices had produced and could not ship."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6940f213340a",
       "kind": "next_improvement",
       "lesson": "A subagent that must not write should be given a tree it cannot write to, not a sentence telling it not to. Worktree isolation exists for exactly this and was not used for the read-only probers.",
@@ -1928,6 +1954,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**capability — the critique acceptor binds on version tokens.** `tracked issue: #699.`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:12de702344bb",
+      "kind": "next_improvement",
+      "lesson": "capability — the mutation harness has not run on `main` for days and its failure reads as a step failure rather than as unmeasured coverage. `tracked issue: #612`",
+      "normalized_key": "capability the mutation harness has not run on main for days and its failure",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "capability — the mutation harness has not run on `main` for days and its failure reads as a step failure rather than as unmeasured coverage. `tracked issue: #612`"
         }
       ]
     },
@@ -2110,6 +2162,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6fc97784cd35",
+      "kind": "next_improvement",
+      "lesson": "workflow — treat a hand-maintained enumeration inside a gate as a defect. When a gate asks to be extended, ask what property it is approximating. `tracked issue: #586`",
+      "normalized_key": "workflow treat a hand maintained enumeration inside a gate as a defect when a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "workflow — treat a hand-maintained enumeration inside a gate as a defect. When a gate asks to be extended, ask what property it is approximating. `tracked issue: #586`"
         }
       ]
     },

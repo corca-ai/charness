@@ -46,27 +46,24 @@
 
 ## Next Session
 
-1. **The next minor is NOT published, and this is the first thing to know.** The
-   published version is whatever `git describe --tags --abbrev=0` reports, and
-   the prepared-but-unshipped bundle is described in
-   [the release record](../charness-artifacts/release/latest.md), which names the delta. Slices C, B
-   and A are committed on `main`; the
-   release was prepared four times and dropped four times, because four claims
-   rounds all returned `unproven`. No tag, nothing pushed, no issue closed.
-   Read the prepared claims narrative before touching the release:
-   [all four rounds](../charness-artifacts/release-review/2026-08-22-v6.3.0-prepared-claims-review.md) and what each blocked on.
-2. **Fix #701 before attempting the release again.** Not one of the ~14 claims
-   blockers was in the shipped code: every round confirmed the quality-status
-   owner mechanism, all five version surfaces and every derived figure. Every
-   blocker was prose ABOUT the review, in artifacts that ship inside the bundle
-   being reviewed — a loop with no fixed point. The predecessor's own durable
-   claims record, added to satisfy a round-3 finding, landed inside the prepared
-   commit and made a `pass` structurally unpublishable
-   (`publish_release_claims_review.py:258-278` wants the narrative ADDED by the
-   evidence commit). Continue from
-   [the successor goal](../charness-artifacts/goals/2026-08-22-claims-review-convergence-then-ship-6-3-0.md), which owns the remainder,
-   which fixes the loop first and publishes second, in that order and for that
-   reason.
+1. **`check-artifact-referents` is new and it reads what you are about to
+   write.** Between the existing form floor and fresh-eye review it adds a
+   REFERENT rung: `issue #N`, an `applied:` naming a path that does not exist,
+   and an unresolvable SHA are all refused. `{{q:<id>=<value>}}` markers make a
+   restated count agree with itself. Two edges: it can exit **3**
+   (`UNESTABLISHED`) when git cannot resolve SHAs — that is "ran, established
+   nothing", not a pass — and quantity consistency is PER FILE, so goal-vs-retro
+   drift is still yours to catch.
+2. **A claims round now declares what its verdict is ABOUT** (#701) — shipped
+   surfaces gate the tag, dated session narrative is reported and published
+   known-inaccurate; the contract is in
+   [critique-boundary.md](../skills/public/release/references/critique-boundary.md).
+   Before authoring a claims record, derive the scope with
+   `claims_review_scope.partition` over `<previous-tag>..<prepared>`; the
+   validator re-derives it and refuses a scope that moves a path or omits a
+   blocking one. Every checked-in example predates `v3`, so copying one as a
+   template gets refused after the prepared commit exists, where the only repair
+   is an in-place amend.
 3. **A new gate now catches the class that cost this session four claims
    rounds**, and it is worth knowing before writing a goal or retro.
    [The referent gate](../scripts/check_artifact_referents.py), wired into

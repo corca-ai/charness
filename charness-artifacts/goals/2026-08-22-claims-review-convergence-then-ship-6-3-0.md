@@ -1,6 +1,6 @@
 # Achieve Goal: Make claims review converge, then ship the 6.3.0 bundle
 
-Status: draft
+Status: complete
 Created: 2026-08-22
 Activation: `/goal @charness-artifacts/goals/2026-08-22-claims-review-convergence-then-ship-6-3-0.md`
 
@@ -57,6 +57,15 @@ the blocked thing — reviewing it was.
 
 ## Non-Goals
 
+- NOT a redesign of the claims-review contract. The distinct-observer floor,
+  the byte floor, the added-not-edited narrative rule and the prepared-stop
+  topology are unchanged; only the SCOPE of what a verdict covers is declared.
+- NOT a way to publish with fewer checks. Advisory findings are recorded and
+  published, never dropped; the laundering guard is tested as hard as the split.
+- NOT the remaining referent-gate and scope-split residue: the non-ASCII path
+  case, `issue/` vs `issues/`, and the test module's `sys.path` cleanup are left
+  for a later pass and named in `## Off-Goal Findings`.
+
 ## Boundaries
 
 - External side-effect scope: name which phase or bundle any approved
@@ -69,27 +78,29 @@ the blocked thing — reviewing it was.
 
 ## User Acceptance
 
-What the user can do to verify completion directly — the OUTCOMES, not the
-verification cadence. Whichever line of `## Active Operating Frame` states when
-broad or expensive proof runs (`Gate cadence:` in the charness default frame; a
-consumer adapter may seed its own) is the one owner of that answer. Restating it
-here creates a second owner, and an agent reading its own acceptance criteria
-obeys the acceptance criteria: one measured session paid roughly two and a half
-hours re-running a 12-minute suite that way. Name what is true when the goal is
-done, and point at `## Active Operating Frame` for when it is proven.
+- A claims round can converge: it returns findings that are ABOUT the shipped
+  bundle, and defects in session narrative do not gate a tag.
+- A `pass` cannot hide what it waived — the published record names each waived
+  defect and the scope it covered.
+- 6.3.0 is published and read back through a channel other than tag state.
 
 ## Agent Verification Plan
 
-### Low-Cost Checks
-
-### High-Confidence Checks
-
-### External Or Live Proof
+- Unit: the classifier, the laundering guard, and the completeness check, each
+  negative-controlled (removing the defect flips the verdict).
+- Wiring: deleting the guard's call site must break a test — round 1 found it
+  did not.
+- End to end: a real claims round against the real prepared commit, with the
+  scope derived from the real delta rather than hand-written.
+- Release: `run-quality.sh --release` over the full suite, then a distinct
+  channel (GitHub API) for the publication itself.
 
 ## Slice Plan
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
+| 1 | Declare what a claims verdict is ABOUT | Two releases stalled on the same non-converging loop | A classifier over the real delta, a `pass` that must carry what it waived | landed; three commits touching `claims_review_scope.py` (`git log --oneline -- skills/public/release/scripts/claims_review_scope.py`). Two-round cap consumed; round-2 repairs accepted-unreviewed |
+| 2 | Ship the bundle | Slices C, B and A reach consumers only through a release | Published readback through a distinct channel; a claims round that converges | landed; the tag and its commit are whatever `git describe --tags --abbrev=0` and `gh release view` report |
 
 ## Backlog Recount
 
@@ -103,64 +114,46 @@ Recount the tracker before scope; see the `achieve` skill's
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+none — every consequential decision this run was either resolved in-flight
+against the repo's own contracts (the scope split, the bump level, the two-round
+cap) or is already carried as an open issue. The one item an operator would
+otherwise inherit — whether the fixed issues may be closed — is recorded in
+`## Coordination Cues` as a deferral with its reason, not parked here.
 
 ## Coordination Cues
 
-Phase-appropriate routing for this run, chosen from installed skill metadata and
-model judgment — never a hard-coded phase-to-skill list here. Use the catalog
-only for hidden availability facts. `achieve` owns this slot and the floors
-below. Fill during the run:
+- Phases: impl, quality, critique, issue, release, retro
 
-- **Phases** — name the phases this run's recorded work crossed, e.g.
-  `Phases: debug, quality`, or `Phases: n/a — <reason>` when it crossed none. YOU
-  say this; the floor used to infer it by matching words in your prose and was
-  wrong in both directions — plain-English debug work did not register, while the
-  word "gate" in an unrelated sentence demanded a quality route.
-- **Routing** — choose the skill for the current phase or boundary from installed
-  metadata/model judgment, and record the route. At completion, recorded
-  implementation / issue work (both detected from records you wrote) and every
-  phase you declared above need this `Routing:` evidence or a
-  `Routing: n/a — <reason>` opt-out.
-- **Gather step** — when `## Context Sources` names an external source
-  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
-  gathered asset, or write `Gather: n/a — <reason>` when no external context
-  applies.
-- **Release step** — when this run touches a release surface (a version bump or
-  install-manifest edit), add a `Release:` line here pointing at the release
-  proof, or write `Release: n/a — <reason>`.
-- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
-  an `Issue closeout:` line naming the close-intended issue numbers, carrier
-  (`direct-commit`, PR body, release commit, or manual fallback), and
-  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
-  tracked issue appears in `## Context Sources` as context only, use
-  `Issue closeout: n/a — <reason>`.
-- **Successor goal step** — required at EVERY completion, not conditionally. Add
-  a `Successor goal:` line naming the next goal artifact this run's lessons
-  designed, or write `Successor goal: n/a — <reason>` to say out loud that none
-  is wanted. The closing goal is the only place that still holds what the session
-  measured about this repo's real shape; a completion that does not spend it
-  throws that away, and the next session re-derives it.
+- Routing: `achieve` — owns this goal's lifecycle, its slice log and this cue slot.
+- Routing: `impl` — slice 1 is ordinary implementation on a release-flow surface.
+- Routing: `quality` — the scope split changes verdict logic on a proof surface,
+  so it went through the changed-line lane, the dup ratchet and the length caps.
+- Routing: `critique` — two bounded fresh-eye rounds on slice 1 (the cap) plus a
+  full claims round on slice 2; all three found blockers that changed code.
+- Routing: `issue` — #701's fix landed here, and #612's diagnosis was
+  recorded against the tracker rather than folded into this goal's prose.
+- Routing: `release` — slice 2 ran the repo-owned publish helper end to end.
+- Routing: `retro` — the closing review, persisted and bound in
+  `## Final Verification`.
 
-Routing step line — record it on ONE physical line so the floor reads the whole
-value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
-form below and replace `<skill>` with the selected installed skill; the
-placeholder is intentionally non-satisfying (the Gather / Release / Issue
-closeout floors are presence-only, so no stub is seeded for them — add their line
-per the bullets above when that boundary is crossed):
+- Gather: n/a — no external URL, Slack, Notion, Docs or Drive source informed
+  this run; every input was repo-local or an issue in this tracker.
 
-- `Phases: <declared phases, or n/a — why none were crossed>`
-- `Routing: <skill> — <why this phase needs it>`
+- Release: published. The tag, its commit and the publication timestamp are
+  whatever `git describe --tags --abbrev=0` and
+  `gh release view --json tagName,publishedAt` report; the record is
+  `charness-artifacts/release/latest.md` and the claims evidence is
+  `charness-artifacts/release-review/2026-08-22-v6.3.0-round5-claims-review.md`.
+  Readback was through the GitHub API, a channel other than tag state.
+
+- Issue closeout: **DEFERRED, not n/a.** #701 is fixed by slice 1 and is NOT
+  closed: no `--close-issue` was passed and no closeout ledger was staged, so
+  the per-issue behavioural floor never ran. Closing on the strength of "the fix
+  shipped" is the substitution that floor exists to refuse. #689, #690, #691,
+  #696, #697, #698, #699, #700 likewise stay open. Closure is left to a session
+  that runs the floor.
+
+- Successor goal: `charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`
 
 ## Discuss Before Activation
 
@@ -175,29 +168,36 @@ applies.
 
 ## Slice Log
 
+### Slice 1: declare the claims-review scope
+
+- Objective: make a claims verdict say which surfaces it covers, so narrative defects stop gating a tag and the round can converge.
+- Commits: `git log --oneline -- skills/public/release/scripts/claims_review_scope.py` — the split, then round-1 repairs, then round-2 repairs, in that order.
+- What changed: `skills/public/release/scripts/claims_review_scope.py` (NEW — classification, the laundering guard, the completeness check), `publish_release_claims_review.py` (schema v2 -> v3, the guard wired into `validate_claims_review`), `publish_release_resume_publish.py` and `publish_release_artifact_sections.py` (the waived findings reach the published record), plus the ownership allowlist, the timing-layer table and the consumer-validator catalog.
+- Critique: TWO bounded rounds; the cap is consumed and the round-2 repairs are accepted-unreviewed. Round 1 recommended `unproven` and was right: `classify()` had NO production caller, so the declared scope was unverified free text and a record declaring a shipped release-gate file as `advisory` was accepted. Deleting the guard's call site also broke no test. Round 2 then found the round-1 repairs had opened a post-tag inlet — `advisory_findings` was rendered verbatim into a record that is pushed AFTER the tag, so a newline could inject a `target version:` line that refuses every later push, and the prepared-stop marker could permanently reclassify a finished release. It also found the `.md`-is-narrative rule classified `quality/latest.md` and `recent-lessons.md` — both machine-read — as advisory.
+- Targeted verification: `python3 -m pytest -q tests/quality_gates/test_claims_review_scope.py` plus every release suite it touches. Both defect paths negative-controlled — removing the defect flips the verdict, and deleting the guard's call site fails two tests. The laundering record round 1 demonstrated is refused by name.
+
+### Slice 2: ship 6.3.0
+
+- Objective: publish the bundle three earlier slices produced, through a claims round that converges.
+- Commits: the release commit, its claims-evidence child, and the post-publish record — `git log --oneline $(git describe --tags --abbrev=0)~1..` shows all three in order.
+- Targeted verification: the release gate REFUSED twice before passing — first on four checks (harness stub, mirror drift, a `--json` flag against this repo's YAML-only contract, a validator-count pin), then on two (six uncovered changed lines, and a runtime budget this release's own scope widening had broken). Covering the changed lines found a live defect: `missing_paths` tested the matched substring for `://`, but the scheme is outside the match, so every external link in a disposition would have been reported as a missing file.
+- Claims review: round 5 returned three blockers, ALL in the blocking scope — the exact inverse of the four rounds before it, every one of whose blockers was session narrative rather than shipped code. All three were false claims on shipped surfaces: a stale path count that understated the never-critiqued portion severalfold, "no existing artifact reddens on update" (false — `draft` is a shaping status and the hollow floor has no date grandfather), and "no consuming repo authors a claims record" (false — the release skill ships in the export). Nine advisory findings were reported; five are published in the record under SHIPPED KNOWN-INACCURATE.
+
 ## Context Sources
 
-Durable references this goal was shaped from. A fresh session can reconstruct
-the originating context by following them in order.
-
-1. TODO the repo's governing design standard, and what it says about THIS goal —
-   which facets bear on its boundaries, where its teeth belong, and which
-   irreversible boundaries it crosses. Read it while SHAPING, not at closeout:
-   the standard is what tells you where a wrong answer escapes, and that is a
-   Before-phase question. (The retro's `## North Star Alignment` asks the
-   backward-looking half; this is the forward-looking one.)
+- The predecessor goal `charness-artifacts/goals/2026-08-22-proof-cost-portability-and-the-cadence-contract.md`, which produced slices C, B and A and could not publish them.
+- `charness-artifacts/release-review/2026-08-16-v6.0.0-claims-review.md` — the same non-convergence at a previous release, stopped at three rounds with the holding "publishing on a fourth round would be reviewing until it passes".
+- Issue #701, which this goal's first slice closes.
 
 ## Interview Decisions
 
-For each Before-phase question: family of options considered, chosen value, and
-rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
-itself so a fresh session sees the design space, not only the closed point.
+- Decision: fix the convergence loop BEFORE publishing, not after. Rationale: four rounds of evidence that the other order does not terminate.
+- Decision: split by scope rather than by reviewing less. A wrong blocker tally in a retro stays a reported defect; it just does not gate a tag, because a tag is a claim about shipped code.
+- Decision: require a `pass` to carry what it waived. The obvious failure of a scope split is that it becomes a laundering channel, so the record must name each waived defect.
 
 ## Plan Critique Findings
 
-Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
-not folded, and reviewer provenance. Preserves reasoning so a fresh session
-re-verifies the folded revisions without re-running critique.
+No Before-phase plan critique: this goal was created at the predecessor's closeout and pursued directly. What stands in its place is two bounded fresh-eye rounds on slice 1 and a full claims round on slice 2, all three of which found blockers that changed the implementation rather than only the prose.
 
 ## Closeout Binding Plan
 
@@ -212,22 +212,27 @@ check proves shape only; closeout workflows prove the values and identities:
 
 ## Off-Goal Findings
 
-Issues or deferred findings discovered during the run.
+- A non-ASCII filename in a release delta makes the release unpublishable: git quotes it, so the quoted form reads as `invented` and the plain form as `missing`. Not filed; recorded here.
+- `charness-artifacts/issue/` (singular, extant) classifies blocking while `issues/` (plural) is advisory. Fail-closed, so it yields false blockers rather than escapes.
+- The new test module's `sys.path.insert` has no cleanup.
+- #612: the mutation harness has not RUN on `main` since at least 2026-08-17 — `Select mutation sample` times out. Measured locally: the sampler completes the standing suite in 197.6s and is still working past 420s. Candidate cause: #697, the shared coverage-report path.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
-
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md
+Host log probe: skipped: host-log-not-exposed: this goal recorded no `Host metric window:` line, so `probe_host_logs.py --goal-path` has no scoped window to read. No turn, token or tool-call figure is claimed anywhere in this artifact or its retro.
+Disposition review: charness-artifacts/release-review/2026-08-22-v6.3.0-round5-claims-review.md
 
 ## User Verification Instructions
 
+The publication is real and checkable without trusting this artifact:
+
+- `gh release view v6.3.0 --repo corca-ai/charness --json tagName,publishedAt,isDraft` — a channel other than tag state.
+- `git ls-remote --tags origin v6.3.0` — the tag on the remote.
+- `git show v6.3.0:packaging/charness.json` — the version as it exists at the tag.
+- `grep -A 8 "Verdict scope" charness-artifacts/release/latest.md` — the five defects published KNOWN-INACCURATE rather than repaired.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: the claims-review scope split (`skills/public/release/scripts/claims_review_scope.py`), which closes #701 and is what made the fifth claims round converge. applied: waived defects now reach the published record through `_scope_lines` instead of being validated and dropped. applied: the `://` guard in `scripts/artifact_referents.py` tested the matched substring, so it never fired — every external link in a disposition would have been reported as a missing file.
+Structural follow-up: issue #612 (recurs: a verification surface that stops verifying and keeps reporting — the mutation harness has not run on `main` since 2026-08-17, and the failure reads as a step failure rather than as unmeasured coverage).
