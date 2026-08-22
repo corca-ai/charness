@@ -111,7 +111,17 @@ NOT_JUDGED = (
     "whether any link RESOLVES (that is check_doc_links.py, a different question)",
     "whether any page is ACCURATE or current (reachability is not accuracy)",
     "whether a link-only line is a bare link or wrapped prose -- the bar counts "
-    "both, so a genuine bare link can hide under the wrapping residual",
+    "both, so a genuine bare link can hide under the wrapping residual (see "
+    "`link_only_lines_slack` for how much room that residual currently has)",
+)
+# Emitted in place of a number for `link_only_lines_slack` (see
+# `link_only_lines_slack` below) on the one path where the gap is genuinely
+# unknown rather than merely unfavourable: this run FAILED on some OTHER
+# metric while `link_only_lines` itself went unobserved, so its count is
+# neither printed nor licensed as zero.
+LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE = (
+    "not computable this run: `link_only_lines` was not observed while a "
+    "different metric failed, so its count is neither zero nor printed"
 )
 _SUMMARY_RE = re.compile(r"^//\s*(?P<verdict>\w+)\s+(?P<fields>.*)$")
 _FIELD_RE = re.compile(r"(?P<key>[a-z_]+)=(?P<value>[0-9.]+)")
@@ -526,6 +536,36 @@ def assert_metric_tables_complete(
 assert_metric_tables_complete()
 
 
+def link_only_lines_slack(result: dict[str, object]) -> int | str:
+    """Bar minus the CURRENTLY MEASURED `link_only_lines` count, on a real verdict.
+
+    The bar only ever moves on a recorded ratchet entry (`ratchet_rows` above);
+    the measured count moves on its own with every docs edit -- a rewrap can
+    LOWER the measured count while the bar stays where it was, and this is the
+    width of the gap that opens between them. Nothing else in this module's
+    output says how wide that gap currently is, so a growing one goes silent:
+    the bar keeps passing while more room opens for the genuine bare link
+    `NOT_JUDGED` already concedes can hide in the wrapping residual.
+
+    Computable whenever `link_only_lines` was actually judged this run: printed
+    directly in the summary, or read as zero off awiki's OWN passing verdict
+    token in the licensed branch inside `_evaluate` (a `pass` where the field is
+    absent can only be that license, never a genuine unknown). Returns
+    `LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE` instead of a number on the one path
+    where the count is genuinely unknown: this run FAILED on some OTHER metric
+    while `link_only_lines` itself was never printed and the zero-license
+    branch was never reached, so reporting a number here would invent one the
+    gate structurally does not have.
+    """
+    summary = result["summary"]
+    bar = result["bars"]["link_only_lines"]
+    if "link_only_lines" in summary:
+        return bar - int(summary["link_only_lines"])
+    if result["status"] == "pass":
+        return bar
+    return LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE
+
+
 def report(result: dict[str, object]) -> dict[str, object]:
     """Fold the verdict-explaining text into the payload the gate actually emits.
 
@@ -548,6 +588,11 @@ def report(result: dict[str, object]) -> dict[str, object]:
         *NOT_JUDGED,
         f"any page outside {result.get('scan_root', '?')}/, which this run never read",
     ]
+    # Additive only: computed from `result`, never fed back into `status` or the
+    # exit code `main` derives from it. The monotone ratchet refuses a RISE and
+    # is silent about a FALL, so this is the one number in the whole payload that
+    # can shrink on a green run without anyone having recorded why.
+    payload["link_only_lines_slack"] = link_only_lines_slack(result)
     failures = result["failures"]
     if failures:
         payload["failure_label"] = {metric: _FAILURE_LABEL[metric] for metric in failures}

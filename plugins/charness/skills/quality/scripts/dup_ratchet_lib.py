@@ -80,6 +80,47 @@ def overlay_fixable_ceiling(overlay: dict[str, Any] | None) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# Scope coverage (slice 4: gate by property, not by enumeration)
+#
+# scope_paths is a scan-cost boundary, not a duplication-eligibility boundary --
+# nothing outside it ever gets a family FORMED at all. Nothing previously said so,
+# or how much that left out. HOW TO SIZE the uncovered population, stated as the
+# method rather than as any run's answer: read this run's own git-tracked file
+# list (the population scope_paths is drawn against) and subtract whatever falls
+# under one of scope_paths' own entries, compared by path SEGMENT so a
+# same-prefix sibling directory is never miscounted as covered. The count is
+# computed fresh every run from that live tracked-file list; it is never frozen
+# here.
+# --------------------------------------------------------------------------- #
+def scope_coverage(tracked_files: set[str] | None, scope_paths: Iterable[str]) -> dict[str, Any] | None:
+    """How many of this repo's git-tracked files sit outside ``scope_paths`` -- the
+    population ``dup_ratchet_scan.scan_families`` never forms a family from,
+    because it only ever reads ``scope_paths``. ``None`` when ``tracked_files`` is
+    unknown (git could not answer this run); the caller reports that
+    un-knowledge honestly rather than reading an unasked population as zero.
+
+    This over-counts relative to what nose would actually flag: every tracked
+    file counts, including docs/config nose would never treat as a code clone.
+    The gate does not own nose's own file-type filtering, and guessing at it here
+    would invent a number rather than compute one -- this is the closest honest
+    signal available without running a second, duplicate scan.
+    """
+    if tracked_files is None:
+        return None
+    scopes = [str(scope).rstrip("/") for scope in scope_paths]
+
+    def _covered(path: str) -> bool:
+        return any(path == scope or path.startswith(f"{scope}/") for scope in scopes)
+
+    uncovered = sorted(path for path in tracked_files if not _covered(path))
+    return {
+        "tracked_file_count": len(tracked_files),
+        "uncovered_file_count": len(uncovered),
+        "uncovered_top_level": sorted({path.split("/", 1)[0] for path in uncovered}),
+    }
+
+
+# --------------------------------------------------------------------------- #
 # Reduction pre-pass (S4-Defer-3: membership-shrink is advisory, not a hard block)
 #
 # The gate-baseline schema (build/load/validate ``dup-ratchet-baseline.json``) lives
@@ -289,6 +330,10 @@ def evaluate(
         "anchor": anchor,
         "anchor_is_ancestor": bool(anchor_is_ancestor),
         "degraded_reasons": degraded,
+        # The fail-open branch's own state, legible without a string match on
+        # `status` -- true exactly when the early `if degraded:` return below
+        # fires. Additive only: never read by `ok`/`block` themselves.
+        "degraded": bool(degraded),
         "hard_block": False,
         "boy_scout_block": False,
         "above_floor": fixable_ceiling > floor_F,

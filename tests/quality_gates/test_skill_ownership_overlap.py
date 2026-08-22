@@ -175,6 +175,99 @@ def test_the_checked_in_allowlist_has_no_stale_entries() -> None:
     )
 
 
+def test_scan_reports_scanned_files_and_uncovered_breakdown(tmp_path: Path) -> None:
+    """Every run sizes what the non-recursive .py/.md scan cannot reach, as a NUMBER,
+    broken down by why: nested, wrong suffix at the top level, or anywhere else under
+    the skill root besides SKILL.md.
+    """
+    skills_dir = tmp_path / "skills" / "public"
+    skill = skills_dir / "alpha"
+    (skill / "scripts" / "templates").mkdir(parents=True)
+    (skill / "SKILL.md").write_text("# Alpha\n\nNo overlap here.\n", encoding="utf-8")
+    (skill / "scripts" / "run.py").write_text("# scanned top-level .py\n", encoding="utf-8")
+    (skill / "scripts" / "config.yaml").write_text("key: value\n", encoding="utf-8")
+    (skill / "scripts" / "templates" / "nested.py").write_text(
+        "# nested, never opened by the non-recursive walk\n", encoding="utf-8"
+    )
+    (skill / "README.md").write_text("# root file other than SKILL.md\n", encoding="utf-8")
+    # references/ as well as scripts/. A first cut exercised only scripts/, and a
+    # fresh-eye round showed the obvious mutant survived it: narrowing the bucket
+    # condition to ("scripts",) reclassifies every references/ file the scan DOES read
+    # into `skill_root_other`, so scanned files get counted as uncovered -- real
+    # double-counting -- with the whole suite green.
+    (skill / "references" / "deep").mkdir(parents=True)
+    (skill / "references" / "notes.md").write_text("# scanned top-level .md\n", encoding="utf-8")
+    (skill / "references" / "deep" / "buried.md").write_text("# nested\n", encoding="utf-8")
+    # And the build-artifact exclusion, which was itself untested while being the
+    # single highest-impact line in the walk.
+    (skill / "scripts" / "__pycache__").mkdir()
+    (skill / "scripts" / "__pycache__" / "run.cpython-310.pyc").write_bytes(b"\x00")
+
+    result = _ownership_overlap.scan(tmp_path, set())
+
+    assert result["scanned_files"] == 3  # SKILL.md + scripts/run.py + references/notes.md
+    uncovered = result["uncovered"]
+    assert uncovered["non_py_md_top_level"] == 1  # scripts/config.yaml
+    # scripts/templates/nested.py + references/deep/buried.md
+    assert uncovered["nested_under_scripts_or_references"] == 2
+    assert uncovered["skill_root_other"] == 1  # README.md
+    assert uncovered["total"] == 4
+    # Reported, and deliberately NOT in `total` -- otherwise the headline number would
+    # move with whether bytecode happens to be on disk.
+    assert uncovered["excluded_build_artifacts"] == 1
+    # Additive only: none of the extra files introduced any finding.
+    assert result["findings"] == []
+
+
+def test_uncovered_count_does_not_change_verdict_on_a_real_blind_spot(tmp_path: Path) -> None:
+    """A real cross-namespace mention hidden in the scan's own blind spot still passes ok --
+    sizing the gap must not itself start judging what's inside it (constraint: additive
+    only, never a new verdict/exit code/refusal).
+    """
+    skills_dir = tmp_path / "skills" / "public"
+    skill = skills_dir / "alpha"
+    (skill / "scripts" / "templates").mkdir(parents=True)
+    (skill / "SKILL.md").write_text("# Alpha\n", encoding="utf-8")
+    (skill / "scripts" / "templates" / "hidden.yaml").write_text(
+        "writes charness-artifacts/quality/latest.md\n", encoding="utf-8"
+    )
+    (skills_dir / "quality").mkdir(parents=True)
+
+    result = _ownership_overlap.scan(tmp_path, set())
+
+    assert result["findings"] == []
+    assert result["uncovered"]["total"] >= 1
+    assert result["uncovered"]["nested_under_scripts_or_references"] >= 1
+
+
+def test_empty_tree_reports_zero_scanned_files_and_zero_uncovered(tmp_path: Path) -> None:
+    (tmp_path / "scripts").mkdir(parents=True)
+
+    result = _ownership_overlap.scan(tmp_path, set())
+
+    assert result["scanned_files"] == 0
+    assert result["uncovered"] == {
+        "nested_under_scripts_or_references": 0,
+        "non_py_md_top_level": 0,
+        "skill_root_other": 0,
+        "excluded_build_artifacts": 0,
+        "total": 0,
+    }
+
+
+def test_current_repo_reports_positive_scanned_files_and_uncovered(monkeypatch, capsys) -> None:
+    """Pinned against the live tree: the measured gap (skills/public/setup/scripts/templates/)
+    must show up as a positive nested count on every run, not just in the one-off measurement.
+    """
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(ROOT))
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["scanned_files"] >= 1
+    assert isinstance(payload["uncovered"]["total"], int)
+    assert payload["uncovered"]["nested_under_scripts_or_references"] >= 1
+
+
 def test_a_tree_with_no_public_skills_claims_no_staleness(monkeypatch, capsys, tmp_path: Path) -> None:
     """It reports zero stale entries because it SCANNED nothing, not because it checked.
 

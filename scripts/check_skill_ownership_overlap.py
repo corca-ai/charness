@@ -11,6 +11,13 @@ via the allowlist at scripts/check_skill_ownership_overlap.allowlist.txt.
 Silent overlap creates drift the next operator hits. This validator surfaces
 the overlap so the boundary becomes a deliberate choice instead of prose-only
 verification in create-skill/portable-authoring.md.
+
+The scan itself is narrow: SKILL.md plus a NON-RECURSIVE, suffix-filtered walk of
+each skill's scripts/ and references/ directories. Every run reports `scanned_files`
+alongside `uncovered`, the count of files under each skill root this walk cannot
+structurally reach, broken down by why (nested beneath scripts/ or references/, wrong
+suffix at that top level, or anywhere else under the skill root besides SKILL.md).
+Both are additive-only: they never change `findings`, `status`, or the exit code.
 """
 from __future__ import annotations
 
@@ -54,13 +61,101 @@ def _scan_file(text: str) -> list[tuple[str, str]]:
     return found
 
 
+# Directory names walked past rather than counted, matching this repo's existing
+# file-tree-walk idiom (check_doc_links.py, check_coverage.py, source_guard_scan_lib.py,
+# among others): build artifacts are not skill content, and counting them would make the
+# uncovered total move with whether a test happened to run first rather than with the
+# skill tree itself.
+#
+# The set is the union of what those three siblings skip, not a narrower guess. A first
+# cut listed only `__pycache__` while claiming to match them; this file is EXPORTED, and
+# a consumer with `node_modules/` or `.venv/` under a skill root would have gotten both
+# a slow recursive walk and a `skill_root_other` in the thousands.
+#
+# These files are unreachable by the scan too, so they are REPORTED as their own count
+# rather than dropped silently -- see `excluded_build_artifacts`.
+_IGNORED_DIR_PARTS = {
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    ".venv",
+    "node_modules",
+    ".git",
+}
+
+_UNCOVERED_KEYS = (
+    "nested_under_scripts_or_references",
+    "non_py_md_top_level",
+    "skill_root_other",
+)
+
+#: Reported beside the buckets but NOT summed into `total`. These are unreachable by the
+#: scan as well, so leaving them uncounted made `scanned_files + uncovered.total` look
+#: like the whole tree when it was not -- on this repo the gap was several hundred files
+#: against a published total in the tens. Kept out of `total` so the headline number
+#: stays a property of skill CONTENT rather than of whether a test ran first, and
+#: reported so the identity `scanned + total + excluded == walked` is checkable.
+_EXCLUDED_KEY = "excluded_build_artifacts"
+
+_EMPTY_UNCOVERED = {**{key: 0 for key in _UNCOVERED_KEYS}, _EXCLUDED_KEY: 0, "total": 0}
+
+
+def _uncovered_counts(skill_dir: Path) -> dict[str, int]:
+    """Files under one skill directory the scan above structurally cannot reach.
+
+    Walked ONCE per skill over the same directory scan() already opens the top of --
+    not a second gate, not another gate's output. Every file is classified by WHY the
+    .py/.md walk above misses it: nested more than one level beneath scripts/ or
+    references/ (no recursion, so depth alone hides it regardless of suffix), sitting
+    at that top level but carrying some other suffix (the suffix filter drops it), or
+    anywhere else under the skill root other than SKILL.md itself (no directory but
+    scripts/ and references/ is ever opened, so another top-level file or an entirely
+    different subdirectory is unread in full). The three buckets are disjoint by
+    construction and their sum is this skill's whole unreachable CONTENT population.
+    Build-artifact paths are unreachable too and are counted separately into
+    `excluded_build_artifacts` rather than dropped silently -- leaving them out of both
+    walks made `scanned_files + total` read as the whole tree when it was not. No count
+    here is frozen; every one is recomputed from the tree on each run.
+    """
+    counts = {key: 0 for key in _UNCOVERED_KEYS}
+    counts[_EXCLUDED_KEY] = 0
+    for path in skill_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        parts = path.relative_to(skill_dir).parts
+        if _IGNORED_DIR_PARTS.intersection(parts):
+            counts["excluded_build_artifacts"] += 1
+            continue
+        if parts == ("SKILL.md",):
+            continue
+        if len(parts) >= 2 and parts[0] in ("scripts", "references"):
+            if len(parts) == 2:
+                if path.suffix not in {".py", ".md"}:
+                    counts["non_py_md_top_level"] += 1
+            else:
+                counts["nested_under_scripts_or_references"] += 1
+        else:
+            counts["skill_root_other"] += 1
+    return counts
+
+
 def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
     public_root = repo_root / "skills" / "public"
     findings: list[dict] = []
     consumed: set[tuple[str, str, str]] = set()
     if not public_root.is_dir():
-        return {"findings": findings, "scanned_skills": 0, "stale_allowlist": []}
+        return {
+            "findings": findings,
+            "scanned_skills": 0,
+            "scanned_files": 0,
+            "uncovered": dict(_EMPTY_UNCOVERED),
+            "stale_allowlist": [],
+        }
     skill_count = 0
+    scanned_files = 0
+    uncovered_totals = {key: 0 for key in _UNCOVERED_KEYS}
+    uncovered_totals[_EXCLUDED_KEY] = 0
     for skill_dir in sorted(public_root.iterdir()):
         if not skill_dir.is_dir():
             continue
@@ -76,6 +171,9 @@ def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
                 for p in sorted(sub_dir.iterdir()):
                     if p.is_file() and p.suffix in {".py", ".md"}:
                         files.append(p)
+        scanned_files += len(files)
+        for key, count in _uncovered_counts(skill_dir).items():
+            uncovered_totals[key] += count
         for f in files:
             text = f.read_text(encoding="utf-8")
             for kind, owner in _scan_file(text):
@@ -111,6 +209,27 @@ def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
     return {
         "findings": findings,
         "scanned_skills": skill_count,
+        "scanned_files": scanned_files,
+        # `total` sums the three CONTENT buckets only. `excluded_build_artifacts` is
+        # reported beside them and deliberately left out, so the headline number does
+        # not swing with whether pytest last wrote bytecode.
+        "uncovered": {
+            **uncovered_totals,
+            "total": sum(
+                value for key, value in uncovered_totals.items() if key != _EXCLUDED_KEY
+            ),
+        },
+        # Unconditional, matching the three sibling gates in this repo that publish a
+        # `did_not_judge`. The caveat used to live ONLY inside the stale-allowlist
+        # advisory, which is emitted conditionally -- so a clean run said nothing about
+        # partial coverage, which is the defect this gate was changed to remove.
+        "did_not_judge": [
+            "whether a cross-namespace mention sits in a file this scan cannot reach -- "
+            "the walk reads SKILL.md plus the top level of scripts/ and references/, "
+            ".py and .md only, so `uncovered` counts real places a mention could hide",
+            "whether an excluded build-artifact path holds a mention -- "
+            f"`{_EXCLUDED_KEY}` counts them and the scan reads none of them",
+        ],
         "stale_allowlist": [
             {"skill": sid, "kind": kind, "owner": owner, "entry": f"{sid}:{kind}:{owner}"}
             for sid, kind, owner in stale
@@ -126,7 +245,8 @@ def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
 STALE_ALLOWLIST_ADVISORY = (
     f"{ALLOWLIST_PATH} entry looks stale (this scan no longer produces that overlap; "
     "re-check the entry's reason before deleting, because the scan reads only top-level "
-    ".py/.md under each skill and a real mention can sit outside it)"
+    ".py/.md under each skill and a real mention can sit outside it -- see `scanned_files` "
+    "and `uncovered` on this same run for exactly how many files that scope leaves unread)"
 )
 
 

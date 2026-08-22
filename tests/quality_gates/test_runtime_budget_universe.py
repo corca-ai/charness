@@ -507,3 +507,91 @@ def test_startup_probes_declared_as_a_mapping_is_refused(tmp_path: Path) -> None
     result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 1
     assert "is not a list" in result.stderr
+
+
+# --------------------------------------------------------------------------- #
+# Slice 4 ("gate by property, not by enumeration"): this gate now names three
+# genuinely computable counts in its own output -- a malformed profile block
+# `budgeted_label_union` used to silently drop, whether the universe -> prescription
+# direction actually ran this pass, and which budgeted labels the SELECTED profile
+# (this run's own reachability, not a claim about any other machine) never reaches.
+# --------------------------------------------------------------------------- #
+def test_malformed_budgets_block_is_named_not_silently_dropped(tmp_path: Path) -> None:
+    """A `budgets:` key that is present but not a mapping used to vanish from the
+    union with no signal at all -- the reader only `continue`d past it. This pins
+    that the gate now NAMES the block it dropped, as a list a caller can count,
+    while still not treating the block as a fatal error (the selected-profile
+    reader is `check_runtime_budget.py`'s job, not this gate's)."""
+    adapter = (
+        "runtime_budgets:\n"
+        "  alpha-gate: 1000\n"
+        "runtime_budget_profiles:\n"
+        "  typo-block:\n"
+        "    budgets:\n"
+        "      - not-a-mapping\n"
+    )
+    repo = _write_repo(tmp_path, adapter=adapter)
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = _payload(result)
+    assert payload["malformed_budget_profile_blocks"] == ["typo-block"]
+    assert "1 runtime_budget_profiles block" in payload["malformed_budget_profile_blocks_summary"]
+
+
+def test_tolerated_profile_stub_is_not_reported_malformed(tmp_path: Path) -> None:
+    """The shape `test_gate_tolerates_a_profile_without_a_budgets_mapping` already
+    pins as legitimate (no `budgets` key at all) must NOT show up in the new
+    malformed list -- the two shapes look similar but only one is a typo."""
+    adapter = (
+        "runtime_budgets:\n"
+        "  alpha-gate: 1000\n"
+        "runtime_budget_profiles:\n"
+        "  stub-profile:\n"
+        "    note: no budgets key here\n"
+    )
+    repo = _write_repo(tmp_path, adapter=adapter)
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert _payload(result)["malformed_budget_profile_blocks"] == []
+
+
+def test_second_direction_status_names_why_it_did_not_run(tmp_path: Path) -> None:
+    """`unbudgeted_expensive_commands` reads `[]` identically whether the second
+    direction ran and found nothing, or never ran because the dominance registry
+    is absent. This pins that the payload now says WHICH happened, without
+    changing the pinned `== []` behavior itself."""
+    adapter = "runtime_budgets:\n  alpha-gate: 1000\n"
+    repo = _write_repo(tmp_path, adapter=adapter)
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = _payload(result)
+    assert payload["unbudgeted_expensive_commands"] == []
+    status = payload["second_direction_status"]
+    assert status["ran"] is False
+    assert status["examined"] == 0
+    assert "absent" in status["reason"]
+
+
+def test_unreachable_by_selected_profile_names_a_block_this_run_cannot_select(tmp_path: Path) -> None:
+    """The module docstring's own example: a profile block nobody on THIS machine
+    selects reaches no sample from THIS run. `feasible=false` covers 'never runs
+    under any condition'; this is the narrower, honestly computable neighbor --
+    reachable from THIS run's own profile selection, or not."""
+    adapter = (
+        "runtime_profile_default: ci-profile\n"
+        "runtime_budget_profiles:\n"
+        "  ci-profile:\n"
+        "    budgets:\n"
+        "      alpha-gate: 1000\n"
+        "  aarch64-profile:\n"
+        "    budgets:\n"
+        "      beta-gate: 1000\n"
+    )
+    repo = _write_repo(tmp_path, adapter=adapter)
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = _payload(result)
+    assert payload["selected_runtime_profile"] == "ci-profile"
+    labels = {entry["label"] for entry in payload["unreachable_by_selected_profile"]}
+    assert labels == {"beta-gate"}
+    assert payload["unreachable_by_selected_profile_reason"] is None

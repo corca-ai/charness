@@ -127,6 +127,39 @@ def budgeted_label_union(adapter_data: dict[str, Any]) -> dict[str, list[str]]:
     return found
 
 
+def malformed_budget_profile_blocks(adapter_data: dict[str, Any]) -> list[str]:
+    """`runtime_budget_profiles` blocks `budgeted_label_union` silently dropped.
+
+    That union `continue`s past two different shapes with one line: a block with
+    NO `budgets` key at all (a legitimate zero-budget profile stub -- the exact
+    shape `test_gate_tolerates_a_profile_without_a_budgets_mapping` pins as
+    tolerated, and a bare `null` block reads the same way), and a block where
+    `budgets` -- or the block itself -- IS present but is not a mapping, which is
+    a typo one level up (`budgets: [...]`, a scalar, a profile entry written as a
+    list). The union has no way to surface the second shape separately, so a
+    typo there removes a whole block from the universe with no error, while the
+    selected-profile reader (`profile_budgets`) errors loudly on the same shape.
+    This names exactly the blocks in the second shape -- HOW to size the count a
+    caller reports, not the count itself.
+    """
+    malformed: list[str] = []
+    profiles = adapter_data.get("runtime_budget_profiles")
+    if not isinstance(profiles, dict):
+        return malformed
+    for name, config in profiles.items():
+        if config is None:
+            # An empty block stub, same tolerated shape as "no budgets key".
+            continue
+        if not isinstance(config, dict):
+            malformed.append(str(name))
+            continue
+        if "budgets" not in config:
+            continue
+        if not isinstance(config.get("budgets"), dict):
+            malformed.append(str(name))
+    return malformed
+
+
 def profile_budgets(adapter_data: dict[str, Any], runtime_profile: str) -> tuple[dict[str, int], list[str]]:
     profiles = adapter_data.get("runtime_budget_profiles")
     if isinstance(profiles, dict) and runtime_profile in profiles:

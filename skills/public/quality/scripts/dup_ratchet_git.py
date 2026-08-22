@@ -69,3 +69,18 @@ def changed_worktree_paths(repo_root: Path) -> set[str] | None:
     if rc_diff != 0 or rc_untracked != 0:
         return None
     return {line.strip() for line in [*diff_out.splitlines(), *untracked_out.splitlines()] if line.strip()}
+
+
+def tracked_files(repo_root: Path) -> set[str] | None:
+    """All git-tracked repo-relative paths, or ``None`` when git cannot answer.
+
+    Used to size the population outside ``scope_paths`` honestly: a plain
+    recursive filesystem walk would also count ``.git``, ``__pycache__``, and
+    everything else this repo's own ``.gitignore`` already excludes from being
+    "code" at all. ``None`` (not an empty set) on failure -- an unreadable
+    population is unknown, never zero.
+    """
+    rc, out = _git_output(repo_root, ["ls-files"])
+    if rc != 0:
+        return None
+    return {line.strip() for line in out.splitlines() if line.strip()}

@@ -77,6 +77,18 @@ def _runtime_profile_lib():
     return _PROFILE_LIB_CACHE["lib"]
 
 
+def _labels_outside(budgeted: dict[str, list[str]], reference: set[str]) -> list[dict[str, object]]:
+    """Every budgeted label absent from `reference`, paired with the block(s) that
+    budget it. One shared shape for two different reference sets this gate asks
+    the same question against: the runner's known labels (`unknown_labels`) and
+    the selected profile's reachable labels (`unreachable_by_selected_profile`)."""
+    return [
+        {"label": label, "blocks": blocks}
+        for label, blocks in sorted(budgeted.items())
+        if label not in reference
+    ]
+
+
 def budgeted_labels(adapter: dict) -> dict[str, list[str]]:
     """Every budgeted label, mapped to the blocks that budget it.
 
@@ -87,6 +99,93 @@ def budgeted_labels(adapter: dict) -> dict[str, list[str]]:
     disagree about a bar.
     """
     return _runtime_profile_lib().budgeted_label_union(adapter)
+
+
+_DOMINANCE_GATE_CACHE = {}
+
+
+def _dominance_gate():
+    """Cached: `load_path_module` execs a fresh module per call."""
+    if "gate" not in _DOMINANCE_GATE_CACHE:
+        _DOMINANCE_GATE_CACHE["gate"] = load_path_module(
+            "check_command_dominance_for_universe", REPO_ROOT / "scripts" / "check_command_dominance.py"
+        )
+    return _DOMINANCE_GATE_CACHE["gate"]
+
+
+def _dominance_arm(repo_root: Path) -> tuple[dict[str, object] | None, dict[str, object]]:
+    """Load the dominance gate's own verdict once, and name whether the SECOND
+    direction (universe -> prescription) actually ran.
+
+    `unbudgeted_expensive_commands` used to render `[]` on a `RegistryError` and
+    on an unarmed registry alike -- correctly, because a malformed registry is
+    genuinely the dominance gate's verdict to render, not this gate's. But the
+    summary line then reads that `[]` as "ran, found zero", and the deferral was
+    not anywhere in the payload for a reader to find. This names the difference:
+    `ran` is false and `reason` is set on exactly the two deferred cases;
+    `examined` is the count of findings THIS direction actually classified, which
+    reads 0-because-none only when `ran` is also true.
+
+    Called at most once per `evaluate()`, so the dominance scan does not run
+    twice in one pass; a caller after `unbudgeted_expensive_commands` directly
+    (the tests do) still gets its own single scan.
+    """
+    # No `registry_path.is_file()` pre-check here, deliberately. The dominance
+    # gate already decides "is there a registry" and reports it as `armed`, and
+    # asking the same question in two places made whichever answer came second
+    # unreachable -- the changed-line proof reported exactly that line as never
+    # executed. One owner for the question, and this reads its answer.
+    gate = _dominance_gate()
+    dominance = gate._load_dominance_lib()
+    try:
+        report = gate.evaluate(repo_root)
+    except dominance.RegistryError as exc:
+        # A malformed registry is genuinely the dominance gate's verdict to
+        # render, so that one case stays deferred; everything else now
+        # propagates (narrowed from a bare `except Exception`, which also
+        # swallowed a missing library, an ImportError, and any AttributeError
+        # from a future refactor -- and in every one of those cases this gate
+        # returned `armed: True` with an empty list and a summary claiming the
+        # direction had run).
+        return None, {"ran": False, "examined": 0, "reason": f"registry error: {exc}"}
+    if not report.get("armed"):
+        return None, {
+            "ran": False,
+            "examined": 0,
+            "reason": str(report.get("reason") or "command dominance registry not armed"),
+        }
+    return report, {"ran": True, "examined": len(report.get("findings", [])), "reason": None}
+
+
+def _findings_to_unbudgeted(
+    report: dict[str, object] | None, budgeted_label_set: set[str]
+) -> list[dict[str, object]]:
+    """The dominance findings that name no budgeted label, given an already-fetched report.
+
+    Split out of `unbudgeted_expensive_commands` so `evaluate()` can read
+    `_dominance_arm`'s single scan once and hand the same report to both the
+    status and the finding list, instead of scanning twice.
+    """
+    if report is None:
+        return []
+    dominance = _dominance_gate()._load_dominance_lib()
+    reported: list[dict[str, object]] = []
+    for finding in report.get("findings", []):
+        label = (finding.get("context") or {}).get("queue_label")
+        if label and label in budgeted_label_set:
+            continue
+        reported.append(
+            {
+                "site": str(finding.get("site", "")),
+                "command": finding.get("command"),
+                "rule_id": finding.get("rule_id"),
+                "exempt": finding.get("exempt", False),
+                "queue_label": label,
+                # One owner for the sentence; see `unbudgeted_basis`.
+                "basis": dominance.unbudgeted_basis(label),
+            }
+        )
+    return reported
 
 
 def unbudgeted_expensive_commands(repo_root: Path, budgeted_label_set: set[str]) -> list[dict[str, object]]:
@@ -127,51 +226,16 @@ def unbudgeted_expensive_commands(repo_root: Path, budgeted_label_set: set[str])
     ADVISORY, not blocking. Every entry here is a site the repo has already
     recorded a judgement about; turning an authored inventory into a red lane
     would make deleting the registry entry the cheapest response.
+
+    REPO_ROOT, not `repo_root`, for loading the gate module below (see
+    `_dominance_gate`). Third instance of the same mistake in this slice, and
+    the acceptance test found all three: the GATE ships beside this one, while
+    only the registry and the scanned sites belong to the analysed tree.
+    Resolving the tool from `--repo-root` crashes on every tree that is not a
+    charness checkout.
     """
-    # No `registry_path.is_file()` pre-check here, deliberately. The dominance
-    # gate already decides "is there a registry" and reports it as `armed`, and
-    # asking the same question in two places made whichever answer came second
-    # unreachable -- the changed-line proof reported exactly that line as never
-    # executed. One owner for the question, and this reads its answer.
-    # REPO_ROOT, not `repo_root`. Third instance of the same mistake in this
-    # slice, and the acceptance test found all three: the GATE ships beside this
-    # one, while only the registry and the scanned sites belong to the analysed
-    # tree. Resolving the tool from `--repo-root` crashes on every tree that is
-    # not a charness checkout.
-    gate = load_path_module(
-        "check_command_dominance_for_universe", REPO_ROOT / "scripts" / "check_command_dominance.py"
-    )
-    dominance = gate._load_dominance_lib()
-    try:
-        report = gate.evaluate(repo_root)
-    except dominance.RegistryError:
-        # Narrowed from a bare `except Exception`, which also swallowed a missing
-        # library, an ImportError, and any AttributeError from a future refactor --
-        # and in every one of those cases this gate returned `armed: True` with an
-        # empty list and a summary claiming the direction had run. A green verdict
-        # over a crashed check is the fail-quiet shape the repo keeps recording.
-        # A malformed registry is genuinely the dominance gate's verdict to render,
-        # so that one case stays deferred; everything else now propagates.
-        return []
-    if not report.get("armed"):
-        return []
-    reported: list[dict[str, object]] = []
-    for finding in report.get("findings", []):
-        label = (finding.get("context") or {}).get("queue_label")
-        if label and label in budgeted_label_set:
-            continue
-        reported.append(
-            {
-                "site": str(finding.get("site", "")),
-                "command": finding.get("command"),
-                "rule_id": finding.get("rule_id"),
-                "exempt": finding.get("exempt", False),
-                "queue_label": label,
-                # One owner for the sentence; see `unbudgeted_basis`.
-                "basis": dominance.unbudgeted_basis(label),
-            }
-        )
-    return reported
+    report, _status = _dominance_arm(repo_root)
+    return _findings_to_unbudgeted(report, budgeted_label_set)
 
 
 def evaluate(repo_root: Path) -> dict[str, object]:
@@ -208,18 +272,37 @@ def evaluate(repo_root: Path) -> dict[str, object]:
             "checked": 0,
         }
     adapter = adapter_lib.load_yaml_file(adapter_path)
-    budgeted = budgeted_labels(adapter if isinstance(adapter, dict) else {})
+    adapter_dict = adapter if isinstance(adapter, dict) else {}
+    budgeted = budgeted_labels(adapter_dict)
     known = set(universe["labels"])
-    unknown = [
-        {"label": label, "blocks": blocks}
-        for label, blocks in sorted(budgeted.items())
-        if label not in known
-    ]
+    unknown = _labels_outside(budgeted, known)
+    dominance_report, second_direction_status = _dominance_arm(repo_root)
+    lib = _runtime_profile_lib()
+    # The selected-profile reachability check, computed with the SAME resolver
+    # `check_runtime_budget.py` uses on this machine, absent any `--runtime-profile`
+    # override this gate does not take. It answers a narrower, honestly computable
+    # neighbor of "does this label ever run": is it in the block THIS run's own
+    # selection would read at all. A different machine or an explicit override may
+    # still select the block this run does not; that is why this is scoped to
+    # "by the selected profile", never claimed as "ever".
+    selected_profile = lib.selected_runtime_profile(adapter_dict, None)
+    reachable, profile_errors = lib.profile_budgets(adapter_dict, selected_profile)
+    if profile_errors:
+        unreachable_by_selected_profile = None
+        unreachable_by_selected_profile_reason = profile_errors[0]
+    else:
+        unreachable_by_selected_profile = _labels_outside(budgeted, set(reachable))
+        unreachable_by_selected_profile_reason = None
     return {
         "armed": True,
         "reason": None,
         "unknown_labels": unknown,
-        "unbudgeted_expensive_commands": unbudgeted_expensive_commands(repo_root, set(budgeted)),
+        "unbudgeted_expensive_commands": _findings_to_unbudgeted(dominance_report, set(budgeted)),
+        "second_direction_status": second_direction_status,
+        "malformed_budget_profile_blocks": lib.malformed_budget_profile_blocks(adapter_dict),
+        "selected_runtime_profile": selected_profile,
+        "unreachable_by_selected_profile": unreachable_by_selected_profile,
+        "unreachable_by_selected_profile_reason": unreachable_by_selected_profile_reason,
         "checked": len(budgeted),
         "universe_size": len(known),
         "universe_sources": {
@@ -278,6 +361,16 @@ def report_payload(report: dict[str, object]) -> dict[str, object]:
         f"runtime budget universe: {report['checked']} budgeted label(s) all named "
         f"by the runner ({report['universe_size']} in the universe)."
     )
+    malformed_blocks = report.get("malformed_budget_profile_blocks") or []
+    if malformed_blocks:
+        # WARN-marked like the advisory below: a block this reader silently
+        # dropped is a defect nobody would otherwise see, not routine scope.
+        payload["malformed_budget_profile_blocks_summary"] = (
+            f"WARN: {len(malformed_blocks)} runtime_budget_profiles block(s) carry a "
+            "`budgets` entry this reader cannot use (present but not a mapping), so "
+            "every label they would have budgeted is silently absent from the "
+            "universe check above. See `malformed_budget_profile_blocks` for which."
+        )
     unbudgeted = report.get("unbudgeted_expensive_commands") or []
     if unbudgeted:
         # Rides the WARN marker for the same reason the dominance gate does: a

@@ -5473,6 +5473,27 @@
       "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
       "reviewed_at": "2026-06-24",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "9ebcfb55cf2b6666",
+      "note": "idiom-sized 'if X is None: return None' two-line guard clause, already the same accepted shape in 32 unrelated files across scripts/ and skills/public/ (adapter_lib.py, quality_policy_defaults.py, adapter_validators.py, setup_adapter.py, and more); dup_ratchet_lib.scope_coverage's own None-tracked-files guard (slice 4, 'gate by property, not by enumeration') is simply the 33rd instance of a guard clause this codebase already writes identically everywhere a caller can pass an unresolved optional. Extracting a shared two-line helper would replace a self-evident guard with an indirection every one of those 33 call sites would still have to import.",
+      "reviewed_at": "2026-08-22",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a347edaafdbcfb35",
+      "note": "idiom-sized 'if X is None: return []' two-line guard clause, the same accepted shape already present in check_command_docs.py, quality_bootstrap_lifecycle.py, chunked_routing_agentic.py, and three call sites in setup_adapter.py; check_runtime_budget_universe._findings_to_unbudgeted's own None-report guard (slice 4) is the same idiom applied to a dominance report that may not have been fetched. Not extractable: the two-line guard is already the whole body a caller would import a helper to replace.",
+      "reviewed_at": "2026-08-22",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e60fdb9e21229f64",
+      "note": "report_payload's shared shape between check_runtime_budget_universe.py and its sibling check_command_dominance.py: dict(report); if not armed: emit a WARN advisory and return; set did_not_judge; branch on the gate's own blocking condition to set summary+remedy and return; else set the clean summary and an optional advisory. Both gates deliberately reimplement this shape independently per docs/design-north-star.md's 'no gate reads another gate's verdict' boundary -- each report_payload only ever touches its OWN evaluate() dict, never the other gate's. slice 4 ('gate by property, not by enumeration') lengthened check_runtime_budget_universe.report_payload's malformed_budget_profile_blocks branch just enough to register as a near-duplicate of the sibling's already-similar control flow; extracting a shared formatter would either take both gates' report dicts as one shape (coupling two independently-owned proof surfaces through a formatting module) or gain no lines once the two branch bodies' own literal text stays gate-specific. Left as two independently-maintained report_payload functions that happen to rhyme in shape.",
+      "reviewed_at": "2026-08-22",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

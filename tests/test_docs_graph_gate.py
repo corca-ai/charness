@@ -242,6 +242,103 @@ def test_every_real_verdict_echoes_the_bars_it_judged_against(
         assert result["bars"]["link_only_lines"] == _gate.resolve_link_only_lines_bar(ROOT)
 
 
+def test_link_only_lines_slack_is_bar_minus_the_measured_count(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The number this slice adds: the gap between the frozen bar and whatever
+    # awiki measures THIS run, so a bar left stale after the measured count
+    # falls is a number in the output rather than a silent tolerance.
+    # The bar is read from the RATCHET RECORD, not from the same resolver the
+    # implementation calls. A fresh-eye round showed the first cut was `f(x) == f(x)`:
+    # if `ratchet_rows` ever silently degraded to `[]`, the resolver falls to the
+    # strict default 0, `measured` clamps to 0, and the assertion became `0 == 0 - 0`
+    # -- green while the repo's real bar had collapsed.
+    rows = _gate.ratchet_rows(ROOT)
+    assert rows, "the ratchet record must parse; a collapsed resolver is the defect here"
+    bar = rows[-1][1]
+    assert bar == _gate.resolve_link_only_lines_bar(ROOT)
+    measured = max(bar - 3, 0)
+    _patch_awiki(
+        monkeypatch,
+        f"// lint_failed documents=42 orphans=0 islands=0 link_only_lines={measured} "
+        "largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000\n",
+    )
+    result = _gate.evaluate(ROOT)
+    payload = _gate.report(result)
+    assert payload["link_only_lines_slack"] == bar - measured
+
+
+def test_link_only_lines_slack_goes_negative_over_the_bar(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A failing run still gets a number, and it is negative -- the sign a
+    # reader would expect from "how much room is left" once none is.
+    bar = _gate.resolve_link_only_lines_bar(ROOT)
+    over = bar + 5
+    _patch_awiki(
+        monkeypatch,
+        f"// lint_failed documents=42 orphans=0 islands=0 link_only_lines={over} "
+        "largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000\n"
+        "// link_only_line\n"
+        "// why: a line with only one link gives no local context.\n"
+        "[[artifact-policy]]:23: - [deferred-decisions.md](./deferred-decisions.md)\n",
+    )
+    result = _gate.evaluate(ROOT)
+    payload = _gate.report(result)
+    assert result["status"] == "fail"
+    assert payload["link_only_lines_slack"] == bar - over
+    assert payload["link_only_lines_slack"] < 0
+
+
+def test_link_only_lines_slack_is_the_bar_when_licensed_as_zero(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The captured clean line OMITS `link_only_lines` entirely; the pass rests
+    # on reading that absence as zero off awiki's own `ok` token, so the slack
+    # here is the whole bar rather than an invented measured count.
+    assert "link_only_lines=" not in _CLEAN_OUTPUT
+    _patch_awiki(monkeypatch, _CLEAN_OUTPUT, returncode=0)
+    result = _gate.evaluate(ROOT)
+    payload = _gate.report(result)
+    assert result["status"] == "pass"
+    # Against the record, not the resolver the implementation shares -- same reason as
+    # the sibling test above.
+    rows = _gate.ratchet_rows(ROOT)
+    assert rows, "the ratchet record must parse"
+    assert payload["link_only_lines_slack"] == rows[-1][1]
+
+
+def test_link_only_lines_slack_is_not_computable_when_unobserved_on_a_failing_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # `link_only_lines` can be missing from the summary on a FAILING run (some
+    # other metric tripped) without the zero-license ever firing -- that
+    # license only fires alongside a passing verdict. Reporting a number here
+    # would invent one the gate does not have; the sentinel says so instead.
+    _patch_awiki(
+        monkeypatch,
+        "// lint_failed documents=10 orphans=1 islands=0 "
+        "largest_component_ratio=0.9000 orphan_rate=0.1000\n"
+        "// orphan\n"
+        "// why: no resolved links connect these pages to the wiki graph.\n"
+        "[[some-page]]: an orphaned page\n",
+    )
+    result = _gate.evaluate(ROOT)
+    payload = _gate.report(result)
+    assert result["status"] == "fail"
+    assert "link_only_lines" not in result["summary"]
+    assert result["not_observed"] == ["link_only_lines"]
+    assert payload["link_only_lines_slack"] == _gate.LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE
+
+
+def test_link_only_lines_slack_is_absent_on_not_run(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Additive-only: a not-run result judged nothing, so it must not carry a
+    # slack number either -- the same rule `did_not_judge` already follows.
+    _patch_awiki(monkeypatch, _EMPTY_ROOT_OUTPUT, returncode=0)
+    result = _gate.evaluate(ROOT)
+    payload = _gate.report(result)
+    assert result["status"] == "not-run"
+    assert "link_only_lines_slack" not in payload
+
+
 def test_a_gated_metric_without_its_tables_fails_loudly() -> None:
     # The negative case the acceptance check names. Adding a metric to the gated
     # set without these entries fails in the two worst available ways:
