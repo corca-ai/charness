@@ -1,0 +1,28 @@
+{
+  "schema_version": "charness.probe.installed-replay.v1",
+  "date": "2026-08-22",
+  "obligation": "The release critique's F5 and the requalification packet's non-claims both require the #681 reproduction to be replayed against the INSTALLED 6.2.2 plugin. A `charness version` or `charness doctor` readback is explicitly not that branch.",
+  "installed": {
+    "version_readback": "6.2.2",
+    "plugin_root": "/home/hwidong/.agents/src/charness/plugins/charness",
+    "refreshed_by": "charness update --detail (pulled: true)"
+  },
+  "case_defect_path": {
+    "fixture": "active goal artifact carrying a soft-wrapped non-deferring cadence bullet",
+    "installed_6_2_1_before": "applies: false with reason 'states no `Gate cadence:` line that defers broad proof', while cadence carried line 12 and its text",
+    "installed_6_2_2_after": "applies: false with reason 'line 12 DOES state a `Gate cadence:` ... neither appears in the text this floor read on that line, so it declined', cadence line 12 present",
+    "verdict": "repaired-on-installed"
+  },
+  "case_true_positive": {
+    "fixture": "the achieve scaffold's own seeded cadence line plus a per-slice broad-proof acceptance line",
+    "result": "applies: true, ok: false",
+    "disambiguator_precedes_overfire_clause": true,
+    "states_refusal_is_correct": true,
+    "verdict": "release-critique-F1-repair-present-on-installed"
+  },
+  "non_claims": [
+    "This is parent-authored evidence, not an independent observer's.",
+    "It establishes the two cases above on the installed copy; it is not a general proof of the module.",
+    "The #694 over-fire is not fixed and is not claimed to be."
+  ]
+}
