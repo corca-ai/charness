@@ -508,3 +508,57 @@ def test_the_disposition_vocabulary_has_one_owner() -> None:
 
     assert "DISPOSITION_LINE_RE = re.compile" not in gate_source
     assert "INLINE_DISPOSITION_RE = re.compile" not in gate_source
+
+
+# --------------------------------------------------------------------------
+# Changed-line coverage: lines the release gate named as uncovered
+# --------------------------------------------------------------------------
+
+
+def test_a_url_in_a_disposition_is_not_treated_as_a_repo_path() -> None:
+    """`PATH_RE` matches `docs/x.md`-shaped tokens, and a URL's tail looks like
+    one. Skipping schemed candidates is what stops every external link in a
+    disposition being reported as a missing file."""
+    line = "applied: see https://example.com/docs/guide.md for the rationale"
+
+    assert missing_paths(line, ROOT) == []
+
+
+def test_git_failing_to_run_at_all_raises_rather_than_answering() -> None:
+    """The OSError arm. A missing or unexecutable git is "cannot answer", not
+    "this SHA is absent" -- answering would report every SHA in the corpus as
+    unresolvable."""
+    from scripts.artifact_referents import ResolverUnavailable, git_commit_exists
+
+    with pytest.raises(ResolverUnavailable):
+        git_commit_exists("96ba78f7f", Path("/nonexistent-root-9f3a/deeper"))
+
+    # And the OSError arm specifically: git absent from PATH entirely.
+    import subprocess as _sp
+
+    def _boom(*args, **kwargs):
+        raise OSError("no git here")
+
+    real = _sp.run
+    _sp.run = _boom
+    try:
+        with pytest.raises(ResolverUnavailable, match="could not be run"):
+            git_commit_exists("96ba78f7f", ROOT)
+    finally:
+        _sp.run = real
+
+
+def test_an_inconsistent_quantity_is_reported_with_its_first_site(tmp_path: Path) -> None:
+    """The quantity findings are assembled in the gate, not the library, and
+    that assembly had no test: the release gate named both of its lines
+    uncovered."""
+    artifact = tmp_path / "2026-08-25-quantities.md"
+    artifact.write_text(
+        "Found {{q:total=27}} blockers.\n\nOf the {{q:total=21}} above ...\n", encoding="utf-8"
+    )
+
+    result = _run("--path", str(artifact))
+
+    assert result.returncode == 1
+    assert "inconsistent-quantity" in result.stdout
+    assert ":1 " in result.stdout, "should anchor on the FIRST site"

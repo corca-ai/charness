@@ -159,9 +159,12 @@ def missing_paths(text: str, repo_root: Path) -> list[str]:
     missing = []
     for match in PATH_RE.finditer(text):
         candidate = match.group(1)
-        # A bare `x.y` version-ish token or a sentence-final abbreviation cannot
-        # reach here (no separator), but a URL can -- skip anything schemed.
-        if "://" in candidate:
+        # A URL's tail looks exactly like a repo path (`example.com/docs/x.md`),
+        # and the scheme is OUTSIDE the match -- so testing `candidate` for
+        # `://` never fired. Look at what PRECEDES the match instead. Without
+        # this, every external link in a disposition is reported as a missing
+        # file, which is the false-positive class that makes a gate ignorable.
+        if "://" in text[max(0, match.start() - 8):match.start()]:
             continue
         if not (repo_root / candidate).exists():
             missing.append(candidate)

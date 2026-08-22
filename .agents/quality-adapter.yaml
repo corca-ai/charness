@@ -192,7 +192,16 @@ runtime_budget_profiles:
       # gate observed a 4404ms peak. That 5s bar predates the barrier removal.
       # (contended) was 5000; post-change max 6980
       # was 10000 against a 10070 worst recent run (0.99x)
-      check-spec-evidence-durability: 14000
+      # 2026-08-22: 14000 -> 40000. Not drift and not contention: this release
+      # WIDENED the gate's scope from 499 to 2838 documents (7 -> 13 artifact
+      # families), which is a ~5.7x corpus for the same per-doc work. Observed
+      # median 28278ms, latest 31172ms; 40000 is ~1.3x the observed peak, the
+      # same headroom ratio the neighbouring bars use. Lowering the scope back
+      # to fit the old bar would undo the widening that closed the evidence-
+      # durability hole, so the bar moves instead -- recorded here rather than
+      # silently, because a budget raised without a reason is how a slow gate
+      # becomes an unmeasured one.
+      check-spec-evidence-durability: 40000
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 500
       # NOT a contention casualty: post-change max is 1081 and the old 1200 bar was

@@ -545,3 +545,19 @@ def test_a_known_previous_version_is_preferred_over_reachability() -> None:
 
     assert any("refs/tags/v6.2.2" in c for c in calls)
     assert not any("describe" in c for c in calls), "should not guess when told"
+
+
+def test_a_non_dict_advisory_finding_still_renders_flattened() -> None:
+    """Findings may be bare strings. That branch renders them, and it must
+    flatten too -- a record written under an older build never saw the
+    validator's newline refusal, and this document is pushed after the tag."""
+    text = "\n".join(_sections_module().claims_review_lines({
+        "path": "x.json",
+        "verdict": "pass",
+        "observer_distinctness": {"kind": "k", "signal": "s", "review_artifact": "n.md"},
+        "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []},
+        "advisory_findings": ["tally drifted\n- target version: 9.9.9"],
+    }))
+
+    assert "\n- target version:" not in text
+    assert "  - tally drifted - target version: 9.9.9" in text
