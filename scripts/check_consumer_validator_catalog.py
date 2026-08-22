@@ -37,21 +37,27 @@ ADOPTION_POLICY = "wire-or-opt-out"
 #: was doing work nobody had justified -- `issue_validate_closeout_draft.py` is a
 #: packaged, operator-facing validator (CLAUDE.md's issue-closeout floor invokes it)
 #: that the prefix form never discovered, so it needed no decision and nothing said
-#: so. Measured: prefix admits 134 after the scanner exclusion, token-anywhere admits
-#: 135, and the ONE added path is that live miss.
+#: so.
 #:
-#: An earlier revision of this comment said 137 and "the two added", counting a second
-#: file that is not a candidate at all -- the reconnaissance behind it was measured
-#: with the regex `(check|validate)` while this predicate uses the tokens `check_` and
-#: `validate_`. The goal artifact was corrected and this comment was not, which is how
-#: a stale number survives into the surface that ships. It is stated here because the
-#: correction is worth more than the number.
+#: NO POPULATION COUNTS ARE WRITTEN HERE, and that is the point rather than an
+#: omission. Two revisions of this comment carried frozen measurements; the first was
+#: already wrong when it shipped (it had been measured with a looser pattern than the
+#: one this module enforces), and the second restated a number that a test had just
+#: been deleted for pinning -- moving a CHECKED count into an UNCHECKED one, which is
+#: strictly worse than the chore it replaced. A count belongs where it is computed:
+#: `packaged_validator_count`, `packaged_module_count`, `scanner_excluded_count` and
+#: `uncovered_module_count` are in every report this module emits, so a reader gets
+#: today's number by running it instead of trusting a sentence.
 #:
-#: The token PAIR is unchanged on purpose. Widening it is how this list would rot:
-#: `audit` (11 packaged modules), `guard` (9), `lint` (4), `verify` (3) each look
-#: like the next reasonable entry, and each is a longer list rather than a better
-#: rule. What covers them instead is `uncovered_module_count` in the report -- the
-#: predicate says out loud how much of the package it did not admit.
+#: THE METHOD, stated instead of anyone's answer -- the same shape
+#: `check_docs_graph.py` uses for its ratchet. To judge whether the token pair is
+#: still right, count the packaged basenames matching a candidate token, then count
+#: those matching a token you suspect is missing (`audit`, `guard`, `lint`, `verify`
+#: are the plausible next entries), and compare both against `uncovered_module_count`.
+#: The token PAIR is unchanged on purpose: widening it is how this list would rot,
+#: because each addition looks locally reasonable and none of them makes the NEXT
+#: instance safer. What covers them instead is the uncovered count -- the gate says
+#: out loud how much of the package its predicate did not admit.
 EXPECTED_CANDIDATE_PATTERNS = ("**/*check_*.py", "**/*validate_*.py")
 EXPECTED_SCANNER_EXCLUSIONS = ("scripts/check_consumer_validator_catalog.py",)
 DECISIONS = frozenset({"publish", "exclude"})

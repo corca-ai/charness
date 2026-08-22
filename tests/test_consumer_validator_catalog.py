@@ -117,9 +117,20 @@ def test_the_discovery_predicate_is_positional_free_and_lost_nothing() -> None:
     assert old_predicate, "replay is vacuous if the old predicate admitted nothing"
     lost = set(old_predicate) - set(new_predicate)
     assert not lost, f"capability regression: the new predicate stopped admitting {sorted(lost)}"
-    assert set(new_predicate) - set(old_predicate) == {
-        "skills/issue/scripts/issue_validate_closeout_draft.py"
-    }
+
+    # The divergence is CHARACTERISED, not pinned to a filename. A first cut asserted
+    # the gained set equals one literal path — which would demand a chore edit the next
+    # time someone correctly adds an infix-named validator with its decision, i.e. the
+    # exact property for which the `== 134` population pin was classified
+    # `recommend-removal` a slice earlier. The motivating instance belongs in the
+    # docstring above; what an assertion should hold is the SHAPE of the widening.
+    for path in set(new_predicate) - set(old_predicate):
+        name = Path(path).name
+        assert catalog_check._is_candidate_name(name)
+        assert not name.startswith(("check_", "validate_")), (
+            f"{path} was already admitted by the old predicate; the widening should "
+            f"only add basenames carrying a token away from the front"
+        )
 
 
 def test_an_infix_named_validator_is_refused_where_the_old_predicate_tolerated_it(

@@ -810,6 +810,34 @@ attack each:
 
 Issues or deferred findings discovered during the run.
 
+- **The operator caught this goal committing its own defect, in the surface the
+  goal had just repaired.** Slice 3 removed the `packaged_validator_count == 134`
+  pin as a chore — a count a TEST enforced — and then wrote the same measurement
+  into the module's docstring, where nothing enforces it. That is a checked count
+  converted into an unchecked one: strictly worse than the chore it replaced, and
+  the frozen lesson for it is named `bar-recorded-as-prose`. It survived two
+  bounded reviewers, both of whom read that comment; one of them even flagged an
+  EARLIER stale number in the same block without noting that the replacement was
+  the same species.
+  - Repair: the docstring now states the METHOD for judging the token pair and
+    carries no population counts at all. The counts live where they are computed
+    — `packaged_validator_count`, `packaged_module_count`,
+    `scanner_excluded_count`, `uncovered_module_count` are in every report the
+    module emits, so a reader gets today's number by running it. This is the
+    idiom `check_docs_graph.py` already uses for its ratchet ("HOW TO SIZE ONE,
+    stated as the method rather than as anyone's answer"), which slice 2 had
+    already read and praised and then did not apply.
+  - The same fix was applied to a second instance in the same slice: the
+    capability-replay test pinned the gained set to one literal path, which would
+    demand a chore edit the next time someone correctly adds an infix-named
+    validator. It now characterises the SHAPE of the widening instead.
+  - **Measured before generalising: this is not a repo-wide pattern.** A sweep of
+    `scripts/` and the packaged skill scripts for population counts frozen in
+    comments returns nothing else. So the remedy is the authoring discipline
+    above, NOT a new gate — building one would be meeting a prose problem with
+    another bespoke gate, which is the cost the north star's diagnosis names.
+    Recorded as a lesson rather than a slice.
+
 - **A missing required binary is reported as N opaque assertion diffs.** The
   standing suite's answer to "ripgrep is not installed" was eight failures
   asserting error codes they never reached, twenty minutes into the sampler's
