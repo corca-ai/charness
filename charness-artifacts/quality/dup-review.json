@@ -5431,6 +5431,13 @@
       "reviewed_at": "2026-08-22",
       "surface": "code",
       "note": "The sibling-import bootstrap idiom -- resolve __file__'s directory, add it to sys.path if absent, then import the sibling -- shared with goal_artifact_floor_grammar and goal_artifact_evidence_distinctness, both untouched by this diff. It exists because these modules are loaded BY SPEC from several entrypoints, so a bare sibling import resolves only when the caller happens to have the directory on the path. Collapsing it would need a shared bootstrap module that each of these must import -- by the same idiom, in the same three files. The duplication IS the bootstrap."
+    },
+    {
+      "class": "intentional",
+      "id": "5aac6f98962c5eb9",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "A four-line `sys.stderr.write(f\"WARNING (<gate>): ...\")` stand-down notice, shared with three untouched changed-line/worktree gates. The shape is the repo's house style for 'this rung could not run, and that is not a pass' -- the WARNING token is load-bearing because run-quality.sh prints a passing gate's log only on it. Collapsing four gates' distinct stand-down REASONS behind one helper would make the message generic at the exact moment a reader needs the specific cause, which is the failure each of these notices exists to prevent."
     }
   ],
   "fixable_ceiling": 0,

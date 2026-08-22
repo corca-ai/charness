@@ -47,6 +47,7 @@ _resume_closeout = _load_resume_closeout()
 _claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
 _resume_publish = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_resume_publish.py")))
 _resume_state = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_resume_state.py")))
+_helpers = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_helpers.py")))
 
 # Re-exported: `resumable_state` is the resume surface's public entry point and several
 # callers and tests reach it through this module. The classification lives next door;
@@ -254,6 +255,13 @@ def preflight_resume_state(
         state["claims_review"] = _claims_review["validate_claims_review"](
             repo_root, prepared=state["prepared"], evidence_commit=state.get("claims_evidence_commit") or state["head_sha"],
             artifact_path=args.claims_review_artifact, target_version=current_version, tag_name=tag_name, run=cli.run,
+            # Resolved through the CANONICAL owner rather than re-derived: it
+            # filters to the release-tag glob and consults the remote, which a
+            # local `git describe` cannot. The scope-completeness check falls
+            # back to a `--match`ed describe when this returns None.
+            previous_version=_helpers["latest_previous_release_version"](
+                repo_root, target_version=current_version, remote=args.remote,
+            ),
         )
         _claims_review["unproven_claims_warning"](state["claims_review"], write=sys.stderr.write)
     return state

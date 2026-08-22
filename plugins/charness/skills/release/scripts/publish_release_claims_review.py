@@ -398,7 +398,8 @@ def _observer_distinctness(data: dict[str, Any], *, verdict: str, prepared: dict
 
 
 def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidence_commit: str,
-                           artifact_path: str | None, target_version: str, tag_name: str, run) -> dict[str, Any]:
+                           artifact_path: str | None, target_version: str, tag_name: str, run,
+                           previous_version: str | None = None) -> dict[str, Any]:
     if not artifact_path:
         raise SystemExit("--resume: prepared claims-review state requires --claims-review-artifact")
     normalized = _review_relative_path(artifact_path, "--claims-review-artifact", ".json")
@@ -450,7 +451,8 @@ def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidenc
     # should be told about the observer first.
     assert_scope_is_declared(data, verdict=verdict)
     if verdict == "pass":
-        assert_scope_matches_release_delta(repo_root, data, prepared=prepared, run=run)
+        assert_scope_matches_release_delta(repo_root, data, prepared=prepared, run=run,
+                                           previous_version=previous_version)
     distinctness = _observer_distinctness(data, verdict=verdict, prepared=prepared, target_version=target_version,
                                           evidence_commit=evidence_commit, repo_root=repo_root, run=run)
     # The evidence commit still carries only claims-review evidence.  The narrative is
@@ -465,4 +467,5 @@ def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidenc
     return {"path": normalized, "sha256": blob_sha256(record.stdout), "prepared": prepared,
             "reviewer_context": reviewer, "verdict": verdict, "observer_distinctness": distinctness,
             "review_scope": data.get("review_scope"),
-            "advisory_findings": data.get("advisory_findings") or []}
+            "advisory_findings": data.get("advisory_findings") or [],
+            "scope_completeness": data.get("scope_completeness")}

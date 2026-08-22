@@ -84,15 +84,25 @@ def _scope_lines(claims_review: dict[str, Any]) -> list[str]:
     readers get.
     """
     scope = claims_review.get("review_scope") or {}
+    if not scope:
+        return []
     blocking = scope.get("blocking_paths") or []
     advisory = scope.get("advisory_paths") or []
     findings = claims_review.get("advisory_findings") or []
-    if not scope:
-        return []
     lines = [
         f"- Verdict scope: {len(blocking)} blocking path(s) gated this tag; "
         f"{len(advisory)} advisory path(s) (session narrative) were reviewed but did not.",
     ]
+    completeness = claims_review.get("scope_completeness")
+    if isinstance(completeness, dict) and not completeness.get("verified", True):
+        # In the RECORD, not only on stderr. A verdict whose scope was never
+        # checked for completeness must not render identically to one that was.
+        lines.append(
+            "- Verdict scope completeness: NOT VERIFIED -- "
+            f"{flatten_signal(completeness.get('reason') or 'no reason recorded')}. "
+            "The declared scope was classification-checked but not compared against the "
+            "release delta, so it may omit changed paths."
+        )
     if not findings:
         # Stated, not omitted. An absent line and "none found" read identically,
         # and the split is only honest if "nobody looked" is distinguishable.
@@ -103,12 +113,15 @@ def _scope_lines(claims_review: dict[str, Any]) -> list[str]:
         "SHIPPED KNOWN-INACCURATE rather than repaired before this tag:"
     )
     for finding in findings:
+        # Flattened at RENDER time as well as refused at the validator, for the
+        # same reason `signal` is: a record committed under an earlier build
+        # never saw that refusal, and this document is pushed after the tag.
         if isinstance(finding, dict):
-            where = finding.get("file") or "unspecified"
-            what = finding.get("summary") or "no summary recorded"
+            where = flatten_signal(finding.get("file") or "unspecified")
+            what = flatten_signal(finding.get("summary") or "no summary recorded")
             lines.append(f"  - `{where}`: {what}")
         else:
-            lines.append(f"  - {finding}")
+            lines.append(f"  - {flatten_signal(finding)}")
     return lines
 
 
@@ -161,6 +174,10 @@ def claims_review_lines(claims_review: dict[str, Any] | None, *, prepared: bool 
     # "Claims Review" section and infers a review happened; the token alone reproduces, in a
     # new place, the exact fail-quiet this section exists to close. State the NEGATIVE
     # property, in the same words the boundary warning uses.
+    # An `unproven` release that recorded advisory findings used to publish a
+    # record showing none: `_scope_lines` was called only on the `pass` branch.
+    # The findings are evidence either way.
+    lines.extend(_scope_lines(claims_review))
     lines.append(
         f"- Claims review verdict: `{verdict}` -- the distinct-observer property was NOT "
         "established for this release."

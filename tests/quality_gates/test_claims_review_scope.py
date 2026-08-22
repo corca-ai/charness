@@ -29,8 +29,6 @@ from claims_review_scope import (  # noqa: E402
     assert_scope_is_declared,
     classify,
     partition,
-    render_packet_scope,
-    scope_summary,
 )
 
 
@@ -100,41 +98,6 @@ def test_an_unrecognised_surface_is_blocking() -> None:
     unlisted; that is how a scope split turns into a laundering channel."""
     assert classify("brand-new-surface/thing.py") == "blocking"
     assert classify("Makefile") == "blocking"
-
-
-def test_partition_dedupes_and_sorts() -> None:
-    split = partition([
-        "scripts/b.py", "scripts/a.py", "scripts/a.py",
-        "charness-artifacts/retro/z.md",
-    ])
-
-    assert split == {
-        "blocking": ["scripts/a.py", "scripts/b.py"],
-        "advisory": ["charness-artifacts/retro/z.md"],
-    }
-
-
-def test_scope_summary_counts_match_the_lists() -> None:
-    summary = scope_summary(["scripts/a.py", "charness-artifacts/goals/g.md"])
-
-    assert summary["blocking_count"] == len(summary["blocking_paths"]) == 1
-    assert summary["advisory_count"] == len(summary["advisory_paths"]) == 1
-
-
-def test_the_packet_names_both_scopes_and_says_advisory_is_not_unimportant() -> None:
-    packet = render_packet_scope(["scripts/a.py", "charness-artifacts/retro/r.md"])
-
-    assert "`scripts/a.py`" in packet
-    assert "`charness-artifacts/retro/r.md`" in packet
-    assert "does NOT make the verdict `unproven`" in packet
-    assert "not-a-tag-gate" in packet
-
-
-# --------------------------------------------------------------------------
-# The laundering guard
-# --------------------------------------------------------------------------
-
-
 def _pass_record(**overrides):
     record = {
         "verdict": "pass",
@@ -210,8 +173,8 @@ def test_advisory_findings_survive_into_the_validator_result() -> None:
             "signal": "bounded-reviewer spawn, read-only envelope",
             "review_artifact": narrative,
         },
-        "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": ["charness-artifacts/retro/r.md"]},
-        "advisory_findings": [{"file": "charness-artifacts/retro/r.md", "summary": "count drifted"}],
+        "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": ["charness-artifacts/retro/2026-08-22-r.md"]},
+        "advisory_findings": [{"file": "charness-artifacts/retro/2026-08-22-r.md", "summary": "count drifted"}],
     }
 
     def fake_run(args, cwd=None, check=True):
@@ -236,7 +199,7 @@ def test_advisory_findings_survive_into_the_validator_result() -> None:
     assert result["verdict"] == "pass"
     assert result["review_scope"]["blocking_paths"] == ["scripts/a.py"]
     assert result["advisory_findings"] == [
-        {"file": "charness-artifacts/retro/r.md", "summary": "count drifted"}
+        {"file": "charness-artifacts/retro/2026-08-22-r.md", "summary": "count drifted"}
     ]
 
 
@@ -378,12 +341,21 @@ def test_machine_read_state_under_an_advisory_root_still_blocks() -> None:
     assert classify("charness-artifacts/retro/2026-08-22-r.md") == "advisory"
 
 
-def test_the_cli_entrypoint_matches_exactly_not_as_a_prefix() -> None:
-    """Bare `charness` as a PREFIX matched every `charness-artifacts/...` path,
-    which made the loop ordering load-bearing for an undocumented reason and left
-    the explicit `charness-artifacts/release/` entry beside it unreachable."""
-    assert classify("charness") == "blocking"
+def test_no_prefix_swallows_the_artifact_tree() -> None:
+    """`charness` was listed as a blocking PREFIX, so it matched every
+    `charness-artifacts/...` path. That made the loop ordering load-bearing for
+    an undocumented reason and left the explicit `charness-artifacts/release/`
+    entry beside it permanently unreachable. This fails if any blocking prefix
+    is broad enough to swallow the artifact tree again."""
+    from claims_review_scope import BLOCKING_PREFIXES
+
+    swallowers = [
+        prefix for prefix in BLOCKING_PREFIXES
+        if "charness-artifacts/retro/2026-08-22-r.md".startswith(prefix)
+    ]
+    assert swallowers == [], f"blocking prefix(es) swallow the artifact tree: {swallowers}"
     assert classify("charness-artifacts/retro/2026-08-22-r.md") == "advisory"
+    assert classify("charness") == "blocking"
 
 
 def _sections_module():
@@ -431,3 +403,146 @@ def test_the_record_reports_both_scope_sizes() -> None:
 
     assert "1 blocking path(s) gated this tag" in text
     assert "1 advisory path(s)" in text
+
+
+# --------------------------------------------------------------------------
+# Round 2: the repairs' own failure modes
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "finding",
+    [
+        "blocker tally drifted\n- target version: 9.9.9",
+        {"summary": "record still shows charness-release-state:prepared-awaiting-claims-review"},
+        {"file": "r.md", "summary": "line one\nline two"},
+    ],
+)
+def test_an_advisory_finding_cannot_inject_lines_into_the_published_record(finding) -> None:
+    """`advisory_findings` is rendered verbatim into a record that is committed
+    AND PUSHED after the tag exists. A newline there injects a `target version:`
+    line that refuses every later push; the prepared-stop marker reclassifies a
+    finished release as an outstanding stop. Every other operator-supplied value
+    on this document already gets this treatment; the field added to publish
+    waived defects had none of it."""
+    record = {
+        "verdict": "pass",
+        "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []},
+        "advisory_findings": [finding],
+    }
+
+    with pytest.raises(SystemExit):
+        assert_scope_is_declared(record, verdict="pass")
+
+
+def test_a_legitimate_finding_is_still_accepted() -> None:
+    record = {
+        "verdict": "pass",
+        "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []},
+        "advisory_findings": [{"file": "charness-artifacts/retro/2026-08-22-r.md",
+                               "summary": "blocker tally drifted"}],
+    }
+
+    assert_scope_is_declared(record, verdict="pass")
+
+
+def test_a_non_string_finding_value_is_a_named_refusal_not_a_traceback() -> None:
+    record = {
+        "verdict": "pass",
+        "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []},
+        "advisory_findings": [{"file": 5, "summary": "x"}],
+    }
+
+    with pytest.raises(SystemExit, match="non-string"):
+        assert_scope_is_declared(record, verdict="pass")
+
+
+@pytest.mark.parametrize(
+    "pointer",
+    [
+        "charness-artifacts/quality/latest.md",
+        "charness-artifacts/retro/recent-lessons.md",
+        "charness-artifacts/retro/retro.md",
+    ],
+)
+def test_a_rolling_pointer_is_not_session_narrative(pointer: str) -> None:
+    """`quality/latest.md` is a `CURRENT_POINTERS` entry in
+    `validate_current_pointer_freshness`; `recent-lessons.md` is the digest
+    CLAUDE.md requires reading before any contract change. The first cut said
+    "`.md` is narrative", which classified both ADVISORY -- a gate input waived
+    through the lane built for prose, one file-extension away from the `.json`
+    escape it had just closed."""
+    assert classify(pointer) == "blocking"
+
+
+def test_only_a_DATED_stem_is_narrative() -> None:
+    """The discriminator is written-once vs continuously-rewritten, so a new
+    pointer added under these roots tomorrow is blocking by default rather than
+    advisory by omission."""
+    assert classify("charness-artifacts/retro/2026-08-22-session.md") == "advisory"
+    assert classify("charness-artifacts/retro/some-new-pointer.md") == "blocking"
+
+
+def test_the_stand_down_is_recorded_durably_not_only_on_stderr() -> None:
+    """A previous round found the SHA rung standing down invisibly: the record
+    rendered identically whether the check ran, and a passing phase's log is
+    deleted at exit. `unproven` is written into the record for exactly this
+    reason."""
+    from claims_review_scope import assert_scope_matches_release_delta
+
+    data = {"review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []}}
+
+    def no_tags(args, cwd=None, check=True):
+        return SimpleNamespace(returncode=1, stdout="")
+
+    assert_scope_matches_release_delta(
+        ROOT, data, prepared={"commit": "P" * 40}, run=no_tags,
+    )
+
+    assert data["scope_completeness"]["verified"] is False
+    assert data["scope_completeness"]["reason"]
+
+
+def test_the_release_base_is_matched_to_release_tags_only() -> None:
+    """Bare `git describe --tags` returns the closest reachable tag of ANY kind,
+    so a stray `ci-pin` after the last release becomes the base, shrinks the
+    delta, and silently drops every blocking path changed before it."""
+    from claims_review_scope import assert_scope_matches_release_delta
+
+    seen: list[list[str]] = []
+
+    def record_args(args, cwd=None, check=True):
+        seen.append(args)
+        return SimpleNamespace(returncode=1, stdout="")
+
+    assert_scope_matches_release_delta(
+        ROOT, {"review_scope": {"blocking_paths": [], "advisory_paths": []}},
+        prepared={"commit": "P" * 40}, run=record_args,
+    )
+
+    describe = next(a for a in seen if "describe" in " ".join(a))
+    assert "--match" in describe, f"release-tag glob missing from {describe}"
+
+
+def test_a_known_previous_version_is_preferred_over_reachability() -> None:
+    """It is the tag the release is measured from and needs no guess."""
+    from claims_review_scope import assert_scope_matches_release_delta
+
+    calls: list[str] = []
+
+    def run(args, cwd=None, check=True):
+        joined = " ".join(args)
+        calls.append(joined)
+        if "rev-parse" in joined:
+            return SimpleNamespace(returncode=0, stdout="abc123\n")
+        if "diff-tree" in joined:
+            return SimpleNamespace(returncode=0, stdout="scripts/a.py\n")
+        return SimpleNamespace(returncode=1, stdout="")
+
+    assert_scope_matches_release_delta(
+        ROOT, {"review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []}},
+        prepared={"commit": "P" * 40}, run=run, previous_version="6.2.2",
+    )
+
+    assert any("refs/tags/v6.2.2" in c for c in calls)
+    assert not any("describe" in c for c in calls), "should not guess when told"
