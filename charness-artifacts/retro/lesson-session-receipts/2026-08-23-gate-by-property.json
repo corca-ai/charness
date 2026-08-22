@@ -1,0 +1,11 @@
+{
+  "kind": "charness.lesson-session-emission-receipt",
+  "schema_version": 1,
+  "session_id": "2026-08-23-gate-by-property",
+  "snapshot_sha256": "15098dc5ab7166ef7e34cb749aae2231dc4f7553a2376edc4420ccc2da942e03",
+  "renderer_id": "charness.lesson-session-preview.text.v1",
+  "stdout_sha256": "cd1e4a9aa3b2e726b02360ae0d3d00dbbac6cc860b93428adc7c5b17e3cbdd9a",
+  "stdout_byte_count": 3004,
+  "emitted_at": "2026-08-22T13:08:44.977090Z",
+  "receipt_sha256": "37b9fa89c6fe5bfa0e9bb444492846434c9dd181b6b7f480db893eb592b9fe26"
+}

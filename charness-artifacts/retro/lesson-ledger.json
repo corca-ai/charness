@@ -1484,6 +1484,36 @@
         ]
       },
       "snapshot_sha256": "92d366236ad1bc27e6234fed125b97cafa9d90ec43588f203ace862772fb763b"
+    },
+    {
+      "session_id": "2026-08-23-gate-by-property",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-23-gate-by-property",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "positive-effect-cannot-be-cited",
+          "proof-surface-message-drift",
+          "goal-closeout-evidence-binding",
+          "changed-line-proof-before-broad-quality",
+          "bar-recorded-as-prose",
+          "agent-authored-score-role",
+          "runtime-budget-contention",
+          "green-test-is-not-covered-line",
+          "removal-consumer-grep-incomplete",
+          "global-probe-for-local-fact"
+        ]
+      },
+      "snapshot_sha256": "15098dc5ab7166ef7e34cb749aae2231dc4f7553a2376edc4420ccc2da942e03"
     }
   ],
   "score_events": [
