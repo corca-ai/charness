@@ -9,21 +9,28 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: slice 1 complete. Committed at `3a5da4a59`, then repaired
-  against two round-2 bounded reviews and recommitted. The two-round cap is
-  consumed; the round-2 repairs are recorded as accepted-unreviewed. Slice 2
-  (classify the seven) is next and has not started.
-- Current slice intent: slice 1's intent is discharged — an unmeasured mutation
-  run now reports `UNMEASURED` rather than a score verdict, on all three routes
-  into that state, and the red coverage baseline's cause is repaired and pinned.
-  Once a new slice starts, this names the reviewable-intent unit in progress and
-  the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent — update it when the intent changes, not per commit
-  (meaningful-slice-cadence).
+- Current slice: slice 2 complete — all seven classified, first cut falsified by
+  two bounded reviewers and rewritten, plan redirect queued for the operator.
+  Slice 1 is complete (`3a5da4a59` plus round-2 repairs at `0552d40b1`); its
+  two-round cap is consumed and those repairs are recorded as
+  accepted-unreviewed.
+- Current slice intent: both slices 1 and 2 are discharged. Slice 1 made an
+  unmeasured mutation run say so on all three routes into that state and repaired
+  the red baseline's cause; slice 2 produced the disposition record and had its
+  first cut falsified. Once a new slice starts, this names the reviewable-intent
+  unit in progress and the commits it spans; critique and broad proof do not
+  re-fire within one unchanged intent — update it when the intent changes, not
+  per commit (meaningful-slice-cadence).
+- **Method note, now carrying two lessons and worth reading before slice 3.**
+  Classify what a surface does IN THE TREE, not what a summary says it does — and
+  that applies to the surface's OWN comments, not only to the predecessor retro.
+  Slice 2's first cut graded seven gates on their self-description and was
+  falsified twice over; this repo's comments are rich and self-critical enough
+  that reading them feels like review when it is not. Run the surface.
 - Frozen target at activation: `5bd571166d0f3b8c84b9a758b246b1d811e6adbe`.
-- Next action: open slice 2 from the inventory anchors already recorded in
-  `## Off-Goal Findings`, starting from the measured `fail-closed` reading of
-  `dup-review.json` rather than the predecessor retro's summary of it.
+- Next action: operator decision on slice 2's plan redirect (queued). Slice 3's
+  conversion target moved to the consumer-validator catalog's discovery
+  predicate; slice 4 is reinstated. Neither starts before that decision.
 - Standing non-claim for this goal: no CI run has been observed after slice 1.
   The mutation lane is NOT known to be green, and slice 1's repair is necessary
   but not proven sufficient — a second, uncharacterized failure mode (the
@@ -291,9 +298,103 @@ an operator call.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Make the mutation harness distinguish unmeasured from passed, and reproduce the sampler failure locally | Every other proof stands on it, and it has produced no verdict since 2026-08-19 | A local run naming the failing/slow phase; a harness change so a skipped `Run mutation` reports unmeasured coverage rather than reading as a step failure; a negative control; two bounded rounds | done — `3a5da4a59` plus round-2 repairs; evidence in `## Slice Log` |
-| 2 | Classify all seven enumerations with the disposition taxonomy | Converting before classifying is how a `contract` list gets destroyed; P3's exception is real | A per-enumeration record: file and line, current list, the property it approximates or the observable contract it IS, disposition, reason | not started |
+| 2 | Classify all seven enumerations with the disposition taxonomy | Converting before classifying is how a `contract` list gets destroyed; P3's exception is real | A per-enumeration record: file and line, current list, the property it approximates or the observable contract it IS, disposition, reason | done — record in `## Enumeration Dispositions`; first cut falsified by two reviewers and rewritten; plan redirect queued for the operator |
 | 3 | Convert the `derive` set (expected: the population count pin and one allowlist) | Both have a stated property their enumeration only approximates | The property replacing the list; capability-equality replay over every current entry; negative control; wired-path test; two bounded rounds | not started |
 | 4 | Give the `fail-closed` and `declare-uncovered` remainder their refusal or their uncovered-set report | A green that cannot distinguish checked from unlooked is the root defect | Each remaining gate either refuses when its population moves, or reports its uncovered set as a number in its own output; a staleness-detection test each | not started |
+
+## Enumeration Dispositions
+
+Slice 2's decision record. Each of the seven read in the tree as it stands, not
+from the predecessor retro's one-line description of it.
+
+**This section's first cut claimed "ZERO of the seven silently under-cover, all
+seven fail closed", and two bounded reviewers falsified it. The claim is
+WITHDRAWN.** It is kept visible here rather than quietly rewritten, because how
+it failed is the most useful thing slice 2 produced.
+
+**The corrected finding, which is sharper than the thesis it was meant to test:
+the enumeration that rots is not the allowlist — it is the SCAN.** All seven do
+fail closed *over the population their scan admits*. But four of the seven reach
+their list through a discovery predicate that is itself a hand-shaped
+enumeration, and none of those four names its unscanned set. A new instance the
+scan never reaches never becomes a candidate, the list is never consulted, and
+the gate is green with nothing said. That is the goal's original thesis, holding
+exactly one level below where the first cut looked.
+
+Three live instances in the tree today, each verified by running the surface, not
+by reading it:
+
+- `skills/public/setup/scripts/templates/t_events_adapter.yaml:7` carries a
+  `charness-artifacts/spec/` mention — a `setup:artifact:spec` cross-namespace
+  overlap with no allowlist entry. `check_skill_ownership_overlap.py` reports
+  `findings: []`, `status: ok`, `scanned_skills: 20`. Its scan reads `SKILL.md`
+  plus a NON-recursive `iterdir()` over `scripts/` and `references/`, filtered to
+  `.py`/`.md`, so this file is doubly invisible: nested, and `.yaml`.
+- `plugins/charness/skills/issue/scripts/issue_validate_closeout_draft.py` is a
+  packaged, operator-facing validator — CLAUDE.md's own issue-closeout floor
+  names it — and it is absent from the catalog. `discover_packaged_validators`
+  admits a file only if its basename starts with `check_` or `validate_`, so
+  this one is never discovered, never needs a decision, and `missing` is empty.
+- `charness-artifacts/quality/dup-review.json` moved aside makes the duplicate
+  ratchet exit **0** with `ok: true`, `status: degraded`. `dup_ratchet_lib.py:298`
+  returns before `hard_block` is ever computed. Observed directly, then restored
+  and the restore verified.
+
+**How the first cut got it wrong, recorded because it is a repeatable trap.**
+Every row's reason in the first cut cited or paraphrased the surface's OWN
+docstring or comment. This repo's comments are unusually rich and self-critical,
+so reading them feels like adversarial review when it is not. The two facts that
+falsify the headline — the `if degraded:` early return and the non-recursive
+`iterdir` — are exactly the two things the self-descriptions do not mention. The
+slice's stated method note ("classify what the surface does in the tree, never
+what the retro's one-line summary said") was applied against the RETRO and never
+against the SURFACES. And the strongest sentence in the section was the only
+claim in it with no file and line behind it — and it was the sentence that
+dissolved the remaining work.
+
+**What survives from the first cut.** Churn is real and is a second, distinct
+cost: several of these surfaces demand a round trip per correct change. But churn
+is now an ADDITIONAL finding, not a replacement for the thesis.
+
+| # | Enumeration | Where | What it does TODAY | Disposition (corrected) | Reason |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Skill-ownership allowlist | `scripts/check_skill_ownership_overlap.py` `scan()`, list at `scripts/check_skill_ownership_overlap.allowlist.txt` (31 entries) | An unlisted overlap becomes a finding; a waiver nobody consumed is a stale advisory. But the SCAN reads only `SKILL.md` plus a non-recursive `iterdir()` over `scripts/`+`references/`, `.py`/`.md` only | `fail-closed` (list) + **`declare-uncovered`** (scan) | The list direction is right and `derive` is correctly rejected: the derivable population IS the finding set, so an allowlist derived from it would make the gate a permanent no-op. But the scan is a silent enumeration with a live miss, and no run ever emits a scanned-file count or the skipped suffix/depth set. The scope caveat exists only inside the stale-waiver advisory, which is emitted CONDITIONALLY — a clean run says nothing about partial coverage. Owes: a number. |
+| 2 | Consumer-validator catalog | `discover_packaged_validators` at `scripts/check_consumer_validator_catalog.py:71-82`; catalog at `skills/public/quality/references/consumer-validator-catalog.yaml` | Raises on any discovered validator without a decision, and on any declared path not discovered — but `discovered` admits a file only if its basename starts with `check_` or `validate_` | **`derive`** — and this is the goal's best real conversion target | The first cut said "the population is derived by discovery, a new validator cannot slip in undeclared." That is exactly wrong: the population is derived from a TWO-ITEM FILENAME-PREFIX enumeration, and one has already slipped in. The property is "packaged Python with a validator entry point", not "basename starts with one of two strings". This is the one surface where a real property replaces a real list. |
+| 3 | Validator-count pin | `tests/test_consumer_validator_catalog.py:94`, `:95`, `:96` | Three assertions with three different answers | **Split three ways** — see below | The first cut treated these as one row and got all three wrong. |
+| 3a | — line 94 | `packaged_validator_count == decision_count` | Cannot fail | **dead assertion — remove or annotate** | Verified: line 186 raises when a declared path is not discovered, line 406 raises on `discovered - declared`, line 184 rejects duplicates. So equality is a THEOREM given `status == "pass"`. Confirmed live (134 == 134). The goal's own prose called this "the assertion above it already states the real property" — the property is stated and enforced by the production gate; this restatement can never bite. A test assertion that cannot fail is this goal's own defect class, inside the test it calls its clearest specimen. |
+| 3b | — line 95 | `packaged_validator_count == 134` | Fires only on a complete, self-consistent, correct change | **`recommend-removal`** | Every INCOMPLETE change is already refused by production: added-without-decision (line 406), deleted-with-entry-kept (line 186), truncated mirror (line 186). What is left is exactly "someone did the work correctly", and the comment on the line is the receipt for the last time the chore was paid. Classifying it `fail-closed` preserved the very chore the record had just identified as the measured cost. |
+| 3c | — line 96 | `consumer_facing_count == 14` | Guards the exported consumer surface | **`contract`** | This one is P3's exception. It pins what every consuming repo must wire or explicitly opt out of. A complete addition or removal of a consumer-facing validator changes an exported contract at an irreversible boundary, and lines 97-99 pinning specific consumer paths and ids reinforce the reading. |
+| 4 | Duplicate-family classifications | `charness-artifacts/quality/dup-review.json` (781 entries); `dup_ratchet_lib.py:298`; scope at `.agents/quality-adapter.yaml:867` | Hard-blocks on a new family **when armed** — but returns `ok=True, block=False` before computing `hard_block` on ANY degrade, and never echoes its scope | **`declare-uncovered`**, NOT `fail-closed` | Observed, not reasoned: hiding the overlay yields exit 0. `tests/` and `skills/shared/` are outside `scope_paths` entirely and no family is ever formed there. Unlike two siblings in this same repo — `check_docs_graph.py` emits `did_not_judge`, `check_runtime_budget_universe.py` emits `NOT_JUDGED` — this gate emits neither its scope nor its uncovered set. The first cut's "never once passed over something it had not looked at" generalised three observed runs into a property the code contradicts. |
+| 5 | Link-only-line bar | `scripts/check_docs_graph.py:56`, `resolve_link_only_lines_bar` at `:277` | A monotone ratchet: refuses when the count moves UP, silently tolerates slack when it moves DOWN | **`bound`** — a SIXTH category this taxonomy lacked | Every failure mode falls to the strict default, and pages outside `docs/` are named in `did_not_judge`, so this surface is genuinely well-built. But `fail-closed` does not describe it: it fails open in the slack direction, and the gate's own comment concedes a genuine bare link can hide under the wrapping residual. Not `derive` (the residual is not machine-separable from a real finding — that is why the bar exists), not `contract`, not `recommend-removal`. Owed remedy is to report the slack as a number, not to convert anything. |
+| 6 | Runtime budget | `scripts/check_runtime_budget_universe.py` (#546) | Derives membership over the UNION of profile blocks and rides `NOT_JUDGED` on every armed verdict | `derive` (done) + `declare-uncovered` (**partial**) | Still the strongest of the seven, and the `derive` half is genuinely complete. But the first cut used it to argue slice 4 was discharged, and on the taxonomy's own wording — "name its uncovered set, AS A NUMBER, in its own output" — it is not: `NOT_JUDGED` names the CLASSES, and no count of budgeted-but-never-run labels exists. The gate structurally cannot produce that count, which is the open half of #546. |
+| 7 | Claims-review scope prefixes | `skills/public/release/scripts/claims_review_scope.py:100-126`, lists at `:44` and `:61` | Unrecognised paths return `blocking`; `_is_dated_narrative` discriminates by dated filename stem | `fail-closed` holds, **reason rewritten** | The first cut called both prefix lists "an optimisation over a fail-closed default." True of `BLOCKING_PREFIXES` only. `ADVISORY_PREFIXES` is CONSTITUTIVE — the sole source of `advisory` in the module, i.e. a permission list where every entry widens what a release may waive. The module's comment guards only the omission direction; the commission direction is what launders findings. Separately, the date-stem property has a known-false premise for one class: `charness-artifacts/goals/<date>-<slug>.md` classifies advisory while `describe_goal_closeout_shape.py` parses that same file as gate input. Blast radius is bounded (the achieve complete gate owns goal-artifact correctness independently), so this is a reason defect, not a disposition change. |
+
+**The taxonomy itself gained a category.** `bound` — a monotone ratchet that
+refuses in one direction and accumulates slack in the other — is not any of the
+original five, and row 5 is a real instance. Recorded as a finding about the
+taxonomy rather than by forcing row 5 into `fail-closed`.
+
+**Consequence for the plan, corrected.**
+
+- **Slice 3 is NOT dead, and its target moves.** The first cut killed it on the
+  grounds that neither named target had a derivable property. Both named targets
+  were misjudged, and a better one exists: row 2's `check_`/`validate_` prefix
+  predicate is a genuine two-item enumeration standing in for "packaged Python
+  with a validator entry point", with a live miss to prove it. That is one real
+  conversion, which is what `## User Acceptance` requires.
+- **Slice 4 is NOT discharged; it is the slice this evidence most supports.**
+  Rows 1, 4, 5 and 6 each owe a number in their own output: unscanned-file count,
+  scope plus `did_not_judge`, ratchet slack, and budgeted-but-never-run count.
+  Each lands inside the gate that owns the list, so none of them trips P5's
+  gate-checking-gates anti-pattern.
+- **Row 3 splits into a removal, a contract, and a dead line** rather than a
+  conversion.
+- **A boundary claim of this goal's own is false and is corrected here.**
+  `## Boundaries` says slices 3 and 4 will "push the broad duplicate/length/
+  pressure gates toward their thresholds" because they add tests. `tests/` is
+  outside the duplicate ratchet's `scope_paths` entirely, so test scaffolding
+  registers nothing on its code arm. Reading that silence as a clean result would
+  be this goal's own defect.
 
 ## Backlog Recount
 
@@ -359,6 +460,26 @@ Seeded at activation:
   the next scheduled run to characterize it with fresh step timings
 - Revisit trigger: the next cancelled `Select mutation sample`, or the first
   scheduled run after slice 1 that still produces no verdict
+
+- Decision: approve slice 2's redirect of the remaining plan
+- Owner: operator
+- Why deferred: it changes what slices 3 and 4 do, which is a scope decision, and
+  local work can continue on either reading. Slice 2's classification moves
+  slice 3's conversion target from the count pin and an allowlist to the
+  consumer-validator catalog's `check_`/`validate_` discovery predicate, splits
+  the count pin into a removal plus a `contract` plus a dead assertion, and
+  reinstates slice 4 as the slice this evidence most supports (four surfaces owe
+  a number in their own output). It also proposes a sixth taxonomy category,
+  `bound`.
+- Why this entry exists at all: an earlier draft of `## Enumeration Dispositions`
+  ended "That decision is the operator's and is queued" while this queue held
+  nothing of the kind. A bounded reviewer caught it and named it correctly as the
+  same defect recorded two entries above — a goal whose thesis is "say out loud
+  what you are not covering" leaving its own gap untracked, one slice later, on
+  the sentence that cancelled two slices.
+- Unblock action: approve the redirect, or direct slices 3 and 4 to run as
+  originally written
+- Revisit trigger: before slice 3 starts
 
 ## Coordination Cues
 
@@ -459,6 +580,20 @@ applies.
 - Critique: Two bounded read-only reviewers on the repaired surface. Findings folded: a THIRD spelling of the rule in check_mutation_score_summary_lib rendering `Mutation score: **FAIL** (0.0%)` directly under `Status: **UNMEASURED**` -- the #612 misdiagnosis reproduced by its own repair; a `passed` verdict rule computed twice in check_js_mutation_score, once for the renderer and once for the exit code, in different orders so no detector could ever flag them; the `status reflects partial completion` sentence that is false when the status is UNMEASURED; the untested `reachable == 0` precedence over the timeout and pending arms; the `one owner` claim overstated while a fourth inline ternary survived; UNMEASURED_STATUS referenced only inside its own definition; the missing wired-path tests; and a BLOCKER on the record -- the Off-Goal Findings bullet said the ratchet's request was answered by removing duplication while the diff extended the ledger four times, three of them describing this slice's own fix.
 - Off-goal findings: The second, uncharacterized mutation failure mode (the 08-19/08-20 cancellations) now has an Operator Decision Queue entry; it had been called `still live` in prose with no tracked destination, which is this goal's own thesis one level up. The public reference skills/public/quality/references/mutation-testing.md still teaches the two-token vocabulary and has no UNMEASURED entry.
 - Lessons carried forward: The two-round floor is not ceremony on a proof surface. Round 1 produced a repair that carried the class it fixed -- a status token corrected on two paths while a third spelling contradicted it on the adjacent line -- and only a round reading the REPAIRS could see it. Second: an assertion narrowed to make a test pass is how the blocker hid. The first cut asserted `- Status: **FAIL**` where the sibling assertion used the bare token; the anchored form steps around the contradicting line, and the version that would have caught it was already in the same file, one function away.
+- Metrics:
+
+### Slice 3: Slice 2 — classify the seven, and get falsified
+
+- Objective: Record one disposition per enumeration from the five-way taxonomy, so slice 3 does not convert a list that is the contract. No code change; the deliverable is a decision record.
+- Why this approach: The predecessor retro named the seven in one line each. Converting on those descriptions is how a contract list gets destroyed, and slice 1 had already shown two of them were nearer the target shape than the summary implied.
+- Commits: this slice is artifact-only; recorded in `## Enumeration Dispositions`
+- What changed: charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md — new `## Enumeration Dispositions` section, a corrected `## Boundaries` claim, and a new Operator Decision Queue entry.
+- Alternatives rejected: Rejected forcing all seven into the goal's stated thesis. Rejected the reverse too: an earlier cut concluded the thesis was unsupported and the remaining slices were dead, and that conclusion did not survive review either.
+- Targeted verification: Every corrected claim re-derived by RUNNING the surface rather than reading it. The ownership gate reports findings [] / status ok / scanned_skills 20 while an unallowlisted setup->spec mention sits in a nested .yaml. The catalog reports 134 == 134 == decision_count, and issue_validate_closeout_draft.py — a packaged operator-facing validator — is absent from it because the discovery predicate admits only check_/validate_ basenames. Moving dup-review.json aside makes the duplicate ratchet exit 0 with ok true and status degraded; restored, and the restore verified by diff. Line 94's tautology confirmed against the two subset-enforcing raises at :186 and :406. Goal artifact, referent gate, and markdown lint all clean.
+- Test duplication pressure: None — no tests added or changed. Worth recording that the goal's own `## Boundaries` predicted duplicate-gate pressure from later slices adding tests, and that prediction is FALSE: tests/ is outside the ratchet's scope_paths entirely, so test scaffolding registers nothing on its code arm. Corrected in place.
+- Critique: Two bounded read-only reviewers, one told to falsify the headline and one to attack each disposition. Both falsified it, independently and by different routes. The headline `ZERO of the seven silently under-cover` is withdrawn. Corrected finding: all seven fail closed over the population their SCAN admits, and four reach their list through a discovery predicate that is itself a silent enumeration naming no unscanned set. Three live instances in the tree. Further folded: line 94 is a dead assertion that cannot fail; line 95 fires only on correct work and is recommend-removal; line 96 is contract; dup-review.json is declare-uncovered because of an explicit fail-open degrade branch; the link-only ratchet needs a sixth taxonomy category because it fails open in the slack direction; and ADVISORY_PREFIXES is constitutive rather than an optimisation. A reviewer also caught a record blocker: the section claimed a decision was queued while the queue held nothing of the kind.
+- Off-goal findings: The three live instances are defects in the tree, not just classification inputs: an unallowlisted cross-namespace mention, an undeclared packaged validator, and a duplicate gate that exits 0 when its overlay is absent. None is repaired in this slice; each belongs to the redirected slice 3 or 4 and is queued with them.
+- Lessons carried forward: I graded seven surfaces on their own self-description. This repo's comments are unusually rich and self-critical, so reading them feels like adversarial review when it is not — and the two facts that falsified my headline, an `if degraded:` early return and a non-recursive iterdir, are exactly the two things the self-descriptions do not mention. The slice's own method note said to read the tree rather than the retro's summary; I applied it against the retro and never against the surfaces. The structural tell was available at the time: the strongest sentence in the section was the only claim in it with no file and line behind it, and it was the sentence that dissolved the remaining work.
 - Metrics:
 
 ## Context Sources
