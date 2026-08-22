@@ -374,6 +374,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-documented-command-flags", "check_documented_command_flags.py"),
     ("check-documented-subcommands", "check_documented_subcommands.py"),
     ("check-spec-evidence-durability", "check_spec_evidence_durability.py"),
+    ("check-artifact-referents", "check_artifact_referents.py"),
     ("check-references-link-inventory", "check_references_link_inventory.py"),
     ("check-seed-fixture-budget", "check_seed_fixture_budget.py"),
     ("check-supply-chain", "check_supply_chain.py"),

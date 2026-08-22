@@ -9,8 +9,8 @@ Goal: charness-artifacts/goals/2026-08-22-proof-cost-portability-and-the-cadence
 One activated goal, three source slices (C: proof cost, B: unfork the Node
 consumers, A: settle the cadence contract) plus slice R, the single release
 carrying all three. Reviewed at the point where the release sits at its prepared
-stop. THREE claims rounds have run and all three returned `unproven`; each
-reset the prepared commit, took repairs as ordinary commits, and remade it.
+stop. {{q:claims-rounds=4}} claims rounds have run and ALL returned `unproven`;
+each reset the prepared commit, took repairs as ordinary commits, and remade it.
 
 What matters next is the release finishing honestly, and the handoff carrying
 what this session measured about the repo's real shape.
@@ -37,9 +37,10 @@ fixed (#697, #698, #699). One finding recorded in the goal without filing: the
 - Checked-in probe: `charness-artifacts/probe/2026-08-22-changed-line-coverage-context-blowup.json`
   (the 671x / 276x / 339x measurement, with SHA-256s).
 - Bounded review spawns: slice C rounds 1 (two reviewers) and 2, slice B rounds
-  1 and 2, slice A rounds 1 and 2, one release critique, and three claims
-  rounds — eleven spawns in total, all read-only, all returning findings to this
-  context; boundary fingerprints verified `parent-attributed` at each.
+  1 and 2, slice A rounds 1 and 2, one release critique, and
+  {{q:claims-rounds=4}} claims rounds — {{q:review-spawns=12}} spawns in total
+  (3 + 2 + 2 + 1 + 4), all read-only, all returning findings to this context;
+  boundary fingerprints verified `parent-attributed` at each.
 - `run-quality.sh --release`: 98 passed / 0 failed. Changed-line proof over the
   full range: clean, 15/15 files, zero blocking.
 - Lesson session `2026-08-22-proof-cost-portability-cadence`, frozen bundle at
@@ -156,9 +157,10 @@ Prior durable retro: `charness-artifacts/retro/2026-08-22-tracker-closeout-retro
 **Engelbart — `system-improving-itself` (briefed by the planner).** The lens is
 *treat (H + LAM + T) as one unit; design T alongside LAM*. I improved the tooling
 (LAM) repeatedly this session and never once improved the T-loop that was
-failing. Concretely: twelve times a repair carried the class it repaired, and each
-time I fixed the instance. Engelbart's move is to ask what in the *process*
-produced a wrong repair three times, and the answer is visible — I repaired from
+failing. Concretely: {{q:class-carrying=12}} times a repair carried the class it
+repaired, and each time I fixed the instance. Engelbart's move is to ask what in
+the *process* produced a wrong repair {{q:class-carrying=12}} times over, and the
+answer is visible — I repaired from
 a reviewer's prose without first reproducing the finding. The changed action:
 **make "reproduce before repairing" a step in the review-response loop, not a
 habit.** When I did reproduce first (the B1 false kill, the two cadence

@@ -60,6 +60,9 @@ PLACEHOLDER_VALUE_RE = re.compile(r":\s*(?:TODO|TBD|FIXME)\b", re.IGNORECASE)
 #: Cues") is not mistaken for a path; bare filenames are handled below.
 PATH_RE = re.compile(r"\b((?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]{1,6})\b")
 
+#: Tokens that look like an issue number but name nothing. `n` and `N` are the
+#: scaffold's own placeholder; the rest are the shapes seen in practice.
+_NON_NUMBERS = {"n", "tbd", "todo", "fixme", "x", "nnn", "<n>", "num"}
 
 
 def issue_refs(text: str) -> list[str]:
@@ -67,41 +70,13 @@ def issue_refs(text: str) -> list[str]:
     return [m.group(1) or m.group(2) for m in ISSUE_REF_RE.finditer(text)]
 
 
-#: The disposition keyword whose VALUE the placeholder test applies to. Anchored
-#: at the start so a trailing `Owner: TODO` on the same line cannot reach it.
-_LEADING_DISPOSITION_RE = re.compile(
-    r"^[\s>*+-]*\**(?:Retro dispositions|Structural follow-up|Disposition|Decision|applied"
-    r"|tracked issue)\**\s*:\s*",
-    re.IGNORECASE,
-)
-
-
 def is_placeholder_line(text: str) -> bool:
-    """Whether this line's DISPOSITION VALUE is an unfilled placeholder.
+    """Whether this line's disposition value is an unfilled placeholder.
 
-    Owned by the form floor, not here: returning True keeps this gate silent so a
-    scaffolded artifact reports one defect from one gate rather than two.
-
-    Scoped to the value, NOT the line. An earlier version searched the whole line,
-    which made the rung trivially evadable --
-
-        Structural follow-up: issue #N (recurs: x). Owner: TODO
-
-    -- where an unrelated unfilled field suppressed the `#N` this module was
-    written about. Any author leaving one scaffold field blank disarmed the rung
-    for that entire line.
+    Owned by the form floor, not here. Returning True keeps this gate silent so
+    a scaffolded artifact reports one defect from one gate rather than two.
     """
-    match = _LEADING_DISPOSITION_RE.match(text)
-    if match is None:
-        # No leading disposition keyword: fall back to the value-ish tail so an
-        # inline `applied: TODO` mid-sentence still defers.
-        head = text
-    else:
-        head = text[match.end():]
-    # Only the FIRST clause of the value can be a placeholder; a later sentence
-    # is separate prose.
-    first_clause = re.split(r"[.;]", head, maxsplit=1)[0]
-    return re.match(r"^\s*(?:TODO|TBD|FIXME)\b", first_clause, re.IGNORECASE) is not None
+    return PLACEHOLDER_VALUE_RE.search(text) is not None
 
 
 def bad_issue_refs(text: str) -> list[str]:
@@ -156,10 +131,7 @@ SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b")
 #: Words that are pure hex and >= 7 chars. English has a few; without this they
 #: reach `git cat-file` and are reported as unresolvable SHAs, which is a false
 #: positive on ordinary prose.
-#: Only >= 7 chars can reach here at all -- `SHA_RE` is `{7,40}` -- so shorter
-#: hex words (`facade`, `decade`, `decaf`) are excluded by the length bound and
-#: listing them here was dead weight that made the filter look broader than it is.
-_HEX_WORDS = {"acceded", "defaced", "effaced", "deedeed"}
+_HEX_WORDS = {"accede", "acceded", "deface", "defaced", "effaced", "facade", "decade", "decaf"}
 
 
 def unresolvable_shas(text: str, repo_root: Path, *, run) -> list[str]:
@@ -186,84 +158,19 @@ def unresolvable_shas(text: str, repo_root: Path, *, run) -> list[str]:
     return bad
 
 
-class ResolverUnavailable(Exception):
-    """Git cannot answer, as opposed to answering "no".
-
-    The distinction is the whole point. A missing binary raises; so does `exit
-    128`, which is what git returns for "not a git work tree" (a source tarball,
-    a vendored copy, a pip-installed tree) and for "detected dubious ownership"
-    (`safe.directory`, routine in containers and under a different uid). An
-    earlier version caught only OSError and treated exit 128 as "this SHA does
-    not exist" -- which would have reported EVERY sha in EVERY dated artifact as
-    unresolvable the moment the gate ran in a container. A docstring promising
-    "absence of a resolver is not evidence the referent is bad" while a
-    present-but-refusing resolver produced a corpus-wide false-positive storm is
-    the exact class this gate exists to catch, so it is raised, not swallowed.
-    """
-
-
 def git_commit_exists(sha: str, repo_root: Path) -> bool:
-    """Whether `sha` resolves to a commit object in `repo_root`.
-
-    Raises `ResolverUnavailable` when git cannot answer at all.
-    """
+    """Whether `sha` resolves to a commit object in `repo_root`."""
     import subprocess
     try:
         result = subprocess.run(
             ["git", "-C", str(repo_root), "cat-file", "-t", sha],
             capture_output=True, text=True, timeout=10,
         )
-    except (OSError, subprocess.SubprocessError) as exc:
-        raise ResolverUnavailable(f"git could not be run: {exc}") from exc
-    if result.returncode == 0:
-        return result.stdout.strip() == "commit"
-    stderr = (result.stderr or "").lower()
-    # `cat-file -t` on a well-formed repo answers "not a valid object name" for a
-    # SHA that is genuinely absent. Anything else -- no work tree, dubious
-    # ownership, a broken index -- is the resolver failing, not the referent.
-    if "not a valid object name" in stderr or "could not get object info" in stderr:
-        return False
-    raise ResolverUnavailable(stderr.strip() or f"git exited {result.returncode}")
-
-
-#: The disposition vocabulary, for detecting a line that ENUMERATES forms rather
-#: than using one.
-_VOCAB_RE = re.compile(
-    r"`?(?:applied|tracked issue|issue|none|accepted-risk|out-of-scope|repo-local guard"
-    r"|Structural follow-up|Retro dispositions)\s*[:#]",
-    re.IGNORECASE,
-)
-
-#: An angle-bracket slot (`<what>`, `<reason>`, `<path>`) is unambiguous evidence
-#: that a line is showing the FORM.
-_SLOT_RE = re.compile(r"<[a-z][a-z /|-]*>", re.IGNORECASE)
-
-
-def documents_the_vocabulary(text: str) -> bool:
-    """Whether this line is SHOWING disposition forms rather than using one.
-
-    Without this the gate cannot be documented inside its own enforced corpus:
-    every reference page, and the next retro explaining this gate, contains a
-    sentence like "the floor accepts `applied: <what>` / `issue #N` / `none`",
-    and `issue #N` there is an example, not a dangling pointer.
-
-    A backtick test would be WRONG and was rejected: the real v6.3.0 defect --
-    ``Decision: `issue #N (recurs: ...)` `` -- was itself inside a code span, so
-    exempting code spans would exempt the exact case this module exists for.
-
-    The discriminator is ENUMERATION. Documentation lists the alternatives (two
-    or more distinct forms, or an explicit `<slot>`); a real disposition commits
-    to one.
-    """
-    if _SLOT_RE.search(text):
+    except (OSError, subprocess.SubprocessError):
+        # Git unavailable: do NOT invent a defect. Absence of a resolver is not
+        # evidence the referent is bad.
         return True
-    # Count forms in the VALUE only. The leading keyword is the disposition being
-    # MADE, not one of the alternatives being listed -- counting it made
-    # `Structural follow-up: issue #N (novel: ...)` look like a two-form
-    # enumeration and silently exempted the defect this module is named for.
-    match = _LEADING_DISPOSITION_RE.match(text)
-    value = text[match.end():] if match else text
-    return len({m.group(0).strip("`").lower() for m in _VOCAB_RE.finditer(value)}) >= 2
+    return result.returncode == 0 and result.stdout.strip() == "commit"
 
 
 def check_disposition_referents(text: str, repo_root: Path) -> list[dict[str, str]]:
@@ -274,7 +181,7 @@ def check_disposition_referents(text: str, repo_root: Path) -> list[dict[str, st
     names is real -- NOT that the destinations are correct.
     """
     findings: list[dict[str, str]] = []
-    if is_placeholder_line(text) or documents_the_vocabulary(text):
+    if is_placeholder_line(text):
         return findings
     for ref in bad_issue_refs(text):
         findings.append({

@@ -12,6 +12,7 @@ the goal/retro artifacts, which had no such machinery.
 """
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -96,8 +97,12 @@ def test_a_todo_line_belongs_to_the_form_floor_not_here() -> None:
     assert check_disposition_referents(scaffold, ROOT) == []
 
 
-@pytest.mark.parametrize("word", ["facade", "defaced", "decade"])
+@pytest.mark.parametrize("word", ["defaced", "acceded", "effaced"])
 def test_hex_looking_english_is_not_a_sha(word: str) -> None:
+    """Every parameter must be >= 7 chars, or `SHA_RE`'s `{7,40}` bound excludes
+    it before `_HEX_WORDS` is consulted and the test passes with the filter
+    deleted. The earlier version had two 6-char words doing exactly that."""
+    assert len(word) >= 7
     assert unresolvable_shas(f"the {word} of it", ROOT, run=lambda *a: False) == []
 
 
@@ -203,13 +208,18 @@ def test_an_out_of_tree_path_does_not_crash_the_gate(tmp_path: Path) -> None:
     returning something, and a checker that crashes on an out-of-tree input is
     one whose negative control cannot be written. Found while writing that
     control."""
+    # The fixture must PRODUCE A FINDING: `_display_path` is only reached while
+    # constructing one, so a clean fixture never exercises the ValueError this
+    # test is named for. A reviewer caught the earlier version passing for the
+    # wrong reason.
     artifact = tmp_path / "2026-08-25-outside.md"
-    artifact.write_text("Structural follow-up: issue #700 (novel: x)\n", encoding="utf-8")
+    artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
 
     result = _run("--path", str(artifact))
 
-    assert result.returncode == 0
     assert "Traceback" not in result.stderr
+    assert result.returncode == 1
+    assert str(artifact) in result.stdout
 
 
 def test_the_repo_corpus_is_clean_and_reports_its_grandfathered_set() -> None:
@@ -218,4 +228,183 @@ def test_the_repo_corpus_is_clean_and_reports_its_grandfathered_set() -> None:
     result = _run()
 
     assert result.returncode == 0, result.stdout[-2000:]
-    assert "grandfathered (reported, not rewritten):" in result.stdout
+    # Assert on the NUMBERS, not the label. `grandfathered (reported, not
+    # rewritten):` is printed unconditionally, so the earlier version passed
+    # when the set was empty, when `scanned` was 0, and when the globs were
+    # broken -- the same render-identically-either-way shape this gate exists
+    # to refuse, inside the gate's own test.
+    scanned = int(re.search(r"scanned: (\d+) artifact", result.stdout).group(1))
+    dispositions = int(re.search(r"dispositions_examined: (\d+)", result.stdout).group(1))
+    grandfathered = int(re.search(r"grandfathered \(reported, not rewritten\): (\d+)", result.stdout).group(1))
+
+    assert scanned > 500, "the corpus collapsed; a clean verdict here proves nothing"
+    assert dispositions > 100, "the disposition regex stopped matching corpus-wide"
+    assert grandfathered > 0, "frozen history should be reported, not silently absent"
+
+
+# --------------------------------------------------------------------------
+# The enforcement asymmetry -- had ZERO tests until a reviewer said so
+# --------------------------------------------------------------------------
+
+
+def test_an_undatable_artifact_is_fail_closed_for_issue_refs(tmp_path: Path) -> None:
+    """`#N` was never valid, so an undated filename must not buy an exemption."""
+    artifact = tmp_path / "recent-lessons.md"
+    artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
+
+    result = _run("--path", str(artifact))
+
+    assert result.returncode == 1
+    assert "unresolvable-issue-ref" in result.stdout
+
+
+def test_an_undatable_artifact_is_NOT_fail_closed_for_shas(tmp_path: Path) -> None:
+    """The asymmetry. A SHA can be correct when written and stop resolving when
+    history is rewritten, so blocking an undated rolling digest would punish an
+    author for a change made after they wrote it -- and the only remedy would be
+    editing frozen memory so a checker goes green."""
+    artifact = tmp_path / "recent-lessons.md"
+    artifact.write_text("landed at `deadbee1234`\n", encoding="utf-8")
+
+    result = _run("--path", str(artifact))
+
+    assert result.returncode == 0
+    assert "grandfathered" in result.stdout
+
+
+def test_a_pre_cutoff_artifact_reports_without_blocking(tmp_path: Path) -> None:
+    artifact = tmp_path / "2026-01-01-frozen.md"
+    artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
+
+    result = _run("--path", str(artifact))
+
+    assert result.returncode == 0
+    assert "grandfathered (reported, not rewritten): 1" in result.stdout
+
+
+# --------------------------------------------------------------------------
+# A clean verdict must mean "nothing was wrong", never "nothing was looked at"
+# --------------------------------------------------------------------------
+
+
+def test_a_path_that_does_not_exist_is_an_input_error_not_a_pass() -> None:
+    """`scanned` used to count a file the gate never opened, so a typo in a
+    wiring line was indistinguishable from a passing run."""
+    result = _run("--path", "/tmp/definitely-not-here-9f3a.md")
+
+    assert result.returncode == 1
+    assert "UNREADABLE" in result.stdout
+
+
+def test_a_directory_argument_is_an_input_error_not_a_pass(tmp_path: Path) -> None:
+    result = _run("--path", str(tmp_path))
+
+    assert result.returncode == 1
+    assert "UNREADABLE" in result.stdout
+
+
+def test_an_empty_corpus_blocks_rather_than_reporting_clean(tmp_path: Path) -> None:
+    """Both adjacent gates in run-quality.sh carry an empty-corpus guard. Without
+    one, a renamed artifact directory reads as a pass."""
+    result = subprocess.run(
+        [sys.executable, str(GATE), "--repo-root", str(tmp_path)],
+        capture_output=True, text=True, timeout=60,
+    )
+
+    assert result.returncode == 1
+    assert "EMPTY CORPUS" in result.stdout
+
+
+def test_the_exit_code_follows_the_printed_status() -> None:
+    """The status line and the exit code must not disagree: the runner believes
+    the code and the human believes the message. An earlier version printed
+    `status: blocked` and exited 0."""
+    result = _run("--path", "/tmp/definitely-not-here-9f3a.md")
+
+    assert ("status: blocked" in result.stdout) == (result.returncode == 1)
+
+
+def test_scope_is_reported_as_numbers() -> None:
+    """A gate that silently drops its own scope prints the same clean line as one
+    with nothing to drop. The excluded count has to be a NUMBER."""
+    result = _run()
+
+    assert re.search(r"dispositions_examined: \d+", result.stdout)
+    assert re.search(r"shas_resolved: \d+", result.stdout)
+
+
+# --------------------------------------------------------------------------
+# Resolver failure is not a verdict
+# --------------------------------------------------------------------------
+
+
+def test_git_refusing_is_distinguished_from_a_missing_commit() -> None:
+    """`exit 128` is what git returns for "not a work tree" and for "dubious
+    ownership" -- routine in containers. Treating it as "this SHA is absent"
+    would report every SHA in every dated artifact as unresolvable."""
+    from scripts.artifact_referents import ResolverUnavailable, git_commit_exists
+
+    assert git_commit_exists("96ba78f7f", ROOT) is True
+    with pytest.raises(ResolverUnavailable):
+        git_commit_exists("96ba78f7f", Path("/tmp"))
+
+
+# --------------------------------------------------------------------------
+# Evasion and self-documentation
+# --------------------------------------------------------------------------
+
+
+def test_an_unrelated_TODO_elsewhere_on_the_line_does_not_disarm_the_rung() -> None:
+    """The placeholder test is scoped to the disposition's VALUE. Searching the
+    whole line let any author disarm the rung by leaving one scaffold field
+    blank."""
+    evasion = "Structural follow-up: issue #N (recurs: x). Owner: TODO"
+
+    assert is_placeholder_line(evasion) is False
+    assert len(check_disposition_referents(evasion, ROOT)) == 1
+
+
+@pytest.mark.parametrize(
+    "documentation",
+    [
+        "the floor accepts `applied: <what>` / `issue #N` / `none — <reason>`",
+        "(`issue #N`/`applied:`/`accepted-risk:`/`out-of-scope:`) accepts it.",
+    ],
+)
+def test_the_gate_can_be_documented_inside_its_own_corpus(documentation: str) -> None:
+    """Otherwise the next retro explaining this gate is its own first false
+    positive. The discriminator is ENUMERATION, not backticks -- the real v6.3.0
+    defect was itself inside a code span."""
+    assert check_disposition_referents(documentation, ROOT) == []
+
+
+@pytest.mark.parametrize(
+    "real_defect",
+    [
+        "Decision: `issue #N (recurs: the release flow already solves this)`",
+        "Structural follow-up: issue #N (novel: something specific)",
+        "- **applied**: issue #N",
+    ],
+)
+def test_a_committed_disposition_is_still_caught_inside_backticks(real_defect: str) -> None:
+    """A backtick exemption would have exempted the exact defect this exists for."""
+    assert len(check_disposition_referents(real_defect, ROOT)) == 1
+
+
+@pytest.mark.parametrize(
+    "spelling",
+    [
+        "Disposition: **applied** — see scripts/does_not_exist_here.py",
+        "- **applied**: scripts/does_not_exist_here.py",
+    ],
+)
+def test_this_repos_other_disposition_spellings_are_seen(spelling: str) -> None:
+    """`Disposition:` appears 75 times across 28 checked-in goals, and `**applied**`
+    puts bold markers between the word and the colon."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("gate", GATE)
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+
+    assert gate.disposition_lines(spelling) != []
