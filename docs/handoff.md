@@ -85,16 +85,28 @@
    [the successor goal](../charness-artifacts/goals/2026-08-22-claims-review-convergence-then-ship-6-3-0.md),
    which fixes the loop first and publishes second, in that order and for that
    reason.
-3. **Reproduce before repairing a review finding.** Twelve of twenty-seven
+3. **A new gate now catches the class that cost this session four claims
+   rounds**, and it is worth knowing before writing a goal or retro.
+   `scripts/check_artifact_referents.py` (wired into `run-quality.sh`) enforces a
+   third rung between the existing two: FORM (a disposition is well-shaped, owned
+   by the skill floors) -> **REFERENT (the thing it names is real)** -> SUBSTANCE
+   (it is the right thing, still the fresh-eye reviewer's call). It refuses
+   `issue #N`, an `applied:` naming a path that does not exist, and a SHA that
+   does not resolve. `{{q:<id>=<value>}}` markers make a count that is restated
+   agree with itself. Two things to know: the gate can exit **3**
+   (`UNESTABLISHED`) when git cannot resolve SHAs — that is "ran, established
+   nothing", not a pass — and quantity consistency is checked PER FILE, so
+   goal-vs-retro drift is still on you.
+4. **Reproduce before repairing a review finding.** Twelve of twenty-seven
    blockers this run got a wrong first repair, and in two more the reviewer's own
    proposed fix was wrong. Repairing prose by re-reading prose is what failed;
    the one repair that held was derived from `git log` / `git show`.
-4. #694 is decided and implemented (decline an ambiguous line, do not block
+5. #694 is decided and implemented (decline an ambiguous line, do not block
    activation), but stays open on a second blind shape: a deferral flag named
    only for a terminal step, with no earlier deferral, still reads as a deferral.
-5. Do not run a third review round on the `#681` repair; the two-round cap is
+6. Do not run a third review round on the `#681` repair; the two-round cap is
    consumed and the round-2 repairs are recorded as accepted-unreviewed.
-6. For a new work unit, run the repo-owned opener before any review or brief —
+7. For a new work unit, run the repo-owned opener before any review or brief —
    `python3 scripts/open_lesson_session.py --repo-root . --session-id <slug> --seed <slug>`
    — and preserve the commit -> changed-line -> broad-quality ordering.
 5. Do not claim a verdict from timeout, exit code, transcript, screen output, HTTP
