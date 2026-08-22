@@ -213,7 +213,7 @@ def claims_review_record(
     release_record_path: str = "charness-artifacts/release/latest.md",
 ) -> dict:
     record = {
-        "schema_version": "charness.release.claims-review.v2",
+        "schema_version": "charness.release.claims-review.v3",
         "prepared_commit": prepared_commit,
         "release_record_path": release_record_path,
         "release_record_sha256": hashlib.sha256(prepared_record.encode("utf-8")).hexdigest(),
@@ -230,6 +230,14 @@ def claims_review_record(
     }
     if verdict == "unproven":
         record["observer_distinctness"]["review_artifact"] = None
+    else:
+        # v3: a `pass` declares what it covered and what it waived. Required so a
+        # scope split can never become a way to launder findings out of a release.
+        record["review_scope"] = {
+            "blocking_paths": ["scripts/fixture_shipped.py"],
+            "advisory_paths": [],
+        }
+        record["advisory_findings"] = []
     return record
 
 

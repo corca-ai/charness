@@ -219,7 +219,7 @@ def test_claims_review_refuses_invalid_paths_tree_and_bindings(tmp_path: Path) -
     with pytest.raises(SystemExit, match="does not bind"):
         invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (0, "{}")})
     bound = {
-        "schema_version": "charness.release.claims-review.v2", "prepared_commit": "prepared",
+        "schema_version": "charness.release.claims-review.v3", "prepared_commit": "prepared",
         "release_record_path": "charness-artifacts/release/latest.md", "release_record_sha256": "record-sha",
         "target_version": "1.2.3", "tag_name": "v1.2.3", "verdict": "pass",
         "preparer_context": "same", "reviewer_context": "same",

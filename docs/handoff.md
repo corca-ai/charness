@@ -21,57 +21,39 @@
 
 ## Current State
 
-- Fourteen issues were closed at `b9cea1829` after a behavioral sweep requalified
-  sixteen against the installed plugin (`charness version`) and source: #635, #638, #639, #670, #672, #676,
-  #677, #678, #679, #681, #682, #683, #685, #686. Counted, not estimated —
-  population: 16 probed; removed: 14 closed.
-- **A probe that does not enter the defect branch proves nothing about it.** The
-  predecessor packet cleared #681 from a checker run against a goal artifact with no
-  `Gate cadence:` bullet, on a goal since gone `complete` where the floor skips
-  outright. #681 was still live on the installed plugin and on source, and is repaired at
-  `b9cea1829`.
-- The ten `repair/issue-*` branches in `git worktree list` are **stale predecessors,
-  not pending work**. Every target file and test already exists on `main` in an
-  evolved form, and `repair/issue-635` cherry-picks as an empty diff. Do not re-land
-  them; the worktrees can be pruned.
-- Held open deliberately: **#671** (the issue named two invariants; no critique angle
-  file mentions path portability and `Path portability disposition:` appears in no
-  shipped markdown) and **#688** (reproduced from none of six constructed bullet
-  shapes; a comment asking for the verbatim source bullet is posted).
-- Three residuals were filed rather than folded in: **#692** (`init_adapter.py` idempotence is wired into only one of the skills
-  that ship the script; recount with
-  `find skills -name init_adapter.py | xargs grep -l existing_adapter_is_valid | wc -l`
-  against `find skills -name init_adapter.py | wc -l`), **#693**
-  (`critique/SKILL.md:114` claims a refusal no code implements), **#694** (the
-  gate-cadence floor reads a negated or two-clause flag mention as a deferral and
-  refuses a truthful artifact).
-- Two bounded review rounds ran on the #681 repair and the cap is consumed. Round 2
-  predicted a mutant that survives all three new tests; it was executed, survived,
-  and now fails after a positive pin. Round-2 repairs are otherwise recorded as
+- Fourteen issues closed at `b9cea1829` (16 probed, 14 closed) — the per-issue
+  probes and the requalification are in the
+  [tracker packet](../charness-artifacts/issues/2026-08-22-tracker-requalification.md).
+- **A probe that does not enter the defect branch proves nothing about it.** That
+  is how #681 was cleared while still live on the installed plugin.
+- The `repair/issue-*` worktrees (`git worktree list`) are **stale
+  predecessors, not pending work** — `repair/issue-635` cherry-picks as an
+  empty diff. Prune, do not re-land.
+- Held open deliberately: **#671** (second invariant unmet) and **#688** (not
+  reproduced from six constructed shapes; awaiting the verbatim source bullet).
+- Residuals filed rather than folded: **#692**, **#693**, **#694** (decided and
+  implemented this session; still open on a second blind shape).
+- The #681 repair's two review rounds are consumed; round-2 repairs are
   accepted-unreviewed under the cap.
-- **A subagent violated its read-only instruction** (detail and restore evidence in
-  the [closeout retro](../charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md))
-  and reverted
-  the [session-start lesson context](../scripts/session_start_lesson_context.py)
-  module in the shared tree, dropping its unclaimed-session routing emitter. Restored from `HEAD`,
-  byte-verified, re-covered by tests; the issue whose surface it touched was
-  re-probed by the parent. Attribution is inferred from content match with
-  `73cf9ce6a^`, not proven. **Verify the staged set before every commit in a
-  concurrent-subagent session** — that is what caught it.
-- The `#681` repair shipped in `6.2.2` and is **confirmed on the installed
-  copy**: after `charness update`, the reproduction fixture returns the repaired
-  payload citing the parsed line, and the scaffold's own seeded frame still
-  refuses correctly with the disambiguator first. Evidence:
+- **A subagent violated its read-only instruction** and reverted a module in the
+  shared tree; restored and re-covered. Forensics in the
+  [closeout retro](../charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md).
+  **Verify the staged set before every commit in a concurrent-subagent session** —
+  that is what caught it.
+- The #681 repair is confirmed on the installed copy:
   [installed replay](../charness-artifacts/probe/2026-08-22-v6.2.2-installed-681-replay.json).
 - #687's host-side terminal event remains explicitly unproven. Cautilus was not run.
 
 ## Next Session
 
-1. **`6.3.0` is NOT published, and this is the first thing to know.** `6.2.2` is
-   still the published version. Slices C, B and A are committed on `main`; the
+1. **The next minor is NOT published, and this is the first thing to know.** The
+   published version is whatever `git describe --tags --abbrev=0` reports, and
+   the prepared-but-unshipped bundle is described in
+   [the release record](../charness-artifacts/release/latest.md). Slices C, B
+   and A are committed on `main`; the
    release was prepared four times and dropped four times, because four claims
    rounds all returned `unproven`. No tag, nothing pushed, no issue closed.
-   Read [the v6.3.0 claims narrative](../charness-artifacts/release-review/2026-08-22-v6.3.0-prepared-claims-review.md)
+   Read [the prepared claims narrative](../charness-artifacts/release-review/2026-08-22-v6.3.0-prepared-claims-review.md)
    before touching the release — it holds all four rounds.
 2. **Fix #701 before attempting the release again.** Not one of the ~14 claims
    blockers was in the shipped code: every round confirmed the quality-status
@@ -87,7 +69,8 @@
    reason.
 3. **A new gate now catches the class that cost this session four claims
    rounds**, and it is worth knowing before writing a goal or retro.
-   `scripts/check_artifact_referents.py` (wired into `run-quality.sh`) enforces a
+   [the referent gate](../scripts/check_artifact_referents.py) (wired into
+   `run-quality.sh`) enforces a
    third rung between the existing two: FORM (a disposition is well-shaped, owned
    by the skill floors) -> **REFERENT (the thing it names is real)** -> SUBSTANCE
    (it is the right thing, still the fresh-eye reviewer's call). It refuses

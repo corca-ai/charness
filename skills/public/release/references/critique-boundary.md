@@ -41,7 +41,18 @@ publish with the review unproven rather than substituting a same-agent reread.
 
 ### Claims Record Shape
 
-The claims round's record is a `charness.release.claims-review.v2` JSON file
+The claims round's record is a `charness.release.claims-review.v3` JSON file
+
+A `pass` must additionally declare `review_scope` (`blocking_paths` /
+`advisory_paths`) and `advisory_findings`. The split exists because a claims
+round that reviews the session narrative shipping inside its own bundle cannot
+converge: repairing a narrative finding changes the bundle, which changes the
+record and the counts, which needs new prose nothing has reviewed. Two releases
+stalled on that loop. Shipped surfaces gate the tag; session narrative is
+reported, published as known-inaccurate, and repaired on a later pass. The
+required fields are what stop the split becoming a way to launder findings —
+`advisory_findings: []` is a claim that the advisory scope was clean, not
+permission to skip it.
 under `charness-artifacts/release-review/`, committed as the direct child of the
 marked prepared release commit, together with the review narrative it names and
 nothing else.

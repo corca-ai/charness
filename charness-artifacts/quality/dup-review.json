@@ -5417,6 +5417,13 @@
       "note": "Repo-boilerplate argparse/main scaffold shared by EIGHT existing validators (check_adapter_consumer_classification, check_plugin_dir_references, parity_harness, check_probe_record, check_plugin_doc_links, check_export_self_sufficiency, removed_name_consumers, check_plugin_asset_command_carriers). Stated out loud: NO member of this family is in the current diff -- all eight are reported `untouched`. The family surfaced while adding check_artifact_referents.py, so the membership rotation is INFERRED from the timing, not proven; the ratchet reports rotation and novelty through the same channel. Collapsing eight independent validators' entrypoints onto a shared harness is a refactor of eight untouched proof surfaces, which is strictly larger and riskier than the gate that surfaced it, and would be made under a slice that reviewed none of them.",
       "reviewed_at": "2026-08-22",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4f6c07d3c8e76002",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "Two-line guard-clause idiom `if <name> != <literal>: return`, shared by the claims-review scope floor (a `pass` must declare what it covered; an `unproven` is exempt because it is already blocking) and validate_cautilus_proof's improve-goal guard. Unrelated subjects, unrelated literals; the shape is Python's ordinary early return. Collapsing them would invent a shared abstraction over two floors that have nothing in common but arity."
     }
   ],
   "fixable_ceiling": 0,

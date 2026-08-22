@@ -39,7 +39,6 @@ correct on more than one floor.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 from datetime import date
@@ -214,7 +213,6 @@ def audit_file(path: Path, repo_root: Path, scope: dict[str, int]) -> list[dict[
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", default=".", help="Repo root that owns charness-artifacts/")
-    parser.add_argument("--json", action="store_true", help="Emit the report as JSON")
     parser.add_argument(
         "--path", action="append", default=[],
         help="Audit only these files (repeatable); defaults to the scanned globs",
@@ -271,33 +269,30 @@ def main() -> int:
         "blocking_findings": blocking,
     }
 
-    if args.json:
-        print(json.dumps(report, indent=2))
-    else:
-        print(f"scanned: {report['scanned']} artifact(s)")
-        print(f"dispositions_examined: {report['dispositions_examined']}")
-        print(f"shas_resolved: {report['shas_resolved']}")
-        if report["sha_resolver_unavailable_files"]:
-            # `WARNING:` is load-bearing, not decoration: run-quality.sh prints a
-            # PASSING gate's log only when it matches (WARNING|WARN|WEAK|ADVISORY),
-            # and a passing phase's log is deleted at EXIT. Without the token the
-            # stand-down was invisible AND its explanation was destroyed.
-            print(
-                f"WARNING: sha_rung STOOD DOWN on {report['sha_resolver_unavailable_files']} "
-                f"file(s) — {report['sha_resolver_reason']}"
-            )
-        print(f"enforced_from: {report['enforced_from']}")
-        print(f"grandfathered (reported, not rewritten): {report['grandfathered']}")
-        if report["unreadable"]:
-            print(f"UNREADABLE (input error, not a pass): {', '.join(report['unreadable'])}")
-        if report["empty_corpus"]:
-            print("EMPTY CORPUS: the scanned globs matched nothing — a clean verdict here "
-                  "would mean the gate found nothing to look at, not that nothing was wrong")
-        print(f"status: {report['status']}")
-        for finding in blocking:
-            print(f"- [blocking] {finding['file']}:{finding['line']} {finding['kind']}: {finding['detail']}")
-        for finding in grandfathered:
-            print(f"- [grandfathered] {finding['file']}:{finding['line']} {finding['kind']}: `{finding['token']}`")
+    print(f"scanned: {report['scanned']} artifact(s)")
+    print(f"dispositions_examined: {report['dispositions_examined']}")
+    print(f"shas_resolved: {report['shas_resolved']}")
+    if report["sha_resolver_unavailable_files"]:
+        # `WARNING:` is load-bearing, not decoration: run-quality.sh prints a
+        # PASSING gate's log only when it matches (WARNING|WARN|WEAK|ADVISORY),
+        # and a passing phase's log is deleted at EXIT. Without the token the
+        # stand-down was invisible AND its explanation was destroyed.
+        print(
+            f"WARNING: sha_rung STOOD DOWN on {report['sha_resolver_unavailable_files']} "
+            f"file(s) — {report['sha_resolver_reason']}"
+        )
+    print(f"enforced_from: {report['enforced_from']}")
+    print(f"grandfathered (reported, not rewritten): {report['grandfathered']}")
+    if report["unreadable"]:
+        print(f"UNREADABLE (input error, not a pass): {', '.join(report['unreadable'])}")
+    if report["empty_corpus"]:
+        print("EMPTY CORPUS: the scanned globs matched nothing — a clean verdict here "
+              "would mean the gate found nothing to look at, not that nothing was wrong")
+    print(f"status: {report['status']}")
+    for finding in blocking:
+        print(f"- [blocking] {finding['file']}:{finding['line']} {finding['kind']}: {finding['detail']}")
+    for finding in grandfathered:
+        print(f"- [grandfathered] {finding['file']}:{finding['line']} {finding['kind']}: `{finding['token']}`")
 
     # Derived from `status`, NOT recomputed from `blocking`. An earlier version
     # returned `1 if blocking else 0` while `status` also accounted for unreadable

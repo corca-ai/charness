@@ -2,16 +2,33 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
 
 MARKER = "charness-release-state:prepared-awaiting-claims-review"
-SCHEMA_VERSION = "charness.release.claims-review.v2"
+#: v3 adds two REQUIRED fields on a `pass`: `review_scope` (which paths the
+#: verdict covers) and `advisory_findings` (what it saw and waived). The bump is
+#: honest rather than cosmetic -- a v2 record has no way to express either, so
+#: silently accepting one would let a pre-split verdict masquerade as a scoped
+#: one. There are no external v2 records to stay compatible with: every prior
+#: record is historical and already published.
+SCHEMA_VERSION = "charness.release.claims-review.v3"
 RELEASE_RECORD_FILENAME = "latest.md"
 # NOT derived from `output_dir`, deliberately.  The claims record's location is defined by
 # this floor and has no adapter key; deriving it would make every already-committed claims
 # record unreadable in a repo that later moves its release output, and there is no contract
 # behind that move.  Only the RELEASE RECORD is adapter-owned.
+# This module is loaded BY SPEC from several entrypoints, so a bare
+# `from claims_review_scope import ...` resolves only when the caller happens to
+# have this directory on the path. Locating it relative to __file__ works in the
+# repo and in the plugin export alike.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+from claims_review_scope import assert_scope_is_declared  # noqa: E402
+
 REVIEW_ROOT = "charness-artifacts/release-review/"
 VERDICTS = ("pass", "unproven")
 # Every accepted kind names a boundary the review actually crossed.  There is
@@ -425,6 +442,10 @@ def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidenc
     preparer, reviewer = data.get("preparer_context"), data.get("reviewer_context")
     if not isinstance(preparer, str) or not preparer.strip() or not isinstance(reviewer, str) or not reviewer.strip() or preparer == reviewer:
         raise SystemExit("--resume: claims-review artifact requires distinct nonempty preparer_context and reviewer_context")
+    # AFTER the distinctness check. "Who reviewed this" is the more fundamental
+    # question than "what did the verdict cover", and a record missing both
+    # should be told about the observer first.
+    assert_scope_is_declared(data, verdict=verdict)
     distinctness = _observer_distinctness(data, verdict=verdict, prepared=prepared, target_version=target_version,
                                           evidence_commit=evidence_commit, repo_root=repo_root, run=run)
     # The evidence commit still carries only claims-review evidence.  The narrative is
@@ -437,4 +458,6 @@ def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidenc
             f"review_artifact it names; expected {allowed!r}, observed {sorted(changed)!r}"
         )
     return {"path": normalized, "sha256": blob_sha256(record.stdout), "prepared": prepared,
-            "reviewer_context": reviewer, "verdict": verdict, "observer_distinctness": distinctness}
+            "reviewer_context": reviewer, "verdict": verdict, "observer_distinctness": distinctness,
+            "review_scope": data.get("review_scope"),
+            "advisory_findings": data.get("advisory_findings") or []}
