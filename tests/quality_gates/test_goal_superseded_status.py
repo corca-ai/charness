@@ -17,9 +17,11 @@ about what `superseded` COSTS.
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ROOT
 
@@ -211,16 +213,64 @@ def test_prose_is_never_treated_as_a_pointer(goal_lib, tmp_path: Path) -> None:
     assert report["ok"] is True
 
 
-def test_an_annotated_superseded_status_reaches_the_record_floor() -> None:
+def _run_checker(repo: Path, status: str, record: str = "") -> dict:
+    """Drive the REAL validator and return its payload."""
+    goals = repo / "charness-artifacts" / "goals"
+    goals.mkdir(parents=True, exist_ok=True)
+    body = [
+        "# Achieve Goal: demo",
+        "",
+        f"Status: {status}",
+        "Created: 2026-08-22",
+        "Activation: `/goal @x.md`",
+        "",
+        record,
+        "",
+    ]
+    (goals / "2026-08-22-demo.md").write_text("\n".join(body), encoding="utf-8")
+    result = subprocess.run(
+        ["python3", str(_ACHIEVE / "check_goal_artifact.py"),
+         "--repo-root", str(repo), "--slug", "demo", "--date", "2026-08-22"],
+        capture_output=True, text=True,
+    )
+    return yaml.safe_load(result.stdout)
+
+
+def test_the_validator_actually_fires_the_record_floor(tmp_path: Path) -> None:
+    """The floor's PRODUCTION entry point, exercised end to end.
+
+    A round-2 reviewer found this branch had no behavioural test at all -- every
+    other test here calls the checker function directly, so deleting the
+    validator wiring left the whole file green. Changed-line coverage agreed and
+    named these exact lines as uncovered. An assertion about the validator's
+    SOURCE TEXT, which the first repair reached for, is not a test of the branch.
+    """
+    payload = _run_checker(tmp_path, "superseded")
+
+    assert payload["superseded_record"]["ok"] is False
+    assert any("superseded-record floor" in issue for issue in payload["issues"])
+    assert payload["ok"] is False
+
+
+def test_an_annotated_superseded_status_reaches_the_record_floor(tmp_path: Path) -> None:
     """`is_terminal_status` normalizes the leading token, so an annotated status
     skips the cadence floor -- while a bare `== "superseded"` in the validator did
-    NOT fire the record floor on the same string. One normalizer, both readers."""
-    import importlib.util as _il
+    NOT fire the record floor on the same string. One normalizer, both readers,
+    proven by RUNNING the validator rather than by grepping it."""
+    payload = _run_checker(tmp_path, "SUPERSEDED (2026-08-22) — folded into the successor")
 
-    spec = _il.spec_from_file_location("chk", _ACHIEVE / "check_goal_artifact.py")
-    source = (_ACHIEVE / "check_goal_artifact.py").read_text(encoding="utf-8")
+    assert payload.get("superseded_record", {}).get("ok") is False, payload
 
-    assert 'status_token(result.get("status")) == "superseded"' in source, (
-        "the validator must normalize the status token, not compare it raw"
+
+def test_a_superseded_goal_with_a_real_successor_clears_the_floor(tmp_path: Path) -> None:
+    """The other direction: the floor must not redden a record that answers it."""
+    successor = tmp_path / "charness-artifacts" / "goals" / "2026-09-01-next.md"
+    successor.parent.mkdir(parents=True, exist_ok=True)
+    successor.write_text("# next\n", encoding="utf-8")
+
+    payload = _run_checker(
+        tmp_path, "superseded",
+        "Superseded by: charness-artifacts/goals/2026-09-01-next.md",
     )
-    assert spec is not None
+
+    assert payload["superseded_record"]["ok"] is True, payload
