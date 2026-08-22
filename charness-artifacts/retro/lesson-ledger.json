@@ -2335,6 +2335,46 @@
       "lesson_id": "agent-authored-score-role",
       "outcome": "changed-an-action",
       "anchor": "Authored these scores directly from cited observed actions in this session rather than asking the operator whether any score should be recorded; without it the retro would have shipped with an empty Lesson Evaluation and the continuity gate would have stayed red."
+    },
+    {
+      "event_id": "2026-08-22-b-release-preflight-order",
+      "session_id": "2026-08-22-b-release",
+      "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "lesson_id": "release-candidate-preflight-order",
+      "outcome": "changed-an-action",
+      "anchor": "Ran fresh-checkout probes and exact changed-line coverage over the frozen release diff BEFORE spawning the release critique, and re-scoped the real-host check to that range; otherwise the critique would have judged a candidate whose coverage and host-trigger verdicts were taken from three dirty worktree files."
+    },
+    {
+      "event_id": "2026-08-22-b-release-identity-churn",
+      "session_id": "2026-08-22-b-release",
+      "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "lesson_id": "release-proof-identity-churn",
+      "outcome": "changed-an-action",
+      "anchor": "Re-ran changed-line coverage after the critique repairs moved the candidate from 5bd80a7b6 to ef57979c7 instead of carrying the older receipts forward; without it the release would have cited coverage for a tree it no longer shipped."
+    },
+    {
+      "event_id": "2026-08-22-b-release-help-before-flags",
+      "session_id": "2026-08-22-b-release",
+      "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "lesson_id": "proof-surface-message-drift",
+      "outcome": "changed-an-action",
+      "anchor": "Resolved publish_release.py and check_real_host_proof.py help before composing their invocations, which surfaced --changed-range and exposed the planner's real-host verdict as worktree-scoped; otherwise that worktree-scoped required:false would have been carried into the release as if it described the release."
+    },
+    {
+      "event_id": "2026-08-22-b-release-blind-class",
+      "session_id": "2026-08-22-b-release",
+      "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "lesson_id": "detector-blind-class-unstated",
+      "outcome": "read-but-not-applied",
+      "anchor": "A blind-class paragraph was written beside the constant as the lesson asks, but it named the achieve scaffold's seeded cadence line as a live over-fire instance without checking the scaffold constant; the line defers in its first clause, so the claim was false and the release reviewer had to catch it."
+    },
+    {
+      "event_id": "2026-08-22-b-release-authored-scores",
+      "session_id": "2026-08-22-b-release",
+      "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "lesson_id": "agent-authored-score-role",
+      "outcome": "changed-an-action",
+      "anchor": "Authored these five scores from cited actions in this session before asking whether to record any; otherwise the release lane would have stayed red on an unclaimed session and the publish attempt would have been retried against the same refusal."
     }
   ],
   "lessons": {
@@ -2371,10 +2411,10 @@
     "release-proof-identity-churn": {
       "source_retro": "charness-artifacts/retro/2026-08-07-session-retro.md",
       "transition_id": "seed-release-proof-identity-churn",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2581,10 +2621,10 @@
     "agent-authored-score-role": {
       "source_retro": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
       "transition_id": "seed-agent-authored-score-role",
-      "score_total": 3,
-      "score_count": 3,
+      "score_total": 4,
+      "score_count": 4,
       "outcome_counts": {
-        "changed-an-action": 3,
+        "changed-an-action": 4,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2731,10 +2771,10 @@
     "proof-surface-message-drift": {
       "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
       "transition_id": "seed-proof-surface-message-drift",
-      "score_total": 3,
-      "score_count": 3,
+      "score_total": 4,
+      "score_count": 4,
       "outcome_counts": {
-        "changed-an-action": 3,
+        "changed-an-action": 4,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2746,10 +2786,10 @@
     "release-candidate-preflight-order": {
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
       "transition_id": "seed-release-candidate-preflight-order",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2836,13 +2876,13 @@
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "transition_id": "seed-detector-blind-class-unstated",
-      "score_total": 6,
-      "score_count": 14,
+      "score_total": 5,
+      "score_count": 15,
       "outcome_counts": {
         "changed-an-action": 10,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 3,
+        "read-but-not-applied": 4,
         "legacy-scalar": 0
       },
       "state": "active",

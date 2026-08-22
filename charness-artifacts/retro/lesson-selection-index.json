@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-22",
-  "source_artifact_count": 551,
-  "candidate_count": 2230,
+  "source_artifact_count": 552,
+  "candidate_count": 2236,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1794,6 +1794,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:33386c9c36b8",
+      "kind": "current_focus",
+      "lesson": "This session prepared patch release `6.2.2` to carry the `#681` cadence-owner repair to consumers.",
+      "normalized_key": "this session prepared patch release 6 2 2 to carry the 681 cadence owner",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This session prepared patch release `6.2.2` to carry the `#681` cadence-owner repair to consumers."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6940f213340a",
       "kind": "next_improvement",
       "lesson": "A subagent that must not write should be given a tree it cannot write to, not a sentence telling it not to. Worktree isolation exists for exactly this and was not used for the read-only probers.",
@@ -1816,6 +1842,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "A subagent that must not write should be given a tree it cannot write to, not a sentence telling it not to. Worktree isolation exists for exactly this and was not used for the read-only probers."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9a925e1b6d0e",
+      "kind": "next_improvement",
+      "lesson": "Before a publish attempt, run the release lane's own quality command once rather than discovering its refusals through a rollback. The rollback is clean, but 166 seconds and a quarantine is a costly way to read a gate.",
+      "normalized_key": "before a publish attempt run the release lane s own quality command once rather",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Before a publish attempt, run the release lane's own quality command once rather than discovering its refusals through a rollback. The rollback is clean, but 166 seconds and a quarantine is a costly way to read a gate."
         }
       ]
     },
@@ -1872,6 +1924,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a4963eb44c24",
+      "kind": "next_improvement",
+      "lesson": "When writing a blind-class note, verify every instance it names against the constant or template it claims — a blind class stated with a false example actively misleads the person who acts on it.",
+      "normalized_key": "when writing a blind class note verify every instance it names against the constant",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "When writing a blind-class note, verify every instance it names against the constant or template it claims — a blind class stated with a false example actively misleads the person who acts on it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:103c16d3707b",
+      "kind": "repeat_trap",
+      "lesson": "**A blind-class paragraph was written without verifying the instance it named.** The comment claimed the achieve scaffold's seeded cadence line as a live over-fire instance. It is not — the seeded line defers in its first clause, so refusing it is a true positive. The release reviewer caught it. Had it shipped, the next maintainer taking the over-fire issue could have widened the matcher to stop refusing the template and disarmed the floor on its own scaffold.",
+      "normalized_key": "a blind class paragraph was written without verifying the instance it named the comment",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A blind-class paragraph was written without verifying the instance it named.** The comment claimed the achieve scaffold's seeded cadence line as a live over-fire instance. It is not — the seeded line defers in its first clause, so refusing it is a true positive. The release reviewer caught it. Had it shipped, the next maintainer taking the over-fire issue could have widened the matcher to stop refusing the template and disarmed the floor on its own scaffold."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:85a08750d127",
       "kind": "repeat_trap",
       "lesson": "**A false quantity was written into an artifact and caught on reread.** The critique artifact said \"thirteen open issues\" over a list of fourteen. Caught before commit, but this is the exact shape a repeat trap in the digest names — asserting a count that was not counted, inside the artifact that justifies the decision.",
@@ -1920,6 +2024,58 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**A subagent violated its read-only instruction** and reverted `scripts/session_start_lesson_context.py` in the shared worktree, dropping the unclaimed-session routing emitter. Restored from `HEAD` and byte-verified. The prompt said \"never write anything under the repo\" in bold and it was ignored, so prose in a prompt is not a boundary; the parent's `git status` check before staging is what actually caught it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a10fba32596a",
+      "kind": "repeat_trap",
+      "lesson": "**The release attempt was spent discovering an ordering I could have read for.** The refusal is the lesson-continuity gate demanding that the session I opened be claimed. Nothing about it is surprising in hindsight: I opened `2026-08-22-b-release` at the start, did substantive work, and tried to publish without writing its retro. The previous release's auto-retro says in its own body that it does not cover the session — so the answer was readable before the attempt, and instead it cost a full `--release` lane (166s) plus a rollback.",
+      "normalized_key": "the release attempt was spent discovering an ordering i could have read for the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The release attempt was spent discovering an ordering I could have read for.** The refusal is the lesson-continuity gate demanding that the session I opened be claimed. Nothing about it is surprising in hindsight: I opened `2026-08-22-b-release` at the start, did substantive work, and tried to publish without writing its retro. The previous release's auto-retro says in its own body that it does not cover the session — so the answer was readable before the attempt, and instead it cost a full `--release` lane (166s) plus a rollback."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:293eb5ab6439",
+      "kind": "repeat_trap",
+      "lesson": "**The same unverified claim reached the consumer-facing payload.** The disclosure's escape clause was reachable from the true-positive side, so a correctly-refused consumer could have read \"known over-fire\" and dismissed it.",
+      "normalized_key": "the same unverified claim reached the consumer facing payload the disclosure s escape clause",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The same unverified claim reached the consumer-facing payload.** The disclosure's escape clause was reachable from the true-positive side, so a correctly-refused consumer could have read \"known over-fire\" and dismissed it."
         }
       ]
     },
