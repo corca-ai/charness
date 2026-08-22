@@ -210,6 +210,37 @@ Queue item form:
 - Revisit trigger: closeout of this goal, or any future goal that cites this
   criterion as met.
 
+### 2. `#694` — the cadence-contract direction (DECIDED)
+
+- Decision: **Option 1 — refuse to render a verdict on an ambiguous cadence
+  line.** When a negation token sits in the same clause as a matched deferral
+  flag, the floor reports `unestablished`, renders no verdict, and does NOT block
+  activation.
+- Owner: repo owner. Chosen at slice A's boundary, which is where this goal's
+  `## Discuss Before Activation` said the decision belonged, so that slice C and
+  slice B evidence could inform it.
+- Options rejected, and why:
+  - A structured `Gate cadence defers: true|false` field is more durable — it
+    removes prose interpretation entirely — but it migrates the frame of the 84
+    checked-in goals that carry a cadence line, plus the scaffold and every
+    future goal.
+  - Accepting the over-fire and documenting it is cheapest, but it ships a gate
+    that can refuse a correct artifact, which this module's own Non-Goals call
+    "a gate an operator would learn to ignore".
+- **Migration consequence: NONE.** No checked-in artifact changes, the scaffold
+  is untouched, and no goal's frame is restructured. Measured at decision time:
+  202 checked-in goals, 84 carrying a `Gate cadence:` line, and ZERO using a
+  negated spelling — so the over-fire was latent rather than active, and the
+  expensive migration would have bought nothing today.
+- What the decision COSTS, stated rather than left implicit: a genuinely
+  contradictory artifact whose cadence clause happens to contain a negation word
+  is no longer caught. That is consistent with the floor's own declared bias —
+  its docstring says a cadence that defers in words nobody has written yet
+  "under-fires rather than guessing".
+- Not closed by this decision: the constant's SECOND blind shape — a flag named
+  only for a terminal step, with no earlier deferral — is unchanged and still
+  disclosed in the payload.
+
 **Why the original is not buildable as written.** "Resumed without rebuilding
 the coverage corpus" needs the harness to know which tests already ran and skip
 them. Coverage.py records that only under `dynamic_context` — the per-test

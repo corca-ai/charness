@@ -364,16 +364,18 @@ def test_process_failures_cannot_exceed_the_reported_failures() -> None:
     assert counts.errors == 1
 
 
-def test_the_spec_reporter_marker_is_read_too() -> None:
-    """node picks its reporter by TTY. `tap` writes `# pass 2`, `spec` writes
-    `ℹ pass 2`. The harness always captures, so the authoring fixture exercises
-    `tap` -- but a consumer getting `spec` back would have met the #689 dead end
-    again, with a more confident-sounding message."""
+def test_the_spec_marker_is_deliberately_NOT_read_as_counts() -> None:
+    """REVERSED by round 2, and the reversal is the point.
+
+    Round 1 asked for `spec` to be read so a consumer whose node emits it would
+    not meet a dead end. Round 2 measured what that bought: `spec` omits the
+    file-level failure detail the false-kill guard needs, so reading its counts
+    reinstated a KILLED verdict on a run where no test caught anything. The
+    counts are refused; the FORMAT is still recognised, so the refusal can name
+    `--test-reporter=tap`. See the three tests at the end of this file."""
     spec = _NODE_PASS.replace("# ", "ℹ ")
 
-    counts = reporters.NodeTestReporter.read(spec)
-
-    assert (counts.passed, counts.failed) == (2, 0)
+    assert reporters.NodeTestReporter.read(spec) is None
 
 
 def test_the_node_summary_shape_names_the_tap_escape_hatch() -> None:
@@ -454,3 +456,46 @@ def test_the_call_site_non_claim_says_the_check_was_inapplicable(tmp_path: Path)
 
     payload = yaml.safe_load(result.stdout)
     assert "could not be APPLIED to src/calc.js" in payload["call_site_non_claim"]
+
+
+# --------------------------------------------------------------------------- #
+# Round-2: the spec reporter is refused, not half-read.
+# --------------------------------------------------------------------------- #
+
+
+_NODE_SPEC = _NODE_PASS.replace("# ", "ℹ ")
+
+
+def test_the_spec_reporter_is_refused_rather_than_half_read() -> None:
+    """THE round-2 blocker. An earlier cut accepted both markers so a consumer
+    whose node emits `spec` would not meet a dead end -- and that widening
+    silently reintroduced the false kill the same slice had just repaired,
+    because the file-level/test-level distinction the guard needs EXISTS ONLY IN
+    TAP. Measured: `node --test --test-reporter=spec` over a module-breaking
+    mutant emits no `exitCode` line in any form."""
+    assert reporters.NodeTestReporter.read(_NODE_SPEC) is None
+
+
+def test_spec_output_is_recognised_so_the_refusal_can_be_specific() -> None:
+    """A dead end that names its own fix is strictly better than a false kill --
+    but a GENERIC dead end over output that is obviously node's is the thing this
+    seam exists to end."""
+    assert reporters.NodeTestReporter.looks_like_spec(_NODE_SPEC) is True
+    assert reporters.NodeTestReporter.looks_like_spec(_NODE_PASS) is False
+
+
+def test_the_spec_refusal_names_the_one_flag_that_fixes_it() -> None:
+    message = reporters.unreadable_refusal("node-test", _NODE_SPEC)
+
+    assert "`spec` reporter" in message
+    assert "--test-reporter=tap" in message
+
+
+def test_a_green_run_zeroes_the_process_failure_mechanism() -> None:
+    """The cap means `reported_failures == 0` disables the subtraction entirely,
+    so a SURVIVED verdict cannot be perturbed by transcript noise."""
+    noisy = "  exitCode: 1\n" * 5 + _NODE_PASS
+
+    counts = reporters.NodeTestReporter.read(noisy)
+
+    assert (counts.passed, counts.failed, counts.errors) == (2, 0, 0)

@@ -566,3 +566,84 @@ def test_every_non_complete_checked_in_goal_passes_the_floor() -> None:
         if not gal.check_cadence_owner(text, status=gal.read_status(text))["ok"]:
             offenders.append(path.name)
     assert offenders == []
+
+
+# --------------------------------------------------------------------------- #
+# The recorded #694 decision: DECLINE on an ambiguous line rather than guess.
+#
+# `_DEFERS_BROAD_PROOF` matches the literal PRESENCE of a flag, so a cadence line
+# telling the reader NOT to pass it read as deferring, and `/goal` refused a
+# truthful artifact. Three options were on the table; the repo owner chose to
+# refuse to render a verdict, which preserves this module's stated preference for
+# silence over a guess and needs no migration of the 84 checked-in goals that
+# carry a cadence line.
+#
+# The distinction that makes this NOT paraphrase matching: the floor does not
+# decide that a negated line demands broad proof. It decides that it cannot tell,
+# and says so.
+# --------------------------------------------------------------------------- #
+
+_NEGATED_CADENCE = (
+    "- Gate cadence: broad pytest at EVERY slice boundary this run; "
+    "do NOT pass `--skip-broad-pytest`."
+)
+_PER_SLICE_ACCEPTANCE = "- `pytest tests/ -q` reports zero failures at each slice boundary."
+
+
+def test_a_negated_flag_mention_renders_no_verdict() -> None:
+    """The exact artifact from the report: frame and acceptance AGREE that broad
+    proof runs every slice, and the floor refused the pair as contradictory."""
+    report = _check(_artifact(cadence=_NEGATED_CADENCE, acceptance=_PER_SLICE_ACCEPTANCE))
+
+    assert report["applies"] is False
+    assert report["ok"] is True
+    assert "unestablished" in report["reason"]
+
+
+def test_the_decline_quotes_the_clause_it_could_not_read() -> None:
+    """A decline that does not show its evidence is indistinguishable from a
+    parser that skipped -- the exact confusion this module already repaired once
+    for its other non-applicable branch."""
+    report = _check(_artifact(cadence=_NEGATED_CADENCE, acceptance=_PER_SLICE_ACCEPTANCE))
+
+    assert "do NOT pass `--skip-broad-pytest`" in report["reason"]
+
+
+def test_the_decline_does_not_block_activation() -> None:
+    """`pursue_readiness` gates on `ok`, so an `ok: False` decline would keep
+    refusing the artifact this decision exists to stop refusing."""
+    text = _artifact(status="draft", cadence=_NEGATED_CADENCE, acceptance=_PER_SLICE_ACCEPTANCE)
+
+    assert _check(text, status="draft")["ok"] is True
+
+
+def test_the_scaffolds_own_seeded_frame_is_STILL_refused() -> None:
+    """THE guard on this change, and the one the constant's comment warns about
+    by name: the seeded frame's FIRST clause genuinely defers, so refusing it
+    beside a per-slice acceptance demand is a TRUE POSITIVE. A line-wide negation
+    search would have declined here and disarmed the floor on its own template."""
+    report = _check(_artifact(acceptance=_PER_SLICE_ACCEPTANCE))
+
+    assert report["applies"] is True
+    assert report["ok"] is False
+
+
+def test_a_negation_in_a_DIFFERENT_clause_does_not_disarm_the_floor() -> None:
+    """Clause-scoped, not line-scoped. A deferring first clause plus an unrelated
+    negation later must still refuse."""
+    cadence = (
+        "- Gate cadence: pre-lock slices use `--skip-broad-pytest`; "
+        "the release is not cut until CI is green."
+    )
+    report = _check(_artifact(cadence=cadence, acceptance=_PER_SLICE_ACCEPTANCE))
+
+    assert report["applies"] is True
+    assert report["ok"] is False
+
+
+def test_an_unambiguous_deferral_with_no_acceptance_conflict_still_passes() -> None:
+    """The decline must not swallow the clean case: one owner, no findings."""
+    report = _check(_artifact(acceptance="- The operator can resume a run without rebuilding."))
+
+    assert report["applies"] is True
+    assert report["ok"] is True

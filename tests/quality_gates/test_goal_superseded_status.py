@@ -163,3 +163,64 @@ def test_upsert_allows_the_flip_once_the_record_is_present(goal_lib, tmp_path: P
     )
 
     assert "Status: superseded" in path.read_text(encoding="utf-8")
+
+
+# --------------------------------------------------------------------------- #
+# Round-2 repairs.
+# --------------------------------------------------------------------------- #
+
+
+def test_creating_straight_to_superseded_is_refused(goal_lib, tmp_path: Path) -> None:
+    """The round-2 blocker. Both flip guards live inside `if path.exists()`, so
+    `--status superseded` on a NEW slug wrote a terminal artifact with no record
+    at all -- opening exactly the window the write-time guard exists to close."""
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "goals").mkdir(parents=True)
+
+    with pytest.raises(ValueError) as excinfo:
+        goal_lib.upsert_goal(
+            repo, date="2026-08-22", slug="fresh", title="Fresh", status="superseded"
+        )
+
+    assert "create this goal `superseded`" in str(excinfo.value)
+    assert not goal_lib.goal_path(repo, "2026-08-22", "fresh").exists()
+
+
+def test_a_successor_pointer_that_names_nothing_is_refused(goal_lib, tmp_path: Path) -> None:
+    """The successor pointer is the ENTIRE cost of this status -- roughly fourteen
+    closeout floors are skipped for it -- and it was the only evidence line in
+    this contract never checked for existence. A pointer at a file nobody wrote
+    loses the work exactly as quietly as having no status would have."""
+    report = goal_lib.check_superseded_record(
+        "Superseded by: charness-artifacts/goals/2026-09-01-never-written.md\n",
+        repo_root=tmp_path,
+    )
+
+    assert report["ok"] is False
+    assert "does not exist" in report["reason"]
+
+
+def test_prose_is_never_treated_as_a_pointer(goal_lib, tmp_path: Path) -> None:
+    """`none — remainder dropped` has no `/` and no `.md`, so existence is never
+    asserted about it. Guessing that prose is a path would refuse the one answer
+    the floor exists to accept."""
+    report = goal_lib.check_superseded_record(
+        "Superseded by: none — folded into the next unit\n", repo_root=tmp_path
+    )
+
+    assert report["ok"] is True
+
+
+def test_an_annotated_superseded_status_reaches_the_record_floor() -> None:
+    """`is_terminal_status` normalizes the leading token, so an annotated status
+    skips the cadence floor -- while a bare `== "superseded"` in the validator did
+    NOT fire the record floor on the same string. One normalizer, both readers."""
+    import importlib.util as _il
+
+    spec = _il.spec_from_file_location("chk", _ACHIEVE / "check_goal_artifact.py")
+    source = (_ACHIEVE / "check_goal_artifact.py").read_text(encoding="utf-8")
+
+    assert 'status_token(result.get("status")) == "superseded"' in source, (
+        "the validator must normalize the status token, not compare it raw"
+    )
+    assert spec is not None

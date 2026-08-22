@@ -48,6 +48,18 @@ pytest's summary is the last LINE carrying counts and a duration; node's is the
 trailing BLOCK of `# key value` lines ending in `# duration_ms`. Anchoring on the
 duration in both cases is not a coincidence -- it is the token a runner emits
 once, at the end, and that an echoed test body has no reason to contain.
+
+## One place this reader looks OUTSIDE the summary, and why
+
+`node --test` has no error concept: a test FILE that fails to load is reported as
+a failing TEST. Measured, a module-breaking mutant and a real kill emit
+byte-identical summaries, so no count-only rule can separate them. The one signal
+that does is file-level -- node prints the file process's `exitCode:` in its TAP
+diagnostic -- and it lives in the transcript, not the summary.
+
+Reading it there is acceptable HERE and refused for counts because the direction
+of error differs: over-counting file failures turns a kill into a REFUSAL, and can
+never manufacture one. It costs a false stop; it cannot grant a false pass.
 """
 
 from __future__ import annotations
@@ -66,17 +78,25 @@ SUMMARY_RE = re.compile(r"in \d+(?:\.\d+)?s", re.IGNORECASE)
 #: node --test summary keys. `^` anchored under MULTILINE so an echoed line that
 #: merely CONTAINS `# pass 5` mid-text cannot supply a count.
 #:
-#: Both markers are accepted because node picks the reporter by TTY: `tap` writes
-#: `# pass 2`, `spec` writes `\u2139 pass 2`. The harness always captures output, so
-#: the authoring repo's fixture exercises `tap` -- but which one a CONSUMER's node
-#: emits is version- and environment-dependent, and getting `spec` back would have
-#: restored the #689 dead end with a more confident-sounding message.
-_NODE_MARK = "(?:#|\u2139)"
-_NODE_KEY_RE = re.compile(rf"^{_NODE_MARK} (tests|pass|fail|cancelled) (\d+)\s*$", re.MULTILINE)
-_NODE_DURATION_RE = re.compile(rf"^{_NODE_MARK} duration_ms \d+(?:\.\d+)?\s*$", re.MULTILINE)
+#: TAP ONLY, deliberately. node picks its reporter by TTY: `tap` writes
+#: `# pass 2`, `spec` writes `\u2139 pass 2`. An earlier cut accepted BOTH, so that a
+#: consumer whose node emits `spec` would not meet a dead end -- and a second
+#: review round found that widening silently reintroduced the false kill the same
+#: slice had just repaired, because the file-level/test-level distinction the
+#: guard below needs EXISTS ONLY IN TAP.
+#:
+#: Measured, not reasoned: `node --test --test-reporter=spec` over a
+#: module-breaking mutant emits NO `exitCode` line in any form, so the guard has
+#: nothing to key on and a broken run reads as a kill again. A dead end that names
+#: its own fix is strictly better than a false kill, so `spec` is DETECTED and
+#: refused with that fix named, rather than half-read.
+_NODE_KEY_RE = re.compile(r"^# (tests|pass|fail|cancelled) (\d+)\s*$", re.MULTILINE)
+_NODE_DURATION_RE = re.compile(r"^# duration_ms \d+(?:\.\d+)?\s*$", re.MULTILINE)
+#: Enough to recognise node's `spec` output so the refusal can be specific.
+_NODE_SPEC_RE = re.compile(r"^\u2139 (?:tests|pass|fail) \d+\s*$", re.MULTILINE)
 #: A FILE-level failure: node reports a test file whose process exited non-zero.
-#: `exitCode:` appears in a subtest's YAML diagnostic only for a file the runner
-#: spawned, never for a test that failed inside a file -- measured both ways.
+#: `exitCode:` appears in a subtest's TAP YAML diagnostic only for a file the
+#: runner spawned, never for a test that failed inside one -- measured both ways.
 _NODE_PROCESS_FAILURE_RE = re.compile(r"^\s*exitCode: \d+\s*$", re.MULTILINE)
 
 
@@ -154,10 +174,16 @@ class NodeTestReporter:
 
     name = "node-test"
     summary_shape = (
-        "a trailing summary block of `# key value` (tap) or `\u2139 key value` (spec) "
-        "lines ending in a `duration_ms` line; if the runner emits neither, add "
-        "`--test-reporter=tap` to the plan's test_command"
+        "a trailing TAP block of `# key value` lines ending in `# duration_ms`. "
+        "node's `spec` reporter is NOT accepted -- it omits the file-level failure "
+        "detail this reader needs to tell a broken module from a caught mutation -- "
+        "so add `--test-reporter=tap` to the plan's test_command"
     )
+
+    @staticmethod
+    def looks_like_spec(output: str) -> bool:
+        """Whether this is node output in the reporter this reader refuses."""
+        return _NODE_SPEC_RE.search(output) is not None
 
     @staticmethod
     def summary(output: str) -> str | None:
@@ -213,6 +239,12 @@ class NodeTestReporter:
         # HERE where it is refused for counts: over-counting process failures
         # turns a kill into a refusal (a false stop), and under-counting leaves
         # the pre-existing behavior. Neither can manufacture a kill.
+        # Scoped to the LAST run, matching how `summary` picks its block. Scanning
+        # the whole transcript charged an earlier run's process failures against a
+        # later run's summary, and gave a mutant's own output more surface to
+        # suppress a real kill with (a test that prints `exitCode: 1` still can,
+        # within its own run -- that is a false stop, which is the safe direction,
+        # and it is the price of a signal node only exposes in the transcript).
         process_failures = min(len(_NODE_PROCESS_FAILURE_RE.findall(output)), reported_failures)
         return RunCounts(
             passed=counts.get("pass", 0),
@@ -276,6 +308,17 @@ def unreadable_refusal(configured: str, output: str) -> str:
     known = REPORTERS.get(configured)
     shape = known.summary_shape if known is not None else "an unregistered summary shape"
     detail = f"the `{configured}` reporter found no readable count report (it looks for {shape})"
+    if NodeTestReporter.looks_like_spec(output):
+        # The one unreadable case with a precise cause and a one-flag fix. Without
+        # this the operator gets a generic "nothing could read it" over output that
+        # is obviously node's, which is the dead end this whole seam exists to end.
+        return (
+            detail
+            + "; this IS node output, in the `spec` reporter. That format omits the "
+            "file-level failure detail needed to tell a broken module from a caught "
+            "mutation, so it is refused rather than half-read -- add "
+            "`--test-reporter=tap` to the plan's test_command"
+        )
     if others:
         detail += (
             "; this output IS readable by the "

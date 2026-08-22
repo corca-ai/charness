@@ -54,7 +54,7 @@ _TEMPLATE = (
 
 
 def test_a_bare_heading_is_hollow(hollow, bounds) -> None:
-    report = hollow.classify("## Goal\n\n## Interview Decisions\n\nreal content\n", _TEMPLATE,
+    report = hollow.classify("## Goal\n\n## Interview Decisions\n\nreal content\n", "## Goal\n\n## Interview Decisions\n\nreal content\n", _TEMPLATE,
                              ("Goal", "Interview Decisions"), section_bounds=bounds)
 
     assert report["empty"] == ["Goal"]
@@ -71,7 +71,7 @@ def test_a_section_still_carrying_the_template_prose_is_hollow(hollow, bounds) -
         "## Interview Decisions\n\nFor each Before-phase question: options, chosen value.\n"
     )
 
-    report = hollow.classify(artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
+    report = hollow.classify(artifact, artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
 
     assert report["still_template_text"] == ["Interview Decisions"]
     assert report["empty"] == []
@@ -85,7 +85,7 @@ def test_reflowing_the_template_prose_is_still_hollow(hollow, bounds) -> None:
         "## Interview Decisions\n\nFor each Before-phase question:\noptions,\nchosen value.\n"
     )
 
-    report = hollow.classify(artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
+    report = hollow.classify(artifact, artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
 
     assert "Interview Decisions" in report["still_template_text"]
 
@@ -93,7 +93,7 @@ def test_reflowing_the_template_prose_is_still_hollow(hollow, bounds) -> None:
 def test_written_content_is_not_hollow(hollow, bounds) -> None:
     artifact = "## Goal\n\nreal goal\n\n## Interview Decisions\n\nChose A over B because C.\n"
 
-    report = hollow.classify(artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
+    report = hollow.classify(artifact, artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
 
     assert report["hollow"] == []
     assert report["reason"] == ""
@@ -104,7 +104,7 @@ def test_an_explicit_n_a_counts_as_written(hollow, bounds) -> None:
     with genuinely nothing for a section keeps the heading and says so."""
     artifact = "## Goal\n\nreal\n\n## Interview Decisions\n\nN/A — no alternatives were considered.\n"
 
-    report = hollow.classify(artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
+    report = hollow.classify(artifact, artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
 
     assert report["hollow"] == []
 
@@ -112,7 +112,7 @@ def test_an_explicit_n_a_counts_as_written(hollow, bounds) -> None:
 def test_an_absent_section_is_not_reported_as_hollow(hollow, bounds) -> None:
     """The missing-heading floor owns that. Reporting it here too would say the
     same thing twice in two vocabularies."""
-    report = hollow.classify("## Goal\n\nreal\n", _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
+    report = hollow.classify("## Goal\n\nreal\n", "## Goal\n\nreal\n", _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds)
 
     assert report["hollow"] == []
 
@@ -121,7 +121,7 @@ def test_run_filled_sections_are_reported_but_never_refused(hollow, bounds) -> N
     """The trap in the fix. Most run-filled sections are template-identical at
     draft time BY DESIGN, so refusing on hollowness alone would refuse every fresh
     draft -- trading one false verdict for another."""
-    report = hollow.classify("## Slice Log\n\n## Goal\n\nreal\n", _TEMPLATE,
+    report = hollow.classify("## Slice Log\n\n## Goal\n\nreal\n", "## Slice Log\n\n## Goal\n\nreal\n", _TEMPLATE,
                              ("Goal", "Slice Log"), section_bounds=bounds)
 
     assert report["hollow"] == ["Slice Log"]
@@ -138,8 +138,7 @@ def test_the_reason_names_which_sections_and_in_which_way(hollow, bounds) -> Non
         "## Interview Decisions\n\nFor each Before-phase question: options, chosen value.\n"
     )
 
-    reason = hollow.classify(
-        artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds
+    reason = hollow.classify(artifact, artifact, _TEMPLATE, ("Goal", "Interview Decisions"), section_bounds=bounds
     )["reason"]
 
     assert "present but EMPTY: Goal" in reason
@@ -198,3 +197,88 @@ def test_a_non_shaping_status_is_not_regraded(goal_lib) -> None:
 
     assert report["hollow_sections"]["hollow"] == []
     assert "not evaluated" in report["hollow_sections"]["reason"]
+
+
+# --------------------------------------------------------------------------- #
+# Round-2 repairs.
+# --------------------------------------------------------------------------- #
+
+
+def test_a_section_in_neither_tuple_fails_CLOSED(hollow, bounds) -> None:
+    """The round-2 blocker. The two tuples are hand-maintained against a section
+    set this module does not own, and the first cut had already drifted:
+    `## Closeout Binding Plan` is passed in on every evaluating run, was in
+    neither list, and so was detected, NOT blocked, and then described as
+    run-filled -- a false statement about the one section where this check had a
+    catch nothing else in the tree could make."""
+    report = hollow.classify(
+        "## Closeout Binding Plan\n", "## Closeout Binding Plan\n", _TEMPLATE,
+        ("Closeout Binding Plan",), section_bounds=bounds,
+    )
+
+    assert report["blocking"] == ["Closeout Binding Plan"]
+    assert report["unclassified_blocking"] == ["Closeout Binding Plan"]
+
+
+def test_the_no_block_sentence_only_names_actually_run_filled_sections(hollow, bounds) -> None:
+    """The reason's parenthetical used to be applied to whatever did not block,
+    which is how a shaping section came to be called run-filled."""
+    report = hollow.classify("## Slice Log\n", "## Slice Log\n", _TEMPLATE,
+                             ("Slice Log",), section_bounds=bounds)
+
+    assert "Slice Log: filled by the run" in report["reason"]
+
+
+def test_a_fenced_body_is_content_not_emptiness(hollow, bounds) -> None:
+    """`mask_fences` blanks fenced regions, so a section written entirely as
+    fenced command blocks -- the most natural shape for a verification plan --
+    normalized to "" and was refused as "present but EMPTY", a statement the code
+    had not established. Emptiness is decided on the RAW body now."""
+    raw = "## Agent Verification Plan\n\n```\npytest -q tests/\n```\n"
+    masked = "## Agent Verification Plan\n\n   \n                 \n   \n"
+
+    report = hollow.classify(masked, raw, _TEMPLATE,
+                             ("Agent Verification Plan",), section_bounds=bounds)
+
+    assert report["empty"] == []
+
+
+def test_a_quotation_of_the_template_is_still_not_content(hollow, bounds) -> None:
+    """Identity still reads the MASKED body, so the fenced-body repair above did
+    not open the hole masking exists to close."""
+    raw = "## Interview Decisions\n\n```\nFor each Before-phase question: options, chosen value.\n```\n"
+    masked = "## Interview Decisions\n\n   \n" + " " * 60 + "\n   \n"
+
+    report = hollow.classify(masked, raw, _TEMPLATE,
+                             ("Interview Decisions",), section_bounds=bounds)
+
+    assert report["hollow"] == []
+
+
+def test_an_evaluated_report_says_so(hollow, bounds) -> None:
+    """This repo's payload grammar uses `evaluated` to separate a clean run from a
+    skipped one. Without it, `hollow: []` reads identically in both states."""
+    report = hollow.classify("## Goal\n\nreal\n", "## Goal\n\nreal\n", _TEMPLATE,
+                             ("Goal",), section_bounds=bounds)
+
+    assert report["evaluated"] is True
+
+
+def test_the_wired_path_catches_a_section_left_as_template_text(goal_lib) -> None:
+    """The integration gap round 2 named: both wired tests exercised only the
+    EMPTY branch, so `elif False` on the identity branch left them green. This one
+    uses the REAL scaffold template."""
+    import importlib.util as _il
+
+    spec = _il.spec_from_file_location("tpl", _ACHIEVE / "goal_artifact_lib.py")
+    lib = _il.module_from_spec(spec)
+    spec.loader.exec_module(lib)
+    template_boundaries = lib._TEMPLATE.split("## Boundaries\n", 1)[1].split("\n## ", 1)[0]
+
+    body = _draft_with(goal_lib, "__none__").replace(
+        "## Boundaries\nBoundaries fixture value.\n",
+        f"## Boundaries\n{template_boundaries}\n",
+    )
+    report = goal_lib.pursue_readiness(body)
+
+    assert "Boundaries" in report["hollow_sections"]["still_template_text"], report["hollow_sections"]

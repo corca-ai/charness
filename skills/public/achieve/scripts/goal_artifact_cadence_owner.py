@@ -83,9 +83,45 @@ _CADENCE_LABEL = re.compile(r"^[ \t>*\-]*\**[ \t]*Gate cadence[ \t]*:[ \t]*\**(.
 #: on its own scaffold.
 #:
 #: Reading either correctly is paraphrase matching, which this module refuses by
-#: design, so the over-fire is tracked upstream rather than patched with a second
-#: guess here. The refusal payload discloses it instead of hiding it.
+#: design. The FIRST shape -- negation -- is now handled by DECLINING rather than
+#: by guessing; see `_NEGATED_NEAR_FLAG`. The second is not, and stays disclosed.
 _DEFERS_BROAD_PROOF = re.compile(r"--skip-broad-pytest|--verification-lock")
+
+#: A negation sitting in the same clause as a matched flag.
+#:
+#: This does NOT read polarity, and the difference is the whole design. Reading
+#: polarity would mean deciding that "do NOT pass `--skip-broad-pytest`" demands
+#: broad proof -- a paraphrase judgement this module refuses. Recognising that a
+#: negation is present means only that the floor CANNOT TELL a deferral from its
+#: opposite on this line, so it renders no verdict and says so. That is the same
+#: move the unbalanced-fence branch already makes, and it preserves the module's
+#: stated preference for silence over a guess.
+#:
+#: Chosen by the repo owner over two alternatives: a structured
+#: `Gate cadence defers:` field (more durable, but it migrates the frame of the 84
+#: checked-in goals that carry a cadence line), and accepting the over-fire with a
+#: documented payload (cheapest, but it ships a gate that can refuse a correct
+#: artifact -- which this module's own Non-Goals call "a gate an operator would
+#: learn to ignore"). Measured at decision time: 202 checked-in goals, 84 with a
+#: cadence line, ZERO using a negated spelling, so the over-fire was latent rather
+#: than active and the expensive migration bought little today.
+#:
+#: Clause-scoped, not line-scoped. A cadence line routinely has two clauses --
+#: "pre-lock slices use `--skip-broad-pytest`; the final bundle is never skipped"
+#: -- and a line-wide negation search would decline on the SCAFFOLD'S OWN seeded
+#: frame, whose first clause genuinely defers. Declining there would disarm the
+#: floor on its own template, which is exactly what the constant above warns
+#: whoever takes this issue not to do.
+_NEGATION_TOKEN = re.compile(r"\b(?:not|never|without|no)\b", re.IGNORECASE)
+_CLAUSE_SPLIT = re.compile(r"[;.]")
+
+
+def _negated_near_flag(cadence_text: str) -> str | None:
+    """The clause in which a matched flag sits beside a negation, else None."""
+    for clause in _CLAUSE_SPLIT.split(cadence_text):
+        if _DEFERS_BROAD_PROOF.search(clause) and _NEGATION_TOKEN.search(clause):
+            return clause.strip()
+    return None
 
 #: A BROAD-pytest command an acceptance line can demand: a pytest run over the
 #: whole tree, or the standing-pytest runner named directly. Optional flags may
@@ -218,6 +254,28 @@ def check(
                 "of `--skip-broad-pytest` or `--verification-lock`, and neither appears in the "
                 "text this floor read on that line, so it declined. `## User Acceptance` is not "
                 "evaluated as a second owner"
+            ),
+            "cadence": cadence,
+            "findings": [],
+        }
+    ambiguous = _negated_near_flag(cadence["text"])
+    if ambiguous is not None:
+        # UNESTABLISHED, and non-blocking. `pursue_readiness` gates on `ok`, so a
+        # refusal here stops `/goal` on an artifact this floor cannot read -- which
+        # is how a truthful frame ("broad pytest EVERY slice; do NOT pass
+        # `--skip-broad-pytest`") came to be refused as contradictory. Declining is
+        # the honest verdict AND the safe one for this floor's stated bias: its own
+        # docstring says "a cadence that defers in words nobody has written yet
+        # under-fires rather than guessing".
+        return {
+            "applies": False,
+            "ok": True,
+            "reason": (
+                f"unestablished: `## Active Operating Frame` line {cadence['line']} names a "
+                f"deferral flag inside a clause that also negates it ({ambiguous!r}), so this "
+                "floor cannot tell a deferral from its opposite without paraphrasing -- which it "
+                "refuses to do. No verdict is rendered and activation is not blocked on it. "
+                "`## User Acceptance` is not evaluated as a second owner"
             ),
             "cadence": cadence,
             "findings": [],

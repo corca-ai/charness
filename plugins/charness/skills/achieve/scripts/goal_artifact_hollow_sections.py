@@ -61,7 +61,6 @@ SHAPING_SECTIONS = (
 RUN_FILLED_SECTIONS = (
     "Slice Log",
     "Off-Goal Findings",
-    "Operator Decision Queue",
     "Final Verification",
     "User Verification Instructions",
     "Auto-Retro",
@@ -91,7 +90,8 @@ def _normalized(body: str) -> str:
     return " ".join(body.split())
 
 
-def classify(masked_text: str, template_text: str, sections: tuple[str, ...], *, section_bounds) -> dict:
+def classify(masked_text: str, raw_text: str, template_text: str,
+             sections: tuple[str, ...], *, section_bounds) -> dict:
     """Report which of `sections` are hollow, and why each one is.
 
     `masked_text` is fence-masked by the caller for the same reason every other
@@ -105,28 +105,50 @@ def classify(masked_text: str, template_text: str, sections: tuple[str, ...], *,
     empty: list[str] = []
     template_identical: list[str] = []
     for name in sections:
-        raw = _body(masked_text, name, section_bounds)
-        if raw is None:
+        masked_body = _body(masked_text, name, section_bounds)
+        if masked_body is None:
             continue
-        body = _normalized(raw)
-        template_body = _body(template_text, name, section_bounds)
-        if not body:
+        # EMPTINESS is decided on the RAW body, template-identity on the masked
+        # one. `mask_fences` blanks fenced regions, so a section written entirely
+        # as fenced command blocks -- the most natural shape for a verification
+        # plan -- normalized to "" and was refused as "present but EMPTY", a
+        # statement the code had not established. Identity still reads the masked
+        # body, because a goal that QUOTES the template must not have the
+        # quotation counted as its own content.
+        unmasked = _body(raw_text, name, section_bounds)
+        if not _normalized(unmasked if unmasked is not None else masked_body):
             empty.append(name)
-        elif template_body is not None and body == _normalized(template_body):
+            continue
+        body = _normalized(masked_body)
+        template_body = _body(template_text, name, section_bounds)
+        if body and template_body is not None and body == _normalized(template_body):
             template_identical.append(name)
     hollow = sorted(empty + template_identical)
-    blocking = [name for name in hollow if name in SHAPING_SECTIONS]
+    run_filled = [name for name in hollow if name in RUN_FILLED_SECTIONS]
+    # FAIL CLOSED on anything in neither tuple. The two lists are hand-maintained
+    # against a section set this module does not own, and a round-2 reviewer found
+    # the first cut had already drifted: `## Closeout Binding Plan` is passed in on
+    # every evaluating run and was in neither list, so a goal that left it exactly
+    # as the scaffold wrote it was detected, NOT blocked, and then described as a
+    # "run-filled section" -- a false statement on a proof surface, about the one
+    # section where this check had a catch nothing else in the tree could make.
+    # Defaulting an unclassified section to "must be written" makes drift cost a
+    # false stop instead of a silent pass.
+    blocking = [name for name in hollow if name not in RUN_FILLED_SECTIONS]
     return {
+        "evaluated": True,
         "hollow": hollow,
         "empty": empty,
         "still_template_text": template_identical,
         "blocking": blocking,
-        "run_filled_hollow": [name for name in hollow if name in RUN_FILLED_SECTIONS],
-        "reason": _reason(empty, template_identical, blocking),
+        "run_filled_hollow": run_filled,
+        "unclassified_blocking": [name for name in blocking if name not in SHAPING_SECTIONS],
+        "reason": _reason(empty, template_identical, blocking, run_filled),
     }
 
 
-def _reason(empty: list[str], template_identical: list[str], blocking: list[str]) -> str:
+def _reason(empty: list[str], template_identical: list[str], blocking: list[str],
+            run_filled: list[str]) -> str:
     """Say WHICH sections are hollow and in which of the two ways.
 
     The core ask, and the reason this is not a boolean: report which ones are
@@ -144,9 +166,11 @@ def _reason(empty: list[str], template_identical: list[str], blocking: list[str]
     detail = "; ".join(parts)
     if blocking:
         return (
-            f"{detail}. Shaping sections must be written before `/goal`: "
+            f"{detail}. These must be written before `/goal`: "
             + ", ".join(blocking)
             + ". A section with genuinely nothing to say keeps its heading and states "
             "`N/A — <reason>`."
         )
-    return f"{detail} (run-filled sections; reported, not refused)"
+    # Only reachable when EVERY hollow section is run-filled, so the parenthetical
+    # is now a fact rather than a label applied to whatever did not block.
+    return f"{detail} ({', '.join(run_filled)}: filled by the run; reported, not refused)"

@@ -87,6 +87,7 @@ validate_goal_values = partial(
 #: Bound at THIS address because the validator reaches them here.
 SUPERSEDED_RECORD_FIELD = _superseded.SUPERSEDED_RECORD_FIELD
 check_superseded_record = partial(_superseded.check_superseded_record, mask_fences=_mask_fences)
+status_token = _pursue.status_token
 VALID_STATUSES = ("draft", "active", "blocked", "complete", "superseded")
 
 # H2 sections every goal artifact must keep so a compacted run can be audited
@@ -171,6 +172,27 @@ def _section_placeholder_summary(report: dict[str, Any]) -> str:
         f"{entry['section']} line {entry['line']} starts with {entry['marker']!r}"
         for entry in entries
     )
+
+
+def _create_status_refusal(status: str, body: str, rel: str) -> dict[str, Any] | None:
+    """Re-run a terminal/blocked status floor against a body being CREATED.
+
+    Both flip guards live inside `if path.exists()`, so `--status <terminal>` on a
+    NEW slug wrote the artifact with no record at all. A round-2 reviewer found
+    that hole open for `superseded`; the `blocked` arm below is the pre-existing
+    fix for the identical bypass, and having both in one place is what stops the
+    next terminal status from having to rediscover it.
+    """
+    if status == "superseded":
+        report = _superseded.check_superseded_record(body, mask_fences=_mask_fences)
+        if not report["ok"]:
+            raise ValueError("refusing to create this goal `superseded`: " + report["reason"])
+    if status == "blocked":
+        refusal = _blocked_matrix.flip_refusal(body, rel, None)
+        if refusal is not None:
+            refusal["status"] = "missing"
+            return refusal
+    return None
 
 
 def upsert_goal(
@@ -273,14 +295,9 @@ def upsert_goal(
         execution_efficiency_context_path=adapter["data"]["scaffold"]["execution_efficiency_context_path"],
         goal_body=goal_body,
     )
-    if status == "blocked":
-        # Creating straight to `blocked` would bypass the flip gate, so a fresh
-        # goal could reach blocked-on-disk with no boundary matrix. Re-run the
-        # floor on the rendered body (no prior status) and refuse if unclean.
-        create_refusal = _blocked_matrix.flip_refusal(body, rel, None)
-        if create_refusal is not None:
-            create_refusal["status"] = "missing"
-            return create_refusal
+    create_refusal = _create_status_refusal(status, body, rel)
+    if create_refusal is not None:
+        return create_refusal
     path.write_text(body, encoding="utf-8")
     return {"action": "created", "path": rel, "status": status}
 
@@ -326,7 +343,7 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
         # second lazy reader was written here and deleted, because "one owner"
         # is the rule the duplicate ratchet had just enforced on this same slice.
         hollow_sections=lambda masked, sections: _hollow.classify(
-            masked, _TEMPLATE, sections,
+            masked, text, _TEMPLATE, sections,
             section_bounds=_markdown.section_bounds,
         ),
     )
