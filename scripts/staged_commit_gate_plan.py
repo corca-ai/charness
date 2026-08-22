@@ -11,6 +11,11 @@ from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
 
 _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
+# One owner for "is this packaged module a catalog candidate". The dispatcher used
+# to carry its own copy of the rule and went stale the moment the checker's copy was
+# repaired; see the trigger clause below.
+_catalog_check = import_repo_module(__file__, "scripts.check_consumer_validator_catalog")
+_is_catalog_candidate_name = _catalog_check._is_candidate_name
 _plan_helpers = import_repo_module(__file__, "scripts.staged_commit_gate_plan_helpers")
 
 GateCommand = _plan_helpers.GateCommand
@@ -88,7 +93,15 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
         or path.startswith("plugins/charness/scripts/")
         or (
             path.startswith(("scripts/", "skills/public/", "plugins/charness/"))
-            and Path(path).name.startswith(("check_", "validate_"))
+            # The CHECKER's own predicate, imported rather than restated. This line
+            # used to spell `startswith(("check_", "validate_"))`, and when the
+            # catalog's discovery predicate became position-independent this copy
+            # stayed positional -- so the one validator the widening exists to bring
+            # into scope, `issue_validate_closeout_draft.py`, was the one file whose
+            # edit did NOT fire this gate at commit time. A rule with two
+            # implementations drifts the moment one of them is repaired; #586's class,
+            # found by a bounded review of the widening slice itself.
+            and _is_catalog_candidate_name(Path(path).name)
         )
         for path in paths
     ):

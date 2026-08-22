@@ -31,7 +31,28 @@ DEFAULT_PACKAGE_ROOT_REL = Path("plugins/charness")
 DEFAULT_ADOPTION_REL = Path(".agents/consumer-validator-adoption.yaml")
 CATALOG_ID = "consumer-validator-catalog"
 ADOPTION_POLICY = "wire-or-opt-out"
-EXPECTED_CANDIDATE_PATTERNS = ("**/check_*.py", "**/validate_*.py")
+#: The discovery predicate, as GLOBS the catalog restates and an operator can run.
+#: `*check_*` / `*validate_*`, not `check_*` / `validate_*`: the token may sit
+#: anywhere in the basename. The prefix-only form was POSITIONAL, and the position
+#: was doing work nobody had justified -- `issue_validate_closeout_draft.py` is a
+#: packaged, operator-facing validator (CLAUDE.md's issue-closeout floor invokes it)
+#: that the prefix form never discovered, so it needed no decision and nothing said
+#: so. Measured: prefix admits 134 after the scanner exclusion, token-anywhere admits
+#: 135, and the ONE added path is that live miss.
+#:
+#: An earlier revision of this comment said 137 and "the two added", counting a second
+#: file that is not a candidate at all -- the reconnaissance behind it was measured
+#: with the regex `(check|validate)` while this predicate uses the tokens `check_` and
+#: `validate_`. The goal artifact was corrected and this comment was not, which is how
+#: a stale number survives into the surface that ships. It is stated here because the
+#: correction is worth more than the number.
+#:
+#: The token PAIR is unchanged on purpose. Widening it is how this list would rot:
+#: `audit` (11 packaged modules), `guard` (9), `lint` (4), `verify` (3) each look
+#: like the next reasonable entry, and each is a longer list rather than a better
+#: rule. What covers them instead is `uncovered_module_count` in the report -- the
+#: predicate says out loud how much of the package it did not admit.
+EXPECTED_CANDIDATE_PATTERNS = ("**/*check_*.py", "**/*validate_*.py")
 EXPECTED_SCANNER_EXCLUSIONS = ("scripts/check_consumer_validator_catalog.py",)
 DECISIONS = frozenset({"publish", "exclude"})
 STABLE_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -68,8 +89,19 @@ def _default_package_root_rel(repo_root: Path) -> Path:
     return _layout_relative(repo_root, DEFAULT_PACKAGE_ROOT_REL, Path("."))
 
 
+#: The tokens whose PRESENCE in a basename makes a packaged module a candidate.
+#: Position-independent by design; see `EXPECTED_CANDIDATE_PATTERNS`.
+CANDIDATE_TOKENS = ("check_", "validate_")
+
+
+def _is_candidate_name(name: str) -> bool:
+    """Whether a packaged module's basename carries a candidate token anywhere."""
+
+    return any(token in name for token in CANDIDATE_TOKENS)
+
+
 def discover_packaged_validators(package_root: Path) -> list[str]:
-    """Return every packaged ``check_*.py`` or ``validate_*.py`` path."""
+    """Every packaged module whose basename carries a candidate token."""
 
     if not package_root.is_dir():
         raise CatalogError(f"{package_root}: packaged plugin root is missing")
@@ -77,9 +109,25 @@ def discover_packaged_validators(package_root: Path) -> list[str]:
         path.relative_to(package_root).as_posix()
         for path in package_root.rglob("*.py")
         if path.is_file()
-        and path.name.startswith(("check_", "validate_"))
+        and _is_candidate_name(path.name)
         and path.relative_to(package_root).as_posix() not in EXPECTED_SCANNER_EXCLUSIONS
     )
+
+
+def count_packaged_modules(package_root: Path) -> int:
+    """Every packaged `.py`, so the report can say what the predicate did NOT admit.
+
+    Without this the catalog's green is ambiguous between "every packaged validator
+    carries a decision" and "every packaged validator THE PREDICATE ADMITTED carries
+    a decision". Those are different claims, and only the second one is true.
+    """
+
+    # The SAME walk `discover_packaged_validators` uses, so the two arms of
+    # `uncovered_module_count` are a subtraction over one population rather than two.
+    # An earlier cut filtered `__pycache__` here and not there; that guard is inert in
+    # the source layout but reachable in the installed one, where the scanned root is
+    # a live plugin directory Python writes bytecode into.
+    return sum(1 for path in package_root.rglob("*.py") if path.is_file())
 
 
 def _required_text(value: Any, *, field: str, where: str) -> str:
@@ -183,7 +231,13 @@ def _validate_entry(
     if path in declared:
         raise CatalogError(f"{where}: duplicate validator path `{path}`")
     if path not in discovered:
-        raise CatalogError(f"{where}: `{path}` is not a packaged check_/validate_ script")
+        # Renders the LIVE predicate rather than a hardcoded `check_/validate_`. The
+        # message taught the prefix rule for as long as the prefix rule existed, and
+        # kept teaching it after the predicate became position-independent.
+        raise CatalogError(
+            f"{where}: `{path}` is not a packaged validator candidate "
+            f"(basename must contain one of {', '.join(CANDIDATE_TOKENS)})"
+        )
     consumer_facing = entry.get("consumer_facing")
     if type(consumer_facing) is not bool:
         raise CatalogError(f"{where} ({path}): `consumer_facing` must be an explicit boolean")
@@ -393,6 +447,7 @@ def validate_catalog(
 
     discovered = discover_packaged_validators(package_dir)
     discovered_set = set(discovered)
+    packaged_module_count = count_packaged_modules(package_dir)
     declared: dict[str, dict[str, Any]] = {}
     for index, entry in enumerate(entries, start=1):
         _validate_entry(
@@ -434,6 +489,23 @@ def validate_catalog(
         "package_root": package_rel,
         "packaged_validator_count": len(discovered),
         "decision_count": len(declared),
+        # WHAT THIS RUN DID NOT LOOK AT, as a number, in the gate's own output.
+        # `packaged_validator_count` counts what the predicate ADMITTED; on its own
+        # it reads as though the package were fully covered. A validator named with
+        # neither token -- `audit_*`, `guard_*`, a bare module name -- is outside
+        # this catalog entirely and no failure marks it. Naming the count is not a
+        # fix for that; it is the difference between a green that means "checked"
+        # and one that cannot tell "checked" from "never looked".
+        "candidate_predicate": list(EXPECTED_CANDIDATE_PATTERNS),
+        "packaged_module_count": packaged_module_count,
+        # The scanner exclusions are DECIDED, not unseen: they carry a token, the
+        # predicate admits them, and the catalog names each with a reason. Counting
+        # them as uncovered would put the one module that was most explicitly
+        # considered into the bucket labelled "never looked at".
+        "scanner_excluded_count": len(EXPECTED_SCANNER_EXCLUSIONS),
+        "uncovered_module_count": (
+            packaged_module_count - len(discovered) - len(EXPECTED_SCANNER_EXCLUSIONS)
+        ),
         "consumer_facing_count": len(consumer_paths),
         "excluded_count": len(declared) - len(consumer_paths),
         "consumer_facing_validators": consumer_paths,

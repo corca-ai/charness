@@ -453,10 +453,23 @@ def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> N
         "scripts/check_demo.py",
         "skills/public/achieve/scripts/check_goal_artifact.py",
         "plugins/charness/skills/achieve/scripts/check_goal_artifact.py",
+        # INFIX-named validators, which this list did not cover. The catalog's
+        # discovery predicate became position-independent on 2026-08-23 while this
+        # dispatcher kept its own positional copy of the rule -- so the one validator
+        # the widening exists to bring into scope was the one file whose edit did NOT
+        # fire this gate at commit time. A rule with two implementations drifts the
+        # moment one is repaired; the dispatcher now imports the checker's predicate.
+        "skills/public/issue/scripts/issue_validate_closeout_draft.py",
+        "plugins/charness/skills/issue/scripts/issue_validate_closeout_draft.py",
     ]
     for path in trigger_paths:
         assert "check-consumer-validator-catalog" in _labels([path]), path
     assert "check-consumer-validator-catalog" not in _labels(["docs/usage.md"])
+    # And the dispatcher's predicate IS the checker's, not a copy that can drift.
+    from scripts import check_consumer_validator_catalog as catalog_check
+    from scripts import staged_commit_gate_plan as gate_plan
+
+    assert gate_plan._is_catalog_candidate_name is catalog_check._is_candidate_name
 
 
 def test_quality_reference_catalog_parity_fires_for_quality_reference_surface() -> None:

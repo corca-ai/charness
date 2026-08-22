@@ -1,13 +1,22 @@
 # Consumer-facing packaged validators.
 #
-# Every check_/validate_ script under plugins/charness is represented below.
-# `consumer_facing: false` is an intentional exclusion, not an omission.
+# Every packaged module whose basename carries `check_` or `validate_` ANYWHERE is
+# represented below. `consumer_facing: false` is an intentional exclusion, not an
+# omission.
+#
+# The predicate is position-independent on purpose. The prefix-only form missed
+# `skills/issue/scripts/issue_validate_closeout_draft.py` -- a packaged validator the
+# issue-closeout floor invokes -- which then needed no decision and raised nothing.
+# The token pair is deliberately NOT widened: `audit`/`guard`/`lint`/`verify` each
+# look like the next reasonable entry and each would be a longer list rather than a
+# better rule. The checker reports `uncovered_module_count` instead, so this
+# catalog's green does not read as coverage it does not have.
 schema_version: 1
 catalog_id: consumer-validator-catalog
 package_root: plugins/charness
 candidate_patterns:
-  - '**/check_*.py'
-  - '**/validate_*.py'
+  - '**/*check_*.py'
+  - '**/*validate_*.py'
 scanner_exclusions:
   - path: scripts/check_consumer_validator_catalog.py
     reason: "the checker is the fixed source-side scanner and is not a product validator"
@@ -567,6 +576,10 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
+  - path: skills/issue/scripts/issue_validate_closeout_draft.py
+    consumer_facing: false
+    decision: exclude
+    reason: "Charness-internal issue-closeout draft validator invoked through issue_tool.py, not a consumer-authored artifact contract a consuming repo wires directly"
   - path: skills/issue/scripts/validate_proposal_fields.py
     consumer_facing: false
     decision: exclude

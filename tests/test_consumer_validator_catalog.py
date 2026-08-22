@@ -47,9 +47,11 @@ def _write_catalog(repo: Path, entries: list[dict[str, object]]) -> Path:
                 "schema_version: 1",
                 "catalog_id: consumer-validator-catalog",
                 "package_root: plugins/charness",
+                # Derived from the checker's own constant rather than restated, so a
+                # future predicate change cannot leave this fixture asserting the old
+                # scope while the tests it feeds still read as passing.
                 "candidate_patterns:",
-                "  - '**/check_*.py'",
-                "  - '**/validate_*.py'",
+                *[f"  - '{pattern}'" for pattern in catalog_check.EXPECTED_CANDIDATE_PATTERNS],
                 "scanner_exclusions:",
                 "  - path: scripts/check_consumer_validator_catalog.py",
                 "    reason: the checker is the fixed source-side scanner and is not a product validator",
@@ -87,12 +89,148 @@ def _write_catalog(repo: Path, entries: list[dict[str, object]]) -> Path:
     return path
 
 
+def test_the_discovery_predicate_is_positional_free_and_lost_nothing() -> None:
+    """Capability-equality replay for the prefix -> token-anywhere conversion.
+
+    The goal that made this change requires, before any enumeration becomes a
+    derived property, that every entry the OLD predicate admitted is replayed
+    against the new one and produces the same answer. Asserting equal capability is
+    what the design north star records being wrong four times in a row; this replays
+    it instead.
+
+    The one gained path is named, not tolerated as noise: it is the live miss that
+    motivated the change -- a packaged validator the issue-closeout floor invokes,
+    which the prefix-only predicate never discovered, so it needed no catalog
+    decision and nothing said so.
+    """
+    package_root = ROOT / "plugins" / "charness"
+    old_predicate = sorted(
+        path.relative_to(package_root).as_posix()
+        for path in package_root.rglob("*.py")
+        if path.is_file()
+        and path.name.startswith(("check_", "validate_"))
+        and path.relative_to(package_root).as_posix()
+        not in catalog_check.EXPECTED_SCANNER_EXCLUSIONS
+    )
+    new_predicate = catalog_check.discover_packaged_validators(package_root)
+
+    assert old_predicate, "replay is vacuous if the old predicate admitted nothing"
+    lost = set(old_predicate) - set(new_predicate)
+    assert not lost, f"capability regression: the new predicate stopped admitting {sorted(lost)}"
+    assert set(new_predicate) - set(old_predicate) == {
+        "skills/issue/scripts/issue_validate_closeout_draft.py"
+    }
+
+
+def test_an_infix_named_validator_is_refused_where_the_old_predicate_tolerated_it(
+    tmp_path: Path,
+) -> None:
+    """THE negative control for the conversion, and it did not exist until round 2.
+
+    Every other planted-defect fixture in this file uses a PREFIX-form name
+    (`check_demo.py`, `validate_missing.py`), which the old positional predicate
+    already refused — so none of them could tell the two predicates apart. This one
+    plants the defect the conversion exists to catch: an undeclared packaged module
+    whose candidate token sits in the MIDDLE of the basename. Before the change it was
+    silently outside the catalog; now it must be refused.
+
+    The old-predicate arm is asserted too, so this is a verdict FLIP and not merely a
+    refusal that might always have happened.
+    """
+    infix = "skills/demo/scripts/issue_validate_thing.py"
+    repo = _fixture_repo(tmp_path, candidates=("scripts/check_demo.py", infix))
+    _write_catalog(repo, [_entry("scripts/check_demo.py")])
+
+    # The predicate that shipped before this slice would not have admitted it at all.
+    assert not Path(infix).name.startswith(("check_", "validate_"))
+    # The one that ships now does, so the missing decision is refused.
+    assert catalog_check._is_candidate_name(Path(infix).name)
+    with pytest.raises(catalog_check.CatalogError) as raised:
+        catalog_check.validate_catalog(repo)
+    assert "missing an explicit catalog decision" in str(raised.value)
+    assert infix in str(raised.value)
+
+
+def test_the_scanner_exclusion_list_is_exactly_the_checker_itself(tmp_path: Path) -> None:
+    """The one detection the removed population pin uniquely owned, made explicit.
+
+    Adding a packaged validator to `EXPECTED_SCANNER_EXCLUSIONS` and deleting its
+    catalog entry is a complete, self-consistent change that SHRINKS the enforced
+    population — the defect class this gate exists for, and the only one the `== 134`
+    pin caught that the checker does not. Today a growing exclusion list happens to
+    redden the suite because the shared fixture hardcodes the single exclusion line;
+    that is incidental, and the obvious next tidy-up (deriving it, as
+    `candidate_patterns` now is) would silently remove the last guard. This asserts it
+    on purpose instead.
+    """
+    assert catalog_check.EXPECTED_SCANNER_EXCLUSIONS == (
+        "scripts/check_consumer_validator_catalog.py",
+    ), "the scanner may exclude only itself; a new exclusion shrinks the enforced set"
+
+
+def test_the_catalog_reports_what_its_predicate_did_not_admit() -> None:
+    """A green here must not read as coverage of the whole package.
+
+    `packaged_validator_count` counts what the predicate ADMITTED. On its own it
+    reads as though every packaged module were accounted for, and a validator named
+    with neither token is outside the catalog with no failure marking it. The gate
+    now says so in its own output, which is the difference between a green that
+    means "checked" and one that cannot tell "checked" from "never looked".
+    """
+    report = catalog_check.validate_catalog(ROOT)
+
+    assert report["packaged_module_count"] > report["packaged_validator_count"]
+    assert report["uncovered_module_count"] > 0, (
+        "a zero here would mean the predicate admits every packaged module; if that "
+        "ever becomes true this assertion should be re-derived, not deleted"
+    )
+    # NOT `report["candidate_predicate"] == list(EXPECTED_CANDIDATE_PATTERNS)`. That
+    # assertion was here and was removed as a tautology: the field is CONSTRUCTED from
+    # that constant, so it could not fail for any value of it — the same dead-assertion
+    # species this slice deleted one screen below, re-added by the same slice that
+    # deleted it. A fresh-eye round caught it.
+    #
+    # The real risk it was hiding: `CANDIDATE_TOKENS` decides the population and
+    # `EXPECTED_CANDIDATE_PATTERNS` is the operator-runnable glob the catalog restates,
+    # and nothing tied them together. Publishing `**/*check*.py` (no underscore) while
+    # enforcing `check_` would make the gate advertise a scope it does not apply. This
+    # asserts the tie in the direction that matters: every glob's token must be one the
+    # predicate actually enforces.
+    for pattern in report["candidate_predicate"]:
+        token = pattern.removeprefix("**/*").removesuffix("*.py")
+        assert token in catalog_check.CANDIDATE_TOKENS, (
+            f"published predicate {pattern!r} advertises token {token!r}, which "
+            f"`_is_candidate_name` does not enforce"
+        )
+        assert catalog_check._is_candidate_name(f"a{token}b.py"), (
+            f"a basename matching published glob {pattern!r} is not admitted"
+        )
+    assert len(report["candidate_predicate"]) == len(catalog_check.CANDIDATE_TOKENS)
+
+
 def test_live_catalog_has_a_decision_for_every_packaged_candidate() -> None:
     report = catalog_check.validate_catalog(ROOT)
 
     assert report["status"] == "pass"
-    assert report["packaged_validator_count"] == report["decision_count"]
-    assert report["packaged_validator_count"] == 134  # +1: check_artifact_referents.py, classified consumer_facing: false
+    # `packaged_validator_count == decision_count` was asserted here and REMOVED as a
+    # dead assertion: given `status == "pass"` it is a theorem, not a check. The
+    # checker raises when a declared path is not discovered, raises on
+    # `discovered - declared`, and rejects duplicate paths, so the two counts cannot
+    # differ. It read as the property line ("every packaged validator carries a
+    # decision") while being incapable of failing. The property is enforced upstream;
+    # `test_new_packaged_validator_cannot_stay_silent` below is the behavioural control
+    # that proves it, and it predates this slice — the replacement control this slice
+    # first added was a near-duplicate of it and was dropped.
+    #
+    # The absolute population pin (`== 134`) was also removed. Every INCOMPLETE change
+    # is already refused by the checker: added-without-decision, deleted-with-entry,
+    # truncated mirror. What the pin uniquely caught was a complete, self-consistent,
+    # correct change -- a chore, whose trailing comment was the receipt for the last
+    # time it was paid. Slice 2 of the gate-by-property goal classified it
+    # `recommend-removal` and the operator approved.
+    #
+    # This one STAYS, and is `contract` rather than chore: it pins the exported
+    # consumer surface every consuming repo must wire or explicitly opt out of.
     assert report["consumer_facing_count"] == 14
     assert "scripts/validate_handoff_artifact.py" in report["consumer_facing_validators"]
     assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
@@ -121,7 +259,10 @@ def test_catalog_rejects_a_non_packaged_or_duplicate_entry(tmp_path: Path) -> No
         catalog_check.validate_catalog(repo)
 
     _write_catalog(repo, [_entry("scripts/check_demo.py"), _entry("scripts/validate_missing.py")])
-    with pytest.raises(catalog_check.CatalogError, match="not a packaged check_/validate_ script"):
+    # Matches the predicate-agnostic wording. The old message hardcoded
+    # `check_/validate_` and kept teaching the prefix rule after the predicate stopped
+    # being positional; this test pinned that stale text in place.
+    with pytest.raises(catalog_check.CatalogError, match="not a packaged validator candidate"):
         catalog_check.validate_catalog(repo)
 
 
@@ -183,7 +324,13 @@ def test_consumer_entry_requires_public_contract_fields(
 def test_catalog_cannot_shrink_the_scanner_scope(tmp_path: Path) -> None:
     repo = _fixture_repo(tmp_path)
     path = _write_catalog(repo, [_entry("scripts/check_demo.py")])
-    text = path.read_text(encoding="utf-8").replace("'**/validate_*.py'", "'scripts/check_*.py'")
+    # Target the checker's own second pattern rather than a hardcoded literal, so
+    # this narrowing test cannot quietly stop narrowing anything when the predicate
+    # changes — which is exactly what it did when the predicate became positional.
+    text = path.read_text(encoding="utf-8").replace(
+        f"'{catalog_check.EXPECTED_CANDIDATE_PATTERNS[1]}'", "'scripts/check_*.py'"
+    )
+    assert text != path.read_text(encoding="utf-8"), "the narrowing edit did not apply"
     path.write_text(text, encoding="utf-8")
 
     with pytest.raises(catalog_check.CatalogError, match="fixed scanner scope"):
@@ -228,6 +375,13 @@ def test_cli_main_emits_a_structured_success_report(tmp_path: Path) -> None:
     assert result.returncode == 0
     assert "status: pass" in result.stdout
     assert result.stderr == ""
+    # THE WIRED PATH for the uncovered-set report. The other assertions on these
+    # fields call `validate_catalog` directly; this one goes through the CLI an
+    # operator actually invokes, because the goal that added them names #586 -- a
+    # check that passes its own direct-call test while never firing on the wired
+    # path -- as a constraint on its own repairs.
+    assert "uncovered_module_count:" in result.stdout
+    assert "candidate_predicate:" in result.stdout
 
 
 def test_cli_main_reports_catalog_failure_without_traceback(tmp_path: Path) -> None:

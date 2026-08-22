@@ -9,11 +9,59 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: slice 2 complete — all seven classified, first cut falsified by
-  two bounded reviewers and rewritten, plan redirect queued for the operator.
-  Slice 1 is complete (`3a5da4a59` plus round-2 repairs at `0552d40b1`); its
-  two-round cap is consumed and those repairs are recorded as
-  accepted-unreviewed.
+- Current slice: slice 3 complete. Slices 1 and 2 are complete (`3a5da4a59`,
+  `0552d40b1`, `332077310`). Slice 3's two-round cap is consumed; its round-2
+  repairs are recorded as accepted-unreviewed.
+- Next action: slice 4 (make the remaining surfaces name their uncovered set),
+  plus two open operator decisions — whether the approval covered EXECUTING a
+  `recommend-removal`, and the standing CI re-verification item.
+- **Standing correction carried out of slice 3: `## User Acceptance` bullet 3 is
+  OPEN.** No `derive` has landed in this goal. Do not read slice 3 as having
+  discharged it.
+- Slice 3 objective and expected evidence, stated before the work: replace the
+  consumer-validator catalog's POSITIONAL discovery predicate with a structural
+  one, and make the catalog report what its predicate did not admit.
+  - Measured first, before designing: 833 packaged `.py`; 135 match the
+    `check_*`/`validate_*` PREFIX; 377 carry a `__main__` guard. So the
+    reviewer-proposed property "packaged Python with a validator entry point"
+    does NOT separate the population — it would nearly triple the decision count.
+    Rejected on that measurement rather than on taste.
+  - The defect is POSITIONAL, not the token set: matching the same two tokens
+    ANYWHERE in the basename instead of only at the front adds exactly ONE
+    candidate, and it is the live miss
+    (`skills/issue/scripts/issue_validate_closeout_draft.py`). This is the same
+    shape as the frozen `bar-recorded-as-prose` lesson: prefer a structural,
+    positional property over a longer token list.
+  - Correction, caught by the gate itself during implementation: the
+    reconnaissance above was measured with the regex `(check|validate)` while the
+    predicate uses the tokens `check_`/`validate_`. Under the implemented
+    predicate `scripts/worktree_doctor_checks.py` ("checks", no underscore) is NOT
+    a candidate, so the delta is one file rather than two. The catalog header
+    check refused the entry I had added for it. Recorded because measuring with a
+    looser pattern than the one being shipped is exactly how a scope claim drifts
+    from the code that implements it.
+  - What this deliberately does NOT solve, and why the second half exists: a
+    validator named with none of these tokens still escapes. Measured exposure if
+    the token list were widened instead — `audit` 11, `guard` 9, `lint` 4,
+    `verify` 3, `assert` 1, `enforce` 1. Growing the list is the disease. So the
+    catalog will instead REPORT its predicate and the count it did not admit, and
+    a green stops meaning "everything was checked".
+  - Expected evidence: a capability-equality replay proving every currently
+    discovered path is still discovered; a negative control; a wired-path test;
+    and the uncovered count present in the report.
+  - **Public-skill validation decision (recorded so the closeout ack is
+    grounded, not waved through).** The slice edits
+    `skills/public/quality/references/consumer-validator-catalog.yaml`, a
+    prompt-affecting surface of the `quality` skill, so `run_slice_closeout.py`
+    blocked for a validation review. Decision: **no dogfood freeze and no
+    Cautilus run.** Evidence — the diff adds exactly one entry, and it is
+    `consumer_facing: false`; no `consumer_facing: true` entry is touched; the
+    consumer-facing set stays at 14 with the same ids and paths. The `quality`
+    skill's consumer contract is therefore unchanged. What changed is an INTERNAL
+    discovery predicate plus three additive report fields, and the checker itself
+    is a declared scanner exclusion rather than a shipped consumer validator.
+    Cautilus stays unrun per repo policy (eval-only, ask-before-run); this slice
+    makes no live-behaviour claim that would need it.
 - Current slice intent: both slices 1 and 2 are discharged. Slice 1 made an
   unmeasured mutation run say so on all three routes into that state and repaired
   the red baseline's cause; slice 2 produced the disposition record and had its
@@ -184,7 +232,14 @@ an operator call.
   list; make the gate name its uncovered set, as a number, in its OWN output, so
   its green stops meaning "checked".
 - `recommend-removal` — a P1 reversible-surface gate judgment could carry.
-  Recorded to `## Operator Decision Queue`; not executed here.
+  Recorded to `## Operator Decision Queue`; not executed here **unless the
+  operator explicitly approves that instance, which must then be recorded as an
+  exception with the approval text quoted.** The escape hatch is written down
+  because slice 3 used one before it existed: it removed the
+  `packaged_validator_count == 134` pin, and a round-2 reviewer correctly charged
+  that against this rule and against the matching Non-Goal. The one contested
+  instance is queued in `## Operator Decision Queue`; a reader should treat an
+  unrecorded execution as a violation, not as precedent.
 
 ### Constraints on the conversions
 
@@ -248,7 +303,14 @@ an operator call.
   which were changed.
 - At least one enumeration is converted to a derived property, with its
   capability-equality replay, its negative control, and a test through the wired
-  surface.
+  surface. **STATUS: OPEN. Slice 3 did not discharge this and must not be read as
+  having done so.** Slice 3 dropped a positional constraint from an enumeration
+  over an unchanged token pair; no property replaced a list. A round-2 reviewer
+  named the overclaim and it is adopted here rather than argued with. Slice 3's
+  real contribution is a bug fix (a live validator was outside the catalog) plus
+  the `declare-uncovered` half. Whether any of the seven admits a genuine
+  `derive` is now itself open — row 6 is the only one that already did, and it
+  was built that way before this goal existed.
 - Every enumeration left in place is either fail-closed when its list falls
   behind, or names in its own output what it is not covering — so a green from it
   is no longer ambiguous between "checked" and "never looked".
@@ -299,7 +361,7 @@ an operator call.
 | --- | --- | --- | --- | --- |
 | 1 | Make the mutation harness distinguish unmeasured from passed, and reproduce the sampler failure locally | Every other proof stands on it, and it has produced no verdict since 2026-08-19 | A local run naming the failing/slow phase; a harness change so a skipped `Run mutation` reports unmeasured coverage rather than reading as a step failure; a negative control; two bounded rounds | done — `3a5da4a59` plus round-2 repairs; evidence in `## Slice Log` |
 | 2 | Classify all seven enumerations with the disposition taxonomy | Converting before classifying is how a `contract` list gets destroyed; P3's exception is real | A per-enumeration record: file and line, current list, the property it approximates or the observable contract it IS, disposition, reason | done — record in `## Enumeration Dispositions`; first cut falsified by two reviewers and rewritten; plan redirect queued for the operator |
-| 3 | Convert the `derive` set (expected: the population count pin and one allowlist) | Both have a stated property their enumeration only approximates | The property replacing the list; capability-equality replay over every current entry; negative control; wired-path test; two bounded rounds | not started |
+| 3 | Convert the `derive` set — target redirected by slice 2 and approved | Slice 2 showed the original two targets had no derivable property; the catalog's scan predicate had a live miss | Predicate widened, live miss brought into scope, `uncovered_module_count` published, capability replay + four negative controls + wired-path test, two bounded rounds | done — **but NOT a `derive`**; see `## User Acceptance`, which stays OPEN |
 | 4 | Give the `fail-closed` and `declare-uncovered` remainder their refusal or their uncovered-set report | A green that cannot distinguish checked from unlooked is the root defect | Each remaining gate either refuses when its population moves, or reports its uncovered set as a number in its own output; a staleness-detection test each | not started |
 
 ## Enumeration Dispositions
@@ -359,7 +421,7 @@ is now an ADDITIONAL finding, not a replacement for the thesis.
 | # | Enumeration | Where | What it does TODAY | Disposition (corrected) | Reason |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Skill-ownership allowlist | `scripts/check_skill_ownership_overlap.py` `scan()`, list at `scripts/check_skill_ownership_overlap.allowlist.txt` (31 entries) | An unlisted overlap becomes a finding; a waiver nobody consumed is a stale advisory. But the SCAN reads only `SKILL.md` plus a non-recursive `iterdir()` over `scripts/`+`references/`, `.py`/`.md` only | `fail-closed` (list) + **`declare-uncovered`** (scan) | The list direction is right and `derive` is correctly rejected: the derivable population IS the finding set, so an allowlist derived from it would make the gate a permanent no-op. But the scan is a silent enumeration with a live miss, and no run ever emits a scanned-file count or the skipped suffix/depth set. The scope caveat exists only inside the stale-waiver advisory, which is emitted CONDITIONALLY — a clean run says nothing about partial coverage. Owes: a number. |
-| 2 | Consumer-validator catalog | `discover_packaged_validators` at `scripts/check_consumer_validator_catalog.py:71-82`; catalog at `skills/public/quality/references/consumer-validator-catalog.yaml` | Raises on any discovered validator without a decision, and on any declared path not discovered — but `discovered` admits a file only if its basename starts with `check_` or `validate_` | **`derive`** — and this is the goal's best real conversion target | The first cut said "the population is derived by discovery, a new validator cannot slip in undeclared." That is exactly wrong: the population is derived from a TWO-ITEM FILENAME-PREFIX enumeration, and one has already slipped in. The property is "packaged Python with a validator entry point", not "basename starts with one of two strings". This is the one surface where a real property replaces a real list. |
+| 2 | Consumer-validator catalog | `discover_packaged_validators` at `scripts/check_consumer_validator_catalog.py`; catalog at `skills/public/quality/references/consumer-validator-catalog.yaml` | Raises on any discovered validator without a decision, and on any declared path not discovered — but `discovered` admits a file only by a two-token basename test | **`declare-uncovered`** + a scope widening. **NOT `derive`** — corrected after slice 3 | Classified `derive` and slice 3 attempted it; a round-2 reviewer showed no property landed. What shipped drops a POSITIONAL constraint (`startswith` → `token in name`) over the SAME two tokens: `CANDIDATE_TOKENS` is still a two-item list and the shipped comment says so outright. Nothing is derived from the tree. The candidate property that would have been — "packaged Python with a validator entry point" — was measured (377 of 833 carry a `__main__` guard) and correctly rejected as not separating the population. So this surface's honest disposition is the one slice 4 was going to give it: the widening is a real bug fix, and `uncovered_module_count` is the real remedy. |
 | 3 | Validator-count pin | `tests/test_consumer_validator_catalog.py:94`, `:95`, `:96` | Three assertions with three different answers | **Split three ways** — see below | The first cut treated these as one row and got all three wrong. |
 | 3a | — line 94 | `packaged_validator_count == decision_count` | Cannot fail | **dead assertion — remove or annotate** | Verified: line 186 raises when a declared path is not discovered, line 406 raises on `discovered - declared`, line 184 rejects duplicates. So equality is a THEOREM given `status == "pass"`. Confirmed live (134 == 134). The goal's own prose called this "the assertion above it already states the real property" — the property is stated and enforced by the production gate; this restatement can never bite. A test assertion that cannot fail is this goal's own defect class, inside the test it calls its clearest specimen. |
 | 3b | — line 95 | `packaged_validator_count == 134` | Fires only on a complete, self-consistent, correct change | **`recommend-removal`** | Every INCOMPLETE change is already refused by production: added-without-decision (line 406), deleted-with-entry-kept (line 186), truncated mirror (line 186). What is left is exactly "someone did the work correctly", and the comment on the line is the receipt for the last time the chore was paid. Classifying it `fail-closed` preserved the very chore the record had just identified as the measured cost. |
@@ -480,6 +542,32 @@ Seeded at activation:
 - Unblock action: approve the redirect, or direct slices 3 and 4 to run as
   originally written
 - Revisit trigger: before slice 3 starts
+- **Resolved 2026-08-23: operator replied `승인` (approved).**
+
+- Decision: confirm that the approval above covered EXECUTING a
+  `recommend-removal`, or direct the pin restored
+- Owner: operator
+- Why deferred: the removal is already made and is cheap to reverse either way;
+  no further work depends on which answer comes back.
+- The exact facts, so the answer is not made on my summary. The taxonomy defined
+  `recommend-removal` as "recorded to the queue; not executed here", and
+  `## Non-Goals` repeated it as "does not execute it". Slice 3 removed the
+  `packaged_validator_count == 134` assertion. The approved text said the
+  redirect "splits the count pin into a removal plus a `contract` plus a dead
+  assertion" — which names a removal as the outcome — but the queue entry's own
+  Unblock action asked a SCOPE question ("approve the redirect, or direct slices
+  3 and 4 to run as originally written"), not for permission to delete an
+  assertion, and no queue entry for the pin itself was ever written. A round-2
+  reviewer charged this as the same shape already caught once in this goal: a
+  decision treated as settled whose record does not carry it.
+- What the removal costs if it was wrong: the pin's one unique detection was a
+  scanner-exclusion list growing while a catalog entry was deleted. That is now
+  held on purpose by
+  `test_the_scanner_exclusion_list_is_exactly_the_checker_itself`, so the
+  capability is not lost either way; the open question is procedural.
+- Unblock action: confirm the approval covered execution, or say "restore the
+  pin" and it goes back with a proper queue entry
+- Revisit trigger: before this goal reaches `complete`
 
 ## Coordination Cues
 
@@ -594,6 +682,20 @@ applies.
 - Critique: Two bounded read-only reviewers, one told to falsify the headline and one to attack each disposition. Both falsified it, independently and by different routes. The headline `ZERO of the seven silently under-cover` is withdrawn. Corrected finding: all seven fail closed over the population their SCAN admits, and four reach their list through a discovery predicate that is itself a silent enumeration naming no unscanned set. Three live instances in the tree. Further folded: line 94 is a dead assertion that cannot fail; line 95 fires only on correct work and is recommend-removal; line 96 is contract; dup-review.json is declare-uncovered because of an explicit fail-open degrade branch; the link-only ratchet needs a sixth taxonomy category because it fails open in the slack direction; and ADVISORY_PREFIXES is constitutive rather than an optimisation. A reviewer also caught a record blocker: the section claimed a decision was queued while the queue held nothing of the kind.
 - Off-goal findings: The three live instances are defects in the tree, not just classification inputs: an unallowlisted cross-namespace mention, an undeclared packaged validator, and a duplicate gate that exits 0 when its overlay is absent. None is repaired in this slice; each belongs to the redirected slice 3 or 4 and is queued with them.
 - Lessons carried forward: I graded seven surfaces on their own self-description. This repo's comments are unusually rich and self-critical, so reading them feels like adversarial review when it is not — and the two facts that falsified my headline, an `if degraded:` early return and a non-recursive iterdir, are exactly the two things the self-descriptions do not mention. The slice's own method note said to read the tree rather than the retro's summary; I applied it against the retro and never against the surfaces. The structural tell was available at the time: the strongest sentence in the section was the only claim in it with no file and line behind it, and it was the sentence that dissolved the remaining work.
+- Metrics:
+
+### Slice 4: Slice 3 — widen the catalog's discovery predicate, and stop calling it a derive
+
+- Objective: Repair the consumer-validator catalog's positional discovery predicate, which silently excluded a packaged operator-facing validator, and make the gate report what its predicate does not admit.
+- Why this approach: Slice 2 found the enumeration that rots is the SCAN, not the list. This is the scan with a live miss and the cheapest honest repair.
+- Commits: committed with this entry; follows 332077310
+- What changed: scripts/check_consumer_validator_catalog.py, scripts/staged_commit_gate_plan.py, skills/public/quality/references/consumer-validator-catalog.yaml, docs/conventions/validator-timing-layers.md, tests/test_consumer_validator_catalog.py, tests/quality_gates/test_staged_commit_gate_plan.py, charness-artifacts/quality/dup-review.json, and the generated plugins/charness mirror.
+- Alternatives rejected: Rejected the reviewer-proposed property `packaged Python with a validator entry point` ON MEASUREMENT, not taste: 377 of 833 packaged modules carry a `__main__` guard, so it would nearly triple the decision count without separating the population. Rejected widening the token list, which is the disease this goal names -- measured exposure if it were widened: audit 11, guard 9, lint 4, verify 3. Rejected keeping the population pin's chore in exchange for its one real detection; that detection is now held on purpose by a positive test on the scanner-exclusion list.
+- Targeted verification: Capability-equality replay committed as a test: zero paths lost, exactly one gained, and it is the live miss. Four negative controls, each run by planting the defect and observing the flip, then restoring: reverting the predicate (3 tests fail), zeroing the uncovered count (1 fails), the INFIX-named undeclared validator (the control that actually distinguishes the two predicates -- added only after round 2 showed every existing fixture used a prefix-form name the OLD predicate already caught), and reverting the dispatcher to its own positional copy. Wired-path assertions on the CLI. Standing suite 11182 passed / 0 failed. Slice closeout green. NOT claimed: any CI behaviour.
+- Test duplication pressure: One new duplicate family, classified intentional: a one-line `sum(1 for path in <root>.rglob(...) if path.is_file())` counting idiom matched across three unrelated modules. Shape, not shared logic.
+- Critique: Two bounded read-only reviewers, and both landed findings that changed the slice. The load-bearing one: the commit-time dispatcher in staged_commit_gate_plan.py kept its OWN positional copy of the predicate, so the single validator this widening exists to bring into scope was the single file whose edit did not fire the catalog gate at commit time -- #586's class, produced by the repair itself. The dispatcher now imports the checker's predicate and a test pins the identity. Also folded: a shipped docstring still carried a retracted measurement (137 / `the two added`) that the goal artifact had already corrected, exported to consumers through the mirror; `candidate_predicate == list(EXPECTED_CANDIDATE_PATTERNS)` was a tautology -- this slice deleted one dead assertion and added another, replaced now by an executable tie between the token constant and the published globs; `uncovered_module_count` counted the deliberate scanner exclusion as unseen; `count_packaged_modules` filtered `__pycache__` where discovery did not, so the subtraction spanned two populations; the refusal message still taught the prefix rule; and one added test was a near-duplicate of an existing control and was dropped.
+- Off-goal findings: The catalog's own operator-facing refusal text and the timing-layer doc both stated the prefix rule and were corrected here. The installed-layout residual (a consumer invoking the packaged checker from their repo root would scan their own tree, and the widened predicate admits strictly more of it) is pre-existing and unchanged by this slice; recorded, not repaired.
+- Lessons carried forward: Two, both about claiming more than was done. First: NO DERIVE LANDED. Dropping a positional constraint from an enumeration over an unchanged token pair is a bug fix plus a declare-uncovered, and calling it a conversion overclaims the goal's own acceptance criterion -- which is now recorded OPEN rather than discharged. Second: a negative control must plant the defect the change is ABOUT. Every planted-defect fixture in the file used a prefix-form name that the old predicate already refused, so none of them could tell the two predicates apart; the control that could was written only after a reviewer pointed at the gap.
 - Metrics:
 
 ## Context Sources

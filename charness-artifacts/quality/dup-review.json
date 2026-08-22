@@ -394,6 +394,13 @@
     },
     {
       "class": "intentional",
+      "id": "12b867b5389618ac",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The repo-standard standalone-script bootstrap preamble (`REPO_ROOT = Path(__file__).resolve().parent.parent`, sys.path insert, then a `# noqa: E402` import), shared here between check_js_mutation_score.py and the untouched changed_line_gate_cli.py. This preamble is what makes these commands directly executable in both the source and collapsed-plugin layouts; extracting it is impossible by construction, since its whole job is to run BEFORE the repo package is importable. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
+    },
+    {
+      "class": "intentional",
       "id": "12fd6c4518a06d6c",
       "note": "a multi-line `print(f\"...\" f\"...\")` operator-message block, shared by seven untouched sites (slice_closeout_advisories x4, check_references_link_inventory, check_test_repo_copy_invariants) that validate_inventory_consumption's extracted exemption helper joined on 2026-08-01. The duplication IS the message-emitting shape this repo uses everywhere; the content of every member differs entirely. Extracting it would mean a print wrapper, which is what print already is. Pre-existing family, new membership from a helper extraction that the complexity gate required.",
       "reviewed_at": "2026-08-01",
@@ -1444,6 +1451,13 @@
     },
     {
       "class": "intentional",
+      "id": "457150ad017ba719",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The two mutation engines' metrics functions -- check_mutation_score.mutation_metrics over cosmic-ray dump records, check_js_mutation_score.summarize_report over the StrykerJS JSON. They are parallel because the DOMAIN is parallel (count outcomes, derive killed/survived/reachable, score), while the inputs share no schema: one walks [work_item, result] pairs with worker_outcome/test_outcome, the other walks files[].mutants[] with a status string. The one rule they genuinely share -- zero denominator means UNMEASURED -- was extracted to mutation_baseline_abort_lib.verdict_token and is now called by both. What remains is shape, and collapsing it would force one engine's outcome vocabulary onto the other. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
+    },
+    {
+      "class": "intentional",
       "id": "45be1941acd3d97e",
       "note": "per-script import/alias preamble (scripts/run_evals.py, check_staged_mirror_drift.py, eval_cautilus_chatbot_compare.py); same class the existing 02923daf7e01c82e entry accepts, surfaced here only because removing an unused `import os` shifted run_evals' preamble into alignment with the others. Extracting a shared preamble replaces explicit imports with indirection and is the nose advisory's own named blind spot.",
       "reviewed_at": "2026-07-26",
@@ -1994,6 +2008,13 @@
       "note": "short value-normalization helper shape shared with a separate inventory library; the quality adapter's semantic conflict vocabulary is intentionally local to its lifecycle boundary.",
       "reviewed_at": "2026-08-05",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5b909fd675e56d48",
+      "reviewed_at": "2026-08-23",
+      "surface": "code",
+      "note": "A ONE-LINE counting idiom -- `return sum(1 for path in <root>.rglob(...) if path.is_file())` -- matched across three unrelated modules: the consumer-validator catalog's packaged-module denominator, a quality-artifact validator, and a skill-ergonomics helper. Different roots, different globs, different questions; the shared content is the generator-expression shape, not a rule. Extracting a helper over `count files under a directory` would couple three surfaces that have nothing to say to each other, to save one line each."
     },
     {
       "class": "intentional",
@@ -3173,13 +3194,6 @@
     },
     {
       "class": "intentional",
-      "id": "457150ad017ba719",
-      "reviewed_at": "2026-08-22",
-      "surface": "code",
-      "note": "The two mutation engines' metrics functions -- check_mutation_score.mutation_metrics over cosmic-ray dump records, check_js_mutation_score.summarize_report over the StrykerJS JSON. They are parallel because the DOMAIN is parallel (count outcomes, derive killed/survived/reachable, score), while the inputs share no schema: one walks [work_item, result] pairs with worker_outcome/test_outcome, the other walks files[].mutants[] with a status string. The one rule they genuinely share -- zero denominator means UNMEASURED -- was extracted to mutation_baseline_abort_lib.verdict_token and is now called by both. What remains is shape, and collapsing it would force one engine's outcome vocabulary onto the other. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
-    },
-    {
-      "class": "intentional",
       "id": "907963a5caacf849",
       "note": "two-line `if <predicate>: return \"<literal>\"` classifier arm, shared lexically by four unrelated owners (seed-budget scan classification, host log probe verdicts, lint-ignore inventory, gather record rendering). Each arm returns its own domain's string constant and shares no behavior; extracting it would replace four readable guard clauses with an indirection that still has to spell out both the predicate and the literal",
       "reviewed_at": "2026-07-26",
@@ -3408,13 +3422,6 @@
       "note": "Idiom-sized two-line `if <value> is None: return None` fail-soft guard clause. 31 members across 20+ independently-owned modules (adapter_lib, quality_policy_defaults, adapter_validators, resolve_adapter, release_backend, surfaces_lib, ...); exactly ONE member is in the current diff (audit_disposition_corpus.normalized_status), every other is untouched. Same class already accepted for other guard-clause shapes in this file. A shared helper for a two-line None-guard would couple unrelated subsystems through a trivial utility and obscure which module owns the None contract; the tokens are identical only because Python spells this idiom one way.",
       "reviewed_at": "2026-08-03",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "ddb724d8f9188c64",
-      "reviewed_at": "2026-08-22",
-      "surface": "code",
-      "note": "The two import lists from scripts.mutation_baseline_abort_lib, which became identical BECAUSE the shared verdict rule was given one owner and both engines now import it. De-duplicating this family would mean un-sharing the rule -- the detector is reporting the fix as the defect. Import statements are the declaration of a dependency, not a copy of logic. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
     },
     {
       "class": "intentional",
@@ -4314,13 +4321,6 @@
     },
     {
       "class": "intentional",
-      "id": "12b867b5389618ac",
-      "reviewed_at": "2026-08-22",
-      "surface": "code",
-      "note": "The repo-standard standalone-script bootstrap preamble (`REPO_ROOT = Path(__file__).resolve().parent.parent`, sys.path insert, then a `# noqa: E402` import), shared here between check_js_mutation_score.py and the untouched changed_line_gate_cli.py. This preamble is what makes these commands directly executable in both the source and collapsed-plugin layouts; extracting it is impossible by construction, since its whole job is to run BEFORE the repo package is importable. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
-    },
-    {
-      "class": "intentional",
       "id": "ce235b3035dc420f",
       "note": "The sibling-module loader idiom -- `spec.loader.exec_module(module); return module` followed by the `_load_*` call -- shared by skills/public/quality/scripts/nose_report_lib.py and skills/public/release/scripts/publish_release_resume.py. Both members are untouched by this diff; it surfaced as new because deleting inventory_ubiquitous_language.py from the corpus re-formed the family. Not extractable, and this is the boundary the harness keeps deliberately: a portable skill package must not import a repo-level `scripts/` helper, so the loader that lets a skill script reach its own sibling has to live inside each package. A shared loader would be exactly the repo-only import the idiom exists to avoid. I could NOT identify a named predecessor entry for this family; what is established is that no member changed and that the only code deletion in the diff is the ubiquitous-language script.",
       "reviewed_at": "2026-08-11",
@@ -4682,6 +4682,13 @@
       "note": "the standard try/except ImportError sibling-module bootstrap block, shared by scripts/host_hook_entry_identity.py and scripts/host_hook_skill_anchor_guard.py. This is the repo's portability idiom for a script that must import a sibling both as a package member and when invoked as a bare file from an installed copy; it cannot be centralized, because the helper that centralized it would need the very import it is bootstrapping. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
       "reviewed_at": "2026-07-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ddb724d8f9188c64",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The two import lists from scripts.mutation_baseline_abort_lib, which became identical BECAUSE the shared verdict rule was given one owner and both engines now import it. De-duplicating this family would mean un-sharing the rule -- the detector is reporting the fix as the defect. Import statements are the declaration of a dependency, not a copy of logic. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
     },
     {
       "class": "intentional",
