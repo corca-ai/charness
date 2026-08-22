@@ -241,6 +241,32 @@ def claims_review_record(
     return record
 
 
+def _derive_review_scope(repo: Path, prepared_commit: str) -> dict[str, list[str]]:
+    """Partition the real prepared-commit delta, the way a reviewer would."""
+    import sys as _sys
+    release_scripts = REPO_ROOT / "skills" / "public" / "release" / "scripts"
+    if str(release_scripts) not in _sys.path:
+        _sys.path.insert(0, str(release_scripts))
+    from claims_review_scope import partition  # noqa: PLC0415
+
+    described = subprocess.run(
+        ["git", "describe", "--tags", "--abbrev=0", f"{prepared_commit}^"],
+        cwd=repo, capture_output=True, text=True,
+    )
+    base = described.stdout.strip()
+    # No previous tag is the NORMAL case in a seeded harness repo. Fall back to
+    # the prepared commit's own diff, which is still a real delta -- returning
+    # empty lists produced a record the validator then refused for having "a
+    # pass over no blocking surface", i.e. the fixture failing its own floor.
+    span = f"{base}..{prepared_commit}" if (described.returncode == 0 and base) else prepared_commit
+    listed = subprocess.run(
+        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", span],
+        cwd=repo, capture_output=True, text=True,
+    )
+    split = partition([line for line in listed.stdout.splitlines() if line])
+    return {"blocking_paths": split["blocking"], "advisory_paths": split["advisory"]}
+
+
 def commit_claims_review(
     repo: Path,
     *,
@@ -261,6 +287,12 @@ def commit_claims_review(
         target_version=target_version, tag_name=tag_name, narrative_path=narrative_path,
         verdict=verdict, kind=kind, release_record_path=release_record_path,
     )
+    if verdict == "pass":
+        # DERIVE the scope from the repo, exactly as a real reviewer must: the
+        # record is the prepared commit's child, so the delta is knowable when
+        # it is written. A hardcoded scope here would make the fixture pass a
+        # completeness check that no real record could satisfy.
+        record["review_scope"] = _derive_review_scope(repo, prepared_commit)
     paths = [review_path]
     (repo / review_path).parent.mkdir(parents=True, exist_ok=True)
     (repo / review_path).write_text(json.dumps(record) + "\n", encoding="utf-8")

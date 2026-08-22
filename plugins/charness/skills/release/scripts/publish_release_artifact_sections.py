@@ -72,6 +72,46 @@ def flatten_signal(signal: object) -> str:
     return " ".join(str(signal).split())
 
 
+def _scope_lines(claims_review: dict[str, Any]) -> list[str]:
+    """What the `pass` covered, and what it saw and did NOT block on.
+
+    A record reading `Claims review verdict: pass` with nothing else hides the
+    whole point of the scope split. Narrative defects are published as
+    known-inaccurate rather than repaired into a new prepared commit -- so the
+    record has to NAME them, or "known-inaccurate" is known to nobody. A
+    fresh-eye round found these fields validated and then dropped before this
+    renderer, which made the design intent untrue at the one surface outside
+    readers get.
+    """
+    scope = claims_review.get("review_scope") or {}
+    blocking = scope.get("blocking_paths") or []
+    advisory = scope.get("advisory_paths") or []
+    findings = claims_review.get("advisory_findings") or []
+    if not scope:
+        return []
+    lines = [
+        f"- Verdict scope: {len(blocking)} blocking path(s) gated this tag; "
+        f"{len(advisory)} advisory path(s) (session narrative) were reviewed but did not.",
+    ]
+    if not findings:
+        # Stated, not omitted. An absent line and "none found" read identically,
+        # and the split is only honest if "nobody looked" is distinguishable.
+        lines.append("- Advisory findings: none recorded by this review.")
+        return lines
+    lines.append(
+        f"- Advisory findings: {len(findings)} defect(s) recorded in the advisory scope and "
+        "SHIPPED KNOWN-INACCURATE rather than repaired before this tag:"
+    )
+    for finding in findings:
+        if isinstance(finding, dict):
+            where = finding.get("file") or "unspecified"
+            what = finding.get("summary") or "no summary recorded"
+            lines.append(f"  - `{where}`: {what}")
+        else:
+            lines.append(f"  - {finding}")
+    return lines
+
+
 def claims_review_lines(claims_review: dict[str, Any] | None, *, prepared: bool = False) -> list[str]:
     """The claims-review verdict, in the document readers outside the session actually get.
 
@@ -115,6 +155,7 @@ def claims_review_lines(claims_review: dict[str, Any] | None, *, prepared: bool 
         lines.append(f"- Observer distinctness: {_named(distinctness.get('kind'))}.")
         lines.append(f"- Recorded signal: {signal}")
         lines.append(f"- Review narrative: {_named(distinctness.get('review_artifact'))}.")
+        lines.extend(_scope_lines(claims_review))
         return lines
     # Not `- verdict: unproven.` and nothing else. A reader scanning headings sees a
     # "Claims Review" section and infers a review happened; the token alone reproduces, in a

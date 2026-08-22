@@ -43,6 +43,10 @@ publish with the review unproven rather than substituting a same-agent reread.
 
 The claims round's record is a `charness.release.claims-review.v3` JSON file
 
+under `charness-artifacts/release-review/`, committed as the direct child of the
+marked prepared release commit, together with the review narrative it names and
+nothing else.
+
 A `pass` must additionally declare `review_scope` (`blocking_paths` /
 `advisory_paths`) and `advisory_findings`. The split exists because a claims
 round that reviews the session narrative shipping inside its own bundle cannot
@@ -53,9 +57,6 @@ reported, published as known-inaccurate, and repaired on a later pass. The
 required fields are what stop the split becoming a way to launder findings —
 `advisory_findings: []` is a claim that the advisory scope was clean, not
 permission to skip it.
-under `charness-artifacts/release-review/`, committed as the direct child of the
-marked prepared release commit, together with the review narrative it names and
-nothing else.
 
 Distinctness is a RECORDED observable, in the same shape
 `publication-boundary.md` already requires of the other release verdict — each
@@ -98,11 +99,16 @@ declares no `output_dir` at all, or whose release record is not readable at the
 derived path — including one whose release output directory is untracked — is
 refused rather than published through a lane that validates no claims review.
 
-An already-committed `v1` record is repaired by AMENDING that commit in place; a
+**Every checked-in example under `charness-artifacts/release-review/` predates
+`v3`.** Copying one as a template produces a record the floor refuses AFTER the
+prepared commit exists, where the only repair is an in-place amend. Add
+`review_scope` and `advisory_findings` before committing the evidence child.
+
+An already-committed pre-`v3` record is repaired by AMENDING that commit in place; a
 follow-on commit is not the direct child of the prepared record and is refused,
 and an already-pushed record needs a force-push to the release branch.
 
-The previous `v1` shape is refused by name. Its only distinctness test was that
+Every pre-`v3` shape is refused by name -- `v1` and `v2` alike. Its only distinctness test was that
 `preparer_context` and `reviewer_context` were unequal strings, so one agent
 writing two different strings satisfied the distinct-observer floor completely,
 and a spawn-blocked session had `verdict: pass` as its only path forward.

@@ -101,6 +101,15 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
             "path": state["claims_review"]["path"],
             "verdict": state["claims_review"]["verdict"],
             "observer_distinctness": state["claims_review"]["observer_distinctness"],
+            # Carried into the RECORD, not just validated. The scope split
+            # publishes narrative defects as known-inaccurate instead of
+            # repairing them into a new prepared commit -- so a record that says
+            # `verdict: pass` and nothing else hides exactly what the split
+            # waived. A fresh-eye round found these validated and then dropped
+            # here, which made the "published as known-inaccurate" design intent
+            # untrue at the one surface outside readers actually get.
+            "review_scope": state["claims_review"].get("review_scope"),
+            "advisory_findings": state["claims_review"].get("advisory_findings") or [],
         }
     if state["phase"] in POST_PUBLICATION:
         resume_closeout.resume_post_publication_closeout(repo_root, args=args, plan=plan, adapter_data=adapter_data,

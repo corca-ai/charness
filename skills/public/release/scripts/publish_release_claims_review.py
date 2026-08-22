@@ -27,7 +27,10 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from claims_review_scope import assert_scope_is_declared  # noqa: E402
+from claims_review_scope import (  # noqa: E402
+    assert_scope_is_declared,
+    assert_scope_matches_release_delta,
+)
 
 REVIEW_ROOT = "charness-artifacts/release-review/"
 VERDICTS = ("pass", "unproven")
@@ -446,6 +449,8 @@ def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidenc
     # question than "what did the verdict cover", and a record missing both
     # should be told about the observer first.
     assert_scope_is_declared(data, verdict=verdict)
+    if verdict == "pass":
+        assert_scope_matches_release_delta(repo_root, data, prepared=prepared, run=run)
     distinctness = _observer_distinctness(data, verdict=verdict, prepared=prepared, target_version=target_version,
                                           evidence_commit=evidence_commit, repo_root=repo_root, run=run)
     # The evidence commit still carries only claims-review evidence.  The narrative is

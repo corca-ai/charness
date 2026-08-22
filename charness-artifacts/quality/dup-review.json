@@ -5424,6 +5424,13 @@
       "reviewed_at": "2026-08-22",
       "surface": "code",
       "note": "Two-line guard-clause idiom `if <name> != <literal>: return`, shared by the claims-review scope floor (a `pass` must declare what it covered; an `unproven` is exempt because it is already blocking) and validate_cautilus_proof's improve-goal guard. Unrelated subjects, unrelated literals; the shape is Python's ordinary early return. Collapsing them would invent a shared abstraction over two floors that have nothing in common but arity."
+    },
+    {
+      "class": "intentional",
+      "id": "64a4f810660ed425",
+      "reviewed_at": "2026-08-22",
+      "surface": "code",
+      "note": "The sibling-import bootstrap idiom -- resolve __file__'s directory, add it to sys.path if absent, then import the sibling -- shared with goal_artifact_floor_grammar and goal_artifact_evidence_distinctness, both untouched by this diff. It exists because these modules are loaded BY SPEC from several entrypoints, so a bare sibling import resolves only when the caller happens to have the directory on the path. Collapsing it would need a shared bootstrap module that each of these must import -- by the same idiom, in the same three files. The duplication IS the bootstrap."
     }
   ],
   "fixable_ceiling": 0,

@@ -92,7 +92,7 @@
 7. For a new work unit, run the repo-owned opener before any review or brief —
    `python3 scripts/open_lesson_session.py --repo-root . --session-id <slug> --seed <slug>`
    — and preserve the commit -> changed-line -> broad-quality ordering.
-5. Do not claim a verdict from timeout, exit code, transcript, screen output, HTTP
+8. Do not claim a verdict from timeout, exit code, transcript, screen output, HTTP
    reachability, tag presence, or any other media alone; the
    [consumer report](../skills/shared/scripts/reviewer_worker_report.py) must accept a
    typed receipt with matching provenance and terminal state.
