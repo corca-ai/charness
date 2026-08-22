@@ -28,7 +28,6 @@ sys.path.insert(0, str(_RELEASE))
 from claims_review_scope import (  # noqa: E402
     assert_scope_is_declared,
     classify,
-    partition,
 )
 
 

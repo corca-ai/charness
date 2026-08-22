@@ -48,6 +48,11 @@ def test_pre_push_quality_gate_runs_as_a_monitored_phase(tmp_path: Path) -> None
         {"quality_command": "./scripts/run-quality.sh"},
         payload,
         cli=_recording_cli(calls),
+        # `stage` is REQUIRED, deliberately: it was a hardcoded
+        # `post-bump, pre-commit` literal that is false on the resume/claims
+        # lane, and a default would let a new lane inherit a wrong stage
+        # silently. A caller must say what is true.
+        stage="post-bump, pre-commit",
     )
 
     assert ("run_phase:quality_command", "./scripts/run-quality.sh") in calls

@@ -39,7 +39,6 @@ correct on more than one floor.
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -49,9 +48,6 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.artifact_quantities import inconsistent_quantities  # noqa: E402
-from scripts.critique_enforcement_scope import date_from_filename  # noqa: E402
-from scripts.repo_path_display import display_path as _display_path  # noqa: E402
-
 from scripts.artifact_referents import (  # noqa: E402
     DISPOSITION_LINE_RE,
     INLINE_DISPOSITION_RE,
@@ -61,6 +57,8 @@ from scripts.artifact_referents import (  # noqa: E402
     sha_candidates,
     unresolvable_shas,
 )
+from scripts.critique_enforcement_scope import date_from_filename  # noqa: E402
+from scripts.repo_path_display import display_path as _display_path  # noqa: E402
 
 #: `git cat-file` per SHA per artifact would be thousands of subprocesses across
 #: the corpus. Same SHA, same answer, so resolve each once per run.
