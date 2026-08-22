@@ -26,6 +26,38 @@ DOC_GLOBS = (
     "charness-artifacts/premortem/**/*.md",
     "charness-artifacts/design-studies/**/*.md",
 )
+
+#: Evidence families added later, and enforced only from `ENFORCED_FROM` forward.
+#:
+#: These carry citations exactly like the families above -- a goal artifact names
+#: the probe that proved its slice, a critique names what it read, a release review
+#: names the run it reviewed -- and they were simply never scanned. Measured at the
+#: time of widening: 70 already-evaporating citations across 2315 docs in these
+#: families, against 0 in the families already covered.
+#:
+#: The date anchor is the whole design. Those 70 live almost entirely in CLOSED
+#: retros, critiques and goals from months back: frozen records of what happened.
+#: Editing them to satisfy a gate would rewrite evidence to make a checker happy,
+#: which is the inversion this repo refuses. So history is COUNTED and reported,
+#: never rewritten, and the gate binds on artifacts written from the anchor date
+#: forward -- the ones whose citations a future session will actually try to follow.
+LATE_DOC_GLOBS = (
+    "charness-artifacts/goals/**/*.md",
+    "charness-artifacts/critique/**/*.md",
+    "charness-artifacts/retro/**/*.md",
+    "charness-artifacts/probe/**/*.md",
+    "charness-artifacts/issues/**/*.md",
+    "charness-artifacts/release-review/**/*.md",
+)
+#: The date this widening landed. A doc in `LATE_DOC_GLOBS` is enforced when its
+#: filename date is on or after this; earlier ones are grandfathered.
+ENFORCED_FROM = "2026-08-22"
+#: `docs/**` is deliberately NOT here. Doctrine that NAMES a runtime path
+#: (`artifact-policy.md` explaining where `.charness/quality/runtime-signals.json`
+#: is written) is not an artifact CITING that file as its own proof, and the 9
+#: hits there are all the former. Folding them in would train the marker onto
+#: prose that was never a citation, which costs the marker its meaning.
+LEADING_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-")
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.[A-Za-z0-9._-]+$")
@@ -185,6 +217,28 @@ def violations_for_doc(root: Path, doc: Path) -> list[str]:
     return messages
 
 
+def is_enforced_late_doc(doc: Path) -> bool:
+    """Whether a `LATE_DOC_GLOBS` artifact is inside the enforced window.
+
+    Anchored on the FILENAME date, which every artifact family here already
+    carries as its naming convention, rather than on git history: a doc's commit
+    or mtime moves when it is touched for unrelated reasons, and a frozen record
+    would silently drift into enforcement the first time anything reformatted it.
+    The filename does not move.
+
+    A doc with no leading date (`recent-lessons.md` and the other rolling
+    digests) is NOT enforced. Those are the ones that get rewritten continuously,
+    so a stale citation in them is a live editing question rather than a frozen
+    record -- but they also have no date to bind to, and inventing one by mtime is
+    the drift this function exists to avoid. Naming the exclusion here is the
+    honest form; the advisory count makes it visible.
+    """
+    match = LEADING_DATE_RE.match(doc.name)
+    if match is None:
+        return False
+    return match.group(1) >= ENFORCED_FROM
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -197,14 +251,39 @@ def main() -> int:
         )
         return 0
     docs = iter_matching_repo_files(root, DOC_GLOBS, require_git=args.require_git_file_listing)
+    late_docs = iter_matching_repo_files(
+        root, LATE_DOC_GLOBS, require_git=args.require_git_file_listing
+    )
     all_messages: list[str] = []
     for doc in docs:
         all_messages.extend(violations_for_doc(root, doc))
+    grandfathered = 0
+    for doc in late_docs:
+        messages = violations_for_doc(root, doc)
+        if not messages:
+            continue
+        if is_enforced_late_doc(doc):
+            all_messages.extend(messages)
+        else:
+            grandfathered += len(messages)
     if all_messages:
         for message in all_messages:
             print(message, file=sys.stderr)
         return 1
-    print(f"Validated spec evidence durability across {len(docs)} doc(s).")
+    print(
+        f"Validated spec evidence durability across {len(docs) + len(late_docs)} doc(s)."
+    )
+    if grandfathered:
+        # Reported, never silent. A gate that quietly excludes part of its own
+        # scope reads as "covered everything" when it did not, and this exclusion
+        # is a deliberate debt with a date on it -- so it gets a number the next
+        # reader can watch shrink or grow.
+        print(
+            f"ADVISORY (evidence durability): {grandfathered} citation(s) to gitignored "
+            f"targets remain in artifacts dated before {ENFORCED_FROM}; they are frozen "
+            "records and are counted, not rewritten. New artifacts in those families "
+            "are enforced."
+        )
     return 0
 
 

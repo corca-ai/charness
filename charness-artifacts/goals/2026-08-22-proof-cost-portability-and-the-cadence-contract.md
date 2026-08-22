@@ -1,6 +1,6 @@
 # Achieve Goal: Cut proof cost, unfork the consumers, then settle the cadence contract
 
-Status: draft
+Status: active
 Created: 2026-08-22
 Activation: `/goal @charness-artifacts/goals/2026-08-22-proof-cost-portability-and-the-cadence-contract.md`
 
@@ -9,14 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-22-proof-cost-portability-and-the-cadence-contract.md` after confirming the draft is
-  still intended.
+- Current slice: C — cut proof cost and close ephemeral-evidence citations.
+- Current slice intent: make an interrupted changed-line proof resumable without
+  rebuilding the coverage corpus, surface the resume path from the tool's own
+  output, and stop citing gitignored rolling files as evidence. This names the
+  reviewable-intent unit in progress and the commits it spans; critique and broad
+  proof do not re-fire within one unchanged intent — update it when the intent
+  changes, not per commit (meaningful-slice-cadence).
+- Next action: slice C is implemented and the pre-lock aggregate is clean. Run
+  changed-line proof over the slice range, then the bounded fresh-eye rounds
+  slice C owes as a verdict-logic change on two proof surfaces, then slice B.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -254,7 +256,12 @@ applies.
 Durable references this goal was shaped from. A fresh session can reconstruct
 the originating context by following them in order.
 
-1. TODO the repo's governing design standard, and what it says about THIS goal —
+1. Lesson session `2026-08-22-proof-cost-portability-cadence`, frozen bundle
+   `charness-artifacts/retro/lesson-session-receipts/2026-08-22-proof-cost-portability-cadence.md`.
+   Declared with the REPO-OWNED opener before any slice work or reviewer spawn.
+   The bundle proves the lesson bytes were issued and frozen for this session; it
+   proves nothing about readback, use, or effect.
+2. TODO the repo's governing design standard, and what it says about THIS goal —
    which facets bear on its boundaries, where its teeth belong, and which
    irreversible boundaries it crosses. Read it while SHAPING, not at closeout:
    the standard is what tells you where a wrong answer escapes, and that is a

@@ -664,9 +664,16 @@ def test_contaminating_pool_changes_is_the_single_detector(tmp_path: Path) -> No
 def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> None:
     # Covers the run-the-probe branch (the default, no --reuse-coverage): the
     # heavy gate probe + config read are stubbed so the test stays fast while the
-    # branch executes and the produced coverage drives a clean verdict. Without
-    # --write-fresh-marker the consumer probe keeps dynamic_context (the faithful
-    # path).
+    # branch executes and the produced coverage drives a clean verdict.
+    #
+    # dynamic_context is False here even WITHOUT --write-fresh-marker (#696). It
+    # used to be True on this arm, justified as "the faithful path" -- faithful to
+    # the scheduled gate's probe, which collects contexts because the cosmic-ray
+    # sampler reads them. This gate does not: its verdict consumes
+    # executed/missing lines only. Preserving an input dimension no reader
+    # consults cost a measured 671x in corpus size and 286x in load time, so the
+    # flag became explicit (--collect-test-contexts) instead of a side effect of
+    # a marker-stamping flag.
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     teeth = _load_teeth()
     called = {}
@@ -692,7 +699,7 @@ def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> No
     rc = teeth.main()
 
     assert called.get("probe") is True  # the run-the-probe branch executed
-    assert called["dynamic_context"] is True
+    assert called["dynamic_context"] is False
     assert rc == 0
 
 

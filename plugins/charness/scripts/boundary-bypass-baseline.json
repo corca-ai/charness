@@ -4,11 +4,11 @@
   "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
   "call_site_fingerprint_algo_version": "1",
   "summary": {
-    "candidate_count": 54,
+    "candidate_count": 53,
     "convertible_count": 2,
     "internal_boundary_count": 38,
-    "keep_boundary_count": 27,
-    "candidate_key_count": 54
+    "keep_boundary_count": 26,
+    "candidate_key_count": 53
   },
   "candidate_keys": [
     "06661433f0e37fc3",
@@ -43,15 +43,14 @@
     "8f4dcccce3e774b4",
     "8fef6017d0b758fc",
     "9337a774dfde198e",
-    "a2e58703680dd423",
     "a6182bd782738441",
-    "ab0ac3bc4108d15a",
     "b01f54994c12d25d",
     "b097824f45b38fb7",
     "b11d217e862ac837",
     "b300d515f1f0ee1a",
     "b6f9c0cc608a652b",
     "b9fda138fdfd80c5",
+    "bb4dd29036a03ce3",
     "cd452832e6f70615",
     "d0408b287b644b31",
     "d11a41b4d1b636a0",
@@ -492,5 +491,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "d7cb512fc5c84f66404f429695453b9ab0e74bb44ae0c2309c0e8e7bcd7f2579"
+  "writer_integrity_sha256": "82497cd7a3918145b9b70bf67fd45265cf60a88a5e4397f87a98214ae3d97e2b"
 }

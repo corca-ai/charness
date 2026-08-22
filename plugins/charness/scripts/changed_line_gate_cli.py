@@ -106,8 +106,23 @@ def parse_args() -> argparse.Namespace:
             "Producer mode: after coverage exists for the analyzed range, write the "
             "sibling `<coverage-json>.fingerprint` marker recording the changed-pool "
             "content fingerprint so the pre-push consumer (`--require-fresh-coverage`) "
-            "can trust the coverage. Uses a plain (no dynamic_context) probe so the "
-            "coverage JSON stays small."
+            "can trust the coverage."
+        ),
+    )
+    parser.add_argument(
+        "--collect-test-contexts",
+        action="store_true",
+        help=(
+            "Collect per-test `dynamic_context` data in the probe and export it into "
+            "the coverage JSON. OFF by default, and this gate never reads it: the "
+            "changed-line verdict consumes `executed_lines`/`missing_lines` only, via "
+            "`load_file_statement_lines`. The single reader of the `contexts` block is "
+            "`load_line_contexts`, used by the cosmic-ray sampler "
+            "(`scripts/sample_mutation_files.py`), which builds its own corpus and does "
+            "not depend on this flag. Pass it only to hand-build a context-bearing "
+            "corpus for that sampler. Measured cost of leaving it on (#696): the same "
+            "coverage data exported to 8.22 GB instead of 12.25 MB (671x), taking 37.2s "
+            "and 20.4 GB of peak RSS to load instead of 0.13s and 0.06 GB."
         ),
     )
     args = parser.parse_args()

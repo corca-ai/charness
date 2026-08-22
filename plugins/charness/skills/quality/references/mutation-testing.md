@@ -261,9 +261,39 @@ Coverage for the gate should piggyback the run you already pay for (the
 full/closeout test run), instrumented once with plain statement coverage — not a
 separate coverage pass. Drop per-test `dynamic_context` for this report: the gate
 only needs executed-vs-missing lines, and per-test context can balloon the
-coverage JSON by orders of magnitude. Run the cheap deterministic doc/lint gates
-*before* paying for the instrumented run so a late failure does not force a
-re-pay.
+coverage JSON by orders of magnitude. Measured on the authoring repo, same
+coverage data with the export flag as the only difference: **8.22 GB vs 12.25 MB
+(671x), and 37.2s / 20.4 GB peak RSS vs 0.13s / 0.06 GB just to load it.**
+
+Size is the lesser half. **20 GB of peak RSS to read a report is a correctness
+risk, not a speed one:** on a host with less headroom that load raises
+`MemoryError`, and a gate with no branch for it reports an out-of-memory crash as
+a tool failure rather than as the refusal-to-judge it is — which is exactly the
+distinction a changed-line gate exists to keep.
+
+Make the collection an **explicit flag**, never a side effect of an adjacent one.
+The authoring repo tied it to the flag that stamps the freshness marker, so the
+cheap path arrived only for callers who happened to want a marker, and the other
+arm paid 671x for a column the verdict never reads. Where a second consumer *does*
+read contexts (a mutant sampler resolving per-line test nodeids), give it its own
+report path rather than sharing one: whichever tool ran last then decides whether
+the other one works.
+
+Run the cheap deterministic doc/lint gates *before* paying for the instrumented
+run so a late failure does not force a re-pay.
+
+### Name the cheap refresh first, in the payload
+
+When the gate cannot USE the coverage it found — absent report, or a fingerprint
+that no longer matches — its own structured output is what the operator acts on.
+If that output names only the whole-corpus rebuild, that is what gets run, however
+many times the tree moves. Emit the **incremental** refresh (instrument only the
+tests that reference the changed files) as the first move and the full rebuild as
+the fallback, and emit them as **structured fields** rather than folded into a
+prose `reason`: a resumed session reads the payload back, and a route buried in a
+sentence has to be re-parsed to be used. Naming the cheap lane first is safe in
+this direction — coverage from a test subset is a subset of full coverage, so it
+can cost a false stop but can never grant a false pass.
 
 ### The false-green dry-run trap
 

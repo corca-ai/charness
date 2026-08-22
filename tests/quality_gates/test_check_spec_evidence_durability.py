@@ -205,3 +205,106 @@ def test_scope_covers_quality_release_dogfood_subdirs(tmp_path: Path) -> None:
     assert result.returncode == 1
     for subdir in ("quality", "release", "dogfood", "debug", "premortem"):
         assert f"charness-artifacts/{subdir}/demo.md" in result.stderr
+
+
+# --------------------------------------------------------------------------- #
+# Late-added evidence families (goals / critique / retro / probe / issues /
+# release-review). These carry citations exactly like the families above and were
+# simply never scanned: 70 already-evaporating citations across 2315 docs at the
+# time of widening, against 0 in the families already covered.
+#
+# Enforcement is date-anchored because almost all 70 sit in CLOSED records from
+# months back. Rewriting a frozen retro so a checker goes green is evidence
+# edited to fit a gate, which is the inversion the gate exists to prevent -- so
+# history is counted, and new artifacts are bound.
+# --------------------------------------------------------------------------- #
+
+
+def _late_doc(repo: Path, family: str, name: str) -> Path:
+    target = repo / "charness-artifacts" / family
+    target.mkdir(parents=True, exist_ok=True)
+    doc = target / name
+    doc.write_text("# Demo\n\nProof: `artifacts/eval-summary.json`.\n", encoding="utf-8")
+    return doc
+
+
+def test_a_new_dated_artifact_in_a_late_family_is_enforced(tmp_path: Path) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    _late_doc(repo, "goals", "2999-01-01-demo.md")
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1, result.stdout
+    assert "charness-artifacts/goals/2999-01-01-demo.md" in result.stderr
+
+
+def test_every_late_family_is_actually_wired(tmp_path: Path) -> None:
+    """One assertion per family. A widening that reaches five of six directories
+    is indistinguishable from one that reaches all six until the sixth is the one
+    carrying the dead citation."""
+    repo = _bootstrap_repo(tmp_path)
+    families = ("goals", "critique", "retro", "probe", "issues", "release-review")
+    for family in families:
+        _late_doc(repo, family, "2999-01-01-demo.md")
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    for family in families:
+        assert f"charness-artifacts/{family}/2999-01-01-demo.md" in result.stderr, family
+
+
+def test_a_frozen_older_record_is_counted_not_blocked(tmp_path: Path) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    _late_doc(repo, "retro", "2020-01-01-demo.md")
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert "1 citation(s) to gitignored targets remain" in result.stdout
+
+
+def test_the_grandfathered_debt_is_never_silent(tmp_path: Path) -> None:
+    """The exclusion must arrive as a NUMBER, not as an absence.
+
+    A gate that quietly drops part of its own scope reports the same clean line
+    as one with nothing to drop, and this exclusion is deliberate debt with a date
+    on it. Two docs, so the count is asserted rather than merely present.
+    """
+    repo = _bootstrap_repo(tmp_path)
+    _late_doc(repo, "retro", "2020-01-01-a.md")
+    _late_doc(repo, "critique", "2020-01-02-b.md")
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert "2 citation(s) to gitignored targets remain" in result.stdout
+
+
+def test_an_undated_rolling_digest_is_not_enforced(tmp_path: Path) -> None:
+    """`recent-lessons.md` and its siblings have no filename date to bind to, and
+    inferring one from mtime is the drift the filename anchor avoids. Not
+    enforced, and counted like the rest so the choice stays visible."""
+    repo = _bootstrap_repo(tmp_path)
+    _late_doc(repo, "retro", "recent-lessons.md")
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert "1 citation(s) to gitignored targets remain" in result.stdout
+
+
+def test_the_reproduction_marker_still_releases_a_new_artifact(tmp_path: Path) -> None:
+    """The widening must not remove the escape hatch, or the only way to record a
+    genuinely ephemeral reproduction source becomes lying about it."""
+    repo = _bootstrap_repo(tmp_path)
+    target = repo / "charness-artifacts" / "goals"
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "2999-01-01-demo.md").write_text(
+        "# Demo\n\n- Proof: `artifacts/eval-summary.json` <!-- reproduction-source -->\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr

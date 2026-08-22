@@ -58,6 +58,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts import changed_line_gate_cli as _cli  # noqa: E402
+from scripts.changed_line_resume_route import resume_fields  # noqa: E402
 from scripts.changed_line_run_trust import (  # noqa: E402
     INSPECTION_FAILED,
     SCOPE_MISMATCH,
@@ -165,13 +166,13 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
             return {**base, "reason": (
                 f"coverage source is stale: fingerprint marker {recorded or 'absent'} != current "
                 f"{current}; changed-line teeth skipped (non-blocking). "
-                "Re-run the closeout producer to refresh coverage for this range."
-            )}
+                "Refresh via `resume_command` below."
+            ), **resume_fields(repo_root, base_sha)}
     if args.skip_if_no_coverage and not coverage_json.is_file():
         return {**base, "reason": (
             f"no coverage source at {args.coverage_json}: changed-line teeth skipped "
-            "(non-blocking). Coverage is produced by the full/closeout run and reused here."
-        )}
+            "(non-blocking). Produce it via `resume_command` below."
+        ), **resume_fields(repo_root, base_sha)}
     return None
 
 
@@ -181,15 +182,30 @@ def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) 
     can trust the coverage was built for this changed-pool content. Skip guards
     run before this, so here a missing/stale reuse target means "run the probe".
 
-    The producer probe drops `dynamic_context` (lever A): the changed-line
+    The probe drops `dynamic_context` on BOTH arms (lever A): the changed-line
     verdict only needs executed-vs-missing lines, and per-test context is what
-    blew the coverage JSON up to ~1.34 GB. Subprocess capture is retained."""
+    blew the coverage JSON up. Subprocess capture is retained.
+
+    Producer mode used to be the only arm that dropped it, which made the cheap
+    path a side effect of `--write-fresh-marker` -- a flag about stamping the
+    freshness marker, not about which columns the verdict reads. The other arm
+    then paid for a `contexts` block this gate has no reader for. Measured on this
+    repo (#696), same coverage data, export flag the only difference: 8.22 GB vs
+    12.25 MB, and 37.2s / 20.4 GB RSS vs 0.13s / 0.06 GB just to LOAD it. The RSS
+    is the sharper half -- on a smaller host that load raises `MemoryError`, and
+    this gate has no branch for that, so an out-of-memory crash on a proof surface
+    reads as a tool failure rather than as the refusal-to-judge it is.
+
+    `--collect-test-contexts` restores collection explicitly for a caller
+    hand-building the cosmic-ray sampler's corpus. Read with `getattr` because the
+    parity tests construct a minimal args namespace, and the safe default when the
+    attribute is absent is the cheap one."""
     if not args.reuse_coverage or not coverage_json.is_file():
         config = args.config if args.config.is_absolute() else repo_root / args.config
         test_command = args.test_command or read_test_command(config)
         run_test_coverage(
             repo_root, test_command, coverage_json,
-            dynamic_context=not args.write_fresh_marker,
+            dynamic_context=getattr(args, "collect_test_contexts", False),
         )
     if args.write_fresh_marker:
         write_coverage_fingerprint_marker(repo_root, coverage_json, base_sha)
