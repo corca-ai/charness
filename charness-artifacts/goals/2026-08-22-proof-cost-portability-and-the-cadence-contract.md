@@ -1,6 +1,7 @@
 # Achieve Goal: Cut proof cost, unfork the consumers, then settle the cadence contract
 
-Status: active
+Status: superseded
+Superseded by: charness-artifacts/goals/2026-08-22-claims-review-convergence-then-ship-6-3-0.md
 Created: 2026-08-22
 Activation: `/goal @charness-artifacts/goals/2026-08-22-proof-cost-portability-and-the-cadence-contract.md`
 
@@ -18,8 +19,11 @@ runs the activation command.
 - Next action: **the operator GRANTED the release for this bundle**, phase-scoped
   to slice R and not carrying forward. Slices C, B and A have landed; C and B
   have consumed their two-round caps and A has consumed both rounds. The publish
-  helper reached `prepared-awaiting-claims-review`, and THREE claims rounds have
-  now returned `unproven` — on three record defects, then three more, then four.
+  helper reached `prepared-awaiting-claims-review`, and FOUR claims rounds have
+  now returned `unproven` — three record defects, then three, then four, then
+  four. Round 4 found that the durable claims record added to satisfy round 3
+  landed INSIDE the prepared commit, which the claims floor refuses, so a `pass`
+  had been made structurally unpublishable by the repair meant to support it.
   This artifact's own staleness has been the sharpest finding in every round: a
   false `applied:` disposition, a commit attributed to the wrong review round,
   and counts corrected into new wrong values. Each round reset the prepared
@@ -166,7 +170,7 @@ Outcomes, not cadence. `## Active Operating Frame` owns when proof runs.
 | C | Cut proof cost and close ephemeral-evidence citations | Every later slice pays this cost; it was measured at four full rebuilds in one session | Export/load wall time as a probe artifact (substituted for full-run wall time — see Verification Plan); a cheap re-establish route reachable from structured tool output; durability gate clean over a scope widened from 499 to 2838 docs | landed at `77c4300ae` + `1cb2e67c2` + `10f1a092c`; both rounds consumed, round-2 repairs accepted-unreviewed |
 | B | Unfork the Node consumers | Three downstream repos maintain a substitute for a harness this repo owns; all three findings are third-or-later sightings | Harness verdict against a `node --test` fixture; hollow-section reporting; a non-complete terminal status accepted by the contract | landed at `ff0f52925` + `10f1a092c` + `142b39102` + `99c440aa7` + `89f32da4e`; both rounds consumed |
 | A | Settle the cadence contract | The only hard blocker published 6.2.2 ships with; deferring it stacks more artifacts on an unread decision | A recorded decision among the three options, its implementation, and the frame migration if it restructures | landed at `99c440aa7` + `23642a769` (round 1) + `96ba78f7f` (round 2); decision recorded on #694; both rounds consumed, round-2 repairs accepted-unreviewed |
-| R | One release over the bundle | B and A reach consumers only through a release; bundling makes the claims rounds run once | Published readback, installed replay, claims round without a blocker | in progress: operator grant given, prepared commit awaiting a passing claims round |
+| R | One release over the bundle | B and A reach consumers only through a release; bundling makes the claims rounds run once | Published readback, installed replay, claims round without a blocker | **NOT ACHIEVED.** Four claims rounds all returned `unproven`; no round's evidence was ever in the shipped code. Nothing published, no tag, nothing pushed; the prepared commit was reset four times and finally dropped. Handed to the successor goal behind #701 |
 
 ## Backlog Recount
 
@@ -198,6 +202,24 @@ Queue item form:
 - Why deferred: why the run did not stop immediately
 - Unblock action: exact action or answer needed
 - Revisit trigger: event, date, or proof boundary that reopens this
+
+### 0. The 6.3.0 release: stop, or run a fifth claims round
+
+- Decision: leave 6.3.0 unpublished and let the successor goal ship it after
+  #701, or direct a fifth claims round against a remade prepared commit.
+- Owner: operator (repo owner). Publishing without a passing claims round is a
+  third option, but it needs a NEW explicit grant: the phase-scoped grant given
+  for this bundle is revoked by a weakened floor, and four `unproven` rounds are
+  that. No agent can infer it.
+- Why deferred: the run did not stop mid-flight because nothing external
+  happened — no tag, no push, no issue closed, `packaging/charness.json` back at
+  `6.2.2`. The default state IS the stopped state, so waiting costs nothing and
+  the code stays committed either way.
+- Unblock action: say "stop" (this artifact already reflects it), or "round 5"
+  to remake the prepared commit WITHOUT the claims narrative inside it and spawn
+  another reviewer, or grant publication explicitly with the defects disclosed.
+- Revisit trigger: #701 landing, which is what makes a passing round reachable
+  rather than a matter of getting lucky on the sixth attempt.
 
 ### 1. Slice C amended a `## User Acceptance` criterion rather than meeting it
 
@@ -311,7 +333,7 @@ per the bullets above when that boundary is crossed):
   contracts, and the proof-cost measurement is a quality question.
 - Routing: `critique` — every slice's bounded fresh-eye rounds and the
   standalone release critique ran through its discipline; seven rounds plus
-  three claims rounds.
+  four claims rounds.
 - Routing: `issue` — four issues filed from run findings (#696, #697, #698,
   #699); none resolved through its closeout floor this run, see below.
 - Routing: `release` — slice R's bump, derived notes, prepared stop and claims
@@ -337,7 +359,7 @@ per the bullets above when that boundary is crossed):
   floor exists to refuse. The fixes are referenced from the release notes so a
   reader can follow them, and closure is left to a session that runs the floor.
 
-- Successor goal: recorded at closeout — see `## Auto-Retro`.
+- Successor goal: `charness-artifacts/goals/2026-08-22-claims-review-convergence-then-ship-6-3-0.md` — fix the convergence loop (#701) FIRST, publish the bundle SECOND, because this goal proved the other order does not terminate.
 
 ## Discuss Before Activation
 
@@ -496,8 +518,8 @@ not folded, and reviewer provenance. Preserves reasoning so a fresh session
 re-verifies the folded revisions without re-running critique.
 
 No Before-phase plan critique was run: this goal was shaped by the predecessor
-session and activated directly. What stands in its place is four bounded
-fresh-eye rounds during the run, whose findings are recorded here because they
+session and activated directly. What stands in its place is six bounded
+fresh-eye code-reading rounds during the run, whose findings are recorded here because they
 changed the plan, not only the code.
 
 - **BLOCKER, round 1 (claims lens), folded into `## User Acceptance`.** The first
@@ -568,13 +590,28 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md
+Host log probe: skipped: no-host-metric-window: this goal recorded no `Host metric window:` line, so `probe_host_logs.py --goal-path` has no scoped window to audit. Turn, token and tool-call counts are therefore NOT claimed anywhere in this artifact or the retro.
+Disposition review: charness-artifacts/release-review/2026-08-22-v6.3.0-prepared-claims-review.md
 
 ## User Verification Instructions
 
+Nothing was published, so there is no public surface to verify. To confirm that
+for yourself:
+
+- `git tag -l v6.3.0` — empty. No tag exists.
+- `git status --short --branch` — nothing pushed; the branch carries the slice
+  commits and no release commit.
+- `python3 -c "import json;print(json.load(open('packaging/charness.json'))['version'])"`
+  — reads `6.2.2`. The published version is unchanged.
+- `gh issue list --repo corca-ai/charness --state open` — #689, #690, #691, #696
+  are still open, as `## Coordination Cues` records. Nothing was closed.
+
+To read what the four claims rounds actually found, without reconstructing it
+from this artifact:
+`charness-artifacts/release-review/2026-08-22-v6.3.0-prepared-claims-review.md`.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: every improvement this run surfaced is dispositioned in `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md` `## Next Improvements`, each as an `applied: <committed change>` or a `tracked issue: #<n>`. Four rounds of claims review blocked on false `applied:` lines in that list; the surviving set was re-verified against the tree by claims round 4, which confirmed the handoff, cadence, quality-status and issue-closure dispositions accurate and found one false one (grant-invalidated prose), now filed as #700.
+Structural follow-up: issue #701 (novel: the claims-review loop has no fixed point when the release bundle contains the artifacts describing the review — repairing a finding changes the bundle, which changes the record and the counts, which requires new prose nothing has reviewed). Also `applied: skills/public/release/scripts/publish_release_common.py` — the quality sentence's stage phrase became a required per-lane argument instead of a hardcoded literal that was false on the lane that publishes, pinned by `tests/quality_gates/test_release_quality_status_binding.py` and negative-controlled.

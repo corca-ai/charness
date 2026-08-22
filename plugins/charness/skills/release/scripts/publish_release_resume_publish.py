@@ -146,7 +146,13 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # it renders "NOT recorded by this helper invocation" rather than an unbound no-drift
     # claim. An absent check reported as absent is the repair; a new refusal at a published
     # boundary is not.
-    common.run_pre_push_quality_gates(repo_root, adapter_data, payload, cli=cli)
+    # The prepared commit already exists here and nothing is bumped in this run,
+    # so `post-bump, pre-commit` -- what this lane used to stamp -- was false in
+    # both halves. This is the payload `commit_post_publish_artifact` rewrites and
+    # pushes to `main`, so the false phrase was the one that shipped.
+    common.run_pre_push_quality_gates(
+        repo_root, adapter_data, payload, cli=cli, stage="post-claims-review, pre-push"
+    )
     fresh = common.timed(payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root))
     payload["fresh_checkout_probe_status"] = fresh["status"]
     expected_url = cli.expected_github_release_url(repo_root, backend, tag_name)

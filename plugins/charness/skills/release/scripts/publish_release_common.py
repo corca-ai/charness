@@ -78,7 +78,7 @@ def preflight_close_issue_carrier(
     )
 
 
-def run_pre_push_quality_gates(repo_root: Path, adapter_data: dict[str, Any], payload: dict[str, Any], *, cli: Any) -> None:
+def run_pre_push_quality_gates(repo_root: Path, adapter_data: dict[str, Any], payload: dict[str, Any], *, cli: Any, stage: str) -> None:
     payload["requested_review_gate"] = timed(
         payload, "requested_review_gate", lambda: cli.run_requested_review_gate(repo_root)
     )
@@ -108,6 +108,16 @@ def run_pre_push_quality_gates(repo_root: Path, adapter_data: dict[str, Any], pa
     # A claims round caught the survivor. Now the sentence carries the command, the
     # stage it ran at, and the measured elapsed time, so a reader can tell a real
     # pass from a template.
+    #
+    # `stage` is a REQUIRED argument, not a default. It was a hardcoded
+    # `post-bump, pre-commit` literal, which is true on the prepare lane and FALSE
+    # on the resume/claims lane -- that lane runs this gate again after the
+    # prepared commit already exists and without bumping anything, and its payload
+    # is what `commit_post_publish_artifact` rewrites and pushes to `main`. So the
+    # sentence written to kill a render-identically-either-way literal contained a
+    # narrower one, and the comment above claimed it carried "the stage it ran at"
+    # when it carried a constant. A default here would let a third lane inherit the
+    # wrong stage silently; requiring it makes a new caller state what is true.
     elapsed = next(
         (
             entry.get("elapsed_seconds")
@@ -118,7 +128,7 @@ def run_pre_push_quality_gates(repo_root: Path, adapter_data: dict[str, Any], pa
     )
     measured = f" in {elapsed:.1f}s" if isinstance(elapsed, (int, float)) else ""
     payload["quality_status"] = (
-        f"exited 0{measured} at `post-bump, pre-commit`, measured by this helper "
+        f"exited 0{measured} at `{stage}`, measured by this helper "
         f"(`{adapter_data['quality_command']}`)"
     )
 

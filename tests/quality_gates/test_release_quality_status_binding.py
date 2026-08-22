@@ -125,3 +125,41 @@ def test_no_writer_hardcodes_the_literal_at_a_call_site(artifact) -> None:
         "the `passed before publish` literal must live only in the owner's "
         f"fallback; found call-site copies at {offenders}"
     )
+
+
+def test_the_stage_phrase_is_not_a_literal_in_the_owner() -> None:
+    """M1, found by claims round 4.
+
+    The repair that killed the `passed before publish` literal wrote a NEW one
+    inside its replacement sentence: ``at `post-bump, pre-commit` ``. That is true
+    on the prepare lane and false on the resume/claims lane, which runs the same
+    gate after the prepared commit exists and without bumping -- and whose payload
+    is what gets rewritten and pushed to `main`. A phrase that renders identically
+    whether it is true or not is the exact class this module exists to refuse.
+    """
+    source = (_RELEASE / "publish_release_common.py").read_text(encoding="utf-8")
+    body = source.split("def run_pre_push_quality_gates", 1)[1]
+    stamp = body.split('payload["quality_status"] = (', 1)[1].split(")", 1)[0]
+
+    assert "post-bump" not in stamp, (
+        "the stage belongs to the CALLER -- each lane runs this gate at a different "
+        f"point. Found a hardcoded stage in the owner's stamp: {stamp.strip()}"
+    )
+    assert "{stage}" in stamp, "the stamp must interpolate the caller's stage"
+
+
+def test_each_lane_states_its_own_true_stage() -> None:
+    """`stage` is required, so a new lane cannot inherit another lane's phrase."""
+    common = (_RELEASE / "publish_release_common.py").read_text(encoding="utf-8")
+    signature = common.split("def run_pre_push_quality_gates", 1)[1].split(":\n", 1)[0]
+    assert "stage: str" in signature and "stage: str =" not in signature, (
+        f"stage must be required, not defaulted: {signature}"
+    )
+
+    lanes = {
+        "publish_release_execute.py": "post-bump, pre-commit",
+        "publish_release_resume_publish.py": "post-claims-review, pre-push",
+    }
+    for name, expected in lanes.items():
+        text = (_RELEASE / name).read_text(encoding="utf-8")
+        assert f'stage="{expected}"' in text, f"{name} must state stage={expected!r}"

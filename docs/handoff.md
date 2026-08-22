@@ -67,15 +67,34 @@
 
 ## Next Session
 
-1. `6.2.2` is published and read back; the installed replay is done. The next
-   unit is open — see the [claims-review narrative](../charness-artifacts/release-review/2026-08-22-v6.2.2-prepared-claims-review.md)
-   for the limitations this release ships with, chiefly the `#694` over-fire.
-2. #694 is the design question worth taking next: whether the gate-cadence floor
-   should read a cadence line's polarity at all, or whether the cadence contract
-   should be a structured field rather than prose the floor must interpret.
-3. Do not run a third review round on the `#681` repair; the two-round cap is
+1. **`6.3.0` is NOT published, and this is the first thing to know.** `6.2.2` is
+   still the published version. Slices C, B and A are committed on `main`; the
+   release was prepared four times and dropped four times, because four claims
+   rounds all returned `unproven`. No tag, nothing pushed, no issue closed.
+   Read [the v6.3.0 claims narrative](../charness-artifacts/release-review/2026-08-22-v6.3.0-prepared-claims-review.md)
+   before touching the release — it holds all four rounds.
+2. **Fix #701 before attempting the release again.** Not one of the ~14 claims
+   blockers was in the shipped code: every round confirmed the quality-status
+   owner mechanism, all five version surfaces and every derived figure. Every
+   blocker was prose ABOUT the review, in artifacts that ship inside the bundle
+   being reviewed — a loop with no fixed point. The predecessor's own durable
+   claims record, added to satisfy a round-3 finding, landed inside the prepared
+   commit and made a `pass` structurally unpublishable
+   (`publish_release_claims_review.py:258-278` wants the narrative ADDED by the
+   evidence commit). Continue from
+   [the successor goal](../charness-artifacts/goals/2026-08-22-claims-review-convergence-then-ship-6-3-0.md),
+   which fixes the loop first and publishes second, in that order and for that
+   reason.
+3. **Reproduce before repairing a review finding.** Twelve of twenty-seven
+   blockers this run got a wrong first repair, and in two more the reviewer's own
+   proposed fix was wrong. Repairing prose by re-reading prose is what failed;
+   the one repair that held was derived from `git log` / `git show`.
+4. #694 is decided and implemented (decline an ambiguous line, do not block
+   activation), but stays open on a second blind shape: a deferral flag named
+   only for a terminal step, with no earlier deferral, still reads as a deferral.
+5. Do not run a third review round on the `#681` repair; the two-round cap is
    consumed and the round-2 repairs are recorded as accepted-unreviewed.
-4. For a new work unit, run the repo-owned opener before any review or brief —
+6. For a new work unit, run the repo-owned opener before any review or brief —
    `python3 scripts/open_lesson_session.py --repo-root . --session-id <slug> --seed <slug>`
    — and preserve the commit -> changed-line -> broad-quality ordering.
 5. Do not claim a verdict from timeout, exit code, transcript, screen output, HTTP

@@ -128,7 +128,9 @@ def _prepare_release_attempt(
         fresh_checkout_payload=fresh_checkout_plan,
         release_stage="charness-release-state:prepared-awaiting-claims-review",
     )
-    _common["run_pre_push_quality_gates"](repo_root, adapter_data, payload, cli=cli)
+    _common["run_pre_push_quality_gates"](
+        repo_root, adapter_data, payload, cli=cli, stage="post-bump, pre-commit"
+    )
     return {
         "payload": payload,
         "branch": plan["branch"],

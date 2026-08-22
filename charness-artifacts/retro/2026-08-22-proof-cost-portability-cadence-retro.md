@@ -49,13 +49,19 @@ fixed (#697, #698, #699). One finding recorded in the goal without filing: the
 
 **The dominant waste was self-inflicted rework caught by review, not by me.**
 Seven bounded rounds (slice C x2, slice B x2, slice A x2, one release critique)
-plus three claims rounds found blockers on every surface they read; the Slice
-Log totals ten across the slices, and the release critique (1) plus claims
-rounds 1, 2 and 3 (3 + 3 + 4) added eleven more, for twenty-one. That is the
-system working, but the cost is real: EIGHT of the twenty-one were *repairs
-carrying the class they
-repaired*, which means the rework was not "found a bug, fixed it" but "found a
-bug, fixed it wrongly, had it found again".
+plus FOUR claims rounds found blockers on every surface they read. Counted from
+the Slice Log as it now reads — slice C 2+1, slice B 2+3, slice A 2+2 — that is
+TWELVE across the slices, and the release critique (1) plus claims rounds 1-4
+(3 + 3 + 4 + 4) add fifteen more, for TWENTY-SEVEN. TWELVE of the twenty-seven
+were *repairs carrying the class they repaired*: not "found a bug, fixed it" but
+"found a bug, fixed it wrongly, had it found again".
+
+An earlier version of this paragraph said "ten across the slices … twenty-one".
+Ten was the count from BEFORE slice A's round-2 findings were written into the
+Slice Log — by the same repair round that then "corrected the counts" and did
+not recount. The correction was stale by exactly the findings the correction had
+added, and claims round 4 caught it. That is this paragraph's own subject,
+performed by this paragraph.
 
 - **The fail-closed durability repair carried its own class.** I closed a
   fail-open hole by delegating to the repo's canonical date helper — whose safety
@@ -114,7 +120,7 @@ this session was a long demonstration of both halves.
 
 - **P4 held, expensively and correctly.** Every blocker in this session came from
   a *different observer on a different channel*. The claims round found three
-  record defects that four code-reading rounds and one release critique had all
+  record defects that SIX code-reading rounds and one release critique had all
   missed — including a sentence in my own bump rationale's neighbourhood that was
   a hardcoded literal. That is P4's exact claim: re-reading the same proxy
   rubber-stamps.
@@ -149,7 +155,7 @@ Prior durable retro: `charness-artifacts/retro/2026-08-22-tracker-closeout-retro
 **Engelbart — `system-improving-itself` (briefed by the planner).** The lens is
 *treat (H + LAM + T) as one unit; design T alongside LAM*. I improved the tooling
 (LAM) repeatedly this session and never once improved the T-loop that was
-failing. Concretely: three times a repair carried the class it repaired, and each
+failing. Concretely: twelve times a repair carried the class it repaired, and each
 time I fixed the instance. Engelbart's move is to ask what in the *process*
 produced a wrong repair three times, and the answer is visible — I repaired from
 a reviewer's prose without first reproducing the finding. The changed action:
@@ -171,14 +177,16 @@ release flow prompts you to go back and find it.
 
 ## Next Improvements
 
-- **workflow — reproduce before repairing a review finding.** Eight of
-  twenty-one blockers got a wrong first repair; in two further cases
+- **workflow — reproduce before repairing a review finding.** Twelve of
+  twenty-seven blockers got a wrong first repair; in two further cases
   reproduction showed the reviewer's own proposed fix was wrong. Applied this
   session in the second half; it should be the default, not the recovery.
-  `applied: recorded in this retro; the handoff carry is NOT yet written and is
-  the first closeout step.` A claims round caught this line asserting the handoff
-  bullet already existed when it did not — an `applied:` that names a destination
-  it has not reached is the strongest disposition shape making the weakest claim.
+  `applied: recorded in this retro AND carried into docs/handoff.md as
+  "Next Session" item 3, written at closeout.` A claims round caught an earlier
+  version of this line asserting the handoff bullet already existed when it did
+  not — an `applied:` that names a destination it has not reached is the
+  strongest disposition shape making the weakest claim. It then stayed honest by
+  saying the carry was still unwritten, which it was until this closeout.
 - **capability — the release record's quality sentence was a hardcoded literal.**
   `applied: skills/public/release/scripts/publish_release_common.py stamps the
   measured result into the payload, and publish_release_artifact.write_current_artifact
@@ -195,7 +203,10 @@ release flow prompts you to go back and find it.
   true.
 - **memory — a grant invalidates prose written before it.** No mechanism exists;
   the claims round is what caught it, one layer too late to be cheap.
-  `tracked issue` — see `## Sibling Search`.
+  `tracked issue: #700.` (This bullet previously said `tracked issue` and pointed
+  at `## Sibling Search`, which carried a literal `#N` placeholder and no filed
+  issue. Claims round 4 found it: the disposition about destinations that are
+  never reached had not reached its own destination. #700 is that destination.)
 - **capability — the critique acceptor binds on version tokens.**
   `tracked issue: #699.`
 - **workflow — prefer a structural property over an enumerated refusal.**
@@ -234,7 +245,7 @@ Four-axis scan:
   and was disclosed by the release critique's F8, not caught by a gate.
 - **Tests:** none assert prose-vs-state consistency.
 
-Decision: `issue #N (recurs: the release flow already solves this for one file
+Decision: `issue #700 (recurs: the release flow already solves this for one file
 via baton_reconcile, and the goal artifact needed it three times in one session)`
 — filed below as the structural follow-up.
 
