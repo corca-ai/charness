@@ -398,9 +398,25 @@ def summarize(report: dict, *, sample_limit: int = 5) -> dict:
         "new_doc_family_count": len(new_docs) if isinstance(new_docs, list) else 0,
         "new_doc_families_sample": new_docs[:sample_limit] if isinstance(new_docs, list) else [],
         "degraded_reasons": report.get("degraded_reasons", []),
-        "scope_paths": report.get("scope_paths", []),
-        "scope_coverage": report.get("scope_coverage"),
-        "did_not_judge": report.get("did_not_judge", []),
+        # WITHHELD, not defaulted, on the paths that judged nothing. `run()` returns
+        # early for `adapter-invalid` and `inert` without populating these, and
+        # defaulting `did_not_judge` to `[]` there publishes an empty "what I did not
+        # judge" list over a gate that judged NOTHING -- which reads as "I judged
+        # everything". That is the false-reassurance class this field was added to
+        # remove, reproduced on the one path the change did not cover, and `inert` is
+        # the DEFAULT state of every repo still working through the documented
+        # adoption procedure. The two sibling gates in this same release already
+        # withhold rather than default (check_runtime_budget_universe on not-armed,
+        # check_docs_graph on not-run); this matches them.
+        **(
+            {
+                "scope_paths": report["scope_paths"],
+                "scope_coverage": report.get("scope_coverage"),
+                "did_not_judge": report.get("did_not_judge", []),
+            }
+            if "scope_paths" in report
+            else {}
+        ),
         "adapter_errors": report.get("adapter_errors", []),
         "message_count": len(messages) if isinstance(messages, list) else 0,
         "messages_sample": messages[:sample_limit] if isinstance(messages, list) else [],
