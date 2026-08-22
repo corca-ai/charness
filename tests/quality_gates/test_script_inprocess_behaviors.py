@@ -29,6 +29,10 @@ SYNTHESIZE_OPERATOR_ACCEPTANCE = load_script_module(
     "tests.quality_gates.script_behaviors_synthesize_operator_acceptance",
     ROOT / "skills/public/setup/scripts/synthesize_operator_acceptance.py",
 )
+PLAN_RELEASE_RUN = load_script_module(
+    "tests.quality_gates.script_behaviors_plan_release_run",
+    ROOT / "skills/public/release/scripts/plan_release_run.py",
+)
 
 
 def test_release_current_release_reports_packaging_version(monkeypatch, capsys) -> None:
@@ -94,6 +98,59 @@ def test_release_fresh_checkout_detail_emits_payload(tmp_path: Path, monkeypatch
         "label": "release fresh checkout probes",
         "default_seconds": 0,
     }
+
+
+def test_release_run_planner_sets_its_own_timeout_budget(tmp_path: Path, monkeypatch) -> None:
+    """The planner must not inherit the shared 10s script default.
+
+    Measured unloaded on this repo the planner takes 7.00s / 6.90s / 8.81s, so 10s is
+    a 1.1x margin against its own typical cost. Every gate lane here runs in parallel,
+    so under `pytest -n` it is killed mid-report and
+    `test_public_skill_yaml_output_contract.test_detail_yaml_is_structured` fails on
+    the empty stdout -- a check that passes only on an idle machine.
+
+    Pinned the same way the sibling `check_fresh_checkout_probes` budget is: on the
+    kwargs handed to `arm_cli_timeout`, so a silent revert to the shared default is a
+    failing test rather than a flake somebody re-runs until it goes green.
+    """
+    emitted: list[dict[str, object]] = []
+    timeout_kwargs: dict[str, object] = {}
+
+    monkeypatch.setattr(PLAN_RELEASE_RUN, "build_plan", lambda _args: {"next_action": {}})
+    monkeypatch.setattr(PLAN_RELEASE_RUN.yaml_output, "emit_yaml", emitted.append)
+    monkeypatch.setattr(
+        PLAN_RELEASE_RUN.SKILL_RUNTIME,
+        "arm_cli_timeout",
+        lambda **kwargs: timeout_kwargs.update(kwargs) or (lambda: None),
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["plan_release_run.py", "--repo-root", str(tmp_path), "--detail"],
+    )
+
+    assert PLAN_RELEASE_RUN.main() == 0
+    assert timeout_kwargs["label"] == "release run planner"
+    budget = timeout_kwargs["default_seconds"]
+    # Bounded on BOTH sides, and the ceiling is a real assertion rather than a comment
+    # claiming one. The first cut of this said "bounded on BOTH sides" over a floor and
+    # a non-zero check only -- `default_seconds=86400` would have passed both while
+    # being the disabled timeout the sentence says it rejects. A bounded review caught
+    # it, and it is the same prose-over-code defect this very commit repairs in
+    # `check_skill_ownership_overlap.py`: a comment asserting a stronger invariant than
+    # the code holds.
+    assert isinstance(budget, (int, float)) and budget > 0, (
+        "the planner must declare a finite budget, not disable the timeout"
+    )
+    assert budget >= 30, (
+        f"budget {budget}s leaves no room over the planner's measured ~7-9s cost "
+        "under the parallel load every gate lane creates"
+    )
+    assert budget <= 300, (
+        f"budget {budget}s is a disabled timeout wearing a number. This command's work "
+        "IS bounded; a report-only planner running for minutes is a defect it should "
+        "surface, not wait out."
+    )
 
 
 def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path, monkeypatch, capsys) -> None:

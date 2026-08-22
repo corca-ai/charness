@@ -31,7 +31,8 @@ overlay/baseline inputs) and an evaluate-suggested rotation is acceptable as-is;
 `--write-baseline` prints a WARN naming this path on overwrite.
 
 Advisory (degraded, never blocks) inputs: overlay/baseline/nose missing, an empty
-`scope_paths` while enabled (falls back to nose DEFAULT_PATHS), and a present but
+`scope_paths` while enabled (a scan that runs would fall back to nose DEFAULT_PATHS),
+and a present but
 schema-invalid gate baseline (validated via `dup_ratchet_baseline_lib.validate_gate_baseline`).
 
 Exit 0 when clean, inert, or degraded. Exit 1 on a real block, an invalid adapter
@@ -69,6 +70,11 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _ratchet = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_lib")
 _ratchet_baseline = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_baseline_lib")
 _ratchet_git = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_git")
+# Scope resolution and the wording of the scope half of `did_not_judge`: one module,
+# because a reporter that does not share the resolver's state invents a cause.
+_scope = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_scope")
+DID_NOT_JUDGE = _scope.DID_NOT_JUDGE
+_scope_did_not_judge = _scope._scope_did_not_judge
 _scan = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_scan")
 _nose_report = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
 _fingerprint = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
@@ -85,24 +91,6 @@ DEFAULT_GATE_BASELINE_REL = "charness-artifacts/quality/dup-ratchet-baseline.jso
 # evaluate path — only the maintenance --write-baseline command.
 DEFAULT_BASELINE_DELTA_THRESHOLD = 50
 
-# What this gate structurally cannot know, stated as METHOD rather than as any
-# run's answer (never a frozen count here -- see property 2/3 in
-# check_docs_graph.py / check_runtime_budget_universe.py, this repo's own
-# precedent for the same discipline). The one gap that IS a genuine count --
-# tracked files scope_paths never covers -- is computed fresh every run in
-# `_scope_did_not_judge` below, from that run's own git-tracked file list, and
-# folded into `did_not_judge` alongside these.
-DID_NOT_JUDGE = (
-    "whether a clone below nose's own scan-cost size floor (FULL_SCAN_MIN_SIZE in "
-    "dup_ratchet_scan.py) is duplication -- that floor is a scan-cost choice, not a "
-    "duplication judgment",
-    "whether a clone outside nose's own detection modes (syntax,semantic,near) "
-    "exists -- a mode nose does not run is invisible to this gate by construction",
-    "whether an overlay classification (intentional/fixable) in dup-review.json is "
-    "still accurate -- the overlay's own claim is trusted here, never independently "
-    "re-checked",
-)
-
 
 def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | None, str | None, bool]:
     if args.stagnation is not None:
@@ -111,56 +99,6 @@ def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | N
     is_ancestor = _ratchet_git.anchor_is_ancestor(repo_root, anchor)
     stagnation = _ratchet_git.stagnation_commits(repo_root, anchor) if is_ancestor else None
     return stagnation, anchor, is_ancestor
-
-
-def _scope_did_not_judge(scope_paths: list[str], coverage: dict | None) -> tuple[list[str], list[str]]:
-    """The scope-coverage half of ``did_not_judge``, as ``(entries, message_lines)``.
-
-    The one genuinely countable gap in ``DID_NOT_JUDGE``: how much of this repo
-    ``scope_paths`` never reaches. Computed fresh from ``coverage`` (this run's own
-    ``dup_ratchet_lib.scope_coverage()`` result) every call -- never a number fixed
-    at authoring time.
-    """
-    if coverage is None:
-        entry = (
-            "how many tracked files sit outside scope_paths -- git could not be "
-            "asked this run, so even that count is unknown (not zero)"
-        )
-        return [entry], [f"SCOPE: scope_paths={scope_paths}; {entry}."]
-    if not scope_paths:
-        # `scope_paths` empty means the CODE scan falls back to nose DEFAULT_PATHS
-        # (dup_ratchet_scan: `scope_paths or _inventory.DEFAULT_PATHS`), so it really
-        # does scan and really does form families. Reporting the whole tree as
-        # uncovered here would be the opposite of this field's job: a gate added to
-        # say honestly what it did not cover, overstating its own gap.
-        entry = (
-            "which files the code scan reached -- scope_paths is empty, so it fell "
-            "back to the scanner's own defaults and this gate cannot name the set"
-        )
-        return [entry], [f"SCOPE: scope_paths=[] (scanner defaults used); {entry}."]
-    uncovered = coverage["uncovered_file_count"]
-    total = coverage["tracked_file_count"]
-    outside = ", ".join(coverage["uncovered_top_level"]) or "none"
-    # "CODE family", not "family". The DOC arm does not read scope_paths at all --
-    # inventory_doc_duplicates scans from DEFAULT_SCAN_PATH = "." -- and a new doc
-    # family sets hard_block just as a code family does. The unqualified sentence was
-    # false, and false in the direction that gets a REAL block dismissed: an operator
-    # reading "never forms a family from them" next to a doc finding under `docs/`
-    # concludes the finding is out of scope or a gate bug.
-    entry = (
-        f"any of the {uncovered} tracked file(s) outside scope_paths (top-level: "
-        f"{outside}) -- this scan never forms a CODE family from them (the doc arm "
-        f"scans the repo root and its findings do block)"
-    )
-    return [entry], [
-        # "admits ... by path", not "covers". The numerator is tracked files whose path
-        # sits under a scope prefix; it is NOT the count the scanner parsed, which is
-        # smaller by an unknown margin (size floors, non-source files, parseability).
-        # The over-count is conservative on the uncovered side and flattering on this
-        # one, so the flattering side gets the qualifier.
-        f"SCOPE: scope_paths={scope_paths} admits {total - uncovered}/{total} "
-        f"tracked file(s) by path (not all are parsed); {entry}."
-    ]
 
 
 def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
@@ -175,13 +113,18 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
 
     degraded: list[str] = []
     if not scope_paths:
-        # F: enabled but no scope_paths. A real code scan then falls back to nose
-        # DEFAULT_PATHS (likely the wrong tree on a consumer repo). Advisory only
-        # (FD8 whole-gate degrade) — never blocks, never reads as a silent clean pass.
+        # F: enabled but no scope_paths. Advisory only (FD8 whole-gate degrade) --
+        # never blocks, never reads as a silent clean pass.
+        #
+        # Subjunctive, and deliberately so: a real code scan WOULD fall back to nose
+        # DEFAULT_PATHS. Whether this run did is not knowable here, and the indicative
+        # version of this sentence shipped beside "nose binary not found" -- a run that
+        # returned before the fallback line -- in the same payload. `_scope_did_not_judge`
+        # refuses the same claim for the same reason; this is the other place it lived.
         degraded.append(
             "dup_ratchet.enabled is true but scope_paths is empty; a real code scan "
-            "falls back to nose DEFAULT_PATHS (likely the wrong tree). Set scope_paths "
-            "to this repo's code roots."
+            "would fall back to nose DEFAULT_PATHS (likely the wrong tree). Set "
+            "scope_paths to this repo's code roots."
         )
     overlay = _scan.load_json(repo_root / review_rel)
     if overlay is None:
@@ -201,9 +144,15 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         degraded.append(f"gate baseline integrity ({baseline_rel}): " + "; ".join(integrity))
     live_members, live_spans, code_reason, live_version = _scan.code_family_members(args, repo_root, scope_paths)
     code_ids = set(live_members)
+    # Named, because `did_not_judge` below owes this state its own entry: the scan ran
+    # and returned zero, which is a RESULT (so no `code_reason`) that the gate does not
+    # believe. Recomputing the condition there would be two spellings of one predicate.
+    zero_families_vs_baseline = bool(
+        not code_reason and args.code_inventory is None and not code_ids and baseline_ids
+    )
     if code_reason:
         degraded.append(code_reason)
-    elif args.code_inventory is None and not code_ids and baseline_ids:
+    elif zero_families_vs_baseline:
         # A real scan that yields zero families against a non-empty gate baseline is
         # almost certainly a broken scan or misconfigured scope_paths, not a repo that
         # lost all its clone families. Treat it as degraded so it cannot read as a
@@ -239,20 +188,62 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
     # ok/block/status above.
     verdict["scope_paths"] = scope_paths
     tracked = _ratchet_git.tracked_files(repo_root)
-    coverage = _ratchet.scope_coverage(tracked, scope_paths)
+    coverage = _scope.scope_coverage(tracked, scope_paths)
     verdict["scope_coverage"] = coverage
-    scope_entries, scope_messages = _scope_did_not_judge(scope_paths, coverage)
+    scope_entries, scope_messages = _scope_did_not_judge(
+        scope_paths, coverage, tracked_known=tracked is not None
+    )
+    # The IN-SCOPE judgment gets its own entry whenever this run did not actually make
+    # one. Without it the payload publishes a gap scoped entirely to files OUTSIDE
+    # scope_paths, which reads as "everything inside was judged" on precisely the run
+    # where it was not.
+    #
+    # Two distinct states reach that, and they are NOT the same claim:
+    #   - `code_reason`: the scan produced no result, so nothing in scope was examined.
+    #   - zero families against a non-empty baseline: the scan RAN and returned zero,
+    #     which `degraded_reasons` above already calls "likely a broken scan". Saying
+    #     nothing here would leave `did_not_judge` implying an in-scope all-clear on a
+    #     run the gate itself does not believe -- two fields of one payload disagreeing,
+    #     the shape this whole surface exists to remove.
+    if code_reason:
+        scope_entries.append(
+            "whether any in-scope file carries a code clone family -- the code scan "
+            f"itself produced no result this run ({code_reason})"
+        )
+    elif zero_families_vs_baseline:
+        scope_entries.append(
+            "whether the in-scope files really carry no code clone family -- this scan "
+            f"returned zero against a gate baseline of {len(baseline_ids or set())}, "
+            "which this gate reports as more likely a broken scan than a cleared repo"
+        )
     verdict["did_not_judge"] = [*DID_NOT_JUDGE, *scope_entries]
-    if verdict.get("degraded"):
-        # A degraded run formed NO families at all -- `evaluate` returns before the
-        # hard arm is computed. Printing "scope_paths admits N/M" underneath that
-        # reads as a coverage statement about a run that covered nothing, which is
-        # the ambiguity this whole slice exists to remove. The structured keys stay
-        # (a consumer can still see the scope), but the human line says what the run
-        # actually did.
+    # Keyed on the CODE SCAN's own outcome, never on the whole-gate `degraded` boolean.
+    # This branch first read `if verdict.get("degraded")` and printed "this run degraded
+    # before any family was formed". That was false for every degrade cause EXCEPT the
+    # ones that are themselves a scan failure: `code_family_members` above runs before
+    # any cause can short-circuit, so a missing overlay, a missing or schema-invalid
+    # baseline, an empty scope_paths, or a failed doc arm all leave the code families
+    # formed and the scope line true.
+    #
+    # Deliberately no count of how many causes: an earlier draft of this comment said
+    # "five of the seven" and a bounded review showed the enumeration wrong in BOTH
+    # directions -- it omitted a cause the old text was also false for, and included
+    # one where zero families genuinely were formed. A restated count in a comment
+    # nothing enforces is the defect this release removes; the CONDITION is the rule.
+    #
+    # `evaluate` returning early skips the HARD ARM, not family formation: it computes
+    # `new_code_families` before its own `if degraded:` return, so the old text sat
+    # beside a populated `new_code_families` list denying those families existed. A gate
+    # added to stop greens from over-claiming coverage was UNDER-claiming it in the same
+    # breath, and contradicting its own payload to do so.
+    if code_reason:
         verdict["messages"].append(
-            "SCOPE: not reported -- this run degraded before any family was formed, "
-            "so no coverage statement about it would be true."
+            # "produced no result", not "no family was formed anywhere": one code_reason
+            # sub-cause is an unreadable member span on families nose DID form, which the
+            # scan then discards whole. Nothing downstream sees them either way, but the
+            # stronger sentence would be false for that sub-cause.
+            "SCOPE: not reported -- the code scan produced no result this run "
+            f"({code_reason}), so this run judged no file for code clone families."
         )
     else:
         verdict["messages"].extend(scope_messages)
@@ -398,25 +389,27 @@ def summarize(report: dict, *, sample_limit: int = 5) -> dict:
         "new_doc_family_count": len(new_docs) if isinstance(new_docs, list) else 0,
         "new_doc_families_sample": new_docs[:sample_limit] if isinstance(new_docs, list) else [],
         "degraded_reasons": report.get("degraded_reasons", []),
-        # WITHHELD, not defaulted, on the paths that judged nothing. `run()` returns
-        # early for `adapter-invalid` and `inert` without populating these, and
-        # defaulting `did_not_judge` to `[]` there publishes an empty "what I did not
-        # judge" list over a gate that judged NOTHING -- which reads as "I judged
-        # everything". That is the false-reassurance class this field was added to
-        # remove, reproduced on the one path the change did not cover, and `inert` is
-        # the DEFAULT state of every repo still working through the documented
-        # adoption procedure. The two sibling gates in this same release already
-        # withhold rather than default (check_runtime_budget_universe on not-armed,
-        # check_docs_graph on not-run); this matches them.
-        **(
-            {
-                "scope_paths": report["scope_paths"],
-                "scope_coverage": report.get("scope_coverage"),
-                "did_not_judge": report.get("did_not_judge", []),
-            }
-            if "scope_paths" in report
-            else {}
-        ),
+        # WITHHELD, not defaulted, PER KEY, on the paths that judged nothing. `run()`
+        # returns early for `adapter-invalid`, `inert`, and the three rebaseline modes without setting
+        # any of these, and defaulting `did_not_judge` to `[]` there published an
+        # empty "what I did not judge" over a gate that judged NOTHING -- which reads
+        # as "I judged everything". `inert` is the state of every consumer repo at
+        # step 1 of the documented adoption procedure, so that is the path it hurt.
+        #
+        # Projected key-by-key rather than gated on `scope_paths` being present: a
+        # round-2 review pointed out that the gated form would SILENTLY DROP a
+        # `did_not_judge` that some future fail-closed path grew without a scope, and
+        # that its inner `.get("did_not_judge", [])` reproduced, inside the guard, the
+        # very defaulting the guard exists to remove. This form fails loudly instead.
+        #
+        # Membership, never truthiness: `scope_paths: []` is the enabled-but-empty
+        # degrade, a real judgment over the scanner's fallback tree, and its
+        # `did_not_judge` must still publish.
+        **{
+            key: report[key]
+            for key in ("scope_paths", "scope_coverage", "did_not_judge")
+            if key in report
+        },
         "adapter_errors": report.get("adapter_errors", []),
         "message_count": len(messages) if isinstance(messages, list) else 0,
         "messages_sample": messages[:sample_limit] if isinstance(messages, list) else [],

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Callable
 
 from scripts.public_skill_validation_lib import ValidationError, public_skill_ids
+from scripts.waiver_file_lines import iter_waiver_lines
 
 REGISTRY_PATH = Path("evals/cautilus/claim-fidelity-registry.json")
 PUBLIC_SKILLS_DIR = Path("skills/public")
@@ -424,15 +425,12 @@ def load_conditional_reads_allowlist(path: Path) -> dict[str, dict[str, str]]:
     if not path.is_file():
         return {}
     waivers: dict[str, dict[str, str]] = {}
-    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
+    for lineno, line in iter_waiver_lines(path):
         parts = line.split(":", 2)
         if len(parts) != 3 or not all(part.strip() for part in parts):
             raise ValidationError(
                 f"{path}:{lineno}: malformed allowlist entry (expected "
-                f"`<skill-id>:<reference-basename>:<reason>`): {raw!r}"
+                f"`<skill-id>:<reference-basename>:<reason>`): {line!r}"
             )
         skill_id, ref, reason = (part.strip() for part in parts)
         waivers.setdefault(skill_id, {})[ref] = reason

@@ -341,7 +341,25 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main() -> int:
-    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="release run planner")
+    # The planner's own budget, not the shared 10s script default. It shells git,
+    # reads the adapter, resolves surface versions, and walks the prepared-stop
+    # topology; measured unloaded on this repo it takes 7.00s / 6.90s / 8.81s, so a
+    # 10s ceiling is a 1.1x margin against its own typical cost. Every gate lane
+    # here is parallel by construction, so that margin is not a margin: under
+    # `pytest -n` the planner is killed mid-report and
+    # `test_detail_yaml_is_structured` fails on the empty stdout, naming the
+    # timeout only as `isinstance(None, dict)`.
+    #
+    # Same reasoning as `check_fresh_checkout_probes.py`, which takes
+    # `default_seconds=0` because it shells arbitrary-length probes: a wrapper
+    # default sized for small scripts must not kill a valid report before its
+    # owner can finish. A finite ceiling is kept here rather than 0 because the
+    # planner's work IS bounded -- a run of this length means something is wrong,
+    # and a report-only command should say so rather than hang. An explicit
+    # CHARNESS_SCRIPT_TIMEOUT_SECONDS still overrides this.
+    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(
+        label="release run planner", default_seconds=90
+    )
     try:
         args = parse_args()
         payload = build_plan(args)

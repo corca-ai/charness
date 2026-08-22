@@ -334,7 +334,9 @@ fails), two traps waste time and produce false proof:
   therefore show `Status: FAIL`, `Mutation score: PASS`, and
   `Blocking signals: FAIL` without any survived Python mutants.
 
-- **`UNMEASURED` is a third status, and it is not a score verdict.** `PASS` and
+- **`UNMEASURED` is a new status token, and it is not a score verdict.** Counting
+  it as "the third status" would be wrong: the `Status:` row already emits
+  `PASS`, `FAIL`, `PASS-partial`, and `FAIL-incomplete`. `PASS` and
   `FAIL` both claim that mutants ran and were scored. When nothing was scored,
   both statuses would assert a measurement that never happened, so the summary
   says `UNMEASURED` instead and the score row reads

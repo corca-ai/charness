@@ -293,7 +293,7 @@ def test_release_run_planner_plain_output(capsys, monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr(
         _PLANNER.SKILL_RUNTIME,
         "arm_cli_timeout",
-        lambda label: (lambda: None),
+        lambda **_kwargs: (lambda: None),
     )
 
     assert _PLANNER.main() == 0
@@ -305,7 +305,7 @@ def test_release_run_planner_main_emits_yaml_detail_in_process(
 ) -> None:
     plan = {"next_action": {"kind": "inspect_only", "reason": "test"}}
     monkeypatch.setattr(_PLANNER, "build_plan", lambda _args: plan)
-    monkeypatch.setattr(_PLANNER.SKILL_RUNTIME, "arm_cli_timeout", lambda label: (lambda: None))
+    monkeypatch.setattr(_PLANNER.SKILL_RUNTIME, "arm_cli_timeout", lambda **_kwargs: (lambda: None))
 
     monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=True))
     assert _PLANNER.main() == 0
@@ -332,7 +332,7 @@ def test_release_run_planner_plain_output_names_required_real_host_scope(
     monkeypatch.setattr(
         _PLANNER.SKILL_RUNTIME,
         "arm_cli_timeout",
-        lambda label: (lambda: None),
+        lambda **_kwargs: (lambda: None),
     )
 
     assert _PLANNER.main() == 0

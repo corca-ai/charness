@@ -253,6 +253,61 @@ injectable so the policy stays pure and testable.
   permanently vacuous gate. A genuinely clone-free scope is real — hence a
   confirmation gate, not a refusal.
 
+### Reading the coverage keys: key presence is not proof of a judgment
+
+`--summary` publishes `scope_paths`, `scope_coverage`, and `did_not_judge` only on a
+run that reached the verdict path. Do not read them with a default — and do not read
+their presence as proof the files were examined.
+
+- **key absent** → this run returned before arming, so it names no gap. The inert,
+  adapter-invalid, and re-baseline paths all return early. A consumer writing
+  `payload.get("did_not_judge", [])` turns that into an empty "what I did not judge"
+  over a gate that looked at nothing, which reads as "I judged everything" — the exact
+  false reassurance these keys exist to remove, recreated on the reading side. Test
+  with `in`, not with `.get`.
+- **key present** → the gate armed. `scope_paths` echoes the scope this run was
+  CONFIGURED with; it is not a receipt that the scan reached those files. An earlier
+  version of this section claimed it was, which was wrong on the one path that matters
+  most: a run whose code scan failed still publishes all three keys.
+- **`scope_paths: []`** → enabled with no scope, so this gate cannot name the file set
+  the code scan reached. It does not report whether the scanner fell back to its own
+  defaults; that is scan provenance the gate does not observe.
+- **`scope_coverage: null`** → the question was asked and the answer is unknown. Not
+  zero uncovered files. A `.get()`-based reader collapses this into the absent case and
+  loses the distinction. Two inputs produce it, and the matching `did_not_judge` entry
+  names whichever ones applied rather than assuming: git could not be consulted this
+  run, and `scope_paths` carries an entry that is not a literal repo-relative path
+  prefix — a glob such as `src/**/*.py`, an absolute path, `~/…`, or a `..` that
+  escapes the root. The coverage count is a literal path-prefix comparison against
+  `git ls-files` output, so a scope it cannot compare literally is refused rather than
+  guessed at. An earlier version of this bullet named only the git cause, and the gate
+  matched it: a glob-scoped consumer was told git had failed on a run where git
+  answered. A whole-tree scope (`.`, `""`, `/`) is not this case — it resolves, and it
+  resolves to `uncovered_file_count: 0`.
+
+**The in-scope judgment has its own discriminator, and it lives in `did_not_judge`.**
+An entry beginning `whether any in-scope file carries a code clone family` means the
+code scan produced no result, so nothing in scope was examined. An entry beginning
+`whether the in-scope files really carry no code clone family` means the scan ran and
+returned zero against a non-empty baseline, which this gate reports as more likely a
+broken scan than a cleared repo.
+
+**Absent both, the gate reached a family-set result for the configured scope — which
+is not the same as having judged it.** An earlier version of this section said "the
+in-scope files were judged", and that was false on three inputs, one of them the
+residual documented immediately below. The second entry cannot fire when the family
+set was INJECTED (`--code-inventory` disarms the backstop by construction), when the
+gate baseline is EMPTY, or when it is missing or unreadable — and in all three a
+broken scan and a clone-free scope are indistinguishable to this gate. Read the
+absence of both entries as "no contradiction was detected", never as an all-clear.
+
+The human `SCOPE:` line follows the same condition, but it is REPLACED rather than
+removed: when the CODE SCAN produced no result the payload still carries a `SCOPE:`
+message, one that says so. Do not grep for the absence of `SCOPE:` as a discriminator. Every other degrade cause — a missing overlay, a
+missing or schema-invalid baseline, an empty `scope_paths`, a failed doc arm — leaves
+the code families formed and the scope statement true, because the scan runs before
+any of those causes can short-circuit.
+
 ### Known residual: an already-empty gate baseline
 
 The "a real scan returned 0 families while the baseline holds N" backstop is keyed on

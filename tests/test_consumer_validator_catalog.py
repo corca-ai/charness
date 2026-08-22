@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import check_consumer_validator_catalog as catalog_check
 from tests.script_main import run_loaded_script_main
@@ -195,6 +196,22 @@ def test_the_catalog_reports_what_its_predicate_did_not_admit() -> None:
         "a zero here would mean the predicate admits every packaged module; if that "
         "ever becomes true this assertion should be re-derived, not deleted"
     )
+    # The NON-ZERO arm of the exclusion count, on the one tree where it is non-zero.
+    # The fixture test pins it at 0 (the excluded file is absent there), and pinning
+    # only that arm let `def count_scanner_exclusions(...): return 0` pass the whole
+    # suite -- which is the shape of the defect that function was written to repair: a
+    # published count whose wrong value nothing measured. It also silently shifts
+    # `uncovered_module_count` by one, so the two are asserted together.
+    assert report["scanner_excluded_count"] == len(catalog_check.EXPECTED_SCANNER_EXCLUSIONS), (
+        "every declared scanner exclusion is present in this repo's packaged tree, so "
+        "the measured count must equal the declared one here"
+    )
+    assert (
+        report["packaged_module_count"]
+        == report["packaged_validator_count"]
+        + report["scanner_excluded_count"]
+        + report["uncovered_module_count"]
+    ), "the three buckets must partition the walked population exactly"
     # NOT `report["candidate_predicate"] == list(EXPECTED_CANDIDATE_PATTERNS)`. That
     # assertion was here and was removed as a tautology: the field is CONSTRUCTED from
     # that constant, so it could not fail for any value of it — the same dead-assertion
@@ -393,6 +410,17 @@ def test_cli_main_emits_a_structured_success_report(tmp_path: Path) -> None:
     # path -- as a constraint on its own repairs.
     assert "uncovered_module_count:" in result.stdout
     assert "candidate_predicate:" in result.stdout
+    # Presence was all this asserted, and presence was not enough: the count subtracted
+    # a CONSTANT number of scanner exclusions from a MEASURED population, so this very
+    # fixture -- one packaged module, one discovered, one declared exclusion that is not
+    # in the tree -- emitted `uncovered_module_count: -1` through the wired path, and the
+    # suite stayed green. A count of modules nobody looked at cannot be negative.
+    payload = yaml.safe_load(result.stdout)
+    assert payload["uncovered_module_count"] == 0, payload
+    assert payload["scanner_excluded_count"] == 0, (
+        "the declared exclusion is not in this fixture's tree, so nothing was excluded"
+    )
+    assert payload["uncovered_module_count"] >= 0
 
 
 def test_cli_main_reports_catalog_failure_without_traceback(tmp_path: Path) -> None:

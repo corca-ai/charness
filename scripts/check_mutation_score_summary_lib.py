@@ -75,7 +75,11 @@ def blocking_signal_labels(metrics: dict[str, float | int | bool | str]) -> list
 def build_summary_lines(
     records: list[tuple[dict, dict | None]],
     repo_root: Path,
-    metrics: dict[str, float | int | bool],
+    # `| str` because this reads `metrics["status"]` and `metrics["sample_manifest_issue"]`,
+    # and hands the same dict to `blocking_signal_labels`, which declares the wider type.
+    # `dict` is invariant in its value type, so the narrower annotation made that call a
+    # type error -- and `status` is where `UNMEASURED` lands, the token this release adds.
+    metrics: dict[str, float | int | bool | str],
 ) -> list[str]:
     reachable = int(metrics["reachable"])
     # THIRD spelling of the same rule, found by a round-2 review of the round-1 fix.

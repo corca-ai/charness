@@ -101,7 +101,17 @@ def test_check_summary_yaml_reports_inert_gate(tmp_path: Path, capsys) -> None:
     payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["status"] == "inert"
     assert payload["ok"] is True
-
+    # WITHHELD, not empty. An inert gate judged nothing, so publishing
+    # `did_not_judge: []` would read as "I judged everything" -- the false
+    # reassurance the uncovered-set fields exist to remove. Both sibling gates
+    # carry this same assertion (test_docs_graph_gate, test_s6b2_changed_line_gaps);
+    # this repair adopted their behaviour and, until a round-2 review said so,
+    # not their proof.
+    assert "did_not_judge" not in payload, (
+        "an inert gate judged nothing; an empty did_not_judge reads as 'I judged everything'"
+    )
+    assert "scope_coverage" not in payload
+    assert "scope_paths" not in payload
 
 def _evaluate(**over):
     base = dict(

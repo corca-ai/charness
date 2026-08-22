@@ -8,6 +8,8 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+from scripts.waiver_file_lines import iter_waiver_lines
+
 RATCHET_SCHEMA_VERSION = "charness.quality.boundary_bypass_ratchet.v2"
 CALL_SITE_FINGERPRINT_ALGO_VERSION = "1"
 DEFAULT_BASELINE_PATH = Path("scripts/boundary-bypass-baseline.json")
@@ -93,10 +95,7 @@ def load_exemptions(path: Path) -> dict[str, str]:
     if not path.is_file():
         return {}
     exemptions: dict[str, str] = {}
-    for line_number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
+    for line_number, line in iter_waiver_lines(path):
         key, marker, why = line.partition("# why:")
         if not marker or not key.strip() or not why.strip():
             raise RatchetError(f"{path}:{line_number}: exemption must be `<content-fingerprint> # why: <rationale>`")

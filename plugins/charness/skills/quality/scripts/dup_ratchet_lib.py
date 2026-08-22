@@ -92,34 +92,6 @@ def overlay_fixable_ceiling(overlay: dict[str, Any] | None) -> int:
 # computed fresh every run from that live tracked-file list; it is never frozen
 # here.
 # --------------------------------------------------------------------------- #
-def scope_coverage(tracked_files: set[str] | None, scope_paths: Iterable[str]) -> dict[str, Any] | None:
-    """How many of this repo's git-tracked files sit outside ``scope_paths`` -- the
-    population ``dup_ratchet_scan.scan_families`` never forms a family from,
-    because it only ever reads ``scope_paths``. ``None`` when ``tracked_files`` is
-    unknown (git could not answer this run); the caller reports that
-    un-knowledge honestly rather than reading an unasked population as zero.
-
-    This over-counts relative to what nose would actually flag: every tracked
-    file counts, including docs/config nose would never treat as a code clone.
-    The gate does not own nose's own file-type filtering, and guessing at it here
-    would invent a number rather than compute one -- this is the closest honest
-    signal available without running a second, duplicate scan.
-    """
-    if tracked_files is None:
-        return None
-    scopes = [str(scope).rstrip("/") for scope in scope_paths]
-
-    def _covered(path: str) -> bool:
-        return any(path == scope or path.startswith(f"{scope}/") for scope in scopes)
-
-    uncovered = sorted(path for path in tracked_files if not _covered(path))
-    return {
-        "tracked_file_count": len(tracked_files),
-        "uncovered_file_count": len(uncovered),
-        "uncovered_top_level": sorted({path.split("/", 1)[0] for path in uncovered}),
-    }
-
-
 # --------------------------------------------------------------------------- #
 # Reduction pre-pass (S4-Defer-3: membership-shrink is advisory, not a hard block)
 #

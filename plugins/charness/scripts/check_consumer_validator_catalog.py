@@ -106,34 +106,53 @@ def _is_candidate_name(name: str) -> bool:
     return any(token in name for token in CANDIDATE_TOKENS)
 
 
-def discover_packaged_validators(package_root: Path) -> list[str]:
-    """Every packaged module whose basename carries a candidate token."""
+def walk_packaged_modules(package_root: Path) -> set[str]:
+    """Every packaged `.py`, as repo-relative posix paths.
+
+    The ONE population every bucket in the report is drawn from. `packaged_validator_count`,
+    `scanner_excluded_count`, and `uncovered_module_count` are each a subset of this set,
+    and the last is computed as the set difference of the other two out of it -- so the
+    three partitioning it is a fact about the sets, not an arithmetic identity.
+
+    Both earlier shapes were wrong in the direction of over-claiming coverage.
+    Subtracting `len(EXPECTED_SCANNER_EXCLUSIONS)` -- a constant -- drove the field
+    NEGATIVE on a root that does not contain the excluded file (the repo's own CLI
+    fixture reported `packaged_module_count: 1` and `uncovered_module_count: -1`).
+    Measuring the exclusions with `is_file()` fixed the sign but measured a DIFFERENT
+    population than the walk: a declared exclusion that is not a `.py` counted in the
+    subtrahend and never in the minuend, so the count of modules nobody looked at came
+    out one too small. One walk removes both.
+    """
 
     if not package_root.is_dir():
         raise CatalogError(f"{package_root}: packaged plugin root is missing")
-    return sorted(
+    return {
         path.relative_to(package_root).as_posix()
         for path in package_root.rglob("*.py")
         if path.is_file()
-        and _is_candidate_name(path.name)
-        and path.relative_to(package_root).as_posix() not in EXPECTED_SCANNER_EXCLUSIONS
-    )
+    }
 
 
-def count_packaged_modules(package_root: Path) -> int:
-    """Every packaged `.py`, so the report can say what the predicate did NOT admit.
+def admitted_validators(walked: set[str]) -> set[str]:
+    """The subset of a walked population the candidate predicate admits.
 
-    Without this the catalog's green is ambiguous between "every packaged validator
-    carries a decision" and "every packaged validator THE PREDICATE ADMITTED carries
-    a decision". Those are different claims, and only the second one is true.
+    Takes the population rather than a root so the report's buckets and this filter
+    cannot drift onto two different walks -- that drift is what made the exclusion
+    count and the module count disagree.
     """
 
-    # The SAME walk `discover_packaged_validators` uses, so the two arms of
-    # `uncovered_module_count` are a subtraction over one population rather than two.
-    # An earlier cut filtered `__pycache__` here and not there; that guard is inert in
-    # the source layout but reachable in the installed one, where the scanned root is
-    # a live plugin directory Python writes bytecode into.
-    return sum(1 for path in package_root.rglob("*.py") if path.is_file())
+    return {
+        relative
+        for relative in walked
+        if _is_candidate_name(relative.rsplit("/", 1)[-1])
+        and relative not in EXPECTED_SCANNER_EXCLUSIONS
+    }
+
+
+def discover_packaged_validators(package_root: Path) -> list[str]:
+    """Every packaged module whose basename carries a candidate token."""
+
+    return sorted(admitted_validators(walk_packaged_modules(package_root)))
 
 
 def _required_text(value: Any, *, field: str, where: str) -> str:
@@ -451,9 +470,11 @@ def validate_catalog(
     catalog_path_value = (catalog_path or (root / default_catalog)).resolve()
     entries = _validate_catalog_header(catalog, catalog_path_value, package_rel)
 
-    discovered = discover_packaged_validators(package_dir)
-    discovered_set = set(discovered)
-    packaged_module_count = count_packaged_modules(package_dir)
+    walked_modules = walk_packaged_modules(package_dir)
+    discovered_set = admitted_validators(walked_modules)
+    discovered = sorted(discovered_set)
+    scanner_excluded = walked_modules & set(EXPECTED_SCANNER_EXCLUSIONS)
+    uncovered_modules = walked_modules - discovered_set - scanner_excluded
     declared: dict[str, dict[str, Any]] = {}
     for index, entry in enumerate(entries, start=1):
         _validate_entry(
@@ -503,15 +524,22 @@ def validate_catalog(
         # fix for that; it is the difference between a green that means "checked"
         # and one that cannot tell "checked" from "never looked".
         "candidate_predicate": list(EXPECTED_CANDIDATE_PATTERNS),
-        "packaged_module_count": packaged_module_count,
+        "packaged_module_count": len(walked_modules),
         # The scanner exclusions are DECIDED, not unseen: they carry a token, the
         # predicate admits them, and the catalog names each with a reason. Counting
         # them as uncovered would put the one module that was most explicitly
         # considered into the bucket labelled "never looked at".
-        "scanner_excluded_count": len(EXPECTED_SCANNER_EXCLUSIONS),
-        "uncovered_module_count": (
-            packaged_module_count - len(discovered) - len(EXPECTED_SCANNER_EXCLUSIONS)
-        ),
+        #
+        # Intersected with the walked set, never counted from the declaration and never
+        # probed with a separate `is_file()`: a declared exclusion outside the walk must
+        # not be subtracted from a total it was never part of.
+        "scanner_excluded_count": len(scanner_excluded),
+        # A set difference out of the same walk, not `total - admitted - excluded`. The
+        # arithmetic form is true for any three numbers, so an assertion that the three
+        # buckets partition the population could not fail -- it passed on the negative
+        # count that motivated writing it. This form makes that assertion falsifiable:
+        # it now holds only because the three sets really are disjoint and exhaustive.
+        "uncovered_module_count": len(uncovered_modules),
         "consumer_facing_count": len(consumer_paths),
         "excluded_count": len(declared) - len(consumer_paths),
         "consumer_facing_validators": consumer_paths,
