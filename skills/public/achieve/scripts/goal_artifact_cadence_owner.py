@@ -65,13 +65,22 @@ _CADENCE_LABEL = re.compile(r"^[ \t>*\-]*\**[ \t]*Gate cadence[ \t]*:[ \t]*\**(.
 #:
 #: BLIND CLASS, stated because the payload now claims this is what it read: this
 #: matches an OCCURRENCE of either flag, not a deferral, so an artifact whose
-#: frame and acceptance AGREE can be refused as contradictory. Two live shapes,
-#: the second more idiomatic in this repo than the first:
+#: frame and acceptance AGREE can be refused as contradictory. Two shapes:
 #:
 #: - negation -- "broad pytest every slice; do NOT pass ``--skip-broad-pytest``"
-#: - two clauses -- "broad pytest at every slice boundary; the final bundle
-#:   records ``--verification-lock``", which is the shape of this repo's own
-#:   seeded frame and agrees with a per-slice acceptance demand
+#: - flag named only for a terminal step, with no earlier deferral -- "broad
+#:   pytest at every slice boundary; the final bundle records
+#:   ``--verification-lock``"
+#:
+#: NOT an instance, and the distinction is load-bearing: the scaffold's own
+#: seeded line (``goal_artifact_scaffold.DEFAULT_DRAFT_ACTIVE_FRAME_LINES``) reads
+#: "pre-lock slices use ``run_slice_closeout.py --skip-broad-pytest``; final/bundle
+#: proof records the verification lock and uses ``--verification-lock``". Its FIRST
+#: clause genuinely defers, so refusing it beside a per-slice acceptance demand is a
+#: TRUE POSITIVE. An earlier revision of this comment claimed the seeded frame as an
+#: over-fire instance; it is not, and whoever takes the upstream issue must not
+#: widen this matcher to stop refusing the template -- that would disarm the floor
+#: on its own scaffold.
 #:
 #: Reading either correctly is paraphrase matching, which this module refuses by
 #: design, so the over-fire is tracked upstream rather than patched with a second
@@ -233,12 +242,17 @@ def check(
             + " DEMANDS it per slice. An agent reading its own acceptance criteria "
             "obeys the acceptance criteria, so this pair buys re-proof of what is "
             "already green. State the outcome in `## User Acceptance` and leave WHEN "
-            "broad proof runs to the `Gate cadence:` line. If that cadence line does "
-            "NOT actually defer — it names `--skip-broad-pytest` or "
-            "`--verification-lock` only to negate it, or only for a final bundle "
-            "alongside a per-slice demand — this refusal is a known over-fire: "
-            "recognition is by literal flag presence, not by reading what the line "
-            "means, so do not delete a correct acceptance line to satisfy it."
+            "broad proof runs to the `Gate cadence:` line. CHECK FIRST whether that "
+            "cadence line defers for any EARLIER step: if it does — the shape the "
+            "achieve scaffold seeds, deferring for pre-lock slices and recording the "
+            "lock at the end — this refusal is CORRECT and the acceptance line is the "
+            "thing to change. Only when the line never defers, naming a flag solely to "
+            "negate it or solely for a terminal step, is this a known over-fire: "
+            "recognition here is by literal flag presence, not by reading what the "
+            "line means. In that case do not delete a correct acceptance line; either "
+            "reword the cadence line so neither flag appears in it literally, or move "
+            "the flag onto a sub-bullet under it, which this floor does not read as "
+            "part of the cadence line."
         ),
         "cadence": cadence,
         "findings": findings,

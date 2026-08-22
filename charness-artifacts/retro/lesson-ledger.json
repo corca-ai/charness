@@ -1424,6 +1424,36 @@
         ]
       },
       "snapshot_sha256": "af0df983afa6494718d0d4835bdad308c91a612b18491fabe35b39886a158c91"
+    },
+    {
+      "session_id": "2026-08-22-b-release",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-22-b-release",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "global-probe-for-local-fact",
+          "detector-blind-class-unstated",
+          "changed-line-proof-before-broad-quality",
+          "proof-surface-message-drift",
+          "agent-authored-score-role",
+          "positive-effect-cannot-be-cited",
+          "release-proof-identity-churn",
+          "goal-closeout-evidence-binding",
+          "release-candidate-preflight-order",
+          "green-test-is-not-covered-line"
+        ]
+      },
+      "snapshot_sha256": "3e60f19946d634eafe0d483567303563ea33f22b6c1794a056d250ffb9aabed5"
     }
   ],
   "score_events": [

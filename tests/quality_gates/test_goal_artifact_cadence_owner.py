@@ -68,6 +68,46 @@ def test_refuses_acceptance_that_restates_a_deferred_cadence() -> None:
     assert "two owners for one rule" in report["reason"]
 
 
+def test_the_seeded_frame_refusal_does_not_read_as_self_cancelling() -> None:
+    """The refusal a real consumer is most likely to see must not dismiss itself.
+
+    The scaffold seeds a two-clause cadence line whose FIRST clause defers, so
+    refusing it beside a per-slice acceptance demand is a TRUE POSITIVE. The
+    payload also discloses a known over-fire in the same sentence, and a release
+    critique found the disclosure reachable from this side: a consumer refused
+    correctly could read "known over-fire" and dismiss it, then run the broad
+    suite every slice -- the measured waste this floor exists to prevent.
+
+    So the disclosure must lead with the check that separates the two, and must
+    say plainly that a deferring line makes the refusal correct.
+    """
+    scaffold = _load(_SCRIPTS / "goal_artifact_scaffold.py", "goal_artifact_scaffold")
+    seeded = [line for line in scaffold.DEFAULT_DRAFT_ACTIVE_FRAME_LINES if "Gate cadence" in line]
+    assert len(seeded) == 1, "the scaffold must seed exactly one cadence line"
+    index = list(scaffold.DEFAULT_DRAFT_ACTIVE_FRAME_LINES).index(seeded[0])
+    # The seeded value soft-wraps onto the following continuation line.
+    cadence = "\n".join(scaffold.DEFAULT_DRAFT_ACTIVE_FRAME_LINES[index : index + 2])
+
+    report = _check(
+        _artifact(
+            cadence=cadence,
+            acceptance="- `pytest tests/ -q` reports zero failures at each slice boundary.",
+        )
+    )
+    # It is a real contradiction, not an over-fire.
+    assert report["applies"] is True
+    assert report["ok"] is False
+    reason = report["reason"]
+    # The disambiguator must come BEFORE the over-fire clause, or the reader meets
+    # the escape hatch first.
+    assert "CHECK FIRST" in reason
+    assert reason.index("CHECK FIRST") < reason.index("over-fire")
+    assert "this refusal is CORRECT" in reason
+    # And the over-fire clause must be conditioned on never deferring, not merely
+    # on where a flag appears.
+    assert "Only when the line never defers" in reason
+
+
 def test_refusal_binds_each_line_to_its_own_role() -> None:
     """The inversion mutant: swapping the two roles must not survive.
 
