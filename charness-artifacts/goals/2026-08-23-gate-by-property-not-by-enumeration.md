@@ -506,6 +506,10 @@ Seeded at activation:
 - Unblock action: land the slice-1 change and read one scheduled `Mutation Tests`
   run, or grant CI observation to a later phase
 - Revisit trigger: the first scheduled mutation run after slice 1 lands
+- **Resolved 2026-08-23: operator GRANTED push and CI observation.** This lifts
+  the activation-time local-only scope for this phase only. `## Non-Goals` keeps
+  its narrowed form — reading CI is in scope, and post-change CI behaviour may
+  now be claimed ONLY from an observed run, never inferred.
 
 - Decision: what to do about the SECOND, uncharacterized mutation failure mode
 - Owner: operator
@@ -568,6 +572,11 @@ Seeded at activation:
 - Unblock action: confirm the approval covered execution, or say "restore the
   pin" and it goes back with a proper queue entry
 - Revisit trigger: before this goal reaches `complete`
+- **Resolved 2026-08-23: operator confirmed the approval covered EXECUTION.** The
+  removal stands, recorded here as the one approved `recommend-removal` exception
+  the taxonomy now allows. The pin's unique detection is independently held by
+  `test_the_scanner_exclusion_list_is_exactly_the_checker_itself`, so no
+  capability rests on this ruling.
 
 ## Coordination Cues
 
