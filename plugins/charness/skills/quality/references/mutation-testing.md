@@ -334,6 +334,22 @@ fails), two traps waste time and produce false proof:
   therefore show `Status: FAIL`, `Mutation score: PASS`, and
   `Blocking signals: FAIL` without any survived Python mutants.
 
+- **`UNMEASURED` is a third status, and it is not a score verdict.** `PASS` and
+  `FAIL` both claim that mutants ran and were scored. When nothing was scored,
+  both statuses would assert a measurement that never happened, so the summary
+  says `UNMEASURED` instead and the score row reads
+  `(no reachable mutant produced a verdict; no score was computed)` rather than
+  a percentage against the threshold. Three routes reach it: the coverage
+  baseline aborted before mutation ran, the StrykerJS report is missing, or the
+  denominator is zero (`killed + survived == 0` — every mutant skipped or
+  ignored, an empty dump, a Stryker config excluding the operator set).
+  **`UNMEASURED` is still red**: the exit code and the workflow result are
+  unchanged, and the blocking-signal row still names the real cause. What
+  changes is only that the run stops claiming a score it never took. Read it as
+  "go find out why nothing ran", not as "the score dropped" — for four days in
+  2026-08 a baseline abort published as a mutation-score regression, and that
+  misreading is what this token exists to prevent.
+
 - **Reproduce with the gate's own coverage, not a naive `coverage run`.** The
   gate collects coverage with `parallel = True` + `COVERAGE_PROCESS_START`
   (`mutation_sampling_lib.run_test_coverage`), so it **captures subprocess-

@@ -189,6 +189,70 @@ def test_js_mutation_summary_fails_when_report_missing(tmp_path) -> None:
     assert "did not produce a fresh JSON report" in summary
 
 
+def test_js_all_ignored_report_is_unmeasured_through_the_cli(tmp_path) -> None:
+    """A Stryker report that scored nothing, driven through the real CLI.
+
+    The zero-denominator property's other tests call `append_summary` directly. This
+    one goes through `check_js_mutation_score.py` as an operator would, because the
+    goal that introduced the property names #586 -- a check that passes its own
+    direct-call test while never firing on the wired path -- as a constraint on its
+    own repairs, and a round-2 review found the property had only direct-call cover.
+
+    All mutants `Ignored` is the realistic route: a `Stryker disable all` in the
+    mutated files, or an `excludedMutations` config covering the operator set.
+    """
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "output_dir: reports/quality",
+                "mutation_testing:",
+                "  score_break: 80",
+                "  report_paths:",
+                "    summary_md: reports/mutation/summary.md",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    report = repo / "reports" / "mutation" / "stryker-js.json"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        json.dumps(
+            {
+                "files": {
+                    "src/a.js": {
+                        "mutants": [
+                            {"status": "Ignored", "mutatorName": "BooleanLiteral"},
+                            {"status": "Ignored", "mutatorName": "ArithmeticOperator"},
+                        ]
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        ["python3", str(ROOT / "scripts" / "check_js_mutation_score.py"), "--repo-root", str(repo)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    summary = (repo / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "- Status: **UNMEASURED**" in summary
+    assert "**FAIL**" not in summary
+    assert "no score was computed" in summary
+    assert "- Reachable mutants: 0" in summary
+    # Unmeasured is still red on the wired path, not only in the renderer.
+    assert result.returncode == 1
+
+
 def test_js_mutation_summary_appends_stryker_results(tmp_path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

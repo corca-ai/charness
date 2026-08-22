@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections import Counter
 from pathlib import Path
 
+from scripts.mutation_baseline_abort_lib import verdict_token
+
 SURVIVED_DETAIL_LIMIT = 10
 PARTIAL_RUN_COMPLETION_FLOOR = 0.75
 
@@ -75,7 +77,26 @@ def build_summary_lines(
     repo_root: Path,
     metrics: dict[str, float | int | bool],
 ) -> list[str]:
-    score_result = "PASS" if metrics["reachable"] and float(metrics["score"]) >= float(metrics["score_break"]) else "FAIL"
+    reachable = int(metrics["reachable"])
+    # THIRD spelling of the same rule, found by a round-2 review of the round-1 fix.
+    # The status row had been routed through `verdict_token` while this row kept its
+    # own `else "FAIL"`, so a zero-denominator run published two adjacent lines that
+    # contradicted each other:
+    #     - Status: **UNMEASURED**
+    #     - Mutation score: **FAIL** (0.0% reachable score vs 60% threshold)
+    # A triager reading the auto-filed issue sees the second line and concludes the
+    # score collapsed -- which is the misdiagnosis (#612) this whole slice exists to
+    # remove, reproduced by the slice's own repair.
+    score_result = verdict_token(
+        reachable, float(metrics["score"]) >= float(metrics["score_break"])
+    )
+    # And with no denominator the `0.0%` is the `else 0.0` fallback, not a
+    # measurement, so it must not be presented as one scored against a threshold.
+    score_detail = (
+        f"({metrics['score']:.1f}% reachable score vs {metrics['score_break']:.0f}% threshold)"
+        if reachable
+        else "(no reachable mutant produced a verdict; no score was computed)"
+    )
     blocking_labels = blocking_signal_labels(metrics)
     blocking_result = "FAIL" if blocking_labels else "PASS"
     blocking_detail = ", ".join(blocking_labels) or "none"
@@ -83,8 +104,7 @@ def build_summary_lines(
         "# Mutation Testing Summary",
         "",
         f"- Status: **{metrics['status']}**",
-        f"- Mutation score: **{score_result}** "
-        f"({metrics['score']:.1f}% reachable score vs {metrics['score_break']:.0f}% threshold)",
+        f"- Mutation score: **{score_result}** {score_detail}",
         f"- Blocking signals: **{blocking_result}** ({blocking_detail})",
         f"- Total mutants: {metrics['total']}",
         f"- Executable mutants: {metrics['executable_total']} (total minus skipped)",
@@ -102,16 +122,19 @@ def build_summary_lines(
         lines.append(f"- Worker abnormal/exception: {metrics['abnormal']}")
     if metrics["skipped"]:
         lines.append(f"- Skipped: {metrics['skipped']}")
+    # "status reflects partial completion" is FALSE when the status is UNMEASURED:
+    # there, the status reflects a zero denominator, not a completion ratio. Telling a
+    # reader triaging a timeout that the status encodes completion sends them to the
+    # wrong question.
+    status_reflects = (
+        "status reflects a zero denominator, not the completion ratio"
+        if not reachable
+        else f"status reflects partial completion (floor {PARTIAL_RUN_COMPLETION_FLOOR*100:.0f}% of executable mutants)"
+    )
     if metrics["exec_timed_out"]:
-        lines.append(
-            f"- Exec timeout fired; status reflects partial completion "
-            f"(floor {PARTIAL_RUN_COMPLETION_FLOOR*100:.0f}% of executable mutants)."
-        )
+        lines.append(f"- Exec timeout fired; {status_reflects}.")
     elif metrics.get("incomplete_exec"):
-        lines.append(
-            f"- Exec did not complete all executable mutants; status reflects partial completion "
-            f"(floor {PARTIAL_RUN_COMPLETION_FLOOR*100:.0f}% of executable mutants)."
-        )
+        lines.append(f"- Exec did not complete all executable mutants; {status_reflects}.")
     if metrics["exec_timed_out"] or metrics.get("incomplete_exec"):
         if not metrics.get("per_file_completion_ok", True):
             lines.append("- Blocking signal: partial run did not meet per-sampled-file completion.")

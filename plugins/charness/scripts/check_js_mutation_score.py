@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
+    UNMEASURED_STATUS,
     baseline_abort_cause,
     read_baseline_abort_marker,
     resolve_baseline_abort_marker,
@@ -78,15 +79,31 @@ def summarize_report(report_path: Path) -> dict[str, object]:
     }
 
 
-def append_summary(summary_path: Path, metrics: dict[str, object], score_break: float) -> None:
+def js_slice_passed(metrics: dict[str, object], score_break: float) -> bool:
+    """Whether the JS slice earned a pass. ONE owner, for the renderer and the exit code.
+
+    These four conjuncts were written twice -- here for the rendered status token and
+    again in `main()` for the process exit code -- in two different orders, so they
+    were byte-different and no duplicate detector would ever have flagged them. Adding
+    a fifth blocking condition to one would have rendered `PASS` while the script
+    exited 1, or the reverse: a summary that contradicts the verdict it ships with.
+    Found by a round-2 review of this slice, in the very file whose other helper was
+    justified as giving a verdict rule one owner.
+    """
     counts = metrics["counts"]
     assert isinstance(counts, dict)
-    passed = (
-        float(metrics["score"]) >= score_break
-        and int(metrics["reachable"]) > 0
+    return (
+        int(metrics["reachable"]) > 0
+        and float(metrics["score"]) >= score_break
         and int(counts.get("NoCoverage", 0)) == 0
         and int(counts.get("Timeout", 0)) == 0
     )
+
+
+def append_summary(summary_path: Path, metrics: dict[str, object], score_break: float) -> None:
+    counts = metrics["counts"]
+    assert isinstance(counts, dict)
+    passed = js_slice_passed(metrics, score_break)
     lines = [
         "",
         "## StrykerJS Mutation Slice",
@@ -95,8 +112,16 @@ def append_summary(summary_path: Path, metrics: dict[str, object], score_break: 
         # mutant there is no score, so neither PASS nor FAIL is earned. Reached when
         # every JS mutant is Ignored -- a `Stryker disable all` in the mutated files,
         # or an `excludedMutations` config covering the operator set.
+        # The parenthetical carries the same obligation as the token: with no
+        # denominator, `0.0%` is a fallback rather than a measurement, and printing it
+        # against a threshold re-asserts the scoring claim the token just withdrew.
+        # Round 1 fixed the token here and left this half; round 2 caught it.
         f"- Status: **{verdict_token(int(metrics['reachable']), passed)}** "
-        f"({float(metrics['score']):.1f}% reachable score vs {score_break:.0f}% threshold)",
+        + (
+            f"({float(metrics['score']):.1f}% reachable score vs {score_break:.0f}% threshold)"
+            if int(metrics["reachable"])
+            else "(no reachable JS mutant produced a verdict; no score was computed)"
+        ),
         f"- Reachable mutants: {metrics['reachable']}",
         f"- Killed: {counts.get('Killed', 0)}",
         f"- Survived: {counts.get('Survived', 0)}",
@@ -138,7 +163,7 @@ def append_missing_report_summary(
         # check_mutation_score.py: a missing report means no JS mutant was scored,
         # which is a different claim from a JS slice that ran and scored badly.
         # The measured JS verdicts above still render PASS/FAIL.
-        "- Status: **UNMEASURED** (StrykerJS JSON report missing)",
+        f"- Status: **{UNMEASURED_STATUS}** (StrykerJS JSON report missing)",
         f"- Missing report: `{report_path}`",
     ]
     if baseline_abort_marker is not None:
@@ -204,15 +229,7 @@ def main() -> int:
         f"StrykerJS score: {float(metrics['score']):.1f}% threshold: {score_break:.0f}% "
         f"reachable: {metrics['reachable']}\n"
     )
-    counts = metrics["counts"]
-    assert isinstance(counts, dict)
-    passed = (
-        int(metrics["reachable"]) > 0
-        and float(metrics["score"]) >= score_break
-        and int(counts.get("NoCoverage", 0)) == 0
-        and int(counts.get("Timeout", 0)) == 0
-    )
-    return 0 if passed else 1
+    return 0 if js_slice_passed(metrics, score_break) else 1
 
 
 if __name__ == "__main__":

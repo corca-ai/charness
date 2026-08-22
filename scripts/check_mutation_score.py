@@ -25,6 +25,7 @@ if str(REPO_ROOT) not in sys.path:
 from scripts import check_mutation_score_summary_lib as mutation_score_summary  # noqa: E402
 from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
+    UNMEASURED_STATUS,
     baseline_abort_cause,
     read_baseline_abort_marker,
     resolve_baseline_abort_marker,
@@ -208,7 +209,11 @@ def mutation_metrics(
         status = "FAIL-incomplete"
     else:
         passed = score_passes
-        status = "PASS" if passed else "FAIL"
+        # Through the shared owner, not a fourth inline ternary. A round-2 review
+        # noted that the "one owner" claim above was overstated while this line still
+        # spelled the rule fifteen lines from the call that was supposed to centralize
+        # it. `reachable` is non-zero on this arm, so the UNMEASURED case cannot fire.
+        status = verdict_token(reachable, passed)
     return {
         **stats,
         "reachable": reachable,
@@ -269,7 +274,7 @@ def _baseline_abort_summary_lines(marker: dict) -> list[str]:
         # four days of "the mutation score broke" were really "nothing was
         # measured". The exit code is unchanged -- an unmeasured surface is still
         # a red workflow -- but the word no longer claims a score it never read.
-        "- Status: **UNMEASURED**",
+        f"- Status: **{UNMEASURED_STATUS}**",
         # Same stage vocabulary as the JS slice, from the same owner. The old wording
         # said "before mutation sampling", which is only true of the sampler stage.
         f"- Blocking signal: {baseline_abort_cause(marker)} before mutation ran; no mutants ran.",

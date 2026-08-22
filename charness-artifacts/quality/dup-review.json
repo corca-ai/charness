@@ -3173,10 +3173,10 @@
     },
     {
       "class": "intentional",
-      "id": "905eed31ef53f0e7",
+      "id": "457150ad017ba719",
       "reviewed_at": "2026-08-22",
       "surface": "code",
-      "note": "The two mutation engines' metrics functions -- check_mutation_score.mutation_metrics over cosmic-ray dump records, check_js_mutation_score.summarize_report over the StrykerJS JSON. They are parallel because the DOMAIN is parallel (count outcomes, derive killed/survived/reachable, score), while the inputs share no schema: one walks [work_item, result] pairs with worker_outcome/test_outcome, the other walks files[].mutants[] with a status string. The one rule they genuinely share -- zero denominator means UNMEASURED -- was extracted to mutation_baseline_abort_lib.verdict_token and is now called by both. What remains is shape, and collapsing it would force one engine's outcome vocabulary onto the other."
+      "note": "The two mutation engines' metrics functions -- check_mutation_score.mutation_metrics over cosmic-ray dump records, check_js_mutation_score.summarize_report over the StrykerJS JSON. They are parallel because the DOMAIN is parallel (count outcomes, derive killed/survived/reachable, score), while the inputs share no schema: one walks [work_item, result] pairs with worker_outcome/test_outcome, the other walks files[].mutants[] with a status string. The one rule they genuinely share -- zero denominator means UNMEASURED -- was extracted to mutation_baseline_abort_lib.verdict_token and is now called by both. What remains is shape, and collapsing it would force one engine's outcome vocabulary onto the other. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
     },
     {
       "class": "intentional",
@@ -3411,10 +3411,10 @@
     },
     {
       "class": "intentional",
-      "id": "9f37cf830cba85e1",
+      "id": "ddb724d8f9188c64",
       "reviewed_at": "2026-08-22",
       "surface": "code",
-      "note": "The two import lists from scripts.mutation_baseline_abort_lib, which became identical BECAUSE the shared verdict rule was given one owner and both engines now import it. De-duplicating this family would mean un-sharing the rule -- the detector is reporting the fix as the defect. Import statements are the declaration of a dependency, not a copy of logic."
+      "note": "The two import lists from scripts.mutation_baseline_abort_lib, which became identical BECAUSE the shared verdict rule was given one owner and both engines now import it. De-duplicating this family would mean un-sharing the rule -- the detector is reporting the fix as the defect. Import statements are the declaration of a dependency, not a copy of logic. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
     },
     {
       "class": "intentional",
@@ -4314,10 +4314,10 @@
     },
     {
       "class": "intentional",
-      "id": "cdca32c9be78baa3",
+      "id": "12b867b5389618ac",
       "reviewed_at": "2026-08-22",
       "surface": "code",
-      "note": "The repo-standard standalone-script bootstrap preamble (`REPO_ROOT = Path(__file__).resolve().parent.parent`, sys.path insert, then a `# noqa: E402` import), shared here between check_js_mutation_score.py and the untouched changed_line_gate_cli.py. This preamble is what makes these commands directly executable in both the source and collapsed-plugin layouts; extracting it is impossible by construction, since its whole job is to run BEFORE the repo package is importable."
+      "note": "The repo-standard standalone-script bootstrap preamble (`REPO_ROOT = Path(__file__).resolve().parent.parent`, sys.path insert, then a `# noqa: E402` import), shared here between check_js_mutation_score.py and the untouched changed_line_gate_cli.py. This preamble is what makes these commands directly executable in both the source and collapsed-plugin layouts; extracting it is impossible by construction, since its whole job is to run BEFORE the repo package is importable. RE-KEYED during the same slice: this ledger's family ids are content fingerprints, so an unrelated edit near the members (here, adding one name to an import list) produces a NEW id and silently orphans the reviewed entry. The judgement did not change; only the key did."
     },
     {
       "class": "intentional",

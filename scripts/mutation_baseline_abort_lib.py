@@ -1,4 +1,16 @@
-"""Shared helpers for the mutation coverage-baseline abort marker.
+"""Shared helpers for the mutation coverage-baseline abort marker, and for the
+status vocabulary both mutation slices report their verdicts in.
+
+TWO concepts live here, declared rather than left for a reader to discover. A
+round-2 review was right that the second arrived because both engines already
+imported this module, not because the file had asked for it; the alternative was
+minting a module for two symbols, which the taste ladder disprefers at equal
+capability. The concepts are related but distinct, and this docstring names both
+so nobody hunting the verdict vocabulary has to guess it lives in an
+abort-marker file: an abort is ONE route to "nothing was measured", a zero
+denominator is another, and `UNMEASURED_STATUS` is the single word both report.
+Every spelling of that word in the repo resolves to the constant below; the
+constant is the owner, not a suggestion.
 
 When `scripts/sample_mutation_files.py`'s coverage-baseline pytest run fails,
 no mutation manifest is written and the failing nodeids only ever reached the

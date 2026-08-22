@@ -129,6 +129,18 @@ def test_check_mutation_score_fails_zero_reachable_dump(tmp_path: Path) -> None:
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
     assert "Blocking signal: no reachable mutants were executed." in summary
+    # THE WIRED PATH for the zero-denominator property. The property's own unit tests
+    # call `mutation_metrics` and `build_summary_lines` directly; this drives the real
+    # CLI through subprocess, which is the surface an operator invokes. The goal that
+    # introduced the property names this constraint twice (issue #586: a check that
+    # passes its own direct-call test while never firing on the wired path), and a
+    # round-2 review found the property had shipped with direct-call coverage only.
+    assert "- Status: **UNMEASURED**" in summary
+    assert "- Status: **FAIL**" not in summary
+    assert "- Mutation score: **FAIL**" not in summary
+    assert "no score was computed" in summary
+    # Still red. Distinguishing the verdict must not forgive it.
+    assert result.returncode == 1
 
 
 def test_check_mutation_score_fails_no_tests_dump(tmp_path: Path) -> None:

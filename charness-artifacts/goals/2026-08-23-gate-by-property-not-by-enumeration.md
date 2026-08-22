@@ -9,15 +9,25 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: slice 1 — the mutation harness signal.
-- Current slice intent: reproduce the `Select mutation sample` failure locally,
-  name the phase that consumes the budget, and make an unrun mutation stage
-  report UNMEASURED coverage instead of reading as a step failure. Once active,
-  this names the reviewable-intent unit in progress and the commits it spans;
-  critique and broad proof do not re-fire within one unchanged intent — update it
-  when the intent changes, not per commit (meaningful-slice-cadence).
+- Current slice: slice 1 complete. Committed at `3a5da4a59`, then repaired
+  against two round-2 bounded reviews and recommitted. The two-round cap is
+  consumed; the round-2 repairs are recorded as accepted-unreviewed. Slice 2
+  (classify the seven) is next and has not started.
+- Current slice intent: slice 1's intent is discharged — an unmeasured mutation
+  run now reports `UNMEASURED` rather than a score verdict, on all three routes
+  into that state, and the red coverage baseline's cause is repaired and pinned.
+  Once a new slice starts, this names the reviewable-intent unit in progress and
+  the commits it spans; critique and broad proof do not re-fire within one
+  unchanged intent — update it when the intent changes, not per commit
+  (meaningful-slice-cadence).
 - Frozen target at activation: `5bd571166d0f3b8c84b9a758b246b1d811e6adbe`.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`.
+- Next action: open slice 2 from the inventory anchors already recorded in
+  `## Off-Goal Findings`, starting from the measured `fail-closed` reading of
+  `dup-review.json` rather than the predecessor retro's summary of it.
+- Standing non-claim for this goal: no CI run has been observed after slice 1.
+  The mutation lane is NOT known to be green, and slice 1's repair is necessary
+  but not proven sufficient — a second, uncharacterized failure mode (the
+  08-19/08-20 cancellations) is still live.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -137,9 +147,13 @@ looked at".
   converting a `contract` list by accident.
 - NOT closing the open issues this touches. Fixing a defect is not the per-issue
   closeout floor.
-- NOT pushing, and NOT claiming anything about CI behaviour from an observed
-  run. The operator scoped this activation to local reproduction and honest
-  signal only.
+- NOT pushing, and NOT claiming that any change here WORKS on CI. The operator
+  scoped this activation to local reproduction and honest signal only. Narrowed
+  after a round-2 reviewer found the earlier wording ("NOT claiming anything
+  about CI behaviour from an observed run") in tension with the slice's own
+  shipped comments, which cite five run IDs. Reading CI history as DIAGNOSTIC
+  INPUT is in scope and is how slice 1's premise was corrected twice; asserting
+  post-change CI behaviour is not, and is asserted nowhere.
 
 ## Boundaries
 
@@ -231,7 +245,16 @@ an operator call.
 - Every enumeration left in place is either fail-closed when its list falls
   behind, or names in its own output what it is not covering — so a green from it
   is no longer ambiguous between "checked" and "never looked".
-- No new surface was added that takes other gates as its input.
+- No new surface was added that takes other gates' VERDICTS, or the repo's
+  enumerations, as its input. The wording is deliberate and was tightened after a
+  round-2 reviewer showed the earlier phrasing ("takes other gates as its input")
+  was literally violated by this goal's own slice 1: a test that reads workflow
+  FILES and asserts a binary is installed before the step that needs it. The
+  worked boundary example, recorded so a later session does not have to re-derive
+  it — reading a gate's *provisioning precondition* out of the only file that
+  states it is a fact about the environment; reading a gate's *green* and
+  re-certifying it is the P5 anti-pattern. The first is allowed, the second is
+  not.
 
 ## Agent Verification Plan
 
@@ -267,7 +290,7 @@ an operator call.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Make the mutation harness distinguish unmeasured from passed, and reproduce the sampler failure locally | Every other proof stands on it, and it has produced no verdict since 2026-08-19 | A local run naming the failing/slow phase; a harness change so a skipped `Run mutation` reports unmeasured coverage rather than reading as a step failure; a negative control; two bounded rounds | not started |
+| 1 | Make the mutation harness distinguish unmeasured from passed, and reproduce the sampler failure locally | Every other proof stands on it, and it has produced no verdict since 2026-08-19 | A local run naming the failing/slow phase; a harness change so a skipped `Run mutation` reports unmeasured coverage rather than reading as a step failure; a negative control; two bounded rounds | done — `3a5da4a59` plus round-2 repairs; evidence in `## Slice Log` |
 | 2 | Classify all seven enumerations with the disposition taxonomy | Converting before classifying is how a `contract` list gets destroyed; P3's exception is real | A per-enumeration record: file and line, current list, the property it approximates or the observable contract it IS, disposition, reason | not started |
 | 3 | Convert the `derive` set (expected: the population count pin and one allowlist) | Both have a stated property their enumeration only approximates | The property replacing the list; capability-equality replay over every current entry; negative control; wired-path test; two bounded rounds | not started |
 | 4 | Give the `fail-closed` and `declare-uncovered` remainder their refusal or their uncovered-set report | A green that cannot distinguish checked from unlooked is the root defect | Each remaining gate either refuses when its population moves, or reports its uncovered set as a number in its own output; a staleness-detection test each | not started |
@@ -320,6 +343,22 @@ Seeded at activation:
 - Unblock action: land the slice-1 change and read one scheduled `Mutation Tests`
   run, or grant CI observation to a later phase
 - Revisit trigger: the first scheduled mutation run after slice 1 lands
+
+- Decision: what to do about the SECOND, uncharacterized mutation failure mode
+- Owner: operator
+- Why deferred: it has no repair in this goal and no reproduction. The 08-19 and
+  08-20 scheduled runs (`32201476295`, `32369077640`) were cancelled at
+  `Select mutation sample` — the 08-19 one after 28 minutes, under a 180-minute
+  job timeout and with `cancel-in-progress: false`, so neither the job timeout
+  nor concurrency explains it. Slice 1's rg repair does not touch this. A
+  round-2 reviewer noted this mode was called "still live" in the goal prose
+  while having no queue item, issue, or off-goal entry — a goal whose thesis is
+  "say out loud what you are not covering" leaving its own gap untracked. This
+  entry is that repair.
+- Unblock action: decide whether to file it as a tracked issue now or wait for
+  the next scheduled run to characterize it with fresh step timings
+- Revisit trigger: the next cancelled `Select mutation sample`, or the first
+  scheduled run after slice 1 that still produces no verdict
 
 ## Coordination Cues
 
@@ -394,6 +433,34 @@ applies.
 
 ## Slice Log
 
+### Slice 1: Slice 1 — make an unmeasured mutation run say so, and unblock the baseline
+
+- Objective: Give the mutation harness a verdict vocabulary that distinguishes 'nothing was measured' from 'measured and failed', and remove the cause of the red coverage baseline. Scoped by operator grant to local reproduction plus honest signal: no push, no CI observation.
+- Why this approach: Every other proof in this repo stands on the mutation surface, and it had produced no verdict since 2026-08-19 while its summary still rendered a score verdict. That is the north star's P5 defect exactly -- a gate declaring completion over a population it never read.
+- Commits: 3a5da4a59 (slice), fd07fb9d7 (goal shaping and activation)
+- What changed: scripts/check_mutation_score.py, scripts/check_js_mutation_score.py, scripts/mutation_baseline_abort_lib.py, .github/workflows/mutation-tests.yml, .github/workflows/quality-core.yml, tests/quality_gates/test_mutation_baseline_abort.py, tests/quality_gates/test_quality_mutation_testing.py, tests/quality_gates/test_js_mutation_tooling.py, charness-artifacts/quality/dup-review.json, and the generated plugins/charness/ mirror.
+- Alternatives rejected: Rejected: skipping the rg-dependent tests when rg is absent -- that is issue #586's class, a green suite over an inert surface. Rejected: removing the rg dependency from the shipped script in this slice -- it is a dependency change on an exported proof surface and a naive `git ls-files` swap breaks seven tests that build non-git roots, so it owes its own slice. Rejected: special-casing the two extra zero-score render sites a reviewer found -- the single condition over the denominator covers every route into them, which is this goal's own thesis. Rejected: reverting the shared `verdict_token` to satisfy the duplicate detector, which had begun flagging the import lists that sharing created -- letting the gate dictate a worse design is the failure under study.
+- Targeted verification: Local reproduction of the cause in both directions: with rg present the preflight suite passes 25/25 in 2.10s; with rg removed from PATH the same 8 tests fail in 1.71s, matching the CI log's 8 verbatim. Independently corroborated on a second workflow: quality-core run 32536921987 (2026-08-21) went red with the identical 8. Negative controls, each run by planting the defect and observing the flip, then restoring: the UNMEASURED rename (test fails, restored passes), the rg workflow ordering pin (fails, restored passes), and the zero-denominator property -- which FIRST showed no coverage at all when planted, proving the property had shipped untested, and now bites. run_slice_closeout.py --skip-broad-pytest completed clean. NOT claimed: any CI behaviour after this change; no run was observed.
+- Test duplication pressure: Predicted in the goal's Boundaries and it fired twice. The duplicate ratchet hard-blocked on a pre-existing byte-identical pair in check_js_mutation_score.py that an unrelated comment shifted into one detector window -- removed by extracting _append_summary_section rather than recorded as a ledger entry. It then blocked again on four families that were all boilerplate or structurally parallel: a one-line ternary, the repo's sys.path bootstrap preamble, the two import lists that the shared-rule extraction had made identical, and the two engines' inherently parallel metrics functions. Those four were classified intentional with reasons. Classification: the first was new-slice-local and fixable; the four are accumulated detector noise on boilerplate, and the fact that its remedy menu asked for a ledger entry each time is direct evidence for slice 2's disposition of dup-review.json.
+- Critique: Two rounds, five bounded read-only reviewers, unnamed, with reviewer_boundary_fingerprint snapshot/verify around round 1 (verdict parent-attributed, no unattributed drift). Round 1 ran three angles -- correctness/reachability, proof integrity, and root-cause premise -- and every one of them landed something that changed the slice. Proof integrity showed the negative control tested a pure function while the token it guarded was emitted by a different renderer. Correctness showed the shipped invariant was false: two more reachable paths still rendered FAIL with nothing scored. Root-cause premise broke the claim's time scope by noticing command_plan_preflight.py did not exist before 2026-08-21, and broke the 'only CI surface runs the standing suite' premise. Both premise corrections were verified against CI records and folded. Round 2 read the repairs.
+- Off-goal findings: Four findings recorded in the artifact's Off-Goal Findings: the missing-binary legibility gap, the adapter-owned issue title that misnames a baseline abort, #612's stale body, and the shipped script's hard rg dependency with the non-git-root caveat that makes a naive git ls-files swap unsafe.
+- Lessons carried forward: Reproduce before repairing, and then reproduce the REPAIR's premise too. This slice's stated cause was wrong twice: the draft said the sampler times out (it completed and refused on a red baseline), and the first correction over-scoped rg to a window in which the offending file did not yet exist. Both were caught by reading records -- CI step outcomes, git log --diff-filter=A -- not by re-reading prose. Second: a property added without a test is not a property. Planting the zero-denominator defect showed nothing failed, which is the only reason it now has a control.
+- Metrics:
+
+### Slice 2: Slice 1, round-2 repairs — the fix carried the class it fixed
+
+- Objective: Fold two round-2 bounded reviews of the repaired surface. The operating contract requires this round for a slice that changes verdict logic on a proof surface, and it earned its keep: it found a blocker in the code and a blocker in the record.
+- Why this approach: One round would have shipped a summary that contradicted itself and a written record claiming the opposite of what the diff did.
+- Commits: follows 3a5da4a59; round-2 repairs committed separately
+- What changed: scripts/check_mutation_score_summary_lib.py, scripts/check_js_mutation_score.py, scripts/check_mutation_score.py, scripts/mutation_baseline_abort_lib.py, tests/quality_gates/test_mutation_baseline_abort.py, tests/quality_gates/test_js_mutation_tooling.py, tests/quality_gates/test_quality_mutation_score_validity.py, tests/quality_gates/test_quality_mutation_testing.py, charness-artifacts/quality/dup-review.json, this artifact, and the generated mirror.
+- Alternatives rejected: Rejected the blunt `"**FAIL**" not in rendered` assertion that exposed the code blocker: it also forbids `- Blocking signals: **FAIL**`, which is a DIFFERENT predicate and is true and needed. Suppressing a correct line to satisfy a test would have been the same defect in the other direction, so the property is stated over the rows that render a verdict about the code, and the blocking-signal row is asserted PRESENT. Rejected keeping the rg pin as a hand-listed pair of workflow paths: that is a two-entry enumeration inside the goal that exists to stop them, so the population is now globbed from `.github/workflows/` and each job that runs the standing suite must install rg.
+- Targeted verification: 124 focused tests pass. Three negative controls run by planting the defect and observing the flip, then restoring: the self-contradicting summary, the cross-job rg install (moved into the job that does NOT run the suite -- the old whole-file assertion passed, the derived per-job one fails), and the zero-denominator property. Both engines now have a WIRED-PATH test driving a zero-denominator run through the real CLI by subprocess, which the property shipped without. run_slice_closeout.py --skip-broad-pytest completed clean; broad standing suite run separately. NOT claimed: any CI behaviour after this change.
+- Test duplication pressure: The duplicate ratchet fired a third time, and this occurrence is the slice's sharpest measurement about it: three of the four families were re-reported under NEW fingerprints because the repairs added one name to an import list. The ids are content fingerprints, so an edit near the members orphans a reviewed entry and demands a fresh one for an unchanged human judgement. Entries were re-keyed in place rather than accumulated. Classification: churn, not stale-list under-coverage -- the opposite failure from the one this goal set out to find.
+- Critique: Two bounded read-only reviewers on the repaired surface. Findings folded: a THIRD spelling of the rule in check_mutation_score_summary_lib rendering `Mutation score: **FAIL** (0.0%)` directly under `Status: **UNMEASURED**` -- the #612 misdiagnosis reproduced by its own repair; a `passed` verdict rule computed twice in check_js_mutation_score, once for the renderer and once for the exit code, in different orders so no detector could ever flag them; the `status reflects partial completion` sentence that is false when the status is UNMEASURED; the untested `reachable == 0` precedence over the timeout and pending arms; the `one owner` claim overstated while a fourth inline ternary survived; UNMEASURED_STATUS referenced only inside its own definition; the missing wired-path tests; and a BLOCKER on the record -- the Off-Goal Findings bullet said the ratchet's request was answered by removing duplication while the diff extended the ledger four times, three of them describing this slice's own fix.
+- Off-goal findings: The second, uncharacterized mutation failure mode (the 08-19/08-20 cancellations) now has an Operator Decision Queue entry; it had been called `still live` in prose with no tracked destination, which is this goal's own thesis one level up. The public reference skills/public/quality/references/mutation-testing.md still teaches the two-token vocabulary and has no UNMEASURED entry.
+- Lessons carried forward: The two-round floor is not ceremony on a proof surface. Round 1 produced a repair that carried the class it fixed -- a status token corrected on two paths while a third spelling contradicted it on the adjacent line -- and only a round reading the REPAIRS could see it. Second: an assertion narrowed to make a test pass is how the blocker hid. The first cut asserted `- Status: **FAIL**` where the sibling assertion used the bare token; the anchored form steps around the contradicting line, and the version that would have caught it was already in the same file, one function away.
+- Metrics:
+
 ## Context Sources
 
 - [The design north star](../../docs/design-north-star.md) — the governing
@@ -409,8 +476,21 @@ applies.
   whose Sibling Search names all seven.
 - The predecessor goal's slice-1 critique rounds, where a hand-kept prefix list
   put a gate-input pointer in the wrong scope and a property fixed it.
-- The observed run behind slice 1: `Mutation Tests` run `32573073322`
-  (2026-08-22, `f5211700a`), read at activation, not the stale text in #612.
+- The CI runs read as diagnostic input for slice 1, listed in full because a
+  round-2 reviewer found the frozen list named only the first while the shipped
+  comments cite five: `Mutation Tests` `32573073322` (2026-08-22, `f5211700a`,
+  the sampler failure); `quality-core` `32536921987` (2026-08-21, the same eight
+  preflight failures on a different workflow); `quality-core` `32544789186`
+  (2026-08-22, clean in 0.5s on a release-artifact-only range, which is why that
+  lane's green is range-scoped rather than suite-wide); and the cancelled
+  `Mutation Tests` runs `32201476295` (2026-08-19) and `32369077640`
+  (2026-08-20). Read at activation and during slice 1, not the stale text in
+  #612.
+- Local reproduction of slice 1's cause, recorded here rather than only in a
+  workflow comment: with `rg` present `tests/quality_gates/test_command_plan_preflight.py`
+  passes 25/25 in 2.10s; with `rg` removed from `PATH` the same eight tests fail
+  in 1.71s — the eight tests in isolation, not a reproduction of the 20-minute
+  sampler path.
 
 ## Interview Decisions
 
@@ -517,14 +597,47 @@ Issues or deferred findings discovered during the run.
   skipped. The auto-filer updates an existing issue by marker token, so the body
   reflects whichever run first opened it. An open issue is not a description of
   today's defect.
-- **The duplicate ratchet asked to be extended during slice 1**, which is a live
-  instance of this goal's thesis rather than an aside. It reported one new code
-  family and offered three remedies, one of which was to classify the family in
-  `dup-review.json` — one of the seven enumerations under study. The family was
-  a pre-existing byte-identical pair in `check_js_mutation_score.py` that an
-  unrelated comment had shifted into one detector window. Removing the
-  duplication was correct and the list entry would have recorded the copies
-  instead. Carried into slice 2 as evidence for that enumeration's disposition.
+- **The duplicate ratchet asked to be extended during slice 1, and the slice
+  answered BOTH ways — it removed duplication once and extended the list four
+  times.** An earlier version of this bullet recorded only the removal, which
+  read as though the slice had declined to extend the ledger. It did not. A
+  round-2 reviewer caught the omission; the full record follows, because the
+  measurement is the most useful input slice 2 has.
+  - Removed: a pre-existing byte-identical pair in `check_js_mutation_score.py`
+    that an unrelated comment had shifted into one detector window. Extracted as
+    `_append_summary_section`. The ledger entry would have recorded the copies
+    instead of removing them, so removal was correct here.
+    - Extended: four entries in `charness-artifacts/quality/dup-review.json`,
+    all classified `intentional` — a one-line ternary matched across unrelated
+    domains; the two engines' metrics functions, which share no input schema;
+    the two import lists; and the repo's `sys.path` bootstrap preamble. The
+    family fingerprints are deliberately NOT restated here: they are volatile
+    (see the re-keying note below), and a value copied into prose drifts from its
+    source, which is a small instance of this goal's own subject. The ledger is
+    the one place they live.
+  - **Three of the four were created or surfaced by this slice's own
+    refactor.** The import-list family exists *because* the shared rule was given
+    one owner: the detector reported the fix as the defect. That is a measured
+    fact about how this ratchet behaves on refactors, not a complaint.
+  - **Re-keyed within the same slice, which is the sharpest measurement this
+    slice produced about the ledger.** The four ids above are the SECOND set. The
+    round-2 repairs added one name to an import list, and three of the four
+    families were immediately re-reported under new fingerprints, requiring their
+    reviewed entries to be re-keyed in place. The ids are
+    content fingerprints, so an edit ANYWHERE NEAR the members orphans the
+    reviewed entry and demands a fresh one — the human judgement is unchanged and
+    has to be re-recorded anyway. That is a maintenance treadmill, not a stale
+    list: the failure mode here is churn rather than silent under-coverage, which
+    is the opposite of the failure this goal set out to find. Slice 2 should
+    classify on THIS evidence, not on the predecessor retro's one-line summary.
+  - **Disposition correction.** An earlier reading of this ledger as the
+    `contract` case was wrong, and the reviewer's correction is adopted:
+    `dup-review.json` is **`fail-closed`**. Its gate already refuses when a new
+    family appears, so the list falling behind IS detectable — which is the
+    fail-closed definition in `## Boundaries`, not the irreducible-observable
+    contract. Under that classification, extending it is the correct operation of
+    a healthy enumeration rather than an instance of the disease. Slice 2
+    inherits this classification, not the earlier one.
 - **The shipped `command_plan_preflight.py` hard-requires a non-baseline binary,
   and CI provisioning does not fix that for consumers.**
   `skills/shared/references/binary-preflight.md` names `rg` as explicitly

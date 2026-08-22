@@ -559,7 +559,23 @@ def test_a_zero_denominator_is_unmeasured_on_both_mutation_slices(tmp_path: Path
 
     rendered = "\n".join(check_mutation_score_summary_lib.build_summary_lines([], tmp_path, metrics))
     assert "- Status: **UNMEASURED**" in rendered
-    assert "- Status: **FAIL**" not in rendered
+    # EVERY VERDICT ROW, not just the status row. The first cut asserted only
+    # `- Status: **FAIL**`, and that narrowing is what hid the blocker: the summary
+    # rendered `- Status: **UNMEASURED**` immediately followed by
+    # `- Mutation score: **FAIL** (0.0% ...)`, and an assertion anchored on the status
+    # row steps straight around the contradicting line.
+    #
+    # But the blunt `"**FAIL**" not in rendered` that found it is ALSO wrong, and
+    # deliberately not used here: `- Blocking signals: **FAIL** (no reachable
+    # mutants, ...)` is a different predicate -- it says blocking signals EXIST, which
+    # is true and is the row a triager needs. Forbidding the token everywhere would
+    # have suppressed a correct line to satisfy a test. So the property is stated over
+    # the rows that render a VERDICT ABOUT THE CODE, and the blocking-signal row is
+    # asserted present rather than absent.
+    for verdict_row in ("- Status: **FAIL**", "- Mutation score: **FAIL**"):
+        assert verdict_row not in rendered, rendered
+    assert "no score was computed" in rendered
+    assert "- Blocking signals: **FAIL**" in rendered, "the real blocker must still be reported"
 
     # The JS slice, same property, its own renderer.
     js_summary = tmp_path / "js-summary.md"
@@ -575,7 +591,11 @@ def test_a_zero_denominator_is_unmeasured_on_both_mutation_slices(tmp_path: Path
     # Negative control for BOTH: a real denominator still renders a real verdict, so
     # the assertions above are about the zero case and not about the tokens vanishing.
     measured = check_mutation_score.mutation_metrics(
-        {**zero_denominator, "killed": 1, "survived": 9, "skipped": 0, "scope_gap": 0},
+        # `total` moves with the members, or the fixture claims 10 scored mutants out
+        # of 4 executable -- incoherent input that would break on any future
+        # `reachable <= total` invariant, and break as the FIXTURE rather than as the
+        # code it is meant to be guarding.
+        {**zero_denominator, "total": 10, "killed": 1, "survived": 9, "skipped": 0, "scope_gap": 0},
         score_break=80.0,
     )
     assert measured["status"] == "FAIL"
@@ -589,6 +609,55 @@ def test_a_zero_denominator_is_unmeasured_on_both_mutation_slices(tmp_path: Path
         80.0,
     )
     assert "- Status: **FAIL**" in js_measured.read_text(encoding="utf-8")
+
+
+def test_unmeasured_outranks_incomplete_when_there_is_no_denominator(tmp_path: Path) -> None:
+    """The precedence decision the `reachable == 0` branch makes, pinned.
+
+    That branch sits BEFORE the `exec_timed_out` and `incomplete_exec` arms, so a run
+    that timed out with nothing scored reports UNMEASURED rather than FAIL-incomplete.
+    That is deliberate -- "we measured nothing" is the stronger and more actionable
+    statement than "we measured part of it" -- but it was shipped unpinned, and a
+    later reorder putting the zero check after the timeout arm is a defensible reading
+    that would silently restore FAIL-incomplete. A round-2 review named it.
+
+    The detail a reader needs is NOT lost to the rename: the pending count, its
+    blocking signal, and the timeout note all still render.
+    """
+    stats = {
+        "killed": 0,
+        "survived": 0,
+        "total": 20,
+        "skipped": 0,
+        "pending": 20,
+        "no_tests": 0,
+        "incompetent": 0,
+        "abnormal": 0,
+        "scope_gap": 0,
+    }
+    timed_out = check_mutation_score.mutation_metrics(stats, score_break=80.0, exec_timed_out=True)
+    assert timed_out["status"] == "UNMEASURED"
+    assert timed_out["passed"] is False
+
+    pending_only = check_mutation_score.mutation_metrics(stats, score_break=80.0)
+    assert pending_only["status"] == "UNMEASURED"
+    assert pending_only["passed"] is False
+
+    rendered = "\n".join(
+        check_mutation_score_summary_lib.build_summary_lines([], tmp_path, timed_out)
+    )
+    assert "- Pending (not executed): 20" in rendered
+    assert "- Blocking signal: mutation execution left pending mutants." in rendered
+    # And the timeout note must not tell the reader the status encodes a completion
+    # ratio, because on this path it encodes a zero denominator.
+    assert "Exec timeout fired" in rendered
+    assert "status reflects partial completion" not in rendered
+
+    # Negative control: with a denominator, the incomplete arms still own the verdict.
+    still_incomplete = check_mutation_score.mutation_metrics(
+        {**stats, "killed": 5, "survived": 5, "pending": 10}, score_break=80.0
+    )
+    assert still_incomplete["status"] == "FAIL-incomplete"
 
 
 def test_check_mutation_score_marker_present_falls_back_to_log_tail_when_no_nodeids(
