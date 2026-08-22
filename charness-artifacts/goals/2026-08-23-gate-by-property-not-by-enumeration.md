@@ -1,6 +1,6 @@
 # Achieve Goal: Gate by property, not by enumeration
 
-Status: active
+Status: complete
 Created: 2026-08-23
 Activation: `/goal @charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`
 
@@ -486,19 +486,9 @@ Recount the tracker before scope; see the `achieve` skill's
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Seeded at activation:
+Four items were raised during the run; three are RESOLVED with the operator's
+ruling recorded inline. The one still open is the CI observation, which is
+granted but not yet performed.
 
 - Decision: whether the slice-1 harness repair actually restores a verdict on CI
 - Owner: operator
@@ -623,8 +613,16 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Phases: <declared phases, or n/a — why none were crossed>`
-- `Routing: <skill> — <why this phase needs it>`
+- Phases: impl, quality, critique, retro, issue
+- Routing: impl — four slices changed code, tests and gate surfaces, which is implementation work; its stop gate is `prove`, and this run used `run_slice_closeout.py` at every slice boundary as that gate.
+- Routing: critique — every slice changed verdict logic on a proof surface, which the operating contract sends to bounded fresh-eye review; eleven rounds ran across the four slices.
+- Routing: retro — the session opened a lesson receipt, so the after-action review is owed and is bound in `## Final Verification`.
+- Routing: issue — two Auto-Retro dispositions were structural rather than local, so they were filed (#702, #703) instead of held as prose.
+- Routing: quality — the goal's whole subject is this repo's quality bar, and every slice ran `run_slice_closeout.py` plus the standing suite; the duplicate ratchet, the docs-graph ratchet and the runtime-budget universe are quality-owned surfaces this run changed.
+- Gather: n/a — no external source was consulted; every input was this repo's own tree, its CI records, and its gates' own output.
+- Release: n/a — no version bump and no install-manifest edit; the plugin mirror was regenerated, which is a generated surface rather than a release surface.
+- Issue closeout: n/a — #586 and #612 appear in `## Context Sources` as context only. This goal fixed defects they name but did not run the per-issue closeout floor, which `## Non-Goals` excludes explicitly.
+- Successor goal: charness-artifacts/goals/2026-08-24-close-the-scans-this-run-taught-us-to-read.md
 
 ## Discuss Before Activation
 
@@ -976,13 +974,13 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md
+Host log probe: skipped: host-log-not-exposed: this host exposes no per-turn token or timing log, and no metric in this goal is sourced from one — every figure cited is a command's own stdout, re-run by me rather than taken from a subagent's report.
+Disposition review: skipped: host-blocked-subagent: the session's higher-priority instruction bars unrequested subagent spawns; the operator granted spawning for bounded fresh-eye REVIEW scopes, which was spent on eleven review rounds, and did not grant a separate disposition-review spawn.
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #702 (novel: no record in this repo previously named the load-bearing-sentence citation rule; the existing referent gate checks that named referents are real, never which sentence is load-bearing); issue #703 (novel: prior instances of this class were checks that never fired on the wired path, #586; this is the inverse — the check fires correctly and its output reaches no reader); applied: scripts/check_consumer_validator_catalog.py states the sizing METHOD and carries no frozen population count, and the counts it publishes are recomputed per run.
+Structural follow-up: issue #702 (novel: no prior record in this repo names the load-bearing-sentence citation rule); issue #703 (novel: numbers shipped into channels no routine run prints).

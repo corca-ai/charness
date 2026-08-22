@@ -2467,6 +2467,46 @@
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "not-consulted",
       "anchor": "Never revisited it at the decision that chose how the cadence floor recognises an ambiguous line; committed an enumerated four-word negation list, and a round-2 review found it disarmed the floor on true positives. The repair that held is the structural rule the lesson names."
+    },
+    {
+      "event_id": "gbp-2026-08-23-01",
+      "session_id": "2026-08-23-gate-by-property",
+      "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "lesson_id": "bar-recorded-as-prose",
+      "outcome": "read-but-not-applied",
+      "anchor": "Removed the checked pin packaged_validator_count == 134 as a chore, then wrote the same measurement into the module docstring where nothing enforces it; the operator caught it and 009a894e2 repaired it by stating the METHOD instead."
+    },
+    {
+      "event_id": "gbp-2026-08-23-04",
+      "session_id": "2026-08-23-gate-by-property",
+      "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "lesson_id": "runtime-budget-contention",
+      "outcome": "changed-an-action",
+      "anchor": "Eight standing-suite failures were diagnosed as contention from my own concurrent edits rather than real, by stopping the concurrent run and re-running clean: 11202 passed, 0 failed."
+    },
+    {
+      "event_id": "gbp-2026-08-23-05",
+      "session_id": "2026-08-23-gate-by-property",
+      "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "lesson_id": "proof-surface-message-drift",
+      "outcome": "changed-an-action",
+      "anchor": "The catalog refusal message still read 'is not a packaged check_/validate_ script' after the predicate became position-independent; it now renders the live CANDIDATE_TOKENS instead of a hardcoded rule."
+    },
+    {
+      "event_id": "gbp-2026-08-23-02",
+      "session_id": "2026-08-23-gate-by-property",
+      "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "outcome": "changed-an-action",
+      "anchor": "Ran focused tests then run_slice_closeout then the broad standing suite last, in that order, on every slice; without it I would have run the broad suite first on slice 1 and read its green as changed-line ownership, which is the substitution this lesson names."
+    },
+    {
+      "event_id": "gbp-2026-08-23-03",
+      "session_id": "2026-08-23-gate-by-property",
+      "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "lesson_id": "removal-consumer-grep-incomplete",
+      "outcome": "changed-an-action",
+      "anchor": "Swept the ENGLISH as well as the identifier when the catalog predicate stopped being positional, which found docs/conventions/validator-timing-layers.md still teaching the prefix rule; without it I would have grepped only for check_ and validate_ and left that doc asserting a boundary the code no longer had."
     }
   ],
   "lessons": {
@@ -2518,10 +2558,10 @@
     "runtime-budget-contention": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-runtime-budget-contention",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2548,10 +2588,10 @@
     "removal-consumer-grep-incomplete": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
       "transition_id": "seed-removal-consumer-grep-incomplete",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2758,10 +2798,10 @@
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "transition_id": "seed-changed-line-proof-before-broad-quality",
-      "score_total": 7,
-      "score_count": 19,
+      "score_total": 8,
+      "score_count": 20,
       "outcome_counts": {
-        "changed-an-action": 13,
+        "changed-an-action": 14,
         "not-consulted": 1,
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
@@ -2863,10 +2903,10 @@
     "proof-surface-message-drift": {
       "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
       "transition_id": "seed-proof-surface-message-drift",
-      "score_total": 4,
-      "score_count": 4,
+      "score_total": 5,
+      "score_count": 5,
       "outcome_counts": {
-        "changed-an-action": 4,
+        "changed-an-action": 5,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
@@ -2938,13 +2978,13 @@
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "transition_id": "seed-bar-recorded-as-prose",
-      "score_total": 3,
-      "score_count": 11,
+      "score_total": 2,
+      "score_count": 12,
       "outcome_counts": {
         "changed-an-action": 7,
         "not-consulted": 1,
         "pushed-a-wrong-action": 0,
-        "read-but-not-applied": 3,
+        "read-but-not-applied": 4,
         "legacy-scalar": 0
       },
       "state": "active",
