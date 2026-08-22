@@ -1,55 +1,72 @@
 {
   "probe": "changed-line-coverage-context-blowup",
   "date": "2026-08-22",
+  "issue": 696,
+  "related_issue": 697,
   "goal": "charness-artifacts/goals/2026-08-22-proof-cost-portability-and-the-cadence-contract.md",
   "slice": "C",
   "question": "What does the changed-line mutation-coverage gate pay for the per-test `contexts` block that its own verdict never reads?",
-  "why_checked_in": "The goal refuses citations to gitignored rolling files. `reports/` is gitignored (`.gitignore:7`), so the measured numbers are recorded HERE rather than quoted from the report tree they were measured in.",
+  "why_checked_in": "The goal refuses citations to gitignored rolling files. `reports/` is gitignored (`.gitignore:7`), so every number is recorded HERE rather than quoted from the report tree it was measured in.",
+  "revision_note": "Revised after a bounded fresh-eye claims review. The first cut reported timings rounded to one decimal, whose components did not sum to their own stated totals (0.02 + 0.12 vs a total of 0.13); reported a peak-RSS ratio to four significant figures from a one-significant-figure denominator; and rested its verdict-equivalence claim on matching file-entry COUNTS, which cannot distinguish 'same set' from 'same size'. All three are replaced below with raw values and a direct line-level comparison.",
   "method": {
-    "same_underlying_data": "Both exports were produced from the SAME coverage data file, `reports/mutation/.test-coverage.mutation-coverage` (9404416 bytes, mtime 2026-08-22T09:25). Only the export flag differs, so the comparison isolates `--show-contexts` and nothing else.",
-    "with_contexts": "The pre-existing `reports/mutation/test-coverage.json`, whose own `meta.show_contexts` is `true`.",
-    "plain": "python3 -m coverage json --data-file reports/mutation/.test-coverage.mutation-coverage -o <tmp>/plain-export.json",
-    "load_measurement": "read_text() then json.loads(), timed separately; peak RSS from resource.getrusage(RUSAGE_SELF).ru_maxrss",
-    "host": "36 CPUs, 125 GiB RAM, Linux 5.15.0-171-generic, CPython with coverage 7.14.0"
+    "same_underlying_data": "Every arm was produced from ONE coverage data file, `reports/mutation/.test-coverage.mutation-coverage` (9404416 bytes, mtime 2026-08-22T09:25, sha256 ced3bae0f40ca5146407d96af34af7d241cde0e81bb15785e1e1fedc751325bd). Only the export flag differs, so the comparison isolates `--show-contexts`.",
+    "export_commands": [
+      "python3 -m coverage json --show-contexts --data-file <data> -o <with-contexts>",
+      "python3 -m coverage json --data-file <data> -o <plain>"
+    ],
+    "timing": "time.perf_counter() around each step; peak RSS from resource.getrusage(RUSAGE_SELF).ru_maxrss (KiB on Linux). Raw values, unrounded.",
+    "host": "36 CPUs, 125 GiB RAM, Linux 5.15.0-171-generic, CPython 3.10, coverage 7.14.0"
   },
-  "measured": {
+  "measured_export_wall_time": {
+    "note": "The before/after the goal's verification plan named, scoped to the step the change actually affects. Both arms ran in the same process, back to back, from the same data file and with no rcfile.",
+    "with_contexts": {"seconds": 162.3824864011258, "bytes": 8224123144},
+    "plain": {"seconds": 21.517476862296462, "bytes": 12261827},
+    "ratios": {"seconds": 7.55, "bytes": 670.7}
+  },
+  "measured_load_cost": {
+    "note": "read_text() then json.loads(), which is what `mutation_sampling_lib.load_file_statement_lines` does.",
     "with_contexts": {
-      "bytes": 8222858702,
-      "gigabytes": 8.22,
+      "read_text_seconds": 7.806794157251716,
+      "json_loads_seconds": 28.691472912207246,
+      "total_seconds": 36.49826706945896,
+      "peak_rss_kib": 21431524,
+      "peak_rss_gib": 20.44,
       "meta_show_contexts": true,
-      "file_entries": 1707,
-      "context_keyed_lines": 246159,
-      "read_text_seconds": 8.2,
-      "json_loads_seconds": 29.0,
-      "total_load_seconds": 37.2,
-      "peak_rss_gb": 20.4
+      "file_entries": 1707
     },
     "plain": {
-      "bytes": 12254514,
-      "megabytes": 12.25,
+      "read_text_seconds": 0.015932152047753334,
+      "json_loads_seconds": 0.11636673845350742,
+      "total_seconds": 0.13229889050126076,
+      "peak_rss_kib": 63268,
+      "peak_rss_gib": 0.0603,
       "meta_show_contexts": false,
-      "file_entries": 1707,
-      "read_text_seconds": 0.02,
-      "json_loads_seconds": 0.12,
-      "total_load_seconds": 0.13,
-      "peak_rss_gb": 0.06,
-      "export_wall_seconds": 20.09,
-      "export_peak_rss_mb": 112.6
+      "file_entries": 1707
     },
-    "ratios": {
-      "bytes": 671.0,
-      "load_seconds": 286.2,
-      "peak_rss": 340.0
-    }
+    "ratios": {"total_seconds": 275.9, "peak_rss": 338.7}
+  },
+  "combined_export_plus_load_seconds": {
+    "with_contexts": 198.88,
+    "plain": 21.65,
+    "ratio": 9.19
   },
   "verdict_inputs_are_identical": {
-    "claim": "The changed-line verdict reads only `executed_lines` and `missing_lines` via `mutation_sampling_lib.load_file_statement_lines`; it never reads `contexts`.",
-    "evidence": "Both exports report the same `file_entries` count (1707) from the same data file, so the executed/missing sets the verdict consumes are the same in both. `load_line_contexts` — the only reader of `contexts` — is called by `scripts/sample_mutation_files.py` (the cosmic-ray sampler) and by nothing on the changed-line gate's path.",
-    "non_claim": "This probe does NOT claim the two exports are byte-identical outside the `contexts` block; it claims the file-entry set is the same and that the gate's reader does not consult `contexts`."
+    "claim": "The changed-line verdict reads only `executed_lines` and `missing_lines` via `mutation_sampling_lib.load_file_statement_lines`; it never reads `contexts`. Dropping contexts therefore cannot move any verdict.",
+    "measured_proof": "Both exports were loaded and compared PER FILE, not by count. Result: file sets identical (1707 == 1707, zero entries in either difference), and `files_with_differing_line_sets` = 0 across all 1707 shared entries, comparing the sorted `executed_lines` and `missing_lines` tuples. This replaces the earlier cardinality control, which could not have distinguished a filter that dropped one file and added another.",
+    "code_evidence": "`load_line_contexts` -- the only reader of `contexts` in the tree -- is called by `scripts/sample_mutation_files.py` (the cosmic-ray sampler) and by nothing on the changed-line path.",
+    "scope_of_the_proof": "This establishes verdict-equivalence for the EXPORT flag. The shipped change also alters COLLECTION: `dynamic_context=False` drops `dynamic_context = test_function` from the rcfile and the `switch_context` block from the sitecustomize. That arm is not exercised here. It is nonetheless well-supported by a channel this probe does not measure: `mutation_coverage_producer.produce_command_coverage` has ALWAYS collected via `prepare_plain_coverage` (`dynamic_context=False`), and its output already feeds this exact verdict in production."
+  },
+  "artifact_hashes": {
+    "note": "Recorded because half of this comparison is a gitignored file that cannot be regenerated identically -- see non-claims. A hash makes the arm verifiable while the file survives, and states exactly what was measured once it does not.",
+    "coverage_data_file_sha256": "ced3bae0f40ca5146407d96af34af7d241cde0e81bb15785e1e1fedc751325bd",
+    "preexisting_with_contexts_export_sha256": "0bc8eb8273f29edf275579d0bbea51611493997e7bddff2a6c98f72ad9a5bb7b",
+    "preexisting_with_contexts_export_bytes": 8222858702
   },
   "non_claims": [
-    "Not a claim about which command wrote the 8.22 GB artifact. The artifact carries `meta.show_contexts: true` and the changed-line gate has a code path that produces exactly that (`_ensure_coverage` passes `dynamic_context=not args.write_fresh_marker`), but the writing process was not observed and attribution is not proven here.",
-    "Not a before/after of a full changed-line RUN. This measures the export and load cost of the coverage corpus, not the pytest collection time, which is unchanged by the export flag.",
-    "The 20.09s plain export was measured with no rcfile, so its include/omit filtering may differ from the gate's own rcfile-driven export. The file-entry count matching at 1707 is the control that makes the comparison usable despite that."
+    "Not a claim about which command wrote the pre-existing 8222858702-byte artifact. It carries `meta.show_contexts: true` and the changed-line gate had a code path producing exactly that, but the writing process was not observed and attribution is inferred, not proven.",
+    "Not a before/after of a full changed-line RUN. A full run's wall time is dominated by pytest collection, which this change does not touch, so two full runs would have differed mostly by suite noise on the one term the change cannot move. The export and load steps measured here are the steps the change affects.",
+    "The pre-existing 8222858702-byte artifact and this probe's 8224123144-byte re-export differ slightly because the original was written with the gate's rcfile (include/omit filtering) and the re-export was not. The two arms of the wall-time and load comparisons above were BOTH produced without an rcfile, back to back, so that difference does not enter any ratio reported here.",
+    "The peak-RSS figures are process peaks for a script that does nothing else; they are not a measurement of the gate's own resident set in a real run.",
+    "This probe is `.json`, and `check_spec_evidence_durability` reads only `**/*.md`. The goal's claim that it holds its own artifacts to that gate is therefore true of its markdown artifacts and structurally inapplicable to this one."
   ]
 }

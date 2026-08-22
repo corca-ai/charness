@@ -7,8 +7,8 @@ expensively is byte-identical to the same verdict computed cheaply.
 1. The probe collected per-test `dynamic_context` data that this gate has no
    reader for, gated on `--write-fresh-marker` -- a flag about stamping the
    freshness marker. Measured on the authoring repo, same coverage data with the
-   export flag as the only difference: 8.22 GB vs 12.25 MB, and 37.2s / 20.4 GB
-   peak RSS vs 0.13s / 0.06 GB just to load it.
+   export flag as the only difference: 8.22 GB vs 12.25 MB, and 36.5s / 20.44 GiB
+   peak RSS vs 0.13s / 0.06 GiB just to load it.
 2. When the gate could not USE the coverage it found, its structured payload named
    only the whole-corpus rebuild (measured 11-15 min) and not the incremental lane
    (measured ~24s for a single-commit slice). The cheap route existed and was
@@ -21,6 +21,7 @@ concept rather than append to a file near its cap.
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -219,3 +220,86 @@ def test_the_resume_command_does_not_redirect_the_focused_corpus(tmp_path: Path)
     payload = _skip_payload(tmp_path, stale=True)
 
     assert "--coverage-json" not in payload["resume_command"]
+
+
+# --------------------------------------------------------------------------- #
+# 3. a corpus written by the OTHER consumer is declined cheaply
+#
+# The sampler needs `contexts` and defaults to the same canonical path this
+# lane's producer writes, so whichever ran last decides whether the other works.
+# Fixing the write side does not close that; the freshness marker fingerprints
+# changed-pool CONTENT, not the writer, so a sampler-written corpus still carries
+# a marker that validates. The read side has to notice.
+# --------------------------------------------------------------------------- #
+
+
+def _reuse_payload(tmp_path: Path, *, show_contexts) -> dict:
+    import subprocess
+
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=repo, check=True, capture_output=True, text=True
+        ).stdout.strip()
+
+    git("init", "-q")
+    foo = repo / "scripts" / "foo.py"
+    foo.write_text("def a():\n    return 1\n", encoding="utf-8")
+    git("add", "-A")
+    git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "base")
+    base = git("rev-parse", "HEAD")
+    foo.write_text("def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8")
+    git("add", "-A")
+    git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "head")
+    head = git("rev-parse", "HEAD")
+
+    cov = repo / "cov.json"
+    meta = {"format": 3, "show_contexts": show_contexts} if show_contexts is not None else {"format": 3}
+    cov.write_text(json.dumps({
+        "meta": meta,
+        "files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}},
+    }), encoding="utf-8")
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov),
+    )
+    return yaml.safe_load(result.stdout)
+
+
+def test_a_context_bearing_corpus_is_declined_with_the_route(tmp_path: Path) -> None:
+    payload = _reuse_payload(tmp_path, show_contexts=True)
+
+    assert "per-test `contexts`" in payload["reason"]
+    assert "prepush_focused_changed_line_coverage.py" in payload["resume_command"]
+
+
+def test_declining_is_a_skip_and_never_a_blocker(tmp_path: Path) -> None:
+    """The corpus being wrong for this READER says nothing about whether the
+    changed lines are covered. Manufacturing a blocker from that would be the
+    substitution this lane exists to refuse."""
+    payload = _reuse_payload(tmp_path, show_contexts=True)
+
+    assert payload["ok"] is True
+    assert payload["blocking"] == []
+
+
+def test_a_plain_corpus_is_still_used(tmp_path: Path) -> None:
+    """The guard must not fire on this lane's own producer output, or it disables
+    the reuse path it was added to protect."""
+    payload = _reuse_payload(tmp_path, show_contexts=False)
+
+    assert "per-test `contexts`" not in str(payload.get("reason", ""))
+    assert payload["changed_pool_files"] == ["scripts/foo.py"]
+
+
+def test_an_unreadable_header_proceeds_exactly_as_before(tmp_path: Path) -> None:
+    """`None` means unknown, not suspicious. Gating on an absence would refuse
+    every corpus written by a coverage version that ordered its keys differently
+    -- a new refusal built on a fact nobody established."""
+    payload = _reuse_payload(tmp_path, show_contexts=None)
+
+    assert "per-test `contexts`" not in str(payload.get("reason", ""))
+    assert payload["changed_pool_files"] == ["scripts/foo.py"]

@@ -172,10 +172,14 @@ jobs:
           tokei --version
 
       - name: Changed-line mutation coverage gate
-        # --write-fresh-marker selects the plain (no dynamic_context) probe:
-        # the changed-line verdict only needs executed-vs-missing lines, and
-        # the per-test-context export is the documented multi-GB blow-up. The
-        # fingerprint marker it writes is ephemeral in CI.
+        # --write-fresh-marker stamps the freshness marker, and nothing else; the
+        # marker is ephemeral in CI. It used to ALSO select the plain (no
+        # dynamic_context) probe, which is why this comment once said so -- but
+        # since #696 the plain probe is the DEFAULT on both arms and contexts are
+        # opt-in via --collect-test-contexts. Do not read the flags as coupled:
+        # dropping --write-fresh-marker here would not re-enable contexts, and
+        # adding --collect-test-contexts would re-enable the measured 8.22 GB
+        # export (671x) that the changed-line verdict never reads.
         env:
           # PR: the merge target. Push: the commit main was at before this push,
           # so the analyzed range is exactly what the push added.

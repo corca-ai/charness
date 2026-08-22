@@ -57,9 +57,17 @@ def _sitecustomize_source(*, dynamic_context: bool) -> str:
     The per-test `switch_context` block is only emitted for the faithful
     `dynamic_context` probe; the plain producer (the changed-line verdict only
     needs executed-vs-missing lines) drops it, which is what collapses the
-    coverage JSON from the ~1.34 GB per-test export down to a small artifact.
+    coverage JSON from a multi-GB per-test export down to a small artifact.
     `coverage.process_startup()` stays in both modes so subprocess-executed
     lines are still measured (no new subprocess blind spot vs the faithful probe).
+
+    The size is quoted as a magnitude, not a constant, because it TRACKS THE
+    SUITE and this file used to name one figure as if it were fixed. It said
+    ~1.34 GB; the 2026-08-22 measurement on a larger suite found 8.22 GB against
+    12.25 MB for the same coverage data (#696). Both were true when taken. A
+    reader comparing two hardcoded numbers two files apart on one code path has
+    no way to tell that, so the current measurement lives in the probe artifact
+    and this docstring names the shape instead of a stale scalar.
     """
     lines = ["import os", "import coverage", "", "coverage.process_startup()"]
     if dynamic_context:
@@ -229,6 +237,36 @@ def load_covered_lines(repo_root: Path, coverage_json: Path) -> dict[str, set[in
         lines = payload.get("executed_lines") or []
         covered[rel] = {int(line) for line in lines}
     return covered
+
+
+#: `meta` is the FIRST key coverage.py writes, so this is decidable from a small
+#: prefix -- which is the entire point, since the file this asks about may be
+#: multiple gigabytes and deciding it by parsing is the cost being avoided.
+_SHOW_CONTEXTS_RE = re.compile(rb'"show_contexts"\s*:\s*(true|false)')
+_META_PREFIX_BYTES = 4096
+
+
+def coverage_is_context_bearing(coverage_json: Path) -> bool | None:
+    """Whether a coverage JSON carries per-test `contexts`, read from its header.
+
+    ``True``/``False`` when ``meta.show_contexts`` is readable in the first few KB,
+    and ``None`` when it is not -- an old export, a truncated file, an unexpected
+    key order. Callers must treat ``None`` as "unknown, proceed as before": this
+    exists to catch a specific known-bad state cheaply, not to gate on an absence.
+
+    Why a caller wants to know: a context-bearing export of this repo measured
+    8.22 GB against 12.25 MB for the same data, and 20.44 GiB of peak RSS to load.
+    A consumer that needs only executed/missing lines can detect that it is about
+    to pay for a corpus some OTHER writer left at a shared path, and decline,
+    instead of discovering it as an out-of-memory crash on a proof surface.
+    """
+    try:
+        with coverage_json.open("rb") as handle:
+            head = handle.read(_META_PREFIX_BYTES)
+    except OSError:
+        return None
+    match = _SHOW_CONTEXTS_RE.search(head)
+    return None if match is None else match.group(1) == b"true"
 
 
 def load_file_statement_lines(repo_root: Path, coverage_json: Path) -> dict[str, tuple[set[int], set[int]]]:

@@ -85,9 +85,18 @@ ships with.
 
 Outcomes, not cadence. `## Active Operating Frame` owns when proof runs.
 
-- A changed-line proof interrupted partway can be resumed without rebuilding the
-  coverage corpus, and the resume path is reachable from the tool's own output
-  rather than by reading its source.
+- A changed-line proof that cannot use the corpus it finds can be re-established
+  from a FOCUSED subset corpus (measured ~24s for a single-commit slice) instead
+  of rebuilding the whole one (measured 11-15 min), and that route is reachable
+  from the tool's own structured output rather than by reading its source.
+  **AMENDED during slice C**, from: "A changed-line proof interrupted partway can
+  be resumed without rebuilding the coverage corpus, and the resume path is
+  reachable from the tool's own output rather than by reading its source." The
+  first half of the original was not met and is not buildable as written; the
+  amendment is recorded as an operator decision rather than made silently, and
+  the reasoning is in `## Operator Decision Queue`. A bounded claims review
+  caught the original being quietly reinterpreted, which is why it is stated
+  here instead of being left to read as satisfied.
 - Running the mutation harness against a Node fixture produces a real verdict
   instead of refusing an unreadable baseline, and its accounting seam is named
   so a third reporter can be added without touching the harness contract.
@@ -121,7 +130,16 @@ Outcomes, not cadence. `## Active Operating Frame` owns when proof runs.
   surface owes the second round the operating contract requires.
 - For slice C specifically: the wall time of a full changed-line run before and
   after the change, recorded as a checked-in probe artifact rather than quoted
-  from a rolling file.
+  from a rolling file. **SUBSTITUTED, and named rather than left to look met.**
+  A full run's wall time is dominated by pytest collection, which this change
+  does not touch, so two full runs would have differed mostly by suite noise on
+  the one term the change cannot move. What was measured instead is stronger for
+  the question actually asked: the EXPORT and LOAD wall time of both shapes,
+  derived from a single shared coverage data file so the only difference is the
+  flag under test. Recorded in
+  `charness-artifacts/probe/2026-08-22-changed-line-coverage-context-blowup.json`
+  with the raw unrounded timings. A bounded claims review flagged the original
+  plan as unmet; this line is the disposition, not a redefinition after the fact.
 - For slice B: the harness's own refusal against the Node fixture quoted before
   the change, and its verdict after.
 
@@ -139,7 +157,7 @@ Outcomes, not cadence. `## Active Operating Frame` owns when proof runs.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| C | Cut proof cost and close ephemeral-evidence citations | Every later slice pays this cost; it was measured at four full rebuilds in one session | Before/after wall time as a probe artifact; a resumable path reachable from tool output; durability gate clean over the sweep | pending |
+| C | Cut proof cost and close ephemeral-evidence citations | Every later slice pays this cost; it was measured at four full rebuilds in one session | Export/load wall time as a probe artifact (substituted for full-run wall time — see Verification Plan); a cheap re-establish route reachable from structured tool output; durability gate clean over a scope widened from 499 to 2838 docs | landed at `77c4300ae` + round-1 repairs; round-2 review owed |
 | B | Unfork the Node consumers | Three downstream repos maintain a substitute for a harness this repo owns; all three findings are third-or-later sightings | Harness verdict against a `node --test` fixture; hollow-section reporting; a non-complete terminal status accepted by the contract | pending |
 | A | Settle the cadence contract | The only hard blocker published 6.2.2 ships with; deferring it stacks more artifacts on an unread decision | A recorded decision among the three options, its implementation, and the frame migration if it restructures | pending |
 | R | One release over the bundle | B and A reach consumers only through a release; bundling makes the claims rounds run once | Published readback, installed replay, claims round without a blocker | pending |
@@ -174,6 +192,35 @@ Queue item form:
 - Why deferred: why the run did not stop immediately
 - Unblock action: exact action or answer needed
 - Revisit trigger: event, date, or proof boundary that reopens this
+
+### 1. Slice C amended a `## User Acceptance` criterion rather than meeting it
+
+- Decision: accept the amended first acceptance criterion, or require the
+  resume-from-partial mechanism the original wording named.
+- Owner: operator (repo owner). The criterion is the operator's; an agent
+  amending one silently is the defect a bounded claims review caught here.
+- Why deferred: the run did not stop because the amendment is disclosed in
+  place, the delivered behavior is strictly better than before, and slices B / A
+  do not depend on which way this resolves.
+- Unblock action: confirm the amended wording, or say the mechanism is wanted.
+- Revisit trigger: closeout of this goal, or any future goal that cites this
+  criterion as met.
+
+**Why the original is not buildable as written.** "Resumed without rebuilding
+the coverage corpus" needs the harness to know which tests already ran and skip
+them. Coverage.py records that only under `dynamic_context` — the per-test
+`contexts` block this very slice removed because it cost a measured 671x in
+corpus size and 276x in load time. So a resume mechanism would have to re-add the
+exact cost the slice exists to delete, to save a fraction of a run whose dominant
+term (pytest collection) it cannot skip anyway. Worse, accumulating coverage
+across runs unions executed lines, and a union can only turn "uncovered" into
+"covered" — a FALSE PASS, the one direction this lane refuses. Building it would
+have produced a mechanism that does not pay and points the wrong way.
+
+What shipped instead re-establishes the verdict from a focused subset corpus,
+which is safe in the opposite direction: subset coverage can cost a false stop,
+never a false pass. That is a different thing from resuming, and it is named
+differently now.
 
 ## Coordination Cues
 
@@ -261,12 +308,37 @@ the originating context by following them in order.
    Declared with the REPO-OWNED opener before any slice work or reviewer spawn.
    The bundle proves the lesson bytes were issued and frozen for this session; it
    proves nothing about readback, use, or effect.
-2. TODO the repo's governing design standard, and what it says about THIS goal —
-   which facets bear on its boundaries, where its teeth belong, and which
-   irreversible boundaries it crosses. Read it while SHAPING, not at closeout:
-   the standard is what tells you where a wrong answer escapes, and that is a
-   Before-phase question. (The retro's `## North Star Alignment` asks the
-   backward-looking half; this is the forward-looking one.)
+2. [design north star](../../docs/design-north-star.md) — the governing standard.
+   **Read during slice C, not while shaping.** The section itself says to read it
+   in the Before phase, so recording when it was actually read is part of being
+   honest about it; a bounded review found this entry still a literal `TODO`
+   after slice C had shipped.
+
+   What it says about THIS goal:
+
+   - **P4/P5 place the teeth.** The one irreversible boundary here is slice R's
+     publication; C, B and A land on source and are reversible, so P1 says their
+     default is judgment, not new gates. The one gate slice C did add — widening
+     evidence durability — earns its place under P5's narrow test only because an
+     evaporated citation cannot be recovered by judgment later: the evidence is
+     simply gone. That is the whole justification, and it does not extend.
+   - **The diagnosis names slice C's own defect.** "Terminal trust on a single
+     evidence channel." The changed-line gate's stale-coverage `reason` was one
+     channel naming one route, and an operator who trusted it rebuilt the corpus.
+     The repair is a second, structured channel — which is the same shape as the
+     remediations the back-test found actually worked.
+   - **P5 caught the first cut of the widening.** "A gate may force a question;
+     it may not declare completion." The first version silently dropped every
+     undated artifact from its own scope and still printed a clean line — a
+     terminal green over a scope it had not read. Fail-closed plus a reported
+     excluded-count is what makes it force a question instead.
+   - **P2 shaped where code went.** Two near-cap files were about to absorb new
+     concepts; `changed_line_resume_route.py` and `mutation_test_reporters.py`
+     exist because "separate a concept" is the rule, not "shave lines".
+   - **P4 governs the reviews.** The bounded rounds are the distinct observer,
+     and their findings had to come from a channel other than the one under
+     review — which is why the claims round read records against commits rather
+     than re-reading the code the correctness round read.
 
 ## Interview Decisions
 
@@ -294,6 +366,27 @@ check proves shape only; closeout workflows prove the values and identities:
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.
+
+- **#696** — filed by slice C before fixing: the changed-line gate collected
+  per-test coverage contexts its own verdict never reads (measured 8.22 GB vs
+  12.25 MB, 36.5s vs 0.13s to load). Fixed in slice C.
+- **#697** — filed, NOT fixed. The mutation sampler and the changed-line producer
+  default to the same coverage report path, and the freshness marker fingerprints
+  changed-pool content rather than the writer, so it cannot tell them apart.
+  Found by the round-1 bounded correctness review with a concrete `MemoryError`
+  scenario. Slice C mitigated the READ side (the gate now declines a
+  context-bearing corpus from a 4 KB header read) and left the shared-path design
+  alone: this goal's Non-Goals fence off the mutation harness, and changing three
+  defaults on the cosmic-ray path without being able to run a real sweep locally
+  is the scope creep that does damage.
+- **Not filed — repo-internal disagreement about one measured number.** Five
+  surfaces quote the incremental lane's nine-commit case at ~4min
+  (`prepush_focused_changed_line_coverage.py`) and four at ~5min
+  (`run-quality.sh:1131`, `.agents/quality-adapter.yaml:411`, the v2.12.0 release
+  notes, the D40 critique). Slice C propagated the ~4min figure from the script
+  that owns the lane, adding a fifth citation site. Recorded rather than filed
+  because it is a documentation drift with no verdict consequence; it becomes
+  worth filing if a timeout is ever set from the lower number.
 
 ## Final Verification
 

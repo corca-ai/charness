@@ -119,4 +119,4 @@
 
 - yes `charness-artifacts/retro/retro.md`
 - yes `charness-artifacts/retro/weekly-2026-04-14.md`
-- yes `.charness/retro/weekly-latest.json`
+- yes `.charness/retro/weekly-latest.json` <!-- reproduction-source -->

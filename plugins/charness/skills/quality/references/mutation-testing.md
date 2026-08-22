@@ -263,7 +263,7 @@ separate coverage pass. Drop per-test `dynamic_context` for this report: the gat
 only needs executed-vs-missing lines, and per-test context can balloon the
 coverage JSON by orders of magnitude. Measured on the authoring repo, same
 coverage data with the export flag as the only difference: **8.22 GB vs 12.25 MB
-(671x), and 37.2s / 20.4 GB peak RSS vs 0.13s / 0.06 GB just to load it.**
+(671x), and 36.5s / 20.44 GiB peak RSS vs 0.13s / 0.06 GiB just to load it.**
 
 Size is the lesser half. **20 GB of peak RSS to read a report is a correctness
 risk, not a speed one:** on a host with less headroom that load raises

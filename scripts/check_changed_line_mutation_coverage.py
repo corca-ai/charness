@@ -96,6 +96,7 @@ from scripts.mutation_changed_files_lib import (  # noqa: E402
     write_coverage_fingerprint_marker,
 )
 from scripts.mutation_sampling_lib import (  # noqa: E402
+    coverage_is_context_bearing,
     load_file_statement_lines,
     read_test_command,
     run_test_coverage,
@@ -147,7 +148,11 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
     """Return a non-blocking skip report when the coverage source cannot be
     trusted for a cheap pre-push verdict, else None.
 
-    Two guards keep the pre-push (read-only) wiring both cheap and safe:
+    Three guards keep the pre-push (read-only) wiring both cheap and safe:
+    - a context-bearing corpus at the reuse path was written by the mutation
+      sampler, not by this lane; skip rather than pay a multi-GB load for columns
+      this verdict never reads. Decided from a 4 KB header read, and only on a
+      definite ``true`` -- an unreadable header proceeds exactly as before.
     - ``--require-fresh-coverage``: a coverage JSON whose sibling ``.fingerprint``
       marker does not match the current changed-pool content fingerprint is STALE
       (it may predate the changed lines), so trusting it would raise false
@@ -158,6 +163,32 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
       through to the slow probe.
     """
     base = {"ok": True, "blocking": [], "base_sha": base_sha, "head_sha": head_sha}
+    # `getattr`, for the reason every hand-built args namespace in this repo's
+    # tests proves: a caller that does not set `reuse_coverage` is not reusing,
+    # so the safe default is the guard OFF. Read directly, this raised
+    # AttributeError inside a producer test -- a new crash on a proof surface,
+    # introduced by a guard added to prevent one.
+    reusing = getattr(args, "reuse_coverage", False)
+    if reusing and coverage_json.is_file() and coverage_is_context_bearing(coverage_json) is True:
+        # Someone else's corpus. This gate never reads `contexts` and its own
+        # probe never writes them, so a context-bearing file at the path it is
+        # about to reuse means a different writer -- the cosmic-ray sampler, which
+        # needs contexts and defaults to this same path -- got here last. Loading
+        # it measured 36.5s and 20.44 GiB of peak RSS, and on a smaller host that is
+        # not slow but a `MemoryError` this gate has no branch for, which would
+        # surface an out-of-memory crash as a tool failure rather than as the
+        # refusal-to-judge it is. Decline cheaply from a 4 KB header read instead.
+        #
+        # A SKIP, not a blocker: the corpus being wrong for this reader says
+        # nothing about whether the changed lines are covered, and inventing a
+        # verdict from that is the substitution this whole lane refuses.
+        return {**base, "reason": (
+            f"coverage source at {args.coverage_json} carries per-test `contexts` "
+            "(`meta.show_contexts: true`), so it was written by the mutation sampler "
+            "rather than by this lane's producer; changed-line teeth skipped "
+            "(non-blocking) rather than paying a multi-GB load for columns this "
+            "verdict never reads. See `resume_command` below."
+        ), **resume_fields(repo_root, base_sha)}
     if args.require_fresh_coverage and coverage_json.is_file():
         marker = coverage_fingerprint_marker_path(coverage_json)
         recorded = marker.read_text(encoding="utf-8").strip() if marker.is_file() else None
@@ -166,12 +197,13 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
             return {**base, "reason": (
                 f"coverage source is stale: fingerprint marker {recorded or 'absent'} != current "
                 f"{current}; changed-line teeth skipped (non-blocking). "
-                "Refresh via `resume_command` below."
+                "See `resume_command` below: it renders the verdict itself, cheaply."
             ), **resume_fields(repo_root, base_sha)}
     if args.skip_if_no_coverage and not coverage_json.is_file():
         return {**base, "reason": (
             f"no coverage source at {args.coverage_json}: changed-line teeth skipped "
-            "(non-blocking). Produce it via `resume_command` below."
+            "(non-blocking). See `resume_command` below: it renders the verdict itself "
+            "from its own focused corpus rather than writing this path."
         ), **resume_fields(repo_root, base_sha)}
     return None
 
@@ -191,7 +223,7 @@ def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) 
     freshness marker, not about which columns the verdict reads. The other arm
     then paid for a `contexts` block this gate has no reader for. Measured on this
     repo (#696), same coverage data, export flag the only difference: 8.22 GB vs
-    12.25 MB, and 37.2s / 20.4 GB RSS vs 0.13s / 0.06 GB just to LOAD it. The RSS
+    12.25 MB, and 36.5s / 20.44 GiB RSS vs 0.13s / 0.06 GiB just to LOAD it. The RSS
     is the sharper half -- on a smaller host that load raises `MemoryError`, and
     this gate has no branch for that, so an out-of-memory crash on a proof surface
     reads as a tool failure rather than as the refusal-to-judge it is.

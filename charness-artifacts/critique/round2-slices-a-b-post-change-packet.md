@@ -83,7 +83,7 @@ Planned sync commands before validators:
 - **Valid reviewer**: `final_combined_slice_review` returned **APPROVE** after
   using only `git diff`, `rg`, `sed`, and `cmp` over the bounded files.
 - **Boundary proof**:
-  `.charness/reviewer-boundary/round2-final-slice-review.json` verified with
+  `.charness/reviewer-boundary/round2-final-slice-review.json` <!-- reproduction-source --> verified with
   `ok=true` and zero worktree/index drift after the review.
 - **Quarantined reviews**: two earlier Slice A/B attempts ran forbidden sync or
   test/subagent commands. Their substantive observations were not counted as

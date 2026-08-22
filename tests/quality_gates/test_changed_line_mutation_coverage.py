@@ -671,7 +671,7 @@ def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> No
     # the scheduled gate's probe, which collects contexts because the cosmic-ray
     # sampler reads them. This gate does not: its verdict consumes
     # executed/missing lines only. Preserving an input dimension no reader
-    # consults cost a measured 671x in corpus size and 286x in load time, so the
+    # consults cost a measured 671x in corpus size and 276x in load time, so the
     # flag became explicit (--collect-test-contexts) instead of a side effect of
     # a marker-stamping flag.
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)

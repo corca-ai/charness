@@ -12,9 +12,10 @@ rebuilds the WHOLE coverage corpus at a measured 11-15 minutes. The incremental
 lane -- `prepush_focused_changed_line_coverage.py`, which instruments only the
 standing tests that reference the changed pool files -- is measured on this repo at
 ~24s for a single-commit slice and ~4min for a nine-commit session, and it was
-reachable only by reading the source. A route that costs 30x more than the
-available one, printed by the tool as THE answer, is how an operator ends up
-rebuilding the corpus several times in one session.
+reachable only by reading the source. The multiple depends on the slice: 11-15min
+against ~24s is 27-38x for a single-commit slice, and about 3x for the
+nine-commit case at ~4min. Printing only the expensive route as THE answer is how
+an operator ends up rebuilding the corpus several times in one session.
 
 Direction of the recommendation matters and is why the cheap lane is safe to name
 first: focused coverage is a SUBSET of full coverage, so it can report a covered
@@ -33,10 +34,7 @@ from pathlib import Path
 #: every `--require-fresh-coverage` consumer read freshness as breadth), so this
 #: route never passes one -- letting that script's own default stand is the point.
 INCREMENTAL_SCRIPT = "scripts/prepush_focused_changed_line_coverage.py"
-#: The whole-corpus rebuild. Correct, and the fallback rather than the first move.
-BROAD_COMMAND = (
-    "python3 scripts/run_slice_closeout.py --produce-mutation-coverage --verification-lock"
-)
+BROAD_SCRIPT = "scripts/run_slice_closeout.py"
 
 
 def incremental_refresh_command(repo_root: Path, base_sha: str) -> str:
@@ -48,6 +46,21 @@ def incremental_refresh_command(repo_root: Path, base_sha: str) -> str:
     )
 
 
+def broad_rebuild_command(repo_root: Path) -> str:
+    """The whole-corpus rebuild: correct, and the fallback rather than the first move.
+
+    Carries `--repo-root` for the same reason the incremental arm does. As a bare
+    constant it did not, and `run_slice_closeout.py` derives its root from its own
+    `__file__` -- so a gate invoked with `--repo-root /other/tree` printed a
+    two-step route whose second step would have produced coverage for a different
+    tree than the one it had just judged.
+    """
+    return (
+        f"python3 {BROAD_SCRIPT} --repo-root {shlex.quote(str(repo_root))} "
+        "--produce-mutation-coverage --verification-lock"
+    )
+
+
 def resume_route(repo_root: Path, base_sha: str) -> str:
     """The two-step route, cheapest first, as one sentence for a `reason` field.
 
@@ -56,9 +69,11 @@ def resume_route(repo_root: Path, base_sha: str) -> str:
     only in a stream nobody replays is not reachable from the tool's output.
     """
     return (
-        "Cheapest refresh FIRST (incremental; instruments only the standing tests "
-        f"that reference the changed pool files): {incremental_refresh_command(repo_root, base_sha)}. "
-        f"Only if that cannot map the change, rebuild the whole corpus: {BROAD_COMMAND}."
+        "Cheapest route FIRST -- this renders the changed-line verdict ITSELF, from a "
+        "focused subset corpus at its own path, rather than refreshing the coverage "
+        f"source this run just rejected: {incremental_refresh_command(repo_root, base_sha)}. "
+        "Only if it cannot map the change, rebuild the whole corpus at the canonical "
+        f"path: {broad_rebuild_command(repo_root)}."
     )
 
 

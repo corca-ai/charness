@@ -6,6 +6,7 @@ import argparse
 import re
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -16,6 +17,10 @@ _repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
+#: The repo's ONE owner of an artifact's effective grandfathering date. Imported
+#: rather than reimplemented: a second date reader on a second proof surface is
+#: how the two would come to disagree about which artifacts a floor binds.
+_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
 
 DOC_GLOBS = (
     "charness-artifacts/spec/**/*.md",
@@ -32,8 +37,8 @@ DOC_GLOBS = (
 #: These carry citations exactly like the families above -- a goal artifact names
 #: the probe that proved its slice, a critique names what it read, a release review
 #: names the run it reviewed -- and they were simply never scanned. Measured at the
-#: time of widening: 70 already-evaporating citations across 2315 docs in these
-#: families, against 0 in the families already covered.
+#: time of widening: 70 already-evaporating citations across 2339 docs in these
+#: families, against 0 across the 499 docs in the families already covered.
 #:
 #: The date anchor is the whole design. Those 70 live almost entirely in CLOSED
 #: retros, critiques and goals from months back: frozen records of what happened.
@@ -50,14 +55,15 @@ LATE_DOC_GLOBS = (
     "charness-artifacts/release-review/**/*.md",
 )
 #: The date this widening landed. A doc in `LATE_DOC_GLOBS` is enforced when its
-#: filename date is on or after this; earlier ones are grandfathered.
-ENFORCED_FROM = "2026-08-22"
+#: observed date is on or after this; earlier ones are grandfathered. An UNDATABLE
+#: doc is enforced -- see `is_enforced_late_doc` for why that direction is the only
+#: safe one.
+ENFORCED_FROM = date(2026, 8, 22)
 #: `docs/**` is deliberately NOT here. Doctrine that NAMES a runtime path
 #: (`artifact-policy.md` explaining where `.charness/quality/runtime-signals.json`
 #: is written) is not an artifact CITING that file as its own proof, and the 9
 #: hits there are all the former. Folding them in would train the marker onto
 #: prose that was never a citation, which costs the marker its meaning.
-LEADING_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-")
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.[A-Za-z0-9._-]+$")
@@ -217,26 +223,43 @@ def violations_for_doc(root: Path, doc: Path) -> list[str]:
     return messages
 
 
-def is_enforced_late_doc(doc: Path) -> bool:
+def is_enforced_late_doc(doc: Path, text: str) -> bool:
     """Whether a `LATE_DOC_GLOBS` artifact is inside the enforced window.
 
-    Anchored on the FILENAME date, which every artifact family here already
-    carries as its naming convention, rather than on git history: a doc's commit
-    or mtime moves when it is touched for unrelated reasons, and a frozen record
-    would silently drift into enforcement the first time anything reformatted it.
-    The filename does not move.
+    Delegates to `critique_enforcement_scope.observed_date`, this repo's ONE
+    owner of "the artifact's effective date for grandfathering": the LATER of the
+    in-body `Date:` line and the leading `YYYY-MM-DD` of the filename. Not
+    mtime and not commit date -- either of those moves when a frozen record is
+    touched for an unrelated reason, and the record would drift into enforcement
+    without its content changing.
 
-    A doc with no leading date (`recent-lessons.md` and the other rolling
-    digests) is NOT enforced. Those are the ones that get rewritten continuously,
-    so a stale citation in them is a live editing question rather than a frozen
-    record -- but they also have no date to bind to, and inventing one by mtime is
-    the drift this function exists to avoid. Naming the exclusion here is the
-    honest form; the advisory count makes it visible.
+    **An UNDATABLE doc is ENFORCED, not exempt**, and that direction is the whole
+    correctness of this function. The first cut read it the other way, and a
+    fresh-eye round found the hole: 68 checked-in artifacts in these families
+    carry no parseable date, 64 of them in `critique/` and `retro/`, and they are
+    overwhelmingly one-shot `*-packet.md` review artifacts -- the files that carry
+    the MOST run-output citations, undated by this repo's own naming convention.
+    So the exemption was not date-bounded debt that shrinks as history recedes; it
+    was an unbounded hole that GROWS with every new packet, opened by omitting a
+    filename convention nothing validates. One live violation was already sitting
+    in it.
+
+    That reading is not a novel judgement -- it is the rule this repo already
+    wrote down twice, after measuring the same mistake:
+    `critique_enforcement_scope.observed_date`'s own docstring says callers "must
+    NOT treat `None` as fail-open by default", and `validate_critique_artifacts`
+    records that its first cut exempted undated artifacts and "handed back the
+    whole of C4 through the one input the rule names as never fail-open".
+
+    There is deliberately NO allowlist. Fail-closed leaves exactly three citations
+    to resolve across all 68 undated docs, and each is a genuine reproduction
+    source that the `<!-- reproduction-source -->` marker already exists to label.
+    An exemption list would be larger than the problem and would rot silently.
     """
-    match = LEADING_DATE_RE.match(doc.name)
-    if match is None:
-        return False
-    return match.group(1) >= ENFORCED_FROM
+    observed = _scope.observed_date(doc, text)
+    if observed is None:
+        return True
+    return observed >= ENFORCED_FROM
 
 
 def main() -> int:
@@ -262,29 +285,55 @@ def main() -> int:
         messages = violations_for_doc(root, doc)
         if not messages:
             continue
-        if is_enforced_late_doc(doc):
+        if is_enforced_late_doc(doc, doc.read_text(encoding="utf-8")):
             all_messages.extend(messages)
         else:
             grandfathered += len(messages)
+    advisory = grandfathered_advisory(grandfathered)
     if all_messages:
         for message in all_messages:
             print(message, file=sys.stderr)
+        # The scope record belongs on a FAILING run too. A failure carries a
+        # signal about the failures and nothing about the floors that were off,
+        # so an operator who fixes the one named file and re-runs would meet the
+        # excluded-count for the first time AFTER forming the belief that this
+        # gate's scope was complete. `artifact_validator` names the same class.
+        if advisory:
+            print(advisory)
         return 1
     print(
         f"Validated spec evidence durability across {len(docs) + len(late_docs)} doc(s)."
     )
-    if grandfathered:
-        # Reported, never silent. A gate that quietly excludes part of its own
-        # scope reads as "covered everything" when it did not, and this exclusion
-        # is a deliberate debt with a date on it -- so it gets a number the next
-        # reader can watch shrink or grow.
-        print(
-            f"ADVISORY (evidence durability): {grandfathered} citation(s) to gitignored "
-            f"targets remain in artifacts dated before {ENFORCED_FROM}; they are frozen "
-            "records and are counted, not rewritten. New artifacts in those families "
-            "are enforced."
-        )
+    if advisory:
+        print(advisory)
     return 0
+
+
+def grandfathered_advisory(grandfathered: int) -> str | None:
+    """The excluded-citation count, described as the population it actually is.
+
+    Reported, never silent: a gate that quietly excludes part of its own scope
+    reads as "covered everything" when it did not.
+
+    The wording is load-bearing and an earlier cut got it wrong in a way a fresh
+    eye caught. It said the excluded citations "remain in artifacts dated before
+    <date>" and that "new artifacts in those families are enforced" -- and both
+    clauses were false for the undated subset, which was neither dated-before
+    anything nor enforced when new. That merged two populations with opposite
+    half-lives (one shrinking as history recedes, one growing with every new
+    packet) into a single number nobody could read as either. Undated docs are
+    now enforced, so the count describes ONE population again and the sentence
+    can say what it is.
+    """
+    if not grandfathered:
+        return None
+    return (
+        f"ADVISORY (evidence durability): {grandfathered} citation(s) to gitignored "
+        f"targets remain in artifacts whose observed date precedes {ENFORCED_FROM.isoformat()}; "
+        "they are frozen records and are counted, not rewritten. Every artifact in "
+        "those families dated on or after that -- and every artifact with no "
+        "readable date at all -- is enforced."
+    )
 
 
 if __name__ == "__main__":

@@ -281,16 +281,89 @@ def test_the_grandfathered_debt_is_never_silent(tmp_path: Path) -> None:
     assert "2 citation(s) to gitignored targets remain" in result.stdout
 
 
-def test_an_undated_rolling_digest_is_not_enforced(tmp_path: Path) -> None:
-    """`recent-lessons.md` and its siblings have no filename date to bind to, and
-    inferring one from mtime is the drift the filename anchor avoids. Not
-    enforced, and counted like the rest so the choice stays visible."""
+def test_an_undated_artifact_is_ENFORCED_not_exempt(tmp_path: Path) -> None:
+    """THE fail-closed pin, and the one a revert would trip.
+
+    The first cut exempted any doc without a leading filename date. A fresh-eye
+    round measured the hole: 68 checked-in artifacts in these families carry no
+    parseable date, 64 in `critique/` and `retro/`, overwhelmingly one-shot
+    `*-packet.md` review artifacts -- the files carrying the MOST run-output
+    citations, undated by this repo's own naming convention. So the exemption was
+    not date-bounded debt that shrinks; it GREW with every new packet, opened by
+    omitting a convention nothing validates, and one live violation already sat
+    in it.
+
+    `critique_enforcement_scope.observed_date` states the rule this restores:
+    callers "must NOT treat `None` as fail-open by default".
+    """
     repo = _bootstrap_repo(tmp_path)
-    _late_doc(repo, "retro", "recent-lessons.md")
+    _late_doc(repo, "critique", "some-review-packet.md")
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1, result.stdout
+    assert "charness-artifacts/critique/some-review-packet.md" in result.stderr
+
+
+def test_an_impossible_filename_date_does_not_buy_exemption(tmp_path: Path) -> None:
+    """`0000-00-00-x.md` string-compares below any cutoff. Routing an unparseable
+    date to `None`, and `None` to ENFORCED, closes that by construction rather
+    than by enumerating bad dates."""
+    repo = _bootstrap_repo(tmp_path)
+    _late_doc(repo, "critique", "0000-00-00-my-review.md")
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1, result.stdout
+    assert "0000-00-00-my-review.md" in result.stderr
+
+
+def test_a_body_date_can_grandfather_an_undated_filename(tmp_path: Path) -> None:
+    """Both channels are read, so a genuinely old artifact that carries its date
+    in the body rather than the filename is still treated as history."""
+    repo = _bootstrap_repo(tmp_path)
+    target = repo / "charness-artifacts" / "retro"
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "some-old-record.md").write_text(
+        "# Demo\nDate: 2020-01-01\n\nProof: `artifacts/eval-summary.json`.\n", encoding="utf-8"
+    )
 
     result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
+    assert "1 citation(s) to gitignored targets remain" in result.stdout
+
+
+def test_the_later_channel_decides_so_a_doc_cannot_backdate_itself(tmp_path: Path) -> None:
+    """An old filename with a recent body date is ENFORCED. Taking the later of
+    the two channels means an artifact is exempt only when both agree it is old,
+    which is why this delegates to the repo's one owner of that rule instead of
+    reading a single channel."""
+    repo = _bootstrap_repo(tmp_path)
+    target = repo / "charness-artifacts" / "goals"
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "2020-01-01-demo.md").write_text(
+        "# Demo\nDate: 2999-01-01\n\nProof: `artifacts/eval-summary.json`.\n", encoding="utf-8"
+    )
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1, result.stdout
+    assert "2020-01-01-demo.md" in result.stderr
+
+
+def test_the_excluded_count_is_reported_on_a_FAILING_run_too(tmp_path: Path) -> None:
+    """A failure carries a signal about the failures and nothing about the floors
+    that were off. Without this, an operator fixes the one named file, re-runs,
+    and meets the excluded count only AFTER concluding the scope was complete."""
+    repo = _bootstrap_repo(tmp_path)
+    _late_doc(repo, "retro", "2020-01-01-old.md")
+    _late_doc(repo, "goals", "2999-01-01-new.md")
+
+    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "2999-01-01-new.md" in result.stderr
     assert "1 citation(s) to gitignored targets remain" in result.stdout
 
 
