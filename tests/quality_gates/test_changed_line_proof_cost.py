@@ -7,7 +7,7 @@ expensively is byte-identical to the same verdict computed cheaply.
 1. The probe collected per-test `dynamic_context` data that this gate has no
    reader for, gated on `--write-fresh-marker` -- a flag about stamping the
    freshness marker. Measured on the authoring repo, same coverage data with the
-   export flag as the only difference: 8.22 GB vs 12.25 MB, and 36.5s / 20.44 GiB
+   export flag as the only difference: 8.22 GB vs 12.26 MB, and 36.5s / 20.44 GiB
    peak RSS vs 0.13s / 0.06 GiB just to load it.
 2. When the gate could not USE the coverage it found, its structured payload named
    only the whole-corpus rebuild (measured 11-15 min) and not the incremental lane
@@ -303,3 +303,30 @@ def test_an_unreadable_header_proceeds_exactly_as_before(tmp_path: Path) -> None
 
     assert "per-test `contexts`" not in str(payload.get("reason", ""))
     assert payload["changed_pool_files"] == ["scripts/foo.py"]
+
+
+def test_the_broad_fallback_arm_carries_the_repo_root(tmp_path: Path) -> None:
+    """A round-2 finding: the fallback was a bare constant, and
+    `run_slice_closeout.py` derives its root from its own `__file__`. A gate run
+    with `--repo-root /other/tree` therefore printed a step-two that would produce
+    coverage for a different tree than the one it had just judged. Nothing pinned
+    the fix -- reverting it left the whole suite green -- which is the same
+    test-pins-the-narrow-case shape round 1 found."""
+    payload = _skip_payload(tmp_path, stale=True)
+    route = payload["resume_route"]
+
+    broad = route[route.index("run_slice_closeout.py"):]
+    assert "--repo-root" in broad, route
+
+
+def test_an_unreadable_coverage_header_is_unknown_not_context_bearing() -> None:
+    """The `OSError` arm of the header probe. `None` must mean "unknown, proceed",
+    because gating on an absence would refuse every corpus written by a coverage
+    version that ordered its keys differently."""
+    from runtime_bootstrap import import_repo_module
+
+    sampling = import_repo_module(
+        "scripts/mutation_sampling_lib.py", "scripts.mutation_sampling_lib"
+    )
+
+    assert sampling.coverage_is_context_bearing(Path("/nonexistent/never/here.json")) is None

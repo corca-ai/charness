@@ -169,11 +169,20 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
     # AttributeError inside a producer test -- a new crash on a proof surface,
     # introduced by a guard added to prevent one.
     reusing = getattr(args, "reuse_coverage", False)
-    if reusing and coverage_json.is_file() and coverage_is_context_bearing(coverage_json) is True:
+    # Not when the operator ASKED for contexts. `--collect-test-contexts` exists so
+    # a caller can hand-build the sampler's corpus with this very gate; declining
+    # to reuse what it was just told to produce would be the tool arguing with its
+    # own flag.
+    wants_contexts = getattr(args, "collect_test_contexts", False)
+    if reusing and not wants_contexts and coverage_json.is_file() and coverage_is_context_bearing(coverage_json) is True:
         # Someone else's corpus. This gate never reads `contexts` and its own
         # probe never writes them, so a context-bearing file at the path it is
-        # about to reuse means a different writer -- the cosmic-ray sampler, which
-        # needs contexts and defaults to this same path -- got here last. Loading
+        # about to reuse was produced with contexts by SOMETHING -- most likely the
+        # cosmic-ray sampler, which needs them and defaults to this same path. The
+        # payload states the observation and not the attribution, because this gate
+        # can also write such a file itself under `--collect-test-contexts`, and
+        # naming a writer it did not observe is the class this same slice repaired
+        # one function down. Loading
         # it measured 36.5s and 20.44 GiB of peak RSS, and on a smaller host that is
         # not slow but a `MemoryError` this gate has no branch for, which would
         # surface an out-of-memory crash as a tool failure rather than as the
@@ -184,10 +193,9 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
         # verdict from that is the substitution this whole lane refuses.
         return {**base, "reason": (
             f"coverage source at {args.coverage_json} carries per-test `contexts` "
-            "(`meta.show_contexts: true`), so it was written by the mutation sampler "
-            "rather than by this lane's producer; changed-line teeth skipped "
-            "(non-blocking) rather than paying a multi-GB load for columns this "
-            "verdict never reads. See `resume_command` below."
+            "(`meta.show_contexts: true`), which this lane's producer never writes and "
+            "this verdict never reads; changed-line teeth skipped (non-blocking) rather "
+            "than paying a multi-GB load for those columns. See `resume_command` below."
         ), **resume_fields(repo_root, base_sha)}
     if args.require_fresh_coverage and coverage_json.is_file():
         marker = coverage_fingerprint_marker_path(coverage_json)
@@ -223,7 +231,7 @@ def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) 
     freshness marker, not about which columns the verdict reads. The other arm
     then paid for a `contexts` block this gate has no reader for. Measured on this
     repo (#696), same coverage data, export flag the only difference: 8.22 GB vs
-    12.25 MB, and 36.5s / 20.44 GiB RSS vs 0.13s / 0.06 GiB just to LOAD it. The RSS
+    12.26 MB, and 36.5s / 20.44 GiB RSS vs 0.13s / 0.06 GiB just to LOAD it. The RSS
     is the sharper half -- on a smaller host that load raises `MemoryError`, and
     this gate has no branch for that, so an out-of-memory crash on a proof surface
     reads as a tool failure rather than as the refusal-to-judge it is.

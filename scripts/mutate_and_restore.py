@@ -78,17 +78,16 @@ from mutation_recovery import (
 
 from yaml_output import emit_yaml
 
-# How to READ a runner's count report now lives in `mutation_test_reporters`
-# (#689): the three properties above are runner-independent, but the pytest
-# summary shape was hardcoded, so no Node repository could use this harness.
-# Re-exported at THIS address because call sites in this module's own test file
-# bind them here, exactly like the constants they replace.
-PASSED_RE = _reporters.PASSED_RE
-FAILED_RE = _reporters.FAILED_RE
-ERROR_RE = _reporters.ERROR_RE
-NO_TESTS_RE = _reporters.NO_TESTS_RE
-SUMMARY_RE = _reporters.SUMMARY_RE
-DEFAULT_REPORTER = _reporters.DEFAULT_REPORTER
+# How to READ a runner's count report lives in `mutation_test_reporters` (#689):
+# the three properties above are runner-independent, but the pytest summary shape
+# was hardcoded, so no Node repository could use this harness.
+#
+# There is deliberately NO re-export block here. One was written -- the five
+# regexes plus `DEFAULT_REPORTER`, justified as "call sites in this module's own
+# test file bind them here" -- and a fresh-eye round grepped: nothing read any of
+# them, in this module or anywhere else. Six dead aliases whose own comment
+# asserted a relationship that did not exist, on the module whose stated rule is
+# that an unread alias is a live trap. Reach them through `_reporters`.
 
 KILLED = "killed"
 SURVIVED = "survived"
@@ -100,7 +99,11 @@ SweepError = RecoveryError
 
 @dataclass
 class Baseline:
-    returncode: int
+    #: `None` when NO baseline command was spawned. A plan refused for its own
+    #: misconfiguration never measured the tree, and reporting `0` there let a
+    #: consumer read "the tree is green" out of a run that established nothing --
+    #: this file's own class, on the reporting side.
+    returncode: int | None
     passed: int | None
     output: str
     refusal: str | None = None
@@ -166,18 +169,6 @@ class Sweep:
             for m in self.mutants
             if m.declared_call_site and m.removed_calls and m.verdict in (KILLED, SURVIVED)
         ]
-
-
-def summary_line(output: str, reporter=_reporters.PytestReporter) -> str | None:
-    """Return the runner's summary text, or None if it printed none.
-
-    Counts must be read from the summary ALONE. Scanning the whole transcript
-    let a failing test's echoed source supply the evidence -- in both directions:
-    a stray `no tests ran` turned a real kill into a refusal, and a stray
-    `N failed` could manufacture a kill from a run where nothing failed. Each
-    reporter carries its own scoping; see `mutation_test_reporters`.
-    """
-    return reporter.summary(output)
 
 
 def parse_passed(output: str, reporter=_reporters.PytestReporter) -> int | None:
@@ -410,7 +401,7 @@ def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
             "available: " + ", ".join(f"`{name}`" for name in sorted(_reporters.REPORTERS))
         )
         emit(f"baseline REFUSED: {refusal}")
-        return Sweep(baseline=Baseline(returncode=0, passed=None, output="", refusal=refusal))
+        return Sweep(baseline=Baseline(returncode=None, passed=None, output="", refusal=refusal))
     baseline = measure_baseline(command, repo_root, reporter)
     # The count goes out BEFORE the first mutant, so a reader of a truncated log
     # still sees what the sweep was measured against.
@@ -497,12 +488,33 @@ def call_site_non_claim(sweep: Sweep) -> str | None:
     # line reads `[removes join, str]`. Two contradictory statements in one report, and
     # the operator-facing one was the false one, on a surface whose whole thesis is not
     # reporting what it did not establish.
-    return (
+    claim = (
         "no mutant was DECLARED a call-site test (`\"call_site\": true`), so a clean result "
         "here says nothing about whether these repairs are still REACHED in production: a "
         "repair pinned only at its own function survives deletion of its caller with the "
         "suite green (#564, measured three times in one goal, none visible in the diff)"
     )
+    # And on a non-Python target the reader could not have counted one anyway.
+    # `removed_calls` parses a PYTHON ast, so a `.js` file yields `None` -- not
+    # `()` -- which means both halves of the call-site mechanism are inert there:
+    # no mutant can ever satisfy `call_site_mutants`, so this sentence fires on
+    # EVERY Node sweep regardless of the plan, and the one place this tool has
+    # teeth (`declared and removed == ()` -> REFUSED) cannot fire either, so a
+    # false `"call_site": true` on a JS mutant is accepted uncorroborated.
+    #
+    # A message that is always printed carries no information, and this repo has
+    # shipped that shape before. Naming the cause is what keeps it informative:
+    # the author is told the check was INAPPLICABLE, not that they forgot to
+    # declare one.
+    unparsed = sorted({m.path for m in sweep.mutants if not m.path.endswith(".py")})
+    if unparsed:
+        claim += (
+            "; and the call-site check could not be APPLIED to "
+            + ", ".join(unparsed)
+            + " at all -- it reads a Python AST, so on a non-Python target it neither "
+            "counts a declared caller test nor refuses a false declaration"
+        )
+    return claim
 
 
 def exit_code(sweep: Sweep) -> int:
@@ -523,9 +535,13 @@ def main() -> int:
         "--plan",
         type=Path,
         help=(
-            'JSON: {"test_command": [...], "mutants": [{"path":..., "find":..., "replace":..., '
-            '"call_site": true}]}. Set `call_site` on the mutant that deletes the repair\'s '
-            "CALLER; without one the sweep reports what it did not establish (#564)."
+            'JSON: {"test_command": [...], "reporter": "pytest"|"node-test", '
+            '"mutants": [{"path":..., "find":..., "replace":..., "call_site": true}]}. '
+            "`reporter` selects how the runner's COUNTS are read and defaults to "
+            "`pytest`; a Node repository needs `node-test`, or the sweep refuses a "
+            "green baseline it cannot parse. Set `call_site` on the mutant that "
+            "deletes the repair's CALLER; without one the sweep reports what it did "
+            "not establish (#564)."
         ),
     )
     action.add_argument(

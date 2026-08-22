@@ -64,7 +64,7 @@ def _sitecustomize_source(*, dynamic_context: bool) -> str:
     The size is quoted as a magnitude, not a constant, because it TRACKS THE
     SUITE and this file used to name one figure as if it were fixed. It said
     ~1.34 GB; the 2026-08-22 measurement on a larger suite found 8.22 GB against
-    12.25 MB for the same coverage data (#696). Both were true when taken. A
+    12.26 MB for the same coverage data (#696). Both were true when taken. A
     reader comparing two hardcoded numbers two files apart on one code path has
     no way to tell that, so the current measurement lives in the probe artifact
     and this docstring names the shape instead of a stale scalar.
@@ -255,7 +255,7 @@ def coverage_is_context_bearing(coverage_json: Path) -> bool | None:
     exists to catch a specific known-bad state cheaply, not to gate on an absence.
 
     Why a caller wants to know: a context-bearing export of this repo measured
-    8.22 GB against 12.25 MB for the same data, and 20.44 GiB of peak RSS to load.
+    8.22 GB against 12.26 MB for the same data, and 20.44 GiB of peak RSS to load.
     A consumer that needs only executed/missing lines can detect that it is about
     to pay for a corpus some OTHER writer left at a shared path, and decline,
     instead of discovering it as an out-of-memory crash on a proof surface.

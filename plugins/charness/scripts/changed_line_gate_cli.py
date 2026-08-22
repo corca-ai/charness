@@ -121,7 +121,7 @@ def parse_args() -> argparse.Namespace:
             "(`scripts/sample_mutation_files.py`), which builds its own corpus and does "
             "not depend on this flag. Pass it only to hand-build a context-bearing "
             "corpus for that sampler. Measured cost of leaving it on (#696): the same "
-            "coverage data exported to 8.22 GB instead of 12.25 MB (671x), taking 36.5s "
+            "coverage data exported to 8.22 GB instead of 12.26 MB (671x), taking 36.5s "
             "and 20.44 GiB of peak RSS to load instead of 0.13s and 0.06 GiB."
         ),
     )

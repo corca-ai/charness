@@ -210,7 +210,7 @@ def test_scope_covers_quality_release_dogfood_subdirs(tmp_path: Path) -> None:
 # --------------------------------------------------------------------------- #
 # Late-added evidence families (goals / critique / retro / probe / issues /
 # release-review). These carry citations exactly like the families above and were
-# simply never scanned: 70 already-evaporating citations across 2315 docs at the
+# simply never scanned: 70 already-evaporating citations across 2339 docs at the
 # time of widening, against 0 in the families already covered.
 #
 # Enforcement is date-anchored because almost all 70 sit in CLOSED records from
@@ -279,6 +279,11 @@ def test_the_grandfathered_debt_is_never_silent(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert "2 citation(s) to gitignored targets remain" in result.stdout
+    # The POPULATION clause, not just the count. Round 1 blocked on this sentence
+    # describing a set the gate did not have; asserting only the digits would have
+    # passed against the wording it rejected.
+    assert "whose FILENAME date precedes" in result.stdout
+    assert "whatever its body says -- is enforced" in result.stdout
 
 
 def test_an_undated_artifact_is_ENFORCED_not_exempt(tmp_path: Path) -> None:
@@ -318,27 +323,36 @@ def test_an_impossible_filename_date_does_not_buy_exemption(tmp_path: Path) -> N
     assert "0000-00-00-my-review.md" in result.stderr
 
 
-def test_a_body_date_can_grandfather_an_undated_filename(tmp_path: Path) -> None:
-    """Both channels are read, so a genuinely old artifact that carries its date
-    in the body rather than the filename is still treated as history."""
+def test_a_body_date_cannot_grandfather_an_undated_filename(tmp_path: Path) -> None:
+    """THE round-2 blocker pin: one author-written line must not buy an exemption.
+
+    The first fail-closed cut delegated to `observed_date`, which is
+    `max(body_date, filename_date)`. Its safety argument is CORROBORATION -- exempt
+    only when both channels agree the artifact is old -- and that argument inverts
+    on this corpus, which is defined by having no filename date. The body line is
+    then the only channel, so `Date: 2020-01-01` in a new review packet bought a
+    permanent exemption. Four checked-in docs already take their date from the body
+    alone, one of them a rolling pointer file whose body date is author-maintained.
+    """
     repo = _bootstrap_repo(tmp_path)
-    target = repo / "charness-artifacts" / "retro"
+    target = repo / "charness-artifacts" / "critique"
     target.mkdir(parents=True, exist_ok=True)
-    (target / "some-old-record.md").write_text(
+    (target / "some-review-packet.md").write_text(
         "# Demo\nDate: 2020-01-01\n\nProof: `artifacts/eval-summary.json`.\n", encoding="utf-8"
     )
 
     result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
 
-    assert result.returncode == 0, result.stderr
-    assert "1 citation(s) to gitignored targets remain" in result.stdout
+    assert result.returncode == 1, result.stdout
+    assert "some-review-packet.md" in result.stderr
 
 
-def test_the_later_channel_decides_so_a_doc_cannot_backdate_itself(tmp_path: Path) -> None:
-    """An old filename with a recent body date is ENFORCED. Taking the later of
-    the two channels means an artifact is exempt only when both agree it is old,
-    which is why this delegates to the repo's one owner of that rule instead of
-    reading a single channel."""
+def test_the_filename_decides_even_against_a_later_body_date(tmp_path: Path) -> None:
+    """The filename is the ONLY grandfathering channel, so a genuinely old artifact
+    stays history regardless of what its body says. Stated as a test because the
+    single-channel rule is a deliberate narrowing of the repo's shared helper, not
+    an oversight -- and because a future editor restoring `observed_date` here
+    would reopen the blocker above."""
     repo = _bootstrap_repo(tmp_path)
     target = repo / "charness-artifacts" / "goals"
     target.mkdir(parents=True, exist_ok=True)
@@ -348,8 +362,8 @@ def test_the_later_channel_decides_so_a_doc_cannot_backdate_itself(tmp_path: Pat
 
     result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
 
-    assert result.returncode == 1, result.stdout
-    assert "2020-01-01-demo.md" in result.stderr
+    assert result.returncode == 0, result.stderr
+    assert "1 citation(s) to gitignored targets remain" in result.stdout
 
 
 def test_the_excluded_count_is_reported_on_a_FAILING_run_too(tmp_path: Path) -> None:

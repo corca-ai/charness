@@ -299,3 +299,158 @@ def test_an_unknown_reporter_refuses_before_running_anything(tmp_path: Path) -> 
     payload = yaml.safe_load(result.stdout)
     assert "which is not registered" in payload["baseline"]["refusal"]
     assert "`node-test`, `pytest`" in payload["baseline"]["refusal"]
+
+
+# --------------------------------------------------------------------------- #
+# Round-1 findings: the adversarial cases the first cut shipped without.
+# --------------------------------------------------------------------------- #
+
+
+_NODE_BROKEN = """\
+TAP version 13
+# Subtest: test/t1.test.js
+not ok 1 - test/t1.test.js
+  ---
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 81.122046
+"""
+
+
+def test_a_file_level_process_failure_is_an_error_not_a_failure() -> None:
+    """THE false-kill guard. `node --test` has no error concept: a test FILE that
+    fails to load is reported as a failing TEST, so a mutation that breaks the
+    module reports counts BYTE-IDENTICAL to a real kill on the same fixture --
+    measured both ways, `# tests 3 / # pass 0 / # fail 3` either way. No count-only
+    rule can separate them; what separates them is that a broken module fails at
+    FILE level and node prints that file process's `exitCode:`."""
+    counts = reporters.NodeTestReporter.read(_NODE_BROKEN)
+
+    assert counts.failed == 0, "a file that never ran its tests caught nothing"
+    assert counts.errors == 1
+
+
+def test_a_real_assertion_failure_stays_a_failure() -> None:
+    """The other half: the guard must not turn genuine kills into refusals. A
+    test-level failure carries `code: 'ERR_ASSERTION'` and no `exitCode`."""
+    real = _NODE_PASS.replace("# pass 2", "# pass 1").replace("# fail 0", "# fail 1")
+    body = "not ok 1 - t1\n  ---\n  code: 'ERR_ASSERTION'\n  ...\n"
+
+    counts = reporters.NodeTestReporter.read(body + real)
+
+    assert (counts.failed, counts.errors) == (1, 0)
+
+
+def test_process_failures_cannot_exceed_the_reported_failures() -> None:
+    """Direction of error is what makes reading outside the summary acceptable
+    here: over-counting turns a kill into a refusal (a false stop) and can never
+    manufacture one. The cap keeps `failed` from going negative."""
+    noisy = "  exitCode: 1\n" * 9 + _NODE_BROKEN
+
+    counts = reporters.NodeTestReporter.read(noisy)
+
+    assert counts.failed == 0
+    assert counts.errors == 1
+
+
+def test_the_spec_reporter_marker_is_read_too() -> None:
+    """node picks its reporter by TTY. `tap` writes `# pass 2`, `spec` writes
+    `ℹ pass 2`. The harness always captures, so the authoring fixture exercises
+    `tap` -- but a consumer getting `spec` back would have met the #689 dead end
+    again, with a more confident-sounding message."""
+    spec = _NODE_PASS.replace("# ", "ℹ ")
+
+    counts = reporters.NodeTestReporter.read(spec)
+
+    assert (counts.passed, counts.failed) == (2, 0)
+
+
+def test_the_node_summary_shape_names_the_tap_escape_hatch() -> None:
+    assert "--test-reporter=tap" in reporters.NodeTestReporter.summary_shape
+
+
+@pytest.mark.parametrize("value", ["", [], 0, False, 5, ["node-test"], {}])
+def test_an_unusable_reporter_value_is_refused_not_defaulted(value) -> None:
+    """`REPORTERS.get(name or DEFAULT)` short-circuited on every FALSY value, so
+    `{"reporter": ""}` -- what a templated plan with an unset variable emits --
+    silently selected pytest and defeated the refusal on the input most likely to
+    produce it. A truthy unhashable value was worse: `dict.get` raised and crashed
+    the sweep. Only an ABSENT key means default."""
+    assert reporters.resolve(value) is None
+
+
+def test_only_an_absent_key_means_default() -> None:
+    assert reporters.resolve(None) is reporters.PytestReporter
+
+
+def test_the_refusal_survives_an_unregistered_reporter_name() -> None:
+    """`REPORTERS[configured]` was an unguarded subscript on the path that exists
+    to EXPLAIN a failure, so the first duck-typed out-of-tree reporter would turn
+    "no readable summary, here is why" into a KeyError mid-sweep."""
+    message = reporters.unreadable_refusal("some-out-of-tree-reporter", "gibberish")
+
+    assert "some-out-of-tree-reporter" in message
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_a_module_breaking_mutant_is_refused_not_killed(tmp_path: Path) -> None:
+    """End to end, against real `node --test`: the node analogue of the pytest
+    suite's strongest property-2 test. Before the guard this returned
+    `killed: 1` -- a kill reported when no test caught anything, which is exactly
+    what the module docstring forbids."""
+    repo = _seed_node_fixture(tmp_path)
+
+    result = _run_harness(
+        repo,
+        {"test_command": ["node", "--test"], "reporter": "node-test",
+         "mutants": [{"id": "syntax-break", "path": "src/calc.js",
+                      "find": "return a + b;", "replace": "return a +"}]},
+        tmp_path,
+    )
+
+    payload = yaml.safe_load(result.stdout)
+    assert payload["killed"] == 0, result.stdout
+    assert payload["mutants"][0]["verdict"] == "refused"
+
+
+def test_an_unmeasured_baseline_reports_no_returncode(tmp_path: Path) -> None:
+    """A plan refused for its OWN misconfiguration never spawned a baseline
+    command. Reporting `returncode: 0` there let a consumer read "the tree is
+    green" out of a run that established nothing -- and this suite itself draws
+    that inference one test away."""
+    repo = _seed_node_fixture(tmp_path)
+
+    result = _run_harness(
+        repo, {"test_command": ["node", "--test"], "reporter": "node", "mutants": []}, tmp_path
+    )
+
+    payload = yaml.safe_load(result.stdout)
+    assert payload["baseline"]["returncode"] is None
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_call_site_non_claim_says_the_check_was_inapplicable(tmp_path: Path) -> None:
+    """`removed_calls` parses a PYTHON ast, so a `.js` target yields `None` and the
+    whole call-site mechanism is inert: no Node mutant can ever count, so the
+    non-claim fires on EVERY Node sweep regardless of the plan, and a false
+    `"call_site": true` cannot be refused either. A message that is always printed
+    carries no information; naming the cause is what keeps it informative."""
+    repo = _seed_node_fixture(tmp_path)
+
+    result = _run_harness(
+        repo, {"test_command": ["node", "--test"], "reporter": "node-test", "mutants": [_MUTANT]}, tmp_path
+    )
+
+    payload = yaml.safe_load(result.stdout)
+    assert "could not be APPLIED to src/calc.js" in payload["call_site_non_claim"]

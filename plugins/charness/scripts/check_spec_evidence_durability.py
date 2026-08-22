@@ -55,9 +55,9 @@ LATE_DOC_GLOBS = (
     "charness-artifacts/release-review/**/*.md",
 )
 #: The date this widening landed. A doc in `LATE_DOC_GLOBS` is enforced when its
-#: observed date is on or after this; earlier ones are grandfathered. An UNDATABLE
-#: doc is enforced -- see `is_enforced_late_doc` for why that direction is the only
-#: safe one.
+#: FILENAME dates it on or after this; earlier ones are grandfathered. A doc whose
+#: filename carries no readable date is enforced whatever its body says -- see
+#: `is_enforced_late_doc` for why only that channel grandfathers.
 ENFORCED_FROM = date(2026, 8, 22)
 #: `docs/**` is deliberately NOT here. Doctrine that NAMES a runtime path
 #: (`artifact-policy.md` explaining where `.charness/quality/runtime-signals.json`
@@ -252,11 +252,41 @@ def is_enforced_late_doc(doc: Path, text: str) -> bool:
     whole of C4 through the one input the rule names as never fail-open".
 
     There is deliberately NO allowlist. Fail-closed leaves exactly three citations
-    to resolve across all 68 undated docs, and each is a genuine reproduction
-    source that the `<!-- reproduction-source -->` marker already exists to label.
-    An exemption list would be larger than the problem and would rot silently.
+    to resolve across all 68 filename-undated docs, and each is a genuine
+    reproduction source that the `<!-- reproduction-source -->` marker already
+    exists to label. An exemption list would be larger than the problem.
+
+    **Only the FILENAME channel grandfathers, and `text` is deliberately unused
+    for that decision.** The first fail-closed cut delegated to
+    `observed_date`, which is `max(body_date, filename_date)` -- and a round-2
+    reviewer showed that repair carried a narrowed form of the class it fixed.
+    `observed_date`'s safety argument is corroboration: when both channels parse,
+    an artifact is exempt only if they agree it is old. Its own docstring records
+    the residual -- "an undated filename with a back-dated body is therefore still
+    exempt" -- and mitigates it with "the scaffold always emits both".
+
+    That mitigation inverts on THIS corpus. The population here is *defined* by
+    having no filename date, so the author-written body line is not a corroborating
+    channel, it is the only one. One line, `Date: 2020-01-01`, in the first five
+    lines of a new review packet bought a permanent exemption. Four checked-in docs
+    already take their date from the body alone, one of them `critique/latest.md` --
+    a rolling pointer whose content is replaced while its body date is
+    author-maintained, which is exactly the grows-not-shrinks shape the fail-closed
+    repair was raised about.
+
+    So the delegation is kept for what it is good at and dropped where its argument
+    does not hold: `date_from_filename` is a name nobody edits while rewriting a
+    doc's body, and an artifact that wants grandfathering must be NAMED old. This
+    also sidesteps a second pre-existing hole the reviewer found in the body
+    channel -- `date_from_body` does not strip display fences, so a packet that
+    merely QUOTES another artifact's `Date:` header reads the quotation as its own
+    claim. That is filed rather than fixed here; this gate simply stops depending
+    on it.
+
+    `text` stays in the signature because a future channel (a front-matter field, a
+    committed-date corroboration) belongs here and not at the call site.
     """
-    observed = _scope.observed_date(doc, text)
+    observed = _scope.date_from_filename(doc)
     if observed is None:
         return True
     return observed >= ENFORCED_FROM
@@ -329,10 +359,11 @@ def grandfathered_advisory(grandfathered: int) -> str | None:
         return None
     return (
         f"ADVISORY (evidence durability): {grandfathered} citation(s) to gitignored "
-        f"targets remain in artifacts whose observed date precedes {ENFORCED_FROM.isoformat()}; "
+        f"targets remain in artifacts whose FILENAME date precedes {ENFORCED_FROM.isoformat()}; "
         "they are frozen records and are counted, not rewritten. Every artifact in "
-        "those families dated on or after that -- and every artifact with no "
-        "readable date at all -- is enforced."
+        "those families whose filename dates it on or after that -- and every "
+        "artifact whose FILENAME carries no readable date at all, whatever its body "
+        "says -- is enforced."
     )
 
 

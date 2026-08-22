@@ -63,15 +63,31 @@ ERROR_RE = re.compile(r"(\d+) error")
 NO_TESTS_RE = re.compile(r"no tests ran", re.IGNORECASE)
 SUMMARY_RE = re.compile(r"in \d+(?:\.\d+)?s", re.IGNORECASE)
 
-#: node --test TAP summary keys. `^` anchored under MULTILINE so an echoed line
-#: that merely CONTAINS `# pass 5` mid-text cannot supply a count.
-_NODE_KEY_RE = re.compile(r"^# (tests|pass|fail|cancelled) (\d+)\s*$", re.MULTILINE)
-_NODE_DURATION_RE = re.compile(r"^# duration_ms \d+(?:\.\d+)?\s*$", re.MULTILINE)
+#: node --test summary keys. `^` anchored under MULTILINE so an echoed line that
+#: merely CONTAINS `# pass 5` mid-text cannot supply a count.
+#:
+#: Both markers are accepted because node picks the reporter by TTY: `tap` writes
+#: `# pass 2`, `spec` writes `\u2139 pass 2`. The harness always captures output, so
+#: the authoring repo's fixture exercises `tap` -- but which one a CONSUMER's node
+#: emits is version- and environment-dependent, and getting `spec` back would have
+#: restored the #689 dead end with a more confident-sounding message.
+_NODE_MARK = "(?:#|\u2139)"
+_NODE_KEY_RE = re.compile(rf"^{_NODE_MARK} (tests|pass|fail|cancelled) (\d+)\s*$", re.MULTILINE)
+_NODE_DURATION_RE = re.compile(rf"^{_NODE_MARK} duration_ms \d+(?:\.\d+)?\s*$", re.MULTILINE)
+#: A FILE-level failure: node reports a test file whose process exited non-zero.
+#: `exitCode:` appears in a subtest's YAML diagnostic only for a file the runner
+#: spawned, never for a test that failed inside a file -- measured both ways.
+_NODE_PROCESS_FAILURE_RE = re.compile(r"^\s*exitCode: \d+\s*$", re.MULTILINE)
 
 
 @dataclass(frozen=True)
 class RunCounts:
-    """What the runner REPORTED. Not a verdict; the harness owns that."""
+    """What the runner REPORTED. Not a verdict; the harness owns that.
+
+    `errors` means "the run did not reach a verdict here" -- pytest's `N error`,
+    node's cancelled tests, and node's file-level process failures all land in it,
+    because the harness treats it as evidence that no test caught anything.
+    """
 
     passed: int
     failed: int
@@ -137,7 +153,11 @@ class NodeTestReporter:
     """
 
     name = "node-test"
-    summary_shape = "a trailing TAP block of `# key value` lines ending in `# duration_ms`"
+    summary_shape = (
+        "a trailing summary block of `# key value` (tap) or `\u2139 key value` (spec) "
+        "lines ending in a `duration_ms` line; if the runner emits neither, add "
+        "`--test-reporter=tap` to the plan's test_command"
+    )
 
     @staticmethod
     def summary(output: str) -> str | None:
@@ -150,16 +170,16 @@ class NodeTestReporter:
         if not durations:
             return None
         end = durations[-1].end()
-        # Walk back over the contiguous `# ...` lines that precede the duration.
-        lines = output[:end].splitlines()
+        # Walk back over the contiguous marker lines that precede the duration.
+        # The duration line itself always starts with a marker and is always the
+        # last element here, so the block is never empty -- an earlier `if not
+        # block: return None` guard below this loop was unreachable and is gone.
         block: list[str] = []
-        for line in reversed(lines):
-            if line.startswith("#"):
+        for line in reversed(output[:end].splitlines()):
+            if line.startswith(("#", "\u2139")):
                 block.append(line)
                 continue
             break
-        if not block:
-            return None
         return "\n".join(reversed(block))
 
     @classmethod
@@ -173,10 +193,31 @@ class NodeTestReporter:
         # says nothing about how many tests there were.
         if "tests" not in counts:
             return None
+        reported_failures = counts.get("fail", 0)
+        # THE false-kill guard, and the reason this reader looks outside the
+        # summary block at all. `node --test` has no error concept: a test FILE
+        # that fails to load is reported as a failing TEST, so a mutation that
+        # breaks the module reports `# pass 0 / # fail 3` -- byte-identical to a
+        # real kill on the same fixture. Measured both ways; the summaries do not
+        # differ, so no count-only rule can separate them.
+        #
+        # What DOES separate them is where the failure sits. A caught mutation
+        # fails at test level (`code: 'ERR_ASSERTION'`, no `exitCode`); a broken
+        # module fails at FILE level, and node prints the file process's
+        # `exitCode:` in that subtest's diagnostic. Counting those and moving them
+        # out of `failed` makes the harness's existing scope check fire: accounted
+        # drops below the baseline and the mutant is REFUSED, which is what
+        # property 2 requires and what the pytest path already did via `N error`.
+        #
+        # Direction of error is why scanning outside the summary is acceptable
+        # HERE where it is refused for counts: over-counting process failures
+        # turns a kill into a refusal (a false stop), and under-counting leaves
+        # the pre-existing behavior. Neither can manufacture a kill.
+        process_failures = min(len(_NODE_PROCESS_FAILURE_RE.findall(output)), reported_failures)
         return RunCounts(
             passed=counts.get("pass", 0),
-            failed=counts.get("fail", 0),
-            errors=counts.get("cancelled", 0),
+            failed=reported_failures - process_failures,
+            errors=counts.get("cancelled", 0) + process_failures,
             evidence=block,
         )
 
@@ -189,15 +230,29 @@ REPORTERS: dict[str, type] = {
 DEFAULT_REPORTER = PytestReporter.name
 
 
-def resolve(name: str | None):
-    """The reporter for a plan's `reporter` key, or None when the name is unknown.
+def resolve(name: object):
+    """The reporter for a plan's `reporter` key, or None when it is unusable.
 
     An unknown name is REFUSED by the caller rather than silently falling back to
     pytest. A plan that asks for `node` and gets pytest's reader would report
     `baseline REFUSED` on a green Node tree and blame the tree -- a misconfigured
     proof surface answering with a verdict about the code instead of about itself.
+
+    ONLY AN ABSENT KEY means "default". An earlier cut wrote
+    `REPORTERS.get(name or DEFAULT_REPORTER)`, which short-circuits on every FALSY
+    value: `{"reporter": ""}` -- exactly what a templated plan with an unset
+    variable emits -- silently selected pytest and defeated this refusal on the one
+    input most likely to produce it. A truthy unhashable value was worse:
+    `{"reporter": ["node-test"]}` made `dict.get` raise and crashed the sweep.
+
+    Same guard `run_mutant` already applies to `call_site`, for the same recorded
+    reason: a templated plan can declare the opposite of what its author meant.
     """
-    return REPORTERS.get(name or DEFAULT_REPORTER)
+    if name is None:
+        return REPORTERS[DEFAULT_REPORTER]
+    if not isinstance(name, str) or not name:
+        return None
+    return REPORTERS.get(name)
 
 
 def unreadable_refusal(configured: str, output: str) -> str:
@@ -214,10 +269,13 @@ def unreadable_refusal(configured: str, output: str) -> str:
         for reporter in REPORTERS.values()
         if reporter.name != configured and reporter.read(output) is not None
     ]
-    detail = (
-        f"the `{configured}` reporter found no readable count report "
-        f"(it looks for {REPORTERS[configured].summary_shape})"
-    )
+    # `.get`, not `[...]`. The reporter parameter is duck-typed on purpose, so the
+    # first out-of-tree reporter class would otherwise turn "no readable summary,
+    # here is why" into a KeyError mid-sweep -- the refusal machinery failing at
+    # exactly the moment it is needed.
+    known = REPORTERS.get(configured)
+    shape = known.summary_shape if known is not None else "an unregistered summary shape"
+    detail = f"the `{configured}` reporter found no readable count report (it looks for {shape})"
     if others:
         detail += (
             "; this output IS readable by the "
