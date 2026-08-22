@@ -152,8 +152,14 @@ def test_upsert_refuses_to_flip_a_goal_superseded_without_the_record(
 
 
 def test_upsert_allows_the_flip_once_the_record_is_present(goal_lib, tmp_path: Path) -> None:
+    """The successor must EXIST, not merely be named -- so this fixture writes it.
+    The pointer-existence check landing at the write is what made that necessary,
+    and this test failing until the successor was created is the check working."""
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "goals").mkdir(parents=True)
+    (repo / "charness-artifacts" / "goals" / "2026-09-01-next.md").write_text(
+        "# next\n", encoding="utf-8"
+    )
     path = goal_lib.goal_path(repo, "2026-08-22", "demo")
     path.write_text(
         "# Demo\n\nStatus: active\n\nSuperseded by: charness-artifacts/goals/2026-09-01-next.md\n",
@@ -274,3 +280,41 @@ def test_a_superseded_goal_with_a_real_successor_clears_the_floor(tmp_path: Path
     )
 
     assert payload["superseded_record"]["ok"] is True, payload
+
+
+def test_the_write_guard_checks_the_successor_pointer_too(goal_lib, tmp_path: Path) -> None:
+    """The release critique's F6. The pointer-existence check reached the
+    validator and NEITHER write, so `--status superseded` with a pointer at a file
+    nobody wrote succeeded at the write and failed one validator cycle later --
+    the exact window the write guard's own docstring says it exists to close, on
+    the one check this module calls the entire cost of the status. Round 2 caught
+    the sibling form (both guards inside `if path.exists()`); this residual
+    survived it."""
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "goals").mkdir(parents=True)
+    path = goal_lib.goal_path(repo, "2026-08-22", "demo")
+    path.write_text(
+        "# Demo\n\nStatus: active\n\nSuperseded by: charness-artifacts/goals/never-written.md\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError) as excinfo:
+        goal_lib.upsert_goal(
+            repo, date="2026-08-22", slug="demo", title="Demo", status="superseded"
+        )
+
+    assert "does not exist" in str(excinfo.value)
+
+
+def test_the_create_guard_checks_the_successor_pointer_too(goal_lib, tmp_path: Path) -> None:
+    """Same omission on the creation arm, which the round-2 repair had just added."""
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "goals").mkdir(parents=True)
+
+    with pytest.raises(ValueError) as excinfo:
+        goal_lib.upsert_goal(
+            repo, date="2026-08-22", slug="fresh", title="Fresh", status="superseded",
+            goal_body="Superseded by: charness-artifacts/goals/never-written.md",
+        )
+
+    assert "superseded" in str(excinfo.value)

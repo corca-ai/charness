@@ -174,7 +174,8 @@ def _section_placeholder_summary(report: dict[str, Any]) -> str:
     )
 
 
-def _create_status_refusal(status: str, body: str, rel: str) -> dict[str, Any] | None:
+def _create_status_refusal(status: str, body: str, rel: str,
+                           repo_root: Path | None = None) -> dict[str, Any] | None:
     """Re-run a terminal/blocked status floor against a body being CREATED.
 
     Both flip guards live inside `if path.exists()`, so `--status <terminal>` on a
@@ -184,7 +185,8 @@ def _create_status_refusal(status: str, body: str, rel: str) -> dict[str, Any] |
     next terminal status from having to rediscover it.
     """
     if status == "superseded":
-        report = _superseded.check_superseded_record(body, mask_fences=_mask_fences)
+        report = _superseded.check_superseded_record(
+            body, mask_fences=_mask_fences, repo_root=repo_root)
         if not report["ok"]:
             raise ValueError("refusing to create this goal `superseded`: " + report["reason"])
     if status == "blocked":
@@ -217,7 +219,8 @@ def upsert_goal(
     if path.exists():
         original = path.read_text(encoding="utf-8")
         refusal = _superseded.refuse_flip_reason(
-            status, original, mask_fences=_mask_fences, read_status=read_status)
+            status, original, mask_fences=_mask_fences, read_status=read_status,
+            repo_root=repo_root)
         if refusal:
             raise ValueError(refusal)
         if status == "complete" and read_status(original) != "complete":
@@ -295,7 +298,7 @@ def upsert_goal(
         execution_efficiency_context_path=adapter["data"]["scaffold"]["execution_efficiency_context_path"],
         goal_body=goal_body,
     )
-    create_refusal = _create_status_refusal(status, body, rel)
+    create_refusal = _create_status_refusal(status, body, rel, repo_root)
     if create_refusal is not None:
         return create_refusal
     path.write_text(body, encoding="utf-8")

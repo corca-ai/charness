@@ -101,16 +101,24 @@ def _pointer_path(value: str) -> str | None:
 
 
 
-def refuse_flip_reason(status: str, original: str, *, mask_fences, read_status) -> str | None:
+def refuse_flip_reason(status: str, original: str, *, mask_fences, read_status,
+                       repo_root: Path | None = None) -> str | None:
     """Why a flip TO `superseded` must be refused, or None when it may proceed.
 
     Checked at the WRITE, matching how `complete` is guarded, because a validator
     that only complains afterwards leaves a window in which the artifact already
     reads as terminal to anything that opens it.
+
+    `repo_root` is threaded so the SUCCESSOR-POINTER existence check runs here too.
+    It did not: the check reached the validator and neither write, so
+    `--status superseded` with a pointer at a file nobody wrote succeeded at the
+    write and failed only on the next validator pass -- the exact window this
+    function's own first paragraph says it exists to close, on the one check this
+    module calls the entire cost of the status.
     """
     if status != "superseded" or read_status(original) == "superseded":
         return None
-    report = check_superseded_record(original, mask_fences=mask_fences)
+    report = check_superseded_record(original, mask_fences=mask_fences, repo_root=repo_root)
     if report["ok"]:
         return None
     return "refusing to mark this goal `superseded`: " + report["reason"]
