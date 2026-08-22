@@ -84,7 +84,7 @@ _CADENCE_LABEL = re.compile(r"^[ \t>*\-]*\**[ \t]*Gate cadence[ \t]*:[ \t]*\**(.
 #:
 #: Reading either correctly is paraphrase matching, which this module refuses by
 #: design. The FIRST shape -- negation -- is now handled by DECLINING rather than
-#: by guessing; see `_NEGATED_NEAR_FLAG`. The second is not, and stays disclosed.
+#: by guessing; see `_negated_near_flag`. The second is not, and stays disclosed.
 _DEFERS_BROAD_PROOF = re.compile(r"--skip-broad-pytest|--verification-lock")
 
 #: A negation sitting in the same clause as a matched flag.
@@ -113,15 +113,47 @@ _DEFERS_BROAD_PROOF = re.compile(r"--skip-broad-pytest|--verification-lock")
 #: floor on its own template, which is exactly what the constant above warns
 #: whoever takes this issue not to do.
 _NEGATION_TOKEN = re.compile(r"\b(?:not|never|without|no)\b", re.IGNORECASE)
-_CLAUSE_SPLIT = re.compile(r"[;.]")
+#: SENTENCE boundaries, not every period. `.` alone split inside the repo's
+#: dominant spelling -- `run_slice_closeout.py --skip-broad-pytest` appears on
+#: ~60 checked-in cadence lines and on the scaffold seed -- which severed the
+#: negation from the flag and left the REPORTED artifact still refused. The
+#: lookahead keeps a filename dot intact because the character after it is a
+#: letter, and still splits a real sentence end.
+_CLAUSE_SPLIT = re.compile(r";|\.(?=\s|$)")
 
 
 def _negated_near_flag(cadence_text: str) -> str | None:
-    """The clause in which a matched flag sits beside a negation, else None."""
-    for clause in _CLAUSE_SPLIT.split(cadence_text):
-        if _DEFERS_BROAD_PROOF.search(clause) and _NEGATION_TOKEN.search(clause):
-            return clause.strip()
-    return None
+    """The clause that leaves this line unreadable, or None when it is readable.
+
+    Declines only when EVERY flag mention on the line is negated. One clause
+    carrying a flag with no negation ESTABLISHES a deferral, and the line is
+    read as deferring however its other clauses are worded.
+
+    That asymmetry is the whole correctness of this function, and the first cut
+    missed it: `not|never|without|no` is the ordinary vocabulary of stating a
+    deferral NEGATIVELY, not only of negating one. A genuinely deferring line --
+    "pre-lock slices use `--skip-broad-pytest`, and no broad pytest runs before
+    then; final/bundle proof uses `--verification-lock`" -- declined, which
+    disarmed the floor on a TRUE POSITIVE and restored the measured 2.5 hours of
+    re-proof it exists to prevent. Requiring every flag mention to be negated
+    keeps the reported artifact declining (it has no unnegated flag clause) while
+    that one refuses again.
+
+    Known and deliberately unfixed: a line whose only flag mention is negated but
+    which ALSO names a flag for a terminal step -- "do not pass
+    `--skip-broad-pytest`; use `--verification-lock` at the bundle" -- is read as
+    deferring. That is the constant's SECOND blind shape, which this decision did
+    not take on.
+    """
+    flag_clauses = [
+        clause for clause in _CLAUSE_SPLIT.split(cadence_text)
+        if _DEFERS_BROAD_PROOF.search(clause)
+    ]
+    if not flag_clauses:
+        return None
+    if any(not _NEGATION_TOKEN.search(clause) for clause in flag_clauses):
+        return None
+    return flag_clauses[0].strip()
 
 #: A BROAD-pytest command an acceptance line can demand: a pytest run over the
 #: whole tree, or the standing-pytest runner named directly. Optional flags may
@@ -150,13 +182,33 @@ _BROAD_PROOF_COMMAND = re.compile(
 _PER_SLICE_FREQUENCY = re.compile(r"\b(?:every|each)\s+slice\b|\bper[- ]slice\b", re.IGNORECASE)
 
 
-def _inert(reason: str) -> dict[str, Any]:
+def _cadence_decline(cadence: dict[str, Any], decline: str, reason: str) -> dict[str, Any]:
+    """A non-applicable verdict that HAS parsed a cadence line.
+
+    One builder for both, because the two differ only in `decline` and `reason`
+    and a duplicate-ratchet gate refused the second copy on sight. `decline` is the
+    discriminating FACT: five branches emit `applies: False, ok: True`, two of them
+    lead with the same `unestablished:` token, and prose was the only thing telling
+    them apart.
+    """
+    return {
+        "applies": False,
+        "ok": True,
+        "reason": reason + ". `## User Acceptance` is not evaluated as a second owner",
+        "cadence": cadence,
+        "findings": [],
+        "decline": decline,
+    }
+
+
+def _inert(reason: str, decline: str = "") -> dict[str, Any]:
     """The floor did not evaluate, and says why. Never a silent clean pass.
 
     `applies: False` alongside a reason is the disclosure: `ok: True` here means
     "not evaluated", not "checked and fine".
     """
-    return {"applies": False, "ok": True, "reason": reason, "cadence": None, "findings": []}
+    return {"applies": False, "ok": True, "reason": reason, "cadence": None,
+            "findings": [], "decline": decline}
 
 
 def _logical_section(masked: str, section: str, markdown) -> list[tuple[int, str]]:
@@ -212,7 +264,8 @@ def check(
     for symmetry; every read goes through ``masked`` (see ``_logical_section``).
     """
     if is_terminal(status):
-        return _inert("skipped: terminal record — a `complete` artifact is one nobody may repair")
+        return _inert("skipped: terminal record — a `complete` artifact is one nobody may repair",
+                      "terminal-status")
     if not balanced:
         # `mask_fences` FAILS OPEN on odd fence parity: `masked` is then the raw
         # text, fenced examples included. Every read below would be over a reading
@@ -220,7 +273,7 @@ def check(
         # which would point inside a code fence. Say that instead. Round-2 review
         # found this floor was the one new reader consuming a possibly-fail-open
         # mask while claiming fenced examples could not act as an owner.
-        return _inert(
+        return _inert(  # unbalanced fences
             "unestablished: an unclosed code fence makes fence masking fail open, so a "
             "fenced example is indistinguishable from a real `Gate cadence:` or acceptance "
             "line; close the fence and this floor can render a verdict"
@@ -245,19 +298,14 @@ def check(
         # deliberate under-fire from a parser that skipped, so the under-fire the
         # module docstring declares must be legible HERE, in the payload, not only in
         # the docstring nobody reads at 3am.
-        return {
-            "applies": False,
-            "ok": True,
-            "reason": (
-                f"not applicable: `## Active Operating Frame` line {cadence['line']} DOES state a "
-                "`Gate cadence:`, but this floor recognises deferral only by the literal presence "
-                "of `--skip-broad-pytest` or `--verification-lock`, and neither appears in the "
-                "text this floor read on that line, so it declined. `## User Acceptance` is not "
-                "evaluated as a second owner"
-            ),
-            "cadence": cadence,
-            "findings": [],
-        }
+        return _cadence_decline(
+            cadence,
+            "vocabulary-not-recognised",
+            f"not applicable: `## Active Operating Frame` line {cadence['line']} DOES state a "
+            "`Gate cadence:`, but this floor recognises deferral only by the literal presence "
+            "of `--skip-broad-pytest` or `--verification-lock`, and neither appears in the "
+            "text this floor read on that line, so it declined",
+        )
     ambiguous = _negated_near_flag(cadence["text"])
     if ambiguous is not None:
         # UNESTABLISHED, and non-blocking. `pursue_readiness` gates on `ok`, so a
@@ -267,19 +315,15 @@ def check(
         # the honest verdict AND the safe one for this floor's stated bias: its own
         # docstring says "a cadence that defers in words nobody has written yet
         # under-fires rather than guessing".
-        return {
-            "applies": False,
-            "ok": True,
-            "reason": (
-                f"unestablished: `## Active Operating Frame` line {cadence['line']} names a "
-                f"deferral flag inside a clause that also negates it ({ambiguous!r}), so this "
-                "floor cannot tell a deferral from its opposite without paraphrasing -- which it "
-                "refuses to do. No verdict is rendered and activation is not blocked on it. "
-                "`## User Acceptance` is not evaluated as a second owner"
-            ),
-            "cadence": cadence,
-            "findings": [],
-        }
+        return _cadence_decline(
+            cadence,
+            "negated-flag-unreadable",
+            f"unestablished: `## Active Operating Frame` line {cadence['line']} names a deferral "
+            f"flag inside a clause that also negates it ({ambiguous!r}), and every flag mention on "
+            "the line is negated, so this floor cannot tell a deferral from its opposite without "
+            "paraphrasing -- which it refuses to do. No verdict is rendered and activation is not "
+            "blocked on it",
+        )
     findings = _acceptance_findings(masked, markdown)
     if not findings:
         return {
@@ -288,6 +332,7 @@ def check(
             "reason": "one owner: `## User Acceptance` does not restate the gate cadence",
             "cadence": cadence,
             "findings": [],
+            "decline": "",
         }
     return {
         "applies": True,

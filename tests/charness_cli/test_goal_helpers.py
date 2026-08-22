@@ -18,12 +18,19 @@ GOAL_PATH = "charness-artifacts/goals/2026-06-03-testability-quality-skill-ratch
 # both fixtures below already write that heading themselves (with content in the
 # discussion fixture, empty in the draft-frame one) — including it here would
 # emit the heading twice.
+# A fixture LINE per section, not a bare heading: the hollow-section floor
+# refuses a required shaping section that is present but says nothing, which is
+# the whole point of it. These fixtures each isolate a DIFFERENT dimension, so
+# filling the sections keeps them testing the dimension they name.
 _REMAINING_SECTIONS = (
-    "## Goal\n\n## Boundaries\n\n## User Acceptance\n\n"
-    "## Agent Verification Plan\n\n## Slice Plan\n\n## Slice Log\n\n"
+    "## Goal\n\nfixture.\n\n## Boundaries\n\nfixture.\n\n"
+    "## User Acceptance\n\nfixture.\n\n"
+    "## Agent Verification Plan\n\nfixture.\n\n## Slice Plan\n\nfixture.\n\n"
+    "## Slice Log\n\n"
     "## Off-Goal Findings\n\n## Final Verification\n\n"
     "## User Verification Instructions\n\n## Auto-Retro\n\n"
-    "## Context Sources\n\n## Interview Decisions\n\n## Plan Critique Findings\n"
+    "## Context Sources\n\nfixture.\n\n## Interview Decisions\n\nfixture.\n\n"
+    "## Plan Critique Findings\n\nfixture.\n"
     "\n## Closeout Binding Plan\n"
     "- Reviewed inputs: fixture\n- Frozen target: fixture\n- Fresh-eye: fixture\n"
     "- Verification lock: fixture\n- Complete flip: fixture\n"
@@ -68,7 +75,7 @@ def _write_generic_draft_frame_goal(repo: Path) -> Path:
         # This fixture isolates the draft-frame ADVISORY, which must stay
         # non-blocking, so the section floor is satisfied and only the frame
         # disposition is generic.
-        "## Non-Goals\n\n" + _REMAINING_SECTIONS,
+        "## Non-Goals\n\nfixture.\n\n" + _REMAINING_SECTIONS,
         encoding="utf-8",
     )
     return goal

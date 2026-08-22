@@ -33,6 +33,7 @@ def _load(path: Path, name: str):
 
 
 gal = _load(_SCRIPTS / "goal_artifact_lib.py", "goal_artifact_lib")
+_CADENCE = _load(_SCRIPTS / "goal_artifact_cadence_owner.py", "goal_artifact_cadence_owner")
 
 _DEFERRING_CADENCE = (
     "- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;\n"
@@ -583,7 +584,17 @@ def test_every_non_complete_checked_in_goal_passes_the_floor() -> None:
 # and says so.
 # --------------------------------------------------------------------------- #
 
+#: THE HOUSE SPELLING. ~60 checked-in cadence lines and the scaffold seed write
+#: the flag as `run_slice_closeout.py --skip-broad-pytest`, and the first cut of
+#: the clause splitter split on every `.` -- severing the negation from the flag,
+#: so the REPORTED artifact was still refused. The original test used the bare
+#: flag, which is the one spelling the corpus does not use, and therefore could
+#: not see it.
 _NEGATED_CADENCE = (
+    "- Gate cadence: broad pytest at EVERY slice boundary this run; "
+    "do not pass `run_slice_closeout.py --skip-broad-pytest`."
+)
+_NEGATED_CADENCE_BARE_FLAG = (
     "- Gate cadence: broad pytest at EVERY slice boundary this run; "
     "do NOT pass `--skip-broad-pytest`."
 )
@@ -600,13 +611,85 @@ def test_a_negated_flag_mention_renders_no_verdict() -> None:
     assert "unestablished" in report["reason"]
 
 
+def test_the_bare_flag_spelling_declines_too() -> None:
+    """Both spellings, because the corpus uses one and the report used the other."""
+    report = _check(_artifact(cadence=_NEGATED_CADENCE_BARE_FLAG,
+                              acceptance=_PER_SLICE_ACCEPTANCE))
+
+    assert report["applies"] is False and report["ok"] is True
+
+
+def test_a_deferral_stated_NEGATIVELY_still_refuses() -> None:
+    """THE round-1 blocker on this slice, and the sharper of the two.
+
+    `not|never|without|no` is the ordinary vocabulary of stating a deferral
+    negatively, not only of negating one. The first cut declined on this line --
+    which genuinely defers -- and so disarmed the floor on a TRUE POSITIVE,
+    restoring the measured 2.5 hours of re-proof it exists to prevent. Declining
+    now requires EVERY flag mention on the line to be negated; one unnegated
+    flag clause establishes the deferral.
+    """
+    cadence = (
+        "- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`, "
+        "and no broad pytest runs before then; final/bundle proof records the "
+        "verification lock and uses `--verification-lock`."
+    )
+    report = _check(_artifact(cadence=cadence, acceptance=_PER_SLICE_ACCEPTANCE))
+
+    assert report["applies"] is True
+    assert report["ok"] is False
+
+
+def test_no_checked_in_cadence_line_declines() -> None:
+    """A CENSUS, not a boolean. The corpus test that asserts only `ok` cannot see
+    blanket disarmament, because a decline also reports `ok: True` -- widening the
+    negation vocabulary until all 84 lines decline would keep it green. Measured
+    at the time of the decision: zero of 84."""
+    import re as _re
+
+    label = _re.compile(r"^[ \t>*\-]*\**[ \t]*Gate cadence[ \t]*:[ \t]*\**(.*)$", _re.MULTILINE)
+    declined = []
+    for goal in sorted((_ROOT / "charness-artifacts" / "goals").glob("*.md")):
+        match = label.search(goal.read_text(encoding="utf-8"))
+        if match and _CADENCE._negated_near_flag(match.group(1).strip()):
+            declined.append(goal.name)
+
+    assert declined == [], declined
+
+
+def test_the_decline_is_distinguishable_from_the_payload_alone() -> None:
+    """Five branches emit `applies: False, ok: True`, and two of them even lead
+    with the same `unestablished:` token, so prose was the only discriminator. The
+    repair that separated absent-from-found added a distinguishing FACT; this
+    restores that invariant."""
+    report = _check(_artifact(cadence=_NEGATED_CADENCE, acceptance=_PER_SLICE_ACCEPTANCE))
+
+    assert report["decline"] == "negated-flag-unreadable"
+
+
+def test_the_readiness_pass_sentence_says_a_floor_rendered_no_verdict() -> None:
+    """A DECLINE IS NOT A PASS. Unlike the unbalanced-fence decline it imitates --
+    which `check_goal` and `activation_ready` both refuse independently -- this one
+    has no backstop, so without disclosure the payload said "safe to pursue" with
+    no clause anywhere saying a floor had answered nothing."""
+    text = _artifact(status="draft", cadence=_NEGATED_CADENCE, acceptance=_PER_SLICE_ACCEPTANCE)
+
+    report = gal.pursue_readiness(text)
+
+    assert report["cadence_unestablished"] is True
+    assert "rendered NO VERDICT" in report["reason"]
+
+
 def test_the_decline_quotes_the_clause_it_could_not_read() -> None:
     """A decline that does not show its evidence is indistinguishable from a
     parser that skipped -- the exact confusion this module already repaired once
     for its other non-applicable branch."""
     report = _check(_artifact(cadence=_NEGATED_CADENCE, acceptance=_PER_SLICE_ACCEPTANCE))
 
-    assert "do NOT pass `--skip-broad-pytest`" in report["reason"]
+    assert "do not pass `run_slice_closeout.py --skip-broad-pytest`" in report["reason"], (
+        "the quoted clause must be the WHOLE clause -- the first splitter cut it "
+        "mid-token at the filename dot and quoted 'py --skip-broad-pytest'"
+    )
 
 
 def test_the_decline_does_not_block_activation() -> None:

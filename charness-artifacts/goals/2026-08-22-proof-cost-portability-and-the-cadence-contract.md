@@ -9,20 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: B — unfork the Node consumers.
-- Current slice intent: make the mutation harness usable by a Node repository
-  (a reporter seam for the coupled accounting), make `--pursue-ready` distinguish
-  a section that is PRESENT from one that was WRITTEN, and give the achieve
-  contract a terminal status for a goal that ended without completing. This names
+- Current slice: A — settle the cadence contract (decided; implementation landed).
+- Current slice intent: implement the recorded `#694` decision — the cadence
+  floor declines to render a verdict on a line it cannot read, rather than
+  guessing its polarity or refusing a truthful artifact. This names
   the reviewable-intent unit in progress and the commits it spans; critique and
   broad proof do not re-fire within one unchanged intent — update it when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: slice C is closed (`77c4300ae`, `1cb2e67c2`, `10f1a092c`); its
-  two-round cap is CONSUMED and the round-2 repairs are accepted-unreviewed.
-  Slice B's three claims are implemented (`ff0f52925` + `10f1a092c` + the
-  pursue-readiness and terminal-status work). Slice B still owes its round-2
-  bounded review as a verdict-logic change on a proof surface. Then slice A
-  (`#694`), then the single release.
+- Next action: all three source slices have landed (`77c4300ae`, `1cb2e67c2`,
+  `ff0f52925`, `10f1a092c`, `142b39102`, `99c440aa7`, `89f32da4e`). Slice C and
+  slice B have both consumed their two-round cap. Awaiting slice A's round-1
+  bounded review and the re-run changed-line proof; then the broad release gate
+  over the bundle, then slice R — which needs an explicit operator grant that
+  this run has NOT yet obtained.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -346,6 +345,20 @@ applies.
 - Off-goal findings: #696 filed before fixing (the context blowup, fixed here). #697 filed and deliberately NOT fixed: the mutation sampler and this lane share one canonical coverage path and the freshness marker fingerprints content rather than the writer, so it cannot tell them apart. Recorded but not filed: five repo surfaces quote the incremental lane's nine-commit case at ~4min and four at ~5min; slice C propagated the lower figure and added a fifth citation site.
 - Lessons carried forward: A gate that silently drops part of its own scope prints the same clean line as one with nothing to drop — the excluded count has to be a NUMBER, and it has to survive a failing run. Fail-open on an absent input is the specific mistake this repo has now made three times on three different floors, and the canonical helper's docstring already said so; delegating to that one owner is cheaper than re-deriving the rule and getting it wrong. An acceptance criterion that cannot be met should be amended out loud at the moment it is discovered, not reinterpreted in the frame; a claims reviewer reading records against commits catches that, and a correctness reviewer reading code does not. Rounding a measurement for display and then computing ratios from the rounded values produces an artifact that cannot be reconciled by its own reader.
 - Metrics: Not available from this host in a form worth quoting; no token or tool-call counters are exposed to the agent. Wall-clock is recorded only where it was measured as evidence (the probe artifact).
+
+### Slice 2: B — unfork the Node consumers
+
+- Objective: Make the mutation harness usable by a Node repository, make `--pursue-ready` distinguish a section that is PRESENT from one that was WRITTEN, and give the achieve contract a terminal status for a goal that ended without completing.
+- Why this approach: Three downstream repositories maintain a substitute for a harness this repo owns, and all three findings were third-or-later sightings — signals that kept being produced and never reached the tracker.
+- Commits: `ff0f52925` (reporter seam), `10f1a092c` (round-1 repairs, shared with slice C), `142b39102` (hollow sections + terminal status), `99c440aa7` (round-2 repairs, shared with slice A), `89f32da4e` (the validator-branch coverage repair).
+- What changed: `scripts/mutation_test_reporters.py` (NEW — the accounting seam), `scripts/mutate_and_restore.py` (reporter threaded through; six dead re-export aliases and a dead `summary_line` deleted), `skills/public/achieve/scripts/goal_artifact_hollow_sections.py` (NEW), `goal_artifact_superseded.py` (NEW), `goal_artifact_naming.py` (NEW, extraction under the length cap), plus `goal_artifact_lib.py`, `goal_artifact_pursue.py`, `check_goal_artifact.py`, `goal_artifact_phase_brief.py`, the achieve reference, and mirrors.
+- Alternatives rejected: REJECTED — a `stryker-js` bridge or a caller-supplied regex knob for the Node accounting. The adapter keeps the scoping discipline (counts from the runner's own summary, never a transcript scan) inside the harness, where it was learned twice; a regex knob pushes that discipline onto every caller to re-learn wrongly. REJECTED — the round-1 reviewer's proposal to carry `# tests` into the scope check: REPRODUCED AND REFUTED, because a broken module and a real kill emit byte-identical node summaries. REJECTED — reading node's `spec` reporter for counts: adopted in round 1 to avoid a consumer dead end, then reversed in round 2 after measuring that `spec` omits the file-level detail the false-kill guard needs. REJECTED — requiring a non-empty section body for the hollow check; the scaffold seeds guidance prose everywhere, so that test would have called every fresh draft shaped.
+- Targeted verification: Measured before/after against a real `node --test` fixture: `baseline REFUSED: ... no readable passing count` at exit 2 on a GREEN tree, versus `baseline: 2 passed` / `killed: 1` at exit 0. The property-2 case measured separately on a three-single-test-file fixture: a non-parsing mutant was reported KILLED before the guard and is `refused` ("accounted for 0 of 3 baseline tests") after, while a real kill stays `killed`. 1416 focused tests green across the goal/achieve/mutation/changed-line/durability suites; 100 across the harness and reporter modules; 17 in the terminal-status module. Four end-to-end tests run a real `node --test`, including a byte-for-byte worktree restore pin, and skip when node is absent. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review` clean.
+- Test duplication pressure: `check_dup_ratchet.py` went HARD-BLOCK twice. The first was a two-line `" ".join(x.split())` idiom shared with two unrelated modules — classified `intentional`. The second was NOT classified and was repaired instead: the hollow classifier had hand-rolled the H2 section walk, an EIGHTH copy of a loop whose declared one owner records six prior copies and says adding another while shipping a slice about one rule having one owner is what made consolidating it a real repair. The gate refusing it was the gate working. A third duplication the gate could not see was found by reading — a second lazy reader for the scaffold template beside the module's existing `_TEMPLATE` — and deleted.
+- Critique: Two bounded fresh-eye rounds; the cap is CONSUMED and the round-2 repairs are recorded as accepted-unreviewed. Round 1: TWO BLOCKERS. A mutant that BROKE THE MODULE was classified KILLED on the node path (property 2's forbidden verdict), and `resolve` silently defaulted to pytest for every falsy reporter value while crashing on unhashable ones. Round 2: THREE MORE, each confirmed by execution before repair. The B1 repair was TAP-only while the summary reader had been widened to `spec`, so the false kill returned intact on the path round 1 had asked for — measured: `spec` emits no `exitCode` line in any form. `## Closeout Binding Plan` was in neither hollow tuple, so the one section where this check had a unique catch was detected, not blocked, and then mislabelled run-filled. Both superseded guards sat inside `if path.exists()`, so creating straight to the terminal status bypassed them. Round 2 also predicted the changed-line gap that later blocked: the validator's superseded branch had no behavioural test, and my first repair asserted on its SOURCE TEXT — coverage disagreed and named the same five lines.
+- Off-goal findings: #698 filed and deliberately NOT fixed: `superseded` bypasses roughly fourteen closeout floors including the Auto-Retro disposition gate, so a run that surfaced improvements can end with them unrecorded. Adding a disposition floor is a new contract surface that would owe its own rounds, and this slice's cap was consumed. The successor-pointer half of the same finding WAS fixed — the path is now checked for existence.
+- Lessons carried forward: A reviewer's proposed fix is a hypothesis, not a patch: two of them here were reproduced and refuted, and adopting either would have shipped a guard that does not guard. When a repair and the surface it guards are widened separately, the guard becomes silently narrower than its subject — round 1 widened the reader to `spec` and round 2 found the guard had not followed. A test that asserts on source text cannot fail for any reason the branch can fail for; changed-line coverage said so about the exact five lines a reviewer had already named in words. And a duplicate-detection gate refusing a new copy of a loop whose owner is declared is not friction to classify away — it is the one mechanism that catches an eighth copy.
+- Metrics: Not available from this host in a form worth quoting; no token or tool-call counters are exposed to the agent.
 
 ## Context Sources
 

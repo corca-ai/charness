@@ -351,6 +351,19 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
     # cost is paid AFTER the goal goes active, one broad suite per slice.
     cadence = check_cadence_owner(text, status=read_status(text))
     report["cadence_owner"] = cadence
+    if cadence.get("decline") == "negated-flag-unreadable":
+        # A DECLINE IS NOT A PASS, and this floor's decline has no backstop --
+        # unlike the unbalanced-fence decline it imitates, which `check_goal` and
+        # `activation_ready` both refuse independently. Without this line the
+        # readiness payload says "safe to pursue" with no clause anywhere saying a
+        # floor rendered no verdict, which is this repo's own narrow-measurement-
+        # in-wide-vocabulary class, inside the sentence written to prevent it.
+        report["cadence_unestablished"] = True
+        report["reason"] += (
+            " | cadence floor rendered NO VERDICT on this artifact (see "
+            "`cadence_owner.reason`); activation is not blocked on it, and the "
+            "one-owner question is unanswered rather than answered clean"
+        )
     if not cadence["ok"]:
         # JOIN, never replace. `_reason` is deliberately every-reason-not-the-first
         # (its docstring records that a single-winner chain made a second `/goal`
