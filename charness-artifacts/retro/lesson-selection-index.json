@@ -12,7 +12,7 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-23",
-  "source_artifact_count": 558,
+  "source_artifact_count": 559,
   "candidate_count": 2256,
   "top_candidates": [
     {
@@ -1880,722 +1880,20 @@
       ]
     },
     {
-      "candidate_id": "current_focus:c2b5552f3784",
-      "kind": "current_focus",
-      "lesson": "One activated goal, three source slices (C: proof cost, B: unfork the Node consumers, A: settle the cadence contract) plus slice R, the single release carrying all three.",
-      "normalized_key": "one activated goal three source slices c proof cost b unfork the node consumers",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "One activated goal, three source slices (C: proof cost, B: unfork the Node consumers, A: settle the cadence contract) plus slice R, the single release carrying all three."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:18148dbb86fa",
-      "kind": "current_focus",
-      "lesson": "The session began as \"design the next work from the handoff and open issues\" and became one work unit: probe sixteen open issues whose repairs were believed to have landed, close the fourteen that a probe could confirm, repair the one that was still live, and file what the probing surfaced.",
-      "normalized_key": "the session began as design the next work from the handoff and open issues",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-          "date": "2026-08-22",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The session began as \"design the next work from the handoff and open issues\" and became one work unit: probe sixteen open issues whose repairs were believed to have landed, close the fourteen that a probe could confirm, repair the one that was still live, and file what the probing surfaced."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:33386c9c36b8",
-      "kind": "current_focus",
-      "lesson": "This session prepared patch release `6.2.2` to carry the `#681` cadence-owner repair to consumers.",
-      "normalized_key": "this session prepared patch release 6 2 2 to carry the 681 cadence owner",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-          "date": "2026-08-22",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This session prepared patch release `6.2.2` to carry the `#681` cadence-owner repair to consumers."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:9f740fa239ab",
-      "kind": "current_focus",
-      "lesson": "Two slices: declare what a claims verdict is about, then publish the bundle three earlier slices had produced and could not ship.",
-      "normalized_key": "two slices declare what a claims verdict is about then publish the bundle three",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
-          "date": "2026-08-22",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "Two slices: declare what a claims verdict is about, then publish the bundle three earlier slices had produced and could not ship."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6940f213340a",
-      "kind": "next_improvement",
-      "lesson": "A subagent that must not write should be given a tree it cannot write to, not a sentence telling it not to. Worktree isolation exists for exactly this and was not used for the read-only probers.",
-      "normalized_key": "a subagent that must not write should be given a tree it cannot write",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "A subagent that must not write should be given a tree it cannot write to, not a sentence telling it not to. Worktree isolation exists for exactly this and was not used for the read-only probers."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9a925e1b6d0e",
-      "kind": "next_improvement",
-      "lesson": "Before a publish attempt, run the release lane's own quality command once rather than discovering its refusals through a rollback. The rollback is clean, but 166 seconds and a quarantine is a costly way to read a gate.",
-      "normalized_key": "before a publish attempt run the release lane s own quality command once rather",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "Before a publish attempt, run the release lane's own quality command once rather than discovering its refusals through a rollback. The rollback is clean, but 166 seconds and a quarantine is a costly way to read a gate."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:d8b435bac10e",
-      "kind": "next_improvement",
-      "lesson": "**capability — the critique acceptor binds on version tokens.** `tracked issue: #699.`",
-      "normalized_key": "capability the critique acceptor binds on version tokens tracked issue 699",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability — the critique acceptor binds on version tokens.** `tracked issue: #699.`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:12de702344bb",
-      "kind": "next_improvement",
-      "lesson": "capability — the mutation harness has not run on `main` for days and its failure reads as a step failure rather than as unmeasured coverage. `tracked issue: #612`",
-      "normalized_key": "capability the mutation harness has not run on main for days and its failure",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "capability — the mutation harness has not run on `main` for days and its failure reads as a step failure rather than as unmeasured coverage. `tracked issue: #612`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:671d1ea2a5d4",
-      "kind": "next_improvement",
-      "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py stamps the measured result into the payload, and publish_release_artifact.write_current_artifact — the single OWNER every one of the five writers routes through — reads it from there, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\". Pinned by tests/quality_gates/test_release_quality_status_binding.py, including a structural scan that fails if any call site re-hardcodes the literal.` Three attempts: the first two patched CALL SITES and each lost the race to a writer they did not know about — the second specifically to `commit_post_publish_artifact`, the write that produces the record pushed to `main`. An earlier draft of this very bullet still credited that rejected call-site repair; a claims round caught it. The disposition for the hardcoded-literal finding was itself a hardcoded claim that had stopped being true.",
-      "normalized_key": "capability the release record s quality sentence was a hardcoded literal applied skills public",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py stamps the measured result into the payload, and publish_release_artifact.write_current_artifact — the single OWNER every one of the five writers routes through — reads it from there, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\". Pinned by tests/quality_gates/test_release_quality_status_binding.py, including a structural scan that fails if any call site re-hardcodes the literal.` Three attempts: the first two patched CALL SITES and each lost the race to a writer they did not know about — the second specifically to `commit_post_publish_artifact`, the write that produces the record pushed to `main`. An earlier draft of this very bullet still credited that rejected call-site repair; a claims round caught it. The disposition for the hardcoded-literal finding was itself a hardcoded claim that had stopped being true."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:dd6e1ece38ae",
-      "kind": "next_improvement",
-      "lesson": "Check a claimed count against the list before the sentence is written, not on reread.",
-      "normalized_key": "check a claimed count against the list before the sentence is written not on",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "Check a claimed count against the list before the sentence is written, not on reread."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:95387810d5de",
-      "kind": "next_improvement",
-      "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue: #700.` (This bullet previously said `tracked issue` and pointed at `## Sibling Search`, which carried a literal `#N` placeholder and no filed issue. Claims round 4 found it: the disposition about destinations that are never reached had not reached its own destination. #700 is that destination.)",
-      "normalized_key": "memory a grant invalidates prose written before it no mechanism exists the claims round",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue: #700.` (This bullet previously said `tracked issue` and pointed at `## Sibling Search`, which carried a literal `#N` placeholder and no filed issue. Claims round 4 found it: the disposition about destinations that are never reached had not reached its own destination. #700 is that destination.)"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:dfe0d5a44bec",
-      "kind": "next_improvement",
-      "lesson": "Never wrap a repo gate in an ad hoc `timeout`. Background it and read the notification; the wrapper adds a failure mode the gate does not have.",
-      "normalized_key": "never wrap a repo gate in an ad hoc timeout background it and read",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "Never wrap a repo gate in an ad hoc `timeout`. Background it and read the notification; the wrapper adds a failure mode the gate does not have."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a4963eb44c24",
-      "kind": "next_improvement",
-      "lesson": "When writing a blind-class note, verify every instance it names against the constant or template it claims — a blind class stated with a false example actively misleads the person who acts on it.",
-      "normalized_key": "when writing a blind class note verify every instance it names against the constant",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "When writing a blind-class note, verify every instance it names against the constant or template it claims — a blind class stated with a false example actively misleads the person who acts on it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:43f4332ab34a",
-      "kind": "next_improvement",
-      "lesson": "**workflow — issue closure deferred rather than faked.** #689/#690/#691/#696 stay open. `applied: recorded in the goal's Coordination Cues as a deferral with its reason, not as an n/a.`",
-      "normalized_key": "workflow issue closure deferred rather than faked 689 690 691 696 stay open applied",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow — issue closure deferred rather than faked.** #689/#690/#691/#696 stay open. `applied: recorded in the goal's Coordination Cues as a deferral with its reason, not as an n/a.`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:abb8e4191ed7",
-      "kind": "next_improvement",
-      "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout.",
-      "normalized_key": "workflow reproduce before repairing a review finding q class carrying 12 of q total",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6fc97784cd35",
-      "kind": "next_improvement",
-      "lesson": "workflow — treat a hand-maintained enumeration inside a gate as a defect. When a gate asks to be extended, ask what property it is approximating. `tracked issue: #586`",
-      "normalized_key": "workflow treat a hand maintained enumeration inside a gate as a defect when a",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "workflow — treat a hand-maintained enumeration inside a gate as a defect. When a gate asks to be extended, ask what property it is approximating. `tracked issue: #586`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:103c16d3707b",
-      "kind": "repeat_trap",
-      "lesson": "**A blind-class paragraph was written without verifying the instance it named.** The comment claimed the achieve scaffold's seeded cadence line as a live over-fire instance. It is not — the seeded line defers in its first clause, so refusing it is a true positive. The release reviewer caught it. Had it shipped, the next maintainer taking the over-fire issue could have widened the matcher to stop refusing the template and disarmed the floor on its own scaffold.",
-      "normalized_key": "a blind class paragraph was written without verifying the instance it named the comment",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A blind-class paragraph was written without verifying the instance it named.** The comment claimed the achieve scaffold's seeded cadence line as a live over-fire instance. It is not — the seeded line defers in its first clause, so refusing it is a true positive. The release reviewer caught it. Had it shipped, the next maintainer taking the over-fire issue could have widened the matcher to stop refusing the template and disarmed the floor on its own scaffold."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:85a08750d127",
-      "kind": "repeat_trap",
-      "lesson": "**A false quantity was written into an artifact and caught on reread.** The critique artifact said \"thirteen open issues\" over a list of fourteen. Caught before commit, but this is the exact shape a repeat trap in the digest names — asserting a count that was not counted, inside the artifact that justifies the decision.",
-      "normalized_key": "a false quantity was written into an artifact and caught on reread the critique",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A false quantity was written into an artifact and caught on reread.** The critique artifact said \"thirteen open issues\" over a list of fourteen. Caught before commit, but this is the exact shape a repeat trap in the digest names — asserting a count that was not counted, inside the artifact that justifies the decision."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:31417f0ad6ca",
-      "kind": "repeat_trap",
-      "lesson": "**A subagent violated its read-only instruction** and reverted `scripts/session_start_lesson_context.py` in the shared worktree, dropping the unclaimed-session routing emitter. Restored from `HEAD` and byte-verified. The prompt said \"never write anything under the repo\" in bold and it was ignored, so prose in a prompt is not a boundary; the parent's `git status` check before staging is what actually caught it.",
-      "normalized_key": "a subagent violated its read only instruction and reverted scripts session start lesson context",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A subagent violated its read-only instruction** and reverted `scripts/session_start_lesson_context.py` in the shared worktree, dropping the unclaimed-session routing emitter. Restored from `HEAD` and byte-verified. The prompt said \"never write anything under the repo\" in bold and it was ignored, so prose in a prompt is not a boundary; the parent's `git status` check before staging is what actually caught it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:e25892887adc",
-      "kind": "repeat_trap",
-      "lesson": "**A test that asserted on source text instead of behaviour.** A reviewer said in words that `check_goal_artifact.py:193-203` had no behavioural test; my repair grepped the file. Changed-line coverage then named the same five lines uncovered. Cost: one wasted repair, and it is the second time in this session that a *stated* finding needed a *measured* one to make me act correctly. **Not waste, though it looks like it:** the broad `--release` gate ran four times (~180s each). Three of those were required by the ordering invariant (changed-line before broad) after real repairs, and the fourth caught a genuine regression the hollow-section floor introduced in a CLI fixture. The telemetry flags this lane as recurring at 16 occurrences repo-wide; that is a standing cost question, not this session's waste.",
-      "normalized_key": "a test that asserted on source text instead of behaviour a reviewer said in",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A test that asserted on source text instead of behaviour.** A reviewer said in words that `check_goal_artifact.py:193-203` had no behavioural test; my repair grepped the file. Changed-line coverage then named the same five lines uncovered. Cost: one wasted repair, and it is the second time in this session that a *stated* finding needed a *measured* one to make me act correctly. **Not waste, though it looks like it:** the broad `--release` gate ran four times (~180s each). Three of those were required by the ordering invariant (changed-line before broad) after real repairs, and the fourth caught a genuine regression the hollow-section floor introduced in a CLI fixture. The telemetry flags this lane as recurring at 16 occurrences repo-wide; that is a standing cost question, not this session's waste."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:4b9ab8bee304",
-      "kind": "repeat_trap",
-      "lesson": "**I destroyed my own slice-B work with `git checkout`** while backing out an over-scoped extraction, then re-applied it. The host probe's `git checkout=3` proxy is that event plus two deliberate negative controls. Cost: ~15 minutes and a commit-message disclosure.",
-      "normalized_key": "i destroyed my own slice b work with git checkout while backing out an",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**I destroyed my own slice-B work with `git checkout`** while backing out an over-scoped extraction, then re-applied it. The host probe's `git checkout=3` proxy is that event plus two deliberate negative controls. Cost: ~15 minutes and a commit-message disclosure."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:a748fa873397",
-      "kind": "repeat_trap",
-      "lesson": "**The fail-closed durability repair carried its own class.** I closed a fail-open hole by delegating to the repo's canonical date helper — whose safety argument is corroboration between two channels, and which inverts on a corpus *defined* by having only one. Round 2 caught it. Cost: one full repair cycle.",
-      "normalized_key": "the fail closed durability repair carried its own class i closed a fail open",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The fail-closed durability repair carried its own class.** I closed a fail-open hole by delegating to the repo's canonical date helper — whose safety argument is corroboration between two channels, and which inverts on a corpus *defined* by having only one. Round 2 caught it. Cost: one full repair cycle."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:3d85f48cd14a",
-      "kind": "repeat_trap",
-      "lesson": "**The Node false-kill guard was narrower than the surface it guarded.** Round 1 asked me to widen the summary reader to node's `spec` reporter; round 2 found that widening silently reinstated the false kill, because the file-level detail the guard needs exists only in `tap`. Cost: a second full cycle, and the reversal of a round-1 advisory.",
-      "normalized_key": "the node false kill guard was narrower than the surface it guarded round 1",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The Node false-kill guard was narrower than the surface it guarded.** Round 1 asked me to widen the summary reader to node's `spec` reporter; round 2 found that widening silently reinstated the false kill, because the file-level detail the guard needs exists only in `tap`. Cost: a second full cycle, and the reversal of a round-1 advisory."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:a10fba32596a",
-      "kind": "repeat_trap",
-      "lesson": "**The release attempt was spent discovering an ordering I could have read for.** The refusal is the lesson-continuity gate demanding that the session I opened be claimed. Nothing about it is surprising in hindsight: I opened `2026-08-22-b-release` at the start, did substantive work, and tried to publish without writing its retro. The previous release's auto-retro says in its own body that it does not cover the session — so the answer was readable before the attempt, and instead it cost a full `--release` lane (166s) plus a rollback.",
-      "normalized_key": "the release attempt was spent discovering an ordering i could have read for the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The release attempt was spent discovering an ordering I could have read for.** The refusal is the lesson-continuity gate demanding that the session I opened be claimed. Nothing about it is surprising in hindsight: I opened `2026-08-22-b-release` at the start, did substantive work, and tried to publish without writing its retro. The previous release's auto-retro says in its own body that it does not cover the session — so the answer was readable before the attempt, and instead it cost a full `--release` lane (166s) plus a rollback."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:293eb5ab6439",
-      "kind": "repeat_trap",
-      "lesson": "**The same unverified claim reached the consumer-facing payload.** The disclosure's escape clause was reachable from the true-positive side, so a correctly-refused consumer could have read \"known over-fire\" and dismissed it.",
-      "normalized_key": "the same unverified claim reached the consumer facing payload the disclosure s escape clause",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The same unverified claim reached the consumer-facing payload.** The disclosure's escape clause was reachable from the true-positive side, so a correctly-refused consumer could have read \"known over-fire\" and dismissed it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:ec9ae8481fbe",
-      "kind": "repeat_trap",
-      "lesson": "**Two long runs lost to timeouts I attached myself.** The first changed-line attempt died at `timeout 900` (exit 124, zero output, no verdict). The second was about to die at `timeout 590`, so the supervisor was killed to save the child — which killed the process group instead, truncating a 202MB coverage JSON mid-export and making it unparseable. The third run, with no wrapper at all, completed in roughly nine minutes. Roughly twenty minutes lost, and the gate never needed a wrapper: it is backgrounded and notifies on exit. This is a RECURRENCE of a standing repeat trap (\"losing long runs to the timeout\", `2026-08-15-json-to-yaml-migration-closeout.md`). The trap was in the digest read at session start and it still happened, which is the part worth recording: the lesson names the loss, not the mechanism that causes it, and the mechanism here was reaching for `timeout` reflexively on a gate whose cost was already documented at ~300s in the previous handoff.",
-      "normalized_key": "two long runs lost to timeouts i attached myself the first changed line attempt",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two long runs lost to timeouts I attached myself.** The first changed-line attempt died at `timeout 900` (exit 124, zero output, no verdict). The second was about to die at `timeout 590`, so the supervisor was killed to save the child — which killed the process group instead, truncating a 202MB coverage JSON mid-export and making it unparseable. The third run, with no wrapper at all, completed in roughly nine minutes. Roughly twenty minutes lost, and the gate never needed a wrapper: it is backgrounded and notifies on exit. This is a RECURRENCE of a standing repeat trap (\"losing long runs to the timeout\", `2026-08-15-json-to-yaml-migration-closeout.md`). The trap was in the digest read at session start and it still happened, which is the part worth recording: the lesson names the loss, not the mechanism that causes it, and the mechanism here was reaching for `timeout` reflexively on a gate whose cost was already documented at ~300s in the previous handoff."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:b99291137a23",
-      "kind": "repeat_trap",
-      "lesson": "**Two wrong premises were reported to the user before being checked.** The ten `repair/issue-*` branches were reported as unlanded work; they are stale predecessors of work already on `main`. Corrected within the same turn, but the claim went out first.",
-      "normalized_key": "two wrong premises were reported to the user before being checked the ten repair",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-          "date": "2026-08-22",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two wrong premises were reported to the user before being checked.** The ten `repair/issue-*` branches were reported as unlanded work; they are stale predecessors of work already on `main`. Corrected within the same turn, but the claim went out first."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 148,
+      "source_count": 149,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -3780,6 +3078,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
+          "date": "2026-08-23",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -3789,15 +3095,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 28,
+      "source_count": 29,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -4018,6 +3324,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md",
           "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
+          "date": "2026-08-23",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -4031,15 +3345,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 28,
+      "source_count": 29,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -4264,6 +3578,750 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
+          "date": "2026-08-23",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ecb8638e310a",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v6.4.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v6 4 0",
+      "recurrence_class": null,
+      "source_count": 2,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v6.4.0`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
+          "date": "2026-08-23",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v6.4.0`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:c2b5552f3784",
+      "kind": "current_focus",
+      "lesson": "One activated goal, three source slices (C: proof cost, B: unfork the Node consumers, A: settle the cadence contract) plus slice R, the single release carrying all three.",
+      "normalized_key": "one activated goal three source slices c proof cost b unfork the node consumers",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "One activated goal, three source slices (C: proof cost, B: unfork the Node consumers, A: settle the cadence contract) plus slice R, the single release carrying all three."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:18148dbb86fa",
+      "kind": "current_focus",
+      "lesson": "The session began as \"design the next work from the handoff and open issues\" and became one work unit: probe sixteen open issues whose repairs were believed to have landed, close the fourteen that a probe could confirm, repair the one that was still live, and file what the probing surfaced.",
+      "normalized_key": "the session began as design the next work from the handoff and open issues",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The session began as \"design the next work from the handoff and open issues\" and became one work unit: probe sixteen open issues whose repairs were believed to have landed, close the fourteen that a probe could confirm, repair the one that was still live, and file what the probing surfaced."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:33386c9c36b8",
+      "kind": "current_focus",
+      "lesson": "This session prepared patch release `6.2.2` to carry the `#681` cadence-owner repair to consumers.",
+      "normalized_key": "this session prepared patch release 6 2 2 to carry the 681 cadence owner",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This session prepared patch release `6.2.2` to carry the `#681` cadence-owner repair to consumers."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:9f740fa239ab",
+      "kind": "current_focus",
+      "lesson": "Two slices: declare what a claims verdict is about, then publish the bundle three earlier slices had produced and could not ship.",
+      "normalized_key": "two slices declare what a claims verdict is about then publish the bundle three",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+          "date": "2026-08-22",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Two slices: declare what a claims verdict is about, then publish the bundle three earlier slices had produced and could not ship."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6940f213340a",
+      "kind": "next_improvement",
+      "lesson": "A subagent that must not write should be given a tree it cannot write to, not a sentence telling it not to. Worktree isolation exists for exactly this and was not used for the read-only probers.",
+      "normalized_key": "a subagent that must not write should be given a tree it cannot write",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "A subagent that must not write should be given a tree it cannot write to, not a sentence telling it not to. Worktree isolation exists for exactly this and was not used for the read-only probers."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9a925e1b6d0e",
+      "kind": "next_improvement",
+      "lesson": "Before a publish attempt, run the release lane's own quality command once rather than discovering its refusals through a rollback. The rollback is clean, but 166 seconds and a quarantine is a costly way to read a gate.",
+      "normalized_key": "before a publish attempt run the release lane s own quality command once rather",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Before a publish attempt, run the release lane's own quality command once rather than discovering its refusals through a rollback. The rollback is clean, but 166 seconds and a quarantine is a costly way to read a gate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d8b435bac10e",
+      "kind": "next_improvement",
+      "lesson": "**capability — the critique acceptor binds on version tokens.** `tracked issue: #699.`",
+      "normalized_key": "capability the critique acceptor binds on version tokens tracked issue 699",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability — the critique acceptor binds on version tokens.** `tracked issue: #699.`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:12de702344bb",
+      "kind": "next_improvement",
+      "lesson": "capability — the mutation harness has not run on `main` for days and its failure reads as a step failure rather than as unmeasured coverage. `tracked issue: #612`",
+      "normalized_key": "capability the mutation harness has not run on main for days and its failure",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "capability — the mutation harness has not run on `main` for days and its failure reads as a step failure rather than as unmeasured coverage. `tracked issue: #612`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:671d1ea2a5d4",
+      "kind": "next_improvement",
+      "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py stamps the measured result into the payload, and publish_release_artifact.write_current_artifact — the single OWNER every one of the five writers routes through — reads it from there, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\". Pinned by tests/quality_gates/test_release_quality_status_binding.py, including a structural scan that fails if any call site re-hardcodes the literal.` Three attempts: the first two patched CALL SITES and each lost the race to a writer they did not know about — the second specifically to `commit_post_publish_artifact`, the write that produces the record pushed to `main`. An earlier draft of this very bullet still credited that rejected call-site repair; a claims round caught it. The disposition for the hardcoded-literal finding was itself a hardcoded claim that had stopped being true.",
+      "normalized_key": "capability the release record s quality sentence was a hardcoded literal applied skills public",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability — the release record's quality sentence was a hardcoded literal.** `applied: skills/public/release/scripts/publish_release_common.py stamps the measured result into the payload, and publish_release_artifact.write_current_artifact — the single OWNER every one of the five writers routes through — reads it from there, so the record reads \"exited 0 in <N>s at post-bump, pre-commit, measured by this helper\". Pinned by tests/quality_gates/test_release_quality_status_binding.py, including a structural scan that fails if any call site re-hardcodes the literal.` Three attempts: the first two patched CALL SITES and each lost the race to a writer they did not know about — the second specifically to `commit_post_publish_artifact`, the write that produces the record pushed to `main`. An earlier draft of this very bullet still credited that rejected call-site repair; a claims round caught it. The disposition for the hardcoded-literal finding was itself a hardcoded claim that had stopped being true."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:dd6e1ece38ae",
+      "kind": "next_improvement",
+      "lesson": "Check a claimed count against the list before the sentence is written, not on reread.",
+      "normalized_key": "check a claimed count against the list before the sentence is written not on",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Check a claimed count against the list before the sentence is written, not on reread."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:95387810d5de",
+      "kind": "next_improvement",
+      "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue: #700.` (This bullet previously said `tracked issue` and pointed at `## Sibling Search`, which carried a literal `#N` placeholder and no filed issue. Claims round 4 found it: the disposition about destinations that are never reached had not reached its own destination. #700 is that destination.)",
+      "normalized_key": "memory a grant invalidates prose written before it no mechanism exists the claims round",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory — a grant invalidates prose written before it.** No mechanism exists; the claims round is what caught it, one layer too late to be cheap. `tracked issue: #700.` (This bullet previously said `tracked issue` and pointed at `## Sibling Search`, which carried a literal `#N` placeholder and no filed issue. Claims round 4 found it: the disposition about destinations that are never reached had not reached its own destination. #700 is that destination.)"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:dfe0d5a44bec",
+      "kind": "next_improvement",
+      "lesson": "Never wrap a repo gate in an ad hoc `timeout`. Background it and read the notification; the wrapper adds a failure mode the gate does not have.",
+      "normalized_key": "never wrap a repo gate in an ad hoc timeout background it and read",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Never wrap a repo gate in an ad hoc `timeout`. Background it and read the notification; the wrapper adds a failure mode the gate does not have."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a4963eb44c24",
+      "kind": "next_improvement",
+      "lesson": "When writing a blind-class note, verify every instance it names against the constant or template it claims — a blind class stated with a false example actively misleads the person who acts on it.",
+      "normalized_key": "when writing a blind class note verify every instance it names against the constant",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "When writing a blind-class note, verify every instance it names against the constant or template it claims — a blind class stated with a false example actively misleads the person who acts on it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:43f4332ab34a",
+      "kind": "next_improvement",
+      "lesson": "**workflow — issue closure deferred rather than faked.** #689/#690/#691/#696 stay open. `applied: recorded in the goal's Coordination Cues as a deferral with its reason, not as an n/a.`",
+      "normalized_key": "workflow issue closure deferred rather than faked 689 690 691 696 stay open applied",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — issue closure deferred rather than faked.** #689/#690/#691/#696 stay open. `applied: recorded in the goal's Coordination Cues as a deferral with its reason, not as an n/a.`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:abb8e4191ed7",
+      "kind": "next_improvement",
+      "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout.",
+      "normalized_key": "workflow reproduce before repairing a review finding q class carrying 12 of q total",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6fc97784cd35",
+      "kind": "next_improvement",
+      "lesson": "workflow — treat a hand-maintained enumeration inside a gate as a defect. When a gate asks to be extended, ask what property it is approximating. `tracked issue: #586`",
+      "normalized_key": "workflow treat a hand maintained enumeration inside a gate as a defect when a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-claims-convergence-and-ship-retro.md",
+          "date": "2026-08-22",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "workflow — treat a hand-maintained enumeration inside a gate as a defect. When a gate asks to be extended, ask what property it is approximating. `tracked issue: #586`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:103c16d3707b",
+      "kind": "repeat_trap",
+      "lesson": "**A blind-class paragraph was written without verifying the instance it named.** The comment claimed the achieve scaffold's seeded cadence line as a live over-fire instance. It is not — the seeded line defers in its first clause, so refusing it is a true positive. The release reviewer caught it. Had it shipped, the next maintainer taking the over-fire issue could have widened the matcher to stop refusing the template and disarmed the floor on its own scaffold.",
+      "normalized_key": "a blind class paragraph was written without verifying the instance it named the comment",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A blind-class paragraph was written without verifying the instance it named.** The comment claimed the achieve scaffold's seeded cadence line as a live over-fire instance. It is not — the seeded line defers in its first clause, so refusing it is a true positive. The release reviewer caught it. Had it shipped, the next maintainer taking the over-fire issue could have widened the matcher to stop refusing the template and disarmed the floor on its own scaffold."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:85a08750d127",
+      "kind": "repeat_trap",
+      "lesson": "**A false quantity was written into an artifact and caught on reread.** The critique artifact said \"thirteen open issues\" over a list of fourteen. Caught before commit, but this is the exact shape a repeat trap in the digest names — asserting a count that was not counted, inside the artifact that justifies the decision.",
+      "normalized_key": "a false quantity was written into an artifact and caught on reread the critique",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A false quantity was written into an artifact and caught on reread.** The critique artifact said \"thirteen open issues\" over a list of fourteen. Caught before commit, but this is the exact shape a repeat trap in the digest names — asserting a count that was not counted, inside the artifact that justifies the decision."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:31417f0ad6ca",
+      "kind": "repeat_trap",
+      "lesson": "**A subagent violated its read-only instruction** and reverted `scripts/session_start_lesson_context.py` in the shared worktree, dropping the unclaimed-session routing emitter. Restored from `HEAD` and byte-verified. The prompt said \"never write anything under the repo\" in bold and it was ignored, so prose in a prompt is not a boundary; the parent's `git status` check before staging is what actually caught it.",
+      "normalized_key": "a subagent violated its read only instruction and reverted scripts session start lesson context",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A subagent violated its read-only instruction** and reverted `scripts/session_start_lesson_context.py` in the shared worktree, dropping the unclaimed-session routing emitter. Restored from `HEAD` and byte-verified. The prompt said \"never write anything under the repo\" in bold and it was ignored, so prose in a prompt is not a boundary; the parent's `git status` check before staging is what actually caught it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e25892887adc",
+      "kind": "repeat_trap",
+      "lesson": "**A test that asserted on source text instead of behaviour.** A reviewer said in words that `check_goal_artifact.py:193-203` had no behavioural test; my repair grepped the file. Changed-line coverage then named the same five lines uncovered. Cost: one wasted repair, and it is the second time in this session that a *stated* finding needed a *measured* one to make me act correctly. **Not waste, though it looks like it:** the broad `--release` gate ran four times (~180s each). Three of those were required by the ordering invariant (changed-line before broad) after real repairs, and the fourth caught a genuine regression the hollow-section floor introduced in a CLI fixture. The telemetry flags this lane as recurring at 16 occurrences repo-wide; that is a standing cost question, not this session's waste.",
+      "normalized_key": "a test that asserted on source text instead of behaviour a reviewer said in",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A test that asserted on source text instead of behaviour.** A reviewer said in words that `check_goal_artifact.py:193-203` had no behavioural test; my repair grepped the file. Changed-line coverage then named the same five lines uncovered. Cost: one wasted repair, and it is the second time in this session that a *stated* finding needed a *measured* one to make me act correctly. **Not waste, though it looks like it:** the broad `--release` gate ran four times (~180s each). Three of those were required by the ordering invariant (changed-line before broad) after real repairs, and the fourth caught a genuine regression the hollow-section floor introduced in a CLI fixture. The telemetry flags this lane as recurring at 16 occurrences repo-wide; that is a standing cost question, not this session's waste."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4b9ab8bee304",
+      "kind": "repeat_trap",
+      "lesson": "**I destroyed my own slice-B work with `git checkout`** while backing out an over-scoped extraction, then re-applied it. The host probe's `git checkout=3` proxy is that event plus two deliberate negative controls. Cost: ~15 minutes and a commit-message disclosure.",
+      "normalized_key": "i destroyed my own slice b work with git checkout while backing out an",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I destroyed my own slice-B work with `git checkout`** while backing out an over-scoped extraction, then re-applied it. The host probe's `git checkout=3` proxy is that event plus two deliberate negative controls. Cost: ~15 minutes and a commit-message disclosure."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a748fa873397",
+      "kind": "repeat_trap",
+      "lesson": "**The fail-closed durability repair carried its own class.** I closed a fail-open hole by delegating to the repo's canonical date helper — whose safety argument is corroboration between two channels, and which inverts on a corpus *defined* by having only one. Round 2 caught it. Cost: one full repair cycle.",
+      "normalized_key": "the fail closed durability repair carried its own class i closed a fail open",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The fail-closed durability repair carried its own class.** I closed a fail-open hole by delegating to the repo's canonical date helper — whose safety argument is corroboration between two channels, and which inverts on a corpus *defined* by having only one. Round 2 caught it. Cost: one full repair cycle."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3d85f48cd14a",
+      "kind": "repeat_trap",
+      "lesson": "**The Node false-kill guard was narrower than the surface it guarded.** Round 1 asked me to widen the summary reader to node's `spec` reporter; round 2 found that widening silently reinstated the false kill, because the file-level detail the guard needs exists only in `tap`. Cost: a second full cycle, and the reversal of a round-1 advisory.",
+      "normalized_key": "the node false kill guard was narrower than the surface it guarded round 1",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The Node false-kill guard was narrower than the surface it guarded.** Round 1 asked me to widen the summary reader to node's `spec` reporter; round 2 found that widening silently reinstated the false kill, because the file-level detail the guard needs exists only in `tap`. Cost: a second full cycle, and the reversal of a round-1 advisory."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a10fba32596a",
+      "kind": "repeat_trap",
+      "lesson": "**The release attempt was spent discovering an ordering I could have read for.** The refusal is the lesson-continuity gate demanding that the session I opened be claimed. Nothing about it is surprising in hindsight: I opened `2026-08-22-b-release` at the start, did substantive work, and tried to publish without writing its retro. The previous release's auto-retro says in its own body that it does not cover the session — so the answer was readable before the attempt, and instead it cost a full `--release` lane (166s) plus a rollback.",
+      "normalized_key": "the release attempt was spent discovering an ordering i could have read for the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The release attempt was spent discovering an ordering I could have read for.** The refusal is the lesson-continuity gate demanding that the session I opened be claimed. Nothing about it is surprising in hindsight: I opened `2026-08-22-b-release` at the start, did substantive work, and tried to publish without writing its retro. The previous release's auto-retro says in its own body that it does not cover the session — so the answer was readable before the attempt, and instead it cost a full `--release` lane (166s) plus a rollback."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:293eb5ab6439",
+      "kind": "repeat_trap",
+      "lesson": "**The same unverified claim reached the consumer-facing payload.** The disclosure's escape clause was reachable from the true-positive side, so a correctly-refused consumer could have read \"known over-fire\" and dismissed it.",
+      "normalized_key": "the same unverified claim reached the consumer facing payload the disclosure s escape clause",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The same unverified claim reached the consumer-facing payload.** The disclosure's escape clause was reachable from the true-positive side, so a correctly-refused consumer could have read \"known over-fire\" and dismissed it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ec9ae8481fbe",
+      "kind": "repeat_trap",
+      "lesson": "**Two long runs lost to timeouts I attached myself.** The first changed-line attempt died at `timeout 900` (exit 124, zero output, no verdict). The second was about to die at `timeout 590`, so the supervisor was killed to save the child — which killed the process group instead, truncating a 202MB coverage JSON mid-export and making it unparseable. The third run, with no wrapper at all, completed in roughly nine minutes. Roughly twenty minutes lost, and the gate never needed a wrapper: it is backgrounded and notifies on exit. This is a RECURRENCE of a standing repeat trap (\"losing long runs to the timeout\", `2026-08-15-json-to-yaml-migration-closeout.md`). The trap was in the digest read at session start and it still happened, which is the part worth recording: the lesson names the loss, not the mechanism that causes it, and the mechanism here was reaching for `timeout` reflexively on a gate whose cost was already documented at ~300s in the previous handoff.",
+      "normalized_key": "two long runs lost to timeouts i attached myself the first changed line attempt",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two long runs lost to timeouts I attached myself.** The first changed-line attempt died at `timeout 900` (exit 124, zero output, no verdict). The second was about to die at `timeout 590`, so the supervisor was killed to save the child — which killed the process group instead, truncating a 202MB coverage JSON mid-export and making it unparseable. The third run, with no wrapper at all, completed in roughly nine minutes. Roughly twenty minutes lost, and the gate never needed a wrapper: it is backgrounded and notifies on exit. This is a RECURRENCE of a standing repeat trap (\"losing long runs to the timeout\", `2026-08-15-json-to-yaml-migration-closeout.md`). The trap was in the digest read at session start and it still happened, which is the part worth recording: the lesson names the loss, not the mechanism that causes it, and the mechanism here was reaching for `timeout` reflexively on a gate whose cost was already documented at ~300s in the previous handoff."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b99291137a23",
+      "kind": "repeat_trap",
+      "lesson": "**Two wrong premises were reported to the user before being checked.** The ten `repair/issue-*` branches were reported as unlanded work; they are stale predecessors of work already on `main`. Corrected within the same turn, but the claim went out first.",
+      "normalized_key": "two wrong premises were reported to the user before being checked the ten repair",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "latest_source_date": "2026-08-22",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+          "date": "2026-08-22",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two wrong premises were reported to the user before being checked.** The ten `repair/issue-*` branches were reported as unlanded work; they are stale predecessors of work already on `main`. Corrected within the same turn, but the claim went out first."
         }
       ]
     },
@@ -4316,32 +4374,6 @@
           "generator": "release-trigger",
           "kind": "current_focus",
           "lesson": "Release publish triggered a configured automatic session retro for `v6.3.0`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:ecb8638e310a",
-      "kind": "current_focus",
-      "lesson": "Release publish triggered a configured automatic session retro for `v6.4.0`.",
-      "normalized_key": "release publish triggered a configured automatic session retro for v6 4 0",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md",
-          "date": "2026-08-22",
-          "section": "Context",
-          "generator": "release-trigger",
-          "kind": "current_focus",
-          "lesson": "Release publish triggered a configured automatic session retro for `v6.4.0`."
         }
       ]
     },

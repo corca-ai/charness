@@ -3,7 +3,7 @@
 ## Current Focus
 
 - One session, one goal: `charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`. (source: `charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md`)
-- One activated goal, three source slices (C: proof cost, B: unfork the Node consumers, A: settle the cadence contract) plus slice R, the single release carrying all three. (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`)
+- Release publish triggered a configured automatic session retro for `v6.4.0`. (source: `charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md`; sources: 2)
 
 ## Repeat Traps
 
@@ -50,4 +50,6 @@
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
 - `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`
+- `charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md`
 - `charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md`
+- `charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md`
