@@ -51,6 +51,10 @@ absolute checkout path, making diagnostics environment-dependent.
 - The expanded discovery logic is split into pointer-normalization helpers after
   the full lint gate exposed a complexity-budget breach; no lint threshold or
   exception was weakened.
+- Post-commit changed-line proof exposed both unreadable-content comparison
+  fallbacks. Focused regressions now prove that a read failure for either the
+  pointer or a dated candidate returns no copied-target identity rather than
+  inventing equivalence.
 - The batch regression includes a broken symlink and asserts that the temporary
   repo root is absent from stderr.
 - The focused suite passes 7 tests, source/plugin copies are byte-identical, and
@@ -78,8 +82,8 @@ but deliberately receives no third-round approval.
 
 - Packet consumed: charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.json
 - Packet path: charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.json
-- Packet SHA256: 623307fd032470b5f295ab31210fcdeb3f569185c186c279d271a94059c2ede2
-- Identity SHA256: 5aaa255b1050f043aa3bc538e6a41b4dc836d95072765e2ed85fc1df934bbdd0
+- Packet SHA256: f08b7b0e66874afe92c07083564fbcb08dbd361665c51fda45e3f8357fada938
+- Identity SHA256: 658eb83f747ba90e837d6ac1ceaba3a968ae23be4b119d57de89a6b30209eb1c
 
 The packet binds the final accepted-unreviewed working tree in working-tree
 mode with `changed_ref: null`; its embedded verifier must report `ok: true` and

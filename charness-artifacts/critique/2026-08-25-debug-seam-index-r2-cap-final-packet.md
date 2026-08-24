@@ -1,10 +1,10 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-24T15:39:06Z
+- **Generated**: 2026-08-24T16:05:49Z
 - **Prepared for**: debug seam-risk complete-batch proof surface cap repair
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `5aaa255b1050f043aa3bc538e6a41b4dc836d95072765e2ed85fc1df934bbdd0`
+- **Reviewed input identity**: `658eb83f747ba90e837d6ac1ceaba3a968ae23be4b119d57de89a6b30209eb1c`
 - **Reviewed paths**: 10
   - `charness-artifacts/debug/2026-08-24-issue-689-node-tap-accounting.md`
   - `charness-artifacts/debug/2026-08-24-issues-690-691-goal-readiness.md`
@@ -23,7 +23,7 @@
 Run this exact command from the repository root:
 
 ```sh
-python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.json --packet-sha256 623307fd032470b5f295ab31210fcdeb3f569185c186c279d271a94059c2ede2 --identity-sha256 5aaa255b1050f043aa3bc538e6a41b4dc836d95072765e2ed85fc1df934bbdd0
+python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.json --packet-sha256 f08b7b0e66874afe92c07083564fbcb08dbd361665c51fda45e3f8357fada938 --identity-sha256 658eb83f747ba90e837d6ac1ceaba3a968ae23be4b119d57de89a6b30209eb1c
 ```
 
 Raw sha256sum is not the contract; the verifier owns the domain-separated packet identity check.
@@ -53,77 +53,12 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/debug/2026-08-24-issue-689-node-tap-accounting.md
-- charness-artifacts/debug/2026-08-24-issues-690-691-goal-readiness.md
-- charness-artifacts/debug/2026-08-24-worker-boundary-identity-pattern.md
-- charness-artifacts/debug/seam-risk-index.json
-- charness-artifacts/metrics/rca-ledger.jsonl
-- charness-artifacts/quality/dup-review.json
-- charness-artifacts/retro/lesson-selection-index.json
-- charness-artifacts/retro/recent-lessons.md
-- charness-artifacts/spec/2026-08-24-issues-690-691-goal-readiness.md
-- plugins/charness/scripts/build_debug_seam_risk_index.py
-- plugins/charness/scripts/mutation_test_reporters.py
-- scripts/build_debug_seam_risk_index.py
-- scripts/mutation_test_reporters.py
 - tests/quality_gates/test_debug_seam_risk_index.py
-- tests/quality_gates/test_goal_artifact_pursue.py
-- charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.json
-- charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.md
-- charness-artifacts/critique/2026-08-25-debug-seam-index-round2-resolution.md
-- charness-artifacts/retro/2026-08-24-151441-packet.json
-- charness-artifacts/retro/2026-08-24-151441-packet.md
-- charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md
-- charness-artifacts/retro/2026-08-25-initial-consumer-friction-session-disposition.md
-- charness-artifacts/spec/2026-08-24-issue-689-node-tap-accounting.md
-- charness-artifacts/spec/2026-08-24-worker-boundary-identity-pattern.md
 
 Owning surfaces:
-- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.
-  source matches: scripts/build_debug_seam_risk_index.py, scripts/mutation_test_reporters.py
-  derived matches: plugins/charness/scripts/build_debug_seam_risk_index.py, plugins/charness/scripts/mutation_test_reporters.py
-  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
-  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
-- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.
-  source matches: charness-artifacts/metrics/rca-ledger.jsonl
-  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root .
-- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/debug/2026-08-24-issue-689-node-tap-accounting.md, charness-artifacts/debug/2026-08-24-issues-690-691-goal-readiness.md, charness-artifacts/debug/2026-08-24-worker-boundary-identity-pattern.md, charness-artifacts/retro/recent-lessons.md, charness-artifacts/spec/2026-08-24-issues-690-691-goal-readiness.md, charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.md, charness-artifacts/critique/2026-08-25-debug-seam-index-round2-resolution.md, charness-artifacts/retro/2026-08-24-151441-packet.md, charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md, charness-artifacts/retro/2026-08-25-initial-consumer-friction-session-disposition.md, charness-artifacts/spec/2026-08-24-issue-689-node-tap-accounting.md, charness-artifacts/spec/2026-08-24-worker-boundary-identity-pattern.md
-  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ "$?" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
-- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.
-  source matches: charness-artifacts/quality/dup-review.json
-  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool "$quality_json" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --detail >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --detail >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary
-- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.
-  source matches: charness-artifacts/quality/dup-review.json
-  verify: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/validate_quality_artifact.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
-- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.json, charness-artifacts/critique/2026-08-25-debug-seam-index-r2-cap-final-packet.md, charness-artifacts/critique/2026-08-25-debug-seam-index-round2-resolution.md
-  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
-- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.
-  source matches: charness-artifacts/debug/2026-08-24-issue-689-node-tap-accounting.md, charness-artifacts/debug/2026-08-24-issues-690-691-goal-readiness.md, charness-artifacts/debug/2026-08-24-worker-boundary-identity-pattern.md, scripts/build_debug_seam_risk_index.py
-  derived matches: charness-artifacts/debug/seam-risk-index.json
-  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write
-  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check
-- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.
-  source matches: charness-artifacts/retro/recent-lessons.md, charness-artifacts/retro/2026-08-24-151441-packet.json, charness-artifacts/retro/2026-08-24-151441-packet.md, charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md, charness-artifacts/retro/2026-08-25-initial-consumer-friction-session-disposition.md
-  derived matches: charness-artifacts/retro/lesson-selection-index.json
-  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
-  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e "$retro_packet_json" ]; then python3 -m json.tool "$retro_packet_json" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check
-- integrations-and-control-plane: Integration manifests and control-plane helper scripts.
-  derived matches: plugins/charness/scripts/build_debug_seam_risk_index.py, plugins/charness/scripts/mutation_test_reporters.py
-  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .
 - repo-python: Repo-owned Python code and tests.
-  source matches: scripts/build_debug_seam_risk_index.py, scripts/mutation_test_reporters.py, tests/quality_gates/test_debug_seam_risk_index.py, tests/quality_gates/test_goal_artifact_pursue.py
-  derived matches: plugins/charness/scripts/build_debug_seam_risk_index.py, plugins/charness/scripts/mutation_test_reporters.py
+  source matches: tests/quality_gates/test_debug_seam_risk_index.py
   verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only
-- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.
-  source matches: scripts/build_debug_seam_risk_index.py, scripts/mutation_test_reporters.py
-  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing
-
-Planned sync commands before validators:
-- python3 scripts/sync_root_plugin_manifests.py --repo-root .
-- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write
-- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
 ```
 
 ## Non-Goals For This Contract

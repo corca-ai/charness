@@ -232,6 +232,46 @@ def test_a_nonsymlink_pointer_indexes_one_interrupt_not_two(
     assert index["entries"][0]["is_current_pointer"] is True
 
 
+def test_an_unreadable_pointer_does_not_invent_copy_identity(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = seed_repo(tmp_path, ("2026-04-22-host-seam.md", debug_artifact()))
+    debug_dir = repo / "charness-artifacts" / "debug"
+    target = debug_dir / "2026-04-22-host-seam.md"
+    pointer = debug_dir / "latest.md"
+    pointer.write_bytes(target.read_bytes())
+    original_read_bytes = Path.read_bytes
+
+    def refuse_pointer(path: Path) -> bytes:
+        if path == pointer:
+            raise OSError("pointer unavailable")
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", refuse_pointer)
+
+    assert _build_debug_seam_risk_index._copied_pointer_target([target, pointer]) is None
+
+
+def test_an_unreadable_candidate_does_not_invent_copy_identity(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = seed_repo(tmp_path, ("2026-04-22-host-seam.md", debug_artifact()))
+    debug_dir = repo / "charness-artifacts" / "debug"
+    target = debug_dir / "2026-04-22-host-seam.md"
+    pointer = debug_dir / "latest.md"
+    pointer.write_bytes(target.read_bytes())
+    original_read_bytes = Path.read_bytes
+
+    def refuse_candidate(path: Path) -> bytes:
+        if path == target:
+            raise OSError("candidate unavailable")
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", refuse_candidate)
+
+    assert _build_debug_seam_risk_index._copied_pointer_target([target, pointer]) is None
+
+
 def test_the_index_never_indexes_itself(tmp_path: Path, monkeypatch, capsys) -> None:
     # `seam-risk-index.md` lives in the same directory and matches the `*.md` glob, so
     # without the skip the index would ingest its own previous output -- growing a row
