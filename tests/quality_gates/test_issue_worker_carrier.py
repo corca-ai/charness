@@ -12,9 +12,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.quality_gates.issue_closeout_support import bug_closeout_body, seed_commit
+from tests.quality_gates.reviewer_capability_support import (
+    non_claims_sha256,
+    ready_capability,
+    receipt_capability_fields,
+    result_capability_fields,
+    target_non_claim,
+    unavailable_optional_capability,
+)
 from tests.quality_gates.support import ROOT, run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
@@ -63,7 +72,13 @@ def _seed(repo: Path, *, satisfaction: str | None, contract: bool) -> None:
     seed_commit(repo, bug_closeout_body(critique_line=f"Critique: {CRITIQUE_REL}"))
 
 
-def _worker_delivered_artifact(tmp_path: Path, *, report_changes: dict | None = None) -> Path:
+def _worker_delivered_artifact(
+    tmp_path: Path,
+    *,
+    report_changes: dict | None = None,
+    capability: dict | None = None,
+) -> Path:
+    capability_payload = capability or ready_capability("issue-worker-1")
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@example.com"], check=True)
     subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"], check=True)
@@ -101,6 +116,7 @@ def _worker_delivered_artifact(tmp_path: Path, *, report_changes: dict | None = 
                 "counterweight_triage": [],
                 "next_move": "fixture only",
                 "non_claims": ["fixture only"],
+                **result_capability_fields(capability_payload or {"capability_non_claims": []}),
             },
             separators=(",", ":"),
         ),
@@ -132,6 +148,7 @@ def _worker_delivered_artifact(tmp_path: Path, *, report_changes: dict | None = 
                 "execution_mode": "file-backed-worker",
                 "prompt_sha256": prompt_sha256,
                 "schema_sha256": schema_sha256,
+                **receipt_capability_fields("issue-worker-1", payload=capability_payload),
             },
             separators=(",", ":"),
         ),
@@ -152,6 +169,9 @@ def _worker_delivered_artifact(tmp_path: Path, *, report_changes: dict | None = 
         backend="codex_exec",
         prompt_sha256=prompt_sha256,
         schema_sha256=schema_sha256,
+        capability_launch_envelope_sha256=receipt_capability_fields("issue-worker-1", payload=capability_payload)[
+            "capability_launch_envelope_sha256"
+        ],
         recorded_at="2026-08-21T00:00:00Z",
     )
     attempt.record_findings(
@@ -254,6 +274,81 @@ def test_worker_delivered_foreign_packet_is_refused_by_the_issue_consumer(tmp_pa
 
     assert observer["disposition"] == "carrier-unverified"
     assert "identity joins" in observer["carrier_reason"]
+
+
+def test_worker_carrier_rejects_capability_identity_foreign_to_the_attempt(tmp_path: Path) -> None:
+    module = _load_resolution_critique()
+    artifact = _worker_delivered_artifact(tmp_path)
+    report_path = tmp_path / "worker-report.yaml"
+    report = yaml.safe_load(report_path.read_text(encoding="utf-8"))
+    foreign_capability = "e" * 64
+    report["capability_launch_envelope_sha256"] = foreign_capability
+    report["provenance"]["capability_launch_envelope_sha256"] = foreign_capability
+    report_path.write_text(yaml.safe_dump(report, sort_keys=True), encoding="utf-8")
+    report_identity = hashlib.sha256(report_path.read_bytes()).hexdigest()
+    lines = []
+    for line in artifact.read_text(encoding="utf-8").splitlines():
+        if line.startswith("- Worker report identity:"):
+            line = f"- Worker report identity: {report_identity}"
+        lines.append(line)
+    artifact.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    observer = module._observer_disposition(tmp_path, check)
+
+    assert observer["disposition"] == "carrier-unverified"
+    assert "capability_launch_envelope_sha256" in observer["carrier_reason"]
+
+
+@pytest.mark.parametrize("mutation", ["missing", "rebound"])
+def test_worker_carrier_rejects_optional_non_claim_result_mutation(
+    tmp_path: Path, mutation: str
+) -> None:
+    capability = unavailable_optional_capability("issue-worker-1")
+    artifact = _worker_delivered_artifact(tmp_path, capability=capability)
+    result_path = tmp_path / "worker-result.json"
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    if mutation == "missing":
+        result.pop("capability_non_claims")
+    else:
+        result["capability_non_claims"] = [target_non_claim("github:issue:690", "unproved")]
+    if mutation != "missing":
+        result["capability_non_claims_sha256"] = non_claims_sha256(result.get("capability_non_claims", []))
+    result_path.write_text(json.dumps(result, separators=(",", ":")), encoding="utf-8")
+    result_identity = hashlib.sha256(result_path.read_bytes()).hexdigest()
+
+    receipt_path = tmp_path / "receipt.json"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    receipt["output_sha256"] = result_identity
+    receipt["output_size"] = result_path.stat().st_size
+    receipt_path.write_text(json.dumps(receipt, separators=(",", ":")), encoding="utf-8")
+
+    ledger_path = tmp_path / "ledger.json"
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    ledger["attempts"][0]["findings_identity"] = result_identity
+    ledger_path.write_text(json.dumps(ledger, separators=(",", ":")), encoding="utf-8")
+
+    report_path = tmp_path / "worker-report.yaml"
+    report = yaml.safe_load(report_path.read_text(encoding="utf-8"))
+    report["findings_identity"] = result_identity
+    report["receipt_output_sha256"] = result_identity
+    report_path.write_text(yaml.safe_dump(report, sort_keys=True), encoding="utf-8")
+    report_identity = hashlib.sha256(report_path.read_bytes()).hexdigest()
+    artifact_lines = []
+    for line in artifact.read_text(encoding="utf-8").splitlines():
+        if line.startswith("- Worker report identity:"):
+            line = f"- Worker report identity: {report_identity}"
+        elif line.startswith("- Worker report findings identity:"):
+            line = f"- Worker report findings identity: {result_identity}"
+        artifact_lines.append(line)
+    artifact.write_text("\n".join(artifact_lines) + "\n", encoding="utf-8")
+
+    module = _load_resolution_critique()
+    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    observer = module._observer_disposition(tmp_path, check)
+    assert observer["disposition"] == "carrier-unverified"
+    expected_reason = "canonical schema" if mutation == "missing" else "non-claim"
+    assert expected_reason in observer["carrier_reason"]
 
 
 def test_worker_delivered_provenance_alias_mismatch_is_refused(tmp_path: Path) -> None:

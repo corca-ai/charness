@@ -39,6 +39,25 @@ def _load_result_contract():
     raise ImportError("package reviewer_result_contract.py not found")
 
 
+def _load_capability_contract():
+    candidate = Path(__file__).resolve().with_name("reviewer_capability.py")
+    module_name = "charness_reviewer_capability"
+    spec = importlib.util.spec_from_file_location(module_name, candidate)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"package reviewer_capability.py not found: {candidate}")
+    module = importlib.util.module_from_spec(spec)
+    previous = sys.modules.get(module_name)
+    sys.modules[module_name] = module
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        if previous is None:
+            sys.modules.pop(module_name, None)
+        else:
+            sys.modules[module_name] = previous
+    return module
+
+
 def _load_delivery_attempt_parser():
     package_dir = Path(__file__).resolve().parent
     aliases = {
@@ -173,6 +192,13 @@ def _validate_receipt_and_result(
         raise WorkerCarrierError("worker receipt is not a terminal succeeded receipt")
     if receipt.get("exit_code") != 0 or receipt.get("output_fresh") is not True:
         raise WorkerCarrierError("worker receipt does not prove a fresh successful result")
+    try:
+        capability_contract = _load_capability_contract()
+        capability_contract.validate_receipt_capabilities(
+            receipt, attempt_id=str(report.get("attempt_id", ""))
+        )
+    except (ImportError, ValueError) as exc:
+        raise WorkerCarrierError(f"worker receipt capability envelope is not valid: {exc}") from exc
     output_value = receipt.get("output_file")
     if not isinstance(output_value, str):
         raise WorkerCarrierError("worker receipt has no output file")
@@ -189,6 +215,13 @@ def _validate_receipt_and_result(
         )
     except (ImportError, ValueError) as exc:
         raise WorkerCarrierError(str(exc)) from exc
+    try:
+        capability_contract.validate_result_capability_non_claims(result, receipt)
+    except (ImportError, ValueError) as exc:
+        raise WorkerCarrierError(f"worker result capability non-claims are not approval-eligible: {exc}") from exc
+    for field in ("capability_non_claims", "capability_non_claims_sha256"):
+        if report.get(field) != receipt.get(field):
+            raise WorkerCarrierError(f"worker report {field} does not match the worker receipt")
     if report.get("findings_identity") != output_hash or report.get("receipt_output_sha256") != output_hash:
         raise WorkerCarrierError("worker findings identity does not match the typed result")
     return receipt, result, output_hash
@@ -220,9 +253,12 @@ def _validate_ledger(
         "attempt_id", "scope", "packet_identity", "reviewed_input_identity",
         "parent_receipt_identity", "boundary_fingerprint", "execution_mode",
         "backend", "prompt_sha256", "schema_sha256",
+        "capability_launch_envelope_sha256",
     )
     if report.get("attempt_id") != provenance.get("attempt_id"):
         raise WorkerCarrierError("delivery chain attempt_id does not match report provenance")
+    if provenance.get("capability_non_claims_sha256") != report.get("capability_non_claims_sha256"):
+        raise WorkerCarrierError("delivery chain capability non-claim digest does not match report provenance")
     for field in joined_fields:
         expected = provenance.get(field) if field == "attempt_id" else report.get(field)
         actual = getattr(attempt, field, None)

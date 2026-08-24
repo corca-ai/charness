@@ -82,4 +82,5 @@ def _event_context(attempt: Any) -> dict[str, Any]:
         "scope": attempt.scope,
         "packet_identity": attempt.packet_identity,
         "parent_receipt_identity": attempt.parent_receipt_identity,
+        "capability_launch_envelope_sha256": attempt.capability_launch_envelope_sha256,
     }

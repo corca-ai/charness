@@ -22,10 +22,12 @@ from typing import Any
 import yaml
 
 try:
+    from reviewer_capability import load_capability_file
     from reviewer_delivery import _read, _write, ledger_lock
     from reviewer_output import emit_yaml
     from reviewer_worker_report import ReportError, build_report
 except ImportError:
+    from skills.shared.scripts.reviewer_capability import load_capability_file
     from skills.shared.scripts.reviewer_delivery import _read, _write, ledger_lock
     from skills.shared.scripts.reviewer_output import emit_yaml
     from skills.shared.scripts.reviewer_worker_report import ReportError, build_report
@@ -114,6 +116,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run one canonical file-backed review attempt.")
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     parser.add_argument("--prompt-file", type=Path, required=True)
+    parser.add_argument("--capability-file", type=Path, required=True)
     parser.add_argument("--scope", required=True)
     parser.add_argument("--packet-identity", required=True)
     parser.add_argument("--reviewed-input-identity", required=True)
@@ -194,6 +197,7 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("file-backed runner requires adapter reviewer_runner.backend")
 
         prompt = _repo_path(repo_root, args.prompt_file)
+        capability_file = _repo_path(repo_root, args.capability_file)
         schema = _repo_path(repo_root, args.schema_file)
         ledger_path = _repo_path(repo_root, args.ledger_file)
         output_path = _repo_path(repo_root, args.output_file)
@@ -209,7 +213,22 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError(
                 "file-backed reviewer runner requires the canonical bounded-review result schema"
             )
-        all_paths = (prompt, schema, ledger_path, output_path, receipt_path, report_target, stdout_path, stderr_path)
+        launch_capability = load_capability_file(
+            capability_file,
+            attempt_id=args.attempt_id,
+            require_ready=True,
+        )
+        all_paths = (
+            prompt,
+            capability_file,
+            schema,
+            ledger_path,
+            output_path,
+            receipt_path,
+            report_target,
+            stdout_path,
+            stderr_path,
+        )
         for path in all_paths:
             try:
                 path.relative_to(repo_root)
@@ -235,6 +254,7 @@ def main(argv: list[str] | None = None) -> int:
                 backend=backend,
                 prompt_sha256=prompt_sha,
                 schema_sha256=schema_sha,
+                capability_launch_envelope_sha256=launch_capability.envelope_sha256,
             )
             _write(ledger_path, ledger)
 
@@ -249,10 +269,12 @@ def main(argv: list[str] | None = None) -> int:
             str(prompt),
             "--schema-file",
             str(schema),
+            "--capability-file",
+            str(capability_file),
             "--output-file",
-            str(args.output_file.resolve()),
+            str(output_path),
             "--receipt-file",
-            str(args.receipt_file.resolve()),
+            str(receipt_path),
             "--execution-mode",
             mode,
             "--attempt-id",
@@ -295,7 +317,7 @@ def main(argv: list[str] | None = None) -> int:
             _write(ledger_path, ledger)
 
         report = build_report(
-            receipt_path=str(args.receipt_file.resolve()),
+            receipt_path=str(receipt_path),
             ledger_path=str(ledger_path),
             attempt_id=args.attempt_id,
             scope=args.scope,
@@ -304,7 +326,7 @@ def main(argv: list[str] | None = None) -> int:
             parent_receipt_identity=args.parent_receipt_identity,
             expected_execution_mode=mode,
         )
-        _atomic_write_yaml(args.report_file.resolve(), report)
+        _atomic_write_yaml(report_target, report)
         emit_yaml(report)
         return 0 if worker.returncode == 0 and report["approval_eligible"] else 1
     except (OSError, ValueError, KeyError, json.JSONDecodeError, ReportError) as exc:

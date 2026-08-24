@@ -22,6 +22,19 @@ except ImportError:
     from skills.shared.scripts.reviewer_delivery import DeliveryError, DeliveryLedger
 
 try:
+    from reviewer_capability import (
+        CapabilityError,
+        validate_receipt_capabilities,
+        validate_result_capability_non_claims,
+    )
+except ImportError:
+    from skills.shared.scripts.reviewer_capability import (
+        CapabilityError,
+        validate_receipt_capabilities,
+        validate_result_capability_non_claims,
+    )
+
+try:
     from reviewer_output import emit_yaml
 except ImportError:
     from skills.shared.scripts.reviewer_output import emit_yaml
@@ -69,6 +82,10 @@ def _validate_result_output(receipt: dict[str, Any], attempt: Any) -> tuple[bool
         return False, "worker result packet_sha256 does not match the delivery attempt"
     if result.get("reviewed_input_identity_sha256") != attempt.reviewed_input_identity:
         return False, "worker result reviewed_input_identity_sha256 does not match the delivery attempt"
+    try:
+        validate_result_capability_non_claims(result, receipt)
+    except CapabilityError as exc:
+        return False, f"worker result capability non-claims are not approval-eligible: {exc}"
     return True, "typed worker receipt and fresh output agree"
 
 
@@ -118,12 +135,17 @@ def _validate_receipt(
         "backend": attempt.backend,
         "prompt_sha256": attempt.prompt_sha256,
         "schema_sha256": attempt.schema_sha256,
+        "capability_launch_envelope_sha256": attempt.capability_launch_envelope_sha256,
     }
     for field, expected in joins.items():
         if expected is None:
             return False, f"delivery attempt has no bound {field}"
         if receipt.get(field) != expected:
             return False, f"worker receipt {field} does not match the delivery attempt"
+    try:
+        validate_receipt_capabilities(receipt, attempt_id=attempt.attempt_id)
+    except CapabilityError as exc:
+        return False, f"worker receipt capability envelope is not approval-eligible: {exc}"
     return _validate_result_output(receipt, attempt)
 
 
@@ -184,6 +206,8 @@ def build_report(
         "backend": attempt.backend,
         "prompt_sha256": attempt.prompt_sha256,
         "schema_sha256": attempt.schema_sha256,
+        "capability_launch_envelope_sha256": attempt.capability_launch_envelope_sha256,
+        "capability_non_claims_sha256": receipt.get("capability_non_claims_sha256"),
     }
     provenance_ok = (
         attempt.scope == scope
@@ -216,6 +240,12 @@ def build_report(
         "schema_version": REPORT_SCHEMA_VERSION,
         "execution_mode": attempt.execution_mode,
         "backend": receipt.get("backend"),
+        "capability_status": receipt.get("capability_status"),
+        "capability_envelope_sha256": receipt.get("capability_envelope_sha256"),
+        "capability_launch_envelope_sha256": receipt.get("capability_launch_envelope_sha256"),
+        "capability_collection_envelope_sha256": receipt.get("capability_collection_envelope_sha256"),
+        "capability_non_claims": receipt.get("capability_non_claims"),
+        "capability_non_claims_sha256": receipt.get("capability_non_claims_sha256"),
         "scope": attempt.scope,
         "attempt_id": attempt.attempt_id,
         "boundary_fingerprint": attempt.boundary_fingerprint,

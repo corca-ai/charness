@@ -6,9 +6,19 @@ from __future__ import annotations
 import os
 import signal
 import subprocess
+from pathlib import Path
 from typing import Any
 
 PROCESS_CLEANUP_TIMEOUT_SECONDS = 5.0
+
+
+class ReviewerProcessError(ValueError):
+    """Typed backend launch/timeout failure for the worker receipt adapter."""
+
+    def __init__(self, status: str, message: str, *, exit_code: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status
+        self.exit_code = exit_code
 
 def terminate_process_group(process: subprocess.Popen[Any]) -> None:
     """Hard-stop a backend and descendants when a bounded run expires."""
@@ -48,3 +58,45 @@ def terminate_process_group(process: subprocess.Popen[Any]) -> None:
             # unbounded second timeout; the typed receipt still records the
             # original worker result and the caller can diagnose the orphan.
             pass
+
+
+def run_bounded_process(
+    command: list[str],
+    *,
+    cwd: Path,
+    stdin_path: Path,
+    stdout_path: Path,
+    stderr_path: Path,
+    timeout_seconds: float,
+) -> int:
+    """Run one backend with file streams and bounded process-group cleanup."""
+    process: subprocess.Popen[Any] | None = None
+    try:
+        with (
+            stdin_path.open("rb") as stdin_handle,
+            stdout_path.open("wb") as stdout_handle,
+            stderr_path.open("wb") as stderr_handle,
+        ):
+            process = subprocess.Popen(
+                command,
+                cwd=cwd,
+                stdin=stdin_handle,
+                stdout=stdout_handle,
+                stderr=stderr_handle,
+                start_new_session=(os.name == "posix"),
+                creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) if os.name == "nt" else 0,
+            )
+            try:
+                return process.wait(timeout=timeout_seconds)
+            except subprocess.TimeoutExpired as exc:
+                terminate_process_group(process)
+                raise ReviewerProcessError(
+                    "timed-out",
+                    f"backend exceeded {timeout_seconds} seconds",
+                    exit_code=124,
+                ) from exc
+    except FileNotFoundError as exc:
+        raise ReviewerProcessError("backend-unavailable", f"backend executable unavailable: {exc}") from exc
+    finally:
+        if process is not None and process.poll() is None:
+            terminate_process_group(process)

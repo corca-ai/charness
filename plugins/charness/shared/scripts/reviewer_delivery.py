@@ -88,6 +88,7 @@ class DeliveryLedger:
         backend: str | None = None,
         prompt_sha256: str | None = None,
         schema_sha256: str | None = None,
+        capability_launch_envelope_sha256: str | None = None,
         attempt_id: str | None = None,
         recorded_at: str | None = None,
     ) -> DeliveryAttempt:
@@ -102,6 +103,7 @@ class DeliveryLedger:
             backend=backend,
             prompt_sha256=prompt_sha256,
             schema_sha256=schema_sha256,
+            capability_launch_envelope_sha256=capability_launch_envelope_sha256,
             recorded_at=recorded_at or utc_now(),
         )
         if attempt.attempt_id in self.attempts:
@@ -138,6 +140,7 @@ class DeliveryLedger:
             backend=old.backend,
             prompt_sha256=old.prompt_sha256,
             schema_sha256=old.schema_sha256,
+            capability_launch_envelope_sha256=old.capability_launch_envelope_sha256,
             recorded_at=recorded_at or utc_now(),
             retry_of=old.attempt_id,
             retry_count=old.retry_count + 1,
@@ -237,6 +240,7 @@ def _parser() -> argparse.ArgumentParser:
     start.add_argument("--backend")
     start.add_argument("--prompt-sha256")
     start.add_argument("--schema-sha256")
+    start.add_argument("--capability-launch-envelope-sha256")
     start.add_argument("--attempt-id")
     start.add_argument("--recorded-at")
 
@@ -290,6 +294,7 @@ def main(argv: list[str] | None = None) -> int:
                     backend=args.backend,
                     prompt_sha256=args.prompt_sha256,
                     schema_sha256=args.schema_sha256,
+                    capability_launch_envelope_sha256=args.capability_launch_envelope_sha256,
                     attempt_id=args.attempt_id,
                     recorded_at=args.recorded_at,
                 )

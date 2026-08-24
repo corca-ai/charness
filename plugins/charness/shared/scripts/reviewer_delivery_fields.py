@@ -77,6 +77,14 @@ def bound_fields(
         if payload.get("schema_sha256") is not None
         else None
     )
+    capability_launch_envelope_sha256 = (
+        _sha256(
+            payload["capability_launch_envelope_sha256"],
+            "capability_launch_envelope_sha256",
+        )
+        if payload.get("capability_launch_envelope_sha256") is not None
+        else None
+    )
     retry_of = attempt_id(payload["retry_of"]) if payload.get("retry_of") is not None else None
     retry_count = payload.get("retry_count", 0)
     if not isinstance(retry_count, int) or retry_count < 0:
@@ -88,6 +96,7 @@ def bound_fields(
         "backend": _text(payload["backend"], "backend") if payload.get("backend") is not None else None,
         "prompt_sha256": prompt_sha256,
         "schema_sha256": schema_sha256,
+        "capability_launch_envelope_sha256": capability_launch_envelope_sha256,
         "retry_of": retry_of,
         "retry_count": retry_count,
     }

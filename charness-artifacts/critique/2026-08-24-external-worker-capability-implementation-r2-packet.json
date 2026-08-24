@@ -1,0 +1,233 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-24T13:42:26Z",
+  "prepared_for": "external worker capability envelope round-2 repaired full surface",
+  "changed_ref": "HEAD",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `HEAD`:\n- charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r2-packet.json\n- charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r2-packet.md\n- charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r4-packet.json\n- charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r4-packet.md\n- charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview.md\n- charness-artifacts/debug/2026-08-24-gh-auth-network-misclassification.md\n- charness-artifacts/ideation/2026-08-24-consumer-friction-and-file-backed-lanes.md\n- charness-artifacts/ideation/2026-08-24-open-issue-consumer-friction-matrix.md\n- charness-artifacts/spec/2026-08-24-external-worker-capability-envelope.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r2-packet.md, charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r4-packet.md, charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview.md, charness-artifacts/debug/2026-08-24-gh-auth-network-misclassification.md, charness-artifacts/ideation/2026-08-24-consumer-friction-and-file-backed-lanes.md, charness-artifacts/ideation/2026-08-24-open-issue-consumer-friction-matrix.md, charness-artifacts/spec/2026-08-24-external-worker-capability-envelope.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r2-packet.json, charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r2-packet.md, charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r4-packet.json, charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview-r4-packet.md, charness-artifacts/critique/2026-08-24-external-worker-capability-envelope-rereview.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-24-gh-auth-network-misclassification.md\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n\nPlanned sync commands before validators:\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "HEAD",
+    "resolved_changed_ref": [
+      "acf20235aa4e64a500c6519912c1a009b0f7ea61"
+    ],
+    "base_head": "acf20235aa4e64a500c6519912c1a009b0f7ea61",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/critique/2026-08-24-external-worker-capability-implementation-r1-packet.json",
+      "charness-artifacts/critique/2026-08-24-external-worker-capability-implementation-r1-packet.md",
+      "charness-artifacts/impl/2026-08-24-external-worker-capability-envelope-first-slice.md",
+      "plugins/charness/shared/scripts/reviewer_capability.py",
+      "plugins/charness/shared/scripts/reviewer_capability_preflight.py",
+      "plugins/charness/shared/scripts/reviewer_delivery.py",
+      "plugins/charness/shared/scripts/reviewer_delivery_attempt.py",
+      "plugins/charness/shared/scripts/reviewer_delivery_fields.py",
+      "plugins/charness/shared/scripts/reviewer_delivery_schema.py",
+      "plugins/charness/shared/scripts/reviewer_worker.py",
+      "plugins/charness/shared/scripts/reviewer_worker_carrier_support.py",
+      "plugins/charness/shared/scripts/reviewer_worker_report.py",
+      "plugins/charness/shared/scripts/reviewer_worker_runtime.py",
+      "plugins/charness/shared/scripts/run_reviewer_worker.py",
+      "skills/shared/scripts/reviewer_capability.py",
+      "skills/shared/scripts/reviewer_capability_preflight.py",
+      "skills/shared/scripts/reviewer_delivery.py",
+      "skills/shared/scripts/reviewer_delivery_attempt.py",
+      "skills/shared/scripts/reviewer_delivery_fields.py",
+      "skills/shared/scripts/reviewer_delivery_schema.py",
+      "skills/shared/scripts/reviewer_worker.py",
+      "skills/shared/scripts/reviewer_worker_carrier_support.py",
+      "skills/shared/scripts/reviewer_worker_report.py",
+      "skills/shared/scripts/reviewer_worker_runtime.py",
+      "skills/shared/scripts/run_reviewer_worker.py",
+      "tests/quality_gates/reviewer_capability_support.py",
+      "tests/quality_gates/test_issue_worker_carrier.py",
+      "tests/quality_gates/test_reviewer_capability.py",
+      "tests/quality_gates/test_reviewer_runner.py",
+      "tests/quality_gates/test_reviewer_worker.py",
+      "tests/quality_gates/test_reviewer_worker_report.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/2026-08-24-external-worker-capability-implementation-r1-packet.json",
+        "content_sha256": null
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-24-external-worker-capability-implementation-r1-packet.md",
+        "content_sha256": null
+      },
+      {
+        "path": "charness-artifacts/impl/2026-08-24-external-worker-capability-envelope-first-slice.md",
+        "content_sha256": null
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_capability.py",
+        "content_sha256": null
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_capability_preflight.py",
+        "content_sha256": null
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_delivery.py",
+        "content_sha256": "635bbcf1d752af544828622252b6152baa8bff24a82cea7f716fb46e9ecae74f"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_delivery_attempt.py",
+        "content_sha256": "92a814006df2de123af06530428d8fa317fc0933404f5b89cdc6beeaf4b6a023"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_delivery_fields.py",
+        "content_sha256": "5f96e13ab6355ac81fc04d688aed5033619d223bb21679906fa4c67944a382e4"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_delivery_schema.py",
+        "content_sha256": "40a5283d9f8980baa7632da8a148632cd83c94472d86c05e397841508401bfdc"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_worker.py",
+        "content_sha256": "839c0d465a7587f7843706ddc9a813f0326e1ca249316dba1d57af9bc9c265e3"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_worker_carrier_support.py",
+        "content_sha256": "d0466460e52c9efb7e48e29c07248e510f145f6633f10f83bcd00bc5e97ac90b"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_worker_report.py",
+        "content_sha256": "4c15ee82f92358ceb2bfb8ed71b56f497dd5c10a51d877599c4fd0d0f3ef9220"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/reviewer_worker_runtime.py",
+        "content_sha256": "cca04ed198359b16fdf22bceb67c7877f12dffbf2f609571ed10f172fb036576"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/run_reviewer_worker.py",
+        "content_sha256": "0a3f2ec8d4d083c58446fe6e1316af2dc82de587db1b9599a350a55a96c4e372"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_capability.py",
+        "content_sha256": null
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_capability_preflight.py",
+        "content_sha256": null
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery.py",
+        "content_sha256": "635bbcf1d752af544828622252b6152baa8bff24a82cea7f716fb46e9ecae74f"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery_attempt.py",
+        "content_sha256": "92a814006df2de123af06530428d8fa317fc0933404f5b89cdc6beeaf4b6a023"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery_fields.py",
+        "content_sha256": "5f96e13ab6355ac81fc04d688aed5033619d223bb21679906fa4c67944a382e4"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery_schema.py",
+        "content_sha256": "40a5283d9f8980baa7632da8a148632cd83c94472d86c05e397841508401bfdc"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker.py",
+        "content_sha256": "839c0d465a7587f7843706ddc9a813f0326e1ca249316dba1d57af9bc9c265e3"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_carrier_support.py",
+        "content_sha256": "d0466460e52c9efb7e48e29c07248e510f145f6633f10f83bcd00bc5e97ac90b"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_report.py",
+        "content_sha256": "4c15ee82f92358ceb2bfb8ed71b56f497dd5c10a51d877599c4fd0d0f3ef9220"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_runtime.py",
+        "content_sha256": "cca04ed198359b16fdf22bceb67c7877f12dffbf2f609571ed10f172fb036576"
+      },
+      {
+        "path": "skills/shared/scripts/run_reviewer_worker.py",
+        "content_sha256": "0a3f2ec8d4d083c58446fe6e1316af2dc82de587db1b9599a350a55a96c4e372"
+      },
+      {
+        "path": "tests/quality_gates/reviewer_capability_support.py",
+        "content_sha256": null
+      },
+      {
+        "path": "tests/quality_gates/test_issue_worker_carrier.py",
+        "content_sha256": "bc392afef80f32088f1750d083b179ffed1c2b16b9a3ddf8f9148f6af93c6c20"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_capability.py",
+        "content_sha256": null
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_runner.py",
+        "content_sha256": "70c2e586f784d6b060d2d1df4da2a26b1bfe0b618c4ade28550a004883e592d1"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_worker.py",
+        "content_sha256": "a5df1e35eede0585201135214c5a90bd8b1be8333d381e4093e4a49586a662fb"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_worker_report.py",
+        "content_sha256": "5a9a72580620251a7607b8ee089fbc8011a568f9a8574c9cda2af4612bf88367"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "69ab801fe2313de14a40b6eae0bca4754bda4ca6f58bfd248e60c4f66d35a001"
+  }
+}

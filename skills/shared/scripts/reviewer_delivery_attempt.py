@@ -66,6 +66,7 @@ class DeliveryAttempt:
     backend: str | None = None
     prompt_sha256: str | None = None
     schema_sha256: str | None = None
+    capability_launch_envelope_sha256: str | None = None
     findings_identity: str | None = None
     retry_of: str | None = None
     retry_count: int = 0
@@ -87,6 +88,7 @@ class DeliveryAttempt:
         backend: str | None = None,
         prompt_sha256: str | None = None,
         schema_sha256: str | None = None,
+        capability_launch_envelope_sha256: str | None = None,
         retry_of: str | None = None,
         retry_count: int = 0,
     ) -> "DeliveryAttempt":
@@ -110,6 +112,11 @@ class DeliveryAttempt:
             backend=_text(backend, "backend") if backend is not None else None,
             prompt_sha256=_sha256(prompt_sha256, "prompt_sha256") if prompt_sha256 is not None else None,
             schema_sha256=_sha256(schema_sha256, "schema_sha256") if schema_sha256 is not None else None,
+            capability_launch_envelope_sha256=(
+                _sha256(capability_launch_envelope_sha256, "capability_launch_envelope_sha256")
+                if capability_launch_envelope_sha256 is not None
+                else None
+            ),
             retry_of=retry_of,
             retry_count=retry_count,
         )
@@ -190,6 +197,7 @@ class DeliveryAttempt:
             backend=fields["backend"],
             prompt_sha256=fields["prompt_sha256"],
             schema_sha256=fields["schema_sha256"],
+            capability_launch_envelope_sha256=fields["capability_launch_envelope_sha256"],
             findings_identity=fields["findings_identity"],
             retry_of=fields["retry_of"],
             retry_count=fields["retry_count"],
@@ -221,6 +229,7 @@ class DeliveryAttempt:
                     "backend",
                     "prompt_sha256",
                     "schema_sha256",
+                    "capability_launch_envelope_sha256",
                 )
                 if (value := getattr(self, key)) is not None
             }

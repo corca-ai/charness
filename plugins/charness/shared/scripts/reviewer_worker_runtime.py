@@ -12,16 +12,36 @@ import hashlib
 import json
 import math
 import os
-import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 try:
-    from reviewer_process import terminate_process_group
+    from reviewer_process import ReviewerProcessError, run_bounded_process
 except ImportError:
-    from skills.shared.scripts.reviewer_process import terminate_process_group
+    from skills.shared.scripts.reviewer_process import ReviewerProcessError, run_bounded_process
+
+try:
+    from reviewer_worker_capability import (
+        CapabilityLifecycleError,
+        WorkerCapability,
+        adapt_failure,
+        collect,
+        launch,
+        receipt_fields,
+        validate_result_non_claims,
+    )
+except ImportError:
+    from skills.shared.scripts.reviewer_worker_capability import (
+        CapabilityLifecycleError,
+        WorkerCapability,
+        adapt_failure,
+        collect,
+        launch,
+        receipt_fields,
+        validate_result_non_claims,
+    )
 
 SCHEMA_VERSION = "charness.reviewer_worker.v1"
 SUCCESS = "succeeded"
@@ -40,6 +60,11 @@ STATUSES = frozenset(
         "schema-validator-unavailable",
         "schema-invalid",
         "interrupted",
+        "transport-unestablished",
+        "credential-invalid",
+        "authorization-insufficient",
+        "provider-unavailable",
+        "probe-invalid",
     }
 )
 
@@ -47,12 +72,20 @@ STATUSES = frozenset(
 class WorkerError(ValueError):
     """A typed, terminal worker failure that the CLI can serialize."""
 
-    def __init__(self, status: str, message: str, *, exit_code: int | None = None) -> None:
+    def __init__(
+        self,
+        status: str,
+        message: str,
+        *,
+        exit_code: int | None = None,
+        capability: dict[str, Any] | None = None,
+    ) -> None:
         if status not in STATUSES or status == SUCCESS:
             raise ValueError(f"invalid worker failure status: {status}")
         super().__init__(message)
         self.status = status
         self.exit_code = exit_code
+        self.capability = capability
 
 
 def now() -> str:
@@ -142,7 +175,7 @@ def _validate_result(
     return payload
 
 
-def preflight(args: Any) -> dict[str, Path | float | str]:
+def preflight(args: Any) -> dict[str, Any]:
     workspace = resolve(args.workspace, "workspace")
     prompt = resolve(args.prompt_file, "prompt_file")
     schema = resolve(args.schema_file, "schema_file")
@@ -150,14 +183,19 @@ def preflight(args: Any) -> dict[str, Path | float | str]:
     receipt = resolve(args.receipt_file, "receipt_file")
     stdout = resolve(args.stdout_file or f"{output}.stdout", "stdout_file")
     stderr = resolve(args.stderr_file or f"{output}.stderr", "stderr_file")
+    capability_file = resolve(args.capability_file, "capability_file")
     if not workspace.is_dir():
         raise WorkerError("input-invalid", f"workspace is not a directory: {workspace}")
-    for path, label in ((prompt, "prompt_file"), (schema, "schema_file")):
+    for path, label in (
+        (prompt, "prompt_file"),
+        (schema, "schema_file"),
+        (capability_file, "capability_file"),
+    ):
         if not path.is_file():
             raise WorkerError("input-invalid", f"{label} is not a file: {path}")
     if not isinstance(args.timeout_seconds, (int, float)) or not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
         raise WorkerError("input-invalid", "timeout_seconds must be finite and greater than zero")
-    all_paths = (prompt, schema, output, receipt, stdout, stderr)
+    all_paths = (prompt, schema, capability_file, output, receipt, stdout, stderr)
     if len({str(path) for path in all_paths}) != len(all_paths):
         raise WorkerError("input-invalid", "worker input and artifact paths must resolve to distinct files")
     artifact_paths = (output, receipt, stdout, stderr)
@@ -165,6 +203,10 @@ def preflight(args: Any) -> dict[str, Path | float | str]:
     if existing:
         rendered = ", ".join(str(path) for path in existing)
         raise WorkerError("stale-artifact-refused", f"refusing pre-existing worker artifact(s): {rendered}")
+    try:
+        capability = launch(capability_file, attempt_id=args.attempt_id)
+    except CapabilityLifecycleError as exc:
+        raise WorkerError(exc.status, str(exc), capability=exc.payload) from exc
     return {
         "workspace": workspace,
         "prompt": prompt,
@@ -173,6 +215,8 @@ def preflight(args: Any) -> dict[str, Path | float | str]:
         "receipt": receipt,
         "stdout": stdout,
         "stderr": stderr,
+        "capability_file": capability_file,
+        "capability": capability,
         "timeout_seconds": float(args.timeout_seconds),
     }
 
@@ -208,19 +252,41 @@ def _normalize_claude(raw_path: Path, pending_output: Path) -> None:
     atomic_write_json(pending_output, structured if isinstance(structured, dict) else payload)
 
 
-def run(args: Any, paths: dict[str, Path | float | str], run_id: str, started_at: str) -> dict[str, Any]:
+def _execute_backend(
+    args: Any,
+    paths: dict[str, Any],
+    *,
+    workspace: Path,
+    prompt: Path,
+    schema: Path,
+    stdout: Path,
+    stderr: Path,
+    temp_output: Path,
+    raw_output: Path,
+) -> int:
+    """Adapt backend-specific command/output paths to the process owner."""
+    try:
+        return run_bounded_process(
+            _command(args.backend, workspace, schema, temp_output),
+            cwd=workspace,
+            stdin_path=prompt,
+            stdout_path=stdout if args.backend == "codex_exec" else raw_output,
+            stderr_path=stderr,
+            timeout_seconds=float(paths["timeout_seconds"]),
+        )
+    except ReviewerProcessError as exc:
+        raise WorkerError(exc.status, str(exc), exit_code=exc.exit_code) from exc
+
+
+def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[str, Any]:
     workspace = paths["workspace"]
     prompt = paths["prompt"]
     schema = paths["schema"]
     output = paths["output"]
     stdout = paths["stdout"]
     stderr = paths["stderr"]
-    assert isinstance(workspace, Path)
-    assert isinstance(prompt, Path)
-    assert isinstance(schema, Path)
-    assert isinstance(output, Path)
-    assert isinstance(stdout, Path)
-    assert isinstance(stderr, Path)
+    capability_file = paths["capability_file"]
+    capability: WorkerCapability = paths["capability"]
     validator, _ = _schema_validator(schema)
     for path in (output, stdout, stderr):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -232,53 +298,42 @@ def run(args: Any, paths: dict[str, Path | float | str], run_id: str, started_at
     exit_code: int | None = None
     status = SUCCESS
     error: str | None = None
-    process: subprocess.Popen[Any] | None = None
     try:
-        command = _command(args.backend, workspace, schema, temp_output)
-        raw_handle = None
-        with prompt.open("rb") as prompt_handle, stdout.open("wb") as stdout_handle, stderr.open("wb") as stderr_handle:
-            try:
-                if args.backend == "claude_p":
-                    raw_handle = raw_output.open("wb")
-                process = subprocess.Popen(
-                    command,
-                    cwd=workspace,
-                    stdin=prompt_handle,
-                    stdout=stdout_handle if args.backend == "codex_exec" else raw_handle,
-                    stderr=stderr_handle,
-                    start_new_session=(os.name == "posix"),
-                    creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) if os.name == "nt" else 0,
-                )
-                try:
-                    exit_code = process.wait(timeout=float(paths["timeout_seconds"]))
-                except subprocess.TimeoutExpired as exc:
-                    terminate_process_group(process)
-                    exit_code = 124
-                    raise WorkerError("timed-out", f"backend exceeded {paths['timeout_seconds']} seconds") from exc
-            except FileNotFoundError as exc:
-                raise WorkerError("backend-unavailable", f"backend executable unavailable: {exc}") from exc
-            finally:
-                if raw_handle is not None:
-                    raw_handle.close()
+        exit_code = _execute_backend(
+            args,
+            paths,
+            workspace=workspace,
+            prompt=prompt,
+            schema=schema,
+            stdout=stdout,
+            stderr=stderr,
+            temp_output=temp_output,
+            raw_output=raw_output,
+        )
         if exit_code != 0:
             raise WorkerError("backend-failed", f"backend exited with code {exit_code}", exit_code=exit_code)
         if args.backend == "claude_p":
             _normalize_claude(raw_output, temp_output)
-        _validate_result(
+        capability = collect(capability, capability_file, attempt_id=args.attempt_id)
+        result = _validate_result(
             temp_output,
             validator,
             packet_identity=args.packet_identity,
             reviewed_input_identity=args.reviewed_input_identity,
         )
+        validate_result_non_claims(result, capability)
         os.replace(temp_output, output)
+    except CapabilityLifecycleError as exc:
+        if exc.adapt_capability:
+            capability = adapt_failure(capability, exc)
+        status = exc.status
+        error = str(exc)
     except WorkerError as exc:
         status = exc.status
         error = str(exc)
         if exc.exit_code is not None:
             exit_code = exc.exit_code
     finally:
-        if process is not None and process.poll() is None:
-            terminate_process_group(process)
         for path in (temp_output, raw_output):
             try:
                 path.unlink()
@@ -294,6 +349,7 @@ def run(args: Any, paths: dict[str, Path | float | str], run_id: str, started_at
         "output_file": str(output),
         "stdout_file": str(stdout),
         "stderr_file": str(stderr),
+        "capability_file": str(capability_file),
         "started_at": started_at,
         "finished_at": now(),
         "timeout_seconds": float(paths["timeout_seconds"]),
@@ -310,6 +366,7 @@ def run(args: Any, paths: dict[str, Path | float | str], run_id: str, started_at
         "execution_mode": args.execution_mode,
         "prompt_sha256": sha256(prompt),
         "schema_sha256": sha256(schema),
+        **receipt_fields(capability),
     }
     if output.exists():
         receipt["output_size"] = output.stat().st_size

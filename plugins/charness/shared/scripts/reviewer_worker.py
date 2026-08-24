@@ -16,6 +16,7 @@ from typing import Any
 
 try:
     from reviewer_output import emit_yaml
+    from reviewer_worker_capability import failure_receipt_fields
     from reviewer_worker_runtime import (
         SCHEMA_VERSION,
         SUCCESS,
@@ -28,6 +29,7 @@ try:
     )
 except ImportError:
     from skills.shared.scripts.reviewer_output import emit_yaml
+    from skills.shared.scripts.reviewer_worker_capability import failure_receipt_fields
     from skills.shared.scripts.reviewer_worker_runtime import (
         SCHEMA_VERSION,
         SUCCESS,
@@ -50,8 +52,9 @@ def _failure_receipt(
     status: str,
     exit_code: int | None,
     error: str,
+    capability: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {
+    receipt: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "run_id": run_id,
         "backend": args.backend,
@@ -71,6 +74,9 @@ def _failure_receipt(
         "timeout_seconds": args.timeout_seconds,
         "error": error,
     }
+    if capability is not None:
+        receipt.update(failure_receipt_fields(capability, status))
+    return receipt
 
 
 def _safe_receipt_path(args: argparse.Namespace) -> Path | None:
@@ -82,6 +88,7 @@ def _safe_receipt_path(args: argparse.Namespace) -> Path | None:
         inputs = {
             resolve(args.prompt_file, "prompt_file"),
             resolve(args.schema_file, "schema_file"),
+            resolve(args.capability_file, "capability_file"),
         }
         if receipt in inputs:
             return None
@@ -96,6 +103,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--workspace", required=True)
     parser.add_argument("--prompt-file", required=True)
     parser.add_argument("--schema-file", required=True)
+    parser.add_argument("--capability-file", required=True)
     parser.add_argument("--output-file", required=True)
     parser.add_argument("--receipt-file", required=True)
     parser.add_argument("--stdout-file")
@@ -125,7 +133,13 @@ def main(argv: list[str] | None = None) -> int:
         receipt = run(args, preflight(args), run_id, started_at)
     except WorkerError as exc:
         receipt = _failure_receipt(
-            args, run_id, started_at, status=exc.status, exit_code=exc.exit_code, error=str(exc)
+            args,
+            run_id,
+            started_at,
+            status=exc.status,
+            exit_code=exc.exit_code,
+            error=str(exc),
+            capability=exc.capability,
         )
     except KeyboardInterrupt:
         receipt = _failure_receipt(
