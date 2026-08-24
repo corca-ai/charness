@@ -21,78 +21,41 @@
 
 ## Current State
 
-- Fourteen issues closed at `b9cea1829` (16 probed, 14 closed) — the per-issue
-  probes and the requalification are in the
-  [tracker packet](../charness-artifacts/issues/2026-08-22-tracker-requalification.md) (probe commands, evidence gaps).
-- **A probe that does not enter the defect branch proves nothing about it.** That
-  is how #681 was cleared while still live on the installed plugin.
-- The `repair/issue-*` worktrees (`git worktree list`) are **stale
-  predecessors, not pending work** — `repair/issue-635` cherry-picks as an
-  empty diff. Prune, do not re-land.
-- Held open deliberately: **#671** (second invariant unmet) and **#688** (not
-  reproduced from six constructed shapes; awaiting the verbatim source bullet).
-- Residuals filed rather than folded: **#692**, **#693**, **#694** (decided and
-  implemented this session; still open on a second blind shape).
-- The #681 repair's two review rounds are consumed; round-2 repairs are
-  accepted-unreviewed under the cap.
-- **A subagent violated its read-only instruction** and reverted a module in the
-  shared tree; restored and re-covered. Forensics in the
-  [closeout retro](../charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md) (restore evidence, attribution caveat).
-  **Verify the staged set before every commit in a concurrent-subagent session** —
-  that is what caught it.
-- The #681 repair is confirmed on the installed copy by the
-  [installed replay](../charness-artifacts/probe/2026-08-22-v6.2.2-installed-681-replay.json) probe record.
-- #687's host-side terminal event remains explicitly unproven. Cautilus was not run.
+- Published release: `6.4.1` (`v6.4.1`) — verify locally with
+  `git describe --tags --abbrev=0`; the [release record](../charness-artifacts/release/latest.md)
+  and <https://github.com/corca-ai/charness/releases/tag/v6.4.1> are the sources
+  for the public claim.
+- The [quality receipt](../.charness/release-quality-receipt.json) is typed
+  `pass` with no unproven subjects; its measured counts and the fresh-checkout
+  plus installed `version`/`doctor` readbacks are the evidence source.
+- The claims review is recorded in the
+  [claims review artifact](../charness-artifacts/release-review/2026-08-25-v6.4.1-claims-review.md).
+  Its only finding is advisory: the dated critique narrative becomes stale when
+  revalidated against the final release delta.
+- `charness update` refreshed the installed surface. Restart Codex/Claude
+  sessions before relying on newly rotated absolute skill paths; the update
+  receipt reports one potentially stale active-session path.
+- Open tracker issues, including **#689**, **#690**, **#691**, and **#713**,
+  remain tracker facts and were not closed by this release. Do not infer issue
+  resolution from the shipped code or release tag.
 
 ## Next Session
 
-1. **`check-artifact-referents` is new and it reads what you are about to
-   write.** Between the existing form floor and fresh-eye review it adds a
-   REFERENT rung: `issue #N`, an `applied:` naming a path that does not exist,
-   and an unresolvable SHA are all refused. `{{q:<id>=<value>}}` markers make a
-   restated count agree with itself. Two edges: it can exit **3**
-   (`UNESTABLISHED`) when git cannot resolve SHAs — that is "ran, established
-   nothing", not a pass — and quantity consistency is PER FILE, so goal-vs-retro
-   drift is still yours to catch.
-2. **A claims round now declares what its verdict is ABOUT** (#701) — shipped
-   surfaces gate the tag, dated session narrative is reported and published
-   known-inaccurate; the contract is in
-   [critique-boundary.md](../skills/public/release/references/critique-boundary.md).
-   Before authoring a claims record, derive the scope with
-   `claims_review_scope.partition` over `<previous-tag>..<prepared>`; the
-   validator re-derives it and refuses a scope that moves a path or omits a
-   blocking one. Every checked-in example predates `v3`, so copying one as a
-   template gets refused after the prepared commit exists, where the only repair
-   is an in-place amend.
-3. **A new gate now catches the class that cost this session four claims
-   rounds**, and it is worth knowing before writing a goal or retro.
-   [The referent gate](../scripts/check_artifact_referents.py), wired into
-   `run-quality.sh`, enforces a
-   third rung between the existing two: FORM (a disposition is well-shaped, owned
-   by the skill floors) -> **REFERENT (the thing it names is real)** -> SUBSTANCE
-   (it is the right thing, still the fresh-eye reviewer's call). It refuses
-   `issue #N`, an `applied:` naming a path that does not exist, and a SHA that
-   does not resolve. `{{q:<id>=<value>}}` markers make a count that is restated
-   agree with itself. Two things to know: the gate can exit **3**
-   (`UNESTABLISHED`) when git cannot resolve SHAs — that is "ran, established
-   nothing", not a pass — and quantity consistency is checked PER FILE, so
-   goal-vs-retro drift is still on you.
-4. **Reproduce before repairing a review finding.** Twelve of twenty-seven
-   blockers this run got a wrong first repair, and in two more the reviewer's own
-   proposed fix was wrong. Repairing prose by re-reading prose is what failed;
-   the one repair that held was derived from `git log` / `git show`.
-5. #694 is decided and implemented (decline an ambiguous line, do not block
-   activation), but stays open on a second blind shape: a deferral flag named
-   only for a terminal step, with no earlier deferral, still reads as a deferral.
-6. Do not run a third review round on the `#681` repair; the two-round cap is
-   consumed and the round-2 repairs are recorded as accepted-unreviewed.
-7. For a new work unit, run the repo-owned opener before any review or brief —
-   `python3 scripts/open_lesson_session.py --repo-root . --session-id <slug> --seed <slug>`
-   — and preserve the commit -> changed-line -> broad-quality ordering.
-8. Do not claim a verdict from timeout, exit code, transcript, screen output, HTTP
-   reachability, tag presence, or any other media alone; the
-   [consumer report](../skills/shared/scripts/reviewer_worker_report.py) must accept a
-   typed receipt with matching provenance and terminal state.
+1. Restart the Codex/Claude sessions after the `charness update` cache rotation,
+   then run the repo-owned opener before any new brief or reviewer spawn:
+   `python3 scripts/open_lesson_session.py --repo-root . --session-id <slug> --seed <slug>`.
+2. Requalify the open consumer-friction issues from GitHub, starting with #713
+   and checking whether #689/#690/#691 have durable shipped evidence. Keep issue
+   status as the source of truth; this release did not close them.
+3. Treat the advisory claims finding and the unauthored generated release body
+   in the [release record](../charness-artifacts/release/latest.md) as follow-up
+   work. Do not rewrite the published release record in place without a new
+   proof packet and public readback.
+4. Preserve the release proof floor documented in the
+   [operating contract](./conventions/operating-contract.md): typed quality
+   receipt, fresh-checkout probes, distinct observer, and distinct-channel
+   public verification. A zero exit code or reachable tag alone is not a
+   release verdict.
 
 ## Discuss
 
