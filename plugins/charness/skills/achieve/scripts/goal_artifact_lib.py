@@ -334,6 +334,7 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
             # Binding Plan at all. Hardening one of two gates makes the other reachable.
             + (CLOSEOUT_PLAN_SECTIONS if _pursue.is_shaping_status(read_status(text)) else ())
         ),
+        duplicate_sections=_markdown.required_heading_report(_mask_fences(text), REQUIRED_SECTIONS, PORTABILITY_SECTIONS)[2],
         status=read_status(text),
         deploy_vocab=deploy_vocab,
         mask_fences=_mask_fences,
@@ -347,7 +348,7 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
         # is the rule the duplicate ratchet had just enforced on this same slice.
         hollow_sections=lambda masked, sections: _hollow.classify(
             masked, text, _TEMPLATE, sections,
-            section_bounds=_markdown.section_bounds,
+            section_bounds=_markdown.section_bounds_all,
         ),
     )
     # Activation is where this floor is worth the most: the contradiction's whole
@@ -420,10 +421,11 @@ def append_slice(text: str, slice_block: str) -> str:
 
 
 def check_goal(text: str) -> dict[str, Any]:
-    present = {match.group(1).strip() for match in _H2.finditer(_mask_fences(text))}
-    missing = [section for section in REQUIRED_SECTIONS if section not in present]
+    missing, portability_missing, duplicate_sections = _markdown.required_heading_report(
+        _mask_fences(text), REQUIRED_SECTIONS, PORTABILITY_SECTIONS
+    )
     status = read_status(text)
-    issues: list[str] = []
+    issues: list[str] = ["duplicate sections: " + ", ".join(duplicate_sections)] if duplicate_sections else []
     if status is None:
         issues.append("missing `Status:` line")
     elif status not in VALID_STATUSES:
@@ -443,7 +445,6 @@ def check_goal(text: str) -> dict[str, Any]:
         issues.append("missing `Activation:` line")
     if missing:
         issues.append("missing sections: " + ", ".join(missing))
-    portability_missing = [section for section in PORTABILITY_SECTIONS if section not in present]
     if portability_missing:
         issues.append(
             "missing portability sections: "
@@ -451,8 +452,7 @@ def check_goal(text: str) -> dict[str, Any]:
             + " — every goal keeps these headings (use `N/A — <reason>` if a section is empty)"
         )
     path_portability = _portability_gate.check(text)
-    portability_issue = _portability_gate.check_issue(path_portability)
-    if portability_issue:
+    if portability_issue := _portability_gate.check_issue(path_portability):
         issues.append(portability_issue)
     cadence = check_cadence_owner(text, status=status)
     if not cadence["ok"]:

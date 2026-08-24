@@ -10,7 +10,7 @@ from .support import (
     run_cli,
 )
 
-GOAL_PATH = "charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md"
+GOAL_PATH = "charness-artifacts/goals/2026-08-18-probe-provenance-and-the-adapter-consumer-debt.md"
 
 
 # Required/portability headings a fixture must carry so the pursue-readiness
@@ -70,12 +70,24 @@ def _write_generic_draft_frame_goal(repo: Path) -> Path:
         "## Active Operating Frame\n\n"
         "- Current slice: before activation.\n"
         "- Next action: activate with `/goal @charness-artifacts/goals/generic-draft-frame.md`.\n\n"
-        "## User Acceptance\n\nUser runs X and sees Y.\n\n"
-        "## Agent Verification Plan\n\nRun the suite; assert Z.\n\n"
         # This fixture isolates the draft-frame ADVISORY, which must stay
         # non-blocking, so the section floor is satisfied and only the frame
         # disposition is generic.
         "## Non-Goals\n\nfixture.\n\n" + _REMAINING_SECTIONS,
+        encoding="utf-8",
+    )
+    return goal
+
+
+def _write_duplicate_goal(repo: Path) -> Path:
+    goal = repo / "charness-artifacts" / "goals" / "duplicate-heading.md"
+    goal.parent.mkdir(parents=True, exist_ok=True)
+    goal.write_text(
+        "# Achieve Goal: Duplicate heading\n\n"
+        "Status: active\n"
+        "Activation: `/goal @charness-artifacts/goals/duplicate-heading.md`\n\n"
+        + _REMAINING_SECTIONS
+        + "\n## Goal\nA second substantive goal statement.\n",
         encoding="utf-8",
     )
     return goal
@@ -164,6 +176,35 @@ def test_goal_check_blocks_unresolved_activation_discussion(tmp_path: Path) -> N
     concise_payload = yaml.safe_load(concise.stdout)
     assert concise_payload["pursue_ready"] is False
     assert "not marked resolved" in concise_payload["reason"]
+
+
+def test_goal_check_cli_rejects_substantive_duplicate_heading(tmp_path: Path) -> None:
+    target_repo = tmp_path / "target"
+    _write_duplicate_goal(target_repo)
+
+    result = run_cli(
+        "goal",
+        "check",
+        "--repo-root",
+        str(target_repo),
+        "--goal-path",
+        "charness-artifacts/goals/duplicate-heading.md",
+        "--charness-checkout",
+        str(ROOT),
+        "--pursue-ready",
+    )
+
+    assert result.returncode == 1, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["pursue_ready"] is False
+    assert payload["activation_ready"] is False
+    assert payload["duplicate_sections"] == ["Goal"]
+    assert payload["readiness_blockers"] == [{
+        "kind": "duplicate_sections",
+        "sections": ["Goal"],
+        "reason": "required or portability H2 section appears more than once",
+    }]
+    assert "duplicate sections: Goal" in payload["reason"]
 
 
 def test_goal_check_concise_output_surfaces_draft_frame_warning(tmp_path: Path) -> None:

@@ -67,8 +67,8 @@ RUN_FILLED_SECTIONS = (
 )
 
 
-def _body(text: str, section: str, section_bounds) -> str | None:
-    """One section's body, via the contract's ONE owner of the H2 walk.
+def _bodies(text: str, section: str, section_bounds) -> list[str]:
+    """Every matching section body, via the contract's ONE owner of the H2 walk.
 
     Not a local walk. `goal_artifact_markdown.section_bounds` records that six
     modules had each hand-rolled this same nine-line loop, "each subtly its own:
@@ -78,11 +78,7 @@ def _body(text: str, section: str, section_bounds) -> str | None:
     eighth copy anyway; the duplicate-ratchet gate refused it, which is the gate
     doing exactly its job.
     """
-    bounds = section_bounds(text, section)
-    if bounds is None:
-        return None
-    start, end = bounds
-    return text[start:end]
+    return [text[start:end] for start, end in section_bounds(text, section)]
 
 
 def _normalized(body: str) -> str:
@@ -105,8 +101,8 @@ def classify(masked_text: str, raw_text: str, template_text: str,
     empty: list[str] = []
     template_identical: list[str] = []
     for name in sections:
-        masked_body = _body(masked_text, name, section_bounds)
-        if masked_body is None:
+        masked_bodies = _bodies(masked_text, name, section_bounds)
+        if not masked_bodies:
             continue
         # EMPTINESS is decided on the RAW body, template-identity on the masked
         # one. `mask_fences` blanks fenced regions, so a section written entirely
@@ -115,13 +111,15 @@ def classify(masked_text: str, raw_text: str, template_text: str,
         # statement the code had not established. Identity still reads the masked
         # body, because a goal that QUOTES the template must not have the
         # quotation counted as its own content.
-        unmasked = _body(raw_text, name, section_bounds)
-        if not _normalized(unmasked if unmasked is not None else masked_body):
+        unmasked_bodies = _bodies(raw_text, name, section_bounds)
+        if any(not _normalized(body) for body in unmasked_bodies):
             empty.append(name)
             continue
-        body = _normalized(masked_body)
-        template_body = _body(template_text, name, section_bounds)
-        if body and template_body is not None and body == _normalized(template_body):
+        template_bodies = _bodies(template_text, name, section_bounds)
+        template_body = _normalized(template_bodies[0]) if template_bodies else ""
+        if template_body and any(
+            _normalized(body) == template_body for body in masked_bodies
+        ):
             template_identical.append(name)
     hollow = sorted(empty + template_identical)
     run_filled = [name for name in hollow if name in RUN_FILLED_SECTIONS]

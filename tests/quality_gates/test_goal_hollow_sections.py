@@ -13,8 +13,12 @@ against the template.
 from __future__ import annotations
 
 import importlib.util
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
+import yaml
 
 from .support import ROOT
 
@@ -44,7 +48,7 @@ def bounds():
     lib layer injects it. Using it here rather than a local copy is the point: a
     test that walked sections its own way would stop proving the production path
     reads the same bodies."""
-    return _load("goal_artifact_markdown").section_bounds
+    return _load("goal_artifact_markdown").section_bounds_all
 
 
 _TEMPLATE = (
@@ -75,6 +79,23 @@ def test_a_section_still_carrying_the_template_prose_is_hollow(hollow, bounds) -
 
     assert report["still_template_text"] == ["Interview Decisions"]
     assert report["empty"] == []
+
+
+@pytest.mark.parametrize(
+    "sections",
+    [
+        "## Goal\n\nwritten first\n\n## Goal\n",
+        "## Goal\n\n## Goal\n\nwritten second\n",
+    ],
+    ids=["written-then-empty", "empty-then-written"],
+)
+def test_every_duplicate_occurrence_is_classified(hollow, bounds, sections: str) -> None:
+    report = hollow.classify(
+        sections, sections, _TEMPLATE, ("Goal",), section_bounds=bounds
+    )
+
+    assert report["empty"] == ["Goal"]
+    assert report["blocking"] == ["Goal"]
 
 
 def test_reflowing_the_template_prose_is_still_hollow(hollow, bounds) -> None:
@@ -188,15 +209,70 @@ def test_the_report_is_published_even_when_nothing_blocks(goal_lib) -> None:
     assert set(report["hollow_sections"]) >= {"hollow", "empty", "still_template_text", "blocking"}
 
 
-def test_a_non_shaping_status_is_not_regraded(goal_lib) -> None:
-    """An artifact whose scope was set before this rule existed is not re-graded
-    against it -- the same scoping the backlog floor already uses."""
+def test_active_hollow_shaping_section_refuses_activation(goal_lib) -> None:
+    """Active work remains pursuable work and cannot bypass the hollow floor."""
     active = _draft_with(goal_lib, "Boundaries").replace("Status: draft", "Status: active", 1)
 
     report = goal_lib.pursue_readiness(active)
 
-    assert report["hollow_sections"]["hollow"] == []
-    assert "not evaluated" in report["hollow_sections"]["reason"]
+    assert report["pursue_ready"] is False
+    assert report["hollow_sections"]["evaluated"] is True
+    assert report["hollow_sections"]["hollow"] == ["Boundaries"]
+    assert report["hollow_blocking_sections"] == ["Boundaries"]
+    assert report["readiness_blockers"] == [{
+        "kind": "hollow_sections",
+        "sections": ["Boundaries"],
+        "reason": report["hollow_sections"]["reason"],
+    }]
+
+
+def test_active_run_filled_section_is_reported_but_not_refused(goal_lib) -> None:
+    active = _draft_with(goal_lib, "Slice Log").replace("Status: draft", "Status: active", 1)
+
+    report = goal_lib.pursue_readiness(active)
+
+    assert report["pursue_ready"] is True
+    assert report["hollow_sections"]["evaluated"] is True
+    assert report["hollow_blocking_sections"] == []
+    assert "Slice Log" in report["hollow_sections"]["run_filled_hollow"]
+
+
+def test_active_hollow_is_rejected_at_the_checker_cli(goal_lib, tmp_path: Path) -> None:
+    goal = tmp_path / "charness-artifacts/goals/active-hollow.md"
+    goal.parent.mkdir(parents=True)
+    goal.write_text(
+        _draft_with(goal_lib, "Boundaries").replace("Status: draft", "Status: active", 1),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_ACHIEVE / "check_goal_artifact.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--goal-path",
+            str(goal),
+            "--pursue-ready",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    payload = yaml.safe_load(result.stdout)
+
+    assert result.returncode == 1, result.stderr
+    assert payload["pursue_ready"] is False
+    assert payload["activation_ready"] is False
+    assert payload["hollow_blocking_sections"] == ["Boundaries"]
+    assert payload["readiness_blockers"][0]["kind"] == "hollow_sections"
+
+
+def test_duplicate_required_headings_are_rejected_by_full_validation(goal_lib) -> None:
+    artifact = _draft_with(goal_lib, "__none__") + "\n## Goal\nsecond copy\n"
+
+    report = goal_lib.check_goal(artifact)
+
+    assert "duplicate sections: Goal" in report["issues"]
 
 
 # --------------------------------------------------------------------------- #

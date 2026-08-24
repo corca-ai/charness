@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import importlib.util
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -26,6 +27,8 @@ import yaml
 from .support import ROOT
 
 _ACHIEVE = ROOT / "skills" / "public" / "achieve" / "scripts"
+_SOURCE_CHECKER = _ACHIEVE / "check_goal_artifact.py"
+_PLUGIN_CHECKER = ROOT / "plugins" / "charness" / "skills" / "achieve" / "scripts" / "check_goal_artifact.py"
 
 
 def _load(name: str):
@@ -66,6 +69,16 @@ def test_an_annotated_superseded_status_is_still_terminal(pursue) -> None:
     silently disarms the skip, which is the defect `status_token` already exists
     to prevent for `complete`."""
     assert pursue.is_terminal_status("SUPERSEDED (2026-08-22) — folded into the successor") is True
+
+
+@pytest.mark.parametrize("status", ["COMPLETE!", "SUPERSEDED!", "complete?", "superseded;"])
+def test_terminal_punctuation_is_part_of_the_annotation_boundary(pursue, status: str) -> None:
+    assert pursue.is_terminal_status(status) is True
+
+
+@pytest.mark.parametrize("status", ["historical COMPLETE!", "complete-ish", "superseded_record"])
+def test_unrelated_leading_words_and_extended_tokens_are_not_terminal(pursue, status: str) -> None:
+    assert pursue.is_terminal_status(status) is False
 
 
 def test_superseded_is_not_a_shaping_status(pursue) -> None:
@@ -240,6 +253,152 @@ def _run_checker(repo: Path, status: str, record: str = "") -> dict:
         capture_output=True, text=True,
     )
     return yaml.safe_load(result.stdout)
+
+
+def _readiness_fixture(goal_lib, status: str, record: str = "") -> str:
+    lines = [
+        "# Achieve Goal: readiness fixture",
+        "",
+        f"Status: {status}",
+        "Created: 2026-08-22",
+        "Activation: `/goal @x.md`",
+        "",
+    ]
+    for section in goal_lib.REQUIRED_SECTIONS + goal_lib.PORTABILITY_SECTIONS:
+        lines.extend([f"## {section}", f"Written fixture content for {section}.", ""])
+    if record:
+        lines.extend([record, ""])
+    return "\n".join(lines)
+
+
+def _run_public_checker(checker: Path, repo: Path, goal: Path, *, pursue_ready: bool) -> dict:
+    args = [sys.executable, str(checker), "--repo-root", str(repo), "--goal-path", str(goal)]
+    if pursue_ready:
+        args.append("--pursue-ready")
+    result = subprocess.run(args, capture_output=True, text=True)
+    assert result.stdout, result.stderr
+    return yaml.safe_load(result.stdout)
+
+
+def _write_readiness_fixture(goal_lib, repo: Path, status: str, record: str = "") -> Path:
+    goal = repo / "charness-artifacts" / "goals" / "2026-08-22-readiness.md"
+    goal.parent.mkdir(parents=True, exist_ok=True)
+    goal.write_text(_readiness_fixture(goal_lib, status, record), encoding="utf-8")
+    return goal
+
+
+def _write_duplicate_readiness_fixture(goal_lib, repo: Path, section: str) -> Path:
+    goal = repo / "charness-artifacts" / "goals" / "2026-08-22-duplicate-readiness.md"
+    goal.parent.mkdir(parents=True, exist_ok=True)
+    goal.write_text(
+        _readiness_fixture(goal_lib, "active")
+        + f"\n## {section}\nA second substantive statement for {section}.\n",
+        encoding="utf-8",
+    )
+    return goal
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        "superseded",
+        "SUPERSEDED (2026-08-22) — folded into the successor",
+        "SUPERSEDED!",
+        "complete.",
+        "COMPLETE!",
+    ],
+)
+def test_terminal_status_never_allows_readiness(goal_lib, status: str) -> None:
+    report = goal_lib.pursue_readiness(
+        _readiness_fixture(
+            goal_lib,
+            status,
+            "Superseded by: none — remainder is intentionally abandoned",
+        )
+    )
+
+    assert report["pursue_ready"] is False
+    assert report["activation_ready"] is False
+    assert report["lifecycle"] == {
+        "status": status,
+        "status_token": goal_lib.status_token(status),
+        "terminal": True,
+        "pursuit_allowed": False,
+    }
+    assert report["hollow_sections"]["evaluated"] is False
+    assert report["hollow_blocking_sections"] == []
+    assert report["readiness_blockers"][0]["kind"] == "terminal_status"
+    assert "historical and cannot be activated" in report["readiness_blockers"][0]["reason"]
+    assert "non-pursuable:" in report["reason"]
+
+
+@pytest.mark.parametrize(
+    "record, record_ok",
+    [
+        ("", False),
+        ("Superseded by: none — remainder is intentionally abandoned", True),
+    ],
+)
+def test_full_validation_and_pursue_readiness_share_terminal_permission_boundary(
+    goal_lib, tmp_path: Path, record: str, record_ok: bool
+) -> None:
+    goal = _write_readiness_fixture(goal_lib, tmp_path, "superseded", record)
+
+    full = _run_public_checker(_SOURCE_CHECKER, tmp_path, goal, pursue_ready=False)
+    pursue = _run_public_checker(_SOURCE_CHECKER, tmp_path, goal, pursue_ready=True)
+
+    assert full["superseded_record"]["ok"] is record_ok
+    assert full["ok"] is record_ok
+    assert pursue["pursue_ready"] is False
+    assert pursue["activation_ready"] is False
+    assert pursue["lifecycle"]["terminal"] is True
+    assert pursue["readiness_blockers"][0]["kind"] == "terminal_status"
+
+
+def test_source_and_plugin_cli_payloads_are_consumer_compatible(goal_lib, tmp_path: Path) -> None:
+    goal = _write_readiness_fixture(
+        goal_lib,
+        tmp_path,
+        "superseded",
+        "Superseded by: none — remainder is intentionally abandoned",
+    )
+
+    source = _run_public_checker(_SOURCE_CHECKER, tmp_path, goal, pursue_ready=True)
+    plugin = _run_public_checker(_PLUGIN_CHECKER, tmp_path, goal, pursue_ready=True)
+
+    assert source == plugin
+    assert source["pursue_ready"] is False
+    assert source["lifecycle"]["terminal"] is True
+    assert source["readiness_blockers"] == [{
+        "kind": "terminal_status",
+        "status": "superseded",
+        "reason": source["readiness_blockers"][0]["reason"],
+    }]
+
+
+@pytest.mark.parametrize("section", ["Goal", "Context Sources"])
+def test_source_and_plugin_cli_reject_substantive_duplicate_sections_and_agree(
+    goal_lib, tmp_path: Path, section: str
+) -> None:
+    goal = _write_duplicate_readiness_fixture(goal_lib, tmp_path, section)
+
+    source_full = _run_public_checker(_SOURCE_CHECKER, tmp_path, goal, pursue_ready=False)
+    plugin_full = _run_public_checker(_PLUGIN_CHECKER, tmp_path, goal, pursue_ready=False)
+    source_pursue = _run_public_checker(_SOURCE_CHECKER, tmp_path, goal, pursue_ready=True)
+    plugin_pursue = _run_public_checker(_PLUGIN_CHECKER, tmp_path, goal, pursue_ready=True)
+
+    assert source_full == plugin_full
+    assert source_pursue == plugin_pursue
+    assert source_full["ok"] is False
+    assert source_full["issues"] == [f"duplicate sections: {section}"]
+    assert source_pursue["pursue_ready"] is False
+    assert source_pursue["activation_ready"] is False
+    assert source_pursue["duplicate_sections"] == [section]
+    assert source_pursue["readiness_blockers"] == [{
+        "kind": "duplicate_sections",
+        "sections": [section],
+        "reason": "required or portability H2 section appears more than once",
+    }]
 
 
 def test_the_validator_actually_fires_the_record_floor(tmp_path: Path) -> None:

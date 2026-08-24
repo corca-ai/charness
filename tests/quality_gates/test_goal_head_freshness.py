@@ -217,8 +217,8 @@ def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path, monke
     # (not the exit-code mapping under test) is what decides the result.
     ready_path.write_text(
         "Status: active\n## Goal\nshaped\n"
-        + "".join(
-            f"## {section}\n"
+            + "".join(
+                f"## {section}\nshaped {section}.\n"
             for section in (
                 "Non-Goals",
                 "Boundaries",

@@ -119,7 +119,21 @@ def section_bounds(masked: str, section: str, *, casefold: bool = False) -> tupl
     slice about one rule having one owner is what made this a real repair rather
     than hygiene — and the duplicate-ratchet gate is what refused it.
     """
+    matches = section_bounds_all(masked, section, casefold=casefold)
+    return matches[0] if matches else None
+
+
+def section_bounds_all(masked: str, section: str, *, casefold: bool = False) -> list[tuple[int, int]]:
+    """Offsets for every ``## <section>`` body in a fence-masked artifact.
+
+    A first-match reader is safe for append-only helpers, but not for a verdict:
+    a duplicate heading can put written content before an empty/template copy (or
+    the reverse) and make the answer depend on order. The all-occurrences reader
+    keeps that decision at the shared markdown boundary so consumers that render
+    a verdict can inspect every matching body.
+    """
     headings = list(_H2.finditer(masked))
+    matches: list[tuple[int, int]] = []
     for index, match in enumerate(headings):
         name = match.group(1).strip()
         if (name.lower() != section.lower()) if casefold else (name != section):
@@ -127,8 +141,27 @@ def section_bounds(masked: str, section: str, *, casefold: bool = False) -> tupl
         body_start = masked.find("\n", match.start())
         start = match.end() if body_start == -1 else body_start + 1
         end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
-        return start, end
-    return None
+        matches.append((start, end))
+    return matches
+
+
+def required_heading_report(
+    masked: str,
+    required_sections: tuple[str, ...],
+    portability_sections: tuple[str, ...],
+) -> tuple[list[str], list[str], list[str]]:
+    """Return missing-required, missing-portability, and duplicate H2 names."""
+    headings = [match.group(1).strip() for match in _H2.finditer(masked)]
+    present = set(headings)
+    missing = [section for section in required_sections if section not in present]
+    duplicate_sections = [
+        section for section in required_sections + portability_sections
+        if headings.count(section) > 1
+    ]
+    portability_missing = [
+        section for section in portability_sections if section not in present
+    ]
+    return missing, portability_missing, duplicate_sections
 
 
 def slice_plan_data_row_count(text: str) -> int:

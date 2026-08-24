@@ -18,7 +18,7 @@ is fixed for the first version.
 ```markdown
 # Achieve Goal: <title>
 
-Status: draft | active | blocked | complete
+Status: draft | active | blocked | complete | superseded
 Created: <date>
 Activation: `/goal @charness-artifacts/goals/<file>.md`
 Timebox: <duration, when user supplied a work budget>
@@ -181,7 +181,7 @@ python3 "$SKILL_DIR/scripts/append_slice_log.py" --repo-root . \
   --slug acme-184-push-confidence --date 2026-05-26 \
   --fields-file /tmp/slice-fields.json
 
-# Flip status as the run progresses (draft -> active -> blocked/complete).
+# Flip status as the run progresses (draft -> active -> blocked/complete/superseded).
 # No title needed: an existing artifact's heading and body are never rewritten.
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
   --slug acme-184-push-confidence --status active
@@ -290,6 +290,12 @@ The record is checked by `check_goal_artifact.py` when the status is
 complete-evidence floor is deliberately NOT applied: this goal says it did not
 complete, and grading it against closeout evidence would ask the record to prove
 something it states it did not do.
+
+This record is audit traceability, not activation permission. The public
+`--pursue-ready` report always sets both `pursue_ready` and `activation_ready` to
+`false` for terminal `complete`/`superseded` statuses, including annotated
+forms. Its typed `lifecycle` and `readiness_blockers` fields identify the
+terminal refusal separately from hollow shaping-section refusal.
 
 ## Remaining Boundary Matrix (conditional, before blocked)
 

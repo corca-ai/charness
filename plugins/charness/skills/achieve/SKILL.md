@@ -130,7 +130,7 @@ depth; read that file, not the full contract, and follow its `closeout_handoff` 
    - **design the successor goal from what this run LEARNED, not what is left
      over, and record `Successor goal: <path>` in `## Coordination Cues`** — the
      last closeout act, required at every completion
-   - run `check_goal_artifact.py`, then flip status to `complete`
+   - run `check_goal_artifact.py`, then flip status to `complete` or `superseded`
    - if the artifact names `current HEAD`/`HEAD is` with an immutable SHA, make
      the SHA match the live `git rev-parse HEAD` result or mark it historical
    - before any host-level goal completion/status tool call, prove the checked-in
@@ -152,7 +152,7 @@ depth; read that file, not the full contract, and follow its `closeout_handoff` 
 
 - a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with `## Active Operating Frame` plus audit sections in `references/goal-artifact.md`
 - a `## Operator Decision Queue` section for deferrable operator-only decisions
-- `Status` is one of draft / active / blocked / complete
+- `Status` is one of draft / active / blocked / complete / superseded
 - an explicit `/goal @...` activation line
 - at completion, a final report that separates self-verification, user
   verification, residual risk, non-claims, and the operator decision queue

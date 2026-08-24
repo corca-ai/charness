@@ -6,11 +6,15 @@ verdict and the statement of what that verdict does NOT establish.
 
 Lives beside ``goal_artifact_lib`` rather than inside it because readiness is its
 own concept (marker + section presence + fence readability + operator discussion
-+ draft frame).
++ draft frame + lifecycle and hollow-section refusal).
 Every collaborator is INJECTED by the caller -- the required-section tuple, the
 artifact status, and the four functions this composes -- so nothing here reaches
 back into the artifact library, and this module carries no sibling-loader
 boilerplate to duplicate.
+
+Lifecycle token normalization and terminal/shaping applicability are owned by
+``goal_artifact_lifecycle``. The public names remain re-exported here so existing
+callers keep their import address while readiness composition stays here.
 """
 from __future__ import annotations
 
@@ -39,89 +43,34 @@ CLOSEOUT_PLAN_FIELDS = (
 #: What a ``pursue_readiness`` verdict does NOT establish, carried in the payload
 #: so the caller reads the answer's scope from the answer instead of re-deriving
 #: it from the flag's help text. The full ``check_goal`` sweep is what covers these.
-def _load_backlog_floor():
-    """The backlog-recount floor, loaded by path like every other sibling here."""
+def _load_sibling(module_name: str):
+    """Load a sibling by path so this exported skill remains standalone."""
     import importlib.util
 
     spec = importlib.util.spec_from_file_location(
-        "goal_artifact_backlog",
-        Path(__file__).resolve().parent / "goal_artifact_backlog.py",
+        module_name,
+        Path(__file__).resolve().parent / f"{module_name}.py",
     )
     if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_backlog.py not found beside goal_artifact_pursue.py")
+        raise ImportError(f"{module_name}.py not found beside goal_artifact_pursue.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
+def _load_backlog_floor():
+    """Compatibility seam for callers that diagnose the backlog sibling."""
+    return _load_sibling("goal_artifact_backlog")
+
+
 _BACKLOG = _load_backlog_floor()
+_LIFECYCLE = _load_sibling("goal_artifact_lifecycle")
 
-# Statuses whose scope was already set, so a SHAPING floor no longer applies. Listed
-# positively (rather than testing `== "draft"`) so an unreadable status fails closed.
-NON_SHAPING_STATUSES = frozenset({"active", "blocked", "complete", "superseded"})
-#: Statuses that mean "this artifact is finished, however it finished".
-#: `superseded` is terminal but NOT complete: the goal ended without completing,
-#: and the contract had no way to say that, so such a goal had to choose between
-#: staying `active` forever and claiming a completion it never earned. The second
-#: lies in the direction that loses work.
-TERMINAL_STATUSES = frozenset({"complete", "superseded"})
-
-
-def is_shaping_status(status: str | None) -> bool:
-    """Whether SHAPING floors apply to an artifact with this status.
-
-    Shared by the backlog-recount floor here and the closeout-binding-plan section gate in
-    `goal_artifact_lib`, because round-2 review found the two had diverged: one was
-    hardened and the other left on `== "draft"`, which made the un-hardened one reachable
-    by the same single-line edit. A predicate both call cannot drift that way again.
-
-    Fail-closed: only a RECOGNISED non-shaping status skips, so a missing `Status:` line,
-    `Status: Draft`, or a trailing annotation all still evaluate.
-    """
-    return (status or "").strip().lower() not in NON_SHAPING_STATUSES
-
-
-def status_token(status: str | None) -> str:
-    """The leading word of a ``Status:`` value, case-folded and unpunctuated.
-
-    ``read_status`` returns the whole remainder of the line, and this repo
-    annotates statuses in prose -- `COMPLETE (2026-06-07) — ...`, `draft — slice 2
-    in flight`, `complete.` -- so any predicate over the raw value is really a
-    predicate over one repo's punctuation habits.
-
-    Deliberately NOT retrofitted onto ``is_shaping_status`` in the same change.
-    That predicate's fail-closed direction is toward APPLYING shaping floors, and
-    making it annotation-tolerant would make it apply them LESS -- a real
-    behavioural change to a hardened gate, which belongs in its own reviewed slice
-    rather than riding along in a round-2 repair. Recorded here so the divergence
-    is a decision on the record and not a second copy nobody noticed.
-    """
-    words = (status or "").strip().lower().split()
-    return words[0].strip(".,;:") if words else ""
-
-
-def is_terminal_status(status: str | None) -> bool:
-    """Whether this artifact is a TERMINAL record nobody is expected to repair.
-
-    Sibling of ``is_shaping_status`` and here for the same reason: a floor that
-    skips terminal records must recognise one, and ``read_status`` returns the
-    whole remainder of the ``Status:`` line rather than a normalized enum. The
-    repo's own house style annotates them -- `Status: COMPLETE (2026-06-07) —
-    gate-phase coverage closed; see ...` -- so a bare ``== "complete"`` test
-    silently DISARMS the skip and the floor can redden on a record the operator
-    has ruled out of scope. Matching the leading token, case-folded, is what both
-    live spellings have in common — see ``status_token``, which owns that
-    normalisation.
-
-    Fail-closed in the other direction from its sibling: only a recognised
-    terminal status skips, so a missing `Status:` line still evaluates.
-
-    `superseded` counts. It is terminal in exactly the sense this predicate
-    means -- nobody is expected to repair the record -- even though it is not
-    complete. Leaving it out would have graded an ended goal against floors whose
-    whole purpose is to fire on a goal still in flight.
-    """
-    return status_token(status) in TERMINAL_STATUSES
+NON_SHAPING_STATUSES = _LIFECYCLE.NON_SHAPING_STATUSES
+TERMINAL_STATUSES = _LIFECYCLE.TERMINAL_STATUSES
+is_shaping_status = _LIFECYCLE.is_shaping_status
+status_token = _LIFECYCLE.status_token
+is_terminal_status = _LIFECYCLE.is_terminal_status
 
 
 SCOPE_NOT_CHECKED = (
@@ -129,7 +78,7 @@ SCOPE_NOT_CHECKED = (
     "activation-line shape",
     "closeout evidence",
     "closeout binding values and final packet identity",
-    "section CONTENT beyond the closeout-plan and backlog-recount FIELDS this reads",
+    "section CONTENT beyond the hollow/template, closeout-plan, and backlog-recount FIELDS this reads",
 )
 
 
@@ -142,10 +91,12 @@ def _reason(
     discussion_warning: str,
     closeout_plan_missing_fields: list[str],
     closeout_plan_duplicate: bool,
+    duplicate_sections: list[str],
     backlog_recount_missing_fields: list[str],
     backlog_state: str,
     activation_ready: bool,
     hollow_reason: str = "",
+    terminal_reason: str = "",
 ) -> str:
     """Every reason this verdict refuses, not only the first one found.
 
@@ -185,7 +136,7 @@ def _reason(
             "the closeout-plan heading/minimum binding fields are present, and "
             f"{backlog_clause}; safe to pursue via `/goal` -- "
             "field shape only, "
-            "section content beyond those fields not checked"
+            "section content beyond the hollow/template checks and those fields not checked"
         )
     clauses: list[str] = []
     if not balanced:
@@ -207,6 +158,8 @@ def _reason(
             "written carries no placeholder marker either, so run the achieve Before-phase "
             "(`/achieve @<file>`) before `/goal`"
         )
+    if terminal_reason:
+        clauses.append("non-pursuable: " + terminal_reason)
     if hollow_reason:
         clauses.append("hollow: " + hollow_reason)
     if closeout_plan_missing_fields:
@@ -218,6 +171,11 @@ def _reason(
     if closeout_plan_duplicate:
         clauses.append(
             "incomplete: Closeout Binding Plan appears more than once -- keep one unambiguous plan before `/goal`"
+        )
+    if duplicate_sections:
+        clauses.append(
+            "duplicate sections: " + ", ".join(duplicate_sections)
+            + " -- keep one required or portability section before `/goal`"
         )
     if backlog_recount_missing_fields:
         clauses.append(
@@ -243,6 +201,7 @@ def pursue_readiness(
     text: str,
     *,
     required_sections: tuple[str, ...],
+    duplicate_sections: list[str],
     status: str | None,
     deploy_vocab: tuple[str, ...] | list[str] | None,
     mask_fences: Callable[[str], str],
@@ -284,6 +243,10 @@ def pursue_readiness(
     masked = mask_fences(text)
     balanced = fences_balanced(text)
     placeholders = UNSHAPED_MARKER.findall(masked)
+    lifecycle = _LIFECYCLE.assess(status)
+    terminal = lifecycle["terminal"]
+    terminal_status_token = lifecycle["status_token"]
+    terminal_reason = lifecycle["terminal_reason"]
     discussion = discussion_readiness(text, deploy_vocab=deploy_vocab)
     disposition = draft_frame_disposition(text, status=status, masked=masked)
     present = {match.group(1).strip() for match in _H2.finditer(masked)}
@@ -294,18 +257,25 @@ def pursue_readiness(
     # headings". Reported for every required section; refused only for the
     # shaping-time ones, because run-filled sections are template-identical at
     # draft time BY DESIGN and refusing those would trade one false verdict for
-    # another. Skipped entirely for a non-shaping status, exactly like the backlog
-    # floor: an artifact whose scope was set before this rule existed is not
-    # re-graded against it.
+    # another. Active work is still pursuable work, so it must not bypass this
+    # floor merely because its status is no longer `draft`. Terminal records are
+    # kept out of the classifier: lifecycle refusal is their independent reason,
+    # and historical hollow/run-filled sections are not re-labeled as blockers
+    # on a record nobody may activate.
+    hollow_evaluation_applies = lifecycle["hollow_evaluation_applies"]
     hollow_report = (
         hollow_sections(masked, tuple(required_sections))
-        if hollow_sections is not None and is_shaping_status(status)
+        if hollow_sections is not None and hollow_evaluation_applies
         else {"hollow": [], "empty": [], "still_template_text": [], "blocking": [],
               "run_filled_hollow": [], "evaluated": False,
               "reason": (
                   "not evaluated: no hollow-section classifier was supplied"
                   if hollow_sections is None
-                  else f"not evaluated: hollow-section reporting is a shaping floor and status is {status!r}"
+                  else (
+                      f"not evaluated: terminal status {terminal_status_token!r} is refused by lifecycle"
+                      if terminal
+                      else f"not evaluated: hollow-section shaping floor does not apply to status {status!r}"
+                  )
               )}
     )
     hollow_blocking = list(hollow_report.get("blocking") or [])
@@ -362,19 +332,21 @@ def pursue_readiness(
     # unrecognised all evaluate.
     backlog_report = (
         _BACKLOG.check(text)
-        if is_shaping_status(status)
+        if lifecycle["shaping_floor_applies"]
         else {"applies": False, "ok": True, "evaluated": False, "missing_fields": [],
               "status_skipped": True,
               "reason": f"not evaluated: backlog recount is a shaping floor and status is {status!r}"}
     )
     backlog_recount_missing_fields = list(backlog_report.get("missing_fields") or [])
     activation_ready = (
-        shape_ready
+        not terminal
+        and shape_ready
         and balanced
         and not missing_sections
         and not hollow_blocking
         and not closeout_plan_missing_fields
         and not closeout_plan_duplicate
+        and not duplicate_sections
         and not backlog_recount_missing_fields
         and discussion["discussion_ready"]
     )
@@ -385,6 +357,25 @@ def pursue_readiness(
         if discussion["discussion_required"] and discussion["discussion_summary_present"] and not discussion["discussion_resolved"]
         else ""
     )
+    readiness_blockers: list[dict[str, Any]] = []
+    if terminal:
+        readiness_blockers.append({
+            "kind": "terminal_status",
+            "status": terminal_status_token,
+            "reason": terminal_reason,
+        })
+    if hollow_blocking:
+        readiness_blockers.append({
+            "kind": "hollow_sections",
+            "sections": hollow_blocking,
+            "reason": hollow_report.get("reason", ""),
+        })
+    if duplicate_sections:
+        readiness_blockers.append({
+            "kind": "duplicate_sections",
+            "sections": duplicate_sections,
+            "reason": "required or portability H2 section appears more than once",
+        })
     return {
         "pursue_ready": activation_ready,
         "shape_ready": shape_ready,
@@ -392,6 +383,7 @@ def pursue_readiness(
         "missing_sections": missing_sections,
         "closeout_plan_missing_fields": closeout_plan_missing_fields,
         "closeout_plan_duplicate": closeout_plan_duplicate,
+        "duplicate_sections": duplicate_sections,
         "backlog_recount": backlog_report,
         "backlog_recount_missing_fields": backlog_recount_missing_fields,
         # PRESENT vs WRITTEN. Published as a structured report, not folded into
@@ -400,6 +392,13 @@ def pursue_readiness(
         # out WHICH sections were hollow.
         "hollow_sections": hollow_report,
         "hollow_blocking_sections": hollow_blocking,
+        "lifecycle": {
+            "status": lifecycle["status"],
+            "status_token": lifecycle["status_token"],
+            "terminal": lifecycle["terminal"],
+            "pursuit_allowed": lifecycle["pursuit_allowed"],
+        },
+        "readiness_blockers": readiness_blockers,
         # False means the heading facts above were read from a FAIL-OPEN mask (the
         # raw text, fenced examples included), so they are not established.
         "sections_reading_established": balanced,
@@ -415,6 +414,7 @@ def pursue_readiness(
             discussion_warning=discussion_warning,
             closeout_plan_missing_fields=closeout_plan_missing_fields,
             closeout_plan_duplicate=closeout_plan_duplicate,
+            duplicate_sections=duplicate_sections,
             backlog_recount_missing_fields=backlog_recount_missing_fields,
             hollow_reason=hollow_report.get("reason", "") if hollow_blocking else "",
             backlog_state=(
@@ -425,6 +425,7 @@ def pursue_readiness(
                 else "pre-rule"
             ),
             activation_ready=activation_ready,
+            terminal_reason=terminal_reason,
         ),
         "activation_discussion_warning": discussion_warning,
         "draft_frame_disposition_present": disposition["present"],

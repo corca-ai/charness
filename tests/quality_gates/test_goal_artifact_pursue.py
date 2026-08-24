@@ -140,6 +140,32 @@ def test_pursue_readiness_rejects_duplicate_closeout_binding_plans() -> None:
     assert "more than once" in report["reason"]
 
 
+@pytest.mark.parametrize("section", ["Goal", "Context Sources"])
+def test_pursue_readiness_rejects_substantive_duplicate_required_or_portability_sections(
+    section: str,
+) -> None:
+    """Duplicate written sections cannot collapse into one readiness fact.
+
+    Both copies carry substantive prose so this proves duplicate identity, not
+    the separate hollow-section floor.
+    """
+    shaped = _with_required_sections(
+        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x.md`\n"
+    ) + f"\n## {section}\nA second substantive statement for {section}.\n"
+
+    report = gal.pursue_readiness(shaped)
+
+    assert report["pursue_ready"] is False
+    assert report["activation_ready"] is False
+    assert report["duplicate_sections"] == [section]
+    assert {
+        "kind": "duplicate_sections",
+        "sections": [section],
+        "reason": "required or portability H2 section appears more than once",
+    } in report["readiness_blockers"]
+    assert f"duplicate sections: {section}" in report["reason"]
+
+
 def test_pursue_readiness_rejects_markdown_only_closeout_values() -> None:
     shaped = _with_required_sections(
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n"
@@ -161,12 +187,16 @@ def test_pursue_readiness_accepts_emphasized_closeout_labels() -> None:
     assert report["pursue_ready"] is True
 
 
-@pytest.mark.parametrize("status", ["active", "blocked", "complete"])
+@pytest.mark.parametrize("status", ["blocked"])
 def test_pursue_readiness_keeps_legacy_non_draft_artifacts_heading_compatible(status: str) -> None:
     legacy = (
         f"# Achieve Goal: T\n\nStatus: {status}\nActivation: `/goal @x.md`\n\n"
         "## User Acceptance\n\nUser runs X and sees Y.\n"
-        + "".join(f"\n## {section}\n" for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS)
+        + "".join(
+            f"\n## {section}\n"
+            for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS
+            if section != "User Acceptance"
+        )
     )
 
     report = gal.pursue_readiness(legacy)
@@ -476,9 +506,8 @@ def test_pursue_readiness_pass_message_states_the_scope_it_measured() -> None:
     assert "safe to pursue" in reason  # legacy substring preserved for matchers
     assert "heading is present" in reason
     # Narrowed from the old blanket `section content not checked`: the verdict now DOES
-    # read the closeout-plan and backlog-recount field values, so claiming it reads no
-    # section content would understate it in the opposite direction.
-    assert "section content beyond those fields not checked" in reason
+    # read hollow/template content as well as closeout-plan and backlog-recount fields.
+    assert "section content beyond the hollow/template checks and those fields not checked" in reason
     # The dimension this slice added must appear, or a passing operator cannot tell the
     # recount was evaluated from a run where it was skipped.
     assert "the backlog recount is recorded" in reason

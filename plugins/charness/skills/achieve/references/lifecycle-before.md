@@ -276,12 +276,17 @@ can see which reading the heading facts came from.
 
 The mode stays deliberately narrower than the full `check_goal` sweep, so it
 carries `scope_not_checked` in its payload naming what its verdict does **not**
-establish (status validity, activation-line shape, closeout evidence, and the
-CONTENT under each heading). Read the scope from the answer; a green here is a
-claim about markers, headings, fences, and operator discussion — not about what
-is written under the headings. `reason` names **every** refusal clause, not only
-the first, so fixing the one it named does not surface a second on the next
-attempt, and the PASS sentence states its own scope too.
+establish (status validity, activation-line shape, closeout evidence, and
+content beyond its hollow/template, closeout-plan, and backlog checks). Read the
+scope from the answer. Required shaping sections are checked for both draft and
+active pursuable work; run-filled empty sections are reported but do not block.
+Terminal `complete` and `superseded` records are independently non-pursuable,
+even when a superseded record has a valid successor/reason line. The structured
+`lifecycle` (including its `pursuit_allowed` status permission) and
+`readiness_blockers` fields carry these typed reasons; consumers must not infer
+them by grepping `reason`. `reason` names **every** refusal clause,
+not only the first, so fixing the one it named does not surface a second on the
+next attempt, and the PASS sentence states its own scope too.
 
 ### Consequential Discussion Before Activation
 
