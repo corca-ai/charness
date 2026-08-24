@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-25",
-  "source_artifact_count": 562,
-  "candidate_count": 2264,
+  "source_artifact_count": 563,
+  "candidate_count": 2265,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1984,124 +1984,20 @@
       ]
     },
     {
-      "candidate_id": "current_focus:bff2aa6c0b88",
-      "kind": "current_focus",
-      "lesson": "One session, one goal: `charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`.",
-      "normalized_key": "one session one goal charness artifacts goals 2026 08 23 gate by property not",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
-      "latest_source_date": "2026-08-23",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
-          "date": "2026-08-23",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "One session, one goal: `charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a50142a058a8",
-      "kind": "next_improvement",
-      "lesson": "`bar-recorded-as-prose` was in the frozen bundle for this session, is the goal's own subject, and was violated anyway — by removing a checked count and restating it in prose. Presentation was not the failure; application at the moment of the edit was. `applied: scripts/check_consumer_validator_catalog.py now states the sizing METHOD and carries no population count, and the counts it publishes are computed per run`",
-      "normalized_key": "bar recorded as prose was in the frozen bundle for this session is the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
-      "latest_source_date": "2026-08-23",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
-          "date": "2026-08-23",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "`bar-recorded-as-prose` was in the frozen bundle for this session, is the goal's own subject, and was violated anyway — by removing a checked count and restating it in prose. Presentation was not the failure; application at the moment of the edit was. `applied: scripts/check_consumer_validator_catalog.py now states the sizing METHOD and carries no population count, and the counts it publishes are computed per run`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:47438121513c",
-      "kind": "next_improvement",
-      "lesson": "`check_skill_ownership_overlap.py` publishes an uncovered count that nothing in the routine lane prints, because the gate is queued by no runner. Two of slice 4's other numbers carry no attention marker, so `run-quality.sh`'s passing-phase filter hides them on green runs. A number nobody reads is not a signal. `tracked issue: #703`",
-      "normalized_key": "check skill ownership overlap py publishes an uncovered count that nothing in the routine",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
-      "latest_source_date": "2026-08-23",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
-          "date": "2026-08-23",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "`check_skill_ownership_overlap.py` publishes an uncovered count that nothing in the routine lane prints, because the gate is queued by no runner. Two of slice 4's other numbers carry no attention marker, so `run-quality.sh`'s passing-phase filter hides them on green runs. A number nobody reads is not a signal. `tracked issue: #703`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c52e819f8c0b",
-      "kind": "next_improvement",
-      "lesson": "the load-bearing sentence in a record — the one whose truth changes what happens next — must carry a file-and-line citation, and a sentence that CANCELS work is load-bearing by definition. Slice 2's withdrawn headline had none while every supporting row had one. `tracked issue: #702`",
-      "normalized_key": "the load bearing sentence in a record the one whose truth changes what happens",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
-      "latest_source_date": "2026-08-23",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
-          "date": "2026-08-23",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "the load-bearing sentence in a record — the one whose truth changes what happens next — must carry a file-and-line citation, and a sentence that CANCELS work is load-bearing by definition. Slice 2's withdrawn headline had none while every supporting row had one. `tracked issue: #702`"
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 149,
+      "source_count": 150,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-23",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
+      "latest_source_date": "2026-08-24",
+      "age_days": 1,
+      "recency_weight": 0.9847,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 0.9847,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -3294,6 +3190,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
+          "date": "2026-08-24",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -3303,15 +3207,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 29,
+      "source_count": 30,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-23",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
+      "latest_source_date": "2026-08-24",
+      "age_days": 1,
+      "recency_weight": 0.9847,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 0.9847,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3540,6 +3444,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
           "date": "2026-08-23",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
+          "date": "2026-08-24",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -3553,15 +3465,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 29,
+      "source_count": 30,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-23",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
+      "latest_source_date": "2026-08-24",
+      "age_days": 1,
+      "recency_weight": 0.9847,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 0.9847,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3794,6 +3706,144 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
+          "date": "2026-08-24",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:c7c01b8c01d0",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v6.4.1`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v6 4 1",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
+      "latest_source_date": "2026-08-24",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
+          "date": "2026-08-24",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v6.4.1`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:bff2aa6c0b88",
+      "kind": "current_focus",
+      "lesson": "One session, one goal: `charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`.",
+      "normalized_key": "one session one goal charness artifacts goals 2026 08 23 gate by property not",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "latest_source_date": "2026-08-23",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+          "date": "2026-08-23",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "One session, one goal: `charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a50142a058a8",
+      "kind": "next_improvement",
+      "lesson": "`bar-recorded-as-prose` was in the frozen bundle for this session, is the goal's own subject, and was violated anyway — by removing a checked count and restating it in prose. Presentation was not the failure; application at the moment of the edit was. `applied: scripts/check_consumer_validator_catalog.py now states the sizing METHOD and carries no population count, and the counts it publishes are computed per run`",
+      "normalized_key": "bar recorded as prose was in the frozen bundle for this session is the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "latest_source_date": "2026-08-23",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+          "date": "2026-08-23",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`bar-recorded-as-prose` was in the frozen bundle for this session, is the goal's own subject, and was violated anyway — by removing a checked count and restating it in prose. Presentation was not the failure; application at the moment of the edit was. `applied: scripts/check_consumer_validator_catalog.py now states the sizing METHOD and carries no population count, and the counts it publishes are computed per run`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:47438121513c",
+      "kind": "next_improvement",
+      "lesson": "`check_skill_ownership_overlap.py` publishes an uncovered count that nothing in the routine lane prints, because the gate is queued by no runner. Two of slice 4's other numbers carry no attention marker, so `run-quality.sh`'s passing-phase filter hides them on green runs. A number nobody reads is not a signal. `tracked issue: #703`",
+      "normalized_key": "check skill ownership overlap py publishes an uncovered count that nothing in the routine",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "latest_source_date": "2026-08-23",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+          "date": "2026-08-23",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`check_skill_ownership_overlap.py` publishes an uncovered count that nothing in the routine lane prints, because the gate is queued by no runner. Two of slice 4's other numbers carry no attention marker, so `run-quality.sh`'s passing-phase filter hides them on green runs. A number nobody reads is not a signal. `tracked issue: #703`"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c52e819f8c0b",
+      "kind": "next_improvement",
+      "lesson": "the load-bearing sentence in a record — the one whose truth changes what happens next — must carry a file-and-line citation, and a sentence that CANCELS work is load-bearing by definition. Slice 2's withdrawn headline had none while every supporting row had one. `tracked issue: #702`",
+      "normalized_key": "the load bearing sentence in a record the one whose truth changes what happens",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+      "latest_source_date": "2026-08-23",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
+          "date": "2026-08-23",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the load-bearing sentence in a record — the one whose truth changes what happens next — must carry a file-and-line citation, and a sentence that CANCELS work is load-bearing by definition. Slice 2's withdrawn headline had none while every supporting row had one. `tracked issue: #702`"
         }
       ]
     },
