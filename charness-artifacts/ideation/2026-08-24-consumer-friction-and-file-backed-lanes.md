@@ -92,10 +92,12 @@ while `codex_exec` and `claude_p` remain host execution methods.
   [#690](https://github.com/corca-ai/charness/issues/690), and
   [#688](https://github.com/corca-ai/charness/issues/688). Goal-terminal integrity
   also depends on [#698](https://github.com/corca-ai/charness/issues/698).
-- This is not fourteen unbuilt repairs. The current tree already implements the
-  main behaviors for #689, #690, and #691; #637 was classified
-  `already-satisfied`; #680's original explicit-path premise was refuted; #671 is
-  partial; and #634 has shipped repairs with enumerated residual families. Sources:
+- This is not fourteen unbuilt repairs. Current Ceal replay nevertheless keeps
+  #689, #690, and #691 open: TAP replay still has three failures, a historical
+  hollow goal passes `--pursue-ready`, and the same pursue-ready path accepts
+  `superseded`. #637 was classified `already-satisfied`; #680's original
+  explicit-path premise was refuted; #671 is partial; and #634 has shipped repairs
+  with enumerated residual families. Sources:
   [tracker requalification](../issues/2026-08-22-tracker-requalification.md) and
   [repairs goal](../goals/2026-08-20-repairs-that-carry-their-class.md).
 - #688 is no longer input-blocked. The malformed generated output and the three
@@ -220,7 +222,8 @@ A frozen invocation record should carry:
 - task objective and canonical contract/artifact;
 - exact subject paths, reviewed-input manifest digest, and writable-path allowlist;
 - base ref and expected worktree identity for write-capable work;
-- backend selection, finite timeout, sandbox/permission request, and portable tier;
+- backend selection, finite timeout, portable tier, and an orthogonal capability
+  envelope for filesystem reads/writes, external reads, and external effects;
 - prompt, result schema, required proof, stop-and-return-partial rule, and
   non-claims;
 - tracked instruction identity plus optional local-instruction identity.
@@ -255,6 +258,12 @@ Configuration ownership is field-level and deterministic:
 | one-run high-risk authority | explicit host/runtime grant, never prose |
 | objective, subject, writable paths, requested authority | frozen invocation |
 | requested and effective backend/authority | host-authored receipt |
+
+“Read-only” is not one authority. The invocation and receipt must distinguish
+checkout mutation, remote observation, and remote mutation. A required external
+read is preflighted before launch; a transport failure cannot be interpreted as
+credential invalidity. The named contract is
+`charness-artifacts/spec/2026-08-24-external-worker-capability-envelope.md`.
 
 Preflight shows the selected backend, selection source, auth readiness, requested
 and effective authority, and capability-config identity. There is no silent backend
@@ -327,8 +336,8 @@ task-specific fields and validators.
 | Requalification | all 46 matrix rows | Refresh the complete inventory; replay the 13 included rows and #698 on current source and installed 6.4.0; classify repair, partial, already-satisfied, premise-refuted, or evidence-blocked before editing |
 | Invocation and delivery | #713, #680, #687 | Bind exact subject/input identity; close or narrow #680 if the current explicit-path refutation holds; make file-backed terminal delivery the portable default |
 | Installed roots and bootstrap | #634, #637, #692, #671 | Preserve #637's already-satisfied behavior, finish #634/#671 residual families, centralize adapter-init idempotence |
-| Capability routing | #667, #689, #601 | Prove #689's current Node reporter repair and close it; declare specialized release routing; require opt-in telemetry before inventing #601 thresholds |
-| Goal lifecycle | #690, #691, #698 | Consumer-replay and close the implemented #690/#691 behavior; design #698 so `superseded` preserves Auto-Retro/remainder disposition without pretending completion |
+| Capability routing | #667, #689, #601 | Repair #689 against the failing Ceal direct/npm TAP replay and prove a real upstream mutation/restore success; declare specialized release routing; require opt-in telemetry before inventing #601 thresholds |
+| Goal lifecycle | #690, #691, #698 | Make `--pursue-ready` reject hollow section bodies and terminal `superseded` goals in the Ceal fixtures; design #698 so `superseded` preserves Auto-Retro/remainder disposition without pretending completion |
 | Generated memory | #688 | Freeze the exact Ceal source bullets and malformed output as fixtures; repair index and digest normalization together |
 
 ## Independent Program Order
@@ -336,8 +345,9 @@ task-specific fields and validators.
 ### Issue retirement track
 
 1. Refresh the full 46-row matrix before slices and again before closeout.
-2. In parallel, prove and close/re-scope #637, #689, #690, and #691; reproduce and
-   repair the independent #688 normalization case; requalify #680 before changing it.
+2. In parallel, preserve #637's already-satisfied proof; repair and consumer-replay
+   #689, #690, and #691; reproduce and repair the independent #688 normalization
+   case; requalify #680 before changing it.
 3. Execute the remaining issue-specific workstreams by causal dependency, using the
    current manual Ceal-style external process where helpful but never making the new
    worker capability their blanket prerequisite.

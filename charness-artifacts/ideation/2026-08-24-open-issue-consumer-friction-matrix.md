@@ -14,7 +14,7 @@ GitHub remains the source of truth.
 
 | Issue | Updated (UTC) | Class | Current disposition and evidence |
 | --- | --- | --- | --- |
-| [#713](https://github.com/corca-ai/charness/issues/713) | 2026-08-24 08:45 | include | Live bug: a Ceal test-only lane was stopped by an unrelated global interrupt while a path-bound invocation proceeded. |
+| [#713](https://github.com/corca-ai/charness/issues/713) | 2026-08-24 08:45 | include | Source-repaired on main: final impl planning now re-observes actual Git paths, distinguishes authoritative empty scope from global/pathless work, and represents unavailable observation explicitly. Ceal installed-consumer replay and tracker closeout remain pending. |
 | [#712](https://github.com/corca-ai/charness/issues/712) | 2026-08-23 05:02 | exclude | Open release-review obligation for Charness 6.4.0 verdict logic; no consumer episode. |
 | [#711](https://github.com/corca-ai/charness/issues/711) | 2026-08-23 05:01 | exclude | Internal dup-ratchet numerator proof gap; current code is correct and no consumer episode is recorded. |
 | [#710](https://github.com/corca-ai/charness/issues/710) | 2026-08-23 05:01 | exclude | Live repo-owned advisory normalization defect; no observed consumer episode. |
@@ -36,9 +36,9 @@ GitHub remains the source of truth.
 | [#694](https://github.com/corca-ai/charness/issues/694) | 2026-08-22 04:38 | exclude | Main source path repaired; open residual is a second internal blind shape. |
 | [#693](https://github.com/corca-ai/charness/issues/693) | 2026-08-21 22:22 | exclude | Live review-contract enforcement gap, but no concrete consumer-friction episode. |
 | [#692](https://github.com/corca-ai/charness/issues/692) | 2026-08-21 22:22 | include | Installed 6.2.1 `release` bootstrap failed on a second valid run; only `impl` is currently idempotent. |
-| [#691](https://github.com/corca-ai/charness/issues/691) | 2026-08-21 21:53 | include | Ceal uses eight `superseded` goals; current source now has the status and tests, while #698 retains a separate residual. |
-| [#690](https://github.com/corca-ai/charness/issues/690) | 2026-08-21 21:59 | include | Repeated Ceal episode; current source now has the hollow-section classifier and tests. |
-| [#689](https://github.com/corca-ai/charness/issues/689) | 2026-08-21 21:52 | include | Three Ceal Node repositories cannot use the common harness and reimplemented a repo-local `prove-guard`. |
+| [#691](https://github.com/corca-ai/charness/issues/691) | 2026-08-21 21:53 | include | Unresolved in the Ceal consumer: normal validation rejects `superseded`, but `--pursue-ready` still reports ready. Ceal has ten superseded goals and only five literal `Superseded by` links; #698 remains a separate terminal-disposition residual. |
+| [#690](https://github.com/corca-ai/charness/issues/690) | 2026-08-21 21:59 | include | Unresolved in the Ceal consumer: a historical hollow goal still passes `check_goal_artifact.py --pursue-ready`; the validator recognizes headings/discussion markers without requiring section bodies. |
+| [#689](https://github.com/corca-ai/charness/issues/689) | 2026-08-21 21:52 | include | Unresolved in the Ceal consumer: both direct Node and npm-wrapper TAP replays produce 27 tests with three failures. Fixtures partly print `ok`/`not ok`, while a real upstream mutation/restore success remains unproven. |
 | [#688](https://github.com/corca-ai/charness/issues/688) | 2026-08-21 22:14 | include | Live and reproducible: malformed ``: strong` output and all three source retros exist in `../ceal`. |
 | [#687](https://github.com/corca-ai/charness/issues/687) | 2026-08-20 22:13 | include | Two Ceal reviewers timed out or were interrupted without findings; typed non-delivery is source-proven but host terminal delivery is not. |
 | [#680](https://github.com/corca-ai/charness/issues/680) | 2026-08-20 09:14 | include | Ceal's installed plugin assigned reviewed-input identity to a zero-section packet; explicit-path behavior needs current requalification. |
