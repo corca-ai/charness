@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import runpy
 import shlex
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +53,46 @@ def _prepare(tmp_path: Path) -> tuple[Path, dict, dict]:
 
 def _run(command: str, *, cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(shlex.split(command), cwd=cwd, capture_output=True, text=True)
+
+
+def _verifier_namespace() -> dict:
+    return runpy.run_path(str(VERIFY_ENTRYPOINTS[0]), run_name="critique_verify_packet_test")
+
+
+def test_missing_skill_runtime_bootstrap_raises_explicitly(monkeypatch) -> None:
+    verifier = _verifier_namespace()
+    loader = verifier["_load_skill_runtime_bootstrap"]
+    missing_path = SimpleNamespace(resolve=lambda: SimpleNamespace(parents=[]))
+    monkeypatch.setitem(loader.__globals__, "Path", lambda _value: missing_path)
+
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
+        loader()
+
+
+def test_identity_owner_exception_becomes_structured_refusal(monkeypatch, capsys) -> None:
+    verifier = _verifier_namespace()
+
+    def explode(**_kwargs) -> tuple[bool, str]:
+        raise RuntimeError("identity owner exploded")
+
+    monkeypatch.setattr(verifier["_identity"], "verify_packet_binding", explode)
+    rc = verifier["main"](
+        [
+            "--repo-root",
+            ".",
+            "--packet-path",
+            "packet.json",
+            "--packet-sha256",
+            "0" * 64,
+            "--identity-sha256",
+            "1" * 64,
+        ]
+    )
+
+    assert rc == 1
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["status"] == "refused"
+    assert payload["reason"] == "cannot verify packet binding: identity owner exploded"
 
 
 def test_raw_worktree_sha_differs_but_canonical_verifier_passes(tmp_path: Path) -> None:

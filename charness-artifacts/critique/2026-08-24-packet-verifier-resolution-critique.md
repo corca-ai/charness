@@ -108,10 +108,15 @@ Cautilus run or scenario-registry mutation is needed or claimed.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/2026-08-24-packet-verifier-r2-packet.json
-- Packet path: charness-artifacts/critique/2026-08-24-packet-verifier-r2-packet.json
-- Packet SHA256: c4b6ee27372b50b2aa83dd1b8e2e8625e17f192b709fdf376cf69557f3904a19
-- Identity SHA256: 0b304afbb33ea2c0ece165f917ce99599a1082a2df45106e35801b09c83a2190
+- Packet consumed: charness-artifacts/critique/2026-08-24-packet-verifier-final-packet.json
+- Packet path: charness-artifacts/critique/2026-08-24-packet-verifier-final-packet.json
+- Packet SHA256: 704f490cafa84200d5e21bb5920a66f56a7d6999d0a39ef94373a44a0b52e21c
+- Identity SHA256: 5aef9c791d68bcacb0df61219b449e04fcfb00dec22edc9760e4b841d69761ea
+
+This final parent-consumed packet binds the post-round-2 test repair. The bounded
+round-2 reviewer consumed the separately preserved `r2` packet over the repaired
+verifier source and plugin surface; no reviewer consumption of this final packet
+is claimed.
 
 ## Boundary Ownership
 
@@ -132,8 +137,11 @@ it does not recreate packet hashing, path capture, or current-input comparison.
 - Final closeout completed 36 commands with adverse and unproven subjects empty;
   standing pytest passed in 91.3 seconds. A second closeout reused that locked
   broad proof and produced focused test coverage for the 60-test packet/identity
-  suite. The changed-line verdict remains pending until the worktree changes are
-  committed, because the changed-line owner intentionally excludes uncommitted
-  eligible files from a base-to-HEAD claim.
+  suite. After commit, the committed-range gate honestly blocked on three
+  uncovered verifier lines: missing-bootstrap refusal and unexpected identity-owner
+  exception handling. Two direct in-process tests raised the focused verifier file
+  to eight tests; the next committed-range run returned `status: clean` across all
+  seven changed mutation-pool files from `origin/main..HEAD`.
 - The post-round-2 duplicate-baseline disposition has no third fresh-eye review;
-  this is the explicit two-round-cap non-claim.
+  the two coverage tests added after that finding are also accepted under the
+  explicit two-round-cap non-claim.
