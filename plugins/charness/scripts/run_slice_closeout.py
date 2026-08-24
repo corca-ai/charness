@@ -23,6 +23,9 @@ _scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan
 plan_cautilus_proof = _scripts_plan_cautilus_proof_module.plan_cautilus_proof
 _scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_interrupt_lib")
 plan_risk_interrupt = _scripts_risk_interrupt_lib_module.plan_risk_interrupt
+_slice_closeout_risk_interrupt = import_repo_module(__file__, "scripts.slice_closeout_risk_interrupt")
+risk_interrupt_initial_paths = _slice_closeout_risk_interrupt.initial_paths
+risk_interrupt_block_reason = _slice_closeout_risk_interrupt.block_reason
 _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
 _slice_closeout_usage_episode = import_repo_module(__file__, "scripts.slice_closeout_usage_episode")
@@ -160,16 +163,16 @@ def _maybe_block_on_cautilus(
 
 
 def _maybe_block_on_risk_interrupt(
-    repo_root: Path, payload: dict[str, object]
+    repo_root: Path, payload: dict[str, object], risk_interrupt_paths: list[str]
 ) -> int | None:
-    risk_interrupt_plan = plan_risk_interrupt(repo_root, payload["changed_paths"])
+    payload["risk_interrupt_paths"] = list(risk_interrupt_paths)
+    risk_interrupt_plan = plan_risk_interrupt(repo_root, risk_interrupt_paths)
     payload["risk_interrupt_plan"] = risk_interrupt_plan
-    if risk_interrupt_plan["status"] != "blocked":
+    reason = risk_interrupt_block_reason(risk_interrupt_plan)
+    if reason is None:
         return None
     payload["status"] = "blocked"
-    payload["error"] = (
-        f"risk interrupt is blocking ordinary closeout; next_action=`{risk_interrupt_plan['next_action']}`"
-    )
+    payload["error"] = f"risk interrupt is blocking ordinary closeout: {reason}"
     return _emit_payload(payload, stderr_message=payload["error"])
 
 
@@ -335,12 +338,14 @@ def _run_preexecution_blocks(
     args,
     *,
     structural_paths: list[str] | None = None,
+    risk_interrupt_paths: list[str],
     base: str = "origin/main",
 ) -> int | None:
     """Fail-fast pre-execution gate chain; returns an exit code on the first block.
     #332: the cheap structural sweep runs FIRST (before surface-match / cautilus /
     risk interrupt / broad pytest), then advisories, unmatched, cautilus, risk.
     """
+    payload["risk_interrupt_paths"] = list(risk_interrupt_paths)
     blocked = block_on_structural_sweep(
         repo_root,
         payload,
@@ -385,7 +390,7 @@ def _run_preexecution_blocks(
     if blocked is not None:
         return blocked
 
-    return _maybe_block_on_risk_interrupt(repo_root, payload)
+    return _maybe_block_on_risk_interrupt(repo_root, payload, risk_interrupt_paths)
 
 
 def _attach_closeout_telemetry(repo_root: Path, payload: dict[str, object]) -> None:
@@ -429,6 +434,14 @@ def main() -> int:
         if campaign_base_sha
         else _resolve_changed_paths(repo_root, args)
     )
+    risk_interrupt_paths = risk_interrupt_initial_paths(
+        repo_root,
+        campaign_base_sha=campaign_base_sha,
+        base=args.base,
+        collect_live=collect_changed_paths,
+        collect_since_base=collect_changed_paths_since_base,
+        collect_since_resolved_base=collect_changed_paths_since_resolved_base,
+    )
     payload = match_surfaces(manifest, changed_paths)
     payload["surfaces_manifest_path"] = manifest["path"]
     payload["executed_commands"] = []
@@ -444,6 +457,7 @@ def main() -> int:
         payload,
         args,
         structural_paths=structural_paths,
+        risk_interrupt_paths=risk_interrupt_paths,
         base=campaign_base_sha or "origin/main",
     )
     if blocked is not None:
@@ -523,11 +537,24 @@ def main() -> int:
         _attach_closeout_telemetry(repo_root, payload)
         return _emit_payload(payload, stderr_message=payload.get("error"))
 
+    # Sync, verification, and coverage producers may add generated or artifact
+    # paths after the fail-fast check. Preserve committed campaign paths and add
+    # the final live Git set before success; --paths never narrows this decision.
+    final_risk_interrupt_paths = sorted(
+        dict.fromkeys([*risk_interrupt_paths, *collect_changed_paths(repo_root)])
+    )
+    blocked = _maybe_block_on_risk_interrupt(repo_root, payload, final_risk_interrupt_paths)
+    if blocked is not None:
+        return blocked
+
     payload["status"] = "completed"
     usage_episode = emit_usage_episode_for_slice_closeout(repo_root, str(payload["status"]))
     payload["usage_episode"] = usage_episode
-    if usage_episode["status"] in {"invalid_adapter", "invalid_records_path", "emit_failed"}:
-        payload["status"] = "failed"
+    payload["status"] = (
+        "failed"
+        if usage_episode["status"] in {"invalid_adapter", "invalid_records_path", "emit_failed"}
+        else payload["status"]
+    )
     _attach_closeout_telemetry(repo_root, payload)
     return _emit_payload(payload)
 

@@ -94,9 +94,9 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/impl/SKILL.md": (
         "impl adapter resolution and verification survey",
-        "risk interrupt planner reports a forced interrupt",
+        "pathless/global planner observation",
         "best self-verification path before you code and again before you stop",
-        "plain implementation until the named spec handoff says this slice may",
+        "authoritative path-scoped planner result",
         '"code written" is not a stop state',
     ),
     "skills/public/prove/SKILL.md": (
@@ -205,7 +205,7 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`",
     ),
     "skills/public/impl/SKILL.md": (
-        'python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail',
+        'python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail --paths <current-slice-path>...',
     ),
     "skills/public/prove/SKILL.md": (
         "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",

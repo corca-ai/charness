@@ -49,7 +49,16 @@ def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_
         ack_cautilus_skill_review=True,
     )
 
-    assert closeout._run_preexecution_blocks(tmp_path, payload, args, base="campaign-base") is None
+    assert (
+        closeout._run_preexecution_blocks(
+            tmp_path,
+            payload,
+            args,
+            risk_interrupt_paths=payload["changed_paths"],
+            base="campaign-base",
+        )
+        is None
+    )
     assert seen == [(tmp_path, payload["changed_paths"])]
     assert {name: value for name, value in base_calls.items() if value is not None} == {
         "advise_new_pool_module": "campaign-base",

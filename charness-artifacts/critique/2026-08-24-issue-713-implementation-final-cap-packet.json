@@ -1,0 +1,186 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-24T11:21:58Z",
+  "prepared_for": "issue 713 final repaired surface under round cap",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md\n- plugins/charness/scripts/check_skill_contracts.py\n- plugins/charness/scripts/run_slice_closeout.py\n- plugins/charness/skills/impl/SKILL.md\n- scripts/check_skill_contracts.py\n- scripts/run_slice_closeout.py\n- skills/public/impl/SKILL.md\n- tests/quality_gates/test_run_slice_closeout_review_obligations.py\n- tests/quality_gates/test_run_slice_closeout_surface_obligations.py\n- tests/quality_gates/test_skill_docs_contracts.py\n- tests/quality_gates/test_slice_closeout_artifact_citations.py\n- charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.json\n- charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.md\n- charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.json\n- charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.md\n- charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.json\n- charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.md\n- charness-artifacts/critique/2026-08-24-issue-713-implementation.md\n- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md\n- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md\n- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md\n- charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md\n- plugins/charness/scripts/slice_closeout_risk_interrupt.py\n- scripts/slice_closeout_risk_interrupt.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/check_skill_contracts.py, scripts/run_slice_closeout.py, skills/public/impl/SKILL.md, scripts/slice_closeout_risk_interrupt.py\n  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/skills/impl/SKILL.md, plugins/charness/scripts/slice_closeout_risk_interrupt.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md, skills/public/impl/SKILL.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md\n  derived matches: plugins/charness/skills/impl/SKILL.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/impl/SKILL.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/impl/SKILL.md\n  derived matches: plugins/charness/skills/impl/SKILL.md\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/impl/SKILL.md\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/impl/SKILL.md\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.json, charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.json, charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.json, charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/slice_closeout_risk_interrupt.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/check_skill_contracts.py, scripts/run_slice_closeout.py, tests/quality_gates/test_run_slice_closeout_review_obligations.py, tests/quality_gates/test_run_slice_closeout_surface_obligations.py, tests/quality_gates/test_skill_docs_contracts.py, tests/quality_gates/test_slice_closeout_artifact_citations.py, scripts/slice_closeout_risk_interrupt.py\n  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/slice_closeout_risk_interrupt.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/check_skill_contracts.py, scripts/run_slice_closeout.py, scripts/slice_closeout_risk_interrupt.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "795e2a74730cee79133960a1a464b6d4881b139a",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md",
+      "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md",
+      "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md",
+      "charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md",
+      "charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md",
+      "plugins/charness/scripts/check_skill_contracts.py",
+      "plugins/charness/scripts/run_slice_closeout.py",
+      "plugins/charness/scripts/slice_closeout_risk_interrupt.py",
+      "plugins/charness/skills/impl/SKILL.md",
+      "scripts/check_skill_contracts.py",
+      "scripts/run_slice_closeout.py",
+      "scripts/slice_closeout_risk_interrupt.py",
+      "skills/public/impl/SKILL.md",
+      "tests/quality_gates/test_run_slice_closeout_review_obligations.py",
+      "tests/quality_gates/test_run_slice_closeout_surface_obligations.py",
+      "tests/quality_gates/test_skill_docs_contracts.py",
+      "tests/quality_gates/test_slice_closeout_artifact_citations.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md",
+        "content_sha256": "86f9ae5a2ad6d368defe637af393f2b8b378097ae99a0807cf25e0d32a0efb0d"
+      },
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md",
+        "content_sha256": "c87a718a79ae3ca46212f2e41ec534920ab1954f4fd0c0e1cdba62f328e7becd"
+      },
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md",
+        "content_sha256": "81e570e92c6aa77cb41674cf28f055d4340ecff0aaa20eab570dfa1c42f0df90"
+      },
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md",
+        "content_sha256": "a073824a7f44b448d79e72650e5958a2bf8d20793e5646b6c37dbbe15faa0fce"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md",
+        "content_sha256": "ae5a1c574d797d8d289298c256fb4518fd54d9648e7ec958c739ef300f235264"
+      },
+      {
+        "path": "plugins/charness/scripts/check_skill_contracts.py",
+        "content_sha256": "eb74e89bf01ed0cbb63cbf086a9399ecad2bcc2847d3ca5792ee305dfc5bf4a1"
+      },
+      {
+        "path": "plugins/charness/scripts/run_slice_closeout.py",
+        "content_sha256": "5047cbd06c8d1305a3ca738ae7d351dbce3308cb80c9c9ec3c86f9b20fd37f92"
+      },
+      {
+        "path": "plugins/charness/scripts/slice_closeout_risk_interrupt.py",
+        "content_sha256": "0fce7010abff633321e7069778f526972aa6fd8c271e1e8f0a86d900a70dff8f"
+      },
+      {
+        "path": "plugins/charness/skills/impl/SKILL.md",
+        "content_sha256": "064ac503221e390a0d26def925c1de1113dd2d0b3ec0e5f3afeff98f57fec3f6"
+      },
+      {
+        "path": "scripts/check_skill_contracts.py",
+        "content_sha256": "eb74e89bf01ed0cbb63cbf086a9399ecad2bcc2847d3ca5792ee305dfc5bf4a1"
+      },
+      {
+        "path": "scripts/run_slice_closeout.py",
+        "content_sha256": "5047cbd06c8d1305a3ca738ae7d351dbce3308cb80c9c9ec3c86f9b20fd37f92"
+      },
+      {
+        "path": "scripts/slice_closeout_risk_interrupt.py",
+        "content_sha256": "0fce7010abff633321e7069778f526972aa6fd8c271e1e8f0a86d900a70dff8f"
+      },
+      {
+        "path": "skills/public/impl/SKILL.md",
+        "content_sha256": "064ac503221e390a0d26def925c1de1113dd2d0b3ec0e5f3afeff98f57fec3f6"
+      },
+      {
+        "path": "tests/quality_gates/test_run_slice_closeout_review_obligations.py",
+        "content_sha256": "8efb19823c4596f7facd31da33a7d6a4b4049e16271f044d74791584789380ff"
+      },
+      {
+        "path": "tests/quality_gates/test_run_slice_closeout_surface_obligations.py",
+        "content_sha256": "97f7c931f2ee3e745547252661a63fb52ee447feb4e58043512ddf92892e28a3"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_docs_contracts.py",
+        "content_sha256": "2d347ff698cfb8b11089d3677b5cb719ae33fe91eebf37c3dbf5aef63914f06b"
+      },
+      {
+        "path": "tests/quality_gates/test_slice_closeout_artifact_citations.py",
+        "content_sha256": "3bc684be4a3f9dbf5dc879066c3fed1b00db21bf673d405a98bd4cef36529581"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "650c3d44e9ab53cd89d6d068dc7087121736fcb83abafdabebfbae9ef22fd4b3",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md",
+        "content_sha256": "86f9ae5a2ad6d368defe637af393f2b8b378097ae99a0807cf25e0d32a0efb0d"
+      },
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md",
+        "content_sha256": "c87a718a79ae3ca46212f2e41ec534920ab1954f4fd0c0e1cdba62f328e7becd"
+      },
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md",
+        "content_sha256": "81e570e92c6aa77cb41674cf28f055d4340ecff0aaa20eab570dfa1c42f0df90"
+      },
+      {
+        "path": "charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md",
+        "content_sha256": "a073824a7f44b448d79e72650e5958a2bf8d20793e5646b6c37dbbe15faa0fce"
+      },
+      {
+        "path": "plugins/charness/scripts/slice_closeout_risk_interrupt.py",
+        "content_sha256": "0fce7010abff633321e7069778f526972aa6fd8c271e1e8f0a86d900a70dff8f"
+      },
+      {
+        "path": "scripts/slice_closeout_risk_interrupt.py",
+        "content_sha256": "0fce7010abff633321e7069778f526972aa6fd8c271e1e8f0a86d900a70dff8f"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "37b7b3a54a8845d788d21f2168c73098bb836c7150597fe472edd3371a5b4232"
+  }
+}

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -35,6 +36,8 @@ def demo_surface(
 
 def write_surface_manifest(repo: Path, *surfaces: dict[str, object]) -> None:
     (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    if not (repo / ".git").exists():
+        subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
     (repo / ".agents" / "surfaces.json").write_text(
         json.dumps({"version": 1, "surfaces": list(surfaces)}, indent=2) + "\n",
         encoding="utf-8",
@@ -324,6 +327,7 @@ def test_run_slice_closeout_preexecution_blocks_invalid_focused_command(
             produce_mutation_coverage=True,
             mutation_coverage_command="python3 scripts/not_pytest.py",
         ),
+        risk_interrupt_paths=["README.md"],
     )
 
     assert rc == 1
@@ -350,6 +354,7 @@ def test_base_range_preexecution_sweeps_only_live_worktree_paths(
         payload,
         SimpleNamespace(plan_only=False),
         structural_paths=["live.py"],
+        risk_interrupt_paths=["live.py"],
     )
 
     assert rc == 9
@@ -381,6 +386,11 @@ def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
     monkeypatch.setattr(closeout, "match_surfaces", lambda manifest, changed_paths: dict(payload))
     monkeypatch.setattr(closeout, "headroom_for", lambda paths, repo_root: [])
     monkeypatch.setattr(closeout, "collect_changed_paths", lambda repo_root: ["live.py"])
+    monkeypatch.setattr(
+        closeout,
+        "collect_changed_paths_since_base",
+        lambda repo_root, base: ["live.py"],
+    )
 
     def capture_preexecution(*args, **kwargs):
         seen["structural_paths"] = kwargs["structural_paths"]
@@ -514,6 +524,7 @@ def test_run_slice_closeout_main_fails_narrow_broad_pytest_proof_scope(
     monkeypatch.setattr(closeout, "_resolve_changed_paths", lambda repo_root, args: ["README.md", "scripts/tool.py"])
     monkeypatch.setattr(closeout, "match_surfaces", lambda manifest, changed_paths: dict(payload))
     monkeypatch.setattr(closeout, "headroom_for", lambda paths, repo_root: [])
+    monkeypatch.setattr(closeout, "collect_changed_paths", lambda repo_root: ["README.md", "scripts/tool.py"])
     monkeypatch.setattr(closeout, "_run_preexecution_blocks", lambda *args, **kwargs: None)
     monkeypatch.setattr(
         closeout,

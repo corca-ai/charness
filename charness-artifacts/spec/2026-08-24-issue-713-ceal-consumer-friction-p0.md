@@ -49,6 +49,13 @@ planner. That actual-path verdict is authoritative: unexpected paths reopen the
 slice binding, and any actual debug/handoff overlap remains protected. A green
 bootstrap result alone can never close the slice.
 
+Because closeout sync, verification, or coverage commands may create generated
+or artifact paths, successful closeout performs a second Git observation after
+those commands. It unions the live worktree set with any committed campaign/base
+range and re-applies the same fail-closed planner interpretation before success.
+Post-decision usage and telemetry writes remain confined to gitignored runtime
+surfaces; they do not create a second source-visible mutation channel.
+
 The planner's classification semantics remain the authority; this slice fixes
 the caller contract, not the planner.
 
@@ -61,6 +68,10 @@ and focused structural tests so a future edit cannot restore a globally
 authoritative pathless call. Bind the final safety claim to the existing
 Git-derived closeout planner rather than inventing a second path collector, and
 repair that closeout caller so it applies the same fail-closed state mapping.
+Keep that mapping in the cohesive `slice_closeout_risk_interrupt.py` policy
+module so the already-large closeout orchestrator does not absorb another
+verdict vocabulary; this is an interpreter of planner output, not a second
+planner.
 
 ## Fixed Decisions
 
@@ -138,7 +149,9 @@ worker is write-capable and must use an isolated Charness worktree.
    `--paths`) `run_slice_closeout.py` path, recomputes actual paths from Git,
    applies the same fail-closed mapping, and exposes the embedded
    `risk_interrupt_plan`; bootstrap planning is not accepted as final proof.
-   Verification: focused closeout-caller tests and closeout receipt.
+   Sync/verify-created paths are re-observed before success and cannot escape
+   the risk decision. Verification: focused closeout-caller tests, a
+   sync-created interrupt regression, and closeout receipt.
 6. The exact #713 implementation path set returns scoped `not-applicable`
    without listing the read-only prior handoff as if it were mutated.
    Verification: recorded planner command and output after the design commit.
@@ -158,7 +171,9 @@ worker is write-capable and must use an isolated Charness worktree.
 - `python3 skills/shared/scripts/plan_risk_interrupt.py --repo-root . --detail
   --paths skills/public/impl/SKILL.md plugins/charness/skills/impl/SKILL.md
   scripts/check_skill_contracts.py scripts/run_slice_closeout.py
+  scripts/slice_closeout_risk_interrupt.py
   plugins/charness/scripts/run_slice_closeout.py
+  plugins/charness/scripts/slice_closeout_risk_interrupt.py
   tests/quality_gates/test_skill_docs_contracts.py
   tests/quality_gates/test_run_slice_closeout_review_obligations.py` —
   scoped-disjoint premise check after the design artifact is committed.

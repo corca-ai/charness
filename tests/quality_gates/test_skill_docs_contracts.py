@@ -5,6 +5,7 @@ import json
 from .support import ROOT
 
 IMPL_SKILL = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+PLUGIN_IMPL_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "impl" / "SKILL.md"
 # The slice closeout ledger (verification routing, truth-surface sync, stop gate,
 # cautilus policy line) moved from impl to the sibling prove skill (#439 split).
 PROVE_SKILL = (ROOT / "skills" / "public" / "prove" / "SKILL.md").read_text(encoding="utf-8")
@@ -343,6 +344,34 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     assert "--paths <changed-path>..." in PROVE_SKILL
     assert "--base-ref <slice-base> --head-ref <slice-head>" in PROVE_SKILL
     assert "bare post-commit invocation" in PROVE_SKILL
+
+
+def test_impl_bootstrap_binds_paths_before_authoritative_risk_interpretation() -> None:
+    skill_text = IMPL_SKILL
+    binding = "Freeze every repo-relative path this slice may own: source, tests, generated"
+    command = (
+        'python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" '
+        "--repo-root . --detail --paths <current-slice-path>..."
+    )
+    interpretation = "Interpret that scoped result fail-closed"
+
+    assert command in skill_text
+    assert "contract, target, and owned source/test/generated/contract paths" in skill_text
+    assert "pathless/global planner observation" in skill_text
+    assert "discovery-only and cannot authorize or refuse" in skill_text
+    assert skill_text.index(binding) < skill_text.index(command) < skill_text.index(interpretation)
+    pathless_command = command.removesuffix(" --paths <current-slice-path>...")
+    assert f"{pathless_command}\n" not in skill_text
+    assert "required: false" in skill_text
+    assert "impl_status: allowed" in skill_text
+    assert "chosen_next_step: impl" in skill_text
+    assert "every other, unknown, or malformed result stops" in skill_text
+
+
+def test_impl_source_and_checked_in_plugin_export_are_byte_identical() -> None:
+    assert (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_bytes() == (
+        PLUGIN_IMPL_SKILL_PATH.read_bytes()
+    )
 
 
 def test_current_cautilus_guidance_uses_eval_surface() -> None:

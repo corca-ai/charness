@@ -36,14 +36,30 @@ python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/survey_verification.py" --repo-root .
 
-# 3. locate the canonical spec/design artifact
+# 3. locate the canonical spec/design artifact and current target
 rg -n "Current Slice|Success Criteria|Acceptance Checks|Fixed Decisions|Probe Questions|Deferred Decisions|requirements|acceptance" .
-python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail
 
-# 4. repo patterns and current target area
+# 4. bind the planned current-slice paths before the authoritative risk call
 rg -n "test|spec|fixture|eval|smoke|integration" .
 git status --short
+
+# Freeze every repo-relative path this slice may own: source, tests, generated
+# exports, and contract/validation surfaces. Then run the only authoritative
+# planner call with that complete path set.
+python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail --paths <current-slice-path>...
 ```
+
+A pathless/global planner observation may be used only to discover whether a
+current interrupt exists; it is discovery-only and cannot authorize or refuse
+this slice. If the current-slice path set is not known, finish binding the
+contract, target, and owned source/test/generated/contract paths before making
+the authoritative call above. Interpret that scoped result fail-closed: only
+`status: not-applicable` with `required: false`, or
+`status: handoff-recorded` with `required: true`, `impl_status: allowed`, and
+`chosen_next_step: impl` permits ordinary implementation. Blocked, unknown, or
+malformed output, any required result without that valid impl handoff, and an
+allowed handoff whose next step is `critique`, `factor-first`, or `hitl` all
+stop ordinary implementation.
 
 If the canonical contract artifact is missing, reconstruct the smallest honest
 contract first. Do not stop just because `spec` was not run as a separate
@@ -83,9 +99,13 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor || true
      user/operator capability and acceptance evidence before coding
    - when user-corrected behavior starts or redirects the work, classify stable
      contract vs better case reading before adding repo rules, tests, or gates
-   - if the risk interrupt planner reports a forced interrupt, do not continue
-     plain implementation until the named spec handoff says this slice may
-     proceed honestly
+   - interpret only the authoritative path-scoped planner result; a pathless or
+     global result is discovery-only and never controls this slice
+   - do not continue plain implementation unless the result is explicitly
+     `not-applicable`/`required: false` or
+     `handoff-recorded`/`required: true`/`impl_status: allowed`/
+     `chosen_next_step: impl`; every other, unknown, or malformed result stops
+     the slice
    - before replacing a process, runner, protocol adapter, or compatibility
      boundary, write the acceptance envelope: preserved inputs and argument
      boundaries, state/lifecycle, outputs, failure and exit behavior, and the
