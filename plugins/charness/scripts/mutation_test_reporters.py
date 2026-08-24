@@ -90,8 +90,14 @@ SUMMARY_RE = re.compile(r"in \d+(?:\.\d+)?s", re.IGNORECASE)
 #: nothing to key on and a broken run reads as a kill again. A dead end that names
 #: its own fix is strictly better than a false kill, so `spec` is DETECTED and
 #: refused with that fix named, rather than half-read.
-_NODE_KEY_RE = re.compile(r"^# (tests|pass|fail|cancelled) (\d+)\s*$", re.MULTILINE)
+_NODE_SUMMARY_KEY_RE = re.compile(
+    r"^# (tests|pass|fail|cancelled|skipped|todo|suites) (\d+)\s*$",
+    re.MULTILINE,
+)
 _NODE_DURATION_RE = re.compile(r"^# duration_ms \d+(?:\.\d+)?\s*$", re.MULTILINE)
+_NODE_TAP_START_RE = re.compile(r"^TAP version \d+\s*$", re.MULTILINE)
+_NODE_RESULT_START_RE = re.compile(r"^(?:not )?ok (?P<number>\d+)(?: - .*)?\s*$", re.MULTILINE)
+_NODE_PLAN_RE = re.compile(r"^1\.\.(\d+)\s*$", re.MULTILINE)
 #: Enough to recognise node's `spec` output so the refusal can be specific.
 _NODE_SPEC_RE = re.compile(r"^\u2139 (?:tests|pass|fail) \d+\s*$", re.MULTILINE)
 #: A FILE-level failure: node reports a test file whose process exited non-zero.
@@ -115,6 +121,15 @@ class RunCounts:
     #: The exact text the counts were read from, so a refusal can quote its
     #: evidence instead of asserting that it looked.
     evidence: str
+
+
+@dataclass(frozen=True)
+class _NodeRun:
+    """One structurally validated TAP run and the summary it owns."""
+
+    text: str
+    summary: str
+    counts: tuple[tuple[str, int], ...]
 
 
 class PytestReporter:
@@ -185,41 +200,124 @@ class NodeTestReporter:
         """Whether this is node output in the reporter this reader refuses."""
         return _NODE_SPEC_RE.search(output) is not None
 
-    @staticmethod
-    def summary(output: str) -> str | None:
-        """The block from the last `# duration_ms` back through its count keys.
-
-        Anchored on the LAST duration line so a fixture that runs the runner twice
-        reports the final run, matching pytest's `reversed()` scan.
-        """
-        durations = list(_NODE_DURATION_RE.finditer(output))
-        if not durations:
-            return None
-        end = durations[-1].end()
-        # Walk back over the contiguous marker lines that precede the duration.
-        # The duration line itself always starts with a marker and is always the
-        # last element here, so the block is never empty -- an earlier `if not
-        # block: return None` guard below this loop was unreachable and is gone.
+    @classmethod
+    def _summary_block(cls, selected_run: str) -> str | None:
+        """Return the strict summary block immediately before its duration."""
         block: list[str] = []
-        for line in reversed(output[:end].splitlines()):
-            if line.startswith(("#", "\u2139")):
+        for line in reversed(selected_run.splitlines()):
+            if _NODE_DURATION_RE.fullmatch(line):
+                if block:
+                    break
+                block.append(line)
+                continue
+            if _NODE_SUMMARY_KEY_RE.fullmatch(line):
                 block.append(line)
                 continue
             break
-        return "\n".join(reversed(block))
+        block.reverse()
+        return "\n".join(block) if block else None
+
+    @classmethod
+    def _validated_run(cls, output: str, start: int, end: int) -> _NodeRun | None:
+        """Validate one candidate's plan, result ownership, and counts."""
+        selected_run = output[start:end]
+        block = cls._summary_block(selected_run)
+        if block is None:
+            return None
+
+        summary_matches = list(_NODE_SUMMARY_KEY_RE.finditer(block))
+        keys = [match.group(1) for match in summary_matches]
+        if len(keys) != len(set(keys)):
+            return None
+        counts = {match.group(1): int(match.group(2)) for match in summary_matches}
+        required = {"tests", "pass", "fail", "cancelled"}
+        if not required <= counts.keys():
+            return None
+
+        plans = list(_NODE_PLAN_RE.finditer(selected_run))
+        if not plans or int(plans[-1].group(1)) != counts["tests"]:
+            return None
+        tests = counts["tests"]
+        if any(value < 0 for value in counts.values()):
+            return None
+        optional = counts.get("skipped", 0) + counts.get("todo", 0)
+        if counts["pass"] + counts["fail"] + counts["cancelled"] + optional != tests:
+            return None
+
+        results = list(_NODE_RESULT_START_RE.finditer(selected_run))
+        result_numbers = [int(match.group("number")) for match in results]
+        if result_numbers != list(range(1, tests + 1)):
+            return None
+        return _NodeRun(selected_run, block, tuple(counts.items()))
+
+    @classmethod
+    def _candidate_for_region(cls, output: str, region_start: int, end: int) -> _NodeRun | None:
+        """Find the first valid header run, then a compact result-owned run."""
+        headers = [
+            match
+            for match in _NODE_TAP_START_RE.finditer(output, region_start)
+            if match.start() < end
+        ]
+        for header in headers:
+            candidate = cls._validated_run(output, header.start(), end)
+            if candidate is not None:
+                return candidate
+
+        plans = [
+            match
+            for match in _NODE_PLAN_RE.finditer(output, region_start)
+            if match.start() < end
+        ]
+        results = [
+            match
+            for match in _NODE_RESULT_START_RE.finditer(output, region_start)
+            if match.start() < end
+        ]
+        for plan in reversed(plans):
+            tests = int(plan.group(1))
+            before = [match for match in results if match.start() < plan.start()]
+            after = [match for match in results if match.start() > plan.end()]
+            starts: list[int] = []
+            if len(after) >= tests:
+                starts.append(plan.start())
+            if len(before) >= tests:
+                starts.append(before[-tests].start() if tests else plan.start())
+            for start in starts:
+                candidate = cls._validated_run(output, start, end)
+                if candidate is not None:
+                    return candidate
+        return None
+
+    @classmethod
+    def _selected_run(cls, output: str) -> _NodeRun | None:
+        """Return the latest complete run after complete-duration boundaries."""
+        durations = list(_NODE_DURATION_RE.finditer(output))
+        if not durations:
+            return None
+
+        selected: _NodeRun | None = None
+        prior_complete_end = 0
+        for duration in durations:
+            candidate = cls._candidate_for_region(output, prior_complete_end, duration.end())
+            if candidate is None:
+                continue
+            selected = candidate
+            prior_complete_end = duration.end()
+        return selected
+
+    @classmethod
+    def summary(cls, output: str) -> str | None:
+        """The summary block owned by the latest structurally complete run."""
+        selected_run = cls._selected_run(output)
+        return selected_run.summary if selected_run is not None else None
 
     @classmethod
     def read(cls, output: str) -> RunCounts | None:
-        block = cls.summary(output)
-        if block is None:
+        selected_run = cls._selected_run(output)
+        if selected_run is None:
             return None
-        counts = {key: int(value) for key, value in _NODE_KEY_RE.findall(block)}
-        # `# tests` is what makes this block a REPORT rather than a stray comment
-        # run. Without it there is no total, and a block carrying only a duration
-        # says nothing about how many tests there were.
-        if "tests" not in counts:
-            return None
-        reported_failures = counts.get("fail", 0)
+        counts = dict(selected_run.counts)
+        reported_failures = counts["fail"]
         # THE false-kill guard, and the reason this reader looks outside the
         # summary block at all. `node --test` has no error concept: a test FILE
         # that fails to load is reported as a failing TEST, so a mutation that
@@ -237,20 +335,16 @@ class NodeTestReporter:
         #
         # Direction of error is why scanning outside the summary is acceptable
         # HERE where it is refused for counts: over-counting process failures
-        # turns a kill into a refusal (a false stop), and under-counting leaves
-        # the pre-existing behavior. Neither can manufacture a kill.
-        # Scoped to the LAST run, matching how `summary` picks its block. Scanning
-        # the whole transcript charged an earlier run's process failures against a
-        # later run's summary, and gave a mutant's own output more surface to
-        # suppress a real kill with (a test that prints `exitCode: 1` still can,
-        # within its own run -- that is a false stop, which is the safe direction,
-        # and it is the price of a signal node only exposes in the transcript).
-        process_failures = min(len(_NODE_PROCESS_FAILURE_RE.findall(output)), reported_failures)
+        # turns a kill into a refusal, and under-counting leaves the pre-existing
+        # behavior. Neither can manufacture a kill. The selected run window keeps
+        # an earlier run's diagnostics from crossing the summary boundary while
+        # retaining the selected run's file-level failure details.
+        process_failures = min(len(_NODE_PROCESS_FAILURE_RE.findall(selected_run.text)), reported_failures)
         return RunCounts(
-            passed=counts.get("pass", 0),
+            passed=counts["pass"],
             failed=reported_failures - process_failures,
-            errors=counts.get("cancelled", 0) + process_failures,
-            evidence=block,
+            errors=counts["cancelled"] + process_failures,
+            evidence=selected_run.summary,
         )
 
 

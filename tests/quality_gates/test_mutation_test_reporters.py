@@ -27,6 +27,9 @@ reporters = import_repo_module("scripts/mutation_test_reporters.py", "scripts.mu
 mar = import_repo_module("scripts/mutate_and_restore.py", "scripts.mutate_and_restore")
 
 _NODE_PASS = """\
+TAP version 13
+ok 1 - t1
+ok 2 - t2
 1..2
 # tests 2
 # suites 0
@@ -38,7 +41,12 @@ _NODE_PASS = """\
 # duration_ms 67.239608
 """
 
-_NODE_FAIL = _NODE_PASS.replace("# pass 2", "# pass 0").replace("# fail 0", "# fail 2")
+_NODE_FAIL = (
+    _NODE_PASS.replace("ok 1 - t1", "not ok 1 - t1")
+    .replace("ok 2 - t2", "not ok 2 - t2")
+    .replace("# pass 2", "# pass 0")
+    .replace("# fail 0", "# fail 2")
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -107,11 +115,14 @@ def test_node_cancelled_counts_as_an_error_not_a_failure() -> None:
 def test_node_skipped_and_todo_are_not_accounted() -> None:
     """Folding them into the total would let a mutant that turns tests into skips
     satisfy the harness's baseline-scope check and read as a survivor."""
-    output = _NODE_PASS.replace("# skipped 0", "# skipped 7").replace("# todo 0", "# todo 5")
+    output = (
+        _NODE_PASS.replace("# pass 2", "# pass 0")
+        .replace("# skipped 0", "# skipped 2")
+    )
 
     counts = reporters.NodeTestReporter.read(output)
 
-    assert counts.passed + counts.failed == 2
+    assert counts.passed + counts.failed == 0
 
 
 def test_an_echoed_count_line_cannot_supply_a_node_count() -> None:
@@ -327,6 +338,92 @@ not ok 1 - test/t1.test.js
 # duration_ms 81.122046
 """
 
+_NODE_ASSERTION_FAILURE = """\
+TAP version 13
+not ok 1 - t1
+  ---
+  code: 'ERR_ASSERTION'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 42.0
+"""
+
+_NODE_COMPACT_FILE_FAILURE = """\
+not ok 1 - file
+  ---
+  exitCode: 1
+  ...
+ok 2 - second
+1..2
+# tests 2
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 17.0
+"""
+
+_NODE_LATE_HEADER_FILE_FAILURE = """\
+TAP version 13
+# Subtest: file
+not ok 1 - file
+  ---
+  exitCode: 1
+  ...
+TAP version 13
+1..1
+# tests 1
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18.0
+"""
+
+_NODE_INCOMPLETE_SUMMARY = """\
+TAP version 13
+not ok 1 - incomplete
+1..1
+# tests 1
+# fail 1
+# duration_ms 19.0
+"""
+
+_NODE_PLAN_MISMATCH = """\
+TAP version 13
+ok 1 - only-one-result
+1..2
+# tests 1
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20.0
+"""
+
+_NODE_INCOMPLETE_TAP_WRAPPER = """\
+TAP version 13
+ok 1 - wrapper-only
+1..2
+# tests 2
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 21.0
+"""
+
 
 def test_a_file_level_process_failure_is_an_error_not_a_failure() -> None:
     """THE false-kill guard. `node --test` has no error concept: a test FILE that
@@ -344,12 +441,85 @@ def test_a_file_level_process_failure_is_an_error_not_a_failure() -> None:
 def test_a_real_assertion_failure_stays_a_failure() -> None:
     """The other half: the guard must not turn genuine kills into refusals. A
     test-level failure carries `code: 'ERR_ASSERTION'` and no `exitCode`."""
-    real = _NODE_PASS.replace("# pass 2", "# pass 1").replace("# fail 0", "# fail 1")
+    real = (
+        _NODE_PASS.replace("ok 1 - t1", "not ok 1 - t1")
+        .replace("# pass 2", "# pass 1")
+        .replace("# fail 0", "# fail 1")
+    )
     body = "not ok 1 - t1\n  ---\n  code: 'ERR_ASSERTION'\n  ...\n"
 
     counts = reporters.NodeTestReporter.read(body + real)
 
     assert (counts.failed, counts.errors) == (1, 0)
+
+
+@pytest.mark.parametrize(
+    ("prefix", "suffix"),
+    [
+        (_NODE_PASS + "wrapper chatter\n  exitCode: 1\n", ""),
+        (_NODE_BROKEN.split("# duration_ms", 1)[0] + "wrapper chatter\n  exitCode: 1\n", ""),
+        ("", "wrapper chatter\n# duration_ms 99\n"),
+    ],
+    ids=["inter-run-wrapper", "incomplete-earlier-run", "trailing-duration-wrapper"],
+)
+def test_the_selected_run_owns_counts_and_process_diagnostics(prefix: str, suffix: str) -> None:
+    """The selected summary and its process diagnostics share one run window.
+
+    The final TAP run is byte-identical across each axis. Earlier complete or
+    incomplete output, wrapper diagnostics, and a misleading trailing duration
+    must not change its assertion-failure result.
+    """
+    counts = reporters.NodeTestReporter.read(prefix + _NODE_ASSERTION_FAILURE + suffix)
+
+    assert (counts.passed, counts.failed, counts.errors) == (0, 1, 0)
+
+
+def test_compact_run_retains_all_owned_results_for_process_diagnostics() -> None:
+    counts = reporters.NodeTestReporter.read(_NODE_COMPACT_FILE_FAILURE)
+
+    assert (counts.passed, counts.failed, counts.errors) == (1, 0, 1)
+
+
+def test_an_inner_tap_header_cannot_erase_the_outer_run_diagnostic() -> None:
+    counts = reporters.NodeTestReporter.read(_NODE_LATE_HEADER_FILE_FAILURE)
+
+    assert (counts.passed, counts.failed, counts.errors) == (0, 0, 1)
+
+
+@pytest.mark.parametrize("output", [_NODE_INCOMPLETE_SUMMARY, _NODE_PLAN_MISMATCH])
+def test_an_incomplete_or_inconsistent_tap_summary_is_unreadable(output: str) -> None:
+    assert reporters.NodeTestReporter.read(output) is None
+
+
+def test_a_complete_tap_shaped_wrapper_cannot_supersede_a_real_run() -> None:
+    counts = reporters.NodeTestReporter.read(_NODE_ASSERTION_FAILURE + _NODE_INCOMPLETE_TAP_WRAPPER)
+
+    assert (counts.passed, counts.failed, counts.errors) == (0, 1, 0)
+
+
+@pytest.mark.parametrize(
+    "output",
+    [_NODE_COMPACT_FILE_FAILURE, _NODE_LATE_HEADER_FILE_FAILURE],
+    ids=["compact-all-results", "explicit-first-header"],
+)
+def test_classification_refuses_file_failures_preserved_by_the_selected_run(output: str) -> None:
+    completed = subprocess.CompletedProcess([], 1, output, "")
+    baseline = mar.Baseline(returncode=0, passed=2, output="")
+
+    verdict, _detail = mar.classify_mutant_run(completed, baseline, reporters.NodeTestReporter)
+
+    assert verdict == mar.REFUSED
+
+
+@pytest.mark.parametrize("output", [_NODE_INCOMPLETE_SUMMARY, _NODE_PLAN_MISMATCH])
+def test_classification_refuses_an_incomplete_or_mismatched_tap_summary(output: str) -> None:
+    completed = subprocess.CompletedProcess([], 1, output, "")
+    baseline = mar.Baseline(returncode=0, passed=1, output="")
+
+    verdict, detail = mar.classify_mutant_run(completed, baseline, reporters.NodeTestReporter)
+
+    assert verdict == mar.REFUSED
+    assert "no readable summary" in detail
 
 
 def test_process_failures_cannot_exceed_the_reported_failures() -> None:

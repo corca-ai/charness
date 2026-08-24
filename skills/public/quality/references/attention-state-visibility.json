@@ -474,6 +474,19 @@
       ],
       "rationale": "The measurement reports every pre-contract citation it skipped as a named list rather than dropping it silently, and states in its non-claims that the gate's prose_review_status arm is not modelled."
     },
+    "scripts/mutation_test_reporters.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "evidence"
+      ],
+      "rationale": "`skipped` is a verdict-critical count read from one structurally complete Node TAP summary, not an internal clean-pass branch. The reporter validates pass/fail/cancelled/skipped/todo arithmetic against the selected run's tests total and retains the complete summary as RunCounts evidence; mutation classification therefore cannot silently zero-fill or drop a skipped count while calling a malformed run a kill."
+    },
     "scripts/parity_harness.py": {
       "states": [
         "skipped"
