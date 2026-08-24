@@ -413,6 +413,55 @@ def test_run_slice_closeout_risk_paths_ignore_paths_override(
     "script_path",
     ["scripts/run_slice_closeout.py", "plugins/charness/scripts/run_slice_closeout.py"],
 )
+def test_run_slice_closeout_non_git_observation_fails_closed_on_global_interrupt(
+    tmp_path: Path, script_path: str
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / ".agents").mkdir()
+    (repo / "charness-artifacts" / "debug").mkdir(parents=True)
+    (repo / "charness-artifacts" / "spec").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    write_surface_manifest(repo, demo_surface())
+    (repo / ".agents" / "debug-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\nlanguage: en\noutput_dir: charness-artifacts/debug\n",
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "debug" / "latest.md").write_text(
+        "\n".join(
+            [
+                "# Debug Review", "", "## Seam Risk", "", "- Interrupt ID: no-git-seam",
+                "- Risk Class: host-disproves-local", "- Seam: missing-git-observer",
+                "- Disproving Observation: Git path observation is unavailable",
+                "- What Local Reasoning Cannot Prove: actual changed paths",
+                "- Generalization Pressure: factor-now", "", "## Interrupt Decision", "",
+                "- Critique Required: yes", "- Next Step: spec",
+                "- Handoff Artifact: charness-artifacts/spec/no-git-seam.md", "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "spec" / "no-git-seam.md").write_text(
+        "# Incomplete handoff\n", encoding="utf-8"
+    )
+
+    result = run_script(
+        script_path, "--repo-root", str(repo), "--paths", "README.md",
+        "--skip-sync", "--skip-verify", "--plan-only",
+    )
+
+    assert result.returncode == 1, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["risk_interrupt_path_observations"][0]["status"] == "unavailable"
+    assert payload["risk_interrupt_paths"] == []
+    assert payload["risk_interrupt_plan"]["status"] == "blocked"
+    assert payload["status"] == "blocked"
+
+
+@pytest.mark.parametrize(
+    "script_path",
+    ["scripts/run_slice_closeout.py", "plugins/charness/scripts/run_slice_closeout.py"],
+)
 def test_run_slice_closeout_rechecks_risk_paths_created_by_sync(
     tmp_path: Path, script_path: str
 ) -> None:

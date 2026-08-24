@@ -21,6 +21,33 @@ def initial_paths(
     return collect_live(repo_root)
 
 
+def observe_initial_paths(*, observation_error, **kwargs) -> dict[str, object]:
+    """Keep Git-observation failure distinct from an observed empty path set."""
+    try:
+        paths = initial_paths(**kwargs)
+    except observation_error as exc:
+        return {"status": "unavailable", "paths": None, "reason": str(exc)}
+    return {"status": "observed", "paths": paths, "reason": None}
+
+
+def observe_final_paths(
+    repo_root,
+    *,
+    initial_observation: dict[str, object],
+    collect_live,
+    observation_error,
+) -> dict[str, object]:
+    """Re-observe after closeout mutations; unavailable means global/fail-closed."""
+    try:
+        live_paths = collect_live(repo_root)
+    except observation_error as exc:
+        return {"status": "unavailable", "paths": None, "reason": str(exc)}
+    initial_paths_value = initial_observation.get("paths")
+    initial = initial_paths_value if isinstance(initial_paths_value, list) else []
+    paths = sorted(dict.fromkeys([*initial, *live_paths]))
+    return {"status": "observed", "paths": paths, "reason": None}
+
+
 def block_reason(plan: object) -> str | None:
     if not isinstance(plan, dict):
         return "risk interrupt planner returned malformed output"

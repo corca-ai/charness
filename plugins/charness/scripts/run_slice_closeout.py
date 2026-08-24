@@ -24,7 +24,8 @@ plan_cautilus_proof = _scripts_plan_cautilus_proof_module.plan_cautilus_proof
 _scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_interrupt_lib")
 plan_risk_interrupt = _scripts_risk_interrupt_lib_module.plan_risk_interrupt
 _slice_closeout_risk_interrupt = import_repo_module(__file__, "scripts.slice_closeout_risk_interrupt")
-risk_interrupt_initial_paths = _slice_closeout_risk_interrupt.initial_paths
+risk_interrupt_observe_initial_paths = _slice_closeout_risk_interrupt.observe_initial_paths
+risk_interrupt_observe_final_paths = _slice_closeout_risk_interrupt.observe_final_paths
 risk_interrupt_block_reason = _slice_closeout_risk_interrupt.block_reason
 _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
@@ -163,9 +164,9 @@ def _maybe_block_on_cautilus(
 
 
 def _maybe_block_on_risk_interrupt(
-    repo_root: Path, payload: dict[str, object], risk_interrupt_paths: list[str]
+    repo_root: Path, payload: dict[str, object], risk_interrupt_paths: list[str] | None
 ) -> int | None:
-    payload["risk_interrupt_paths"] = list(risk_interrupt_paths)
+    payload["risk_interrupt_paths"] = list(risk_interrupt_paths or [])
     risk_interrupt_plan = plan_risk_interrupt(repo_root, risk_interrupt_paths)
     payload["risk_interrupt_plan"] = risk_interrupt_plan
     reason = risk_interrupt_block_reason(risk_interrupt_plan)
@@ -338,14 +339,14 @@ def _run_preexecution_blocks(
     args,
     *,
     structural_paths: list[str] | None = None,
-    risk_interrupt_paths: list[str],
+    risk_interrupt_paths: list[str] | None,
     base: str = "origin/main",
 ) -> int | None:
     """Fail-fast pre-execution gate chain; returns an exit code on the first block.
     #332: the cheap structural sweep runs FIRST (before surface-match / cautilus /
     risk interrupt / broad pytest), then advisories, unmatched, cautilus, risk.
     """
-    payload["risk_interrupt_paths"] = list(risk_interrupt_paths)
+    payload["risk_interrupt_paths"] = list(risk_interrupt_paths or [])
     blocked = block_on_structural_sweep(
         repo_root,
         payload,
@@ -434,17 +435,20 @@ def main() -> int:
         if campaign_base_sha
         else _resolve_changed_paths(repo_root, args)
     )
-    risk_interrupt_paths = risk_interrupt_initial_paths(
-        repo_root,
+    initial_risk_observation = risk_interrupt_observe_initial_paths(
+        repo_root=repo_root,
         campaign_base_sha=campaign_base_sha,
         base=args.base,
         collect_live=collect_changed_paths,
         collect_since_base=collect_changed_paths_since_base,
         collect_since_resolved_base=collect_changed_paths_since_resolved_base,
+        observation_error=SurfaceError,
     )
+    risk_interrupt_paths = initial_risk_observation["paths"]
     payload = match_surfaces(manifest, changed_paths)
     payload["surfaces_manifest_path"] = manifest["path"]
     payload["executed_commands"] = []
+    payload["risk_interrupt_path_observations"] = [initial_risk_observation]
     payload["headroom"] = headroom_for([Path(p) for p in payload["changed_paths"]], repo_root)
 
     if not payload["changed_paths"]:
@@ -540,9 +544,14 @@ def main() -> int:
     # Sync, verification, and coverage producers may add generated or artifact
     # paths after the fail-fast check. Preserve committed campaign paths and add
     # the final live Git set before success; --paths never narrows this decision.
-    final_risk_interrupt_paths = sorted(
-        dict.fromkeys([*risk_interrupt_paths, *collect_changed_paths(repo_root)])
+    final_risk_observation = risk_interrupt_observe_final_paths(
+        repo_root,
+        initial_observation=initial_risk_observation,
+        collect_live=collect_changed_paths,
+        observation_error=SurfaceError,
     )
+    payload["risk_interrupt_path_observations"].append(final_risk_observation)
+    final_risk_interrupt_paths = final_risk_observation["paths"]
     blocked = _maybe_block_on_risk_interrupt(repo_root, payload, final_risk_interrupt_paths)
     if blocked is not None:
         return blocked

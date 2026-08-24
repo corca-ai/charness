@@ -56,6 +56,12 @@ range and re-applies the same fail-closed planner interpretation before success.
 Post-decision usage and telemetry writes remain confined to gitignored runtime
 surfaces; they do not create a second source-visible mutation channel.
 
+Git observation itself has three semantic states: observed non-empty, observed
+empty, and unavailable. Closeout records that state. Unavailable never falls
+back to caller-selected `--paths`; it invokes the existing pathless/global
+planner so a current interrupt fails closed, while a consumer with no current
+interrupt can still use the closeout surface without a Git repository.
+
 The planner's classification semantics remain the authority; this slice fixes
 the caller contract, not the planner.
 
@@ -79,6 +85,8 @@ planner.
   `changed_paths: None` (pathless/global discovery) from `changed_paths: []`
   (an authoritative Git observation found no slice paths); the latter is scoped
   `not-applicable`, not a global forced-interrupt decision.
+- Distinguish an unavailable Git observer from both states above. Record it and
+  use global planning; do not crash, silently clear, or trust `--paths`.
 - `run_slice_closeout.py` is an existing caller of the planner and must refuse
   unknown/malformed states, blocked handoffs, and allowed handoffs whose chosen
   next step is not `impl`.
