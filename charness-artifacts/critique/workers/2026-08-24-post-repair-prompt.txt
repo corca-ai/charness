@@ -1,0 +1,37 @@
+Run as a one-shot read-only fresh-eye reviewer. Do not modify files and do not spawn descendants.
+
+Review the repaired decision and its complete issue inventory:
+
+- `charness-artifacts/ideation/2026-08-24-consumer-friction-and-file-backed-lanes.md`
+- `charness-artifacts/ideation/2026-08-24-open-issue-consumer-friction-matrix.md`
+- canonical packet: `charness-artifacts/critique/2026-08-24-consumer-friction-post-repair-packet.json`
+
+Read the prior angle findings and counterweight so this round evaluates the repairs instead of restarting discovery:
+
+- `charness-artifacts/critique/workers/2026-08-24-framing-result.json`
+- `charness-artifacts/critique/workers/2026-08-24-operator-result.json`
+- `charness-artifacts/critique/workers/2026-08-24-integrity-result.json`
+- `charness-artifacts/critique/workers/2026-08-24-counterweight-result.json`
+
+Acceptance question: did the repaired design address every `act-before-spec` item honestly and bind its complete current-open-issue cohort, without making the external-worker platform a prerequisite for unrelated issue retirement?
+
+Specifically verify:
+
+1. all 46 open issues are accounted for and the 13 include + 1 dependency + 32 exclude arithmetic and meanings are coherent;
+2. issue retirement and worker capability have independent terminal criteria and only explicit causal edges create dependencies;
+3. `charness task` is the one durable lifecycle owner with a minimum launch/status/collect/cancel/retry recovery contract;
+4. one executable host process/configuration owner and field-level config/grant ownership are selected, with executable input-drift observation;
+5. the relative-path hypothesis is reproduction-gated;
+6. candidate-command dogfood cannot approve its own proof surface and an independent channel plus conditional second round are reserved;
+7. local-instruction composition and write-capable work are correctly deferred from the first read-only slice.
+
+Findings must be evidence-backed blockers or majors that would still change this design before spec. Do not block merely because implementation details deliberately belong to the spec or named slice, and do not infer that an excluded issue is invalid or closable. The canonical packet identity is the JSON file's byte hash; the adjacent Markdown rendering has a different hash by design.
+
+Return only one JSON object valid against `skills/shared/references/bounded-review-result.schema.json`. Use:
+
+- kind: `charness.bounded_review.v1`
+- lens: `post-repair-decision-integrity`
+- packet_sha256: `731472bb457cc52a489ba253ab7ce72a6f66ba7bd633c9ee058d562a7eadfc13`
+- reviewed_input_identity_sha256: `66d881bff7fa784f9a76610e7c382bce37e82054275f58e2b2c98667a9ddceb6`
+- counterweight_triage: []
+- verdict, findings, next_move, and non_claims: complete and explicit

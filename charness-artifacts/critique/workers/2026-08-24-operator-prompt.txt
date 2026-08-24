@@ -1,0 +1,21 @@
+Run as a one-shot read-only fresh-eye angle reviewer. Do not modify files and do not spawn descendants.
+
+Target: decision premortem for `charness-artifacts/ideation/2026-08-24-consumer-friction-and-file-backed-lanes.md`.
+Prepared packet: `charness-artifacts/critique/2026-08-24-consumer-friction-lanes-premortem-packet.md`.
+
+Lens: Atul Gawande operational checklist plus Jef Raskin first-use interface. Imagine a new Charness consumer adopted the proposed path and it failed or created new friction. Inspect the operator steps, tracked versus ignored config, AGENTS.local.md composition, worktree preparation, backend selection, timeout/recovery, unsafe permission visibility, installation/export, and the proposed public command questions. Find missing acceptance tests or choices that must be fixed before spec.
+
+Success line under review: a first-time installed consumer can start, observe, recover, and collect a bounded external worker without trusting exit/status/commit proxies or copying machine-specific policy into tracked files.
+
+Out of scope: implementing fixes, mutating GitHub, broad whole-repo quality, provider model selection, or assuming Ceal's local grants are portable defaults.
+
+Return only one JSON object valid against `skills/shared/references/bounded-review-result.schema.json`. Use:
+- kind: `charness.bounded_review.v1`
+- lens: `operator-first-use-and-recovery`
+- packet_sha256: `10eb42f128451efaef600c594da3be7cb31f281f1959cd0b7bc08b8dbacb0bd9`
+- reviewed_input_identity_sha256: `280be919e8e64060c47ae3bd7c25415e6a3a2f3e3a3c2c64708fb3bd726f08db`
+- verdict: pass, block, or defer
+- counterweight_triage: [] (the parent runs a separate counterweight)
+- findings: only evidence-backed concerns that would change the decision or acceptance criteria
+- next_move and non_claims: complete and explicit
+

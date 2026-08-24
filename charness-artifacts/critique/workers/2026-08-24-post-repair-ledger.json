@@ -1,0 +1,50 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "2026-08-24-post-repair",
+      "scope": "Verify the repaired consumer-friction/file-backed-work decision and complete open-issue matrix before spec.",
+      "packet_identity": "731472bb457cc52a489ba253ab7ce72a6f66ba7bd633c9ee058d562a7eadfc13",
+      "parent_receipt_identity": "2026-08-24-consumer-friction-parent",
+      "boundary_fingerprint": "0eecf30bd5a7e1224e9e6bb2fb687d54bba305af0d7a2a3ed476016f6dbdc2e9",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-08-24T09:29:52Z",
+      "history": [
+        {
+          "event_id": "4c1a7c4dd729470eb94f2956b2df679f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-08-24T09:26:58Z",
+          "attempt_id": "2026-08-24-post-repair",
+          "scope": "Verify the repaired consumer-friction/file-backed-work decision and complete open-issue matrix before spec.",
+          "packet_identity": "731472bb457cc52a489ba253ab7ce72a6f66ba7bd633c9ee058d562a7eadfc13",
+          "parent_receipt_identity": "2026-08-24-consumer-friction-parent"
+        },
+        {
+          "event_id": "72823cb108ba47ab92a42f6ca2d0dc97",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-08-24T09:29:52Z",
+          "attempt_id": "2026-08-24-post-repair",
+          "scope": "Verify the repaired consumer-friction/file-backed-work decision and complete open-issue matrix before spec.",
+          "packet_identity": "731472bb457cc52a489ba253ab7ce72a6f66ba7bd633c9ee058d562a7eadfc13",
+          "parent_receipt_identity": "2026-08-24-consumer-friction-parent",
+          "findings_identity": "5c43379b161fc43461e576415e13f3c95142118111df1358261edd028e6c8b34"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "66d881bff7fa784f9a76610e7c382bce37e82054275f58e2b2c98667a9ddceb6",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "7708acb8038037f8e830c864b2a6b9e257100c46dc3a27a73f81b5215631b1a1",
+      "schema_sha256": "4235ae95ae21c43ff4e4611b9cc26ae797fbb7cb534388953b23c52b1de9fa45",
+      "findings_identity": "5c43379b161fc43461e576415e13f3c95142118111df1358261edd028e6c8b34"
+    }
+  ]
+}

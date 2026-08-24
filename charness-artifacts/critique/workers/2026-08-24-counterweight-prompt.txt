@@ -1,0 +1,29 @@
+Run as a one-shot read-only fresh-eye counterweight reviewer. Do not modify files and do not spawn descendants.
+
+Target decision: `charness-artifacts/ideation/2026-08-24-consumer-friction-and-file-backed-lanes.md`.
+Canonical prepared packet whose SHA-256 is assigned below: `charness-artifacts/critique/2026-08-24-consumer-friction-lanes-premortem-packet.json`. The adjacent `.md` file is a human rendering and is not expected to have the JSON packet's byte hash.
+
+Read and triage every concern in these three angle results:
+
+- `charness-artifacts/critique/workers/2026-08-24-framing-result.json`
+- `charness-artifacts/critique/workers/2026-08-24-operator-result.json`
+- `charness-artifacts/critique/workers/2026-08-24-integrity-result.json`
+
+Use evidence from the target, packet, current repository, and `../ceal` only as needed to decide whether each concern is decision-changing. Separate genuine blockers from over-worry. In particular, do not preserve OPR-001 merely because the operator reviewer hashed the Markdown rendering instead of the canonical JSON packet. Do not silently discard its other semantic findings solely because that reviewer made the packet-file mistake; independently test them.
+
+Put each PF-01..PF-03, OPR-001..OPR-006, and II-1..II-4 concern into exactly one of these bins in `counterweight_triage`:
+
+- `act-before-spec`: must change the current design before it becomes a spec
+- `bundle-in-slice`: can be specified or proven within the named implementation slice
+- `over-worry`: refuted, duplicate, or based on a mistaken premise
+- `valid-defer`: real but not part of the first read-only capability or issue-retirement contract
+
+For every triage item, name the source concern id in `concern` and give a concise evidence-backed disposition. Use `findings` only for a new cross-cutting concern not already represented by those ids. The verdict is `pass` only if no `act-before-spec` item remains; otherwise use `block` and name the minimum design repairs in `next_move`.
+
+Return only one JSON object valid against `skills/shared/references/bounded-review-result.schema.json`. Use:
+
+- kind: `charness.bounded_review.v1`
+- lens: `counterweight-triage`
+- packet_sha256: `10eb42f128451efaef600c594da3be7cb31f281f1959cd0b7bc08b8dbacb0bd9`
+- reviewed_input_identity_sha256: `280be919e8e64060c47ae3bd7c25415e6a3a2f3e3a3c2c64708fb3bd726f08db`
+- findings, counterweight_triage, next_move, and non_claims: complete and explicit

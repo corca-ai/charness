@@ -1,0 +1,21 @@
+Run as a one-shot read-only fresh-eye angle reviewer. Do not modify files and do not spawn descendants.
+
+Target: decision premortem for `charness-artifacts/ideation/2026-08-24-consumer-friction-and-file-backed-lanes.md`.
+Prepared packet: `charness-artifacts/critique/2026-08-24-consumer-friction-lanes-premortem-packet.md`.
+
+Lens: implementation integrity, source-of-truth ownership, and cost dominance. Imagine Option B shipped but duplicated or weakened existing Charness mechanisms. Inspect the current worktree CLI, reviewer worker/runtime/report, Codex eval runtime, adapters, plugin export, and Ceal host pattern as needed. Test whether the proposed layer boundaries are coherent, whether review approval is truly separated from general delivery, whether the rollout order creates a circular dogfood dependency, and whether a thinner composition of existing commands gives the same capability.
+
+Success line under review: reuse one host process/receipt substrate without flattening task semantics, adding a second adapter/config family unnecessarily, or coupling portable Charness to Ceal/Node behavior.
+
+Out of scope: implementing fixes, mutating GitHub, broad whole-repo quality, or treating code-reading hypotheses as reproduced bugs.
+
+Return only one JSON object valid against `skills/shared/references/bounded-review-result.schema.json`. Use:
+- kind: `charness.bounded_review.v1`
+- lens: `implementation-integrity-and-cost-dominance`
+- packet_sha256: `10eb42f128451efaef600c594da3be7cb31f281f1959cd0b7bc08b8dbacb0bd9`
+- reviewed_input_identity_sha256: `280be919e8e64060c47ae3bd7c25415e6a3a2f3e3a3c2c64708fb3bd726f08db`
+- verdict: pass, block, or defer
+- counterweight_triage: [] (the parent runs a separate counterweight)
+- findings: only evidence-backed concerns that would change the decision or acceptance criteria
+- next_move and non_claims: complete and explicit
+
