@@ -1,0 +1,72 @@
+{
+  "attempt_id": "release-raskin-r2",
+  "backend": "codex_exec",
+  "boundary_fingerprint": "20fdd35e10a27554af064dc2444ecc787e05479a21825b096d328e38ddb52ca4",
+  "capability_collection_envelope_sha256": "1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865",
+  "capability_envelope_sha256": "1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865",
+  "capability_file": "/home/hwidong/codes/charness/.charness/reviewer-round-2/release-6-4-1-critique-r2/capability.json",
+  "capability_launch_envelope_sha256": "1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865",
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "release-6-4-1-critique-read-only-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "parent-explicit-read-only",
+    "sandbox": {
+      "label": "read-only",
+      "source": "parent-boundary"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-08-24T18:39:41Z",
+  "output_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-4-1-r2/raskin.result.json",
+  "output_fresh": true,
+  "output_sha256": "f5511e70d9498cddd22fe5dea9a3759e4983293f11961d2d93bd2aa8d35da2bc",
+  "output_size": 5959,
+  "packet_identity": "71f7ae3924f48db1a93806a1414be264887629324cc8e4e6366b82fb1ece2643",
+  "parent_receipt_identity": "release-6-4-1-parent-r2",
+  "preflight": [],
+  "prompt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-2/release-6-4-1-critique-r2/raskin.txt",
+  "prompt_sha256": "1227d55ddfa6ba332308a4b67618954eda097e2912bc9ea3c682c4da4b5ef83d",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "reviewed_input_identity": "3ee0a55f5bfcf1ce1469a1bea71b5530c56568167ec689cc5d9eba8116bb9b96",
+  "run_id": "release-6-4-1-raskin-r2",
+  "schema_file": "/home/hwidong/codes/charness/skills/shared/references/bounded-review-result.schema.json",
+  "schema_sha256": "a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "release-raskin",
+  "started_at": "2026-08-24T18:31:30Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/.charness/reviewer-round-2/release-6-4-1-critique-r2/raskin.stderr.log",
+  "stdout_file": "/home/hwidong/codes/charness/.charness/reviewer-round-2/release-6-4-1-critique-r2/raskin.stdout.log",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

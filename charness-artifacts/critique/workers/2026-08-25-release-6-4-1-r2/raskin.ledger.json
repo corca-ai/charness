@@ -1,0 +1,53 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-raskin-r2",
+      "scope": "release-raskin",
+      "packet_identity": "71f7ae3924f48db1a93806a1414be264887629324cc8e4e6366b82fb1ece2643",
+      "parent_receipt_identity": "release-6-4-1-parent-r2",
+      "boundary_fingerprint": "20fdd35e10a27554af064dc2444ecc787e05479a21825b096d328e38ddb52ca4",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-08-24T18:39:41Z",
+      "history": [
+        {
+          "event_id": "5fdbd69522bc43548b5347afe4ab58b4",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-08-24T18:31:30Z",
+          "attempt_id": "release-raskin-r2",
+          "scope": "release-raskin",
+          "packet_identity": "71f7ae3924f48db1a93806a1414be264887629324cc8e4e6366b82fb1ece2643",
+          "parent_receipt_identity": "release-6-4-1-parent-r2",
+          "capability_launch_envelope_sha256": "1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865"
+        },
+        {
+          "event_id": "5fdf0f9f5ea345aabea587be1cf06d22",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-08-24T18:39:41Z",
+          "attempt_id": "release-raskin-r2",
+          "scope": "release-raskin",
+          "packet_identity": "71f7ae3924f48db1a93806a1414be264887629324cc8e4e6366b82fb1ece2643",
+          "parent_receipt_identity": "release-6-4-1-parent-r2",
+          "capability_launch_envelope_sha256": "1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865",
+          "findings_identity": "f5511e70d9498cddd22fe5dea9a3759e4983293f11961d2d93bd2aa8d35da2bc"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "3ee0a55f5bfcf1ce1469a1bea71b5530c56568167ec689cc5d9eba8116bb9b96",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "1227d55ddfa6ba332308a4b67618954eda097e2912bc9ea3c682c4da4b5ef83d",
+      "schema_sha256": "a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3",
+      "capability_launch_envelope_sha256": "1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865",
+      "findings_identity": "f5511e70d9498cddd22fe5dea9a3759e4983293f11961d2d93bd2aa8d35da2bc"
+    }
+  ]
+}

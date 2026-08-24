@@ -1,0 +1,50 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865
+capability_launch_envelope_sha256: 1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865
+capability_collection_envelope_sha256: 1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: release-raskin
+attempt_id: release-raskin-r2
+boundary_fingerprint: 20fdd35e10a27554af064dc2444ecc787e05479a21825b096d328e38ddb52ca4
+prompt_sha256: 1227d55ddfa6ba332308a4b67618954eda097e2912bc9ea3c682c4da4b5ef83d
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-4-1-r2/raskin.receipt.json
+ledger_path: /home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-4-1-r2/raskin.ledger.json
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: f5511e70d9498cddd22fe5dea9a3759e4983293f11961d2d93bd2aa8d35da2bc
+receipt_output_sha256: f5511e70d9498cddd22fe5dea9a3759e4983293f11961d2d93bd2aa8d35da2bc
+packet_identity: 71f7ae3924f48db1a93806a1414be264887629324cc8e4e6366b82fb1ece2643
+reviewed_input_identity: 3ee0a55f5bfcf1ce1469a1bea71b5530c56568167ec689cc5d9eba8116bb9b96
+parent_receipt_identity: release-6-4-1-parent-r2
+provenance:
+  scope: release-raskin
+  packet_identity: 71f7ae3924f48db1a93806a1414be264887629324cc8e4e6366b82fb1ece2643
+  reviewed_input_identity: 3ee0a55f5bfcf1ce1469a1bea71b5530c56568167ec689cc5d9eba8116bb9b96
+  parent_receipt_identity: release-6-4-1-parent-r2
+  attempt_id: release-raskin-r2
+  attempt_scope: release-raskin
+  attempt_packet_identity: 71f7ae3924f48db1a93806a1414be264887629324cc8e4e6366b82fb1ece2643
+  attempt_parent_receipt_identity: release-6-4-1-parent-r2
+  result_packet_identity: 71f7ae3924f48db1a93806a1414be264887629324cc8e4e6366b82fb1ece2643
+  result_reviewed_input_identity: 3ee0a55f5bfcf1ce1469a1bea71b5530c56568167ec689cc5d9eba8116bb9b96
+  boundary_fingerprint: 20fdd35e10a27554af064dc2444ecc787e05479a21825b096d328e38ddb52ca4
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 1227d55ddfa6ba332308a4b67618954eda097e2912bc9ea3c682c4da4b5ef83d
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 1f2ed16093cafa236bd456543b00f141bb5efd85334466ca51e0ce6771ae3865
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
